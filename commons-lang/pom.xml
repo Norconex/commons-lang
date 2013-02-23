@@ -3,11 +3,11 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.norconex.commons</groupId>
-  <artifactId>commons-lang</artifactId>
+  <artifactId>norconex-commons-lang</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>jar</packaging>
 
-  <name>commons-lang</name>
+  <name>Norconex Commons Lang</name>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -87,8 +87,8 @@
                     <exclude>**/*Point*.java</exclude>
                 </excludes>
             </configuration>
-         </plugin>
-     </plugins>
+        </plugin>
+    </plugins>
     
   </build>
 
