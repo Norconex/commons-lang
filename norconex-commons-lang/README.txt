@@ -1,4 +1,4 @@
+To build this project in your favourite IDE, please set the following:
 
-
-Java compiler version 1.6
-encoding UTF-8
+   Minimum Java compiler version: 1.6
+   Source Encoding: UTF-8
