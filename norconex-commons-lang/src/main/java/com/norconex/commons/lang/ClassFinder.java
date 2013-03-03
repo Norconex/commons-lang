@@ -56,7 +56,7 @@ public class ClassFinder {
      * an empty list will be returned.  
      * If the file is null or does not exists, or if it is not a JAR or 
      * directory, an empty string list will be returned.
-     * @param files directory or JAR to scan for classes
+     * @param file directory or JAR to scan for classes
      * @param superClass the class from which to find implementors
      * @return list of class names
      */

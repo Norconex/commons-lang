@@ -126,7 +126,7 @@ public final class ConfigurationUtils {
     /**
      * Creates a new {@link Reader} from a {@link XMLConfiguration}.
      * Do not forget to close the reader instance when you are done with it.
-     * @param xml the xml configuration to convert to a reader instance.
+     * @param node the xml configuration to convert to a reader instance.
      * @return reader
      * @throws ConfigurationException cannot read configuration
      * @throws IOException cannot read configuration
