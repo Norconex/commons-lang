@@ -96,6 +96,10 @@
   </build>
 
   <distributionManagement>
+    <site>
+      <id>norconex-scp-site</id>
+      <url>scp://dev.norconex.com/var/www/products/commons-lang/</url>
+    </site>
     <repository>
       <id>norconex-scp-repo</id>
       <url>scp://dev.norconex.com/var/www/maven/</url>
@@ -125,7 +129,7 @@
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>2.9</version>
         <configuration>
-          <show>public</show>
+          <show>protected</show>
         </configuration>
         <reportSets>
           <reportSet>
