@@ -77,10 +77,12 @@ public final class FileUtil {
     public static void moveFile(File sourceFile, File targetFile)
     		throws IOException {
     	if (sourceFile == null || !sourceFile.isFile()) {
-    		throw new IOException("Source file is not valid: " + sourceFile);
+    		throw new IOException(
+    		        "Source file is not a file or is not valid: " + sourceFile);
     	}
     	if (targetFile == null || targetFile.exists() && !targetFile.isFile()) {
-    		throw new IOException("Target file is not valid: " + targetFile);
+    		throw new IOException(
+    		        "Target file is not a file or is not valid: " + targetFile);
     	}
         boolean success = false;
         int failure = 0;
