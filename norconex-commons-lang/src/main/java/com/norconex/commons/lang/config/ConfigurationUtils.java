@@ -7,7 +7,6 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 
-import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.log4j.LogManager;
@@ -25,47 +24,95 @@ public final class ConfigurationUtils {
     private ConfigurationUtils() {
         super();
     }
+   
+    /**
+     * Creates a new instance of the class represented by the "class" attribute
+     * on the given node.  The class must have an empty constructor.
+     * If the class is an instance of {@link IXMLConfigurable}, the object 
+     * created will be automatically populated by invoking the 
+     * {@link IXMLConfigurable#loadFromXML(Reader)} method, 
+     * passing it the node XML automatically populated.
+     * @param node the node representing the class to instantiate.
+     * @return a new object.
+     * @throws ConfigurationException if instance cannot be created/populated
+     */
+    public static <T extends Object> T newInstance(
+            HierarchicalConfiguration node)
+            throws ConfigurationException {
+        return newInstance(node, null, true);
+    }
 
     /**
      * Creates a new instance of the class represented by the "class" attribute
      * on the given node.  The class must have an empty constructor.
-     * If the class is an instance of {@link IXMLConfigurable}, consider
-     * invoking {@link #newXMLConfigurableInstance(HierarchicalConfiguration)} 
-     * instead to have it automatically populated.
-     * @param node the node representing the class to instanciate.
+     * If the class is an instance of {@link IXMLConfigurable} and 
+     * <code>supportXMLConfigurable</code> is true, the object created
+     * will be automatically populated by invoking the 
+     * {@link IXMLConfigurable#loadFromXML(Reader)} method, 
+     * passing it the node XML automatically populated.
+     * @param node the node representing the class to instantiate.
+     * @param supportXMLConfigurable automatically populates the object from XML
+     *        if it is implementing {@link IXMLConfigurable}.
      * @return a new object.
      * @throws ConfigurationException if instance cannot be created/populated
      */
-    public static Object newInstance(
-            HierarchicalConfiguration node)
+    public static <T extends Object> T newInstance(
+            HierarchicalConfiguration node,
+            boolean supportXMLConfigurable)
             throws ConfigurationException {
-        return newInstance(node, null);
+        return newInstance(node, null, supportXMLConfigurable);
     }
+    
+    
     /**
      * Creates a new instance of the class represented by the "class" attribute
      * on the given node.  The class must have an empty constructor.
-     * If the class is an instance of {@link IXMLConfigurable}, consider
-     * invoking {@link #newXMLConfigurableInstance(
-     *      HierarchicalConfiguration, IXMLConfigurable)} instead to have
-     * it automatically populated.
+     * If the class is an instance of {@link IXMLConfigurable}, the object 
+     * created will be automatically populated by invoking the 
+     * {@link IXMLConfigurable#loadFromXML(Reader)} method, 
+     * passing it the node XML automatically populated.
      * @param node the node representing the class to instantiate.
      * @param defaultObject if returned object is null or undefined,
      *        returns this default object.
      * @return a new object.
      * @throws ConfigurationException if instance cannot be created/populated
      */
-    @SuppressWarnings("nls")
-    public static Object newInstance(
-            HierarchicalConfiguration node, Object defaultObject)
+    public static <T extends Object> T newInstance(
+            HierarchicalConfiguration node, T defaultObject)
             throws ConfigurationException {
-        Object obj = null;
+        return newInstance(node, defaultObject, true);
+    }
+    
+    /**
+     * Creates a new instance of the class represented by the "class" attribute
+     * on the given node.  The class must have an empty constructor.
+     * If the class is an instance of {@link IXMLConfigurable} and 
+     * <code>supportXMLConfigurable</code> is true, the object created
+     * will be automatically populated by invoking the 
+     * {@link IXMLConfigurable#loadFromXML(Reader)} method, 
+     * passing it the node XML automatically populated.
+     * @param node the node representing the class to instantiate.
+     * @param defaultObject if returned object is null or undefined,
+     *        returns this default object.
+     * @param supportXMLConfigurable automatically populates the object from XML
+     *        if it is implementing {@link IXMLConfigurable}.
+     * @return a new object.
+     * @throws ConfigurationException if instance cannot be created/populated
+     */
+    @SuppressWarnings("unchecked")
+    public static <T extends Object> T newInstance(
+            HierarchicalConfiguration node, T defaultObject,
+            boolean supportXMLConfigurable)
+            throws ConfigurationException {
+        T obj = null;
+        String clazz = null;
         if (node == null) {
-            obj = defaultObject;
+            return defaultObject;
         } else {
-            String clazz = node.getString("[@class]", null);
+            clazz = node.getString("[@class]", null);
             if (clazz != null) {
                 try {
-                    obj = Class.forName(clazz).newInstance();
+                    obj = (T) Class.forName(clazz).newInstance();
                 } catch (Exception e) {
                     throw new ConfigurationException(
                             "This class could not be instantiated: \""
@@ -78,50 +125,21 @@ public final class ConfigurationUtils {
                 obj = defaultObject;
             }
         }
-        return obj;
-    }
-    
-    /**
-     * Creates a new {@link IXMLConfigurable} instance of the class represented
-     * by the "class" attribute on the given node.  The class must have an 
-     * empty constructor.  The instance will be automatically populated by
-     * invoking {@link IXMLConfigurable#loadFromXML(Reader)}.
-     * @param node the node representing the class to instantiate.
-     * @return a new object.
-     * @throws ConfigurationException if instance cannot be created/populated
-     * @throws IOException if instance cannot be created/populated
-     */    
-    public static IXMLConfigurable newXMLConfigurableInstance(
-            HierarchicalConfiguration node)
-            throws ConfigurationException, IOException {
-        return newXMLConfigurableInstance(node, null);
-    }
-    
-    /**
-     * Creates a new {@link IXMLConfigurable} instance of the class represented
-     * by the "class" attribute on the given node.  The class must have an 
-     * empty constructor.  The instance will be automatically populated by
-     * invoking {@link IXMLConfigurable#loadFromXML(Reader)}.
-     * @param node the node representing the class to instantiate.
-     * @param defaultObject if returned object is null or undefined,
-     *        returns this default object.
-     * @return a new object.
-     * @throws ConfigurationException if instance cannot be created/populated
-     * @throws IOException if instance cannot be created/populated
-     */    
-    public static IXMLConfigurable newXMLConfigurableInstance(
-            HierarchicalConfiguration node, IXMLConfigurable defaultObject)
-            throws ConfigurationException, IOException {
-        
-        IXMLConfigurable obj = (IXMLConfigurable) newInstance(node);
         if (obj == null) {
             return defaultObject;
         }
-        if (obj != null && node != null) {
-            obj.loadFromXML(newReader(node));
+        if (obj instanceof IXMLConfigurable) {
+            try {
+                ((IXMLConfigurable) obj).loadFromXML(newReader(node));
+            } catch (IOException e) {
+                throw new ConfigurationException(
+                        "Could not load new instance from XML \""
+                        + clazz + "\".", e);
+            }
         }
         return obj;
     }
+    
     
     /**
      * Creates a new {@link Reader} from a {@link XMLConfiguration}.
@@ -140,7 +158,12 @@ public final class ConfigurationUtils {
             xml = new XMLConfiguration(node);
         }
         StringWriter w = new StringWriter();
-        xml.save(w);
+        try {
+            xml.save(w);
+        } catch (org.apache.commons.configuration.ConfigurationException e) {
+            throw new ConfigurationException(
+                    "Could transform XML node to reader.", e);
+        }
         StringReader r = new StringReader(w.toString());
         w.close();
         return r;
@@ -170,7 +193,12 @@ public final class ConfigurationUtils {
         IXMLConfigurable readConfigurable = 
                 (IXMLConfigurable) ConfigurationUtils.newInstance(xml);
         StringWriter w = new StringWriter();
-        xml.save(w);
+        try {
+            xml.save(w);
+        } catch (org.apache.commons.configuration.ConfigurationException e) {
+            throw new ConfigurationException(
+                    "Could not transform XML node to reader.", e);
+        }
         StringReader r = new StringReader(w.toString());
         readConfigurable.loadFromXML(r);
         w.close();
