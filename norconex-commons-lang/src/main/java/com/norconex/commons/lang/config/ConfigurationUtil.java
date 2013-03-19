@@ -17,11 +17,11 @@ import org.junit.Assert;
  * Utility methods when dealing with configuration files.
  * @author Pascal Essiembre
  */
-public final class ConfigurationUtils {
+public final class ConfigurationUtil {
     private static final Logger LOG = 
-            LogManager.getLogger(ConfigurationUtils.class);
+            LogManager.getLogger(ConfigurationUtil.class);
 
-    private ConfigurationUtils() {
+    private ConfigurationUtil() {
         super();
     }
    
@@ -191,7 +191,7 @@ public final class ConfigurationUtils {
         // Read
         XMLConfiguration xml = new ConfigurationLoader().loadXML(tempFile);
         IXMLConfigurable readConfigurable = 
-                (IXMLConfigurable) ConfigurationUtils.newInstance(xml);
+                (IXMLConfigurable) ConfigurationUtil.newInstance(xml);
         StringWriter w = new StringWriter();
         try {
             xml.save(w);

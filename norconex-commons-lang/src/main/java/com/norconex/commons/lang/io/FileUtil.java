@@ -10,6 +10,8 @@ import java.util.Date;
 import java.util.LinkedList;
 
 import org.apache.commons.io.Charsets;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
@@ -107,6 +109,50 @@ public final class FileUtil {
         }
     }
     
+    /**
+     * Deletes all directories that are empty from a given parent directory.
+     * @param parentDir the directory where to start looking for empty 
+     *        directories
+     * @return the number of deleted directories
+     */
+    public static int deleteEmptyDirs(File parentDir) {
+        int count = 0;
+        String[] files = parentDir.list(DirectoryFileFilter.INSTANCE);
+        if (files == null) {
+            return count;
+        }
+        for (String fileStr : files) {
+            File file = new File(parentDir.getAbsolutePath() + "/" + fileStr);
+            if (file.list().length == 0) {
+                FileUtils.deleteQuietly(file);
+                count++;
+            } else {
+                count += deleteEmptyDirs(file);
+                if (file.list().length == 0) {
+                    FileUtils.deleteQuietly(file);
+                }
+            }
+        }
+        return count;
+    }
+
+    /**
+     * Create all parent directories for a file if they do not exists.  
+     * If they exist already, this method does nothing.  This method assumes
+     * the last segment is a file or will be a file.
+     * @param file the file to create parent directories for
+     * @return The newly created parent directory
+     * @throws IOException if somethign went wrong creating the parent 
+     * directories
+     */
+    public static File createDirsForFile(File file) throws IOException {
+        File parent = file.getParentFile();
+        if (parent != null) {
+            FileUtils.forceMkdir(parent);
+            return parent;
+        }
+        return new File("/");
+    }
     
     /**
      * Visits all files and directories under a directory.
