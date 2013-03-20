@@ -233,12 +233,7 @@ public final class ConfigurationLoader {
                 for (String key : props.stringPropertyNames()) {
                     context.put(key, props.getProperty(key));
                 }
-            } else {
-                throw new ConfigurationException(
-                        "Variable files must have \".variables\" or "
-                      + "\".properties.\" extension: " + vars);
             }
-
         } catch (IOException e) {
             throw new ConfigurationException(
                     "Cannot load variables from file: " + vars, e);
