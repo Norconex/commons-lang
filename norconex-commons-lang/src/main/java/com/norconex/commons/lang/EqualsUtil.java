@@ -47,4 +47,14 @@ public final class EqualsUtil {
         }
         return true;
     }
+    
+    /**
+     * Whether a source object equals NONE of the target objects
+     * @param source object being tested for equality with targets
+     * @param targets one or more objects to be tested with source for equality
+     * @return <code>true</code> if none of the target objects is equal
+     */
+    public static boolean equalsNone(Object source, Object... targets) {
+        return !equalsAny(source, targets);
+    }
 }
