@@ -19,25 +19,45 @@ import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.runtime.RuntimeConstants;
 
 /**
- * Class parsing a Velocity template (which can have parse/include directives)
+ * <p>Class parsing a Velocity template (which can have parse/include 
+ * directives)
  * and uses a properties file for Velocity variables.
  * Templates, whether the main template or any template
- * included using the <code>#parse</code> directive, can have properties files
+ * included using the <code>#parse</code> directive, can have variable files
  * attached, for which each key would become a variable in the Velocity
- * context.  The properties file is of the same name as the template file, 
- * with ".properties" for the extension.  The property file must have
- * key and values separated by an equal sign, one variable per line.  The 
+ * context.  A variable file must be of the same name as the template file, 
+ * with one of two possible extensions: 
+ * <code>.variables</code> or <code>.properties</code>.</p>
+ * 
+ * <p>A <code>.variables</code> file must have
+ * keys and values separated by an equal sign, one variable per line.  The 
  * key and value strings are taken literally, after trimming leading and
- * trailing spaces. 
- * In addition, any properties
- * file can also be specified when the creating a ConfigurationLoader.  
+ * trailing spaces.</p> 
+ * 
+ * <p>A <code>.properties</code> file stores key/value in the way the Java
+ * programming language expects it for any <code>.properties</code> file. 
+ * It is essentially the same, but has more options (e.g. multi-line support)
+ * and gotchas (e.g. must escape certain characters). Please
+ * refer to the corresponding 
+ * <a href="http://docs.oracle.com/javase/6/docs/api/java/util/Properties.html#load(java.io.Reader)">
+ * Java API documentation</a> for exact syntax and parsing logic.</p> 
+ * 
+ * <p>When both <code>.variables</code> and <code>.properties</code> exist
+ * for a template, the <code>.properties</code> file takes precedence.</p>
+ * 
+ * <p>Any <code>.variables</code> or <code>.properties</code> file 
+ * can also be specified using the {@link #loadXML(File, File)} method.
+ * <p>
  * Refer to <a href="http://velocity.apache.org/engine/devel/user-guide.html">
  * Velocity User Guide</a> for template documentation. 
+ * </p>
  * @author Pascal Essiembre
  */
 @SuppressWarnings("nls")
 public final class ConfigurationLoader {
     
+    private static final String EXTENSION_PROPERTIES = ".properties";
+    private static final String EXTENSION_VARIABLES = ".variables";
     private final VelocityEngine velocityEngine;
     
     /**
@@ -91,7 +111,8 @@ public final class ConfigurationLoader {
     /**
      * Loads a configuration file.
      * @param configFile XML configuration file
-     * @param variables path to properties file defining variables. 
+     * @param variables path to .variables or .properties file defining 
+     *        variables. 
      * @return Apache XMLConfiguration instance
      */
     public XMLConfiguration loadXML(File configFile, File variables) {
@@ -116,7 +137,8 @@ public final class ConfigurationLoader {
     /**
      * Loads a configuration file as a string.
      * @param configFile configuration file
-     * @param variables path to properties file defining variables. 
+     * @param variables path to .variables or .properties file defining 
+     *        variables. 
      * @return configuration as string
      */
     public String loadString(File configFile, File variables) {
@@ -177,16 +199,20 @@ public final class ConfigurationLoader {
     }
 
     private File getVariablesFile(String fullpath, String baseName) {
-        File vars = new File(fullpath + baseName + ".properties");
-        if (vars.exists() && vars.isFile()) {
+        File vars = new File(fullpath + baseName + EXTENSION_PROPERTIES);
+        if (isVariableFile(vars, EXTENSION_PROPERTIES)) {
         	return vars;
+        }
+        vars = new File(fullpath + baseName + EXTENSION_VARIABLES);
+        if (isVariableFile(vars, EXTENSION_VARIABLES)) {
+            return vars;
         }
         return null;
     }
     
     private void loadVariables(VelocityContext context, File vars) {
         try {
-            if (vars != null && vars.exists() && vars.isFile()) {
+            if (isVariableFile(vars, EXTENSION_VARIABLES)) {
                 FileInputStream is = new FileInputStream(vars);
 				List<String> lines = IOUtils.readLines(is);
                 is.close();
@@ -199,10 +225,28 @@ public final class ConfigurationLoader {
 	                    context.put(key, value);
 					}
 				}
+            } else if (isVariableFile(vars, EXTENSION_PROPERTIES)) {
+                Reader r = new FileReader(vars);
+                Properties props = new Properties();
+                props.load(r);
+                r.close();
+                for (String key : props.stringPropertyNames()) {
+                    context.put(key, props.getProperty(key));
+                }
+            } else {
+                throw new ConfigurationException(
+                        "Variable files must have \".variables\" or "
+                      + "\".properties.\" extension: " + vars);
             }
+
         } catch (IOException e) {
             throw new ConfigurationException(
                     "Cannot load variables from file: " + vars, e);
         }
+    }
+    
+    private boolean isVariableFile(File vars,  String extension) {
+        return vars != null && vars.exists() && vars.isFile() 
+                && vars.getName().endsWith(extension);
     }
 }
