@@ -110,6 +110,44 @@ public final class FileUtil {
     }
     
     /**
+     * Deletes a file or a directory recursively. This method does:
+     * <ul>
+     *   <li>If file or directory deletion does not work, it will try 10 times,
+     *       waiting 1 second between each try to give a chance to whatever
+     *       OS lock on the file to go.</li>
+     *   <li>It throws a IOException if the move failed (as opposed to fail
+     *       silently).</li>
+     *   <li>If file is <code>null</code> or does not exist, nothing happens.
+     * </ul>
+     * @param file file or directory to delete
+     * @throws IOException cannot delete file.
+     */
+    public static void deleteFile(File file) throws IOException {
+        if (file == null || !file.exists()) {
+            return;
+        }
+        boolean success = false;
+        int failure = 0;
+        Exception ex = null;
+        while (!success && failure < 10) {
+            if (file.exists() && !FileUtils.deleteQuietly(file)) {
+                failure++;
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    ex = e;
+                }
+                continue;
+            }
+            success = true;
+        }
+        if (!success) {
+            throw new IOException(
+                    "Could not delete \"" + file + "\".", ex);
+        }
+    }
+    
+    /**
      * Deletes all directories that are empty from a given parent directory.
      * @param parentDir the directory where to start looking for empty 
      *        directories
