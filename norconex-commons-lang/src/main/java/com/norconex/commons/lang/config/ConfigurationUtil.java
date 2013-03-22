@@ -192,17 +192,6 @@ public final class ConfigurationUtil {
         XMLConfiguration xml = new ConfigurationLoader().loadXML(tempFile);
         IXMLConfigurable readConfigurable = 
                 (IXMLConfigurable) ConfigurationUtil.newInstance(xml);
-        StringWriter w = new StringWriter();
-        try {
-            xml.save(w);
-        } catch (org.apache.commons.configuration.ConfigurationException e) {
-            throw new ConfigurationException(
-                    "Could not transform XML node to reader.", e);
-        }
-        StringReader r = new StringReader(w.toString());
-        readConfigurable.loadFromXML(r);
-        w.close();
-        r.close();
 
         tempFile.delete();
 
