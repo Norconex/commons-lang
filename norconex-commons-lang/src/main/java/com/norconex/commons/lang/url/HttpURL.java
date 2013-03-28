@@ -22,8 +22,8 @@ public class HttpURL implements Serializable {
     private QueryString queryString;
     private String host;
     private int port = DEFAULT_PORT;
-    private boolean secure;
     private String path;
+    private String protocol;
     
     public HttpURL() {
         super();
@@ -40,7 +40,7 @@ public class HttpURL implements Serializable {
             } catch (MalformedURLException e) {
                 throw new URLException("Could not interpret URL: " + url, e);
             }
-            secure = urlwrap.getProtocol().equalsIgnoreCase("https");
+            protocol = urlwrap.getProtocol();
             host = urlwrap.getHost();
             port = urlwrap.getPort();
             path = urlwrap.getPath();
@@ -65,12 +65,14 @@ public class HttpURL implements Serializable {
     public void setHost(String host) {
         this.host = host;
     }
-
-    public boolean isSecure() {
-        return secure;
+    public String getProtocol() {
+        return protocol;
     }
-    public void setSecure(boolean secure) {
-        this.secure = secure;
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
+    }
+    public boolean isSecure() {
+        return getProtocol().equalsIgnoreCase("https");
     }
 
     public int getPort() {
@@ -97,7 +99,8 @@ public class HttpURL implements Serializable {
     }
     public String toString() {
         StringBuilder b = new StringBuilder();
-        b.append(secure ? "https://" : "http://");
+        b.append(protocol);
+        b.append("://");
         b.append(host);
         if (port != DEFAULT_PORT) {
             b.append(':');
@@ -121,8 +124,9 @@ public class HttpURL implements Serializable {
         result = prime * result + ((path == null) ? 0 : path.hashCode());
         result = prime * result + port;
         result = prime * result
+                + ((protocol == null) ? 0 : protocol.hashCode());
+        result = prime * result
                 + ((queryString == null) ? 0 : queryString.hashCode());
-        result = prime * result + (secure ? 1231 : 1237);
         return result;
     }
 
@@ -147,12 +151,15 @@ public class HttpURL implements Serializable {
             return false;
         if (port != other.port)
             return false;
+        if (protocol == null) {
+            if (other.protocol != null)
+                return false;
+        } else if (!protocol.equals(other.protocol))
+            return false;
         if (queryString == null) {
             if (other.queryString != null)
                 return false;
         } else if (!queryString.equals(other.queryString))
-            return false;
-        if (secure != other.secure)
             return false;
         return true;
     }
