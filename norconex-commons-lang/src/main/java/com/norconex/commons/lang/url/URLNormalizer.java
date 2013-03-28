@@ -235,7 +235,7 @@ public class URLNormalizer implements Serializable {
     /**
      * Removes the default port (80 for http, and 443 for https).<p>
      * <code>http://www.example.com:80/bar.html &rarr; 
-     *       http://www.example.com/bar.html
+     *       http://www.example.com/bar.html</code>
      * @return this instance
      */
     public URLNormalizer removeDefaultPort() {
