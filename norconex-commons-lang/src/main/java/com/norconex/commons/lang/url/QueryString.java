@@ -1,13 +1,11 @@
 package com.norconex.commons.lang.url;
 
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.util.Collection;
-import java.util.Set;
 
-import org.apache.commons.collections.map.MultiValueMap;
 import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
 
@@ -73,16 +71,14 @@ public class QueryString extends TypedProperties {
             paramString = paramString.replaceAll("(.*?)(\\?)(.*)", "$3");
         }
         String[] paramParts = paramString.split("\\&");
-        MultiValueMap params = new MultiValueMap();
         for (int i = 0; i < paramParts.length; i++) {
             String paramPart = paramParts[i];
             if (StringUtils.contains(paramPart, "=")) {
                 String key = StringUtils.substringBefore(paramPart, "=");
                 String value = StringUtils.substringAfter(paramPart, "=");
                 try {
-                    params.put(
-                            URLDecoder.decode(key, this.encoding),
-                            URLDecoder.decode(value, this.encoding));
+                    addString(URLDecoder.decode(key, this.encoding),
+                              URLDecoder.decode(value, this.encoding));
                 } catch (UnsupportedEncodingException e) {
                     throw new URLException(
                             "Cannot URL-decode query string (key=" 
@@ -90,27 +86,23 @@ public class QueryString extends TypedProperties {
                 }
             }
         }
-        for (Object keyObj : params.keySet()) {
-            String key = (String) keyObj;
-            @SuppressWarnings("unchecked")
-            Collection<String> coll = params.getCollection(key);
-            setString(key, StringUtils.join(coll, getDelimiter()));
-        }
     }
-    
+
+    /**
+     * Convert this <code>QueryString</code> to a URL-encoded string 
+     * representation that can be appended as is to a URL with no query string.
+     */
     @Override
     public synchronized String toString() {
         if (isEmpty()) {
             return "";
         }
         StringBuilder b = new StringBuilder();
-        Set<Object> keys = keySet();
         char sep = '?';
-        for (Object keyObj : keys) {
-            String key = (String) keyObj;
-            String[] values = getStrings(key);
-            for (String value : values) {
+        for (String key : keySet()) {
+            for (String value : getStrings(key)) {
                 b.append(sep);
+                sep = '&';
                 try {
                     b.append(URLEncoder.encode(key, encoding));
                     b.append('=');
@@ -125,4 +117,26 @@ public class QueryString extends TypedProperties {
         return b.toString();
     }
     
+    /**
+     * Apply this url QueryString on the given URL. If a query string already
+     * exists, it is replaced by this one.
+     * @param url the URL to apply this query string.
+     * @return
+     */
+    public String applyOnURL(String url) {
+        if (StringUtils.isBlank(url)) {
+            return url;
+        }
+        return StringUtils.substringBefore(url, "?") + toString();
+    }
+    public URL applyOnURL(URL url) {
+        if (url == null) {
+            return url;
+        }
+        try {
+            return new URL(applyOnURL(url.toString()));
+        } catch (MalformedURLException e) {
+            throw new URLException("Cannot applyl query string to: " + url, e);
+        }
+    }
 }
