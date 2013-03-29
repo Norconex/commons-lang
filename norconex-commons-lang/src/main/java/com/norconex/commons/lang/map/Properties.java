@@ -15,11 +15,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.InvalidPropertiesFormatException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Properties;
-import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -30,11 +29,11 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
 /**
- * <p>This class is a enhanced version of {@link Properties}
+ * <p>This class is a enhanced version of {@link java.util.Properties}
  * that enforces the use of String keys and values, but offers many
  * convenience methods for storing and retrieving multiple values of different
  * types (e.g. Integer, Locale, File, etc).  While it does not extend 
- * {@link Properties}, it offers similar load and store
+ * {@link java.util.Properties}, it offers similar load and store
  * method and can be used as a replacement for it in many cases 
  * (e.g. works great with configuration files).</p>
  * 
@@ -54,11 +53,11 @@ import org.apache.log4j.Logger;
  * </p>
  * 
  * <p>Upon encountering a problem in parsing the
- * data to its target format, a {@link TypedPropertiesException} is thrown.</p>
+ * data to its target format, a {@link PropertiesException} is thrown.</p>
  * @author Pascal Essiembre (pascal.essiembre&#x40;norconex.com)
  */
 @SuppressWarnings("nls")
-public class TypedProperties extends TreeMap<String, List<String>> {
+public class Properties extends TreeMap<String, List<String>> {
 
     private static final long serialVersionUID = -7215126924574341L;
 
@@ -70,49 +69,92 @@ public class TypedProperties extends TreeMap<String, List<String>> {
     
     /** Logger. */
     private static final Logger LOG =
-        LogManager.getLogger(TypedProperties.class);
+        LogManager.getLogger(Properties.class);
+    
+    private boolean caseSensitiveKeys = false;
     
     /**
+     * Create a new instance with case-sensitive keys.
      * @see TreeMap#TreeMap()
      */
-    public TypedProperties() {
+    public Properties() {
         super();
     }
 
     /**
-     * @see TreeMap#TreeMap(Map)
+     * Creates a new instance.
+     * @param caseSensitiveKeys getter methods taking a key as well as
+     *        {{@link #remove(Object)} will 
+     *        return all combined values or remove all keys where keys are 
+     *        equal, ignoring case, to the key supplied. 
+     * @see TreeMap#TreeMap()
      */
-    public TypedProperties(Map<? extends String, ? extends List<String>> t) {
-        super(t);
+    public Properties(boolean caseSensitiveKeys) {
+        this(null, false);
     }
+    
     /**
-     * @see TreeMap#TreeMap(SortedMap)
-     */
-    public TypedProperties(
-            SortedMap<? extends String, ? extends List<String>> t) {
-        super(t);
-    }
-    /**
-     * @see TreeMap#TreeMap(SortedMap)
-     */
-    public TypedProperties(TypedProperties properties) {
-        super(properties);
-    }
-    /**
-     * Creates a new <code>TypedProperties</code> initializing it with values
-     * from the given <code>Properties</code>.  Changes to this instance
-     * won't be reflected in the given <code>Properties</code>.
+     * <p>Creates a new <code>Properties</code> initializing it with values
+     * from the given <code>Map</code>.  {@link ObjectUtils#toString(Object)} 
+     * is used to convert to convert keys and values to strings, with exception
+     * of values being arrays or collections.  In such case, the entry
+     * is considered a mult-value one and each value will be converted
+     * to individual strings. <code>null</code> keys are ignored.</p>
+     * <code>null</code> values are converted to an empty string. 
+     * <p>Changes to this instance
+     * won't be reflected in the given <code>Map</code>. Keys are
+     * case-sensitive.</p>
+     * 
      * @param defaults the default values
      */
-    public TypedProperties(Properties defaults) {
+    public Properties(Map<?, ?> defaults) {
+        this(defaults, false);
+    }
+    
+    /**
+     * <p>Creates a new <code>Properties</code> initializing it with values
+     * from the given <code>Map</code>.  {@link ObjectUtils#toString(Object)} 
+     * is used to convert to convert keys and values to strings, with exception
+     * of values being arrays or collections.  In such case, the entry
+     * is considered a mult-value one and each value will be converted
+     * to individual strings. <code>null</code> keys are ignored.</p>
+     * <code>null</code> values are converted to an empty string. 
+     * <p>Changes to this instance
+     * won't be reflected in the given <code>Map</code>.</p>
+     * 
+     * @param defaults the default values
+     * @param caseSensitiveKeys getter methods taking a key as well as
+     *        {{@link #remove(Object)} will 
+     *        return all combined values or remove all keys where keys are 
+     *        equal, ignoring case, to the key supplied. 
+     */
+    public Properties(Map<?, ?> defaults, boolean caseSensitiveKeys) {
         super();
-        List<String> values = new ArrayList<String>();
-        for (String key : defaults.stringPropertyNames()) {
-            String value = defaults.getProperty(key);
-            if (value != null) {
-                values.add(value);
+        this.caseSensitiveKeys = caseSensitiveKeys;
+        if (defaults != null) {
+            for (Object keyObj : defaults.keySet()) {
+                if (keyObj == null) {
+                    continue;
+                }
+                String key = ObjectUtils.toString(keyObj);
+                Object valObj = defaults.get(keyObj);
+                if (valObj == null) {
+                    valObj = StringUtils.EMPTY;
+                }
+                Iterable<?> it = null;
+                if (valObj.getClass().isArray()) {
+                    it = Arrays.asList((Object[]) valObj);
+                } else if (valObj instanceof Iterable) {
+                    it = (Iterable<?>) valObj;
+                }
+                if (it == null) {
+                    addString(key, ObjectUtils.toString(valObj));
+                } else {
+                    for (Object val : it) {
+                        addString(key, ObjectUtils.toString(val));
+                    }
+                }
             }
-            put(key, values);
         }
     }
 
@@ -143,7 +185,7 @@ public class TypedProperties extends TreeMap<String, List<String>> {
      * exact same as the {@link Properties#store(Writer, String)} method.
      * Keys with multi-values are joined into a single string, using
      * the default delimiter:
-     * {@link TypedProperties#DEFAULT_PROPERTIES_MULTIVALUE_DELIMITER}
+     * {@link Properties#DEFAULT_PROPERTIES_MULTIVALUE_DELIMITER}
      * @param   writer     an output character stream writer.
      * @param   comments   a description of the property list.
      * @see Properties#store(Writer, String)
@@ -167,7 +209,7 @@ public class TypedProperties extends TreeMap<String, List<String>> {
      */
     public void store(Writer writer, String comments, String delimiter)
             throws IOException {
-        Properties p = new Properties();
+        java.util.Properties p = new java.util.Properties();
         for (String key : keySet()) {
             List<String> values = getStrings(key);
             p.put(key, StringUtils.join(values, delimiter));
@@ -183,7 +225,7 @@ public class TypedProperties extends TreeMap<String, List<String>> {
      * exact same as the {@link Properties#store(OutputStream, String)} method.
      * Keys with multi-values are joined into a single string, using
      * the default delimiter:
-     * {@link TypedProperties#DEFAULT_PROPERTIES_MULTIVALUE_DELIMITER}
+     * {@link Properties#DEFAULT_PROPERTIES_MULTIVALUE_DELIMITER}
      * @param   out      an output stream.
      * @param   comments   a description of the property list.
      * @see Properties#store(OutputStream, String)
@@ -219,7 +261,7 @@ public class TypedProperties extends TreeMap<String, List<String>> {
      * where the character encoding is "UTF-8".
      * Keys with multi-values are joined into a single string, using
      * the default delimiter:
-     * {@link TypedProperties#DEFAULT_PROPERTIES_MULTIVALUE_DELIMITER}
+     * {@link Properties#DEFAULT_PROPERTIES_MULTIVALUE_DELIMITER}
      * @param os the output stream on which to emit the XML document.
      * @param comment a description of the property list, or <code>null</code>
      *        if no comment is desired.
@@ -238,7 +280,7 @@ public class TypedProperties extends TreeMap<String, List<String>> {
      * {@link Properties#storeToXML(OutputStream, String, String)} method.
      * Keys with multi-values are joined into a single string, using
      * the default delimiter:
-     * {@link TypedProperties#DEFAULT_PROPERTIES_MULTIVALUE_DELIMITER}
+     * {@link Properties#DEFAULT_PROPERTIES_MULTIVALUE_DELIMITER}
      * @param os the output stream on which to emit the XML document.
      * @param comment a description of the property list, or <code>null</code>
      *        if no comment is desired.
@@ -268,7 +310,7 @@ public class TypedProperties extends TreeMap<String, List<String>> {
      */
     public synchronized void storeToXML(OutputStream os, String comment, 
             String encoding, String delimiter) throws IOException {
-        Properties p = new Properties();
+        java.util.Properties p = new java.util.Properties();
         for (String key : keySet()) {
             List<String> values = getStrings(key);
             p.put(key, StringUtils.join(values, delimiter));
@@ -283,7 +325,7 @@ public class TypedProperties extends TreeMap<String, List<String>> {
      * character stream in a simple line-oriented format.
      * If a key was stored with multiple values using a delimiter, this,
      * method will split these values appropriately assuming the delimiter is
-     * {@link TypedProperties#DEFAULT_PROPERTIES_MULTIVALUE_DELIMITER}
+     * {@link Properties#DEFAULT_PROPERTIES_MULTIVALUE_DELIMITER}
      * If the key value was stored as a
      * single value, then this method behavior is the
      * exact same as the 
@@ -311,7 +353,7 @@ public class TypedProperties extends TreeMap<String, List<String>> {
      */
     public synchronized void load(Reader reader, String delimiter)
             throws IOException {
-        Properties p = new Properties();
+        java.util.Properties p = new java.util.Properties();
         p.load(reader);
         List<String> values = new ArrayList<String>();
         for (String key : p.stringPropertyNames()) {
@@ -329,7 +371,7 @@ public class TypedProperties extends TreeMap<String, List<String>> {
      * character stream in a simple line-oriented format.
      * If a key was stored with multiple values using a delimiter, this,
      * method will split these values appropriately assuming the delimiter is
-     * {@link TypedProperties#DEFAULT_PROPERTIES_MULTIVALUE_DELIMITER}
+     * {@link Properties#DEFAULT_PROPERTIES_MULTIVALUE_DELIMITER}
      * If the key value was stored as a
      * single value, then this method behavior is the
      * exact same as the 
@@ -365,7 +407,7 @@ public class TypedProperties extends TreeMap<String, List<String>> {
      * specified input stream into this instance.
      * If a key was stored with multiple values using a delimiter, 
      * method will split these values appropriately assuming the delimiter is
-     * {@link TypedProperties#DEFAULT_PROPERTIES_MULTIVALUE_DELIMITER}
+     * {@link Properties#DEFAULT_PROPERTIES_MULTIVALUE_DELIMITER}
      * If the key value was stored as a
      * single value, then this method behavior is the
      * exact same as the 
@@ -391,7 +433,7 @@ public class TypedProperties extends TreeMap<String, List<String>> {
      */
     public synchronized void loadFromXML(InputStream in, String delimiter)
             throws IOException, InvalidPropertiesFormatException {
-        Properties p = new Properties();
+        java.util.Properties p = new java.util.Properties();
         p.loadFromXML(in);
         List<String> values = new ArrayList<String>();
         for (String key : p.stringPropertyNames()) {
@@ -895,6 +937,40 @@ public class TypedProperties extends TreeMap<String, List<String>> {
     public void addClass(String key, Class<?>... values) {
         addString(key, classesToStringArray(values));
     }
+
+    
+    
+    @Override
+    public List<String> get(Object key) {
+        if (!caseSensitiveKeys) {
+            return super.get(key);
+        }
+        List<String> values = new ArrayList<String>();
+        for (String pkey : keySet()) {
+            if (StringUtils.equalsIgnoreCase(pkey, ObjectUtils.toString(key))) {
+                values.addAll(super.get(pkey));
+            }
+        }
+        return values;
+    }
+    @Override
+    public List<String> remove(Object key) {
+        if (!caseSensitiveKeys) {
+            return super.remove(key);
+        }
+        List<String> values = new ArrayList<String>();
+        for (Iterator<String> iterator = keySet().iterator(); 
+                iterator.hasNext();) {
+            String pkey = (String) iterator.next();
+            if (StringUtils.equalsIgnoreCase(pkey, ObjectUtils.toString(key))) {
+                iterator.remove();
+            }
+        }
+        return values;
+    }
+    
+    
+    //--- Privates -------------------------------------------------------------
     private String[] classesToStringArray(Class<?>... values) {
         if (values == null) {
             return null;
@@ -905,14 +981,11 @@ public class TypedProperties extends TreeMap<String, List<String>> {
         }
         return array;
     }
-
-    
-    
-    private TypedPropertiesException createTypedException(
+    private PropertiesException createTypedException(
             String msg, String key, String value, Exception cause) {
         String message = msg + " [key=" + key + "; value=" + value + "].";
         LOG.error(message, cause);
-        return new TypedPropertiesException(message, cause);
+        return new PropertiesException(message, cause);
     }
     private String[] toStringArray(Object[] array) {
         if (array == null) {

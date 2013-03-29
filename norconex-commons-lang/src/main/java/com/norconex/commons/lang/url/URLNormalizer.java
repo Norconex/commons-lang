@@ -428,7 +428,7 @@ public class URLNormalizer implements Serializable {
      */
     public URLNormalizer sortQueryParameters() {
         if (url.contains("?")) {
-            // QueryString extends TypedProperties which already has sorted keys.
+            // QueryString extends Properties which already has sorted keys.
             QueryString q = new HttpURL(url).getQueryString();
             if (q != null) {
                 url = StringUtils.substringBefore(url, "?") + q.toString();

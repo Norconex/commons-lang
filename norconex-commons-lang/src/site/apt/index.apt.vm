@@ -1,19 +1,71 @@
             ------
-            Home
+            Norconex Commons Lang
             ------
             Norconex Inc.
             ------
 
 Welcome to Norconex Commons Lang
 
-  Norconex Commons Lang is a Java library containing utility classes that
-  complements the Java API and are not found in commonly available libraries
-  (such as the great Apache Commons Lang, which it relies on).
+  Norconex Commons Lang is a generic Java library containing utility classes 
+  that complements the Java API and are not found in commonly available 
+  libraries (such as the Apache Commons Lang, which several classes rely on).
 
-  It is shared between various Norconex projects.
+  Amongst other things, it is used by other Norconex open-source projects.
 
   The current version of 
   {{{http://commons-lang.norconex.com}Norconex Commons Lang}} is 
   ${project.version}
   
   Latest {{{./apidocs/index.html}Javadoc}}.
+  
+* Overview
+
+  The following is a description of packages 
+  available in this library (more can be found in the 
+  {{{./apidocs/index.html}Javadoc}}).  Click on a package links to 
+  get a summary of classes and complete documentation:
+
+** Configuration
+
+  Makes it easier to deal with configuration files and configurable classes,
+  especially when dealing with XML.
+  Their purpose is to make configuration files more portable, reusable
+  and manageable.  Turn your configuration files into templates that can
+  interpret variables defined in variables files and can include 
+  reusable configuration fragments.  
+  
+  Classes: {{{./apidocs/com/norconex/commons/lang/config/package-summary.html} com.norconex.commons.lang.config.*}}
+
+** I/O
+
+  Provides features for dealing with streams, files and directories,
+  such as:
+  
+    * getting the "head" or the "tail" of a file
+
+    * create time-based directory structure
+
+    * recursively browse directories using the visitor pattern
+
+    * filter input streams using input stream filters (e.g. regex-based filter)
+
+    * stream a file in reverse
+
+    * create listeners that get notified when input stream is being read
+
+  Classes: {{{./apidocs/com/norconex/commons/lang/io/package-summary.html} com.norconex.commons.lang.io.*}}
+  
+** URL
+
+  URL-related utility classes offering features such as:
+  
+    * Mutable URL
+    
+    * QueryString object for easy setting/getting of query parameters
+    
+    * URL normalization
+    
+    * Several URL streaming options
+  
+  Classes: {{{./apidocs/com/norconex/commons/lang/url/package-summary.html} com.norconex.commons.lang.url.*}}
+  

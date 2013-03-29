@@ -9,7 +9,7 @@ import java.net.URLEncoder;
 import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
 
-import com.norconex.commons.lang.map.TypedProperties;
+import com.norconex.commons.lang.map.Properties;
 
 
 /**
@@ -18,7 +18,7 @@ import com.norconex.commons.lang.map.TypedProperties;
  * @author Pascal Essiembre
  */
 @SuppressWarnings("nls")
-public class QueryString extends TypedProperties {
+public class QueryString extends Properties {
     
     private static final long serialVersionUID = 1744232652147275170L;
 
