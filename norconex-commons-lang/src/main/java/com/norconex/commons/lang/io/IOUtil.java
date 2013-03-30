@@ -10,7 +10,7 @@ import java.util.List;
 
 /**
  * I/O related utility methods.
- * @author Pascal Essiembre (pascal.essiembre&#x40;norconex.com)
+ * @author <a href="mailto:pascal.essiembre@norconex.com">Pascal Essiembre</a>
  */
 public final class IOUtil {
 

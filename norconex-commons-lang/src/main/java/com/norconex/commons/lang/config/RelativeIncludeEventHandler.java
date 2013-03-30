@@ -17,7 +17,7 @@ import org.apache.velocity.util.ContextAware;
  * Velocity include event handler that check for includes both relative
  * to a template location, and absolute to the current file system root
  * otherwise.   Used by {@link ConfigurationLoader}.
- * @author Pascal Essiembre
+ * @author <a href="mailto:pascal.essiembre@norconex.com">Pascal Essiembre</a>
  */
 public class RelativeIncludeEventHandler 
         implements IncludeEventHandler, ContextAware {

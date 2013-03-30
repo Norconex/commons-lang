@@ -3,7 +3,7 @@ package com.norconex.commons.lang.io;
 /**
  * Filters lines of text read from an InputStream decorated with 
  * {@link FilteredInputStream}.
- * @author Pascal Essiembre (pascal.essiembre&#x40;norconex.com)
+ * @author <a href="mailto:pascal.essiembre@norconex.com">Pascal Essiembre</a>
  */
 public interface IInputStreamFilter {
 

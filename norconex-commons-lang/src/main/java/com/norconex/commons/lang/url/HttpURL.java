@@ -10,7 +10,7 @@ import org.apache.commons.lang3.StringUtils;
  * This class can be seen as a mutable URL, which could be a replacement
  * or "wrapper" to the {@link URL} class.
  * 
- * @author Pascal Essiembre
+ * @author <a href="mailto:pascal.essiembre@norconex.com">Pascal Essiembre</a>
  */
 @SuppressWarnings("nls")
 public class HttpURL implements Serializable {

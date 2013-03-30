@@ -18,7 +18,7 @@ import org.apache.commons.lang3.time.DateFormatUtils;
 
 /**
  * Utility methods when dealing with files and directories.
- * @author Pascal Essiembre
+ * @author <a href="mailto:pascal.essiembre@norconex.com">Pascal Essiembre</a>
  */
 public final class FileUtil {
 

@@ -3,7 +3,7 @@ package com.norconex.commons.lang.map;
 /**
  * <code>TypeProperties</code> exception.  Typically thrown when 
  * setting/getting invalid property values.
- * @author Pascal Essiembre (pascal.essiembre&#x40;norconex.com)
+ * @author <a href="mailto:pascal.essiembre@norconex.com">Pascal Essiembre</a>
  * @see Properties
  */
 public class PropertiesException extends RuntimeException {

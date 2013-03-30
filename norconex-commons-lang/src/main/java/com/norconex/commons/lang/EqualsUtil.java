@@ -4,7 +4,7 @@ import org.apache.commons.lang3.ObjectUtils;
 
 /**
  * Convenience methods related to object equality.
- * @author Pascal Essiembre
+ * @author <a href="mailto:pascal.essiembre@norconex.com">Pascal Essiembre</a>
  */
 public final class EqualsUtil {
 

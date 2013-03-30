@@ -5,7 +5,7 @@ import java.io.File;
 /**
  * Visitor to be used with <code>FileUtil.visit*</code> methods.
  * @see FileUtil
- * @author Pascal Essiembre
+ * @author <a href="mailto:pascal.essiembre@norconex.com">Pascal Essiembre</a>
  */
 public interface IFileVisitor {
     /**

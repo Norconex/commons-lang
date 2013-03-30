@@ -2,7 +2,7 @@ package com.norconex.commons.lang.config;
 
 /**
  * Runtime exception for configuration related issues.
- * @author Pascal Essiembre
+ * @author <a href="mailto:pascal.essiembre@norconex.com">Pascal Essiembre</a>
  */
 public class ConfigurationException extends RuntimeException {
 

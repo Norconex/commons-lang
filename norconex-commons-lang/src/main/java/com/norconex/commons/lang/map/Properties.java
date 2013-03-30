@@ -54,7 +54,7 @@ import org.apache.log4j.Logger;
  * 
  * <p>Upon encountering a problem in parsing the
  * data to its target format, a {@link PropertiesException} is thrown.</p>
- * @author Pascal Essiembre (pascal.essiembre&#x40;norconex.com)
+ * @author <a href="mailto:pascal.essiembre@norconex.com">Pascal Essiembre</a>
  */
 @SuppressWarnings("nls")
 public class Properties extends TreeMap<String, List<String>> {

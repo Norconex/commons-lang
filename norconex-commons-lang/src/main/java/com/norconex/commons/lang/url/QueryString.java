@@ -15,7 +15,7 @@ import com.norconex.commons.lang.map.Properties;
 /**
  * Provides utility methods for getting and setting attributes on 
  * a URL query string. 
- * @author Pascal Essiembre
+ * @author <a href="mailto:pascal.essiembre@norconex.com">Pascal Essiembre</a>
  */
 @SuppressWarnings("nls")
 public class QueryString extends Properties {

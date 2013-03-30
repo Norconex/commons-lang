@@ -3,7 +3,7 @@ package com.norconex.commons.lang;
 /**
  * Runtime <code>Sleep</code> exception wrapping any 
  * {@link InterruptedException} thrown.
- * @author Pascal Essiembre
+ * @author <a href="mailto:pascal.essiembre@norconex.com">Pascal Essiembre</a>
  * @see Sleeper
  */
 public class SleeperException extends RuntimeException {

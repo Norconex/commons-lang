@@ -10,7 +10,7 @@ import java.io.InputStreamReader;
  * Decorates an InputStream with a stream filter.  The stream filter
  * allows to control which line of text is being returned by the decorated
  * instance when read.
- * @author Pascal Essiembre (pascal.essiembre&#x40;norconex.com)
+ * @author <a href="mailto:pascal.essiembre@norconex.com">Pascal Essiembre</a>
  */
 public class FilteredInputStream extends InputStream {
     

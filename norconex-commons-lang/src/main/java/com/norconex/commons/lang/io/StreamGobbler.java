@@ -17,7 +17,7 @@ import org.apache.log4j.Logger;
  * often required by some processes/operating systems in order to prevent
  * application freeze.  For example, this is a way to capture the STDOUT and
  * STDERR from a process.
- * @author Pascal Essiembre (pascal.essiembre&#x40;norconex.com)
+ * @author <a href="mailto:pascal.essiembre@norconex.com">Pascal Essiembre</a>
  */
 @SuppressWarnings("nls")
 public class StreamGobbler extends Thread {

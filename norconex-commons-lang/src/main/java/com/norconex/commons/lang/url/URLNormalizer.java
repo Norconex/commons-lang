@@ -111,7 +111,7 @@ import org.apache.log4j.Logger;
  * Refer to each methods below for description and examples (or click on a
  * normalization name above).
  * </p>
- * @author Pascal Essiembre
+ * @author <a href="mailto:pascal.essiembre@norconex.com">Pascal Essiembre</a>
  */
 public class URLNormalizer implements Serializable {
 

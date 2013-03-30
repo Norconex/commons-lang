@@ -15,7 +15,7 @@ import org.junit.Assert;
 
 /**
  * Utility methods when dealing with configuration files.
- * @author Pascal Essiembre
+ * @author <a href="mailto:pascal.essiembre@norconex.com">Pascal Essiembre</a>
  */
 public final class ConfigurationUtil {
     private static final Logger LOG = 
