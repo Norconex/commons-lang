@@ -5,13 +5,18 @@ import java.util.concurrent.TimeUnit;
 /**
  * Convenience class to put to sleep the currently running thread.
  * If sleeping fails, it throws a runtime exception of type
+ * {@link SleeperException}
  * 
  * @author Pascal Essiembre
  */
+@SuppressWarnings("nls")
 public final class Sleeper {
 
+    /** Number of milliseconds representing 1 second. */
     public static final long ONE_SECOND = 1000;
+    /** Number of milliseconds representing 1 minute. */
     public static final long ONE_MINUTE = 60 * ONE_SECOND;
+    /** Number of milliseconds representing 1 hour. */
     public static final long ONE_HOUR = 60 * ONE_MINUTE;
     
     private Sleeper() {
@@ -22,7 +27,6 @@ public final class Sleeper {
      * Sleeps for the number of milliseconds specified.
      * @param milliseconds milliseconds
      */
-    @SuppressWarnings("nls")
     public static void sleepMillis(long milliseconds) {
         try {
             Thread.sleep(milliseconds);
@@ -34,7 +38,6 @@ public final class Sleeper {
      * Sleeps for the number of nanoseconds specified.
      * @param nanos nanoseconds
      */
-    @SuppressWarnings("nls")
     public static void sleepNanos(long nanoSeconds) {
         long milis = TimeUnit.NANOSECONDS.toMillis(nanoSeconds);
         int nanoRemains = (int) (nanoSeconds 

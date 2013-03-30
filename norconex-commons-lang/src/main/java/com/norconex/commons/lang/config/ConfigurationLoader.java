@@ -20,8 +20,10 @@ import org.apache.velocity.runtime.RuntimeConstants;
 
 /**
  * <p>Class parsing a Velocity template (which can have parse/include 
- * directives)
- * and uses a properties file for Velocity variables.
+ * directives) and using separate files for defining Velocity variables.
+ * </p>
+ * <h3>Variables</h3>
+ * <p>
  * Templates, whether the main template or any template
  * included using the <code>#parse</code> directive, can have variable files
  * attached, for which each key would become a variable in the Velocity
@@ -47,9 +49,59 @@ import org.apache.velocity.runtime.RuntimeConstants;
  * 
  * <p>Any <code>.variables</code> or <code>.properties</code> file 
  * can also be specified using the {@link #loadXML(File, File)} method.
+ * </p>
+ * 
+ * <h3>Configuration fragments</h3>
  * <p>
- * Refer to <a href="http://velocity.apache.org/engine/devel/user-guide.html">
- * Velocity User Guide</a> for template documentation. 
+ * To include configuration fragments and favor reuse, use the 
+ * <code>#include("myfile.cg")</code> or <code>#parse("myfile.cg")</code> 
+ * directives.  An include directive will include the referenced file
+ * as-is, without interpretation.  A parse directive will treat the included
+ * file as a Velocity file and will interpret it (along with its variable
+ * file if any exists -- see above).
+ * </p>
+ * <p> 
+ * The included/parsed files are relative to the parent template, or, can be
+ * absolute paths on the host where the configuration loader is executed.
+ * Example (both Windows and UNIX path styles are supported equally):
+ * </p>
+ * <p><i>Sample directory structure:</i></p>
+ * <pre>
+ * c:\sample\
+ *     myapp\
+ *         runme.jar
+ *         configs\
+ *              myconfig.cfg
+ *              myconfig.properties
+ *     shared\
+ *         sharedconfig.cfg
+ *         sharedconfig.variables</pre>
+ * <p><i>Configuration file myconfig.cfg:</i></p>
+ * <pre>
+ * &lt;myconfig&gt;
+ *    &lt;host>$host&lt;/host&gt;
+ *    &lt;port>$port&lt;/port&gt;
+ *    #parse("../../shared/sharedconfig.cfg")
+ * &lt;/myconfig&gt;</pre>
+ * <p><i>Configuration loading:</i></p>
+ * <pre>
+ * XMLConfiguration xml = ConfigurationLoader.loadXML(
+ *         new File("C:\\sample\\myapp\\myconfig.cfg"));</pre>
+ * <p><i>Explanation:</i></p>
+ * <p>
+ * When loading myconfig.cfg, the variables defined in myconfig.properties
+ * are automatically loaded and will replace the $host and $port variables.
+ * The myconfig.cfg file is also parsing a shared configuration file: 
+ * sharedconfig.cfg.  That file will be parsed and inserted,
+ * with its variables defined in sharedconfig.variables automatically
+ * loaded and resolved. 
+ * </p>
+ * <p>
+ * Other Velocity directives are supported 
+ * (if-else statements, foreach loops, macros,
+ * etc).  Refer to 
+ * <a href="http://velocity.apache.org/engine/devel/user-guide.html">
+ * Velocity User Guide</a> for complete syntax and template documentation. 
  * </p>
  * @author Pascal Essiembre
  */
