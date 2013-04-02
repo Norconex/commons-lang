@@ -119,7 +119,7 @@ public final class ConfigurationUtil {
                             + clazz + "\".", e);
                 }
             } else {
-                LOG.warn("A configuration entry was found without class "
+                LOG.debug("A configuration entry was found without class "
                        + "reference where one was needed; "
                        + "using default value:" + defaultObject);
                 obj = defaultObject;
@@ -219,11 +219,17 @@ public final class ConfigurationUtil {
     public static <T extends Object> T newInstance(
             HierarchicalConfiguration node, String key, 
             T defaultObject, boolean supportXMLConfigurable) {
-        if (node == null || !node.containsKey(key)) {
+        if (node == null) {
             return defaultObject;
         }
-        return ConfigurationUtil.newInstance(node.configurationAt(key),
-                defaultObject, supportXMLConfigurable);
+        
+        try {
+            HierarchicalConfiguration subconfig = node.configurationAt(key);
+            return ConfigurationUtil.newInstance(
+                    subconfig, defaultObject, supportXMLConfigurable);
+        } catch (Exception e) {
+            return defaultObject;
+        }
     }
     
     
