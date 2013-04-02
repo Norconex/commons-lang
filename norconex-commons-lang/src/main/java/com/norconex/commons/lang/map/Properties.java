@@ -355,8 +355,8 @@ public class Properties extends TreeMap<String, List<String>> {
             throws IOException {
         java.util.Properties p = new java.util.Properties();
         p.load(reader);
-        List<String> values = new ArrayList<String>();
         for (String key : p.stringPropertyNames()) {
+            List<String> values = new ArrayList<String>();
             String value = p.getProperty(key);
             if (value != null) {
                 values.addAll(Arrays.asList(
@@ -462,7 +462,7 @@ public class Properties extends TreeMap<String, List<String>> {
     //--- String ---------------------------------------------------------------
     public String getString(String key) {
         List<String> list = get(key);
-        if (!list.isEmpty()) {
+        if (list != null && !list.isEmpty()) {
             return list.get(0);
         }
         return null;
