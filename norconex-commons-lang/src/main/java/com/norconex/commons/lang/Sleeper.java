@@ -36,7 +36,7 @@ public final class Sleeper {
     }
     /**
      * Sleeps for the number of nanoseconds specified.
-     * @param nanos nanoseconds
+     * @param nanoSeconds nanoseconds
      */
     public static void sleepNanos(long nanoSeconds) {
         long milis = TimeUnit.NANOSECONDS.toMillis(nanoSeconds);

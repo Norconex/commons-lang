@@ -1,5 +1,5 @@
             ------
-            Home
+            Welcome
             ------
             Norconex Inc.
             ------
@@ -8,16 +8,15 @@ Welcome to Norconex Commons Lang
 
   Norconex Commons Lang is a generic Java library containing utility classes 
   that complements the Java API and are not found in commonly available 
-  libraries.
-
-  Amongst other things, it is used by other Norconex open-source projects.
+  libraries. Amongst other things, it is used by other Norconex open-source 
+  projects.
 
   The current version of 
-  {{{http://commons-lang.norconex.com}Norconex Commons Lang}} is 
+  {{{http://www.norconex.com/product/commons-lang}Norconex Commons Lang}} is 
   ${project.version}
   
   Latest {{{./apidocs/index.html}API documentation}}.
-  
+
   The following is a general description of packages 
   available in this library.  Click on a package links to 
   get a summary of classes and complete documentation:
@@ -66,4 +65,3 @@ Welcome to Norconex Commons Lang
     * Several URL streaming options
   
   Classes: {{{./apidocs/com/norconex/commons/lang/url/package-summary.html} com.norconex.commons.lang.url.*}}
-  

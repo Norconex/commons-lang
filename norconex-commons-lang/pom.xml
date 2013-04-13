@@ -4,7 +4,7 @@
 
   <groupId>com.norconex.commons</groupId>
   <artifactId>norconex-commons-lang</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>1.0.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>Norconex Commons Lang</name>
@@ -12,6 +12,27 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
+  <inceptionYear>2010</inceptionYear>
+  <licenses>
+    <license>
+      <!-- 
+      <comments></comments>
+      <distribution></distribution>
+       -->
+      <name>GNU GENERAL PUBLIC LICENSE, Version 3</name>
+      <url>http://www.gnu.org/licenses/gpl-3.0.txt</url>
+    </license>
+    <license>
+      <comments>
+        Norconex provides commercial licenses for all its open-source
+        products, designed to meet the development and distribution 
+        needs of commercial distributors
+        (such as OEMs, ISVs and VARs).  Please contact Norconex
+        for a commercial license at sales@norconex.com.
+      </comments>
+      <name>Commercial License</name>
+    </license>
+  </licenses>
 
   <dependencies>
     <dependency>
@@ -65,7 +86,6 @@
     	<version>1.2.17</version>
     </dependency>
   </dependencies>
-  
   <build>
     <extensions>
       <extension>
@@ -105,7 +125,7 @@
   <distributionManagement>
     <site>
       <id>norconex-scp-site</id>
-      <url>scp://dev.norconex.com/var/www/products/commons-lang/</url>
+      <url>scp://www.norconex.com/var/www/vhosts/norconex.com/httpdocs/product/commons-lang/</url>
     </site>
     <repository>
       <id>norconex-scp-repo</id>
@@ -156,7 +176,7 @@
   	<name>Norconex Inc.</name>
   	<url>http://www.norconex.com</url>
   </organization>
-  <url>http://commons-lang.norconex.com</url>
+  <url>http://www.norconex.com/product/commons-lang</url>
   <description>Norconex Commons Lang is a Java library containing utility classes that complements the Java API and are not found in commonly available libraries (such as the great Apache Commons Lang, which it relies on).</description>
   <scm>
   	<url>https://github.com/Norconex/commons/tree/master/norconex-commons-lang</url>

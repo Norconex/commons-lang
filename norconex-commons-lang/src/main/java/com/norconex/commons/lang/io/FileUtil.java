@@ -490,7 +490,6 @@ public final class FileUtil {
      *    /&lt;parentDir&gt;/2000/12/31/13/34/12/
      * </code>
      * @param parentDir the parent directory where to create date directories
-     * @param date the date to create directories from
      * @return the directory representing the full path created
      * @throws IOException if the parent directory is not valid
      */
@@ -507,7 +506,7 @@ public final class FileUtil {
      *    /&lt;parentDir&gt;/2000/12/31/13/34/12/
      * </code>
      * @param parentDir the parent directory where to create date directories
-     * @param date the date to create directories from
+     * @param dateTime the date to create directories from
      * @return the directory representing the full path created
      * @throws IOException if the parent directory is not valid
      */

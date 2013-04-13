@@ -121,7 +121,7 @@ public class QueryString extends Properties {
      * Apply this url QueryString on the given URL. If a query string already
      * exists, it is replaced by this one.
      * @param url the URL to apply this query string.
-     * @return
+     * @return url with query string added
      */
     public String applyOnURL(String url) {
         if (StringUtils.isBlank(url)) {
