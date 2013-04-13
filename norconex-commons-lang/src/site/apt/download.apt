@@ -1,0 +1,52 @@
+            ------
+            Download
+            ------
+            Norconex Inc.
+            ------
+
+Download
+
+* Binaries
+
+  Latest stable release
+   
+  * 1.0
+
+  []
+
+  Snapshot release
+
+  * 1.0-SNAPSHOT
+
+  []
+  
+  Older releases:
+  
+  * 0.1
+  
+  * 0.1
+
+  []    
+  
+* Source
+  
+  Source code can be obtained on GitHub: 
+  {{git@github.com:Norconex/commons.git}}.
+  
+  The project can be found in the "norconex-commons-lang" folder.
+  
+  Maven users can add the following to their pom.xml:
+  
++-------------------------------+
+<repository>
+  <id>norconex-maven-repo</id>
+  <url>http://TODO.norconex.com/maven/</url>
+</repository>
+
+<dependency>
+    <groupId>com.norconex.commons</groupId>
+    <artifactId>norconex-commons-lang</artifactId>
+    <version>[VERSION_HERE]</version>
+</dependency>
++-------------------------------+
+  
