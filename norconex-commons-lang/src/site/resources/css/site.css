@@ -1,3 +1,20 @@
+/* Copyright 2010-2013 Norconex Inc.
+ * 
+ * This file is part of Norconex Commons Lang.
+ * 
+ * Norconex Commons Lang is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * Norconex Commons Lang is distributed in the hope that it will be useful, 
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with Norconex Commons Lang. If not, see <http://www.gnu.org/licenses/>.
+ */
 #banner {
   min-width: 990px;
   border-bottom-width: 3px;
@@ -5,36 +22,23 @@
 }
 
 #breadcrumbs {
-  xbackground-color: #D78E24;
   background-color: #FFFFFF; 
   border-top-width: 2px;
-  xborder-top-color: #666;
   border-bottom-color: #D78E24;
   border-bottom-width: 0px;
 }
 
 #leftColumn {
-  xpadding-top: 15px;
   border-radius: 5px;
   border-width: 1px 1px 1px 1px;
-  xborder-style: ridge;
   border-color: #D78E24;
   background-color: #FFFEF6;
 }
 
 h2 {
   padding: 4px 4px 4px 6px;
-  xborder: 1px solid #999;
   border-width: 0px 0px 1px 0px;
-  xborder-radius: 10px 10px 10px 10px;
-  xcolor: #00153B;
   color: #D78E24;
-  xcolor: #FF6A00;
-  xcolor: #09A;
-  xbackground-color: #D78E24;
-  xbackground-color: #00153B;
-  xbackground-color: #214368;
-  xbackground-color: #214368;
   background-color: #FFFFFF;
   font-weight: bold;
   font-size: x-large;
@@ -43,16 +47,9 @@ h2 {
 
 h3 {
   padding: 4px 4px 4px 6px;
-  xborder: 1px solid #999;
   border-width: 0px 0px 1px 1px;
-  xborder-width: 1px;
-  xborder-color: #00153B;
-  xborder-radius: 10px 10px 0px 0px;
   border-radius: 0px 0px 0px 5px;
-  xcolor: #00153B;
   color: #D78E24;
-  xbackground-color: #CEA873;
-  xbackground-color: #F2C78E;
   background-color: #FFFFFF;
   font-weight: bold;
   font-size: medium;
