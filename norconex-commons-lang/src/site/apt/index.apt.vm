@@ -27,9 +27,11 @@ Welcome to Norconex Commons Lang
   libraries. Amongst other things, it is used by other Norconex open-source 
   projects.
 
-  The current version of 
-  {{{http://www.norconex.com/product/commons-lang}Norconex Commons Lang}} is 
-  ${project.version}
+  The current stable version of 
+  {{{http://www.norconex.com/product/commons-lang}Norconex Commons Lang}} is
+  ${currentStableVersion} ({{{./donwload.html}download}}). 
+  
+  This site documentation reflects version ${project.version}.
   
   Latest {{{./apidocs/index.html}API documentation}}.
 

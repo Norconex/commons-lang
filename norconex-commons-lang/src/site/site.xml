@@ -36,7 +36,6 @@ along with Norconex Commons Lang. If not, see <http://www.gnu.org/licenses/>.
       <item name="Support" href="support.html"/>
     </links>
 
-
     <menu name="Overview">
       <item name="Introduction" href="index.html"/>
       <item name="License" href="license.html"/>
@@ -50,8 +49,8 @@ along with Norconex Commons Lang. If not, see <http://www.gnu.org/licenses/>.
     <menu ref="reports"/>
 
     <menu name="Norconex Products">
-      <item name="HTTP Collector" href="http://www.norconex.com/product/collector-http"/>
-      <item name="Search Analytics" href="http://www.norconex.com/analytics"/>
+      <item name="HTTP Collector"  href="http://norconex.com/product/collector-http"/>
+      <item name="Search Analytics" href="http://norconex.com/analytics"/>
       <item name="JEF" href="http://www.norconex.com/product/jef"/>
       <item name="Importer" href="http://www.norconex.com/product/importer"/>
       <item name="Committer" href="http://www.norconex.com/product/committer"/>
