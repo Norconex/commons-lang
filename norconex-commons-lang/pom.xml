@@ -29,16 +29,13 @@ along with Norconex Commons Lang. If not, see <http://www.gnu.org/licenses/>.
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <site.url>[overwrite me in settings.xml]</site.url>
+    <site.baseurl>[overwrite me in settings.xml]</site.baseurl>
     <currentStableVersion>coming soon</currentStableVersion>
   </properties>
   <inceptionYear>2010</inceptionYear>
+
   <licenses>
     <license>
-      <!-- 
-      <comments></comments>
-      <distribution></distribution>
-       -->
       <name>GNU GENERAL PUBLIC LICENSE, Version 3</name>
       <url>http://www.gnu.org/licenses/gpl-3.0.txt</url>
     </license>
@@ -169,7 +166,7 @@ along with Norconex Commons Lang. If not, see <http://www.gnu.org/licenses/>.
   <distributionManagement>
     <site>
       <id>norconex-site-deployment</id>
-      <url>${site.url}</url>
+      <url>${site.baseurl}/commons-lang</url>
     </site>
     <repository>  
       <id>norconex-release-repo</id>
