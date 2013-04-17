@@ -265,6 +265,7 @@ public final class ConfigurationUtil {
             xml = (XMLConfiguration) node;
         } else {
             xml = new XMLConfiguration(node);
+            xml.setDelimiterParsingDisabled(true);
         }
         StringWriter w = new StringWriter();
         try {
