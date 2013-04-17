@@ -39,7 +39,7 @@ Download
 
   Snapshot releases:
 
-  * {{{http://norconex.s3.amazonaws.com/repo/snapshot/com/norconex/commons/norconex-commons-lang/1.0.0-SNAPSHOT/norconex-commons-lang-1.0.0-20130415.212224-1.zip} 1.0.0-20130415.212224-1}}
+  * {{{http://norconex.s3.amazonaws.com/repo/snapshot/com/norconex/commons/norconex-commons-lang/1.0.0-SNAPSHOT/norconex-commons-lang-1.0.0-20130417.175147-2.zip} 1.0.0-20130417.175147-2}}
 
   []
 
@@ -73,7 +73,7 @@ Download
    <version>${currentStableVersion}</version>
  </dependency>
 
- <!-- Optional (unstable): -->
+ <!-- At your own risk: -->
  <repository>  
    <id>norconex-snapshot-repo</id>  
    <name>Norconex Snapshot Repository</name>  

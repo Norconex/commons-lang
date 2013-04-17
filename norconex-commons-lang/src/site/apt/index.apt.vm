@@ -29,7 +29,7 @@ Welcome to Norconex Commons Lang
 
   The current stable version of 
   {{{http://www.norconex.com/product/commons-lang}Norconex Commons Lang}} is
-  ${currentStableVersion} ({{{./donwload.html}download}}). 
+  ${currentStableVersion} ({{{./download.html}download}}). 
   
   This site documentation reflects version ${project.version}.
   
