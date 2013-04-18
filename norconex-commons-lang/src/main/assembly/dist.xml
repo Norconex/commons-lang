@@ -36,6 +36,10 @@ along with Norconex Commons Lang. If not, see <http://www.gnu.org/licenses/>.
       </includes>
       <outputDirectory>/</outputDirectory>
     </fileSet>
+    <fileSet>
+      <directory>${project.build.directory}/site/apidocs</directory>
+      <outputDirectory>apidocs</outputDirectory>
+    </fileSet>
   </fileSets>
   <dependencySets>
     <dependencySet>
