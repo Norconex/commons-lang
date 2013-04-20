@@ -38,6 +38,7 @@ along with Norconex Commons Lang. If not, see <http://www.gnu.org/licenses/>.
 
     <menu name="Overview">
       <item name="Introduction" href="index.html"/>
+      <item name="Javadoc (Latest release)" href="apidocs/index.html"/>
       <item name="License" href="license.html"/>
       <item name="Download" href="download.html"/>
       <item name="Support" href="support.html"/>

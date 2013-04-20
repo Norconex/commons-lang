@@ -165,6 +165,8 @@ along with Norconex Commons Lang. If not, see <http://www.gnu.org/licenses/>.
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>2.9</version>
         <configuration>
+          <stylesheetfile>${basedir}/src/main/resources/javadoc.css</stylesheetfile>
+          <show>protected</show>
         </configuration>
         <executions>
           <execution>
@@ -219,6 +221,7 @@ along with Norconex Commons Lang. If not, see <http://www.gnu.org/licenses/>.
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>2.9</version>
         <configuration>
+          <stylesheetfile>${basedir}/src/main/resources/javadoc.css</stylesheetfile>
           <show>protected</show>
         </configuration>
         <reportSets>
