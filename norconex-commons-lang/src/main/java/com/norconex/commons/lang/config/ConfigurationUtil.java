@@ -137,7 +137,7 @@ public final class ConfigurationUtil {
                 }
             } else {
                 LOG.debug("A configuration entry was found without class "
-                       + "reference where one was needed; "
+                       + "reference where one could have been provided; "
                        + "using default value:" + defaultObject);
                 obj = defaultObject;
             }
@@ -241,10 +241,15 @@ public final class ConfigurationUtil {
         }
         
         try {
-            HierarchicalConfiguration subconfig = node.configurationAt(key);
-            return ConfigurationUtil.newInstance(
-                    subconfig, defaultObject, supportXMLConfigurable);
+            if (node.containsKey(key)) {
+                HierarchicalConfiguration subconfig = node.configurationAt(key);
+                return ConfigurationUtil.newInstance(
+                        subconfig, defaultObject, supportXMLConfigurable);
+            }
+            return defaultObject;
         } catch (Exception e) {
+            LOG.warn("Could not instantiate object from configuration for "
+                   + "node: " + node.getRoot().getName() + " key: " + key, e);
             return defaultObject;
         }
     }
