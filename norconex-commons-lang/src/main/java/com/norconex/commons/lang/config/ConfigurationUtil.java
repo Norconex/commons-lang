@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.List;
 
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
@@ -241,12 +242,14 @@ public final class ConfigurationUtil {
         }
         
         try {
-            if (node.containsKey(key)) {
-                HierarchicalConfiguration subconfig = node.configurationAt(key);
+            if (key == null && defaultObject == null) {
                 return ConfigurationUtil.newInstance(
-                        subconfig, defaultObject, supportXMLConfigurable);
+                        node, defaultObject, supportXMLConfigurable);
             }
-            return defaultObject;
+            HierarchicalConfiguration subconfig = 
+                    safeConfigurationAt(node, key);
+            return ConfigurationUtil.newInstance(
+                    subconfig, defaultObject, supportXMLConfigurable);
         } catch (Exception e) {
             LOG.warn("Could not instantiate object from configuration for "
                    + "node: " + node.getRoot().getName() + " key: " + key, e);
@@ -296,10 +299,14 @@ public final class ConfigurationUtil {
      */
     public static XMLConfiguration getXmlAt(
             HierarchicalConfiguration node, String key) {
-        if (node == null || !node.containsKey(key)) {
+        if (node == null) {
             return null;
         }
-        return new XMLConfiguration(node.configurationAt(key));
+        HierarchicalConfiguration sub = safeConfigurationAt(node, key);
+        if (sub == null) {
+            return null;
+        }
+        return new XMLConfiguration(sub);
     }
     
     /**
@@ -330,4 +337,17 @@ public final class ConfigurationUtil {
         Assert.assertEquals("Saved and loaded XML are not the same.", 
                 xmlConfiurable, readConfigurable);
     }
+
+    // This method is because the regular configuration at MUST have 1
+    // entry or will fail, and the containsKey(String) method is not reliable
+    // since it expects a value (body text) or returns false.
+    private static HierarchicalConfiguration safeConfigurationAt(
+            HierarchicalConfiguration node, String key) {
+        List<HierarchicalConfiguration> subs = node.configurationsAt(key);
+        if (subs != null && !subs.isEmpty()) {
+            return subs.get(0);
+        }
+        return null;
+    }
+    
 }

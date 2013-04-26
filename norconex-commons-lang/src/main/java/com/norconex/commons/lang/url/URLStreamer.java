@@ -21,15 +21,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
-import org.apache.commons.httpclient.Credentials;
-import org.apache.commons.httpclient.HostConfiguration;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.ProxyHost;
-import org.apache.commons.httpclient.auth.AuthScope;
-import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.time.StopWatch;
+import org.apache.http.HttpHost;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.Credentials;
+import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.conn.params.ConnRoutePNames;
+import org.apache.http.impl.client.BasicResponseHandler;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -67,79 +70,82 @@ public final class URLStreamer {
     }
     
     public static InputStream stream(
-            String url, Credentials creds, ProxyHost proxyHost) {
-        return stream(url, creds, proxyHost, null);
+            String url, Credentials creds, HttpHost proxy) {
+        return stream(url, creds, proxy, null);
     }
     public static InputStream stream(
-            URL url, Credentials creds, ProxyHost proxyHost) {
-        return stream(url.toString(), creds, proxyHost, null);
+            URL url, Credentials creds, HttpHost proxy) {
+        return stream(url.toString(), creds, proxy, null);
     }
     public static InputStream stream(
-            HttpURL url, Credentials creds, ProxyHost proxyHost) {
-        return stream(url.toString(), creds, proxyHost, null);
+            HttpURL url, Credentials creds, HttpHost proxy) {
+        return stream(url.toString(), creds, proxy, null);
     }
 
     public static InputStream stream(
-            String url, Credentials creds, ProxyHost proxyHost, 
+            String url, Credentials creds, HttpHost proxy, 
             Credentials proxyCreds) {
-        HttpClient client = new HttpClient();
-        if (proxyHost != null) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Streaming with proxy: "
-                        + proxyHost.getHostName()
-                        + ":" + proxyHost.getPort());
-            }
-            HostConfiguration hostConfig = new HostConfiguration();
-            hostConfig.setProxyHost(proxyHost);
-            client.setHostConfiguration(hostConfig);
-            if (proxyCreds != null) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Streaming with proxy credentials.");
-                }
-                client.getState().setProxyCredentials(new AuthScope(
-                        proxyHost.getHostName(), proxyHost.getPort()), 
-                        proxyCreds);                
-            }
-        }
         
-        if (creds != null) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Streaming with credentials.");
-            }
-            client.getState().setCredentials(new AuthScope(
-                    AuthScope.ANY_HOST, 80, AuthScope.ANY_REALM), creds);            
-        }
-        
-        GetMethod call = new GetMethod(url);
+        DefaultHttpClient client = new DefaultHttpClient();
         try {
-            client.executeMethod(call);
-            int statusCode = call.getStatusCode();
+            if (proxy != null) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Streaming with proxy: "
+                            + proxy.getHostName() + ":" + proxy.getPort());
+                }
+                client.getParams().setParameter(
+                        ConnRoutePNames.DEFAULT_PROXY, proxy);
+                if (proxyCreds != null) {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Streaming with proxy credentials.");
+                    }
+                    client.getCredentialsProvider().setCredentials(
+                            new AuthScope(proxy.getHostName(), proxy.getPort()),
+                            proxyCreds);
+                }
+            }
+            
+            if (creds != null) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Streaming with credentials.");
+                }
+                client.getCredentialsProvider().setCredentials(new AuthScope(
+                        AuthScope.ANY_HOST, 80, AuthScope.ANY_REALM), creds);
+            }
+            
+            HttpGet call = new HttpGet(url);
+            HttpResponse response = client.execute(call);
+            int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode != HttpStatus.SC_OK) {
+                ResponseHandler<String> responseHandler = 
+                        new BasicResponseHandler();
                 LOG.error("Invalid HTTP response: " + statusCode
                         + ". Response body is: " 
-                                + call.getResponseBodyAsString());
+                        + responseHandler.handleResponse(response));
                 throw new IOException("Cannot stream URL: " + url);
             }
-            InputStream stream = call.getResponseBodyAsStream();
+            InputStream stream = response.getEntity().getContent();
             return stream;
         } catch (IOException e) {
             throw new URLException("Could not stream URL: " + url, e);
+        } finally {
+            client.getConnectionManager().shutdown();
         }
     }    
     public static InputStream stream(
-            URL url, Credentials creds, ProxyHost proxyHost, 
+            URL url, Credentials creds, HttpHost proxy, 
             Credentials proxyCreds) {
-        return stream(url.toString(), creds, proxyHost, proxyCreds);
+        return stream(url.toString(), creds, proxy, proxyCreds);
     }
     public static InputStream stream(
-            HttpURL url, Credentials creds, ProxyHost proxyHost, 
+            HttpURL url, Credentials creds, HttpHost proxy, 
             Credentials proxyCreds) {
-        return stream(url.toString(), creds, proxyHost, proxyCreds);
+        return stream(url.toString(), creds, proxy, proxyCreds);
     }
 
     
     public static String streamToString(
-            String url, Credentials creds, ProxyHost proxyHost) {
+            String url, Credentials creds, HttpHost proxy) {
         StopWatch watch = null;
         if (LOG.isDebugEnabled()) {
             watch = new StopWatch();
@@ -148,7 +154,7 @@ public final class URLStreamer {
         }
         String out;
         try {
-            out = IOUtils.toString(stream(url, creds, proxyHost));
+            out = IOUtils.toString(stream(url, creds, proxy));
         } catch (IOException e) {
             throw new URLException("Could not stream URL to string: " + url, e);
         }
@@ -159,16 +165,16 @@ public final class URLStreamer {
         return out;
     }
     public static String streamToString(
-            URL url, Credentials creds, ProxyHost proxyHost) {
-        return streamToString(url.toString(), creds, proxyHost);
+            URL url, Credentials creds, HttpHost proxy) {
+        return streamToString(url.toString(), creds, proxy);
     }
     public static String streamToString(
-            HttpURL url, Credentials creds, ProxyHost proxyHost) {
-        return streamToString(url.toString(), creds, proxyHost);
+            HttpURL url, Credentials creds, HttpHost proxy) {
+        return streamToString(url.toString(), creds, proxy);
     }
 
     public static String streamToString(
-            String url, Credentials creds, ProxyHost proxyHost, 
+            String url, Credentials creds, HttpHost proxy, 
             Credentials proxyCreds) {
         StopWatch watch = null;
         if (LOG.isDebugEnabled()) {
@@ -178,7 +184,7 @@ public final class URLStreamer {
         }
         String out;
         try {
-            out = IOUtils.toString(stream(url, creds, proxyHost, proxyCreds));
+            out = IOUtils.toString(stream(url, creds, proxy, proxyCreds));
         } catch (IOException e) {
             throw new URLException("Could not stream URL to string: " + url, e);
         }
@@ -189,14 +195,14 @@ public final class URLStreamer {
         return out;
     }
     public static String streamToString(
-            URL url, Credentials creds, ProxyHost proxyHost, 
+            URL url, Credentials creds, HttpHost proxy, 
             Credentials proxyCreds) {
-        return streamToString(url.toString(), creds, proxyHost, proxyCreds);
+        return streamToString(url.toString(), creds, proxy, proxyCreds);
     }
     public static String streamToString(
-            HttpURL url, Credentials creds, ProxyHost proxyHost, 
+            HttpURL url, Credentials creds, HttpHost proxy, 
             Credentials proxyCreds) {
-        return streamToString(url.toString(), creds, proxyHost, proxyCreds);
+        return streamToString(url.toString(), creds, proxy, proxyCreds);
     }
     
     public static String streamToString(String url, Credentials creds) {

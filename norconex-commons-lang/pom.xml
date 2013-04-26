@@ -63,19 +63,9 @@ along with Norconex Commons Lang. If not, see <http://www.gnu.org/licenses/>.
     	<version>1.1.1</version>
     </dependency>
     <dependency>
-    	<groupId>commons-codec</groupId>
-    	<artifactId>commons-codec</artifactId>
-    	<version>1.7</version>
-    </dependency>
-    <dependency>
     	<groupId>commons-collections</groupId>
     	<artifactId>commons-collections</artifactId>
     	<version>3.2.1</version>
-    </dependency>
-    <dependency>
-    	<groupId>commons-httpclient</groupId>
-    	<artifactId>commons-httpclient</artifactId>
-    	<version>3.1</version>
     </dependency>
     <dependency>
     	<groupId>commons-io</groupId>
@@ -101,6 +91,11 @@ along with Norconex Commons Lang. If not, see <http://www.gnu.org/licenses/>.
     	<groupId>log4j</groupId>
     	<artifactId>log4j</artifactId>
     	<version>1.2.17</version>
+    </dependency>
+    <dependency>
+    	<groupId>org.apache.httpcomponents</groupId>
+    	<artifactId>httpclient</artifactId>
+    	<version>4.2.4</version>
     </dependency>
   </dependencies>
 
