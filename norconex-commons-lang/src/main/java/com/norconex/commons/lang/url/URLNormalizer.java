@@ -35,6 +35,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
+import com.norconex.commons.lang.EqualsUtil;
+
 /**
  * <p>
  * The general idea behind URL normalization is to make different URLs 
@@ -158,7 +160,7 @@ public class URLNormalizer implements Serializable {
      * @param url the url to normalize
      */
     public URLNormalizer(URL url) {
-        super();
+        this(url.toString());
     }
 
     /**
@@ -225,18 +227,7 @@ public class URLNormalizer implements Serializable {
             try {
                 while (m.find()) {
                     String enc = m.group(1).toUpperCase();
-                    // If one of these, in same order: 
-                    // ALPHA (%41�%5A and %61�%7A),
-                    // DIGIT (%30�%39), hyphen (%2D), period (%2E), 
-                    // underscore (%5F), or tilde (%7E) 
-                    if ((enc.compareTo("%41") >= 0 && enc.compareTo("%5A") <= 0)
-                     || (enc.compareTo("%61") >= 0 && enc.compareTo("%7A") <= 0)
-                     || (enc.compareTo("%30") >= 0 && enc.compareTo("%39") <= 0)
-                     || (enc.compareTo("%2D") == 0 
-                             || enc.compareTo("%2E") == 0
-                             || enc.compareTo("%5F") == 0
-                             || enc.compareTo("%7E") == 0)) {
-                        //CharEncoding.isSupported(name)
+                    if (isEncodedUnreservedCharacter(enc)) {
                         m.appendReplacement(sb, 
                                 URLDecoder.decode(enc, CharEncoding.UTF_8));
                     }
@@ -257,11 +248,12 @@ public class URLNormalizer implements Serializable {
      */
     public URLNormalizer removeDefaultPort() {
         URI u = toURI(url);
-        if ("http".equalsIgnoreCase(u.getScheme()) && u.getPort() == 80) {
-            url = url.replaceFirst(":80", "");
+        if ("http".equalsIgnoreCase(u.getScheme())
+                && u.getPort() == HttpURL.DEFAULT_HTTP_PORT) {
+            url = url.replaceFirst(":" + HttpURL.DEFAULT_HTTP_PORT, "");
         } else if ("https".equalsIgnoreCase(u.getScheme()) 
-                && u.getPort() == 443) {
-            url = url.replaceFirst(":443", "");
+                && u.getPort() == HttpURL.DEFAULT_HTTPS_PORT) {
+            url = url.replaceFirst(":" + HttpURL.DEFAULT_HTTPS_PORT, "");
         }
         return this;
     }
@@ -571,5 +563,19 @@ public class URLNormalizer implements Serializable {
                     + url);
             return null;
         }
+    }
+    
+    private boolean isEncodedUnreservedCharacter(String enc) {
+        // is ALPHA (a-zA-Z)
+        if ((enc.compareTo("%41") >= 0 && enc.compareTo("%5A") <= 0)
+         || (enc.compareTo("%61") >= 0 && enc.compareTo("%7A") <= 0)) {
+            return true;
+        }
+        // is Digit (0-9)
+        if (enc.compareTo("%30") >= 0 && enc.compareTo("%39") <= 0) {
+            return true;
+        }
+        // is hyphen, period, underscore, tilde
+        return EqualsUtil.equalsAny(enc, "%2D", "%2E", "%5F", "%7E");
     }
 }

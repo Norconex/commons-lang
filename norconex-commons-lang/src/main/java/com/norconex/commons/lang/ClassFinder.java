@@ -45,9 +45,13 @@ import org.apache.log4j.Logger;
  * @author <a href="mailto:pascal.essiembre@norconex.com">Pascal Essiembre</a>
  */
 @SuppressWarnings("nls")
-public class ClassFinder {
+public final class ClassFinder {
 
     private static final Logger LOG = Logger.getLogger(ClassFinder.class);
+
+    private ClassFinder() {
+        super();
+    }
 
     /**
      * Finds the names of all classes implementing the super class.

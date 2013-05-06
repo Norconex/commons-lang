@@ -31,7 +31,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.InvalidPropertiesFormatException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -107,7 +106,7 @@ public class Properties extends TreeMap<String, List<String>> {
      * @see TreeMap#TreeMap()
      */
     public Properties(boolean caseSensitiveKeys) {
-        this(null, false);
+        this(null, caseSensitiveKeys);
     }
     
     /**
@@ -432,7 +431,7 @@ public class Properties extends TreeMap<String, List<String>> {
      * @param in in the input stream from which to read the XML document.
      */
     public synchronized void loadFromXML(InputStream in)
-            throws IOException, InvalidPropertiesFormatException {
+            throws IOException {
         loadFromXML(in, DEFAULT_PROPERTIES_MULTIVALUE_DELIMITER);
     }
     /**
@@ -449,7 +448,7 @@ public class Properties extends TreeMap<String, List<String>> {
      *        key.
      */
     public synchronized void loadFromXML(InputStream in, String delimiter)
-            throws IOException, InvalidPropertiesFormatException {
+            throws IOException {
         java.util.Properties p = new java.util.Properties();
         p.loadFromXML(in);
         List<String> values = new ArrayList<String>();
@@ -477,21 +476,21 @@ public class Properties extends TreeMap<String, List<String>> {
     }
 
     //--- String ---------------------------------------------------------------
-    public String getString(String key) {
+    public final String getString(String key) {
         List<String> list = get(key);
         if (list != null && !list.isEmpty()) {
             return list.get(0);
         }
         return null;
     }
-    public String getString(String key, String defaultValue) {
+    public final String getString(String key, String defaultValue) {
         String s = getString(key);
         if (s == null) {
             return defaultValue;
         }
         return s;
     }
-    public List<String> getStrings(String key) {
+    public final List<String> getStrings(String key) {
         List<String> values = get(key);
         if (values == null) {
             return new ArrayList<String>();
@@ -504,7 +503,7 @@ public class Properties extends TreeMap<String, List<String>> {
      * @param key the key of the value to set
      * @param values the values to set
      */
-    public void setString(String key, String... values) {
+    public final void setString(String key, String... values) {
         List<String> list = new ArrayList<String>(values.length);
         for (String value : values) {
             if (value == null) {
@@ -521,7 +520,7 @@ public class Properties extends TreeMap<String, List<String>> {
      * @param key the key of the value to set
      * @param values the values to set
      */
-    public void addString(String key, String... values) {
+    public final void addString(String key, String... values) {
         List<String> list = get(key);
         if (list == null) {
             list = new ArrayList<String>(values.length);
@@ -537,7 +536,7 @@ public class Properties extends TreeMap<String, List<String>> {
     }
 
     //--- Integer --------------------------------------------------------------
-    public int getInt(String key) {
+    public final int getInt(String key) {
         try {
             return Integer.parseInt(getString(key));
         } catch (NumberFormatException e) {
@@ -545,7 +544,7 @@ public class Properties extends TreeMap<String, List<String>> {
                     "Could not parse integer value.", key, getString(key), e);
         }
     }
-    public int getInt(String key, int defaultValue) {
+    public final int getInt(String key, int defaultValue) {
         String value = getString(key, "" + defaultValue);
         try {
             return Integer.parseInt(value);
@@ -554,7 +553,7 @@ public class Properties extends TreeMap<String, List<String>> {
                     "Could not parse integer value.", key, value, e);
         }
     }
-    public List<Integer> getInts(String key) {
+    public final List<Integer> getInts(String key) {
         List<String> values = getStrings(key);
         String errVal = null;
         try {
@@ -569,15 +568,15 @@ public class Properties extends TreeMap<String, List<String>> {
                     "Could not parse integer value.", key, errVal, e);
         }
     }
-    public void setInt(String key, int... values) {
+    public final void setInt(String key, int... values) {
         setString(key, toStringArray(ArrayUtils.toObject(values)));
     }
-    public void addInt(String key, int... values) {
+    public final void addInt(String key, int... values) {
         addString(key, toStringArray(ArrayUtils.toObject(values)));
     }
     
     //--- Double ---------------------------------------------------------------
-    public double getDouble(String key) {
+    public final double getDouble(String key) {
         try {
             return Double.parseDouble(getString(key));
         } catch (NumberFormatException e) {
@@ -585,7 +584,7 @@ public class Properties extends TreeMap<String, List<String>> {
                     "Could not parse double value.", key, getString(key), e);
         }
     }
-    public double getDouble(String key, double defaultValue) {
+    public final double getDouble(String key, double defaultValue) {
         String value = getString(key, "" + defaultValue);
         try {
             return Double.parseDouble(value);
@@ -594,7 +593,7 @@ public class Properties extends TreeMap<String, List<String>> {
                     "Could not parse double value.", key, value, e);
         }
     }
-    public List<Double> getDoubles(String key) {
+    public final List<Double> getDoubles(String key) {
         List<String> values = getStrings(key);
         String errVal = null;
         try {
@@ -609,15 +608,15 @@ public class Properties extends TreeMap<String, List<String>> {
                     "Could not parse double value.", key, errVal, e);
         }
     }
-    public void setDouble(String key, double... values) {
+    public final void setDouble(String key, double... values) {
         setString(key, toStringArray(ArrayUtils.toObject(values)));
     }
-    public void addDouble(String key, double... values) {
+    public final void addDouble(String key, double... values) {
         addString(key, toStringArray(ArrayUtils.toObject(values)));
     }
 
     //--- Long -----------------------------------------------------------------
-    public long getLong(String key) {
+    public final long getLong(String key) {
         try {
             return Long.parseLong(getString(key));
         } catch (NumberFormatException e) {
@@ -625,7 +624,7 @@ public class Properties extends TreeMap<String, List<String>> {
                     "Could not parse long value.", key, getString(key), e);
         }
     }
-    public long getLong(String key, long defaultValue) {
+    public final long getLong(String key, long defaultValue) {
         String value = getString(key, "" + defaultValue);
         try {
             return Long.parseLong(value);
@@ -634,7 +633,7 @@ public class Properties extends TreeMap<String, List<String>> {
                     "Could not parse long value.", key, value, e);
         }
     }
-    public List<Long> getLongs(String key) {
+    public final List<Long> getLongs(String key) {
         List<String> values = getStrings(key);
         String errVal = null;
         try {
@@ -649,15 +648,15 @@ public class Properties extends TreeMap<String, List<String>> {
                     "Could not parse long value.", key, errVal, e);
         }
     }
-    public void setLong(String key, long... values) {
+    public final void setLong(String key, long... values) {
         setString(key, toStringArray(ArrayUtils.toObject(values)));
     }
-    public void addLong(String key, long... values) {
+    public final void addLong(String key, long... values) {
         addString(key, toStringArray(ArrayUtils.toObject(values)));
     }
     
     //--- Float ----------------------------------------------------------------
-    public float getFloat(String key) {
+    public final float getFloat(String key) {
         try {
             return Float.parseFloat(getString(key));
         } catch (NumberFormatException e) {
@@ -665,7 +664,7 @@ public class Properties extends TreeMap<String, List<String>> {
                     "Could not parse float value.", key, getString(key), e);
         }
     }
-    public float getFloat(String key, float defaultValue) {
+    public final float getFloat(String key, float defaultValue) {
         String value = getString(key, "" + defaultValue);
         try {
             return Float.parseFloat(value);
@@ -674,7 +673,7 @@ public class Properties extends TreeMap<String, List<String>> {
                     "Could not parse float value.", key, value, e);
         }
     }
-    public List<Float> getFloats(String key) {
+    public final List<Float> getFloats(String key) {
         List<String> values = getStrings(key);
         String errVal = null;
         try {
@@ -689,15 +688,15 @@ public class Properties extends TreeMap<String, List<String>> {
                     "Could not parse float value.", key, errVal, e);
         }
     }
-    public void setFloat(String key, float... values) {
+    public final void setFloat(String key, float... values) {
         setString(key, toStringArray(ArrayUtils.toObject(values)));
     }
-    public void addFloat(String key, float... values) {
+    public final void addFloat(String key, float... values) {
         addString(key, toStringArray(ArrayUtils.toObject(values)));
     }
     
     //--- BigDecimal -----------------------------------------------------------
-    public BigDecimal getBigDecimal(String key) {
+    public final BigDecimal getBigDecimal(String key) {
         String value = getString(key);
         if (value == null || value.trim().length() == 0) {
             return null;
@@ -709,21 +708,21 @@ public class Properties extends TreeMap<String, List<String>> {
                     "Could not parse BigDecimal value.", key, value, e);
         }
     }
-    public BigDecimal getBigDecimal(String key, BigDecimal defaultValue) {
+    public final BigDecimal getBigDecimal(String key, BigDecimal defaultValue) {
         BigDecimal value = getBigDecimal(key);
         if (value == null) {
             return defaultValue;
         }
         return value;
     }
-    public void setBigDecimal(String key, BigDecimal value) {
+    public final void setBigDecimal(String key, BigDecimal value) {
         if (value == null) {
             setString(key, "");
         } else {
             setString(key, value.toString());
         }
     }
-    public List<BigDecimal> getBigDecimals(String key) {
+    public final List<BigDecimal> getBigDecimals(String key) {
         List<String> values = getStrings(key);
         String errVal = null;
         try {
@@ -738,15 +737,15 @@ public class Properties extends TreeMap<String, List<String>> {
                     "Could not parse BigDecimal value.", key, errVal, e);
         }
     }
-    public void setBigDecimal(String key, BigDecimal... values) {
+    public final void setBigDecimal(String key, BigDecimal... values) {
         setString(key, toStringArray(values));
     }
-    public void addBigDecimal(String key, BigDecimal... values) {
+    public final void addBigDecimal(String key, BigDecimal... values) {
         addString(key, toStringArray(values));
     }
     
     //--- Date -----------------------------------------------------------------
-    public Date getDate(String key) {
+    public final Date getDate(String key) {
         String value = getString(key);
         if (StringUtils.isBlank(value)) {
             return null;
@@ -758,14 +757,14 @@ public class Properties extends TreeMap<String, List<String>> {
                     "Could not parse Date value.", key, value, e);
         }
     }
-    public Date getDate(String key, Date defaultValue) {
+    public final Date getDate(String key, Date defaultValue) {
         Date value = getDate(key);
         if (value == null) {
             return defaultValue;
         }
         return value;
     }    
-    public List<Date> getDates(String key) {
+    public final List<Date> getDates(String key) {
         List<String> values = getStrings(key);
         String errVal = null;
         try {
@@ -780,10 +779,10 @@ public class Properties extends TreeMap<String, List<String>> {
                     "Could not parse Date value.", key, errVal, e);
         }
     }
-    public void setDate(String key, Date... values) {
+    public final void setDate(String key, Date... values) {
         setString(key, datesToStringArray(values));
     }
-    public void addDate(String key, Date... values) {
+    public final void addDate(String key, Date... values) {
         addString(key, datesToStringArray(values));
     }
     private String[] datesToStringArray(Date... values) {
@@ -798,17 +797,17 @@ public class Properties extends TreeMap<String, List<String>> {
     }
 
     //--- Boolean --------------------------------------------------------------
-    public boolean getBoolean(String key) {
+    public final boolean getBoolean(String key) {
         return Boolean.valueOf(getString(key)).booleanValue();
     }
-    public boolean getBoolean(String key, boolean defaultValue) {
+    public final boolean getBoolean(String key, boolean defaultValue) {
         return Boolean.valueOf(
                 getString(key, "" + defaultValue)).booleanValue();
     }    
-    public void setBoolean(String key, boolean value) {
+    public final void setBoolean(String key, boolean value) {
         setString(key, Boolean.toString(value));
     }
-    public List<Boolean> getBooleans(String key) {
+    public final List<Boolean> getBooleans(String key) {
         List<String> values = getStrings(key);
         List<Boolean> list = new ArrayList<Boolean>(values.size());
         for (String value : values) {
@@ -816,15 +815,15 @@ public class Properties extends TreeMap<String, List<String>> {
         }
         return list;
     }
-    public void setBoolean(String key, boolean... values) {
+    public final void setBoolean(String key, boolean... values) {
         setString(key, toStringArray(ArrayUtils.toObject(values)));
     }
-    public void addBoolean(String key, boolean... values) {
+    public final void addBoolean(String key, boolean... values) {
         addString(key, toStringArray(ArrayUtils.toObject(values)));
     }
     
     //--- Locale ---------------------------------------------------------------
-    public Locale getLocale(String key) {
+    public final Locale getLocale(String key) {
         try {
             return LocaleUtils.toLocale(getString(key));
         } catch (IllegalArgumentException e) {
@@ -832,14 +831,14 @@ public class Properties extends TreeMap<String, List<String>> {
                     "Could not parse Locale value.", key, getString(key), e);
         }
     }
-    public Locale getLocale(String key, Locale defaultValue) {
+    public final Locale getLocale(String key, Locale defaultValue) {
         try {
             return LocaleUtils.toLocale(getString(key));
         } catch (IllegalArgumentException e) {
             return defaultValue;
         }
     }
-    public List<Locale> getLocales(String key) {
+    public final List<Locale> getLocales(String key) {
         List<String> values = getStrings(key);
         String errVal = null;
         try {
@@ -854,10 +853,10 @@ public class Properties extends TreeMap<String, List<String>> {
                     "Could not parse locale value.", key, errVal, e);
         }
     }
-    public void setLocale(String key, Locale... values) {
+    public final void setLocale(String key, Locale... values) {
         setString(key, toStringArray(values));
     }
-    public void addLocale(String key, Locale... values) {
+    public final void addLocale(String key, Locale... values) {
         addString(key, toStringArray(values));
     }
     
@@ -866,7 +865,7 @@ public class Properties extends TreeMap<String, List<String>> {
      * Gets a file, assuming key value is a file system path. 
      * @param key properties key
      */
-    public File getFile(String key) {
+    public final File getFile(String key) {
         String filePath = getString(key);
         if (filePath == null) {
             return null;
@@ -879,14 +878,14 @@ public class Properties extends TreeMap<String, List<String>> {
      * @param defaultValue default file being returned if no file has been
      *        defined for the given key in the properties.
      */
-    public File getFile(String key, File defaultValue) {
+    public final File getFile(String key, File defaultValue) {
         File value = getFile(key);
         if (value == null) {
             return defaultValue;
         }
     	return value;
     }
-    public List<File> getFiles(String key) {
+    public final List<File> getFiles(String key) {
         List<String> values = getStrings(key);
         List<File> list = new ArrayList<File>(values.size());
         for (String value : values) {
@@ -894,10 +893,10 @@ public class Properties extends TreeMap<String, List<String>> {
         }
         return list;
     }
-    public void setFile(String key, File... values) {
+    public final void setFile(String key, File... values) {
         setString(key, filesToStringArray(values));
     }
-    public void addFile(String key, File... values) {
+    public final void addFile(String key, File... values) {
         addString(key, filesToStringArray(values));
     }
     private String[] filesToStringArray(File... values) {
@@ -917,7 +916,7 @@ public class Properties extends TreeMap<String, List<String>> {
      * available in the classloader. 
      * @param key properties key
      */
-    public Class<?> getClass(String key) {
+    public final Class<?> getClass(String key) {
     	String value = getString(key);
     	try {
 			return Class.forName(value);
@@ -933,14 +932,14 @@ public class Properties extends TreeMap<String, List<String>> {
      * @param defaultValue default file being returned if no class has been
      *        defined for the given key in the properties.
      */
-    public Class<?> getClass(String key, Class<?> defaultValue) {
+    public final Class<?> getClass(String key, Class<?> defaultValue) {
         Class<?> value = getClass(key);
         if (value == null) {
             return defaultValue;
         }
     	return value;
     }
-    public List<Class<?>> getClasses(String key) {
+    public final List<Class<?>> getClasses(String key) {
         List<String> values = getStrings(key);
         List<Class<?>> list = new ArrayList<Class<?>>(values.size());
         for (String value : values) {
@@ -948,17 +947,17 @@ public class Properties extends TreeMap<String, List<String>> {
         }
         return list;
     }
-    public void setClass(String key, Class<?>... values) {
+    public final void setClass(String key, Class<?>... values) {
         setString(key, classesToStringArray(values));
     }
-    public void addClass(String key, Class<?>... values) {
+    public final void addClass(String key, Class<?>... values) {
         addString(key, classesToStringArray(values));
     }
 
     
     
     @Override
-    public List<String> get(Object key) {
+    public final List<String> get(Object key) {
         if (!caseSensitiveKeys) {
             return super.get(key);
         }
@@ -971,7 +970,7 @@ public class Properties extends TreeMap<String, List<String>> {
         return values;
     }
     @Override
-    public List<String> remove(Object key) {
+    public final List<String> remove(Object key) {
         if (!caseSensitiveKeys) {
             return super.remove(key);
         }

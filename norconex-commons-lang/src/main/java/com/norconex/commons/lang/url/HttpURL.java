@@ -22,6 +22,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
  * This class can be seen as a mutable URL, which could be a replacement
@@ -34,11 +36,12 @@ public class HttpURL implements Serializable {
 
     private static final long serialVersionUID = -8886393027925815099L;
     
-    public static final int DEFAULT_PORT = 80;
+    public static final int DEFAULT_HTTP_PORT = 80;
+    public static final int DEFAULT_HTTPS_PORT = 443;
     
     private QueryString queryString;
     private String host;
-    private int port = DEFAULT_PORT;
+    private int port = DEFAULT_HTTP_PORT;
     private String path;
     private String protocol;
     
@@ -119,7 +122,7 @@ public class HttpURL implements Serializable {
         b.append(protocol);
         b.append("://");
         b.append(host);
-        if (port != DEFAULT_PORT) {
+        if (port != DEFAULT_HTTP_PORT) {
             b.append(':');
             b.append(port);
         }
@@ -133,51 +136,36 @@ public class HttpURL implements Serializable {
         return b.toString();
     }
 
+    
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((host == null) ? 0 : host.hashCode());
-        result = prime * result + ((path == null) ? 0 : path.hashCode());
-        result = prime * result + port;
-        result = prime * result
-                + ((protocol == null) ? 0 : protocol.hashCode());
-        result = prime * result
-                + ((queryString == null) ? 0 : queryString.hashCode());
-        return result;
+        return new HashCodeBuilder()
+                .append(host)
+                .append(path)
+                .append(port)
+                .append(protocol)
+                .append(queryString)
+                .toHashCode();
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (!(obj instanceof HttpURL)) {
             return false;
+        }
         HttpURL other = (HttpURL) obj;
-        if (host == null) {
-            if (other.host != null)
-                return false;
-        } else if (!host.equals(other.host))
-            return false;
-        if (path == null) {
-            if (other.path != null)
-                return false;
-        } else if (!path.equals(other.path))
-            return false;
-        if (port != other.port)
-            return false;
-        if (protocol == null) {
-            if (other.protocol != null)
-                return false;
-        } else if (!protocol.equals(other.protocol))
-            return false;
-        if (queryString == null) {
-            if (other.queryString != null)
-                return false;
-        } else if (!queryString.equals(other.queryString))
-            return false;
-        return true;
+        return new EqualsBuilder()
+                .append(host, other.host)
+                .append(path, other.path)
+                .append(port, other.port)
+                .append(protocol, other.protocol)
+                .append(queryString, other.queryString)
+                .isEquals();
     }
 }

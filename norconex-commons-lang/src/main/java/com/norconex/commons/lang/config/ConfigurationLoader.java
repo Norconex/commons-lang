@@ -133,14 +133,6 @@ public final class ConfigurationLoader {
      * Constructor.
      */
     public ConfigurationLoader() {
-        this(new File("/"));
-    }
-
-    /**
-     * Constructor.
-     * @param templateRoot directory acting as the root for all relative paths 
-     */
-    public ConfigurationLoader(File templateRoot) {
         super();
         velocityEngine = new VelocityEngine();
         velocityEngine.setProperty(RuntimeConstants.EVENTHANDLER_INCLUDE,
@@ -151,8 +143,6 @@ public final class ConfigurationLoader {
         velocityEngine.setProperty(RuntimeConstants.RUNTIME_LOG_LOGSYSTEM_CLASS,
         	      "org.apache.velocity.runtime.log.Log4JLogChute");
         velocityEngine.setProperty("runtime.log", "");
-        //        ve.setProperty("runtime.log.logsystem.log4j.logger",
-        //                LOGGER_NAME);
     }
 
     /**
@@ -213,7 +203,8 @@ public final class ConfigurationLoader {
     public String loadString(File configFile, File variables) {
 
         if (configFile == null) {
-            throw new NullPointerException("No configuration file specified.");
+            throw new ConfigurationException(
+                    "No configuration file specified.");
         }
         if (!configFile.exists()) {
             return null;
@@ -253,10 +244,8 @@ public final class ConfigurationLoader {
      * Velocity parsing or variable substitution.
      * @param in input stream
      * @return XMLConfiguration
-     * @throws ConfigurationException 
      */
-    public static XMLConfiguration loadXML(Reader in)
-            throws ConfigurationException {
+    public static XMLConfiguration loadXML(Reader in) {
         XMLConfiguration xml = new XMLConfiguration();
         xml.setDelimiterParsingDisabled(true);
         try {

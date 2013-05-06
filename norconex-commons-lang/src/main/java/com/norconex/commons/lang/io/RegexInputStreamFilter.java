@@ -28,12 +28,12 @@ public class RegexInputStreamFilter implements IInputStreamFilter {
 
     private final Pattern pattern;
     
-    private RegexInputStreamFilter(String regex) {
+    public RegexInputStreamFilter(String regex) {
         super();
         this.pattern = Pattern.compile(regex);
     }
 
-    private RegexInputStreamFilter(Pattern pattern) {
+    public RegexInputStreamFilter(Pattern pattern) {
         super();
         this.pattern = pattern;
     }

@@ -110,7 +110,8 @@ public final class URLStreamer {
                     LOG.debug("Streaming with credentials.");
                 }
                 client.getCredentialsProvider().setCredentials(new AuthScope(
-                        AuthScope.ANY_HOST, 80, AuthScope.ANY_REALM), creds);
+                        AuthScope.ANY_HOST, HttpURL.DEFAULT_HTTP_PORT,
+                        AuthScope.ANY_REALM), creds);
             }
             
             HttpGet call = new HttpGet(url);
@@ -124,8 +125,7 @@ public final class URLStreamer {
                         + responseHandler.handleResponse(response));
                 throw new IOException("Cannot stream URL: " + url);
             }
-            InputStream stream = response.getEntity().getContent();
-            return stream;
+            return response.getEntity().getContent();
         } catch (IOException e) {
             throw new URLException("Could not stream URL: " + url, e);
         } finally {

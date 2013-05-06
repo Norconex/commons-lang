@@ -30,8 +30,11 @@ import org.apache.commons.io.Charsets;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
+
+import com.norconex.commons.lang.Sleeper;
 
 /**
  * Utility methods when dealing with files and directories.
@@ -39,11 +42,12 @@ import org.apache.commons.lang3.time.DateFormatUtils;
  */
 public final class FileUtil {
 
+    private static final int MAX_FILE_OPERATION_ATTEMPTS = 10;
+    
     private FileUtil() {
         super();
     }
 
-    
     /**
      * Moves a file to a directory.   Like {@link #moveFile(File, File)}:
      * <ul>
@@ -95,7 +99,8 @@ public final class FileUtil {
      */
     public static void moveFile(File sourceFile, File targetFile)
     		throws IOException {
-    	if (sourceFile == null || !sourceFile.isFile()) {
+        
+    	if (!isFile(sourceFile)) {
     		throw new IOException(
     		        "Source file is not a file or is not valid: " + sourceFile);
     	}
@@ -103,23 +108,18 @@ public final class FileUtil {
     		throw new IOException(
     		        "Target file is not a file or is not valid: " + targetFile);
     	}
-        boolean success = false;
         int failure = 0;
         Exception ex = null;
-        while (!success && failure < 10) {
+        while (failure < MAX_FILE_OPERATION_ATTEMPTS) {
             if (targetFile.exists() && !targetFile.delete()
             		|| !sourceFile.renameTo(targetFile)) {
         		failure++;
-        		try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-		        	ex = e;
-				}
+        		Sleeper.sleepSeconds(1);
         		continue;
             }
-            success = true;
+            break;
         }
-        if (!success) {
+        if (failure >= MAX_FILE_OPERATION_ATTEMPTS) {
         	throw new IOException(
         			"Could not move \"" + sourceFile + "\" to \"" 
         					+ targetFile + "\".", ex);
@@ -146,14 +146,10 @@ public final class FileUtil {
         boolean success = false;
         int failure = 0;
         Exception ex = null;
-        while (!success && failure < 10) {
+        while (!success && failure < MAX_FILE_OPERATION_ATTEMPTS) {
             if (file.exists() && !FileUtils.deleteQuietly(file)) {
                 failure++;
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    ex = e;
-                }
+                Sleeper.sleepSeconds(1);
                 continue;
             }
             success = true;
@@ -345,7 +341,7 @@ public final class FileUtil {
      * @throws IOException
      */
     public static String[] head(File file, String encoding,
-            int numberOfLinesToRead, boolean stripBlankLines,
+            final int numberOfLinesToRead, boolean stripBlankLines,
             IInputStreamFilter filter)
             throws IOException {
         assertFile(file);
@@ -353,17 +349,20 @@ public final class FileUtil {
         LinkedList<String> lines = new LinkedList<String>();
         BufferedReader reader = new BufferedReader(
                 new InputStreamReader(new FileInputStream(file), encoding));
-        for (String line = null; (numberOfLinesToRead-- > 0)
-                && (line = reader.readLine()) != null;) {
-            if (!stripBlankLines || !line.trim().equals("")) {
-                if (filter != null && filter.accept(line)) {
-                    lines.addFirst(line);
-                } else {
-                    numberOfLinesToRead++;
-                }
-            } else {
-                numberOfLinesToRead++;
-            }
+
+        int remainingLinesToRead = numberOfLinesToRead;
+        String line = StringUtils.EMPTY;
+        while(line != null && remainingLinesToRead-- > 0){
+             line = reader.readLine();
+             if (!stripBlankLines || StringUtils.isNotBlank(line)) {
+                 if (filter != null && filter.accept(line)) {
+                     lines.addFirst(line);
+                 } else {
+                     remainingLinesToRead++;
+                 }
+             } else {
+                 remainingLinesToRead++;
+             }
         }
         reader.close();
         return (String[]) lines.toArray(ArrayUtils.EMPTY_STRING_ARRAY);
@@ -424,7 +423,7 @@ public final class FileUtil {
      * @throws IOException
      */
     public static String[] tail(File file, String encoding,
-            int numberOfLinesToRead, boolean stripBlankLines,
+            final int numberOfLinesToRead, boolean stripBlankLines,
             IInputStreamFilter filter)
             throws IOException {
         assertFile(file);
@@ -432,25 +431,26 @@ public final class FileUtil {
         LinkedList<String> lines = new LinkedList<String>();
         BufferedReader reader = new BufferedReader(new InputStreamReader(
                 new ReverseFileInputStream(file), encoding));
-        for (String line = null; (numberOfLinesToRead-- > 0)
-                && (line = reader.readLine()) != null;) {
-            // Reverse the order of the characters in the string
-            char[] chars = line.toCharArray();
-            for (int j = 0, k = chars.length - 1; j < k; j++, k--) {
-                char temp = chars[j];
-                chars[j] = chars[k];
-                chars[k] = temp;
-            }
-            String newLine = new String(chars);
-            if (!stripBlankLines || !newLine.trim().equals("")) {
-                if (filter != null && filter.accept(newLine)) {
-                    lines.addFirst(newLine);
-                } else {
-                    numberOfLinesToRead++;
-                }
-            } else {
-                numberOfLinesToRead++;
-            }
+        int remainingLinesToRead = numberOfLinesToRead;
+        String line = StringUtils.EMPTY;
+        while(line != null && remainingLinesToRead-- > 0){
+             line = StringUtils.defaultString(reader.readLine());
+             char[] chars = line.toCharArray();
+             for (int j = 0, k = chars.length - 1; j < k; j++, k--) {
+                 char temp = chars[j];
+                 chars[j] = chars[k];
+                 chars[k] = temp;
+             }
+             String newLine = new String(chars);
+             if (!stripBlankLines || StringUtils.isNotBlank(line)) {
+                 if (filter != null && filter.accept(newLine)) {
+                     lines.addFirst(newLine);
+                 } else {
+                     remainingLinesToRead++;
+                 }
+             } else {
+                 remainingLinesToRead++;
+             }
         }
         reader.close();
         return (String[]) lines.toArray(ArrayUtils.EMPTY_STRING_ARRAY);
@@ -554,5 +554,10 @@ public final class FileUtil {
             throw new IOException("Not a valid file: " + file);
         }
     }
-    
+
+    //TODO make public as a null-safe method, along with similar methods?
+    private static boolean isFile(File file) {
+        return file != null && file.isFile();
+    }
+
 }

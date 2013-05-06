@@ -55,8 +55,7 @@ public final class ConfigurationUtil {
      * @throws ConfigurationException if instance cannot be created/populated
      */
     public static <T extends Object> T newInstance(
-            HierarchicalConfiguration node)
-            throws ConfigurationException {
+            HierarchicalConfiguration node) {
         return newInstance(node, null, true);
     }
 
@@ -76,8 +75,7 @@ public final class ConfigurationUtil {
      */
     public static <T extends Object> T newInstance(
             HierarchicalConfiguration node,
-            boolean supportXMLConfigurable)
-            throws ConfigurationException {
+            boolean supportXMLConfigurable) {
         return newInstance(node, null, supportXMLConfigurable);
     }
     
@@ -96,8 +94,7 @@ public final class ConfigurationUtil {
      * @throws ConfigurationException if instance cannot be created/populated
      */
     public static <T extends Object> T newInstance(
-            HierarchicalConfiguration node, T defaultObject)
-            throws ConfigurationException {
+            HierarchicalConfiguration node, T defaultObject) {
         return newInstance(node, defaultObject, true);
     }
     
@@ -120,8 +117,7 @@ public final class ConfigurationUtil {
     @SuppressWarnings("unchecked")
     public static <T extends Object> T newInstance(
             HierarchicalConfiguration node, T defaultObject,
-            boolean supportXMLConfigurable)
-            throws ConfigurationException {
+            boolean supportXMLConfigurable) {
         T obj = null;
         String clazz = null;
         if (node == null) {
@@ -267,9 +263,9 @@ public final class ConfigurationUtil {
      * @throws IOException cannot read configuration
      */
     public static Reader newReader(HierarchicalConfiguration node)
-            throws ConfigurationException, IOException {
+            throws IOException {
         XMLConfiguration xml;
-        if (node != null && node instanceof XMLConfiguration) {
+        if (node instanceof XMLConfiguration) {
             xml = (XMLConfiguration) node;
         } else {
             xml = new XMLConfiguration(node);
@@ -318,7 +314,7 @@ public final class ConfigurationUtil {
      * @throws ConfigurationException Cannot load configuration
      */
     public static void assertWriteRead(IXMLConfigurable xmlConfiurable)
-            throws IOException, ConfigurationException {
+            throws IOException {
         
         File tempFile = File.createTempFile("XMLConfigurableTester", ".xml");
         

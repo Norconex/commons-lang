@@ -30,7 +30,9 @@ import java.io.RandomAccessFile;
 @SuppressWarnings("nls")
 public class ReverseFileInputStream extends InputStream {
 
-    private final byte[] buffer = new byte[4096];
+    private static final int BUFFER_SIZE = 4096;
+    
+    private final byte[] buffer = new byte[BUFFER_SIZE];
 
     private final RandomAccessFile raf;
 

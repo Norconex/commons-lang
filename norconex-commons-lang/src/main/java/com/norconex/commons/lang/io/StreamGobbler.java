@@ -75,8 +75,7 @@ public class StreamGobbler extends Thread {
                 fireLineStreamed(line);
             }
         } catch (IOException e) {
-            //TODO handle better
-            throw new RuntimeException("Problem gobbling input stream.", e);
+            throw new StreamException("Problem gobbling input stream.", e);
         }
         afterStreaming();
     }
