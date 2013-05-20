@@ -122,22 +122,21 @@ public final class ConfigurationUtil {
         String clazz = null;
         if (node == null) {
             return defaultObject;
-        } else {
-            clazz = node.getString("[@class]", null);
-            if (clazz != null) {
-                try {
-                    obj = (T) Class.forName(clazz).newInstance();
-                } catch (Exception e) {
-                    throw new ConfigurationException(
-                            "This class could not be instantiated: \""
-                            + clazz + "\".", e);
-                }
-            } else {
-                LOG.debug("A configuration entry was found without class "
-                       + "reference where one could have been provided; "
-                       + "using default value:" + defaultObject);
-                obj = defaultObject;
+        }
+        clazz = node.getString("[@class]", null);
+        if (clazz != null) {
+            try {
+                obj = (T) Class.forName(clazz).newInstance();
+            } catch (Exception e) {
+                throw new ConfigurationException(
+                        "This class could not be instantiated: \""
+                        + clazz + "\".", e);
             }
+        } else {
+            LOG.debug("A configuration entry was found without class "
+                   + "reference where one could have been provided; "
+                   + "using default value:" + defaultObject);
+            obj = defaultObject;
         }
         if (obj == null) {
             return defaultObject;

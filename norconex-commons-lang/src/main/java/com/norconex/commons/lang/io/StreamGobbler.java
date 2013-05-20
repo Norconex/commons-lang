@@ -80,18 +80,11 @@ public class StreamGobbler extends Thread {
         afterStreaming();
     }
     /**
-     * Adds a stream listener.
-     * @param listener stream listener
-     */
-    public synchronized void addStreamListener(IStreamListener listener) {
-        listeners.add(0, listener);
-    }
-    /**
      * Adds stream listeners.
      * @param listeners stream listeners
      */
-    public synchronized void addStreamListeners(IStreamListener[] listeners) {
-        this.listeners.addAll(0, Arrays.asList(listeners));
+    public synchronized void addStreamListener(IStreamListener... l) {
+        this.listeners.addAll(0, Arrays.asList(l));
     }
     /**
      * Removes a stream listener.
@@ -105,12 +98,16 @@ public class StreamGobbler extends Thread {
      * Invoked just before steaming begins, in a new thread.
      * Default implementation does nothing.  This method is for implementors. 
      */
-    protected void beforeStreaming() {};
+    protected void beforeStreaming() {
+        // do nothing (for subclasses)
+    }
     /**
      * Invoked just after steaming ended, before the thread dies.
      * Default implementation does nothing.  This method is for implementors. 
      */
-    protected void afterStreaming() {};
+    protected void afterStreaming() {
+        // do nothing (for subclasses)
+    }
 
     private synchronized void fireLineStreamed(String line) {
         if (LOG.isDebugEnabled()) {

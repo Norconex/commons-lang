@@ -141,7 +141,7 @@ public final class ClassFinder {
         }
         Enumeration<JarEntry> entries = jar.entries();
         while (entries.hasMoreElements()) {
-            JarEntry entry = (JarEntry) entries.nextElement();
+            JarEntry entry = entries.nextElement();
             String className = entry.getName();
             className = resolveName(loader, className, superClass);
             if (className != null) {

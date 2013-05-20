@@ -365,7 +365,7 @@ public final class FileUtil {
              }
         }
         reader.close();
-        return (String[]) lines.toArray(ArrayUtils.EMPTY_STRING_ARRAY);
+        return lines.toArray(ArrayUtils.EMPTY_STRING_ARRAY);
     }
 
     /**
@@ -453,7 +453,7 @@ public final class FileUtil {
              }
         }
         reader.close();
-        return (String[]) lines.toArray(ArrayUtils.EMPTY_STRING_ARRAY);
+        return lines.toArray(ArrayUtils.EMPTY_STRING_ARRAY);
     }
 
 
@@ -541,7 +541,7 @@ public final class FileUtil {
         return dateDir;
     }
     
-    private static void assertNumOfLinesToRead(int num) throws IOException {
+    private static void assertNumOfLinesToRead(int num) {
         if (num <= 0) {
             throw new IllegalArgumentException(
                     "Not a valid number to read: " + num);

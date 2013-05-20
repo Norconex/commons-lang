@@ -69,7 +69,7 @@ public final class IOUtil {
         }
         br.close();
         Collections.reverse(lines);
-        return (String[]) lines.toArray(EMPTY_STRINGS);
+        return lines.toArray(EMPTY_STRINGS);
     }
 
     /**
@@ -97,6 +97,6 @@ public final class IOUtil {
             }
         }
         br.close();
-        return (String[]) lines.toArray(EMPTY_STRINGS);
+        return lines.toArray(EMPTY_STRINGS);
     }
 }

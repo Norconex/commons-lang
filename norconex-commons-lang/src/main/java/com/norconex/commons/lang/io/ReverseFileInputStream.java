@@ -72,9 +72,7 @@ public class ReverseFileInputStream extends InputStream {
         return buffer[currentPositionInBuffer];
     }
 
-    /**
-     * @see java.io.InputStream#close()
-     */
+    @Override
     public void close() throws IOException {
         raf.close();
     }

@@ -167,6 +167,7 @@ public class URLNormalizer implements Serializable {
      * Create a new <code>URLNormalizer</code> instance.
      * @param url the url to normalize
      */
+    @SuppressWarnings("unused")
     public URLNormalizer(String url) {
         super();
         // make sure URL is valid

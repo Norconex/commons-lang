@@ -43,6 +43,7 @@ public class RelativeIncludeEventHandler
             RelativeIncludeEventHandler.class);
     private Context context;
     
+    @Override
     @SuppressWarnings("nls")
     public String includeEvent(
             String includeResourcePath,
@@ -84,6 +85,7 @@ public class RelativeIncludeEventHandler
         return inclFile;
     }
 
+    @Override
     public void setContext(Context context) {
         this.context = context;
     }
