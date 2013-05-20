@@ -977,7 +977,7 @@ public class Properties extends TreeMap<String, List<String>> {
         List<String> values = new ArrayList<String>();
         for (Iterator<String> iterator = keySet().iterator(); 
                 iterator.hasNext();) {
-            String pkey = (String) iterator.next();
+            String pkey = iterator.next();
             if (StringUtils.equalsIgnoreCase(pkey, ObjectUtils.toString(key))) {
                 iterator.remove();
             }
