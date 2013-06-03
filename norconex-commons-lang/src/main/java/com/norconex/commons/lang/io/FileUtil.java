@@ -132,7 +132,7 @@ public final class FileUtil {
      *   <li>If file or directory deletion does not work, it will try 10 times,
      *       waiting 1 second between each try to give a chance to whatever
      *       OS lock on the file to go.</li>
-     *   <li>It throws a IOException if the move failed (as opposed to fail
+     *   <li>It throws a IOException if the delete failed (as opposed to fail
      *       silently).</li>
      *   <li>If file is <code>null</code> or does not exist, nothing happens.
      * </ul>
