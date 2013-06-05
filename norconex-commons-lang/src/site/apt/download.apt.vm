@@ -26,8 +26,7 @@ Download
 
   Latest stable release
    
-  * None yet.
-~~  {{{}${currentStableVersion}}} 
+  * {{{http://norconex.s3.amazonaws.com/repo/release/com/norconex/commons/norconex-commons-lang/${currentStableVersion}/norconex-commons-lang-${currentStableVersion}.zip} ${currentStableVersion}}}
 
   []
 
@@ -36,16 +35,6 @@ Download
   * None yet.
 
   []    
-
-  Snapshot releases:
-
-  * {{{http://norconex.s3.amazonaws.com/repo/snapshot/com/norconex/commons/norconex-commons-lang/1.0.0-SNAPSHOT/norconex-commons-lang-1.0.0-20130604.145856-5.zip} 1.0.0-20130604.145856-5.zip}}
-
-  []
-
-  <<Note:>> Snapshot releases are only listed until first stable release.
-  After that, they will be available through the Norconex Snapshot maven
-  repository (see below).
   
 * Source
   

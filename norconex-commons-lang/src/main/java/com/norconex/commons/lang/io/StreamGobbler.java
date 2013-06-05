@@ -81,7 +81,7 @@ public class StreamGobbler extends Thread {
     }
     /**
      * Adds stream listeners.
-     * @param listeners stream listeners
+     * @param l stream listeners
      */
     public synchronized void addStreamListener(IStreamListener... l) {
         this.listeners.addAll(0, Arrays.asList(l));
