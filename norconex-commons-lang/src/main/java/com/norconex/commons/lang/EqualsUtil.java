@@ -21,7 +21,7 @@ import org.apache.commons.lang3.ObjectUtils;
 
 /**
  * Convenience methods related to object equality.
- * @author <a href="mailto:pascal.essiembre@norconex.com">Pascal Essiembre</a>
+ * @author Pascal Essiembre
  */
 public final class EqualsUtil {
 

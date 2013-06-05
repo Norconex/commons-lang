@@ -38,7 +38,7 @@ import com.norconex.commons.lang.Sleeper;
 
 /**
  * Utility methods when dealing with files and directories.
- * @author <a href="mailto:pascal.essiembre@norconex.com">Pascal Essiembre</a>
+ * @author Pascal Essiembre
  */
 public final class FileUtil {
 

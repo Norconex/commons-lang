@@ -19,7 +19,7 @@ package com.norconex.commons.lang.url;
 
 /**
  * Runtime exception thrown when dealing with a URL fails.
- * @author <a href="mailto:pascal.essiembre@norconex.com">Pascal Essiembre</a>
+ * @author Pascal Essiembre
  *
  */
 public class URLException extends RuntimeException {

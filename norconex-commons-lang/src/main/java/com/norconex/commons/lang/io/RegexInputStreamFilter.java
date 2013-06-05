@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 /**
  * Filters lines of text read from an InputStream decorated with 
  * {@link FilteredInputStream}, based on a given regular expression.
- * @author <a href="mailto:pascal.essiembre@norconex.com">Pascal Essiembre</a>
+ * @author Pascal Essiembre
  */
 public class RegexInputStreamFilter implements IInputStreamFilter {
 

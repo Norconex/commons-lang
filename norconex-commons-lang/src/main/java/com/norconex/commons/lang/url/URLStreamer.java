@@ -38,7 +38,7 @@ import org.apache.log4j.Logger;
 
 /**
  * Provides a quick and easy way to stream a URL.
- * @author <a href="mailto:pascal.essiembre@norconex.com">Pascal Essiembre</a>
+ * @author Pascal Essiembre
  */
 @SuppressWarnings("nls")
 public final class URLStreamer {

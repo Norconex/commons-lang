@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
  * If sleeping fails, it throws a runtime exception of type
  * {@link SleeperException}
  * 
- * @author <a href="mailto:pascal.essiembre@norconex.com">Pascal Essiembre</a>
+ * @author Pascal Essiembre
  */
 @SuppressWarnings("nls")
 public final class Sleeper {

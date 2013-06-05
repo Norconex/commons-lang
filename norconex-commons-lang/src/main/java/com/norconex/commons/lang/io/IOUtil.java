@@ -27,7 +27,7 @@ import java.util.List;
 
 /**
  * I/O related utility methods.
- * @author <a href="mailto:pascal.essiembre@norconex.com">Pascal Essiembre</a>
+ * @author Pascal Essiembre
  */
 public final class IOUtil {
 

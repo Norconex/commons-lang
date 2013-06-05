@@ -26,7 +26,7 @@ import java.io.Writer;
  * Provides indications that a class is configurable via XML.  Classes
  * implementing this should be carefull to document XML configuration options
  * propertly (e.g. in Javadoc).
- * @author <a href="mailto:pascal.essiembre@norconex.com">Pascal Essiembre</a>
+ * @author Pascal Essiembre
  */
 public interface IXMLConfigurable extends Serializable {
 

@@ -22,7 +22,7 @@ import java.io.File;
 /**
  * Visitor to be used with <code>FileUtil.visit*</code> methods.
  * @see FileUtil
- * @author <a href="mailto:pascal.essiembre@norconex.com">Pascal Essiembre</a>
+ * @author Pascal Essiembre
  */
 public interface IFileVisitor {
     /**

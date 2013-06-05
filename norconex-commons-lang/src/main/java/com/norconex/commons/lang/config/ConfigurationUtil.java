@@ -33,7 +33,7 @@ import org.junit.Assert;
 
 /**
  * Utility methods when dealing with configuration files.
- * @author <a href="mailto:pascal.essiembre@norconex.com">Pascal Essiembre</a>
+ * @author Pascal Essiembre
  */
 public final class ConfigurationUtil {
     private static final Logger LOG = 

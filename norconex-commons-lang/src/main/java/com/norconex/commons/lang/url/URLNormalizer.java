@@ -130,7 +130,7 @@ import com.norconex.commons.lang.EqualsUtil;
  * Refer to each methods below for description and examples (or click on a
  * normalization name above).
  * </p>
- * @author <a href="mailto:pascal.essiembre@norconex.com">Pascal Essiembre</a>
+ * @author Pascal Essiembre
  */
 public class URLNormalizer implements Serializable {
 

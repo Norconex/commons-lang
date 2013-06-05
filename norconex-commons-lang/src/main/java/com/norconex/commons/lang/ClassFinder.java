@@ -42,7 +42,7 @@ import org.apache.log4j.Logger;
  * <a href="http://commons.apache.org/sandbox/classscan/">Apache ClassScan</a>
  * sandbox project for code that does that. 
  * 
- * @author <a href="mailto:pascal.essiembre@norconex.com">Pascal Essiembre</a>
+ * @author Pascal Essiembre
  */
 @SuppressWarnings("nls")
 public final class ClassFinder {

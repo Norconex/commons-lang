@@ -19,7 +19,7 @@ package com.norconex.commons.lang.io;
 
 /**
  * Runtime exception when dealing with I/O streams.
- * @author <a href="mailto:pascal.essiembre@norconex.com">Pascal Essiembre</a>
+ * @author Pascal Essiembre
  */
 public class StreamException extends RuntimeException {
 

@@ -20,7 +20,7 @@ package com.norconex.commons.lang.io;
 /**
  * Filters lines of text read from an InputStream decorated with 
  * {@link FilteredInputStream}.
- * @author <a href="mailto:pascal.essiembre@norconex.com">Pascal Essiembre</a>
+ * @author Pascal Essiembre
  */
 public interface IInputStreamFilter {
 

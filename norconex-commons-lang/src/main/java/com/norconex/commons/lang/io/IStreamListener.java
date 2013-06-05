@@ -20,7 +20,7 @@ package com.norconex.commons.lang.io;
 /**
  * Listener that is being notified every time a line is processed from a 
  * given stream.
- * @author <a href="mailto:pascal.essiembre@norconex.com">Pascal Essiembre</a>
+ * @author Pascal Essiembre
  * @see StreamGobbler
  */
 public interface IStreamListener {

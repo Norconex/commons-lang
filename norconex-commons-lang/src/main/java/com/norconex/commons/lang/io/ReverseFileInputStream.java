@@ -25,7 +25,7 @@ import java.io.RandomAccessFile;
 /**
  * {@link InputStream} implementation for streaming files in reverse order
  * (from the end of file to its beginning). 
- * @author <a href="mailto:pascal.essiembre@norconex.com">Pascal Essiembre</a>
+ * @author Pascal Essiembre
  */
 @SuppressWarnings("nls")
 public class ReverseFileInputStream extends InputStream {

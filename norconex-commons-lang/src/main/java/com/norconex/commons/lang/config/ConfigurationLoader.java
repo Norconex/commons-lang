@@ -120,7 +120,7 @@ import org.apache.velocity.runtime.RuntimeConstants;
  * <a href="http://velocity.apache.org/engine/devel/user-guide.html">
  * Velocity User Guide</a> for complete syntax and template documentation. 
  * </p>
- * @author <a href="mailto:pascal.essiembre@norconex.com">Pascal Essiembre</a>
+ * @author Pascal Essiembre
  */
 @SuppressWarnings("nls")
 public final class ConfigurationLoader {
