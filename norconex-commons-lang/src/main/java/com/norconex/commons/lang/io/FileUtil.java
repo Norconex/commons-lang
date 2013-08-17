@@ -174,12 +174,12 @@ public final class FileUtil {
         }
         for (String fileStr : files) {
             File file = new File(parentDir.getAbsolutePath() + "/" + fileStr);
-            if (file.list().length == 0) {
+            if (ArrayUtils.isEmpty(file.list())) {
                 FileUtils.deleteQuietly(file);
                 count++;
             } else {
                 count += deleteEmptyDirs(file);
-                if (file.list().length == 0) {
+                if (ArrayUtils.isEmpty(file.list())) {
                     FileUtils.deleteQuietly(file);
                 }
             }

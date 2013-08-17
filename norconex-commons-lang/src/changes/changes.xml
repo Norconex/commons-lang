@@ -6,11 +6,22 @@
     <author email="info@norconex.com">Norconex Inc.</author>
   </properties>
   <body>
+
+    <release version="1.0.1" date="2013-??-??" description="Minor release">
+      <action dev="essiembp" type="add">
+        New DurationUtil class for nice and easy formatting of time durations.
+      </action>
+      <action dev="essiembp" type="fix">
+        Fixed NullPointerException in FileUtil when deleting empty directories.
+      </action>
+    </release>
+
     <release version="1.0.0" date="2013-06-04" description="Open Source release">
       <action dev="essiembp" type="add">
         Starting with this release, Norconex Commons Lang is open-source under 
         GPL3.
       </action>
     </release>
+
   </body>
 </document>
