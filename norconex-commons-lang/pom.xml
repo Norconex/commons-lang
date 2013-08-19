@@ -24,7 +24,6 @@ along with Norconex Commons Lang. If not, see <http://www.gnu.org/licenses/>.
   <artifactId>norconex-commons-lang</artifactId>
   <version>1.0.1-SNAPSHOT</version>
   <packaging>jar</packaging>
-
   <name>Norconex Commons Lang</name>
 
   <properties>
@@ -117,17 +116,17 @@ along with Norconex Commons Lang. If not, see <http://www.gnu.org/licenses/>.
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
-                <version>3.2</version>
+                <version>3.3</version>
                 <dependencies>
                   <dependency>
                     <groupId>org.apache.maven.doxia</groupId>
                     <artifactId>doxia-site-renderer</artifactId>
-                    <version>1.3</version>
+                    <version>1.4</version>
                   </dependency>
                   <dependency>
                     <groupId>org.apache.maven.doxia</groupId>
                     <artifactId>doxia-module-markdown</artifactId>
-                    <version>1.3</version>
+                    <version>1.4</version>
                   </dependency>
                 </dependencies>                
             </plugin>

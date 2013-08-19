@@ -9,6 +9,10 @@
 
     <release version="1.0.1" date="2013-??-??" description="Minor release">
       <action dev="essiembp" type="add">
+        New #toSafeFileName and #fromSafeFileName method on FileUtil for 
+        creating OS friendly file names out of any strings.
+      </action>
+      <action dev="essiembp" type="add">
         New DurationUtil class for nice and easy formatting of time durations.
       </action>
       <action dev="essiembp" type="fix">

@@ -30,8 +30,10 @@ import org.apache.commons.io.Charsets;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 
 import com.norconex.commons.lang.Sleeper;
@@ -48,6 +50,57 @@ public final class FileUtil {
         super();
     }
 
+    /**
+     * Converts any String to a valid file-system file name representation. The 
+     * valid file name is constructed so it can be written to virtually any 
+     * operating system.
+     * Use {@link #fromSafeFileName(String)} to get back the original name.
+     * @param unsafeFileName the file name to make safe.
+     * @return valid file name
+     */
+    public static String toSafeFileName(String unsafeFileName) {
+        if (unsafeFileName == null) {
+            return null;
+        }
+        StringBuilder b = new StringBuilder();
+        for (int i = 0; i < unsafeFileName.length(); i++){
+            char ch = unsafeFileName.charAt(i);
+            if (CharUtils.isAsciiAlphanumeric(ch) || ch == '-' || ch == '.') {
+                b.append(ch);
+            } else {
+                b.append('_');
+                b.append((int) ch);
+                b.append('_');
+            }
+        }
+        return b.toString();
+    }
+    /**
+     * Converts a "safe" file name originally created with 
+     * {@link #toSafeFileName(String)} into its original string.
+     * @param safeFileName the file name to convert to its origianl form
+     * @return original string
+     */
+    public static String fromSafeFileName(String safeFileName) {
+        if (safeFileName == null) {
+            return null;
+        }
+        StringBuilder b = new StringBuilder();
+        for (int i = 0; i < safeFileName.length(); i++){
+            char ch = safeFileName.charAt(i);
+            if (ch == '_') {
+                String intVal = StringUtils.substring(safeFileName, i + 1, 
+                        StringUtils.indexOf(safeFileName, '_', i + 1));
+                b.append((char) NumberUtils.toInt(intVal));
+                i += intVal.length() + 1;
+            } else {
+                b.append(ch);
+            }
+        }
+        return b.toString();
+    }
+    
+    
     /**
      * Moves a file to a directory.   Like {@link #moveFile(File, File)}:
      * <ul>
