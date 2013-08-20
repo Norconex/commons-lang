@@ -34,14 +34,14 @@ Download
 
   Older releases:
   
-  * None yet.
+  * {{{http://norconex.s3.amazonaws.com/repo/release/com/norconex/commons/norconex-commons-lang/1.0.0/norconex-commons-lang-1.0.0.zip} 1.0.0}}
 
   []    
   
 * Source
   
-  Source code can be obtained on GitHub: 
-  {{https://github.com/Norconex/commons/tree/master/norconex-commons-lang}}.
+  Source code can be obtained on GitHub:
+  {{https://github.com/Norconex/commons}}.
   
   Maven users can add the following to their pom.xml:
   

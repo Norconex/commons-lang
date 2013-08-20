@@ -59,6 +59,8 @@ Welcome to Norconex Commons Lang
   such as:
   
     * getting the "head" or the "tail" of a file
+    
+    * converts any strings to OS friendly file names 
 
     * create time-based directory structure
 
@@ -85,3 +87,29 @@ Welcome to Norconex Commons Lang
     * Several URL streaming options
   
   Classes: {{{./apidocs/com/norconex/commons/lang/url/package-summary.html} com.norconex.commons.lang.url.*}}
+
+* Map
+
+  Replacement for Properties, adding getter and setting for all kinds of 
+  class types (integers, boolean, file, etc).
+
+  Classes: {{{./apidocs/com/norconex/commons/lang/map/package-summary.html} com.norconex.commons.map.url.*}}
+
+* Time
+
+  Time-related utility classes.
+
+  Classes: {{{./apidocs/com/norconex/commons/lang/time/package-summary.html} com.norconex.commons.lang.time.*}}
+
+* Others
+
+  Other classes not fitting anyhere.  Includes:
+  
+    * Sleeper class
+    
+    * Ways to test several objects at once for equality
+    
+    * Find classes in directories and jars
+  
+  Classes: {{{./apidocs/com/norconex/commons/lang/package-summary.html} com.norconex.commons.lang.*}}
+  
