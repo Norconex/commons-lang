@@ -20,6 +20,8 @@
             Norconex Inc.
             ------
 
+%{snippet|file=src/main/resources/adsense.txt|verbatim=false}
+
 Welcome to Norconex Commons Lang
 
   Norconex Commons Lang is a generic Java library containing utility classes 
