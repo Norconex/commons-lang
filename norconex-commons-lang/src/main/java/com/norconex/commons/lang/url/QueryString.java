@@ -47,7 +47,7 @@ public class QueryString extends Properties {
     
     /**
      * Default URL character encoding is UTF-8.  
-     * @param urlWithQueryString
+     * @param urlWithQueryString a URL from which to extract a query string.
      */
     public QueryString(URL urlWithQueryString) {
         this(urlWithQueryString.toString(), null);

@@ -72,6 +72,13 @@ public class HttpURL implements Serializable {
         }
     }
 
+    public String getPath() {
+        return path;
+    }
+    public void setPath(String path) {
+        this.path = path;
+    }
+
     public QueryString getQueryString() {
         return queryString;
     }
