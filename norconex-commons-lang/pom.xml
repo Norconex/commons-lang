@@ -302,13 +302,13 @@ along with Norconex Commons Lang. If not, see <http://www.gnu.org/licenses/>.
   <url>http://www.norconex.com/product/commons-lang</url>
   <description>Norconex Commons Lang is a Java library containing utility classes that complements the Java API and are not found in commonly available libraries (such as the great Apache Commons Lang, which it relies on).</description>
   <scm>
-  	<url>https://github.com/Norconex/commons</url>
-  	<connection>scm:git:git@github.com:Norconex/commons.git</connection>
-  	<developerConnection>scm:git:git@github.com:Norconex/commons.git</developerConnection>
+  	<url>https://github.com/Norconex/commons-lang</url>
+  	<connection>scm:git:git@github.com:Norconex/commons-lang.git</connection>
+  	<developerConnection>scm:git:git@github.com:Norconex/commons-lang.git</developerConnection>
   </scm>
   <issueManagement>
   	<system>GitHub</system>
-  	<url>https://github.com/Norconex/commons/issues</url>
+  	<url>https://github.com/Norconex/commons-lang/issues</url>
   </issueManagement>
 
   <developers>
