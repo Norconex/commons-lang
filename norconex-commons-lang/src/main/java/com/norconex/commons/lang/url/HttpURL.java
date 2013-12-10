@@ -26,7 +26,7 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
- * This class can be seen as a mutable URL, which could be a replacement
+ * This class act as a mutable URL, which could be a replacement
  * or "wrapper" to the {@link URL} class.
  * 
  * @author Pascal Essiembre
@@ -36,7 +36,9 @@ public class HttpURL implements Serializable {
 
     private static final long serialVersionUID = -8886393027925815099L;
     
+    /** Default URL HTTP Port. */
     public static final int DEFAULT_HTTP_PORT = 80;
+    /** Default Secure URL HTTP Port. */
     public static final int DEFAULT_HTTPS_PORT = 443;
     
     private QueryString queryString;
@@ -45,13 +47,24 @@ public class HttpURL implements Serializable {
     private String path;
     private String protocol;
     
+    /**
+     * Constructor.
+     */
     public HttpURL() {
         super();
     }
 
+    /**
+     * Constructor.
+     * @param url a URL
+     */
     public HttpURL(URL url) {
         this(url.toString());
     }
+    /**
+     * Constructor.
+     * @param url a URL
+     */
     public HttpURL(String url) {
         if (url.startsWith("http")) {
             URL urlwrap;
@@ -72,56 +85,112 @@ public class HttpURL implements Serializable {
         }
     }
 
+    /**
+     * Gets the URL path.
+     * @return URL path
+     */
     public String getPath() {
         return path;
     }
+    /**
+     * Sets the URL path.
+     * @param path url path
+     */
     public void setPath(String path) {
         this.path = path;
     }
 
+    /**
+     * Gets the URL query string.
+     * @return URL query string, or <code>null</code> if none
+     */
     public QueryString getQueryString() {
         return queryString;
     }
+    /**
+     * Sets the URL query string.
+     * @param queryString the query string
+     */
     public void setQueryString(QueryString queryString) {
         this.queryString = queryString;
     }
     
+    /**
+     * Gets the host portion of the URL.
+     * @return the host portion of the URL
+     */
     public String getHost() {
         return host;
     }
+    /**
+     * Sets the host portion of the URL.
+     * @param host the host portion of the URL
+     */
     public void setHost(String host) {
         this.host = host;
     }
+
+    /**
+     * Gets the protocol portion of the URL (e.g. http, https);
+     * @return the protocol portion of the URL
+     */
     public String getProtocol() {
         return protocol;
     }
+    /**
+     * Sets the protocol portion of the URL.
+     * @param protocol the protocol portion of the URL
+     */
     public void setProtocol(String protocol) {
         this.protocol = protocol;
     }
+    /**
+     * Whether this URL is secure (e.g. https).
+     * @return <code>true</code> if protocol is secure
+     */
     public boolean isSecure() {
         return getProtocol().equalsIgnoreCase("https");
     }
 
+    /**
+     * Gets the URL port.
+     * @return the URL port
+     */
     public int getPort() {
         return port;
     }
+    /**
+     * Sets the URL port.
+     * @param port the URL port
+     */
     public void setPort(int port) {
         this.port = port;
     }
 
-    
+    /**
+     * Gets the last URL path segment without the query string.
+     * If there are segment to return, 
+     * an empty string will be returned instead.
+     * @return the last URL path segment
+     */
     public String getLastPathSegment() {
-        String segment = toString();
+        if (StringUtils.isBlank(path)) {
+            return StringUtils.EMPTY;
+        }
+        String segment = path;
         segment = StringUtils.substringAfterLast(segment, "/");
         return segment;
     }
+    /**
+     * Convert this HttpURL to a regular URL.
+     * @return a URL
+     */
     public URL toURL() {
         String url = toString();
         try {
             return new URL(url);
         } catch (MalformedURLException e) {
-            throw new URLException("Cannot convert to URL: "
-                    + url, e);
+            throw new URLException("Cannot convert to URL: " + url, e);
         }
     }
     @Override

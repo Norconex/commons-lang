@@ -38,7 +38,9 @@ public class FilteredInputStream extends InputStream {
 
     /**
      * Constructor.
-     * @throws IOException
+     * @param is input stream to filter
+     * @param filter the filter to apply
+     * @throws IOException i/o problem
      */
     public FilteredInputStream(InputStream is, IInputStreamFilter filter)
             throws IOException {

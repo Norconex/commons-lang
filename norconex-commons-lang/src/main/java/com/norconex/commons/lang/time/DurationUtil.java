@@ -39,8 +39,6 @@ public final class DurationUtil {
      * locale. All matching units are returned.
      * @param locale locale of time unit names
      * @param duration the duration to format
-     * @param maxUnits the number of different time units to return (zero or 
-     *                 less returns all matching units)
      * @return formatted duration
      */
     public static String formatShort(Locale locale, long duration) {

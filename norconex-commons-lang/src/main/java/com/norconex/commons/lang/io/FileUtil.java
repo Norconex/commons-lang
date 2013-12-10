@@ -347,7 +347,7 @@ public final class FileUtil {
      * @param file the file to read lines from
      * @param numberOfLinesToRead the number of lines to read
      * @return array of file lines
-     * @throws IOException
+     * @throws IOException i/o problem
      */
     public static String[] head(File file, int numberOfLinesToRead)
             throws IOException {
@@ -361,7 +361,7 @@ public final class FileUtil {
      * @param encoding the file encoding
      * @param numberOfLinesToRead the number of lines to read
      * @return array of file lines
-     * @throws IOException
+     * @throws IOException i/o problem
      */
     public static String[] head(File file, String encoding,
             int numberOfLinesToRead) throws IOException {
@@ -375,7 +375,7 @@ public final class FileUtil {
      * @param numberOfLinesToRead the number of lines to read
      * @param stripBlankLines whether to return blank lines or not
      * @return array of file lines
-     * @throws IOException
+     * @throws IOException i/o problem
      */
     public static String[] head(File file, String encoding,
             int numberOfLinesToRead, boolean stripBlankLines)
@@ -391,7 +391,7 @@ public final class FileUtil {
      * @param stripBlankLines whether to return blank lines or not
      * @param filter InputStream filter
      * @return array of file lines
-     * @throws IOException
+     * @throws IOException i/o problem
      */
     public static String[] head(File file, String encoding,
             final int numberOfLinesToRead, boolean stripBlankLines,
@@ -427,7 +427,7 @@ public final class FileUtil {
      * @param file the file to read lines from
      * @param numberOfLinesToRead the number of lines to read
      * @return array of file lines
-     * @throws IOException
+     * @throws IOException i/o problem
      */
     public static String[] tail(File file, int numberOfLinesToRead)
             throws IOException {
@@ -441,7 +441,7 @@ public final class FileUtil {
      * @param encoding the file encoding
      * @param numberOfLinesToRead the number of lines to read
      * @return array of file lines
-     * @throws IOException
+     * @throws IOException i/o problem
      */
     public static String[] tail(File file, String encoding,
             int numberOfLinesToRead) throws IOException {
@@ -456,7 +456,7 @@ public final class FileUtil {
      * @param numberOfLinesToRead the number of lines to read
      * @param stripBlankLines whether to return blank lines or not
      * @return array of file lines
-     * @throws IOException
+     * @throws IOException i/o problem
      */
     public static String[] tail(File file, String encoding,
             int numberOfLinesToRead, boolean stripBlankLines)
@@ -473,7 +473,7 @@ public final class FileUtil {
      * @param stripBlankLines whether to return blank lines or not
      * @param filter InputStream filter
      * @return array of file lines
-     * @throws IOException
+     * @throws IOException i/o problem
      */
     public static String[] tail(File file, String encoding,
             final int numberOfLinesToRead, boolean stripBlankLines,

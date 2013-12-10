@@ -41,6 +41,9 @@ public class QueryString extends Properties {
 
     private final String encoding;
 
+    /**
+     * Constructor.
+     */
     public QueryString() {
         this(CharEncoding.UTF_8);
     }
@@ -52,6 +55,11 @@ public class QueryString extends Properties {
     public QueryString(URL urlWithQueryString) {
         this(urlWithQueryString.toString(), null);
     }
+    /**
+     * Constructor.
+     * @param urlWithQueryString a URL from which to extract a query string.
+     * @param encoding character encoding
+     */
     public QueryString(URL urlWithQueryString, String encoding) {
         this(urlWithQueryString.toString(), encoding);
     }
@@ -146,6 +154,12 @@ public class QueryString extends Properties {
         }
         return StringUtils.substringBefore(url, "?") + toString();
     }
+    /**
+     * Apply this url QueryString on the given URL. If a query string already
+     * exists, it is replaced by this one.
+     * @param url the URL to apply this query string.
+     * @return url with query string added
+     */
     public URL applyOnURL(URL url) {
         if (url == null) {
             return url;

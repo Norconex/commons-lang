@@ -55,6 +55,7 @@ along with Norconex Commons Lang. If not, see <http://www.gnu.org/licenses/>.
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.11</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
     	<groupId>commons-logging</groupId>

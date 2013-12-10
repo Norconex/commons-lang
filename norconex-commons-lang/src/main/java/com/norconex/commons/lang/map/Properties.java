@@ -204,6 +204,7 @@ public class Properties extends TreeMap<String, List<String>> {
      * {@link Properties#DEFAULT_PROPERTIES_MULTIVALUE_DELIMITER}
      * @param   writer     an output character stream writer.
      * @param   comments   a description of the property list.
+     * @throws IOException i/o problem
      * @see Properties#store(Writer, String)
      */
     public void store(Writer writer, String comments) throws IOException {
@@ -221,6 +222,7 @@ public class Properties extends TreeMap<String, List<String>> {
      * @param   comments   a description of the property list.
      * @param delimiter string to used as a separator when joining 
      *        multiple values for the same key.
+     * @throws IOException i/o problem
      * @see Properties#store(Writer, String)
      */
     public void store(Writer writer, String comments, String delimiter)
@@ -244,6 +246,7 @@ public class Properties extends TreeMap<String, List<String>> {
      * {@link Properties#DEFAULT_PROPERTIES_MULTIVALUE_DELIMITER}
      * @param   out      an output stream.
      * @param   comments   a description of the property list.
+     * @throws IOException i/o problem
      * @see Properties#store(OutputStream, String)
      */
     public void store(OutputStream out, String comments) 
@@ -262,6 +265,7 @@ public class Properties extends TreeMap<String, List<String>> {
      * @param   comments   a description of the property list.
      * @param delimiter delimiter string to used as a separator when joining 
      *        multiple values for the same key.
+     * @throws IOException i/o problem
      * @see Properties#store(OutputStream, String)
      */
     public void store(OutputStream out, String comments, String delimiter) 
@@ -281,6 +285,7 @@ public class Properties extends TreeMap<String, List<String>> {
      * @param os the output stream on which to emit the XML document.
      * @param comment a description of the property list, or <code>null</code>
      *        if no comment is desired.
+     * @throws IOException i/o problem
      * @see Properties#storeToXML(OutputStream, String, String)
      */
     public synchronized void storeToXML(
@@ -301,6 +306,7 @@ public class Properties extends TreeMap<String, List<String>> {
      * @param comment a description of the property list, or <code>null</code>
      *        if no comment is desired.
      * @param encoding character encoding
+     * @throws IOException i/o problem
      * @see Properties#storeToXML(OutputStream, String, String)
      */
     public synchronized void storeToXML(OutputStream os, String comment, 
@@ -322,6 +328,7 @@ public class Properties extends TreeMap<String, List<String>> {
      * @param encoding character encoding
      * @param delimiter delimiter string to used as a separator when joining 
      *        multiple values for the same key.
+     * @throws IOException i/o problem
      * @see Properties#storeToXML(OutputStream, String, String)
      */
     public synchronized void storeToXML(OutputStream os, String comment, 
@@ -347,6 +354,7 @@ public class Properties extends TreeMap<String, List<String>> {
      * exact same as the 
      * {@link Properties#load(Reader)} method.
      * @param   reader   the input character stream.
+     * @throws IOException i/o problem
      * @see Properties#load(Reader)
      */
     public synchronized void load(Reader reader)
@@ -365,6 +373,7 @@ public class Properties extends TreeMap<String, List<String>> {
      * @param   reader   the input character stream.
      * @param delimiter delimiter string to used to parse a multi value
      *        key.
+     * @throws IOException i/o problem
      * @see Properties#load(Reader)
      */
     public synchronized void load(Reader reader, String delimiter)
@@ -393,6 +402,7 @@ public class Properties extends TreeMap<String, List<String>> {
      * exact same as the 
      * {@link Properties#load(InputStream)} method.
      * @param   inStream   the input stream.
+     * @throws IOException i/o problem
      * @see Properties#load(InputStream)
      */
     public synchronized void load(InputStream inStream)
@@ -412,6 +422,7 @@ public class Properties extends TreeMap<String, List<String>> {
      * @param   inStream   the input stream.
      * @param delimiter delimiter string to used to parse a multi value
      *        key.
+     * @throws IOException i/o problem
      * @see Properties#load(InputStream)
      */
     public synchronized void load(InputStream inStream, String delimiter)
@@ -429,6 +440,7 @@ public class Properties extends TreeMap<String, List<String>> {
      * exact same as the 
      * {@link Properties#loadFromXML(InputStream)} method.
      * @param in in the input stream from which to read the XML document.
+     * @throws IOException i/o problem
      */
     public synchronized void loadFromXML(InputStream in)
             throws IOException {
@@ -446,6 +458,7 @@ public class Properties extends TreeMap<String, List<String>> {
      * @param in in the input stream from which to read the XML document.
      * @param delimiter delimiter string to used to parse a multi value
      *        key.
+     * @throws IOException i/o problem
      */
     public synchronized void loadFromXML(InputStream in, String delimiter)
             throws IOException {
@@ -476,6 +489,11 @@ public class Properties extends TreeMap<String, List<String>> {
     }
 
     //--- String ---------------------------------------------------------------
+    /**
+     * Gets value as string.
+     * @param key property key
+     * @return the value
+     */
     public final String getString(String key) {
         List<String> list = get(key);
         if (list != null && !list.isEmpty()) {
@@ -483,6 +501,12 @@ public class Properties extends TreeMap<String, List<String>> {
         }
         return null;
     }
+    /**
+     * Gets value as string.
+     * @param key property key
+     * @param defaultValue default value to return when original value is null.
+     * @return the value
+     */
     public final String getString(String key, String defaultValue) {
         String s = getString(key);
         if (s == null) {
@@ -490,6 +514,11 @@ public class Properties extends TreeMap<String, List<String>> {
         }
         return s;
     }
+    /**
+     * Gets values as a list of strings.
+     * @param key property key
+     * @return the values
+     */
     public final List<String> getStrings(String key) {
         List<String> values = get(key);
         if (values == null) {
@@ -498,7 +527,7 @@ public class Properties extends TreeMap<String, List<String>> {
         return new ArrayList<String>(values);
     }
     /**
-     * Sets one or multiple string values.  
+     * Sets one or multiple string values replacing existing ones.  
      * Setting a string with a <code>null</code> value will set a blank string.
      * @param key the key of the value to set
      * @param values the values to set
@@ -516,7 +545,7 @@ public class Properties extends TreeMap<String, List<String>> {
     }
     /**
      * Adds one or multiple string values.  
-     * Setting a string with a <code>null</code> value will set a blank string.
+     * Adding a string with a <code>null</code> value will set a blank string.
      * @param key the key of the value to set
      * @param values the values to set
      */
@@ -536,6 +565,11 @@ public class Properties extends TreeMap<String, List<String>> {
     }
 
     //--- Integer --------------------------------------------------------------
+    /**
+     * Gets value as an integer.
+     * @param key property key
+     * @return the value
+     */
     public final int getInt(String key) {
         try {
             return Integer.parseInt(getString(key));
@@ -544,6 +578,12 @@ public class Properties extends TreeMap<String, List<String>> {
                     "Could not parse integer value.", key, getString(key), e);
         }
     }
+    /**
+     * Gets value as an integer.
+     * @param key property key
+     * @param defaultValue default value to return when original value is null.
+     * @return the value
+     */
     public final int getInt(String key, int defaultValue) {
         String value = getString(key, "" + defaultValue);
         try {
@@ -553,6 +593,11 @@ public class Properties extends TreeMap<String, List<String>> {
                     "Could not parse integer value.", key, value, e);
         }
     }
+    /**
+     * Gets values as a list of integers.
+     * @param key property key
+     * @return the values
+     */
     public final List<Integer> getInts(String key) {
         List<String> values = getStrings(key);
         String errVal = null;
@@ -568,14 +613,29 @@ public class Properties extends TreeMap<String, List<String>> {
                     "Could not parse integer value.", key, errVal, e);
         }
     }
+    /**
+     * Sets one or multiple integer values, replacing existing ones.  
+     * @param key the key of the values to set
+     * @param values the values to set
+     */
     public final void setInt(String key, int... values) {
         setString(key, toStringArray(ArrayUtils.toObject(values)));
     }
+    /**
+     * Adds one or multiple integer values values.  
+     * @param key the key of the values to set
+     * @param values the values to set
+     */
     public final void addInt(String key, int... values) {
         addString(key, toStringArray(ArrayUtils.toObject(values)));
     }
     
     //--- Double ---------------------------------------------------------------
+    /**
+     * Gets value as a double.
+     * @param key property key
+     * @return the value
+     */
     public final double getDouble(String key) {
         try {
             return Double.parseDouble(getString(key));
@@ -584,6 +644,12 @@ public class Properties extends TreeMap<String, List<String>> {
                     "Could not parse double value.", key, getString(key), e);
         }
     }
+    /**
+     * Gets value as a double.
+     * @param key property key
+     * @param defaultValue default value to return when original value is null.
+     * @return the value
+     */
     public final double getDouble(String key, double defaultValue) {
         String value = getString(key, "" + defaultValue);
         try {
@@ -593,6 +659,11 @@ public class Properties extends TreeMap<String, List<String>> {
                     "Could not parse double value.", key, value, e);
         }
     }
+    /**
+     * Gets values as a list of doubles.
+     * @param key property key
+     * @return the values
+     */
     public final List<Double> getDoubles(String key) {
         List<String> values = getStrings(key);
         String errVal = null;
@@ -608,14 +679,29 @@ public class Properties extends TreeMap<String, List<String>> {
                     "Could not parse double value.", key, errVal, e);
         }
     }
+    /**
+     * Sets one or multiple double values, replacing existing ones.  
+     * @param key the key of the values to set
+     * @param values the values to set
+     */
     public final void setDouble(String key, double... values) {
         setString(key, toStringArray(ArrayUtils.toObject(values)));
     }
+    /**
+     * Adds one or multiple double values.  
+     * @param key the key of the values to set
+     * @param values the values to set
+     */
     public final void addDouble(String key, double... values) {
         addString(key, toStringArray(ArrayUtils.toObject(values)));
     }
 
     //--- Long -----------------------------------------------------------------
+    /**
+     * Gets value as a long.
+     * @param key property key
+     * @return the value
+     */
     public final long getLong(String key) {
         try {
             return Long.parseLong(getString(key));
@@ -624,6 +710,12 @@ public class Properties extends TreeMap<String, List<String>> {
                     "Could not parse long value.", key, getString(key), e);
         }
     }
+    /**
+     * Gets value as a long.
+     * @param key property key
+     * @param defaultValue default value to return when original value is null.
+     * @return the value
+     */    
     public final long getLong(String key, long defaultValue) {
         String value = getString(key, "" + defaultValue);
         try {
@@ -633,6 +725,11 @@ public class Properties extends TreeMap<String, List<String>> {
                     "Could not parse long value.", key, value, e);
         }
     }
+    /**
+     * Gets values as a list of longs.
+     * @param key property key
+     * @return the values
+     */
     public final List<Long> getLongs(String key) {
         List<String> values = getStrings(key);
         String errVal = null;
@@ -648,14 +745,29 @@ public class Properties extends TreeMap<String, List<String>> {
                     "Could not parse long value.", key, errVal, e);
         }
     }
+    /**
+     * Sets one or multiple long values, replacing existing ones.  
+     * @param key the key of the values to set
+     * @param values the values to set
+     */
     public final void setLong(String key, long... values) {
         setString(key, toStringArray(ArrayUtils.toObject(values)));
     }
+    /**
+     * Add one or multiple long values.  
+     * @param key the key of the values to set
+     * @param values the values to set
+     */
     public final void addLong(String key, long... values) {
         addString(key, toStringArray(ArrayUtils.toObject(values)));
     }
     
     //--- Float ----------------------------------------------------------------
+    /**
+     * Gets value as a float.
+     * @param key property key
+     * @return the value
+     */    
     public final float getFloat(String key) {
         try {
             return Float.parseFloat(getString(key));
@@ -664,6 +776,12 @@ public class Properties extends TreeMap<String, List<String>> {
                     "Could not parse float value.", key, getString(key), e);
         }
     }
+    /**
+     * Gets value as a float.
+     * @param key property key
+     * @param defaultValue default value to return when original value is null.
+     * @return the value
+     */    
     public final float getFloat(String key, float defaultValue) {
         String value = getString(key, "" + defaultValue);
         try {
@@ -673,6 +791,11 @@ public class Properties extends TreeMap<String, List<String>> {
                     "Could not parse float value.", key, value, e);
         }
     }
+    /**
+     * Gets values as a list of floats.
+     * @param key property key
+     * @return the values
+     */
     public final List<Float> getFloats(String key) {
         List<String> values = getStrings(key);
         String errVal = null;
@@ -688,14 +811,29 @@ public class Properties extends TreeMap<String, List<String>> {
                     "Could not parse float value.", key, errVal, e);
         }
     }
+    /**
+     * Sets one or multiple float values, replacing existing ones.  
+     * @param key the key of the values to set
+     * @param values the values to set
+     */
     public final void setFloat(String key, float... values) {
         setString(key, toStringArray(ArrayUtils.toObject(values)));
     }
+    /**
+     * Adds one or multiple long values.  
+     * @param key the key of the values to set
+     * @param values the values to set
+     */
     public final void addFloat(String key, float... values) {
         addString(key, toStringArray(ArrayUtils.toObject(values)));
     }
     
     //--- BigDecimal -----------------------------------------------------------
+    /**
+     * Gets value as a BigDecimal.
+     * @param key property key
+     * @return the value
+     */    
     public final BigDecimal getBigDecimal(String key) {
         String value = getString(key);
         if (value == null || value.trim().length() == 0) {
@@ -708,6 +846,12 @@ public class Properties extends TreeMap<String, List<String>> {
                     "Could not parse BigDecimal value.", key, value, e);
         }
     }
+    /**
+     * Gets value as a BigDecimal.
+     * @param key property key
+     * @param defaultValue default value to return when original value is null.
+     * @return the value
+     */    
     public final BigDecimal getBigDecimal(String key, BigDecimal defaultValue) {
         BigDecimal value = getBigDecimal(key);
         if (value == null) {
@@ -715,13 +859,11 @@ public class Properties extends TreeMap<String, List<String>> {
         }
         return value;
     }
-    public final void setBigDecimal(String key, BigDecimal value) {
-        if (value == null) {
-            setString(key, "");
-        } else {
-            setString(key, value.toString());
-        }
-    }
+    /**
+     * Gets values as a list of BigDecimals.
+     * @param key property key
+     * @return the values
+     */    
     public final List<BigDecimal> getBigDecimals(String key) {
         List<String> values = getStrings(key);
         String errVal = null;
@@ -737,14 +879,29 @@ public class Properties extends TreeMap<String, List<String>> {
                     "Could not parse BigDecimal value.", key, errVal, e);
         }
     }
+    /**
+     * Sets one or multiple BigDecimal values, replacing existing ones.  
+     * @param key the key of the values to set
+     * @param values the values to set
+     */
     public final void setBigDecimal(String key, BigDecimal... values) {
         setString(key, toStringArray(values));
     }
+    /**
+     * Add one or multiple BigDecimal values.  
+     * @param key the key of the values to set
+     * @param values the values to set
+     */
     public final void addBigDecimal(String key, BigDecimal... values) {
         addString(key, toStringArray(values));
     }
     
     //--- Date -----------------------------------------------------------------
+    /**
+     * Gets value as a date.
+     * @param key property key
+     * @return the value
+     */    
     public final Date getDate(String key) {
         String value = getString(key);
         if (StringUtils.isBlank(value)) {
@@ -757,13 +914,24 @@ public class Properties extends TreeMap<String, List<String>> {
                     "Could not parse Date value.", key, value, e);
         }
     }
+    /**
+     * Gets value as a date.
+     * @param key property key
+     * @param defaultValue default value to return when original value is null.
+     * @return the value
+     */    
     public final Date getDate(String key, Date defaultValue) {
         Date value = getDate(key);
         if (value == null) {
             return defaultValue;
         }
         return value;
-    }    
+    }
+    /**
+     * Gets values as a list of dates.
+     * @param key property key
+     * @return the values
+     */    
     public final List<Date> getDates(String key) {
         List<String> values = getStrings(key);
         String errVal = null;
@@ -779,9 +947,19 @@ public class Properties extends TreeMap<String, List<String>> {
                     "Could not parse Date value.", key, errVal, e);
         }
     }
+    /**
+     * Sets one or multiple date values, replacing existing ones.  
+     * @param key the key of the values to set
+     * @param values the values to set
+     */
     public final void setDate(String key, Date... values) {
         setString(key, datesToStringArray(values));
     }
+    /**
+     * Add one or multiple date values.  
+     * @param key the key of the values to set
+     * @param values the values to set
+     */
     public final void addDate(String key, Date... values) {
         addString(key, datesToStringArray(values));
     }
@@ -797,16 +975,29 @@ public class Properties extends TreeMap<String, List<String>> {
     }
 
     //--- Boolean --------------------------------------------------------------
+    /**
+     * Gets value as a boolean.
+     * @param key property key
+     * @return the value
+     */    
     public final boolean getBoolean(String key) {
         return Boolean.valueOf(getString(key)).booleanValue();
     }
+    /**
+     * Gets value as a boolean.
+     * @param key property key
+     * @param defaultValue default value to return when original value is null.
+     * @return the value
+     */        
     public final boolean getBoolean(String key, boolean defaultValue) {
         return Boolean.valueOf(
                 getString(key, "" + defaultValue)).booleanValue();
-    }    
-    public final void setBoolean(String key, boolean value) {
-        setString(key, Boolean.toString(value));
     }
+    /**
+     * Gets values as a list of booleans.
+     * @param key property key
+     * @return the values
+     */
     public final List<Boolean> getBooleans(String key) {
         List<String> values = getStrings(key);
         List<Boolean> list = new ArrayList<Boolean>(values.size());
@@ -815,14 +1006,29 @@ public class Properties extends TreeMap<String, List<String>> {
         }
         return list;
     }
+    /**
+     * Sets one or multiple boolean values, replacing existing ones.  
+     * @param key the key of the values to set
+     * @param values the values to set
+     */
     public final void setBoolean(String key, boolean... values) {
         setString(key, toStringArray(ArrayUtils.toObject(values)));
     }
+    /**
+     * Adds one or multiple boolean values.  
+     * @param key the key of the values to set
+     * @param values the values to set
+     */
     public final void addBoolean(String key, boolean... values) {
         addString(key, toStringArray(ArrayUtils.toObject(values)));
     }
     
     //--- Locale ---------------------------------------------------------------
+    /**
+     * Gets value as a locale.
+     * @param key property key
+     * @return the value
+     */    
     public final Locale getLocale(String key) {
         try {
             return LocaleUtils.toLocale(getString(key));
@@ -831,6 +1037,12 @@ public class Properties extends TreeMap<String, List<String>> {
                     "Could not parse Locale value.", key, getString(key), e);
         }
     }
+    /**
+     * Gets value as a locale.
+     * @param key property key
+     * @param defaultValue default value to return when original value is null.
+     * @return the value
+     */        
     public final Locale getLocale(String key, Locale defaultValue) {
         try {
             return LocaleUtils.toLocale(getString(key));
@@ -838,6 +1050,11 @@ public class Properties extends TreeMap<String, List<String>> {
             return defaultValue;
         }
     }
+    /**
+     * Gets values as a list of locales.
+     * @param key property key
+     * @return the values
+     */
     public final List<Locale> getLocales(String key) {
         List<String> values = getStrings(key);
         String errVal = null;
@@ -853,9 +1070,19 @@ public class Properties extends TreeMap<String, List<String>> {
                     "Could not parse locale value.", key, errVal, e);
         }
     }
+    /**
+     * Sets one or multiple locale values, replacing existing ones.  
+     * @param key the key of the values to set
+     * @param values the values to set
+     */
     public final void setLocale(String key, Locale... values) {
         setString(key, toStringArray(values));
     }
+    /**
+     * Adds one or multiple locale values.  
+     * @param key the key of the values to set
+     * @param values the values to set
+     */
     public final void addLocale(String key, Locale... values) {
         addString(key, toStringArray(values));
     }
@@ -864,6 +1091,7 @@ public class Properties extends TreeMap<String, List<String>> {
     /**
      * Gets a file, assuming key value is a file system path. 
      * @param key properties key
+     * @return a File
      */
     public final File getFile(String key) {
         String filePath = getString(key);
@@ -877,6 +1105,7 @@ public class Properties extends TreeMap<String, List<String>> {
      * @param key properties key
      * @param defaultValue default file being returned if no file has been
      *        defined for the given key in the properties.
+     * @return a File
      */
     public final File getFile(String key, File defaultValue) {
         File value = getFile(key);
@@ -885,6 +1114,11 @@ public class Properties extends TreeMap<String, List<String>> {
         }
     	return value;
     }
+    /**
+     * Gets values as a list of files.
+     * @param key property key
+     * @return the values
+     */
     public final List<File> getFiles(String key) {
         List<String> values = getStrings(key);
         List<File> list = new ArrayList<File>(values.size());
@@ -893,9 +1127,19 @@ public class Properties extends TreeMap<String, List<String>> {
         }
         return list;
     }
+    /**
+     * Sets one or multiple file values, replacing existing ones.  
+     * @param key the key of the values to set
+     * @param values the values to set
+     */
     public final void setFile(String key, File... values) {
         setString(key, filesToStringArray(values));
     }
+    /**
+     * Adds one or multiple file values.  
+     * @param key the key of the values to set
+     * @param values the values to set
+     */
     public final void addFile(String key, File... values) {
         addString(key, filesToStringArray(values));
     }
@@ -915,6 +1159,7 @@ public class Properties extends TreeMap<String, List<String>> {
      * Gets a class, assuming key value is a fully qualified class name
      * available in the classloader. 
      * @param key properties key
+     * @return initialized class
      */
     public final Class<?> getClass(String key) {
     	String value = getString(key);
@@ -931,6 +1176,7 @@ public class Properties extends TreeMap<String, List<String>> {
      * @param key properties key
      * @param defaultValue default file being returned if no class has been
      *        defined for the given key in the properties.
+     * @return initialized class
      */
     public final Class<?> getClass(String key, Class<?> defaultValue) {
         Class<?> value = getClass(key);
@@ -939,6 +1185,11 @@ public class Properties extends TreeMap<String, List<String>> {
         }
     	return value;
     }
+    /**
+     * Gets values as a list of initialized classes.
+     * @param key property key
+     * @return the values
+     */
     public final List<Class<?>> getClasses(String key) {
         List<String> values = getStrings(key);
         List<Class<?>> list = new ArrayList<Class<?>>(values.size());
@@ -947,15 +1198,23 @@ public class Properties extends TreeMap<String, List<String>> {
         }
         return list;
     }
+    /**
+     * Sets one or multiple class values, replacing existing ones.  
+     * @param key the key of the values to set
+     * @param values the values to set
+     */
     public final void setClass(String key, Class<?>... values) {
         setString(key, classesToStringArray(values));
     }
+    /**
+     * Adds one or multiple class values.  
+     * @param key the key of the values to set
+     * @param values the values to set
+     */
     public final void addClass(String key, Class<?>... values) {
         addString(key, classesToStringArray(values));
     }
 
-    
-    
     @Override
     public final List<String> get(Object key) {
         if (!caseSensitiveKeys) {

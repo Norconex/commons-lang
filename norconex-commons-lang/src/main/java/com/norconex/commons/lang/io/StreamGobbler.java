@@ -57,6 +57,7 @@ public class StreamGobbler extends Thread {
     /**
      * Constructor.
      * @param is input stream
+     * @param type an optional way to identify each line by adding a type
      */
     public StreamGobbler(InputStream is, String type) {
         super("StreamGobbler" + (type == null ? "": "-" + type));

@@ -28,11 +28,19 @@ public class RegexInputStreamFilter implements IInputStreamFilter {
 
     private final Pattern pattern;
     
+    /**
+     * Constructor.
+     * @param regex regular expression
+     */
     public RegexInputStreamFilter(String regex) {
         super();
         this.pattern = Pattern.compile(regex);
     }
 
+    /**
+     * Constructor.
+     * @param pattern regular expression pattern
+     */
     public RegexInputStreamFilter(Pattern pattern) {
         super();
         this.pattern = pattern;

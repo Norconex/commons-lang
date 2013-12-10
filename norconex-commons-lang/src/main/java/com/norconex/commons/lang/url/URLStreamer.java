@@ -49,39 +49,101 @@ public final class URLStreamer {
         super();
     }
 
+    /**
+     * Streams URL content.
+     * @param url the URL to stream
+     * @return a URL content InputStream
+     */
     public static InputStream stream(String url) {
         return stream(url, null);
     }
+    /**
+     * Streams URL content.
+     * @param url the URL to stream
+     * @return a URL content InputStream
+     */
     public static InputStream stream(URL url) {
         return stream(url.toString(), null);
     }
+    /**
+     * Streams URL content.
+     * @param url the URL to stream
+     * @return a URL content InputStream
+     */
     public static InputStream stream(HttpURL url) {
         return stream(url.toString(), null);
     }
 
+    /**
+     * Streams URL content.
+     * @param url the URL to stream
+     * @param creds credentials for a protected URL
+     * @return a URL content InputStream
+     */
     public static InputStream stream(String url, Credentials creds) {
         return stream(url, creds, null);
     }
+    /**
+     * Streams URL content.
+     * @param url the URL to stream
+     * @param creds credentials for a protected URL
+     * @return a URL content InputStream
+     */
     public static InputStream stream(URL url, Credentials creds) {
         return stream(url.toString(), creds, null);
     }
+    /**
+     * Streams URL content.
+     * @param url the URL to stream
+     * @param creds credentials for a protected URL
+     * @return a URL content InputStream
+     */
     public static InputStream stream(HttpURL url, Credentials creds) {
         return stream(url.toString(), creds, null);
     }
     
+    /**
+     * Streams URL content.
+     * @param url the URL to stream
+     * @param creds credentials for a protected URL
+     * @param proxy proxy to use to stream the URL
+     * @return a URL content InputStream
+     */
     public static InputStream stream(
             String url, Credentials creds, HttpHost proxy) {
         return stream(url, creds, proxy, null);
     }
+    /**
+     * Streams URL content.
+     * @param url the URL to stream
+     * @param creds credentials for a protected URL
+     * @param proxy proxy to use to stream the URL
+     * @return a URL content InputStream
+     */
     public static InputStream stream(
             URL url, Credentials creds, HttpHost proxy) {
         return stream(url.toString(), creds, proxy, null);
     }
+    /**
+     * Streams URL content.
+     * @param url the URL to stream
+     * @param creds credentials for a protected URL
+     * @param proxy proxy to use to stream the URL
+     * @return a URL content InputStream
+     */
     public static InputStream stream(
             HttpURL url, Credentials creds, HttpHost proxy) {
         return stream(url.toString(), creds, proxy, null);
     }
 
+    /**
+     * Streams URL content.
+     * @param url the URL to stream
+     * @param creds credentials for a protected URL
+     * @param proxy proxy to use to stream the URL
+     * @param proxyCreds credentials to access the proxy
+     * @return a URL content InputStream
+     */
     public static InputStream stream(
             String url, Credentials creds, HttpHost proxy, 
             Credentials proxyCreds) {
@@ -132,18 +194,40 @@ public final class URLStreamer {
             client.getConnectionManager().shutdown();
         }
     }    
+    /**
+     * Streams URL content.
+     * @param url the URL to stream
+     * @param creds credentials for a protected URL
+     * @param proxy proxy to use to stream the URL
+     * @param proxyCreds credentials to access the proxy
+     * @return a URL content InputStream
+     */
     public static InputStream stream(
             URL url, Credentials creds, HttpHost proxy, 
             Credentials proxyCreds) {
         return stream(url.toString(), creds, proxy, proxyCreds);
     }
+    /**
+     * Streams URL content.
+     * @param url the URL to stream
+     * @param creds credentials for a protected URL
+     * @param proxy proxy to use to stream the URL
+     * @param proxyCreds credentials to access the proxy
+     * @return a URL content InputStream
+     */
     public static InputStream stream(
             HttpURL url, Credentials creds, HttpHost proxy, 
             Credentials proxyCreds) {
         return stream(url.toString(), creds, proxy, proxyCreds);
     }
 
-    
+    /**
+     * Streams URL content to a String.
+     * @param url the URL to stream
+     * @param creds credentials for a protected URL
+     * @param proxy proxy to use to stream the URL
+     * @return a URL content as a String
+     */
     public static String streamToString(
             String url, Credentials creds, HttpHost proxy) {
         StopWatch watch = null;
@@ -164,15 +248,37 @@ public final class URLStreamer {
         }
         return out;
     }
+    /**
+     * Streams URL content to a String.
+     * @param url the URL to stream
+     * @param creds credentials for a protected URL
+     * @param proxy proxy to use to stream the URL
+     * @return a URL content as a String
+     */
     public static String streamToString(
             URL url, Credentials creds, HttpHost proxy) {
         return streamToString(url.toString(), creds, proxy);
     }
+    /**
+     * Streams URL content to a String.
+     * @param url the URL to stream
+     * @param creds credentials for a protected URL
+     * @param proxy proxy to use to stream the URL
+     * @return a URL content as a String
+     */
     public static String streamToString(
             HttpURL url, Credentials creds, HttpHost proxy) {
         return streamToString(url.toString(), creds, proxy);
     }
 
+    /**
+     * Streams URL content to a String.
+     * @param url the URL to stream
+     * @param creds credentials for a protected URL
+     * @param proxy proxy to use to stream the URL
+     * @param proxyCreds credentials to access the proxy
+     * @return a URL content as a String
+     */
     public static String streamToString(
             String url, Credentials creds, HttpHost proxy, 
             Credentials proxyCreds) {
@@ -194,23 +300,57 @@ public final class URLStreamer {
         }
         return out;
     }
+    /**
+     * Streams URL content to a String.
+     * @param url the URL to stream
+     * @param creds credentials for a protected URL
+     * @param proxy proxy to use to stream the URL
+     * @param proxyCreds credentials to access the proxy
+     * @return a URL content as a String
+     */
     public static String streamToString(
             URL url, Credentials creds, HttpHost proxy, 
             Credentials proxyCreds) {
         return streamToString(url.toString(), creds, proxy, proxyCreds);
     }
+    /**
+     * Streams URL content to a String.
+     * @param url the URL to stream
+     * @param creds credentials for a protected URL
+     * @param proxy proxy to use to stream the URL
+     * @param proxyCreds credentials to access the proxy
+     * @return a URL content as a String
+     */
     public static String streamToString(
             HttpURL url, Credentials creds, HttpHost proxy, 
             Credentials proxyCreds) {
         return streamToString(url.toString(), creds, proxy, proxyCreds);
     }
     
+    /**
+     * Streams URL content to a String.
+     * @param url the URL to stream
+     * @param creds credentials for a protected URL
+     * @return a URL content as a String
+     */
     public static String streamToString(String url, Credentials creds) {
         return streamToString(url, creds, null);
     }
+    /**
+     * Streams URL content to a String.
+     * @param url the URL to stream
+     * @param creds credentials for a protected URL
+     * @return a URL content as a String
+     */
     public static String streamToString(URL url, Credentials creds) {
         return streamToString(url.toString(), creds, null);
     }
+    /**
+     * Streams URL content to a String.
+     * @param url the URL to stream
+     * @param creds credentials for a protected URL
+     * @return a URL content as a String
+     */
     public static String streamToString(HttpURL url, Credentials creds) {
         return streamToString(url.toString(), creds, null);
     }

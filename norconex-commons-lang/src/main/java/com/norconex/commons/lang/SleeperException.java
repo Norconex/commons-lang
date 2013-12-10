@@ -29,6 +29,8 @@ public class SleeperException extends RuntimeException {
 
     /**
      * @see Exception#Exception(java.lang.String, java.lang.Throwable)
+     * @param msg exception message
+     * @param cause exception root cause
      */
     public SleeperException(
             final String msg, final InterruptedException cause) {

@@ -148,6 +148,11 @@ public final class ClassFinder {
                 classes.add(className);
             }
         }
+        try {
+            jar.close();
+        } catch (IOException e) {
+            LOG.error("Could not close JAR.", e);
+        }
         return classes;
     }
 

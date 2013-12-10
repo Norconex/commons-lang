@@ -24,12 +24,23 @@ import java.io.Writer;
 
 /**
  * Provides indications that a class is configurable via XML.  Classes
- * implementing this should be carefull to document XML configuration options
- * propertly (e.g. in Javadoc).
+ * implementing this should be careful to document XML configuration options
+ * properly (e.g. in Javadoc).
  * @author Pascal Essiembre
  */
 public interface IXMLConfigurable extends Serializable {
 
+    /**
+     * Load XML configuration values and initialized this object with them.
+     * @param in XML input stream
+     * @throws IOException something went wrong reading the XML
+     */
     void loadFromXML(Reader in) throws IOException;
+    
+    /**
+     * Saves this object as XML.
+     * @param out XML writer
+     * @throws IOException something went wrong writing the XML
+     */
     void saveToXML(Writer out) throws IOException;
 }

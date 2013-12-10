@@ -21,6 +21,7 @@ package com.norconex.commons.lang.io;
  * Runtime exception when dealing with I/O streams.
  * @author Pascal Essiembre
  */
+@SuppressWarnings("javadoc")
 public class StreamException extends RuntimeException {
 
     private static final long serialVersionUID = 2988235417669737473L;
