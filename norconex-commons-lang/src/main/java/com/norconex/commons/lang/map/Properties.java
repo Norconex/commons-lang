@@ -132,7 +132,7 @@ public class Properties extends TreeMap<String, List<String>> {
      * from the given <code>Map</code>.  {@link ObjectUtils#toString(Object)} 
      * is used to convert to convert keys and values to strings, with exception
      * of values being arrays or collections.  In such case, the entry
-     * is considered a mult-value one and each value will be converted
+     * is considered a multi-value one and each value will be converted
      * to individual strings. <code>null</code> keys are ignored.</p>
      * <code>null</code> values are converted to an empty string. 
      * <p>Changes to this instance
@@ -476,18 +476,17 @@ public class Properties extends TreeMap<String, List<String>> {
         p = null;
     }
     /**
-    * Reads a property list (key and element pairs) from the input
-    * string.  Otherwise, the same considerations as
-    * {@link #load(InputStream)} apply.
-    * @param str the string to load
-    * @throws IOException problem loading string
-    */
+     * Reads a property list (key and element pairs) from the input
+     * string.  Otherwise, the same considerations as
+     * {@link #load(InputStream)} apply.
+     * @param str the string to load
+     * @throws IOException problem loading string
+     */
     public void loadFromString(String str) throws IOException {
         InputStream is = new ByteArrayInputStream(str.getBytes());
         load(is);
         is.close();
     }
-
     //--- String ---------------------------------------------------------------
     /**
      * Gets value as string.

@@ -19,6 +19,7 @@ package com.norconex.commons.lang;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -180,7 +181,10 @@ public final class ClassFinder {
 
         try {
             Class<?> clazz = loader.loadClass(className);
-            if (superClass.isAssignableFrom(clazz)) {
+            // load only concrete implementations
+            if (!clazz.isInterface()
+                    && !Modifier.isAbstract(clazz.getModifiers())
+                    && superClass.isAssignableFrom(clazz)) {
                 return clazz.getName();
             }
         } catch (ClassNotFoundException e) {
