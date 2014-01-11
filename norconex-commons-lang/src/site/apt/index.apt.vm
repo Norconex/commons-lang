@@ -33,8 +33,6 @@ Welcome to Norconex Commons Lang
   {{{http://www.norconex.com/product/commons-lang}Norconex Commons Lang}} is
   ${currentStableVersion} ({{{./download.html}download}}). 
   
-  This site documentation reflects version ${project.version}.
-  
   Latest {{{./apidocs/index.html}API documentation}}.
 
   The following is a general description of packages 

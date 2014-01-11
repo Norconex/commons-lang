@@ -174,10 +174,9 @@ along with Norconex Commons Lang. If not, see <http://www.gnu.org/licenses/>.
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>2.9</version>
         <configuration>
-          <stylesheetfile>${basedir}/src/main/resources/javadoc.css</stylesheetfile>
           <overview>${basedir}/src/main/resources/javadoc-overview.html</overview>
           <show>protected</show>
-          <detectLinks>true</detectLinks>
+          <detectLinks>false</detectLinks>
         </configuration>
         <executions>
           <execution>
@@ -264,8 +263,31 @@ along with Norconex Commons Lang. If not, see <http://www.gnu.org/licenses/>.
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>2.9</version>
         <configuration>
-          <stylesheetfile>${basedir}/src/main/resources/javadoc.css</stylesheetfile>
           <overview>${basedir}/src/main/resources/javadoc-overview.html</overview>
+          <header><![CDATA[
+            <style>div.aboutLanguage .siteLink {font-size: 2em;}</style>
+            <span class="siteLink">
+              <a href="http://www.norconex.com/product/commons-lang">Norconex Commons Lang</a>
+            </span>
+            ]]>
+          </header>
+          <footer><![CDATA[
+            <script type="text/javascript">
+              var _gaq = _gaq || [];
+              _gaq.push(['_setAccount', 'UA-23162620-1']);
+              _gaq.push(['_setDomainName', 'norconex.com']);
+              _gaq.push(['_trackPageview']);
+              (function() {
+                var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+                ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+                var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+              })();
+            </script>
+            <a style="font-size: 1.4em;" href="https://github.com/norconex/commons-lang/issues">Submit an Issue</a>
+            &nbsp;&nbsp;|&nbsp;&nbsp; 
+            <a style="font-size: 1.4em;" href="http://www.norconex.com">www.norconex.com</a>
+            ]]>
+          </footer>
           <show>protected</show>
           <detectLinks>true</detectLinks>
         </configuration>
