@@ -21,25 +21,35 @@ package com.norconex.commons.lang.url;
  * Runtime exception thrown when dealing with URL failures.
  * @author Pascal Essiembre
  */
-@SuppressWarnings("javadoc")
 public class URLException extends RuntimeException {
 
     private static final long serialVersionUID = 8484839654375152232L;
 
+    /**
+     * Constructor.
+     */
     public URLException() {
-        super();
     }
-
+    /**
+     * Constructor.
+     * @param message exception message
+     */
     public URLException(String message) {
         super(message);
     }
-
+    /**
+     * Constructor.
+     * @param cause exception cause
+     */
     public URLException(Throwable cause) {
         super(cause);
     }
-
+    /**
+     * Constructor.
+     * @param message exception message
+     * @param cause exception cause
+     */
     public URLException(String message, Throwable cause) {
         super(message, cause);
     }
-
 }

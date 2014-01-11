@@ -21,22 +21,34 @@ package com.norconex.commons.lang.io;
  * Runtime exception when dealing with I/O streams.
  * @author Pascal Essiembre
  */
-@SuppressWarnings("javadoc")
 public class StreamException extends RuntimeException {
 
     private static final long serialVersionUID = 2988235417669737473L;
 
+    /**
+     * Constructor.
+     */
     public StreamException() {
     }
-
+    /**
+     * Constructor.
+     * @param message exception message
+     */
     public StreamException(String message) {
         super(message);
     }
-
+    /**
+     * Constructor.
+     * @param cause exception cause
+     */
     public StreamException(Throwable cause) {
         super(cause);
     }
-
+    /**
+     * Constructor.
+     * @param message exception message
+     * @param cause exception cause
+     */
     public StreamException(String message, Throwable cause) {
         super(message, cause);
     }

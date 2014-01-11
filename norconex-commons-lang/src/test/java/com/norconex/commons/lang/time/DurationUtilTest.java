@@ -22,7 +22,6 @@ import java.util.Locale;
 import org.junit.Assert;
 import org.junit.Test;
 
-@SuppressWarnings("javadoc")
 public class DurationUtilTest {
 
     private static final long SECOND = 1000;

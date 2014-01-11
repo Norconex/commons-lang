@@ -3,7 +3,6 @@ package com.norconex.commons.lang.io;
 import org.junit.Assert;
 import org.junit.Test;
 
-@SuppressWarnings("javadoc")
 public class FileUtilTest {
 
     @Test
