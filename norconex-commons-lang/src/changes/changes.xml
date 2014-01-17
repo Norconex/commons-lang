@@ -7,6 +7,12 @@
   </properties>
   <body>
 
+    <release version="1.3.0" date="2014-??-??" description="Feature release">
+      <action dev="essiembp" type="add">
+        New FileMonitor and IFileChangeListener to be notified of file changes.
+      </action>
+    </release>
+
     <release version="1.2.0" date="2014-01-10" description="Minor release">
       <action dev="essiembp" type="add">
         New getter and setter for URL "path" on HttpURL.
