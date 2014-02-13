@@ -56,14 +56,12 @@ public class FileMonitor {
     }
 
     /**
-     * Adds a monitored file with a {@link FileChangeListener}.
+     * Adds a monitored file with a {@link IFileChangeListener}.
      * 
-     * @param listener
-     *            listener to notify when the file changed.
-     * @param fileName
-     *            name of the file to monitor.
-     * @param period
-     *            polling period in milliseconds.
+     * @param listener listener to notify when the file changed.
+     * @param fileName name of the file to monitor.
+     * @param period   polling period in milliseconds.
+     * @throws FileNotFoundException error with the file
      */
     public void addFileChangeListener(IFileChangeListener listener,
             String fileName, long period) throws FileNotFoundException {
@@ -73,12 +71,10 @@ public class FileMonitor {
     /**
      * Adds a monitored file with a FileChangeListener.
      * 
-     * @param listener
-     *            listener to notify when the file changed.
-     * @param fileName
-     *            name of the file to monitor.
-     * @param period
-     *            polling period in milliseconds.
+     * @param listener listener to notify when the file changed.
+     * @param file     the file to monitor.
+     * @param period   polling period in milliseconds.
+     * @throws FileNotFoundException error with the file
      */
     public void addFileChangeListener(IFileChangeListener listener, File file,
             long period) throws FileNotFoundException {
@@ -91,8 +87,8 @@ public class FileMonitor {
     /**
      * Remove the listener from the notification list.
      * 
-     * @param listener
-     *            the listener to be removed.
+     * @param listener the listener to be removed.
+     * @param fileName name of the file for which to remove the listener
      */
     public void removeFileChangeListener(IFileChangeListener listener,
             String fileName) {
@@ -102,8 +98,8 @@ public class FileMonitor {
     /**
      * Remove the listener from the notification list.
      * 
-     * @param listener
-     *            the listener to be removed.
+     * @param listener the listener to be removed.
+     * @param file     the file for which to remove the listener
      */
     public void removeFileChangeListener(
             IFileChangeListener listener, File file) {

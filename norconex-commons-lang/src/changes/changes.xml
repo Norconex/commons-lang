@@ -11,6 +11,9 @@
       <action dev="essiembp" type="add">
         New FileMonitor and IFileChangeListener to be notified of file changes.
       </action>
+      <action dev="essiembp" type="update">
+        Upgraded Apache HttpClient to version 4.3.1.
+      </action>
     </release>
 
     <release version="1.2.0" date="2014-01-10" description="Minor release">
