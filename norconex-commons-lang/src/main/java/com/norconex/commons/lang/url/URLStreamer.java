@@ -22,17 +22,20 @@ import java.io.InputStream;
 import java.net.URL;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.input.AutoCloseInputStream;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
+import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.conn.params.ConnRoutePNames;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.BasicResponseHandler;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -148,34 +151,42 @@ public final class URLStreamer {
             String url, Credentials creds, HttpHost proxy, 
             Credentials proxyCreds) {
         
-        DefaultHttpClient client = new DefaultHttpClient();
+        CloseableHttpClient client = null;
+        HttpClientBuilder httpBuilder = HttpClientBuilder.create();
         try {
+            CredentialsProvider credsProvider = null;
             if (proxy != null) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Streaming with proxy: "
                             + proxy.getHostName() + ":" + proxy.getPort());
                 }
-                client.getParams().setParameter(
-                        ConnRoutePNames.DEFAULT_PROXY, proxy);
+                httpBuilder.setProxy(proxy);
                 if (proxyCreds != null) {
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("Streaming with proxy credentials.");
                     }
-                    client.getCredentialsProvider().setCredentials(
-                            new AuthScope(proxy.getHostName(), proxy.getPort()),
-                            proxyCreds);
+                    credsProvider = new BasicCredentialsProvider();
+                    credsProvider.setCredentials(new AuthScope(
+                            proxy.getHostName(), proxy.getPort()), proxyCreds);
                 }
             }
-            
             if (creds != null) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Streaming with credentials.");
                 }
-                client.getCredentialsProvider().setCredentials(new AuthScope(
+                if (credsProvider == null) {
+                    credsProvider = new BasicCredentialsProvider();
+                }                    
+                credsProvider.setCredentials(new AuthScope(
                         AuthScope.ANY_HOST, HttpURL.DEFAULT_HTTP_PORT,
                         AuthScope.ANY_REALM), creds);
             }
+            if (credsProvider != null) {
+                httpBuilder.setDefaultCredentialsProvider(credsProvider);
+            }
             
+            final CloseableHttpClient finalClient = httpBuilder.build();
+            client = finalClient;
             HttpGet call = new HttpGet(url);
             HttpResponse response = client.execute(call);
             int statusCode = response.getStatusLine().getStatusCode();
@@ -187,11 +198,20 @@ public final class URLStreamer {
                         + responseHandler.handleResponse(response));
                 throw new IOException("Cannot stream URL: " + url);
             }
-            return response.getEntity().getContent();
+            return new AutoCloseInputStream(response.getEntity().getContent()) {
+                @Override
+                public void close() throws IOException {
+                    super.close();
+                    if (finalClient != null) {
+                        IOUtils.closeQuietly(finalClient);
+                    }
+                }
+            };
         } catch (IOException e) {
+            if (client != null) {
+                IOUtils.closeQuietly(client);
+            }
             throw new URLException("Could not stream URL: " + url, e);
-        } finally {
-            client.getConnectionManager().shutdown();
         }
     }    
     /**
@@ -353,5 +373,33 @@ public final class URLStreamer {
      */
     public static String streamToString(HttpURL url, Credentials creds) {
         return streamToString(url.toString(), creds, null);
+    }
+    
+    /**
+     * Streams URL content to a String.
+     * @param url the URL to stream
+     * @return a URL content as a String
+     * @since 1.3
+     */
+    public static String streamToString(String url) {
+        return streamToString(url, null);
+    }
+    /**
+     * Streams URL content to a String.
+     * @param url the URL to stream
+     * @return a URL content as a String
+     * @since 1.3
+     */
+    public static String streamToString(URL url) {
+        return streamToString(url, null);
+    }    
+    /**
+     * Streams URL content to a String.
+     * @param url the URL to stream
+     * @return a URL content as a String
+     * @since 1.3
+     */
+    public static String streamToString(HttpURL url) {
+        return streamToString(url.toString(), null);
     }
 }
