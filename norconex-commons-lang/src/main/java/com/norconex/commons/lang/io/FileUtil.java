@@ -284,7 +284,50 @@ public final class FileUtil {
             }
         }
     }
-
+    
+    /**
+     * Visits only empty directories under a directory.
+     * @param dir the directory
+     * @param visitor the visitor
+     * @since 1.3.0
+     */
+    public static void visitEmptyDirs(File dir, IFileVisitor visitor) {
+        if (!dir.exists()) {
+            return;
+        } else if (dir.isDirectory()) {
+            String[] children = dir.list();
+            if (children.length == 0) {
+                visitor.visit(dir);
+            } else {
+                for (int i=0; i<children.length; i++) {
+                    visitAllDirs(new File(dir, children[i]), visitor);
+                }
+            }
+        }
+    }
+    /**
+     * Visits only empty directories under a directory.
+     * @param dir the directory
+     * @param visitor the visitor
+     * @param filter an optional filter to restrict the visited directories
+     * @since 1.3.0
+     */
+    public static void visitEmptyDirs(
+            File dir, IFileVisitor visitor, FileFilter filter) {
+        if (!dir.exists()) {
+            return;
+        } else if (dir.isDirectory()) {
+            File[] children = dir.listFiles(filter);
+            if (children.length == 0) {
+                visitor.visit(dir);
+            } else {
+                for (int i=0; i<children.length; i++) {
+                    visitAllDirs(children[i], visitor, filter);
+                }
+            }
+        }
+    }
+    
     /**
      * Visits only directories under a directory.
      * @param dir the directory
@@ -301,7 +344,26 @@ public final class FileUtil {
             }
         }
     }
-
+    /**
+     * Visits only directories under a directory.
+     * @param dir the directory
+     * @param visitor the visitor
+     * @param filter an optional filter to restrict the visited directories
+     * @since 1.3.0
+     */
+    public static void visitAllDirs(
+            File dir, IFileVisitor visitor, FileFilter filter) {
+        if (!dir.exists()) {
+            return;
+        } else if (dir.isDirectory()) {
+            visitor.visit(dir);
+            File[] children = dir.listFiles(filter);
+            for (int i=0; i<children.length; i++) {
+                visitAllDirs(children[i], visitor, filter);
+            }
+        }
+    }
+    
     /**
      * Visits all files (and only files) under a directory, including 
      * sub-directories.

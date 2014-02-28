@@ -18,6 +18,12 @@
       <action dev="essiembp" type="add">
         New FileMonitor and IFileChangeListener to be notified of file changes.
       </action>
+      <action dev="essiembp" type="add">
+        New methods on FileUtil: 
+          #visitEmptyDirs(File, IFileVisitor)
+          #visitEmptyDirs(File, IFileVisitor, FileFilter)
+          #visitAllDirs(File, IFileVisitor, FileFilter)
+      </action>
       <action dev="essiembp" type="update">
         Upgraded Apache HttpClient to version 4.3.2 and Apache Commons 
         Configuration to 1.10.  Refactored affected code.
