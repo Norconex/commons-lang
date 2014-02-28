@@ -244,11 +244,10 @@ public final class FileUtil {
             public void visit(File file) {
                 if (date == null || FileUtils.isFileOlder(file, date)) {
                     String[] children = file.list();
-                    if (file.isDirectory() && 
-                            (children == null || children.length == 0)) {
-                        if (!file.delete()) {
-                            LOG.error("Could not be delete directory: " + file);
-                        }
+                    if (file.isDirectory()
+                            && (children == null || children.length == 0)
+                            && !file.delete()) {
+                        LOG.error("Could not be delete directory: " + file);
                     }
                     dirCount.increment();
                 }
