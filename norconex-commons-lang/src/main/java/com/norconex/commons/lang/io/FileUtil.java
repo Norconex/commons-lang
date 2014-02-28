@@ -28,13 +28,15 @@ import java.util.LinkedList;
 
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.commons.lang3.time.DateFormatUtils;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 import com.norconex.commons.lang.Sleeper;
 
@@ -44,6 +46,8 @@ import com.norconex.commons.lang.Sleeper;
  */
 public final class FileUtil {
 
+    private static final Logger LOG = LogManager.getLogger(FileUtil.class);
+    
     private static final int MAX_FILE_OPERATION_ATTEMPTS = 10;
     
     private FileUtil() {
@@ -220,26 +224,40 @@ public final class FileUtil {
      * @return the number of deleted directories
      */
     public static int deleteEmptyDirs(File parentDir) {
-        int count = 0;
-        String[] files = parentDir.list(DirectoryFileFilter.INSTANCE);
-        if (files == null) {
-            return count;
-        }
-        for (String fileStr : files) {
-            File file = new File(parentDir.getAbsolutePath() + "/" + fileStr);
-            if (ArrayUtils.isEmpty(file.list())) {
-                FileUtils.deleteQuietly(file);
-                count++;
-            } else {
-                count += deleteEmptyDirs(file);
-                if (ArrayUtils.isEmpty(file.list())) {
-                    FileUtils.deleteQuietly(file);
-                }
-            }
-        }
-        return count;
+        return deleteEmptyDirs(parentDir, null);
     }
 
+    /**
+     * Deletes all directories that are empty and are <b>older</b> 
+     * than the given date.  If the date is <code>null</code>, all empty 
+     * directories will be deleted, regardless of their date.
+     * @param parentDir the directory where to start looking for empty 
+     *        directories
+     * @param date the date to compare empty directories against
+     * @return the number of deleted directories
+     * @since 1.3.0
+     */
+    public static int deleteEmptyDirs(File parentDir, final Date date) {
+        final MutableInt dirCount = new MutableInt(0);
+        visitEmptyDirs(parentDir, new IFileVisitor() {
+            @Override
+            public void visit(File file) {
+                if (date == null || FileUtils.isFileOlder(file, date)) {
+                    String[] children = file.list();
+                    if (file.isDirectory() && 
+                            (children == null || children.length == 0)) {
+                        if (!file.delete()) {
+                            LOG.error("Could not be delete directory: " + file);
+                        }
+                    }
+                    dirCount.increment();
+                }
+            }
+        });
+        return dirCount.intValue();
+    }
+
+    
     /**
      * Create all parent directories for a file if they do not exists.  
      * If they exist already, this method does nothing.  This method assumes
@@ -279,8 +297,10 @@ public final class FileUtil {
             return;
         } else if (dir.isDirectory()) {
             File[] children = dir.listFiles(filter);
-            for (int i=0; i<children.length; i++) {
-                visitAllDirsAndFiles(children[i], visitor, filter);
+            if (children != null) {
+                for (int i=0; i<children.length; i++) {
+                    visitAllDirsAndFiles(children[i], visitor, filter);
+                }
             }
         }
     }
@@ -296,7 +316,7 @@ public final class FileUtil {
             return;
         } else if (dir.isDirectory()) {
             String[] children = dir.list();
-            if (children.length == 0) {
+            if (children == null || children.length == 0) {
                 visitor.visit(dir);
             } else {
                 for (int i=0; i<children.length; i++) {
@@ -318,7 +338,7 @@ public final class FileUtil {
             return;
         } else if (dir.isDirectory()) {
             File[] children = dir.listFiles(filter);
-            if (children.length == 0) {
+            if (children == null || children.length == 0) {
                 visitor.visit(dir);
             } else {
                 for (int i=0; i<children.length; i++) {
@@ -339,8 +359,10 @@ public final class FileUtil {
         } else if (dir.isDirectory()) {
             visitor.visit(dir);
             String[] children = dir.list();
-            for (int i=0; i<children.length; i++) {
-                visitAllDirs(new File(dir, children[i]), visitor);
+            if (children != null) {
+                for (int i=0; i<children.length; i++) {
+                    visitAllDirs(new File(dir, children[i]), visitor);
+                }
             }
         }
     }
@@ -358,8 +380,10 @@ public final class FileUtil {
         } else if (dir.isDirectory()) {
             visitor.visit(dir);
             File[] children = dir.listFiles(filter);
-            for (int i=0; i<children.length; i++) {
-                visitAllDirs(children[i], visitor, filter);
+            if (children != null) {
+                for (int i=0; i<children.length; i++) {
+                    visitAllDirs(children[i], visitor, filter);
+                }
             }
         }
     }
@@ -375,8 +399,10 @@ public final class FileUtil {
             return;
         } else if (dir.isDirectory()) {
             String[] children = dir.list();
-            for (int i=0; i<children.length; i++) {
-                visitAllFiles(new File(dir, children[i]), visitor);
+            if (children != null) {
+                for (int i=0; i<children.length; i++) {
+                    visitAllFiles(new File(dir, children[i]), visitor);
+                }
             }
         } else {
             visitor.visit(dir);
@@ -395,8 +421,10 @@ public final class FileUtil {
             return;
         } else if (dir.isDirectory()) {
             File[] children = dir.listFiles(filter);
-            for (int i=0; i<children.length; i++) {
-                visitAllFiles(children[i], visitor, filter);
+            if (children != null) {
+                for (int i=0; i<children.length; i++) {
+                    visitAllFiles(children[i], visitor, filter);
+                }
             }
         } else {
             visitor.visit(dir);
