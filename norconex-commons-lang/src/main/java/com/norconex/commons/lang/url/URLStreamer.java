@@ -187,33 +187,13 @@ public final class URLStreamer {
             
             final CloseableHttpClient finalClient = httpBuilder.build();
             client = finalClient;
-            HttpGet call = new HttpGet(url);
-            HttpResponse response = client.execute(call);
-            int statusCode = response.getStatusLine().getStatusCode();
-            if (statusCode != HttpStatus.SC_OK) {
-                ResponseHandler<String> responseHandler = 
-                        new BasicResponseHandler();
-                LOG.error("Invalid HTTP response: " + statusCode
-                        + ". Response body is: " 
-                        + responseHandler.handleResponse(response));
-                throw new IOException("Cannot stream URL: " + url);
-            }
-            return new AutoCloseInputStream(response.getEntity().getContent()) {
-                @Override
-                public void close() throws IOException {
-                    super.close();
-                    if (finalClient != null) {
-                        IOUtils.closeQuietly(finalClient);
-                    }
-                }
-            };
+            return responseInputStream(url, finalClient);
         } catch (IOException e) {
-            if (client != null) {
-                IOUtils.closeQuietly(client);
-            }
+            IOUtils.closeQuietly(client);
             throw new URLException("Could not stream URL: " + url, e);
         }
-    }    
+    }
+
     /**
      * Streams URL content.
      * @param url the URL to stream
@@ -401,5 +381,31 @@ public final class URLStreamer {
      */
     public static String streamToString(HttpURL url) {
         return streamToString(url.toString(), null);
+    }
+    
+    private static InputStream responseInputStream(
+            String url, 
+            final CloseableHttpClient httpClient) 
+                    throws IOException {
+        HttpGet call = new HttpGet(url);
+        HttpResponse response = httpClient.execute(call);
+        int statusCode = response.getStatusLine().getStatusCode();
+        if (statusCode != HttpStatus.SC_OK) {
+            ResponseHandler<String> responseHandler = 
+                    new BasicResponseHandler();
+            LOG.error("Invalid HTTP response: " + statusCode
+                    + ". Response body is: " 
+                    + responseHandler.handleResponse(response));
+            throw new IOException("Cannot stream URL: " + url);
+        }
+        return new AutoCloseInputStream(response.getEntity().getContent()) {
+            @Override
+            public void close() throws IOException {
+                super.close();
+                if (httpClient != null) {
+                    IOUtils.closeQuietly(httpClient);
+                }
+            }
+        };
     }
 }

@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URL;
 import java.util.Hashtable;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -29,14 +30,15 @@ import java.util.TimerTask;
  * {@link IFileChangeListener}.
  * 
  * @author Pascal Essiembre
+ * @since 1.3.0
  */
-public class FileMonitor {
+public final class FileMonitor {
 
-    private static final FileMonitor instance = new FileMonitor();
+    private static final FileMonitor INSTANCE = new FileMonitor();
 
     private Timer timer;
 
-    private Hashtable<String, FileMonitorTask> timerEntries;
+    private Map<String, FileMonitorTask> timerEntries;
 
     /**
      * Gets the file monitor instance.
@@ -44,7 +46,7 @@ public class FileMonitor {
      * @return file monitor instance
      */
     public static FileMonitor getInstance() {
-        return instance;
+        return INSTANCE;
     }
 
     /**
@@ -127,18 +129,17 @@ public class FileMonitor {
      * File monitoring task.
      */
     class FileMonitorTask extends TimerTask {
-        IFileChangeListener listener;
-
-        File monitoredFile;
-
-        long lastModified;
+        private IFileChangeListener listener;
+        private File monitoredFile;
+        private long lastModified;
 
         public FileMonitorTask(IFileChangeListener listener, File file)
                 throws FileNotFoundException {
             this.listener = listener;
             this.lastModified = 0;
             monitoredFile = file;
-            if (!monitoredFile.exists()) { // but is it on CLASSPATH?
+            // but is it on CLASSPATH?
+            if (!monitoredFile.exists()) {
                 URL fileURL = listener.getClass().getClassLoader()
                         .getResource(file.toString());
                 if (fileURL != null) {
@@ -151,9 +152,9 @@ public class FileMonitor {
         }
 
         public void run() {
-            long lastModified = monitoredFile.lastModified();
-            if (lastModified != this.lastModified) {
-                this.lastModified = lastModified;
+            long fileLastModified = monitoredFile.lastModified();
+            if (fileLastModified != this.lastModified) {
+                this.lastModified = fileLastModified;
                 fireFileChangeEvent(this.listener, monitoredFile);
             }
         }

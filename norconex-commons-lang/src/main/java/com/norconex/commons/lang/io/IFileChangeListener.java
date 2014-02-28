@@ -22,6 +22,7 @@ import java.io.File;
 /**
  * Listener for file changes, to be used with a {@link FileMonitor}.
  * @author Pascal Essiembre
+ * @since 1.3.0
  */
 public interface IFileChangeListener {
     /**
