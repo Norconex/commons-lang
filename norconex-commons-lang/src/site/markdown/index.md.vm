@@ -1,0 +1,99 @@
+#*
+ Copyright 2010-2013 Norconex Inc.
+ 
+ This file is part of Norconex Commons Lang.
+ 
+ Norconex Commons Lang is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+ 
+ Norconex Commons Lang is distributed in the hope that it will be useful, 
+ but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+ 
+ You should have received a copy of the GNU General Public License
+ along with Norconex Commons Lang. If not, see <http://www.gnu.org/licenses/>.
+*#
+#set($h1 = '#')
+#set($h2 = '##')
+#set($h3 = '###')
+#set($h4 = '####')
+<head><title>Norconex Commons Lang</title><meta name="Author" content="Norconex Inc." /></head> 
+
+<p class="lead">
+<a href="download.html" class="btn btn-primary btn-large">Download ${currentStableVersion}</a> 
+<br/><br/>
+Norconex Commons Lang is a generic Java library containing utility classes 
+that complements the Java API and are not found in commonly available 
+libraries. Amongst other things, it is used by other Norconex open-source 
+projects.
+</p>
+
+
+
+*********************************************************
+
+$h2 Configuration
+
+Make configurable classes and XML configuration files more portable, reusable
+and manageable.  Turn your configuration files into templates that can
+interpret variables defined in text files and include 
+reusable configuration fragments.  
+  
+Classes: [com.norconex.commons.lang.config.*](./apidocs/com/norconex/commons/lang/config/package-summary.html)
+
+$h2 Map
+
+Replacement for Properties, adding getter and setting for all kinds of 
+class types (integers, boolean, file, etc).
+
+Classes: [com.norconex.commons.map.url.*](./apidocs/com/norconex/commons/lang/map/package-summary.html)
+
+$h2 URL
+
+URL-related utility classes offering features such as:
+  
+  * Mutable URL
+  * QueryString class for easy setting/getting of query parameters
+  * URL normalization
+  * Several URL streaming options
+  
+Classes: [com.norconex.commons.lang.url.*](./apidocs/com/norconex/commons/lang/url/package-summary.html)
+
+$h2 Time
+
+Time-related utility classes, including:
+
+  * YearMonthDay class for dates without time
+  * YearMonthDayInterval class for a date range without time
+
+Classes: [com.norconex.commons.lang.time.*](./apidocs/com/norconex/commons/lang/time/package-summary.html)
+
+$h2 I/O
+
+Provides features for dealing with streams, files and directories,
+such as:
+  
+  * getting the "head" or the "tail" of a file
+  * converts any strings to OS friendly file names 
+  * create time-based directory structure
+  * recursively browse directories using the visitor pattern
+  * filter input streams using input stream filters (e.g. regex-based filter)
+  * stream a file in reverse
+  * create listeners that get notified when input stream is being read
+  * monitor files for changes
+
+Classes: [com.norconex.commons.lang.io.*](./apidocs/com/norconex/commons/lang/io/package-summary.html)
+  
+$h2 Others
+
+Other classes not fitting anyhere.  Includes:
+  
+  * Sleeper class
+  * Ways to test several objects at once for equality
+  * Find classes in directories and jars
+  
+Classes: [com.norconex.commons.lang.*](./apidocs/com/norconex/commons/lang/package-summary.html)
+  

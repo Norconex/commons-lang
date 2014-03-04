@@ -17,74 +17,139 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Norconex Commons Lang. If not, see <http://www.gnu.org/licenses/>.
 -->
-<project xmlns="http://maven.apache.org/DECORATION/1.3.0"
+<project name="Norconex Commons Lang" 
+  xmlns="http://maven.apache.org/DECORATION/1.3.0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/DECORATION/1.3.0 http://maven.apache.org/xsd/decoration-1.3.0.xsd"
-  name="Norconex Commons Lang">
-  <bannerLeft>
-    <name>Norconex Commons Lang</name>
-    <src>images/leftbanner.png</src>
-    <href>http://www.norconex.com</href>
-  </bannerLeft>
-  <bannerRight>
-    <src>images/rightbanner.png</src>
-    <href>http://www.norconex.com/product/commons-lang</href>
-  </bannerRight>
+  xsi:schemaLocation="http://maven.apache.org/DECORATION/1.3.0 http://maven.apache.org/xsd/decoration-1.3.0.xsd">
+
   <skin>
-    <groupId>org.apache.maven.skins</groupId>
-    <artifactId>maven-fluido-skin</artifactId>
-    <version>1.3.0</version>
+    <groupId>lt.velykis.maven.skins</groupId>
+    <artifactId>reflow-maven-skin</artifactId>
+    <version>1.1.0</version>
   </skin>
+  
   <custom>
-    <fluidoSkin>
-      <sideBarEnabled>true</sideBarEnabled>
-      <sourceLineNumbersEnabled>true</sourceLineNumbersEnabled>
-      <twitter>
-        <user>Norconex</user>
-        <showUser>false</showUser>
-        <showFollowers>false</showFollowers>
-      </twitter>
-      <facebookLike />
-      <googlePlusOne />
-    </fluidoSkin>
-  </custom>  
+    <reflowSkin>
+      <protocolRelativeURLs>false</protocolRelativeURLs>
+      <highlightJs>false</highlightJs>
+      <theme>site</theme>
+      <localResources>true</localResources>
+      <brand>
+        <name><![CDATA[
+          <span class="color-highlight">Norconex</span> Commons Lang
+          ]]>
+        </name>
+        <href>http://www.norconex.com/product/commons-lang/index.html</href>
+      </brand>
+      <slogan><![CDATA[
+          Open-Source Generic Java Library
+          ]]>
+      </slogan>
+      <titleTemplate>%2$s | %1$s</titleTemplate>
+      <topNav>Documentation|Contribute</topNav>
+      <bottomNav>
+        <column>Main</column>
+        <column>Maven Documentation</column>
+        <column>Norconex Products</column>
+      </bottomNav>
+      <bottomDescription><![CDATA[
+          <a href="http://www.norconex.com"><img src="./images/norconex_logo.png"></a><br />
+          Norconex Commons Lang is released and actively maintained by 
+          <a href="http://www.norconex.com">Norconex</a>. 
+          ]]>
+      </bottomDescription>
+      <skinAttribution>false</skinAttribution>
+
+      <breadcrumbs>false</breadcrumbs>
+      <markPageHeader>false</markPageHeader>
+      <toc>none</toc>
+      <smoothScroll>true</smoothScroll>
+
+      <pages>
+
+        <index>
+          <breadcrumbs>false</breadcrumbs>
+          <sections>
+            <body />
+            <columns>2</columns>
+          </sections>
+        </index>
+
+        <download>
+          <breadcrumbs>false</breadcrumbs>
+          <sections>
+            <columns>2</columns>
+          </sections>
+        </download>
+
+        <contribute>
+          <sections>
+            <columns>2</columns>
+          </sections>
+        </contribute>
+
+      </pages>
+      
+      <endContent>
+        <script src="$resourcePath/js/highlight.min.js"></script>
+      </endContent>
+    </reflowSkin>
+  </custom>
+  
+  <bannerLeft>
+    <name><![CDATA[
+      <span class="color-highlight">Norconex</span> Commons Lang
+      ]]>
+    </name>
+    <href>http://www.norconex.com/product/commons-lang/index.html</href>
+  </bannerLeft>
+  <!-- 
+  <bannerRight>
+    <src>images/come up with logo</src>
+  </bannerRight>
+   -->
+  <version position="none "/>
+  <publishDate position="navigation-bottom"/>
   
   <body>
+    <head>
+       <link rel="stylesheet" href="$resourcePath/css/highlight.min.css" />
+    </head>
     <links>
-      <item name="Norconex" href="http://www.norconex.com" />
+      <item name="Download" href="download.html"/>
       <item name="Support" href="support.html"/>
     </links>
 
-    <menu name="Overview">
-      <item name="Introduction" href="index.html"/>
+    <menu name="Documentation">
       <item name="Javadoc (Latest release)" href="apidocs/index.html"/>
-      <item name="License" href="license.html"/>
-      <item name="Download" href="download.html"/>
-      <item name="Support" href="support.html"/>
-      <!-- <item name="FAQ" href="faq.html"/>-->
-      <!-- <item name="Release Notes" href="release-notes.html" /> -->
-      <!-- <item name="Road Map" href="roadmap.html" /> -->
+      <item name="Release Notes" href="changes-report.html" />
     </menu>
 
-    <menu ref="reports"/>
+    <menu name="Contribute">
+      <item name="Issues" href="https://github.com/norconex/collector-http/issues"/>
+      <item name="Fork on GitHub"  href="https://github.com/Norconex/collector-http"/>
+    </menu>
+
+    <menu name="Main">
+      <item name="Support" href="support.html"/>
+      <item name="Licensing" href="license.html"/>
+      <item name="Norconex Site"  href="http://www.norconex.com"/>
+    </menu>
+
+    <menu name="Maven Documentation" ref="reports"/>
 
     <menu name="Norconex Products">
-      <item name="HTTP Collector"  href="http://www.norconex.com/product/collector-http"/>
       <item name="Search Analytics" href="http://www.norconex.com/analytics"/>
-      <item name="JEF" href="http://www.norconex.com/product/jef"/>
-      <item name="Importer" href="http://www.norconex.com/product/importer"/>
+      <item name="HTTP Collector" href="http://www.norconex.com/product/collector-http"/>
       <item name="Committer" href="http://www.norconex.com/product/committer"/>
+      <item name="Importer"  href="http://www.norconex.com/product/importer"/>
+      <item name="JEF" href="http://www.norconex.com/product/jef"/>
+      <item name="Commons Lang" href="http://www.norconex.com/product/commons-lang"/>
     </menu>
+
 
   </body>
 
   <googleAnalyticsAccountId>UA-23162620-1</googleAnalyticsAccountId>
-
-  <poweredBy>
-    <logo name="Maven" href="http://maven.apache.org/" position="right"
-          img="images/build-by-maven-white.png"/>
-    <logo name="GPL" href="http://www.gnu.org/licenses/gpl.html" position="right"
-          img="images/gplv3-88x31.png"/>
-  </poweredBy>
 
 </project>
