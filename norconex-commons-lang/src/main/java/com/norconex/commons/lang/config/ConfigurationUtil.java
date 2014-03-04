@@ -29,7 +29,6 @@ import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.junit.Assert;
 
 /**
  * Utility methods when dealing with configuration files.
@@ -329,8 +328,10 @@ public final class ConfigurationUtil {
 
         tempFile.delete();
 
-        Assert.assertEquals("Saved and loaded XML are not the same.", 
-                xmlConfiurable, readConfigurable);
+        if (!xmlConfiurable.equals(readConfigurable)) {
+            throw new RuntimeException(
+                    "Saved and loaded XML are not the same.");
+        }
     }
 
     // This method is because the regular configuration at MUST have 1
