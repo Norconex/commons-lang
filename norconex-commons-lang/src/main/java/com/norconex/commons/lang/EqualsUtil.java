@@ -35,6 +35,7 @@ public final class EqualsUtil {
      * @param targets one or more objects to be tested with source for equality
      * @return <code>true</code> if any of the target objects is equal
      */
+    @SuppressWarnings("deprecation")
     public static boolean equalsAny(Object source, Object... targets) {
         if (targets == null) {
             return source == null;
@@ -53,6 +54,7 @@ public final class EqualsUtil {
      * @param targets one or more objects to be tested with source for equality
      * @return <code>true</code> if all of the target objects is equal
      */
+    @SuppressWarnings("deprecation")
     public static boolean equalsAll(Object source, Object... targets) {
         if (targets == null) {
             return source == null;

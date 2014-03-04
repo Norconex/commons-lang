@@ -144,6 +144,7 @@ public class Properties extends TreeMap<String, List<String>> {
      *        return all combined values or remove all keys where keys are 
      *        equal, ignoring case, to the key supplied. 
      */
+    @SuppressWarnings("deprecation")
     public Properties(Map<?, ?> defaults, boolean caseSensitiveKeys) {
         super();
         this.caseSensitiveKeys = caseSensitiveKeys;
@@ -1214,6 +1215,7 @@ public class Properties extends TreeMap<String, List<String>> {
         addString(key, classesToStringArray(values));
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public final List<String> get(Object key) {
         if (!caseSensitiveKeys) {
@@ -1227,6 +1229,7 @@ public class Properties extends TreeMap<String, List<String>> {
         }
         return values;
     }
+    @SuppressWarnings("deprecation")
     @Override
     public final List<String> remove(Object key) {
         if (!caseSensitiveKeys) {
@@ -1261,6 +1264,7 @@ public class Properties extends TreeMap<String, List<String>> {
         LOG.error(message, cause);
         return new PropertiesException(message, cause);
     }
+    @SuppressWarnings("deprecation")
     private String[] toStringArray(Object[] array) {
         if (array == null) {
             return null;
