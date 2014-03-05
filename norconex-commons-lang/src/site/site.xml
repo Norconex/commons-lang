@@ -126,8 +126,8 @@ along with Norconex Commons Lang. If not, see <http://www.gnu.org/licenses/>.
     </menu>
 
     <menu name="Contribute">
-      <item name="Issues" href="https://github.com/norconex/collector-http/issues"/>
-      <item name="Fork on GitHub"  href="https://github.com/Norconex/collector-http"/>
+      <item name="Issues" href="https://github.com/norconex/commons-lang/issues"/>
+      <item name="Fork on GitHub"  href="https://github.com/Norconex/commons-lang"/>
     </menu>
 
     <menu name="Main">
@@ -144,7 +144,6 @@ along with Norconex Commons Lang. If not, see <http://www.gnu.org/licenses/>.
       <item name="Committer" href="http://www.norconex.com/product/committer"/>
       <item name="Importer"  href="http://www.norconex.com/product/importer"/>
       <item name="JEF" href="http://www.norconex.com/product/jef"/>
-      <item name="Commons Lang" href="http://www.norconex.com/product/commons-lang"/>
     </menu>
 
 
