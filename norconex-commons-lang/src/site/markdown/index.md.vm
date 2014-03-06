@@ -20,7 +20,7 @@
 #set($h2 = '##')
 #set($h3 = '###')
 #set($h4 = '####')
-<head><title>Norconex Commons Lang</title><meta name="Author" content="Norconex Inc." /></head> 
+<head><title>Home</title><meta name="Author" content="Norconex Inc." /></head> 
 
 <p class="lead">
 <a href="download.html" class="btn btn-primary btn-large">Download ${currentStableVersion}</a> 
