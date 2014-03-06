@@ -20,7 +20,7 @@
 #set($h2 = '##')
 #set($h3 = '###')
 #set($h4 = '####')
-<head><title>Suppor</title><meta name="Author" content="Norconex Inc." /></head> 
+<head><title>Support</title><meta name="Author" content="Norconex Inc." /></head> 
 
 
 $h2 Community Support
