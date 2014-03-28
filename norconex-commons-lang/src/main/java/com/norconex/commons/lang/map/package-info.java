@@ -16,6 +16,6 @@
  * along with Norconex Commons Lang. If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- * Enhanced versions of Map.
+ * Enhanced and/or useful versions of Map.
  */
 package com.norconex.commons.lang.map;

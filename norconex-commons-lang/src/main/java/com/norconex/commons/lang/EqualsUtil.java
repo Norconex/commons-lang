@@ -17,7 +17,7 @@
  */
 package com.norconex.commons.lang;
 
-import org.apache.commons.lang3.ObjectUtils;
+import java.util.Objects;
 
 /**
  * Convenience methods related to object equality.
@@ -35,13 +35,12 @@ public final class EqualsUtil {
      * @param targets one or more objects to be tested with source for equality
      * @return <code>true</code> if any of the target objects is equal
      */
-    @SuppressWarnings("deprecation")
     public static boolean equalsAny(Object source, Object... targets) {
         if (targets == null) {
             return source == null;
         }
         for (Object object : targets) {
-            if (ObjectUtils.equals(source, object)) {
+            if (Objects.equals(source, object)) {
                 return true;
             }
         }
@@ -54,13 +53,12 @@ public final class EqualsUtil {
      * @param targets one or more objects to be tested with source for equality
      * @return <code>true</code> if all of the target objects is equal
      */
-    @SuppressWarnings("deprecation")
     public static boolean equalsAll(Object source, Object... targets) {
         if (targets == null) {
             return source == null;
         }
         for (Object object : targets) {
-            if (!ObjectUtils.equals(source, object)) {
+            if (!Objects.equals(source, object)) {
                 return false;
             }
         }

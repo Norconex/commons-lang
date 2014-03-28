@@ -7,6 +7,20 @@
   </properties>
   <body>
 
+    <release version="1.4.0" date="2014-??-??" description="Feature release">
+      <action dev="essiembp" type="update">
+        Added new classes for listening to java.util.Map changes: 
+        ObservableMap, MapChangeSupport, IMapChangeListener, and MapChangeEvent.
+      </action>
+      <action dev="essiembp" type="update">
+        Now requires Java 7 or higher.
+      </action>
+      <action dev="essiembp" type="update">
+        Refactored Properties to extend ObservableMap so changes can 
+        optionally be tracked.
+      </action>
+    </release>
+
     <release version="1.3.1" date="2014-03-06" description="Maintenance release">
       <action dev="essiembp" type="fix">
         Fixed missing localized text for DurationUtil.
