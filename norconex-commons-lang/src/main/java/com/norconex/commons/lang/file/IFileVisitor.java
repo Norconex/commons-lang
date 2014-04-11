@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Norconex Commons Lang. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.norconex.commons.lang.io;
+package com.norconex.commons.lang.file;
 
 import java.io.File;
 
@@ -23,9 +23,7 @@ import java.io.File;
  * Visitor to be used with <code>FileUtil.visit*</code> methods.
  * @see FileUtil
  * @author Pascal Essiembre
- * @deprecated Use {@link com.norconex.commons.lang.file.IFileVisitor}
  */
-@Deprecated
 public interface IFileVisitor {
     /**
      * Visits a file or directory.

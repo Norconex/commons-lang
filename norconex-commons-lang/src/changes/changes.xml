@@ -8,9 +8,18 @@
   <body>
 
     <release version="1.4.0" date="2014-??-??" description="Feature release">
-      <action dev="essiembp" type="update">
+      <action dev="essiembp" type="add">
+        New ContentType class to represent a file media/MIME type and obtain
+        its usual name and file extension.
+      </action>
+      <action dev="essiembp" type="add">
         Added new classes for listening to java.util.Map changes: 
         ObservableMap, MapChangeSupport, IMapChangeListener, and MapChangeEvent.
+      </action>
+      <action dev="essiembp" type="update">
+        FileMonitor, FileUtil, IFileChangeListener, IFileVisitor are now 
+        found under the com.norconex.commons.lang.file package.  Classes
+        have been deprecated in former location.
       </action>
       <action dev="essiembp" type="update">
         Now requires Java 7 or higher.

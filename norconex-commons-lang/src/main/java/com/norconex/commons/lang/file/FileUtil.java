@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Norconex Commons Lang. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.norconex.commons.lang.io;
+package com.norconex.commons.lang.file;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -39,13 +39,13 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
 import com.norconex.commons.lang.Sleeper;
+import com.norconex.commons.lang.io.IInputStreamFilter;
+import com.norconex.commons.lang.io.ReverseFileInputStream;
 
 /**
  * Utility methods when dealing with files and directories.
  * @author Pascal Essiembre
- * @deprecated Use {@link com.norconex.commons.lang.file.FileUtil}
  */
-@Deprecated
 public final class FileUtil {
 
     private static final Logger LOG = LogManager.getLogger(FileUtil.class);
