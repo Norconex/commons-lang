@@ -53,6 +53,7 @@ public final class ContentType implements Serializable {
 
     public static final ContentType HTML = new ContentType("text/html");
     public static final ContentType PDF = new ContentType("application/pdf");
+    public static final ContentType XML = new ContentType("application/xml");
 
     //TODO how many do we want? Do we list them all??
     
