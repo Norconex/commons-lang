@@ -22,7 +22,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.util.List;
 
+import org.apache.commons.collections4.map.ListOrderedMap;
 import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
 
@@ -32,6 +34,9 @@ import com.norconex.commons.lang.map.Properties;
 /**
  * Provides utility methods for getting and setting attributes on 
  * a URL query string. 
+ * <p/>
+ * <b>Since 1.4</b>, query string parameters are stored and returned in the
+ * order they were provided.
  * @author Pascal Essiembre
  */
 @SuppressWarnings("nls")
@@ -85,7 +90,7 @@ public class QueryString extends Properties {
      * @param encoding character encoding
      */
     public QueryString(String urlWithQueryString, String encoding) {
-        super();
+        super(new ListOrderedMap<String, List<String>>());
         if (StringUtils.isBlank(encoding)) {
             this.encoding = CharEncoding.UTF_8;
         } else {
