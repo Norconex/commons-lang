@@ -9,12 +9,13 @@ public class ContentTypeTest {
     public void testGetDisplayName() {
         Assert.assertEquals("Adobe Portable Document Format",
                 ContentType.PDF.getDisplayName());
-        Assert.assertEquals("Open eBook Publication Structure", ContentType.get(
-                "application/oebps-package+xml").getDisplayName());
+        Assert.assertEquals("Open eBook Publication Structure", 
+                ContentType.valueOf(
+                        "application/oebps-package+xml").getDisplayName());
         Assert.assertEquals(".pdf", ContentType.PDF.getExtension());
         Assert.assertEquals(".wpd", 
-                ContentType.get("application/wordperfect").getExtension());
+                ContentType.valueOf("application/wordperfect").getExtension());
         Assert.assertArrayEquals(new String[]{ ".wpd", ".wp", ".wp5", ".wp6" },
-                ContentType.get("application/wordperfect").getExtensions());
+                ContentType.valueOf("application/wordperfect").getExtensions());
     }
 }
