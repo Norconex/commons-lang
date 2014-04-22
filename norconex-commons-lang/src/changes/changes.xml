@@ -9,6 +9,14 @@
 
     <release version="1.4.0" date="2014-??-??" description="Feature release">
       <action dev="essiembp" type="add">
+        New DataUnit class to perform data unit (KB, MB, GB, etc) conversions
+        much like Java TimeUnit class.
+      </action>
+      <action dev="essiembp" type="add">
+        New DataUnitFormatter to format any data unit ot a human-readable format
+        taking into account locale and decimals.
+      </action>
+      <action dev="essiembp" type="add">
         New ContentType class to represent a file media/MIME type and obtain
         its usual name and file extension.
       </action>

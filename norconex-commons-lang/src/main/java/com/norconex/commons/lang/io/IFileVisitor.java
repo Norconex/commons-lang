@@ -23,7 +23,8 @@ import java.io.File;
  * Visitor to be used with <code>FileUtil.visit*</code> methods.
  * @see FileUtil
  * @author Pascal Essiembre
- * @deprecated Use {@link com.norconex.commons.lang.file.IFileVisitor}
+ * @deprecated Since 1.4.0, use 
+ *     {@link com.norconex.commons.lang.file.IFileVisitor}
  */
 @Deprecated
 public interface IFileVisitor {

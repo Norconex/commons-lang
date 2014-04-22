@@ -43,7 +43,7 @@ import com.norconex.commons.lang.Sleeper;
 /**
  * Utility methods when dealing with files and directories.
  * @author Pascal Essiembre
- * @deprecated Use {@link com.norconex.commons.lang.file.FileUtil}
+ * @deprecated Since 1.4.0, use {@link com.norconex.commons.lang.file.FileUtil}
  */
 @Deprecated
 public final class FileUtil {

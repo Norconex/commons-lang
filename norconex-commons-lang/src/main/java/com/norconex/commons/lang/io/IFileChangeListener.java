@@ -23,7 +23,8 @@ import java.io.File;
  * Listener for file changes, to be used with a {@link FileMonitor}.
  * @author Pascal Essiembre
  * @since 1.3.0
- * @deprecated Use {@link com.norconex.commons.lang.file.IFileChangeListener}
+ * @deprecated Since 1.4.0, use 
+ *             {@link com.norconex.commons.lang.file.IFileChangeListener}
  */
 @Deprecated
 public interface IFileChangeListener {

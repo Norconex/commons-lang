@@ -31,7 +31,8 @@ import java.util.TimerTask;
  * 
  * @author Pascal Essiembre
  * @since 1.3.0
- * @deprecated Use {@link com.norconex.commons.lang.file.FileMonitor}
+ * @deprecated Since 1.4.0, use 
+ *     {@link com.norconex.commons.lang.file.FileMonitor}
  */
 @Deprecated
 public final class FileMonitor {
