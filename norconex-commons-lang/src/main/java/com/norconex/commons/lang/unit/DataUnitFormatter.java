@@ -108,12 +108,13 @@ public class DataUnitFormatter implements Serializable {
         if (decimalPrecision > 0 && unit.ordinal() < finalUnit.ordinal()) {
             int previousOrdinal = finalUnit.ordinal() -1;
             if (previousOrdinal >= 0) {
-                DataUnit previousUnit = DATA_UNITS[previousOrdinal];
                 long originalBytes = unit.toBytes(amount); 
                 long finalBytes = finalUnit.toBytes(finalAmount);
-                long remainder = DataUnit.B.convert(
-                        originalBytes - finalBytes, previousUnit);
-                decimals = (remainder * 100) / 1024;
+                long diff = originalBytes - finalBytes;
+                DataUnit previousUnit = DATA_UNITS[previousOrdinal];
+                long remainder = previousUnit.convert(diff, DataUnit.B);
+                long base = remainder * (long) Math.pow(10, decimalPrecision);
+                decimals = base / 1024;
             }
         }
 
