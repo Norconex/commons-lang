@@ -122,7 +122,7 @@ public final class ContentType implements Serializable {
             LOG.warn("Could not find display name for content type: "
                     + contentType);
         }
-        return contentType;
+        return "[" + contentType + "]";
     }
 
     /**
