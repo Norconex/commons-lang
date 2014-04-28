@@ -13,6 +13,9 @@
         much like Java TimeUnit class.
       </action>
       <action dev="essiembp" type="add">
+        New PercentFormatter to format fraction values as percentage string. 
+      </action>
+      <action dev="essiembp" type="add">
         New DataUnitFormatter to format any data unit ot a human-readable format
         taking into account locale and decimals.
       </action>
