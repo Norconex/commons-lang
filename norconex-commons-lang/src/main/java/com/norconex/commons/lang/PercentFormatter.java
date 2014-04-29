@@ -1,5 +1,6 @@
 package com.norconex.commons.lang;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.NumberFormat;
@@ -10,8 +11,10 @@ import java.util.Locale;
  * @author Pascal Essiembre
  * @since 1.4.0
  */
-public class PercentFormatter {
+public class PercentFormatter implements Serializable {
 
+    private static final long serialVersionUID = 3403860660255503075L;
+    
     private final Locale locale;
     private final int decimalPrecision;
 
