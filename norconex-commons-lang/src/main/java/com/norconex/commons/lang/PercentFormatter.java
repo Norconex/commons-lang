@@ -19,6 +19,16 @@ public class PercentFormatter implements Serializable {
     private final int decimalPrecision;
 
     /**
+     * Creates a new percent formatter with no decimal precision and using
+     * the default system locale.
+     */
+    public PercentFormatter() {
+        super();
+        this.decimalPrecision = 0;
+        this.locale = null;
+    }
+    
+    /**
      * Creates a new percent formatter for the given local and decimal 
      * precision.
      * @param decimalPrecision maximum number of decimals to display
@@ -43,6 +53,7 @@ public class PercentFormatter implements Serializable {
     /**
      * Formats a fraction as percentage string.
      * @param fraction the value to format as percentage
+     * @return formatted percent string
      */
     public String format(double fraction) {
         return format(fraction, decimalPrecision, locale);
@@ -55,6 +66,7 @@ public class PercentFormatter implements Serializable {
      * @param denominator the divider
      * @param decimalPrecision maximum number of decimals to display
      * @param locale a locale
+     * @return formatted percent string
      */
     public static String format(double numerator, double denominator, 
             int decimalPrecision, Locale locale) {
@@ -70,6 +82,7 @@ public class PercentFormatter implements Serializable {
      * @param fraction the value to format as percentage
      * @param decimalPrecision maximum number of decimals to display
      * @param locale a locale
+     * @return formatted percent string
      */
     public static String format(
             double fraction, int decimalPrecision, Locale locale) {
