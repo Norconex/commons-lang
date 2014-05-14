@@ -28,6 +28,9 @@
         ObservableMap, MapChangeSupport, IMapChangeListener, and MapChangeEvent.
       </action>
       <action dev="essiembp" type="update">
+        Properties now uses UTF-8 to load and store itself.
+      </action>
+      <action dev="essiembp" type="update">
         FileMonitor, FileUtil, IFileChangeListener, IFileVisitor are now 
         found under the com.norconex.commons.lang.file package.  Classes
         have been deprecated in former location.

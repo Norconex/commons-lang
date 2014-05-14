@@ -40,6 +40,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.LocaleUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.LogManager;
@@ -239,7 +240,7 @@ public class Properties extends ObservableMap<String, List<String>>
     }
     /**
      * Writes this {@link Map} (key and element pairs) to the output character
-     * stream in a format suitable for using the 
+     * stream as UTF-8 in a format suitable for using the 
      * {@link #load(InputStream, String)} method. 
      * If a key only has one value, then this method behavior is the
      * exact same as the {@link Properties#store(OutputStream, String)} method.
@@ -254,7 +255,8 @@ public class Properties extends ObservableMap<String, List<String>>
      */
     public void store(OutputStream out, String comments, String delimiter) 
             throws IOException {
-        store(new OutputStreamWriter(out, "8859_1"), comments, delimiter);
+        store(new OutputStreamWriter(
+                out, CharEncoding.UTF_8), comments, delimiter);
     }
     /**
      * Emits an XML document representing all of the properties contained
@@ -275,7 +277,7 @@ public class Properties extends ObservableMap<String, List<String>>
     public synchronized void storeToXML(
             OutputStream os, String comment)
             throws IOException {
-        storeToXML(os, comment, "UTF-8");        
+        storeToXML(os, comment, CharEncoding.UTF_8);        
     }
     /**
      * Emits an XML document representing all of the properties contained
@@ -421,7 +423,7 @@ public class Properties extends ObservableMap<String, List<String>>
     
     /**
      * Reads a property list (key and element pairs) from the input
-     * character stream in a simple line-oriented format.
+     * character stream (UTF-8) in a simple line-oriented format.
      * If a key was stored with multiple values using a delimiter, this,
      * method will split these values appropriately assuming the delimiter is
      * {@link Properties#DEFAULT_MULTIVALUE_DELIMITER}
@@ -435,12 +437,12 @@ public class Properties extends ObservableMap<String, List<String>>
      */
     public synchronized void load(InputStream inStream)
             throws IOException {
-        load(new InputStreamReader(inStream, "8859_1"),
+        load(new InputStreamReader(inStream, CharEncoding.UTF_8),
                 DEFAULT_MULTIVALUE_DELIMITER);
     }
     /**
      * Reads a property list (key and element pairs) from the input
-     * character stream in a simple line-oriented format.
+     * character stream (UTF8) in a simple line-oriented format.
      * If a key was stored with multiple values using a delimiter, 
      * this method will split these values appropriately provided the 
      * supplied delimiter is the same. If the key value was stored as a
@@ -455,7 +457,7 @@ public class Properties extends ObservableMap<String, List<String>>
      */
     public synchronized void load(InputStream inStream, String delimiter)
             throws IOException {
-        load(new InputStreamReader(inStream, "8859_1"), delimiter);
+        load(new InputStreamReader(inStream, CharEncoding.UTF_8), delimiter);
     }
     /**
      * Loads all of the properties represented by the XML document on the
