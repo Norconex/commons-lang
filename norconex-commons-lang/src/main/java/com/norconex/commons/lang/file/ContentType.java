@@ -40,9 +40,8 @@ import org.apache.log4j.Logger;
  */
 public final class ContentType implements Serializable {
 
-    //TODO consider creating a ContentTypeFamily class, where display names
-    //would be less specific (e.g. Microsoft Office Document), or consider
-    //adding a getFamilyName method or similar.
+    //TODO allow easy way to overwrite display/family names
+    // (e.g. by checking for a CustomContentType-[...].properties
     
     private static final long serialVersionUID = 6416074869536512030L;
 
@@ -51,12 +50,11 @@ public final class ContentType implements Serializable {
     private static final Map<String, ContentType> REGISTRY = 
         new HashMap<String, ContentType>();
 
+    //TODO how many do we want? Do we list them all??
     public static final ContentType TEXT = new ContentType("text/plain");
     public static final ContentType HTML = new ContentType("text/html");
     public static final ContentType PDF = new ContentType("application/pdf");
     public static final ContentType XML = new ContentType("application/xml");
-    
-    //TODO how many do we want? Do we list them all??
     
     private String contentType;
 
@@ -91,7 +89,7 @@ public final class ContentType implements Serializable {
 
     /**
      * Gets a name for the content type suitable for display to a user.
-     * The system locale is used to defined the langage of the display name.
+     * The system locale is used to defined the language of the display name.
      * If no name has been defined for a content type, the raw content type 
      * is returned (equivalent to {@link #toString()}).
      * @return display name
@@ -119,12 +117,53 @@ public final class ContentType implements Serializable {
                     ContentType.class.getName() + "-names",
                     safeLocale).getString(contentType);
         } catch (MissingResourceException e) {
-            LOG.warn("Could not find display name for content type: "
+            LOG.debug("Could not find display name for content type: "
                     + contentType);
         }
         return "[" + contentType + "]";
     }
 
+    /**
+     * Gets the family, or category this content type belongs to, for display
+     * to a user.
+     * The system locale is used to defined the language of the display name.
+     * If no name has been defined for a content type, the raw content type 
+     * is returned (equivalent to {@link #toString()}).
+     * @return display name
+     */
+    public String getFamilyName() {
+        return getDisplayName(null);
+    }
+    /**
+     * Gets the family, or category this content type belongs to, for display
+     * to a user.
+     * If the locale is {@code null}, the system locale is used.
+     * If no name has been defined for a content type with the provided locale, 
+     * the name defaults to English.
+     * If no name has been defined for any locale, the raw content type
+     * is returned (equivalent to {@link #toString()}).
+     * @param locale the locale to use to get the display name
+     * @return display name
+     */
+    public String getFamilyName(Locale locale) {
+        try {
+            ResourceBundle bundle = getFamilyBundle(locale);
+            if (bundle.containsKey(contentType)) {
+                return bundle.getString(contentType);
+            }
+            String group = 
+                    "DEFAULT." + StringUtils.substringBefore(contentType, "/");
+            if (bundle.containsKey(group)) {
+                return bundle.getString(group);
+            }
+            return bundle.getString("DEFAULT");
+        } catch (MissingResourceException e) {
+            LOG.debug("Could not find family name for content type: "
+                    + contentType);
+        }
+        return "[" + contentType + "]";
+    }
+    
     /**
      * Gets the file extension usually associated with this content type.
      * If the content type has more than one extension, the first one
@@ -161,6 +200,15 @@ public final class ContentType implements Serializable {
      */
     public boolean matches(String contentType) {
         return this.contentType.equals(StringUtils.trim(contentType));
+    }
+    
+    private ResourceBundle getFamilyBundle(Locale locale) {
+        Locale safeLocale = locale;
+        if (safeLocale == null) {
+            safeLocale = Locale.getDefault();
+        }
+        return ResourceBundle.getBundle(
+                    ContentType.class.getName() + "-families", safeLocale);
     }
     
     @Override

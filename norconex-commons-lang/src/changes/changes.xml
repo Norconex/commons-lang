@@ -21,7 +21,7 @@
       </action>
       <action dev="essiembp" type="add">
         New ContentType class to represent a file media/MIME type and obtain
-        its usual name and file extension.
+        its usual name, family name, and file extension(s).
       </action>
       <action dev="essiembp" type="add">
         Added new classes for listening to java.util.Map changes: 
