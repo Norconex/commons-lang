@@ -188,7 +188,7 @@ public final class ContentType implements Serializable {
                     + "-extensions").getString(contentType);
             return StringUtils.split(ext, ',');
         } catch (MissingResourceException e) {
-            LOG.warn("Could not find extension(s) for content type: "
+            LOG.debug("Could not find extension(s) for content type: "
                     + contentType);
         }
         return ArrayUtils.EMPTY_STRING_ARRAY;
