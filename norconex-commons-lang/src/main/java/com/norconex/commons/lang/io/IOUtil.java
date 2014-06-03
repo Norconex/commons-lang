@@ -45,8 +45,8 @@ public final class IOUtil {
      * Gets the last lines from an input stream.  This method is null-safe.
      * If the input stream is null or empty, an empty string array will
      * be returned.  For files, one should use
-     * {@link FileUtil#tail(java.io.File, int)} which is more efficient,
-     * especially on large files.
+     * {@link com.norconex.commons.lang.file.FileUtil#tail(java.io.File, int)} 
+     * which is more efficient, especially on large files.
      * @param is input stream
      * @param lineQty maximum number of lines to return
      * @return lines as a string array

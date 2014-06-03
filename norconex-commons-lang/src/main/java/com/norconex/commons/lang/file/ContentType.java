@@ -196,6 +196,7 @@ public final class ContentType implements Serializable {
     
     /**
      * Whether the given string matches this content type.
+     * @param contentType the content type
      * @return {@code true} if the given string matches this content type
      */
     public boolean matches(String contentType) {
