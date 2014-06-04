@@ -42,6 +42,10 @@
         Refactored Properties to extend ObservableMap so changes can 
         optionally be tracked.
       </action>
+      <action dev="essiembp" type="fix">
+        Fix junit test for converting IP to domain. Was failing due to wikipedia
+        IP change.
+      </action>
     </release>
 
     <release version="1.3.1" date="2014-03-06" description="Maintenance release">
