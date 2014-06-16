@@ -42,6 +42,10 @@
         Refactored Properties to extend ObservableMap so changes can 
         optionally be tracked.
       </action>
+      <action dev="essiembp" type="update">
+        URLNormalizer no longer rejects URLs with spaces in them. It will now
+        convert spaces to %20 and log a warning.
+      </action>
       <action dev="essiembp" type="fix">
         Fix junit test for converting IP to domain. Was failing due to wikipedia
         IP change.
