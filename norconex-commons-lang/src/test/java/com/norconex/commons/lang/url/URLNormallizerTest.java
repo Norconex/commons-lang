@@ -140,10 +140,10 @@ public class URLNormallizerTest {
     
     @Test
     public void testReplaceIPWithDomainName() {
-        s = "http://208.80.152.201/wiki/Main_Page";
+        s = "http://208.80.154.224/wiki/Main_Page";
         t = null;
         Assert.assertTrue(
-               n(s).replaceIPWithDomainName().toString().contains("wikipedia"));
+               n(s).replaceIPWithDomainName().toString().contains("wikimedia"));
         s = "http://wikipedia.org/wiki/Main_Page";
         t = "http://wikipedia.org/wiki/Main_Page";
         assertEquals(t, n(s).replaceIPWithDomainName().toString());
