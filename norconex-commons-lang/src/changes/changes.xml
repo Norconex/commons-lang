@@ -7,6 +7,13 @@
   </properties>
   <body>
 
+    <release version="1.3.2" date="2014-06-16" description="Maintenance release">
+      <action dev="essiembp" type="update">
+        URLNormalizer no longer rejects URLs with spaces in them. It will now
+        convert spaces to %20 and log a warning.
+      </action>
+    </release>
+      
     <release version="1.3.1" date="2014-03-06" description="Maintenance release">
       <action dev="essiembp" type="fix">
         Fixed missing localized text for DurationUtil.

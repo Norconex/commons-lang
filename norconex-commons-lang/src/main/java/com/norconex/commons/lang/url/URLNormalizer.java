@@ -170,8 +170,14 @@ public class URLNormalizer implements Serializable {
     public URLNormalizer(String url) {
         super();
         // make sure URL is valid
+        String fixedURL = url;
         try {
-            new URI(url);
+            if (StringUtils.contains(fixedURL, " ")) {
+                LOG.warn("URL syntax is invalid as it contains space "
+                        + "character(s). Replacing them with %20. URL: " + url);
+                fixedURL = StringUtils.replace(fixedURL, " ", "%20");
+            }
+            new URI(fixedURL);
         } catch (URISyntaxException e) {
             throw new URLException("Invalid URL syntax: " + url, e);
         }
@@ -179,7 +185,7 @@ public class URLNormalizer implements Serializable {
             throw new URLException(
                     "UTF-8 is not supported by your system.");
         }
-        this.url = url.trim();
+        this.url = fixedURL.trim();
     }
 
     /**
