@@ -187,7 +187,7 @@ public class URLNormalizer implements Serializable {
             throw new URLException(
                     "UTF-8 is not supported by your system.");
         }
-        this.url = url.trim();
+        this.url = fixedURL.trim();
     }
 
     /**
