@@ -55,7 +55,13 @@ public final class ContentType implements Serializable {
     public static final ContentType HTML = new ContentType("text/html");
     public static final ContentType PDF = new ContentType("application/pdf");
     public static final ContentType XML = new ContentType("application/xml");
-    
+
+    // Common images:
+    public static final ContentType JPEG = new ContentType("image/jpeg");
+    public static final ContentType GIF = new ContentType("image/gif");
+    public static final ContentType BMP = new ContentType("image/bmp");
+    public static final ContentType PNG = new ContentType("image/png");
+
     private String contentType;
 
     /**
