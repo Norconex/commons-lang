@@ -499,7 +499,7 @@ public class Properties extends ObservableMap<String, List<String>>
             String value = p.getProperty(key);
             if (value != null) {
                 values.addAll(Arrays.asList(
-                        StringUtils.split(value, delimiter)));
+                        StringUtils.splitByWholeSeparator(value, delimiter)));
             }
             put(key, values);
         }
