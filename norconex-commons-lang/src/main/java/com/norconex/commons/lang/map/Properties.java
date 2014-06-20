@@ -1261,20 +1261,27 @@ public class Properties extends ObservableMap<String, List<String>>
 
     @Override
     public final List<String> remove(Object key) {
-        List<String> oldValues = new ArrayList<String>();
+        
         if (!caseSensitiveKeys) {
-            oldValues.addAll(super.remove(key));
-        } else {
-            List<String> keysToRemove = new ArrayList<String>();
-            for (Iterator<String> it = keySet().iterator(); it.hasNext();) {
-                String k = it.next();
-                if (StringUtils.equalsIgnoreCase(
-                        k, Objects.toString(key, null))) {
-                    keysToRemove.add(k);
-                }
+            return super.remove(key);
+        } 
+        
+        List<String> oldValues = null;    
+        List<String> keysToRemove = new ArrayList<String>();
+        for (Iterator<String> it = keySet().iterator(); it.hasNext();) {
+            String k = it.next();
+            if (StringUtils.equalsIgnoreCase(
+                    k, Objects.toString(key, null))) {
+                keysToRemove.add(k);
             }
-            for (String k : keysToRemove) {
-                oldValues.addAll(super.remove(k));
+        }
+        for (String k : keysToRemove) {
+            List<String> previous = super.remove(k);
+            if (previous != null) {
+                if (oldValues == null) {
+                    oldValues = new ArrayList<>();
+                }
+                oldValues.addAll(previous);
             }
         }
         return oldValues;

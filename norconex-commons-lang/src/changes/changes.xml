@@ -9,7 +9,10 @@
 
     <release version="1.4.0" date="2014-??-??" description="Feature release">
       <action dev="dimassip" type="fix">
-        Fix junit Properties.load to use the whole delimiter.
+        Fix Properties.remove to return null if key is non existent.
+      </action>
+      <action dev="dimassip" type="fix">
+        Fix Properties.load to use the whole delimiter.
       </action>
       <action dev="essiembp" type="add">
         New DataUnit class to perform data unit (KB, MB, GB, etc) conversions
