@@ -20,5 +20,9 @@ public class ContentFamilyTest {
         
         Assert.assertTrue(ContentFamily.forContentType(
                 ContentType.TSV).contains("text/tab-separated-values"));
+        
+        Assert.assertEquals("other", ContentFamily.forContentType(
+                "application/octet-stream").getId());
+
     }
 }

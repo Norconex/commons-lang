@@ -66,7 +66,10 @@ public final class ContentFamily {
         if (StringUtils.isBlank(contentType)) {
             return null;
         }
-        String familyId = CONTENTTYPE_MAPPINGS.getString(contentType);
+        String familyId = null;
+        if (CONTENTTYPE_MAPPINGS.containsKey(contentType)) {
+            familyId = CONTENTTYPE_MAPPINGS.getString(contentType);
+        }
         if (familyId == null) {
             for (String partialContentType : WILD_MAPPINGS.keySet()) {
                 if (contentType.startsWith(partialContentType)) {
