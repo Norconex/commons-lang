@@ -186,28 +186,35 @@ public final class FileUtil {
     }
     
     /**
-     * Deletes a file or a directory recursively. This method does:
+     * Deletes a file or a directory recursively in a more robust way. 
+     * This method applies the following strategies:
      * <ul>
-     *   <li>If file or directory deletion does not work, it will try 10 times,
-     *       waiting 1 second between each try to give a chance to whatever
-     *       OS lock on the file to go.</li>
-     *   <li>It throws a IOException if the delete failed (as opposed to fail
-     *       silently).</li>
+     *   <li>If file or directory deletion does not work, it will re-try 10 
+     *       times, waiting 1 second between each try to give a chance to 
+     *       whatever OS lock on the file to go.</li>
+     *   <li>After a first failed attempt, it invokes {@link System#gc()}
+     *       in hope of releasing any handles left on files.  This is in 
+     *       relation to a known Java bug mostly occurring on Windows
+     *   (<a href="http://bugs.java.com/bugdatabase/view_bug.do?bug_id=4715154"
+     *   >http://bugs.java.com/bugdatabase/view_bug.do?bug_id=4715154</a>).</li>
+     *   <li>It throws a IOException if the delete still fails after the 10
+     *       attempts (as opposed to fail silently).</li>
      *   <li>If file is <code>null</code> or does not exist, nothing happens.
      * </ul>
      * @param file file or directory to delete
      * @throws IOException cannot delete file.
+     * @since 1.4. Renamed from <code>deleteFile(File)</code>
      */
-    public static void deleteFile(File file) throws IOException {
+    public static void delete(File file) throws IOException {
         if (file == null || !file.exists()) {
             return;
         }
         boolean success = false;
         int failure = 0;
-        Exception ex = null;
         while (!success && failure < MAX_FILE_OPERATION_ATTEMPTS) {
             if (file.exists() && !FileUtils.deleteQuietly(file)) {
                 failure++;
+                System.gc();
                 Sleeper.sleepSeconds(1);
                 continue;
             }
@@ -215,8 +222,18 @@ public final class FileUtil {
         }
         if (!success) {
             throw new IOException(
-                    "Could not delete \"" + file + "\".", ex);
+                    "Could not delete \"" + file + "\".");
         }
+    }
+    
+    /**
+     * @deprecated renamed to {@link #delete(File)}.
+     * @param file file or directory to delete
+     * @throws IOException cannot delete file.
+     */
+    @Deprecated
+    public static void deleteFile(File file) throws IOException {
+        delete(file);
     }
     
     /**

@@ -8,8 +8,9 @@
   <body>
 
     <release version="1.4.0" date="2014-??-??" description="Feature release">
-      <action dev="dimassip" type="fix">
-        Fix junit Properties.load to use the whole delimiter.
+      <action dev="essiembp" type="add">
+        New ClassFinder#findSubTypes(Class) method for finding subtypes in
+        classpath using classpath roots.
       </action>
       <action dev="essiembp" type="add">
         New DataUnit class to perform data unit (KB, MB, GB, etc) conversions
@@ -31,6 +32,14 @@
         ObservableMap, MapChangeSupport, IMapChangeListener, and MapChangeEvent.
       </action>
       <action dev="essiembp" type="update">
+        Deprecation of FileUtil#deleteFile(File) in favour of 
+        FileUtil#delete(File).
+      </action>
+      <action dev="essiembp" type="update">
+        FileUtil#delete(File) now invokes System.gc() upon deletion failure
+        to fix a known java bug when trying to delete files on windows.
+      </action>
+      <action dev="essiembp" type="update">
         Properties now uses UTF-8 to load and store itself.
       </action>
       <action dev="essiembp" type="update">
@@ -48,6 +57,16 @@
       <action dev="essiembp" type="update">
         URLNormalizer no longer rejects URLs with spaces in them. It will now
         convert spaces to %20 and log a warning.
+      </action>
+      <action dev="essiembp" type="update">
+        Deprecation of ClassFinder#findImplementors(XXX) in favour of 
+        ClassFinder#findSubTypes(XXX).
+      </action>
+      <action dev="dimassip" type="fix">
+        Fix junit Properties.load to use the whole delimiter.
+      </action>
+      <action dev="dimassip" type="fix">
+        Fix Properties.remove to return null if key is non existent.
       </action>
       <action dev="essiembp" type="fix">
         Fix junit test for converting IP to domain. Was failing due to wikipedia

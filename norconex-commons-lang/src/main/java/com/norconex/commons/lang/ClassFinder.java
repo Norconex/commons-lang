@@ -55,53 +55,116 @@ public final class ClassFinder {
     }
 
     /**
-     * Finds the names of all classes implementing the super class.
+     * Finds the names of all subtypes of the super class,
+     * scanning the roots of this class classpath.
      * This method is null-safe.  If no classes are found, 
      * an empty list will be returned.
-     * @param files directories and JARs to scan for classes
-     * @param superClass the class from which to find implementors
+     * @param superClass the class from which to find subtypes
      * @return list of class names
+     * @since 1.4.0
      */
-    public static List<String> findImplementors(
-            List<File> files, Class<?> superClass) {
+    public static List<String> findSubTypes(Class<?> superClass) {
         List<String> classes = new ArrayList<String>();
-        for (File file : files) {
-            classes.addAll(ClassFinder.findImplementors(
-                            file, superClass));
+        if (superClass == null) {
+            return classes;
+        }
+        Enumeration<URL> roots;
+        try {
+            roots = ClassFinder.class.getClassLoader().getResources("");
+        } catch (IOException e) {
+            LOG.error("Cannot obtain class roots for class: "
+                    + superClass, e);
+            return classes;
+        }
+        while (roots.hasMoreElements()) {
+            URL url = roots.nextElement();
+            File root = new File(url.getPath());
+            classes.addAll(findSubTypes(root, superClass));
         }
         return classes;
     }
-
+    
+    
     /**
-     * Finds the names of all classes implementing the super class.
+     * Finds the names of all subtypes of the super class in list
+     * of {@link File} supplied.
+     * This method is null-safe.  If no classes are found, 
+     * an empty list will be returned.
+     * @param files directories and/or JARs to scan for classes
+     * @param superClass the class from which to find subtypes
+     * @return list of class names
+     * @since 1.4.0
+     */
+    public static List<String> findSubTypes(
+            List<File> files, Class<?> superClass) {
+        List<String> classes = new ArrayList<String>();
+        if (superClass == null || files == null) {
+            return classes;
+        }
+        for (File file : files) {
+            classes.addAll(findSubTypes(file, superClass));
+        }
+        return classes;
+    }
+    /**
+     * @deprecated since 1.4.0.  Replaced with 
+     * {@link #findSubTypes(List, Class)}.
+     * @param files directories and/or JARs to scan for classes
+     * @param superClass the class from which to find subtypes
+     * @return list of class names
+     */
+    @Deprecated
+    public static List<String> findImplementors(
+            List<File> files, Class<?> superClass) {
+        return findSubTypes(files, superClass);
+    }
+    
+    /**
+     * Finds the names of all subtypes of the super class for the
+     * supplied {@link File}.
      * This method is null-safe.  If no classes are found, 
      * an empty list will be returned.  
      * If the file is null or does not exists, or if it is not a JAR or 
      * directory, an empty string list will be returned.
      * @param file directory or JAR to scan for classes
-     * @param superClass the class from which to find implementors
+     * @param superClass the class from which to find subtypes
      * @return list of class names
+     * @since 1.4.0
      */
-    public static List<String> findImplementors(
+    public static List<String> findSubTypes(
             File file, Class<?> superClass) {
+        if (superClass == null) {
+            return new ArrayList<String>();
+        }
         if (file == null || !file.exists()) {
             LOG.warn("Trying to find implementing classes from a null or "
                    + "non-existant file: " + file);
             return new ArrayList<String>();
         }
         if (file.isDirectory()) {
-            return findImplementingDirectoryClasses(
+            return findSubTypesFromDirectory(
                     new File(file.getAbsolutePath() + "/"), superClass);
         }
         if (file.getName().endsWith(".jar")) {
-            return findImplementingJarClasses(file, superClass);
+            return findSubTypesFromJar(file, superClass);
         }
         LOG.warn("File not a JAR and not a directory.");
         return new ArrayList<String>();
     }
+    /**
+     * @deprecated since 1.4.0.  Replaced with 
+     * {@link #findSubTypes(File, Class)}.
+     * @param file directory or JAR to scan for classes
+     * @param superClass the class from which to find subtypes
+     * @return list of class names
+     */
+    public static List<String> findImplementors(
+            File file, Class<?> superClass) {
+        return findSubTypes(file, superClass);
+    }
+
     
-    
-    private static List<String> findImplementingDirectoryClasses(
+    private static List<String> findSubTypesFromDirectory(
             File dir, Class<?> superClass) {
         
         List<String> classes = new ArrayList<String>();
@@ -124,11 +187,10 @@ public final class ClassFinder {
         }
         return classes;
     }
-    private static List<String> findImplementingJarClasses(
+    private static List<String> findSubTypesFromJar(
             File jarFile, Class<?> superClass) {
         
         List<String> classes = new ArrayList<String>();
-        
         ClassLoader loader = getClassLoader(jarFile);
         if (loader == null) {
             return classes;
