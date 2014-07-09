@@ -62,6 +62,10 @@
         Deprecation of ClassFinder#findImplementors(XXX) in favour of 
         ClassFinder#findSubTypes(XXX).
       </action>
+      <action dev="essiembp" type="fix">
+        Fix FileUtil#tail(...) method when the file has less lines than the 
+        amount requested.
+      </action>
       <action dev="dimassip" type="fix">
         Fix junit Properties.load to use the whole delimiter.
       </action>

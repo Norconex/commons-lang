@@ -593,25 +593,22 @@ public final class FileUtil {
         BufferedReader reader = new BufferedReader(new InputStreamReader(
                 new ReverseFileInputStream(file), encoding));
         int remainingLinesToRead = numberOfLinesToRead;
-        String line = StringUtils.EMPTY;
-        while(line != null && remainingLinesToRead-- > 0){
-             line = StringUtils.defaultString(reader.readLine());
-             char[] chars = line.toCharArray();
-             for (int j = 0, k = chars.length - 1; j < k; j++, k--) {
-                 char temp = chars[j];
-                 chars[j] = chars[k];
-                 chars[k] = temp;
-             }
-             String newLine = new String(chars);
-             if (!stripBlankLines || StringUtils.isNotBlank(line)) {
-                 if (filter != null && filter.accept(newLine)) {
-                     lines.addFirst(newLine);
-                 } else {
-                     remainingLinesToRead++;
-                 }
-             } else {
-                 remainingLinesToRead++;
-             }
+
+        
+        
+        String line;
+        while ((line = reader.readLine()) != null 
+                && remainingLinesToRead-- > 0) {
+            String newLine = StringUtils.reverse(line);
+            if (!stripBlankLines || StringUtils.isNotBlank(line)) {
+                if (filter != null && filter.accept(newLine)) {
+                    lines.addFirst(newLine);
+                } else {
+                    remainingLinesToRead++;
+                }
+            } else {
+                remainingLinesToRead++;
+            }
         }
         reader.close();
         return lines.toArray(ArrayUtils.EMPTY_STRING_ARRAY);
