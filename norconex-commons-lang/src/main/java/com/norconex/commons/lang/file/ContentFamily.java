@@ -11,12 +11,29 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
-//TODO allow overriding of properties
 /**
  * Represents a family of content types.  Typically, a broader, conceptual
  * object for related content types.
  * <p/>
- * 
+ * To provide your own content type mappings or display names, copy the 
+ * appropriate <code>.properties</code> file to your classpath root, with
+ * the word "custom" inserted: <code>ContentFamily-custom-[...]</code>.
+ * The actual custom names and classpath location are:
+ * <p/>
+ * <table border="1">
+ *   <tr>
+ *     <th>Original</td>
+ *     <th>Custom</td>
+ *   </tr>
+ *   <tr>
+ *     <td>com.norconex.commmons.lang.file.ContentFamily-mappings.properties</td>
+ *     <td>ContentFamily-custom-mappings.properties</td>
+ *   </tr>
+ *   <tr>
+ *     <td>com.norconex.commmons.lang.file.ContentFamily-name[_locale].properties</td>
+ *     <td>ContentFamily-custom-name[_locale].propertiess</td>
+ *   </tr>
+ * </table> 
  * @author Pascal Essiembre
  * @since 1.4.0
  */
@@ -24,15 +41,26 @@ public final class ContentFamily {
     
     private static Logger LOG = LogManager.getLogger(ContentFamily.class);
     
-    private static final ResourceBundle CONTENTTYPE_MAPPINGS = 
-            ResourceBundle.getBundle(
+    private static final ResourceBundle BUNDLE_MAPPINGS;
+    static {
+        ResourceBundle bundle = null;
+        try {
+            bundle = ResourceBundle.getBundle(
+                    ContentFamily.class.getSimpleName() + "-custom-mappings");
+        } catch (MissingResourceException e) {
+            bundle = ResourceBundle.getBundle(
                     ContentFamily.class.getName() + "-mappings");
+        }
+        BUNDLE_MAPPINGS = bundle;
+    }
+
     private static final Map<String, String> WILD_MAPPINGS = 
             new ListOrderedMap<>();
+            
     private static final Map<String, ContentFamily> FAMILIES = new HashMap<>();
     static {
-        for (String contentType : CONTENTTYPE_MAPPINGS.keySet()) {
-            String familyId = CONTENTTYPE_MAPPINGS.getString(contentType);
+        for (String contentType : BUNDLE_MAPPINGS.keySet()) {
+            String familyId = BUNDLE_MAPPINGS.getString(contentType);
             if (contentType.startsWith("DEFAULT")) {
                 String partialContentType = 
                         contentType.replaceFirst("DEFAULT\\.{0,1}", "");
@@ -40,6 +68,9 @@ public final class ContentFamily {
             }
         }
     }
+    
+    private static final Map<Locale, ResourceBundle> BUNDLE_DISPLAYNAMES =
+            new HashMap<>();
     
     private final String id;
     
@@ -67,8 +98,8 @@ public final class ContentFamily {
             return null;
         }
         String familyId = null;
-        if (CONTENTTYPE_MAPPINGS.containsKey(contentType)) {
-            familyId = CONTENTTYPE_MAPPINGS.getString(contentType);
+        if (BUNDLE_MAPPINGS.containsKey(contentType)) {
+            familyId = BUNDLE_MAPPINGS.getString(contentType);
         }
         if (familyId == null) {
             for (String partialContentType : WILD_MAPPINGS.keySet()) {
@@ -94,14 +125,29 @@ public final class ContentFamily {
             safeLocale = Locale.getDefault();
         }
         try {
-            return ResourceBundle.getBundle(
-                    ContentFamily.class.getName() + "-names",
-                    safeLocale).getString(id);
+            return getDisplayBundle(safeLocale).getString(id);
         } catch (MissingResourceException e) {
             LOG.debug("Could not find display name for content family: " + id);
         }
         return "[" + id + "]";
     }
+    private ResourceBundle getDisplayBundle(Locale locale) {
+        ResourceBundle bundle = BUNDLE_DISPLAYNAMES.get(locale);
+        if (bundle != null) {
+            return bundle;
+        }
+        try {
+            bundle = ResourceBundle.getBundle(
+                    ContentFamily.class.getSimpleName()
+                            + "-custom-names", locale);
+        } catch (MissingResourceException e) {
+            bundle = ResourceBundle.getBundle(
+                    ContentFamily.class.getName() + "-names", locale);
+        }
+        BUNDLE_DISPLAYNAMES.put(locale, bundle);
+        return bundle;
+    }
+    
 
     public boolean contains(ContentType contentType) {
         if (contentType == null) {

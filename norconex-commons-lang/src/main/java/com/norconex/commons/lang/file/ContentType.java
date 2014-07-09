@@ -34,15 +34,32 @@ import org.apache.log4j.Logger;
  * <p/>
  * To detect the content type of a file, consider using an open-source library
  * such as <a href="https://tika.apache.org/">Apache Tika</a>.
+ * <p/>
+ * To provide your own extension mappings or display names, copy the 
+ * appropriate <code>.properties</code> file to your classpath root, with
+ * the word "custom" inserted: <code>ContentType-custom-[...]</code>.
+ * The actual custom names and classpath location are:
+ * <p/>
+ * <table border="1">
+ *   <tr>
+ *     <th>Original</td>
+ *     <th>Custom</td>
+ *   </tr>
+ *   <tr>
+ *     <td>com.norconex.commmons.lang.file.ContentType-extensions.properties</td>
+ *     <td>ContentType-custom-extensions.properties</td>
+ *   </tr>
+ *   <tr>
+ *     <td>com.norconex.commmons.lang.file.ContentType-name[_locale].properties</td>
+ *     <td>ContentType-custom-name[_locale].propertiess</td>
+ *   </tr>
+ * </table>
  * 
  * @author Pascal Essiembre
  * @since 1.4.0
  */
 public final class ContentType implements Serializable {
 
-    //TODO allow easy way to overwrite display/family names
-    // (e.g. by checking for a CustomContentType-[...].properties
-    
     private static final long serialVersionUID = 6416074869536512030L;
 
     private static Logger LOG = LogManager.getLogger(ContentType.class);
@@ -50,6 +67,21 @@ public final class ContentType implements Serializable {
     private static final Map<String, ContentType> REGISTRY = 
         new HashMap<String, ContentType>();
 
+    private static final ResourceBundle BUNDLE_EXTENSIONS;
+    static {
+        ResourceBundle bundle = null;
+        try {
+            bundle = ResourceBundle.getBundle(
+                    ContentType.class.getSimpleName() + "-custom-extensions");
+        } catch (MissingResourceException e) {
+            bundle = ResourceBundle.getBundle(
+                    ContentType.class.getName() + "-extensions");
+        }
+        BUNDLE_EXTENSIONS = bundle;
+    }
+    private static final Map<Locale, ResourceBundle> BUNDLE_DISPLAYNAMES =
+            new HashMap<>();
+    
     //TODO how many do we want? Do we list them all??
     public static final ContentType TEXT = new ContentType("text/plain");
     public static final ContentType HTML = new ContentType("text/html");
@@ -58,7 +90,6 @@ public final class ContentType implements Serializable {
     public static final ContentType CSV = new ContentType("text/csv");
     public static final ContentType TSV = 
             new ContentType("text/tab-separated-values");
-
     
     // Common images:
     public static final ContentType JPEG = new ContentType("image/jpeg");
@@ -123,14 +154,27 @@ public final class ContentType implements Serializable {
             safeLocale = Locale.getDefault();
         }
         try {
-            return ResourceBundle.getBundle(
-                    ContentType.class.getName() + "-names",
-                    safeLocale).getString(contentType);
+            return getDisplayBundle(safeLocale).getString(contentType);
         } catch (MissingResourceException e) {
             LOG.debug("Could not find display name for content type: "
                     + contentType);
         }
         return "[" + contentType + "]";
+    }
+    private ResourceBundle getDisplayBundle(Locale locale) {
+        ResourceBundle bundle = BUNDLE_DISPLAYNAMES.get(locale);
+        if (bundle != null) {
+            return bundle;
+        }
+        try {
+            bundle = ResourceBundle.getBundle(ContentType.class.getSimpleName()
+                    + "-custom-names", locale);
+        } catch (MissingResourceException e) {
+            bundle = ResourceBundle.getBundle(
+                    ContentType.class.getName() + "-names", locale);
+        }
+        BUNDLE_DISPLAYNAMES.put(locale, bundle);
+        return bundle;
     }
     
     public ContentFamily getContentFamily() {
@@ -157,8 +201,7 @@ public final class ContentType implements Serializable {
      */
     public String[] getExtensions() {
         try {
-            String ext = ResourceBundle.getBundle(ContentType.class.getName()
-                    + "-extensions").getString(contentType);
+            String ext = BUNDLE_EXTENSIONS.getString(contentType);
             return StringUtils.split(ext, ',');
         } catch (MissingResourceException e) {
             LOG.debug("Could not find extension(s) for content type: "
