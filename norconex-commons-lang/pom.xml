@@ -299,7 +299,7 @@ along with Norconex Commons Lang. If not, see <http://www.gnu.org/licenses/>.
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>2.9.1</version>
         <configuration>
-          <overview>${basedir}/src/main/resources/javadoc-overview.html</overview>
+          <overview>${basedir}/src/main/javadoc/overview.html</overview>
           <header><![CDATA[
             <style>div.aboutLanguage .siteLink {font-size: 2em;}</style>
             <span class="siteLink">
@@ -384,6 +384,17 @@ along with Norconex Commons Lang. If not, see <http://www.gnu.org/licenses/>.
         <organizationUrl>http://www.norconex.com</organizationUrl>
         <roles>
           <role>project leader</role>
+          <role>developer</role>
+        </roles>
+        <timezone>-4</timezone>
+    </developer>
+    <developer>
+        <id>pascaldimassimo</id>
+        <name>Pascal Dimassimo</name>
+        <email>pascal.dimassimo@norconex.com</email>
+        <organization>Norconex Inc.</organization>
+        <organizationUrl>http://www.norconex.com</organizationUrl>
+        <roles>
           <role>developer</role>
         </roles>
         <timezone>-4</timezone>
