@@ -7,7 +7,7 @@
   </properties>
   <body>
 
-    <release version="1.4.0" date="2014-??-??" description="Feature release">
+    <release version="1.4.0" date="2014-07-09" description="Feature release">
       <action dev="essiembp" type="add">
         New ClassFinder#findSubTypes(Class) method for finding subtypes in
         classpath using classpath roots.

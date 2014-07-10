@@ -18,7 +18,7 @@
 package com.norconex.commons.lang.map;
 
 /**
- * <code>TypeProperties</code> exception.  Typically thrown when 
+ * <code>Properties</code> exception.  Typically thrown when 
  * setting/getting invalid property values.
  * @author Pascal Essiembre
  * @see Properties

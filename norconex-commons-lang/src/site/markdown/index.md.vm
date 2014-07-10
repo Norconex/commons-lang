@@ -46,10 +46,39 @@ Classes: [com.norconex.commons.lang.config.*](./apidocs/com/norconex/commons/lan
 
 $h2 Map
 
-Replacement for Properties, adding getter and setting for all kinds of 
-class types (integers, boolean, file, etc).
+Enhanced Maps. Observable maps. and replacement for Properties, adding 
+getter and setting for all kinds of class types (integers, boolean, file, etc).
 
-Classes: [com.norconex.commons.map.url.*](./apidocs/com/norconex/commons/lang/map/package-summary.html)
+Classes: [com.norconex.commons.map.*](./apidocs/com/norconex/commons/lang/map/package-summary.html)
+
+$h2 Time
+
+Time-related utility classes, including:
+
+  * YearMonthDay class for dates without time
+  * YearMonthDayInterval class for a date range without time
+
+Classes: [com.norconex.commons.lang.time.*](./apidocs/com/norconex/commons/lang/time/package-summary.html)
+
+$h2 Data Unit
+
+Provides easy to use conversion of data units (KB, MB, GB, etc) as well as 
+offering human-readable formatting.
+
+Classes: [com.norconex.commons.lang.unit.*](./apidocs/com/norconex/commons/lang/unit/package-summary.html)
+ 
+$h2 Files
+
+Classes dealing with files and directories, such as:
+  
+  * getting the "head" or the "tail" of a file
+  * converts any strings to OS friendly file names 
+  * create time-based directory structure
+  * recursively browse directories using the visitor pattern
+  * stream a file in reverse
+  * monitor files for changes
+
+Classes: [com.norconex.commons.lang.file.*](./apidocs/com/norconex/commons/lang/file/package-summary.html)
 
 $h2 URL
 
@@ -62,38 +91,24 @@ URL-related utility classes offering features such as:
   
 Classes: [com.norconex.commons.lang.url.*](./apidocs/com/norconex/commons/lang/url/package-summary.html)
 
-$h2 Time
-
-Time-related utility classes, including:
-
-  * YearMonthDay class for dates without time
-  * YearMonthDayInterval class for a date range without time
-
-Classes: [com.norconex.commons.lang.time.*](./apidocs/com/norconex/commons/lang/time/package-summary.html)
-
 $h2 I/O
 
-Provides features for dealing with streams, files and directories,
-such as:
+Provides features for dealing with streams, such as:
   
-  * getting the "head" or the "tail" of a file
-  * converts any strings to OS friendly file names 
-  * create time-based directory structure
-  * recursively browse directories using the visitor pattern
   * filter input streams using input stream filters (e.g. regex-based filter)
-  * stream a file in reverse
+  * stream in reverse
   * create listeners that get notified when input stream is being read
-  * monitor files for changes
 
 Classes: [com.norconex.commons.lang.io.*](./apidocs/com/norconex/commons/lang/io/package-summary.html)
-  
+
 $h2 Others
 
 Other classes not fitting anyhere.  Includes:
   
   * Sleeper class
   * Ways to test several objects at once for equality
-  * Find classes in directories and jars
+  * Find classes in classpath, directories and jars
+  * Percent formatter
   
 Classes: [com.norconex.commons.lang.*](./apidocs/com/norconex/commons/lang/package-summary.html)
   

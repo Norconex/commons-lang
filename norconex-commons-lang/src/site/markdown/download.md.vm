@@ -28,21 +28,27 @@ $h2 Binaries
 
 **[Download Latest Release ${currentStableVersion}]($releasePath/${currentStableVersion}/norconex-commons-lang-${currentStableVersion}.zip)**
 
-From 3.0.1:
+Changes include:
 
-  * Fixed missing localized text for DurationUtil.
-
-From 3.0.0:
-
-  * New YearMonthDay class for a local date without time.
-  * New YearMonthDayInterval (and unit test) class for a local date range 
-    without time.
-  * New FileMonitor and IFileChangeListener to be notified of file changes.
+  * Now requires Java 7 or higher.
+  * New DataUnit classe to perform data unit 
+    (KB, MB, GB, etc) conversions much like Java TimeUnit class.
+  * New DataUnitFormatter to format any data unit ot a human-readable format
+    taking into account locale and decimals
+  * New percentage formatter.
+  * New ContentType class to represent a file media/MIME type and obtain
+    its usual name, content family, and file extension(s).
+  * New ContentFamily class to represent a group of files of similar
+    content types. Useful for content categorization.
+  * New ObservableMap class.
   * [View all changes]((changes-report.html))
-
 
 **Older Releases**
 
+  * [1.3.2]($releasePath/1.3.2/norconex-commons-lang-1.3.2.zip)<small>
+    [[Release Notes](changes-report.html#a1.3.2)]</small>
+  * [1.3.1]($releasePath/1.3.1/norconex-commons-lang-1.3.1.zip)<small>
+    [[Release Notes](changes-report.html#a1.3.1)]</small>
   * [1.3.0]($releasePath/1.3.0/norconex-commons-lang-1.3.0.zip)<small>
     [[Release Notes](changes-report.html#a1.3.0)]</small>
   * [1.2.0]($releasePath/1.2.0/norconex-commons-lang-1.2.0.zip)<small>
