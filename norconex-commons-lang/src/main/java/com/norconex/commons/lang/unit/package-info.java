@@ -16,6 +16,6 @@
  * along with Norconex Commons Lang. If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- * Enhanced and/or useful versions of Map.
+ * Classes making it easier to deal with unit conversions and formatting.
  */
-package com.norconex.commons.lang.map;
+package com.norconex.commons.lang.unit;

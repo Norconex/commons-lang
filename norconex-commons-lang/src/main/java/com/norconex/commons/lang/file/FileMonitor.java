@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Norconex Commons Lang. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.norconex.commons.lang.io;
+package com.norconex.commons.lang.file;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -31,10 +31,7 @@ import java.util.TimerTask;
  * 
  * @author Pascal Essiembre
  * @since 1.3.0
- * @deprecated Since 1.4.0, use 
- *     {@link com.norconex.commons.lang.file.FileMonitor}
  */
-@Deprecated
 public final class FileMonitor {
 
     private static final FileMonitor INSTANCE = new FileMonitor();

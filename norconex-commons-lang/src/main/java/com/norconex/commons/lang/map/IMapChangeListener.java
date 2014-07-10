@@ -1,4 +1,4 @@
-/* Copyright 2010-2013 Norconex Inc.
+/* Copyright 2010-2014 Norconex Inc.
  * 
  * This file is part of Norconex Commons Lang.
  * 
@@ -15,22 +15,23 @@
  * You should have received a copy of the GNU General Public License
  * along with Norconex Commons Lang. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.norconex.commons.lang.io;
+package com.norconex.commons.lang.map;
 
-import java.io.File;
+import java.util.Map;
 
 /**
- * Listener for file changes, to be used with a {@link FileMonitor}.
+ * Listener for {@link Map} changes.
  * @author Pascal Essiembre
- * @since 1.3.0
- * @deprecated Since 1.4.0, use 
- *             {@link com.norconex.commons.lang.file.IFileChangeListener}
+ * @since 1.4
+ *
+ * @param <K> the type of keys maintained by the map we are observing
+ * @param <V> the type of mapped values
  */
-@Deprecated
-public interface IFileChangeListener {
+public interface IMapChangeListener<K,V> {
+
     /**
-     * Invoked when a file changes.
-     * @param file changed file.
+     * The observed map has changed.
+     * @param event change event
      */
-    void fileChanged(File file);
+    void mapChanged(MapChangeEvent<K, V> event);
 }

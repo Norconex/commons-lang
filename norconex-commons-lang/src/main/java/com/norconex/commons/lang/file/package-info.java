@@ -1,4 +1,4 @@
-/* Copyright 2010-2013 Norconex Inc.
+/* Copyright 2010-2014 Norconex Inc.
  * 
  * This file is part of Norconex Commons Lang.
  * 
@@ -16,6 +16,6 @@
  * along with Norconex Commons Lang. If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- * Enhanced and/or useful versions of Map.
+ * File-related utility classes.
  */
-package com.norconex.commons.lang.map;
+package com.norconex.commons.lang.file;

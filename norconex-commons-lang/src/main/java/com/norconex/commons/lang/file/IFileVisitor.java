@@ -15,7 +15,19 @@
  * You should have received a copy of the GNU General Public License
  * along with Norconex Commons Lang. If not, see <http://www.gnu.org/licenses/>.
  */
+package com.norconex.commons.lang.file;
+
+import java.io.File;
+
 /**
- * Enhanced and/or useful versions of Map.
+ * Visitor to be used with <code>FileUtil.visit*</code> methods.
+ * @see FileUtil
+ * @author Pascal Essiembre
  */
-package com.norconex.commons.lang.map;
+public interface IFileVisitor {
+    /**
+     * Visits a file or directory.
+     * @param file the file or directory being visited
+     */
+    void visit(File file);
+}

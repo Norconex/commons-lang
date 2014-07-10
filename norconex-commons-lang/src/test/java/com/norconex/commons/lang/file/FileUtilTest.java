@@ -1,7 +1,9 @@
-package com.norconex.commons.lang.io;
+package com.norconex.commons.lang.file;
 
 import org.junit.Assert;
 import org.junit.Test;
+
+import com.norconex.commons.lang.file.FileUtil;
 
 public class FileUtilTest {
 

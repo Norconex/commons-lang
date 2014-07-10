@@ -7,6 +7,81 @@
   </properties>
   <body>
 
+    <release version="1.4.0" date="2014-07-09" description="Feature release">
+      <action dev="essiembp" type="add">
+        New ClassFinder#findSubTypes(Class) method for finding subtypes in
+        classpath using classpath roots.
+      </action>
+      <action dev="essiembp" type="add">
+        New DataUnit class to perform data unit (KB, MB, GB, etc) conversions
+        much like Java TimeUnit class.
+      </action>
+      <action dev="essiembp" type="add">
+        New PercentFormatter to format fraction values as percentage string. 
+      </action>
+      <action dev="essiembp" type="add">
+        New DataUnitFormatter to format any data unit ot a human-readable format
+        taking into account locale and decimals.
+      </action>
+      <action dev="essiembp" type="add">
+        New ContentType class to represent a file media/MIME type and obtain
+        its usual name, content family, and file extension(s).
+      </action>
+      <action dev="essiembp" type="add">
+        New ContentFamily class to represent a group of files of similar
+        content types. Useful for content categorization.
+      </action>
+      <action dev="essiembp" type="add">
+        Added new classes for listening to java.util.Map changes: 
+        ObservableMap, MapChangeSupport, IMapChangeListener, and MapChangeEvent.
+      </action>
+      <action dev="essiembp" type="update">
+        Deprecation of FileUtil#deleteFile(File) in favour of 
+        FileUtil#delete(File).
+      </action>
+      <action dev="essiembp" type="update">
+        FileUtil#delete(File) now invokes System.gc() upon deletion failure
+        to fix a known java bug when trying to delete files on windows.
+      </action>
+      <action dev="essiembp" type="update">
+        Properties now uses UTF-8 to load and store itself.
+      </action>
+      <action dev="essiembp" type="update">
+        FileMonitor, FileUtil, IFileChangeListener, IFileVisitor are now 
+        found under the com.norconex.commons.lang.file package.  Classes
+        have been deprecated in former location.
+      </action>
+      <action dev="essiembp" type="update">
+        Now requires Java 7 or higher.
+      </action>
+      <action dev="essiembp" type="update">
+        Refactored Properties to extend ObservableMap so changes can 
+        optionally be tracked.
+      </action>
+      <action dev="essiembp" type="update">
+        URLNormalizer no longer rejects URLs with spaces in them. It will now
+        convert spaces to %20 and log a warning.
+      </action>
+      <action dev="essiembp" type="update">
+        Deprecation of ClassFinder#findImplementors(XXX) in favour of 
+        ClassFinder#findSubTypes(XXX).
+      </action>
+      <action dev="essiembp" type="fix">
+        Fix FileUtil#tail(...) method when the file has less lines than the 
+        amount requested.
+      </action>
+      <action dev="dimassip" type="fix">
+        Fix junit Properties.load to use the whole delimiter.
+      </action>
+      <action dev="dimassip" type="fix">
+        Fix Properties.remove to return null if key is non existent.
+      </action>
+      <action dev="essiembp" type="fix">
+        Fix junit test for converting IP to domain. Was failing due to wikipedia
+        IP change.
+      </action>
+    </release>
+
     <release version="1.3.2" date="2014-06-16" description="Maintenance release">
       <action dev="essiembp" type="update">
         URLNormalizer no longer rejects URLs with spaces in them. It will now
@@ -17,7 +92,7 @@
         IP change.
       </action>
     </release>
-      
+
     <release version="1.3.1" date="2014-03-06" description="Maintenance release">
       <action dev="essiembp" type="fix">
         Fixed missing localized text for DurationUtil.

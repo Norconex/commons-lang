@@ -1,4 +1,4 @@
-/* Copyright 2010-2013 Norconex Inc.
+/* Copyright 2010-2014 Norconex Inc.
  * 
  * This file is part of Norconex Commons Lang.
  * 
@@ -26,40 +26,38 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
+import java.io.Serializable;
 import java.io.Writer;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.TreeMap;
+import java.util.Objects;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.LocaleUtils;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
 /**
  * <p>This class is a enhanced version of {@link java.util.Properties}
- * that enforces the use of String keys and values, but offers many
+ * that enforces the use of String keys and values internally, but offers many
  * convenience methods for storing and retrieving multiple values of different
- * types (e.g. Integer, Locale, File, etc).  While it does not extend 
+ * types (e.g. Integer, Locale, File, etc). You can also see it as a 
+ * string-based multi-value map with helpful methods. While it does not extend 
  * {@link java.util.Properties}, it offers similar load and store
- * method and can be used as a replacement for it in many cases 
- * (e.g. works great with configuration files).</p>
+ * methods and can be used as a replacement for it in many cases.</p>
  * 
- * <p>It can also be used as a 
- * string-based multi-value map with helpful methods.  This works great
- * in a few scenarios, like easily accessing or manipulating URL query string
- * values.  It extends 
- * {@link TreeMap} so that keys are always sorted, either by the 
- * <code>String</code> natural order, or by supplying a comparator.
- * </p>
+ * <p>As of <b>1.4</b>, this class no longer extends {@code TreeMap}.
+ * It now extends {@link ObservableMap} which means you can listen
+ * for map changes.</p>
  * 
  * <p>To insert values, there are <i>set</i> methods and <i>add</i> methods.
  * The <i>set</i> methods will replace any value(s) already present under the 
@@ -73,106 +71,92 @@ import org.apache.log4j.Logger;
  * @author Pascal Essiembre
  */
 @SuppressWarnings("nls")
-public class Properties extends TreeMap<String, List<String>> {
+public class Properties extends ObservableMap<String, List<String>>
+        implements Serializable {
 
     private static final long serialVersionUID = -7215126924574341L;
+    private static final Logger LOG = LogManager.getLogger(Properties.class);
 
     /**
      * Default delimiter when storing/loading multi-values to/from 
      * <code>.properties</code> files.
      */
-    public static final String DEFAULT_PROPERTIES_MULTIVALUE_DELIMITER = "^^^";
+    public static final String DEFAULT_MULTIVALUE_DELIMITER = "^^^";
     
-    /** Logger. */
-    private static final Logger LOG =
-        LogManager.getLogger(Properties.class);
-    
-    private boolean caseSensitiveKeys = false;
+    private final boolean caseSensitiveKeys;
+    private String multiValueDelimiter = DEFAULT_MULTIVALUE_DELIMITER;
     
     /**
      * Create a new instance with case-sensitive keys.
-     * @see TreeMap#TreeMap()
+     * Internally wraps a {@link HashMap} to store keys and values.
      */
     public Properties() {
-        super();
+        this(false);
     }
 
     /**
-     * Creates a new instance.
-     * @param caseSensitiveKeys getter methods taking a key as well as
-     *        {{@link #remove(Object)} will 
-     *        return all combined values or remove all keys where keys are 
-     *        equal, ignoring case, to the key supplied. 
-     * @see TreeMap#TreeMap()
+     * Creates a new instance. Internally wraps a {@link HashMap} to 
+     * store keys and values.
+     * @param caseSensitiveKeys methods taking a key argument 
+     *        will consider the key being passed without consideration
+     *        for character case.
      */
     public Properties(boolean caseSensitiveKeys) {
         this(null, caseSensitiveKeys);
     }
     
     /**
-     * <p>Creates a new <code>Properties</code> initializing it with values
-     * from the given <code>Map</code>.  {@link ObjectUtils#toString(Object)} 
-     * is used to convert to convert keys and values to strings, with exception
-     * of values being arrays or collections.  In such case, the entry
-     * is considered a mult-value one and each value will be converted
-     * to individual strings. <code>null</code> keys are ignored.</p>
-     * <code>null</code> values are converted to an empty string. 
-     * <p>Changes to this instance
-     * won't be reflected in the given <code>Map</code>. Keys are
-     * case-sensitive.</p>
-     * 
-     * @param defaults the default values
+     * Decorates {@code Map} as a {@code Properties}.
+     * As of version <b>1.4</b> the {@code Map} argument is decorated so that
+     * modifications to this instance will also modify the supplied {@code Map}.
+     * To use a {@code Map} to initialize values only, use the 
+     * {@link #load(Map)} method.
+     * @param map the Map to decorate 
      */
-    public Properties(Map<?, ?> defaults) {
-        this(defaults, false);
+    public Properties(Map<String, List<String>> map) {
+        this(map, false);
     }
-    
     /**
-     * <p>Creates a new <code>Properties</code> initializing it with values
-     * from the given <code>Map</code>.  {@link ObjectUtils#toString(Object)} 
-     * is used to convert to convert keys and values to strings, with exception
-     * of values being arrays or collections.  In such case, the entry
-     * is considered a multi-value one and each value will be converted
-     * to individual strings. <code>null</code> keys are ignored.</p>
-     * <code>null</code> values are converted to an empty string. 
-     * <p>Changes to this instance
-     * won't be reflected in the given <code>Map</code>.</p>
-     * 
-     * @param defaults the default values
-     * @param caseSensitiveKeys getter methods taking a key as well as
-     *        {{@link #remove(Object)} will 
-     *        return all combined values or remove all keys where keys are 
-     *        equal, ignoring case, to the key supplied. 
+     * Decorates a {@code Map} argument as a {@code Properties}.
+     * As of version <b>1.4</b> the {@code Map} argument is decorated so that
+     * modifications to this instance will also modify the supplied {@code Map}.
+     * To use a {@code Map} to initialize values only, use the 
+     * {@link #load(Map)} method.
+     * @param map the Map to decorate 
+     * @param caseSensitiveKeys methods taking a key argument 
+     *        will consider the key being passed without consideration
+     *        for character case.
      */
-    @SuppressWarnings("deprecation")
-    public Properties(Map<?, ?> defaults, boolean caseSensitiveKeys) {
-        super();
+    public Properties(
+            Map<String, List<String>> map, boolean caseSensitiveKeys) {
+        super(map);
         this.caseSensitiveKeys = caseSensitiveKeys;
-        if (defaults != null) {
-            for (Object keyObj : defaults.keySet()) {
-                if (keyObj == null) {
-                    continue;
-                }
-                String key = ObjectUtils.toString(keyObj);
-                Object valObj = defaults.get(keyObj);
-                if (valObj == null) {
-                    valObj = StringUtils.EMPTY;
-                }
-                Iterable<?> it = null;
-                if (valObj.getClass().isArray()) {
-                    it = Arrays.asList((Object[]) valObj);
-                } else if (valObj instanceof Iterable) {
-                    it = (Iterable<?>) valObj;
-                }
-                if (it == null) {
-                    addString(key, ObjectUtils.toString(valObj));
-                } else {
-                    for (Object val : it) {
-                        addString(key, ObjectUtils.toString(val));
-                    }
-                }
-            }
-        }
+    }
+
+    /**
+     * Gets whether keys are case sensitive or not.
+     * @return <code>true</code> if case sensitive
+     * @since 1.4
+     */
+    public boolean isCaseSensitiveKeys() {
+        return caseSensitiveKeys;
+    }
+
+    /**
+     * Gets multiple value string delimiter.
+     * @return multiple value string delimiter
+     * @since 1.4
+     */
+    public String getMultiValueDelimiter() {
+        return multiValueDelimiter;
+    }
+    /**
+     * Sets multiple value string delimiter.
+     * @param multiValueDelimiter multiple value string delimiter
+     * @since 1.4
+     */
+    public void setMultiValueDelimiter(String multiValueDelimiter) {
+        this.multiValueDelimiter = multiValueDelimiter;
     }
 
     //--- Store ----------------------------------------------------------------
@@ -202,14 +186,14 @@ public class Properties extends TreeMap<String, List<String>> {
      * exact same as the {@link Properties#store(Writer, String)} method.
      * Keys with multi-values are joined into a single string, using
      * the default delimiter:
-     * {@link Properties#DEFAULT_PROPERTIES_MULTIVALUE_DELIMITER}
+     * {@link Properties#DEFAULT_MULTIVALUE_DELIMITER}
      * @param   writer     an output character stream writer.
      * @param   comments   a description of the property list.
      * @throws IOException i/o problem
      * @see Properties#store(Writer, String)
      */
     public void store(Writer writer, String comments) throws IOException {
-        store(writer, comments, DEFAULT_PROPERTIES_MULTIVALUE_DELIMITER);
+        store(writer, comments, DEFAULT_MULTIVALUE_DELIMITER);
     }
     /**
      * Writes this {@link Map} (key and element pairs) to the output character
@@ -244,7 +228,7 @@ public class Properties extends TreeMap<String, List<String>> {
      * exact same as the {@link Properties#store(OutputStream, String)} method.
      * Keys with multi-values are joined into a single string, using
      * the default delimiter:
-     * {@link Properties#DEFAULT_PROPERTIES_MULTIVALUE_DELIMITER}
+     * {@link Properties#DEFAULT_MULTIVALUE_DELIMITER}
      * @param   out      an output stream.
      * @param   comments   a description of the property list.
      * @throws IOException i/o problem
@@ -252,11 +236,11 @@ public class Properties extends TreeMap<String, List<String>> {
      */
     public void store(OutputStream out, String comments) 
             throws IOException {
-        store(out, comments, DEFAULT_PROPERTIES_MULTIVALUE_DELIMITER);
+        store(out, comments, DEFAULT_MULTIVALUE_DELIMITER);
     }
     /**
      * Writes this {@link Map} (key and element pairs) to the output character
-     * stream in a format suitable for using the 
+     * stream as UTF-8 in a format suitable for using the 
      * {@link #load(InputStream, String)} method. 
      * If a key only has one value, then this method behavior is the
      * exact same as the {@link Properties#store(OutputStream, String)} method.
@@ -271,7 +255,8 @@ public class Properties extends TreeMap<String, List<String>> {
      */
     public void store(OutputStream out, String comments, String delimiter) 
             throws IOException {
-        store(new OutputStreamWriter(out, "8859_1"), comments, delimiter);
+        store(new OutputStreamWriter(
+                out, CharEncoding.UTF_8), comments, delimiter);
     }
     /**
      * Emits an XML document representing all of the properties contained
@@ -282,7 +267,7 @@ public class Properties extends TreeMap<String, List<String>> {
      * where the character encoding is "UTF-8".
      * Keys with multi-values are joined into a single string, using
      * the default delimiter:
-     * {@link Properties#DEFAULT_PROPERTIES_MULTIVALUE_DELIMITER}
+     * {@link Properties#DEFAULT_MULTIVALUE_DELIMITER}
      * @param os the output stream on which to emit the XML document.
      * @param comment a description of the property list, or <code>null</code>
      *        if no comment is desired.
@@ -292,7 +277,7 @@ public class Properties extends TreeMap<String, List<String>> {
     public synchronized void storeToXML(
             OutputStream os, String comment)
             throws IOException {
-        storeToXML(os, comment, "UTF-8");        
+        storeToXML(os, comment, CharEncoding.UTF_8);        
     }
     /**
      * Emits an XML document representing all of the properties contained
@@ -302,7 +287,7 @@ public class Properties extends TreeMap<String, List<String>> {
      * {@link Properties#storeToXML(OutputStream, String, String)} method.
      * Keys with multi-values are joined into a single string, using
      * the default delimiter:
-     * {@link Properties#DEFAULT_PROPERTIES_MULTIVALUE_DELIMITER}
+     * {@link Properties#DEFAULT_MULTIVALUE_DELIMITER}
      * @param os the output stream on which to emit the XML document.
      * @param comment a description of the property list, or <code>null</code>
      *        if no comment is desired.
@@ -313,7 +298,7 @@ public class Properties extends TreeMap<String, List<String>> {
     public synchronized void storeToXML(OutputStream os, String comment, 
             String encoding) throws IOException {
         storeToXML(os, comment, encoding, 
-                DEFAULT_PROPERTIES_MULTIVALUE_DELIMITER);
+                DEFAULT_MULTIVALUE_DELIMITER);
     }
     /**
      * Emits an XML document representing all of the properties contained
@@ -349,7 +334,7 @@ public class Properties extends TreeMap<String, List<String>> {
      * character stream in a simple line-oriented format.
      * If a key was stored with multiple values using a delimiter, this,
      * method will split these values appropriately assuming the delimiter is
-     * {@link Properties#DEFAULT_PROPERTIES_MULTIVALUE_DELIMITER}
+     * {@link Properties#DEFAULT_MULTIVALUE_DELIMITER}
      * If the key value was stored as a
      * single value, then this method behavior is the
      * exact same as the 
@@ -360,7 +345,7 @@ public class Properties extends TreeMap<String, List<String>> {
      */
     public synchronized void load(Reader reader)
             throws IOException {
-        load(reader, DEFAULT_PROPERTIES_MULTIVALUE_DELIMITER);
+        load(reader, DEFAULT_MULTIVALUE_DELIMITER);
     }
     /**
      * Reads a property list (key and element pairs) from the input
@@ -386,18 +371,62 @@ public class Properties extends TreeMap<String, List<String>> {
             String value = p.getProperty(key);
             if (value != null) {
                 values.addAll(Arrays.asList(
-                        StringUtils.split(value, delimiter)));
+                        StringUtils.splitByWholeSeparator(value, delimiter)));
             }
             put(key, values);
         }
         p = null;
     }
+
+    /**
+     * <p>Reads all key/value pairs in the given map, and 
+     * add them to this <code>Map</code>.  Keys are converted to strings
+     * using their toString() method, with exception
+     * of values being arrays or collections.  In such case, the entry
+     * is considered a multi-value one and each value will be converted
+     * to individual strings. <code>null</code> keys are ignored.
+     * <code>null</code> values are converted to an empty string.</p> 
+     * <p>Changes to this instance
+     * won't be reflected in the given <code>Map</code>.  If you want otherwise,
+     * use invoke the constructor with a <code>Map</code> argument.</p>
+     * 
+     * @param map the map containing values to load
+     */
+    public synchronized void load(Map<?, ?> map) {
+        if (map != null) {
+            for (Object keyObj : map.keySet()) {
+                if (keyObj == null) {
+                    continue;
+                }
+                String key = Objects.toString(keyObj, null);
+                Object valObj = map.get(keyObj);
+                if (valObj == null) {
+                    valObj = StringUtils.EMPTY;
+                }
+                Iterable<?> it = null;
+                if (valObj.getClass().isArray()) {
+                    it = Arrays.asList((Object[]) valObj);
+                } else if (valObj instanceof Iterable) {
+                    it = (Iterable<?>) valObj;
+                }
+                if (it == null) {
+                    addString(key, Objects.toString(valObj, null));
+                } else {
+                    for (Object val : it) {
+                        addString(key, Objects.toString(val, null));
+                    }
+                }
+            }
+        }
+    }
+
+    
     /**
      * Reads a property list (key and element pairs) from the input
-     * character stream in a simple line-oriented format.
+     * character stream (UTF-8) in a simple line-oriented format.
      * If a key was stored with multiple values using a delimiter, this,
      * method will split these values appropriately assuming the delimiter is
-     * {@link Properties#DEFAULT_PROPERTIES_MULTIVALUE_DELIMITER}
+     * {@link Properties#DEFAULT_MULTIVALUE_DELIMITER}
      * If the key value was stored as a
      * single value, then this method behavior is the
      * exact same as the 
@@ -408,12 +437,12 @@ public class Properties extends TreeMap<String, List<String>> {
      */
     public synchronized void load(InputStream inStream)
             throws IOException {
-        load(new InputStreamReader(inStream, "8859_1"),
-                DEFAULT_PROPERTIES_MULTIVALUE_DELIMITER);
+        load(new InputStreamReader(inStream, CharEncoding.UTF_8),
+                DEFAULT_MULTIVALUE_DELIMITER);
     }
     /**
      * Reads a property list (key and element pairs) from the input
-     * character stream in a simple line-oriented format.
+     * character stream (UTF8) in a simple line-oriented format.
      * If a key was stored with multiple values using a delimiter, 
      * this method will split these values appropriately provided the 
      * supplied delimiter is the same. If the key value was stored as a
@@ -428,14 +457,14 @@ public class Properties extends TreeMap<String, List<String>> {
      */
     public synchronized void load(InputStream inStream, String delimiter)
             throws IOException {
-        load(new InputStreamReader(inStream, "8859_1"), delimiter);
+        load(new InputStreamReader(inStream, CharEncoding.UTF_8), delimiter);
     }
     /**
      * Loads all of the properties represented by the XML document on the
      * specified input stream into this instance.
      * If a key was stored with multiple values using a delimiter, 
      * method will split these values appropriately assuming the delimiter is
-     * {@link Properties#DEFAULT_PROPERTIES_MULTIVALUE_DELIMITER}
+     * {@link Properties#DEFAULT_MULTIVALUE_DELIMITER}
      * If the key value was stored as a
      * single value, then this method behavior is the
      * exact same as the 
@@ -445,7 +474,7 @@ public class Properties extends TreeMap<String, List<String>> {
      */
     public synchronized void loadFromXML(InputStream in)
             throws IOException {
-        loadFromXML(in, DEFAULT_PROPERTIES_MULTIVALUE_DELIMITER);
+        loadFromXML(in, DEFAULT_MULTIVALUE_DELIMITER);
     }
     /**
      * Loads all of the properties represented by the XML document on the
@@ -470,7 +499,7 @@ public class Properties extends TreeMap<String, List<String>> {
             String value = p.getProperty(key);
             if (value != null) {
                 values.addAll(Arrays.asList(
-                        StringUtils.split(value, delimiter)));
+                        StringUtils.splitByWholeSeparator(value, delimiter)));
             }
             put(key, values);
         }
@@ -1215,37 +1244,48 @@ public class Properties extends TreeMap<String, List<String>> {
         addString(key, classesToStringArray(values));
     }
 
-    @SuppressWarnings("deprecation")
+    //--- Other ----------------------------------------------------------------
     @Override
     public final List<String> get(Object key) {
         if (!caseSensitiveKeys) {
             return super.get(key);
         }
         List<String> values = new ArrayList<String>();
-        for (String pkey : keySet()) {
-            if (StringUtils.equalsIgnoreCase(pkey, ObjectUtils.toString(key))) {
-                values.addAll(super.get(pkey));
+        for (String k : keySet()) {
+            if (StringUtils.equalsIgnoreCase(k, Objects.toString(key, null))) {
+                values.addAll(super.get(k));
             }
         }
         return values;
     }
-    @SuppressWarnings("deprecation")
+
     @Override
     public final List<String> remove(Object key) {
+        
         if (!caseSensitiveKeys) {
             return super.remove(key);
-        }
-        List<String> values = new ArrayList<String>();
-        for (Iterator<String> iterator = keySet().iterator(); 
-                iterator.hasNext();) {
-            String pkey = iterator.next();
-            if (StringUtils.equalsIgnoreCase(pkey, ObjectUtils.toString(key))) {
-                iterator.remove();
+        } 
+        
+        List<String> oldValues = null;    
+        List<String> keysToRemove = new ArrayList<String>();
+        for (Iterator<String> it = keySet().iterator(); it.hasNext();) {
+            String k = it.next();
+            if (StringUtils.equalsIgnoreCase(
+                    k, Objects.toString(key, null))) {
+                keysToRemove.add(k);
             }
         }
-        return values;
+        for (String k : keysToRemove) {
+            List<String> previous = super.remove(k);
+            if (previous != null) {
+                if (oldValues == null) {
+                    oldValues = new ArrayList<>();
+                }
+                oldValues.addAll(previous);
+            }
+        }
+        return oldValues;
     }
-    
     
     //--- Privates -------------------------------------------------------------
     private String[] classesToStringArray(Class<?>... values) {
@@ -1264,14 +1304,13 @@ public class Properties extends TreeMap<String, List<String>> {
         LOG.error(message, cause);
         return new PropertiesException(message, cause);
     }
-    @SuppressWarnings("deprecation")
     private String[] toStringArray(Object[] array) {
         if (array == null) {
             return null;
         }
         String[] strArray = new String[array.length];
         for (int i = 0; i < array.length; i++) {
-            strArray[i] = ObjectUtils.toString(array[i], "");
+            strArray[i] = Objects.toString(array[i], StringUtils.EMPTY);
             
         }
         return strArray;

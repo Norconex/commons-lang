@@ -27,6 +27,8 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.net.UnknownHostException;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -445,8 +447,13 @@ public class URLNormalizer implements Serializable {
         if (url.contains("?")) {
             // QueryString extends Properties which already has sorted keys.
             QueryString q = new HttpURL(url).getQueryString();
+            QueryString sorted = new QueryString();
+            Set<String> keys = new TreeSet<>(q.keySet());
+            for (String key : keys) {
+                sorted.put(key, q.get(key));
+            }
             if (q != null) {
-                url = StringUtils.substringBefore(url, "?") + q.toString();
+                url = StringUtils.substringBefore(url, "?") + sorted.toString();
             }
         }
         return this;
