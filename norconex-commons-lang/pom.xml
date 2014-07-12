@@ -22,7 +22,7 @@ along with Norconex Commons Lang. If not, see <http://www.gnu.org/licenses/>.
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.norconex.commons</groupId>
   <artifactId>norconex-commons-lang</artifactId>
-  <version>1.4.0</version>
+  <version>1.5.0-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>Norconex Commons Lang</name>
 
