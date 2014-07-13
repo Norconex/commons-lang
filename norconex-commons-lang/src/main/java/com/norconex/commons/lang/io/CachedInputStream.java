@@ -28,6 +28,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -37,11 +38,14 @@ import com.norconex.commons.lang.unit.DataUnit;
 
 //TODO check remaining memory and cache to file before capacity is reached
 // if preferable.
+// IDEA: use static counter that holds how much bytes were written by all
+// input streams.  Would need to synchronize get/set... could it affect
+// performance... or can we live with a small time-discrepency?
 
 /**
- * InputStream wrapper that can be re-read any number of times.  This class
- * will cache the wrapped input steam content the first time it is read, and
- * subsequent read will use the cache.   
+ * {@link InputStream} wrapper that can be re-read any number of times.  This 
+ * class will cache the wrapped input steam content the first time it is read, 
+ * and subsequent read will use the cache.   
  * <p/>
  * In order to re-use this InputStream, it must first be read fully.  
  * Once done reading the stream, you will get the -1 character as usual.
@@ -52,21 +56,18 @@ import com.norconex.commons.lang.unit.DataUnit;
  * anymore.  It is important to <b>close the stream to delete any temporary 
  * cache file created</b>.
  * <p/>
- * The internal cache uses a {@link ByteBuffer} to store the stream content
- * into memory, up to the specified maximum cache size. If content exceeds
+ * The internal cache stores read bytes into memory, up to to the 
+ * specified maximum cache size. If content exceeds
  * the cache limit, the cache transforms itself into a file-based cache
- * of unlimited size, using a fast {@link RandomAccessFile} to access it.
- * <p/>
- * Implementors can optionally dictate how and where temporary cache files
- * get created by overrriding {@link #newCacheFile()}.
+ * of unlimited size.  Default memory cache size is 128 KB.
  * <p/>
  * @author Pascal Essiembre
  * @since 1.5
  */
-public class ReusableInputStream extends InputStream {
+public class CachedInputStream extends InputStream {
 
     private static final Logger LOG = 
-            LogManager.getLogger(ReusableInputStream.class);
+            LogManager.getLogger(CachedInputStream.class);
     
     public static final int DEFAULT_MAX_CACHE_MEMORY = 
             (int) DataUnit.KB.toBytes(128);
@@ -79,27 +80,56 @@ public class ReusableInputStream extends InputStream {
     private boolean firstRead = true;
     private boolean needNewStream = false;
     
+    private final File cacheDirectory;
+    
     /**
-     * Makes the wrapped InputSource re-usable.
-     * @param is InputSource to make re-usable
+     * Caches the wrapped InputStream.
+     * @param is InputStream to cache
      */
-    public ReusableInputStream(InputStream is) {
+    public CachedInputStream(InputStream is) {
         this(is, DEFAULT_MAX_CACHE_MEMORY);
+    }
+
+    /**
+     * Caches the wrapped InputStream.
+     * @param is InputStream to cache
+     * @param cacheDirectory directory where to store large content
+     */
+    public CachedInputStream(
+            InputStream is, File cacheDirectory) {
+        this(is, DEFAULT_MAX_CACHE_MEMORY, cacheDirectory);
     }
     
     /**
-     * Makes the wrapped InputSource re-usable.  
-     * @param is InputSource to make re-usable
+     * Caches the wrapped InputStream.
+     * @param is InputStream to cache
      * @param maxCacheSize maximum byte size of memory cache 
      *        (before caching to file).
      */
-    public ReusableInputStream(InputStream is, int maxCacheSize) {
+    public CachedInputStream(InputStream is, int maxCacheSize) {
+        this(is, maxCacheSize, null);
+    }
+    
+    /**
+     * Caches the wrapped InputStream.
+     * @param is InputStream to cache
+     * @param maxCacheSize maximum byte size of memory cache 
+     *        (before caching to file).
+     * @param cacheDirectory directory where to store large content
+     */
+    public CachedInputStream(
+            InputStream is, int maxCacheSize, File cacheDirectory) {
         super();
         byteBuffer = ByteBuffer.allocate(maxCacheSize);
         if (is instanceof BufferedInputStream) {
             this.inputStream = is;
         } else {
             this.inputStream = new BufferedInputStream(is);
+        }
+        if (cacheDirectory == null) {
+            this.cacheDirectory = FileUtils.getTempDirectory();
+        } else {
+            this.cacheDirectory = cacheDirectory;
         }
     }
 
@@ -144,7 +174,7 @@ public class ReusableInputStream extends InputStream {
             }
             if (fileOutputStream != null) {
                 fileOutputStream.write(b, 0, num);
-            } else if (byteBuffer.position() + num == byteBuffer.capacity()) {
+            } else if (byteBuffer.position() + num >= byteBuffer.capacity()) {
                 cacheToFile();
                 fileOutputStream.write(b, 0, num);
             } else {
@@ -188,10 +218,19 @@ public class ReusableInputStream extends InputStream {
             LOG.debug("Deleted cache file: " + cacheFile);
         }
     }
+
+    /**
+     * Gets the cache directory where temporary cache files are created.
+     * @return the cache directory
+     */
+    public final File getCacheDirectory() {
+        return cacheDirectory;
+    }
     
     @SuppressWarnings("resource")
     private void cacheToFile() throws IOException {
-        cacheFile = newCacheFile();
+        cacheFile = File.createTempFile(
+                "CachedInputStream-", "-temp", cacheDirectory);
         LOG.debug("Reached max cache size. Swapping to file: " + cacheFile);
         RandomAccessFile f = new RandomAccessFile(cacheFile, "rw");
         FileChannel channel = f.getChannel();
@@ -204,15 +243,6 @@ public class ReusableInputStream extends InputStream {
         byteBuffer = null;
     }
 
-    /**
-     * Creates a new temporary file used for caching larger content.
-     * Can be overridden.
-     * @return a file
-     * @throws IOException could not create file
-     */
-    protected File newCacheFile() throws IOException {
-        return File.createTempFile("importer-", "-temp");
-    }
     
     @SuppressWarnings("resource")
     private void createInputStreamFromCache() throws FileNotFoundException {

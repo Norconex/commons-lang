@@ -17,14 +17,14 @@ import com.norconex.commons.lang.unit.DataUnit;
  * @author Pascal Essiembre
  *
  */
-public class CachingInputStreamTest {
+public class CachedInputStreamTest {
 
     @Test
     public void testContentMatchMemCache() throws IOException {
         String content = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
         ByteArrayInputStream is = new ByteArrayInputStream(content.getBytes());
-        InputStream cache = new ReusableInputStream(
+        InputStream cache = new CachedInputStream(
                 is, (int) DataUnit.B.toBytes(100));
         try {
             // first time should cache
@@ -43,7 +43,7 @@ public class CachingInputStreamTest {
         String content = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
         ByteArrayInputStream is = new ByteArrayInputStream(content.getBytes());
-        InputStream cache = new ReusableInputStream(
+        InputStream cache = new CachedInputStream(
                 is, (int) DataUnit.B.toBytes(10));
         try {
             // first time should cache

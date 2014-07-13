@@ -9,8 +9,12 @@
 
     <release version="1.5.0" date="2014-??-??" description="Feature release">
       <action dev="essiembp" type="add">
-        New ReusableInputStream for caching input streams for re-use.  
+        New CachedInputStream for caching input streams for re-use.  
         Swaps memory overflow to file.
+      </action>
+      <action dev="essiembp" type="add">
+        New CachedOutputStream for caching output streams for re-use as
+        InputStream. Swaps memory overflow to file.
       </action>
       <action dev="essiembp" type="add">
         New ByteBufferInputStream for reading a ByteBuffer as an InputStream.
