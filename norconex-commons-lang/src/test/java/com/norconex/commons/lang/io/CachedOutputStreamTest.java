@@ -1,5 +1,19 @@
-/**
+/* Copyright 2014 Norconex Inc.
  * 
+ * This file is part of Norconex Commons Lang.
+ * 
+ * Norconex Commons Lang is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * Norconex Commons Lang is distributed in the hope that it will be useful, 
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with Norconex Commons Lang. If not, see <http://www.gnu.org/licenses/>.
  */
 package com.norconex.commons.lang.io;
 
@@ -8,8 +22,9 @@ import java.io.InputStream;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.apache.log4j.SimpleLayout;
+import org.apache.log4j.PatternLayout;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,29 +39,25 @@ public class CachedOutputStreamTest {
 
     @Before
     public void before() {
-        Logger.getRootLogger().addAppender(new ConsoleAppender(
-                new SimpleLayout(), ConsoleAppender.SYSTEM_OUT));
+        Logger logger = LogManager.getRootLogger();
+        logger.addAppender(new ConsoleAppender(
+                new PatternLayout("%-5p [%C{1}] %m%n"), 
+                ConsoleAppender.SYSTEM_OUT));
+        logger.setAdditivity(false);
     }
     
     @Test
     public void testContentMatchMemCache() throws IOException {
         String content = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
+        System.out.println("Testing mem cache.");
+        
         CachedOutputStream cache = 
                 new CachedOutputStream((int) DataUnit.B.toBytes(100));
         InputStream is = null;
         
         try {
             cache.write(content.getBytes());
-            
-            // first time should read from cache
-            System.out.println("Fist time.");
-            is = cache.getInputStream();
-            Assert.assertEquals(content, readCacheToString(is));
-            IOUtils.closeQuietly(is);
-            
-            // second time should read from cache again
-            System.out.println("Second time.");
             is = cache.getInputStream();
             Assert.assertEquals(content, readCacheToString(is));
         }  finally {
@@ -59,21 +70,13 @@ public class CachedOutputStreamTest {
     public void testContentMatchFileCache() throws IOException {
         String content = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
+        System.out.println("Testing file cache.");
+
         CachedOutputStream cache = 
                 new CachedOutputStream((int) DataUnit.B.toBytes(10));
         InputStream is = null;
-        
         try {
             cache.write(content.getBytes());
-            
-            // first time should read from cache
-            System.out.println("Fist time.");
-            is = cache.getInputStream();
-            Assert.assertEquals(content, readCacheToString(is));
-            IOUtils.closeQuietly(is);
-            
-            // second time should read from cache again
-            System.out.println("Second time.");
             is = cache.getInputStream();
             Assert.assertEquals(content, readCacheToString(is));
         }  finally {

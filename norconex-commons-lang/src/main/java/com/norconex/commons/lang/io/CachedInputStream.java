@@ -79,6 +79,7 @@ public class CachedInputStream extends InputStream {
     private OutputStream fileOutputStream;
     private boolean firstRead = true;
     private boolean needNewStream = false;
+    private boolean cacheEmpty = true;
     
     private final File cacheDirectory;
     
@@ -133,6 +134,29 @@ public class CachedInputStream extends InputStream {
         }
     }
 
+    /**
+     * Creates an input stream with an existing memory cache.
+     * @param byteBuffer the InputStream cache.
+     */
+    /*default*/ CachedInputStream(ByteBuffer byteBuffer) {
+        byteBuffer.rewind();
+        this.byteBuffer = byteBuffer;
+        this.cacheDirectory = null;
+        firstRead = false;
+        needNewStream = true;
+    }
+    /**
+     * Creates an input stream with an existing file cache.
+     * @param cacheFile the file cache
+     */
+    /*default*/ CachedInputStream(File cacheFile) {
+        this.cacheFile = cacheFile;
+        this.cacheDirectory = null;
+        firstRead = false;
+        needNewStream = true;
+    }
+
+    
     @Override
     public int read() throws IOException {
         if (needNewStream) {
@@ -152,12 +176,14 @@ public class CachedInputStream extends InputStream {
             } else {
                 byteBuffer.put((byte) read);
             }
+            cacheEmpty = false;
             return read;
         }
         int read = inputStream.read();
         if (read == -1) {
             innerClose();
         }
+        cacheEmpty = false;
         return read;
     }
     
@@ -180,11 +206,16 @@ public class CachedInputStream extends InputStream {
             } else {
                 byteBuffer.put(b, 0, num);
             }
+            if (num > 0) {
+                cacheEmpty = false;
+            }
             return num;
         }
         int num = inputStream.read(b, off, len);
         if (num == -1) {
             innerClose();
+        } else if (num > 0) {
+            cacheEmpty = false;
         }
         return num;
     }
@@ -195,6 +226,9 @@ public class CachedInputStream extends InputStream {
         fileOutputStream = null;
         firstRead = false;
         needNewStream = true;
+        if (byteBuffer != null) {
+            byteBuffer.flip();
+        }
     }
     
     @Override
@@ -217,6 +251,7 @@ public class CachedInputStream extends InputStream {
             FileUtil.delete(cacheFile);
             LOG.debug("Deleted cache file: " + cacheFile);
         }
+        cacheEmpty = true;
     }
 
     /**
@@ -225,6 +260,15 @@ public class CachedInputStream extends InputStream {
      */
     public final File getCacheDirectory() {
         return cacheDirectory;
+    }
+
+    /**
+     * Returns <code>true</code> if was nothing to cache (no writing was 
+     * performed) or if the stream was closed. 
+     * @return <code>true</code> if empty
+     */
+    public boolean isCacheEmpty() {
+        return cacheEmpty;
     }
     
     @SuppressWarnings("resource")
@@ -253,7 +297,7 @@ public class CachedInputStream extends InputStream {
             inputStream = Channels.newInputStream(channel);
         } else {
             LOG.debug("Creating new input stream from memory cache.");
-            byteBuffer.position(0);
+            byteBuffer.rewind();
             inputStream = new ByteBufferInputStream(byteBuffer);
         }
         needNewStream = false;

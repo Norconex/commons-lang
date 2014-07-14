@@ -19,9 +19,7 @@ package com.norconex.commons.lang.io;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
@@ -41,15 +39,12 @@ import com.norconex.commons.lang.unit.DataUnit;
 
 /**
  * {@link OutputStream} wrapper that caches the output so it can be retrieved
- * any number of times as an {@link InputStream}.  The first time
- * #getInputStream() is invoked, the OutputStream can no longer be written to.
+ * once as a {@link CachedInputStream}. Invoking {@link #getInputStream()}
+ * effectively {@link #close()} this stream and it can no longer be written
+ * to.  Obtaining an input stream before or instead of calling the close
+ * method will not delete the cache content, but rather pass the reference 
+ * to it to the CachedInputStream. 
  * <p/> 
- * <b>Do not close the stream until you are done getting input streams for 
- * it.</b> The moment you close the stream, 
- * its internal cache will be wiped out and you will not be able to use it 
- * anymore.  It is important to <b>close the stream to delete any temporary 
- * cache file created</b>.
- * <p/>
  * The internal cache stores written bytes into memory, up to to the 
  * specified maximum cache size. If content exceeds
  * the cache limit, the cache transforms itself into a file-based cache
@@ -73,7 +68,7 @@ public class CachedOutputStream extends OutputStream {
     private OutputStream cacheFileOutputStream;
     private boolean doneWriting = false;
     private boolean closed = false;
-    
+    private boolean cacheEmpty = true;
     private final File cacheDirectory;
     
     //--- Constructors ---------------------------------------------------------
@@ -178,6 +173,7 @@ public class CachedOutputStream extends OutputStream {
         } else {
             byteBuffer.put((byte) b);
         }
+        cacheEmpty = false;
     }
 
     @Override
@@ -198,38 +194,31 @@ public class CachedOutputStream extends OutputStream {
         } else {
             byteBuffer.put(b, off, len);
         }
+        cacheEmpty = false;
     }
 
-    public InputStream getInputStream() throws IOException {
+    public CachedInputStream getInputStream() throws IOException {
         if (closed) {
             throw new IllegalStateException("Cannot get InputStream on a "
                     + "closed CachedOutputStream.");
         }
-        if (!doneWriting) {
-            doneWriting = true;
-            innerClose();
+        CachedInputStream is = null;
+        if (cacheFile != null) {
+            is = new CachedInputStream(cacheFile);
+        } else {
+            byteBuffer.position(0);
+            is = new CachedInputStream(byteBuffer);
         }
-        return createInputStreamFromCache();
+        close(false);
+        return is;
     }
     
-    private void innerClose() throws IOException {
-        if (outputStream != null) {
-            outputStream.flush();
-            IOUtils.closeQuietly(outputStream);
-        }
-        if (cacheFileOutputStream != null) {
-            cacheFileOutputStream.flush();
-            IOUtils.closeQuietly(cacheFileOutputStream);
-        }
-        outputStream = null;
-        cacheFileOutputStream = null;
-    }
-    
-    @Override
-    public void close() throws IOException {
+    private void close(boolean clearCache) throws IOException {
         closed = true;
         if (byteBuffer != null) {
-            byteBuffer.clear();
+            if (clearCache) {
+                byteBuffer.clear();
+            }
             byteBuffer = null;
         }
         if (outputStream != null) {
@@ -243,10 +232,34 @@ public class CachedOutputStream extends OutputStream {
             cacheFileOutputStream = null;
         }
         if (cacheFile != null) {
-            FileUtil.delete(cacheFile);
-            LOG.debug("Deleted cache file: " + cacheFile);
+            if (clearCache) {
+                FileUtil.delete(cacheFile);
+                LOG.debug("Deleted cache file: " + cacheFile);
+            }
             cacheFile = null;
         }
+        cacheEmpty = true;
+    }
+    
+    @Override
+    public void close() throws IOException {
+        close(true);
+    }
+
+    /**
+     * Gets the cache directory where temporary cache files are created.
+     * @return the cache directory
+     */
+    public final File getCacheDirectory() {
+        return cacheDirectory;
+    }
+    /**
+     * Returns <code>true</code> if was nothing to cache (no writing was 
+     * performed) or if the stream was closed. 
+     * @return <code>true</code> if empty
+     */
+    public boolean isCacheEmpty() {
+        return cacheEmpty;
     }
     
     @SuppressWarnings("resource")
@@ -264,28 +277,7 @@ public class CachedOutputStream extends OutputStream {
         byteBuffer.clear();
         byteBuffer = null;
     }
-
-    /**
-     * Gets the cache directory where temporary cache files are created.
-     * @return the cache directory
-     */
-    public final File getCacheDirectory() {
-        return cacheDirectory;
-    }
     
-    @SuppressWarnings("resource")
-    private InputStream createInputStreamFromCache() throws 
-            FileNotFoundException {
-        if (cacheFile != null) {
-            LOG.debug("Creating new input stream from file cache.");
-            RandomAccessFile f = new RandomAccessFile(cacheFile, "r");
-            FileChannel channel = f.getChannel();
-            return Channels.newInputStream(channel);
-        }
-        LOG.debug("Creating new input stream from memory cache.");
-        byteBuffer.position(0);
-        return new ByteBufferInputStream(byteBuffer);
-    }
     
     @Override
     protected void finalize() throws Throwable {
