@@ -19,6 +19,9 @@
       <action dev="essiembp" type="add">
         New ByteBufferInputStream for reading a ByteBuffer as an InputStream.
       </action>
+      <action dev="essiembp" type="add">
+        Added content-type mappings for Content Family.
+      </action>
     </release>
 
     <release version="1.4.0" date="2014-07-09" description="Feature release">

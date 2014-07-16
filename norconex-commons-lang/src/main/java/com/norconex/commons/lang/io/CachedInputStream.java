@@ -199,12 +199,15 @@ public class CachedInputStream extends InputStream {
                 return num;
             }
             if (fileOutputStream != null) {
-                fileOutputStream.write(b, 0, num);
+                //fileOutputStream.write(b, 0, num);
+                fileOutputStream.write(b, off, num);
             } else if (byteBuffer.position() + num >= byteBuffer.capacity()) {
                 cacheToFile();
-                fileOutputStream.write(b, 0, num);
+                //fileOutputStream.write(b, 0, num);
+                fileOutputStream.write(b, off, num);
             } else {
-                byteBuffer.put(b, 0, num);
+                //byteBuffer.put(b, 0, num);
+                byteBuffer.put(b, off, num);
             }
             if (num > 0) {
                 cacheEmpty = false;
@@ -297,7 +300,7 @@ public class CachedInputStream extends InputStream {
             inputStream = Channels.newInputStream(channel);
         } else {
             LOG.debug("Creating new input stream from memory cache.");
-            byteBuffer.rewind();
+            byteBuffer.flip();
             inputStream = new ByteBufferInputStream(byteBuffer);
         }
         needNewStream = false;

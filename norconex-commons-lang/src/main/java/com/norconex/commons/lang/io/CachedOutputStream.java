@@ -178,6 +178,7 @@ public class CachedOutputStream extends OutputStream {
 
     @Override
     public void write(byte[] b, int off, int len) throws IOException {
+        
         if (doneWriting) {
             throw new IllegalStateException(
                     "Cannot write to this closed output stream.");
@@ -195,6 +196,16 @@ public class CachedOutputStream extends OutputStream {
             byteBuffer.put(b, off, len);
         }
         cacheEmpty = false;
+
+//        //vvvvvvvvvvvvvvvvvvvvvvvvvvv
+//        try {
+//            System.out.println("WRITE:" + IOUtils.toString(b));
+//        } catch (IOException e1) {
+//            // TODO Auto-generated catch block
+//            e1.printStackTrace();
+//        }
+//        //^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    
     }
 
     public CachedInputStream getInputStream() throws IOException {
@@ -206,10 +217,20 @@ public class CachedOutputStream extends OutputStream {
         if (cacheFile != null) {
             is = new CachedInputStream(cacheFile);
         } else {
-            byteBuffer.position(0);
+            byteBuffer.flip();
             is = new CachedInputStream(byteBuffer);
         }
         close(false);
+        
+//        //vvvvvvvvvvvvvvvvvvvvvvvvvvv
+//        try {
+//            System.out.println("READ:" + IOUtils.toString(is));
+//        } catch (IOException e1) {
+//            // TODO Auto-generated catch block
+//            e1.printStackTrace();
+//        }
+//        //^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        
         return is;
     }
     

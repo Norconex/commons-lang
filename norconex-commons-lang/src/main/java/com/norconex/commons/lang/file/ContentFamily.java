@@ -31,7 +31,7 @@ import org.apache.log4j.Logger;
  *   </tr>
  *   <tr>
  *     <td>com.norconex.commmons.lang.file.ContentFamily-name[_locale].properties</td>
- *     <td>ContentFamily-custom-name[_locale].propertiess</td>
+ *     <td>ContentFamily-custom-name[_locale].properties</td>
  *   </tr>
  * </table> 
  * @author Pascal Essiembre
