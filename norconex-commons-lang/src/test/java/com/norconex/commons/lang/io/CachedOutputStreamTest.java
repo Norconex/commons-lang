@@ -50,8 +50,6 @@ public class CachedOutputStreamTest {
     public void testContentMatchMemCache() throws IOException {
         String content = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-        System.out.println("Testing mem cache.");
-        
         CachedOutputStream cache = 
                 new CachedOutputStream((int) DataUnit.B.toBytes(100));
         InputStream is = null;
@@ -69,8 +67,6 @@ public class CachedOutputStreamTest {
     @Test
     public void testContentMatchFileCache() throws IOException {
         String content = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-        System.out.println("Testing file cache.");
 
         CachedOutputStream cache = 
                 new CachedOutputStream((int) DataUnit.B.toBytes(10));

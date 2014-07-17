@@ -57,10 +57,8 @@ public class CachedInputStreamTest {
                 is, (int) DataUnit.B.toBytes(100));
         try {
             // first time should cache
-            System.out.println("Fist time.");
             Assert.assertEquals(content, readCacheToString(cache));
             // second time should read from cache
-            System.out.println("Second time.");
             Assert.assertEquals(content, readCacheToString(cache));
         }  finally {
             IOUtils.closeQuietly(cache);
@@ -76,10 +74,8 @@ public class CachedInputStreamTest {
                 is, (int) DataUnit.B.toBytes(10));
         try {
             // first time should cache
-            System.out.println("Fist time.");
             Assert.assertEquals(content, readCacheToString(cache));
             // second time should read from cache
-            System.out.println("Second time.");
             Assert.assertEquals(content, readCacheToString(cache));
         }  finally {
             IOUtils.closeQuietly(cache);

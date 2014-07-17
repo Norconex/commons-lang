@@ -196,16 +196,6 @@ public class CachedOutputStream extends OutputStream {
             byteBuffer.put(b, off, len);
         }
         cacheEmpty = false;
-
-//        //vvvvvvvvvvvvvvvvvvvvvvvvvvv
-//        try {
-//            System.out.println("WRITE:" + IOUtils.toString(b));
-//        } catch (IOException e1) {
-//            // TODO Auto-generated catch block
-//            e1.printStackTrace();
-//        }
-//        //^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    
     }
 
     public CachedInputStream getInputStream() throws IOException {
@@ -217,20 +207,10 @@ public class CachedOutputStream extends OutputStream {
         if (cacheFile != null) {
             is = new CachedInputStream(cacheFile);
         } else {
-            byteBuffer.flip();
+            byteBuffer.position(0);
             is = new CachedInputStream(byteBuffer);
         }
         close(false);
-        
-//        //vvvvvvvvvvvvvvvvvvvvvvvvvvv
-//        try {
-//            System.out.println("READ:" + IOUtils.toString(is));
-//        } catch (IOException e1) {
-//            // TODO Auto-generated catch block
-//            e1.printStackTrace();
-//        }
-//        //^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        
         return is;
     }
     

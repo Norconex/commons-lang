@@ -192,33 +192,25 @@ public class CachedInputStream extends InputStream {
         if (needNewStream) {
             createInputStreamFromCache();
         }
-        if (firstRead) {
-            int num = inputStream.read(b, off, len);
-            if (num == -1) {
-                innerClose();
-                return num;
-            }
-            if (fileOutputStream != null) {
-                //fileOutputStream.write(b, 0, num);
-                fileOutputStream.write(b, off, num);
-            } else if (byteBuffer.position() + num >= byteBuffer.capacity()) {
-                cacheToFile();
-                //fileOutputStream.write(b, 0, num);
-                fileOutputStream.write(b, off, num);
-            } else {
-                //byteBuffer.put(b, 0, num);
-                byteBuffer.put(b, off, num);
-            }
-            if (num > 0) {
-                cacheEmpty = false;
-            }
-            return num;
-        }
+
         int num = inputStream.read(b, off, len);
         if (num == -1) {
             innerClose();
+            return num;
         } else if (num > 0) {
             cacheEmpty = false;
+        }
+
+        if (firstRead) {
+            if (fileOutputStream != null) {
+                fileOutputStream.write(b, 0, num);
+            } else if (byteBuffer.position() + num >= byteBuffer.capacity()) {
+                cacheToFile();
+                fileOutputStream.write(b, 0, num);
+            } else {
+                //byteBuffer.put(b, 0, num);
+                byteBuffer.put(b, 0, len);
+            }
         }
         return num;
     }
@@ -230,7 +222,7 @@ public class CachedInputStream extends InputStream {
         firstRead = false;
         needNewStream = true;
         if (byteBuffer != null) {
-            byteBuffer.flip();
+            byteBuffer.position(0);
         }
     }
     
@@ -300,7 +292,7 @@ public class CachedInputStream extends InputStream {
             inputStream = Channels.newInputStream(channel);
         } else {
             LOG.debug("Creating new input stream from memory cache.");
-            byteBuffer.flip();
+            byteBuffer.position(0);
             inputStream = new ByteBufferInputStream(byteBuffer);
         }
         needNewStream = false;
