@@ -177,13 +177,8 @@ public class CachedOutputStream extends OutputStream {
         cacheEmpty = false;
     }
 
-    static int count = 0;
-    
     @Override
     public void write(byte[] b, int off, int len) throws IOException {
-
-        System.out.println("Wrote count: " + ++count);
-        
         if (doneWriting) {
             throw new IllegalStateException(
                     "Cannot write to this closed output stream.");
