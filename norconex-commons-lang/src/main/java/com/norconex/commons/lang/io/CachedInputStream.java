@@ -18,6 +18,7 @@
 package com.norconex.commons.lang.io;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -40,15 +41,17 @@ import com.norconex.commons.lang.unit.DataUnit;
 // if preferable.
 // IDEA: use static counter that holds how much bytes were written by all
 // input streams.  Would need to synchronize get/set... could it affect
-// performance... or can we live with a small time-discrepency?
+// performance... or can we live with a small time-discrepancy?
 
 /**
  * {@link InputStream} wrapper that can be re-read any number of times.  This 
  * class will cache the wrapped input steam content the first time it is read, 
  * and subsequent read will use the cache.   
  * <p/>
- * In order to re-use this InputStream, it must first be read fully.  
- * Once done reading the stream, you will get the -1 character as usual.
+ * In order to re-use this InputStream, you must call {@link #rewind()} first
+ * on it. Once done reading the stream, you will get the -1 character as 
+ * expected, and it will remain at that until you rewind or close.
+ * <p/>
  * Starting reading the stream again will start reading bytes from the 
  * beginning (re)using its internal cache. <b>Do not close the stream 
  * until you are done re-using it.</b> The moment you close the stream, 
@@ -58,7 +61,7 @@ import com.norconex.commons.lang.unit.DataUnit;
  * <p/>
  * The internal cache stores read bytes into memory, up to to the 
  * specified maximum cache size. If content exceeds
- * the cache limit, the cache transforms itself into a file-based cache
+ * the cache limit, the cache transforms itself into a fast file-based cache
  * of unlimited size.  Default memory cache size is 128 KB.
  * <p/>
  * @author Pascal Essiembre
@@ -75,11 +78,14 @@ public class CachedInputStream extends InputStream {
     private InputStream inputStream;
     
     private ByteBuffer byteBuffer; 
+    
     private File cacheFile;
     private OutputStream fileOutputStream;
     private boolean firstRead = true;
     private boolean needNewStream = false;
     private boolean cacheEmpty = true;
+    private Integer bufferLimit = null;
+    private boolean closed = false;
     
     private final File cacheDirectory;
     
@@ -139,7 +145,7 @@ public class CachedInputStream extends InputStream {
      * @param byteBuffer the InputStream cache.
      */
     /*default*/ CachedInputStream(ByteBuffer byteBuffer) {
-        byteBuffer.rewind();
+        //byteBuffer.rewind();
         this.byteBuffer = byteBuffer;
         this.cacheDirectory = null;
         firstRead = false;
@@ -156,16 +162,22 @@ public class CachedInputStream extends InputStream {
         needNewStream = true;
     }
 
+    /*default*/ Integer getBufferLimit() {
+        return bufferLimit;
+    }
     
     @Override
     public int read() throws IOException {
+        if (closed) {
+            throw new IOException("Cannot read a closed input stream.");
+        }
+        
         if (needNewStream) {
             createInputStreamFromCache();
         }
         if (firstRead) {
             int read = inputStream.read();
             if (read == -1) {
-                innerClose();
                 return read;
             }
             if (fileOutputStream != null) {
@@ -180,22 +192,20 @@ public class CachedInputStream extends InputStream {
             return read;
         }
         int read = inputStream.read();
-        if (read == -1) {
-            innerClose();
-        }
         cacheEmpty = false;
         return read;
     }
     
     @Override
     public int read(byte[] b, int off, int len) throws IOException {
+        if (closed) {
+            throw new IOException("Cannot read a closed input stream.");
+        }
         if (needNewStream) {
             createInputStreamFromCache();
         }
-
         int num = inputStream.read(b, off, len);
         if (num == -1) {
-            innerClose();
             return num;
         } else if (num > 0) {
             cacheEmpty = false;
@@ -208,21 +218,22 @@ public class CachedInputStream extends InputStream {
                 cacheToFile();
                 fileOutputStream.write(b, 0, num);
             } else {
-                //byteBuffer.put(b, 0, num);
-                byteBuffer.put(b, 0, len);
+                byteBuffer.put(b, 0, num);
             }
         }
         return num;
     }
     
-    private void innerClose() {
-        IOUtils.closeQuietly(inputStream);
-        IOUtils.closeQuietly(fileOutputStream);
-        fileOutputStream = null;
-        firstRead = false;
-        needNewStream = true;
-        if (byteBuffer != null) {
-            byteBuffer.position(0);
+    public void rewind() {
+        if (!cacheEmpty) {
+            if (byteBuffer != null) {
+                bufferLimit = byteBuffer.position();
+            }
+            IOUtils.closeQuietly(inputStream);
+            IOUtils.closeQuietly(fileOutputStream);
+            fileOutputStream = null;
+            firstRead = false;
+            needNewStream = true;
         }
     }
     
@@ -246,6 +257,7 @@ public class CachedInputStream extends InputStream {
             FileUtil.delete(cacheFile);
             LOG.debug("Deleted cache file: " + cacheFile);
         }
+        closed = true;
         cacheEmpty = true;
     }
 
@@ -274,10 +286,13 @@ public class CachedInputStream extends InputStream {
         RandomAccessFile f = new RandomAccessFile(cacheFile, "rw");
         FileChannel channel = f.getChannel();
         fileOutputStream = Channels.newOutputStream(channel);
-        byteBuffer.position(0);
-        
-        IOUtils.copy(new ByteBufferInputStream(
-                byteBuffer), fileOutputStream);
+
+        byteBuffer.flip();
+        byte[] bytesToStore = new byte[byteBuffer.limit()];
+        byteBuffer.get(bytesToStore);
+        ByteArrayInputStream is = new ByteArrayInputStream(bytesToStore);
+        IOUtils.copy(is, fileOutputStream);
+        is.close();
         byteBuffer.clear();
         byteBuffer = null;
     }
@@ -292,8 +307,13 @@ public class CachedInputStream extends InputStream {
             inputStream = Channels.newInputStream(channel);
         } else {
             LOG.debug("Creating new input stream from memory cache.");
-            byteBuffer.position(0);
-            inputStream = new ByteBufferInputStream(byteBuffer);
+            byteBuffer.flip();
+            if (bufferLimit != null) {
+                byteBuffer.limit(bufferLimit);
+            }
+            byte[] bytesToStore = new byte[byteBuffer.limit()];
+            byteBuffer.get(bytesToStore);
+            inputStream = new ByteArrayInputStream(bytesToStore);
         }
         needNewStream = false;
     }

@@ -18,6 +18,7 @@
 package com.norconex.commons.lang.io;
 
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -176,8 +177,12 @@ public class CachedOutputStream extends OutputStream {
         cacheEmpty = false;
     }
 
+    static int count = 0;
+    
     @Override
     public void write(byte[] b, int off, int len) throws IOException {
+
+        System.out.println("Wrote count: " + ++count);
         
         if (doneWriting) {
             throw new IllegalStateException(
@@ -200,46 +205,48 @@ public class CachedOutputStream extends OutputStream {
 
     public CachedInputStream getInputStream() throws IOException {
         if (closed) {
-            throw new IllegalStateException("Cannot get InputStream on a "
+            throw new IllegalStateException("Cannot get CachedInputStream on a "
                     + "closed CachedOutputStream.");
         }
         CachedInputStream is = null;
         if (cacheFile != null) {
             is = new CachedInputStream(cacheFile);
         } else {
-            byteBuffer.position(0);
-            is = new CachedInputStream(byteBuffer);
+            ByteBuffer bbuf = byteBuffer.asReadOnlyBuffer();
+            is = new CachedInputStream(bbuf);
         }
         close(false);
         return is;
     }
     
     private void close(boolean clearCache) throws IOException {
-        closed = true;
-        if (byteBuffer != null) {
-            if (clearCache) {
-                byteBuffer.clear();
+        if (!closed) {
+            closed = true;
+            if (byteBuffer != null) {
+                if (clearCache) {
+                    byteBuffer.clear();
+                    byteBuffer = null;
+                }
             }
-            byteBuffer = null;
-        }
-        if (outputStream != null) {
-            outputStream.flush();
-            IOUtils.closeQuietly(outputStream);
-            outputStream = null;
-        }
-        if (cacheFileOutputStream != null) {
-            cacheFileOutputStream.flush();
-            IOUtils.closeQuietly(cacheFileOutputStream);
-            cacheFileOutputStream = null;
-        }
-        if (cacheFile != null) {
-            if (clearCache) {
-                FileUtil.delete(cacheFile);
-                LOG.debug("Deleted cache file: " + cacheFile);
+            if (outputStream != null) {
+                outputStream.flush();
+                IOUtils.closeQuietly(outputStream);
+                outputStream = null;
             }
-            cacheFile = null;
+            if (cacheFileOutputStream != null) {
+                cacheFileOutputStream.flush();
+                IOUtils.closeQuietly(cacheFileOutputStream);
+                cacheFileOutputStream = null;
+            }
+            if (cacheFile != null) {
+                if (clearCache) {
+                    FileUtil.delete(cacheFile);
+                    LOG.debug("Deleted cache file: " + cacheFile);
+                    cacheFile = null;
+                }
+            }
+            cacheEmpty = true;
         }
-        cacheEmpty = true;
     }
     
     @Override
@@ -271,10 +278,15 @@ public class CachedOutputStream extends OutputStream {
         RandomAccessFile f = new RandomAccessFile(cacheFile, "rw");
         FileChannel channel = f.getChannel();
         cacheFileOutputStream = Channels.newOutputStream(channel);
-        byteBuffer.position(0);
+        //byteBuffer.position(0);
         
-        IOUtils.copy(new ByteBufferInputStream(
-                byteBuffer), cacheFileOutputStream);
+        byteBuffer.flip();
+        
+        byte[] bytesToStore = new byte[byteBuffer.limit()];
+        byteBuffer.get(bytesToStore);
+        ByteArrayInputStream is = new ByteArrayInputStream(bytesToStore);
+        IOUtils.copy(is, cacheFileOutputStream);
+        is.close();
         byteBuffer.clear();
         byteBuffer = null;
     }

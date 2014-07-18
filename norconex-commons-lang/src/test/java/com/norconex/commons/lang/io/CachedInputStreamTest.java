@@ -34,7 +34,6 @@ import com.norconex.commons.lang.unit.DataUnit;
 
 /**
  * @author Pascal Essiembre
- *
  */
 public class CachedInputStreamTest {
 
@@ -53,11 +52,12 @@ public class CachedInputStreamTest {
         String content = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
         ByteArrayInputStream is = new ByteArrayInputStream(content.getBytes());
-        InputStream cache = new CachedInputStream(
+        CachedInputStream cache = new CachedInputStream(
                 is, (int) DataUnit.B.toBytes(100));
         try {
             // first time should cache
             Assert.assertEquals(content, readCacheToString(cache));
+            cache.rewind();
             // second time should read from cache
             Assert.assertEquals(content, readCacheToString(cache));
         }  finally {
@@ -70,11 +70,12 @@ public class CachedInputStreamTest {
         String content = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
         ByteArrayInputStream is = new ByteArrayInputStream(content.getBytes());
-        InputStream cache = new CachedInputStream(
+        CachedInputStream cache = new CachedInputStream(
                 is, (int) DataUnit.B.toBytes(10));
         try {
             // first time should cache
             Assert.assertEquals(content, readCacheToString(cache));
+            cache.rewind();
             // second time should read from cache
             Assert.assertEquals(content, readCacheToString(cache));
         }  finally {

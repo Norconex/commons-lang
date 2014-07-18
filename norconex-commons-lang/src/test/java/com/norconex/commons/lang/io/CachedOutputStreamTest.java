@@ -33,7 +33,6 @@ import com.norconex.commons.lang.unit.DataUnit;
 
 /**
  * @author Pascal Essiembre
- *
  */
 public class CachedOutputStreamTest {
 
