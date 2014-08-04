@@ -22,6 +22,9 @@
       <action dev="essiembp" type="add">
         Added content-type mappings for Content Family.
       </action>
+      <action dev="essiembp" type="update">
+        Properties default content delimiter is now more unique.
+      </action>
     </release>
 
     <release version="1.4.0" date="2014-07-09" description="Feature release">

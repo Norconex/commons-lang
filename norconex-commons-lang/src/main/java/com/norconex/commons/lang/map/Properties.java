@@ -81,7 +81,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * Default delimiter when storing/loading multi-values to/from 
      * <code>.properties</code> files.
      */
-    public static final String DEFAULT_MULTIVALUE_DELIMITER = "^^^";
+    public static final String DEFAULT_MULTIVALUE_DELIMITER = "^|~";
     
     private final boolean caseSensitiveKeys;
     private String multiValueDelimiter = DEFAULT_MULTIVALUE_DELIMITER;
