@@ -261,6 +261,17 @@ public class CachedInputStream extends InputStream {
         cacheEmpty = true;
     }
 
+    @Override
+    public int available() throws IOException {
+        if (needNewStream) {
+            createInputStreamFromCache();
+        }
+        if (inputStream == null) {
+            return 0;
+        }
+        return inputStream.available();
+    }
+    
     /**
      * Gets the cache directory where temporary cache files are created.
      * @return the cache directory
