@@ -25,9 +25,6 @@
       <action dev="essiembp" type="update">
         Properties default content delimiter is now more unique.
       </action>
-      <action dev="essiembp" type="update">
-        Properties default content delimiter is now more unique.
-      </action>
       <action dev="essiembp" type="fix">
         Fixed content type display name for application/ccxml+xml not being
         mapped properly.

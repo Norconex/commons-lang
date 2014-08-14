@@ -50,14 +50,20 @@ import com.norconex.commons.lang.unit.DataUnit;
  * <p/>
  * In order to re-use this InputStream, you must call {@link #rewind()} first
  * on it. Once done reading the stream, you will get the -1 character as 
- * expected, and it will remain at that until you rewind or close.
+ * expected, and it will remain at that until you rewind or dispose.
  * <p/>
  * Starting reading the stream again will start reading bytes from the 
- * beginning (re)using its internal cache. <b>Do not close the stream 
- * until you are done re-using it.</b> The moment you close the stream, 
- * its internal cache will be wiped out and you will not be able to use it 
- * anymore.  It is important to <b>close the stream to delete any temporary 
- * cache file created</b>.
+ * beginning (re)using its internal cache.
+ * <p/>
+ * Calling {@link #close()} has
+ * no effect, and the cache data remains available for subsequent read.
+ * <p/>
+ * To explicitly dispose of resources allocated to the cache, you can 
+ * use the {@link #dispose()} method.  
+ * Attempting to read a disposed instance will throw an {@link IOException}.
+ * It is recommended you explicitly dispose of <code>CachedInputStream</code>
+ * instances to speed up the release of resources. Otherwise, resources are
+ * de-allocated automatically when the instance is finalized.
  * <p/>
  * The internal cache stores read bytes into memory, up to to the 
  * specified maximum cache size. If content exceeds
@@ -85,7 +91,7 @@ public class CachedInputStream extends InputStream {
     private boolean needNewStream = false;
     private boolean cacheEmpty = true;
     private Integer bufferLimit = null;
-    private boolean closed = false;
+    private boolean disposed = false;
     
     private final File cacheDirectory;
     
@@ -168,8 +174,8 @@ public class CachedInputStream extends InputStream {
     
     @Override
     public int read() throws IOException {
-        if (closed) {
-            throw new IOException("Cannot read a closed input stream.");
+        if (disposed) {
+            throw new IOException("CachedInputStream has been disposed.");
         }
         
         if (needNewStream) {
@@ -198,8 +204,8 @@ public class CachedInputStream extends InputStream {
     
     @Override
     public int read(byte[] b, int off, int len) throws IOException {
-        if (closed) {
-            throw new IOException("Cannot read a closed input stream.");
+        if (disposed) {
+            throw new IOException("CachedInputStream has been disposed.");
         }
         if (needNewStream) {
             createInputStreamFromCache();
@@ -237,9 +243,7 @@ public class CachedInputStream extends InputStream {
         }
     }
     
-    @Override
-    public void close() throws IOException {
-        super.close();
+    public void dispose() throws IOException {
         if (byteBuffer != null) {
             byteBuffer.clear();
             byteBuffer = null;
@@ -257,7 +261,7 @@ public class CachedInputStream extends InputStream {
             FileUtil.delete(cacheFile);
             LOG.debug("Deleted cache file: " + cacheFile);
         }
-        closed = true;
+        disposed = true;
         cacheEmpty = true;
     }
 
@@ -287,6 +291,10 @@ public class CachedInputStream extends InputStream {
      */
     public boolean isCacheEmpty() {
         return cacheEmpty;
+    }
+    
+    public boolean isDisposed() {
+        return disposed;
     }
     
     @SuppressWarnings("resource")
@@ -331,6 +339,6 @@ public class CachedInputStream extends InputStream {
     
     @Override
     protected void finalize() throws Throwable {
-        close();
+        dispose();
     }
 }
