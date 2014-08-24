@@ -1,4 +1,4 @@
-/* Copyright 2010-2013 Norconex Inc.
+/* Copyright 2010-2014 Norconex Inc.
  * 
  * This file is part of Norconex Commons Lang.
  * 
@@ -240,22 +240,17 @@ public final class ConfigurationLoader {
     
     /**
      * This load method will return an Apache XML Configuration without
-     * any variable substitution or Velocity directives. 
-     * Velocity parsing or variable substitution.
+     * any Velocity parsing, variable substitution or Velocity directives. 
      * @param in input stream
      * @return XMLConfiguration
+     * @deprecated Since 1.5.0.  Use 
+     *             {@link ConfigurationUtil#newXMLConfiguration(Reader)} 
      */
+    @Deprecated
     public static XMLConfiguration loadXML(Reader in) {
-        XMLConfiguration xml = new XMLConfiguration();
-        xml.setDelimiterParsingDisabled(true);
-        try {
-            xml.load(in);
-        } catch (org.apache.commons.configuration.ConfigurationException e) {
-            throw new ConfigurationException("Cannot load from XML", e);
-        }
-        return xml;
+        return ConfigurationUtil.newXMLConfiguration(in);
     }
-
+    
     private File getVariablesFile(String fullpath, String baseName) {
         File vars = new File(fullpath + baseName + EXTENSION_PROPERTIES);
         if (isVariableFile(vars, EXTENSION_PROPERTIES)) {

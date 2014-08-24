@@ -20,10 +20,18 @@
         New ByteBufferInputStream for reading a ByteBuffer as an InputStream.
       </action>
       <action dev="essiembp" type="add">
+        New EnhancedXMLStreamWriter class to facilitate writing of primitives
+        and other types.
+      </action>
+      <action dev="essiembp" type="add">
         Added content-type mappings for Content Family.
       </action>
       <action dev="essiembp" type="update">
         Properties default content delimiter is now more unique.
+      </action>
+      <action dev="essiembp" type="update">
+        Deprecated ConfigurationLoader#loadXML(Reader) in favor of 
+        ConfigurationUtil#newXMLConfiguration(Reader).
       </action>
       <action dev="essiembp" type="fix">
         Fixed content type display name for application/ccxml+xml not being

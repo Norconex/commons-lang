@@ -42,6 +42,26 @@ public final class ConfigurationUtil {
         super();
     }
    
+    
+    /**
+     * This load method will return an Apache XML Configuration from
+     * from a reader, with delimiter parsing disabled. 
+     * @param in input stream
+     * @return XMLConfiguration
+     * @since 1.5.0
+     */
+    public static XMLConfiguration newXMLConfiguration(Reader in) {
+        XMLConfiguration xml = new XMLConfiguration();
+        xml.setDelimiterParsingDisabled(true);
+        try {
+            xml.load(in);
+        } catch (org.apache.commons.configuration.ConfigurationException e) {
+            throw new ConfigurationException("Cannot load XMLConfiguration", e);
+        }
+        return xml;
+    }
+
+    
     /**
      * Creates a new instance of the class represented by the "class" attribute
      * on the given node.  The class must have an empty constructor.
