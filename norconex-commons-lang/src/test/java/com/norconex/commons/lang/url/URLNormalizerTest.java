@@ -23,7 +23,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class URLNormallizerTest {
+public class URLNormalizerTest {
 
     private String s;
     private String t;
