@@ -9,6 +9,10 @@
 
     <release version="1.5.0" date="2014-??-??" description="Feature release">
       <action dev="essiembp" type="add">
+        New Content class, referencing or holding arbitrary content 
+        (text of binary).
+      </action>
+      <action dev="essiembp" type="add">
         New CachedInputStream for caching input streams for re-use.  
         Swaps memory overflow to file.
       </action>
