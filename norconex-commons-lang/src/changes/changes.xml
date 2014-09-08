@@ -9,6 +9,10 @@
 
     <release version="1.5.0" date="2014-??-??" description="Feature release">
       <action dev="essiembp" type="add">
+        New pipeline-related classes for a very simple pipeline framework for 
+        encapsulating executable tasks.
+      </action>
+      <action dev="essiembp" type="add">
         New Content class, referencing or holding arbitrary content 
         (text of binary).
       </action>
@@ -41,7 +45,6 @@
         Fixed content type display name for application/ccxml+xml not being
         mapped properly.
       </action>
-      
     </release>
 
     <release version="1.4.0" date="2014-07-09" description="Feature release">
