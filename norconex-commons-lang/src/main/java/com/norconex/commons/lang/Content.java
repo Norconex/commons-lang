@@ -98,6 +98,18 @@ public class Content {
         return cacheStream;
     }
     
+    /**
+     * Releases any resources attached to this content (clears this content
+     * cache).   
+     * @throws IOException 
+     */
+    public void dispose() throws IOException {
+        if (cacheStream != null) {
+            cacheStream.dispose();
+        }
+        cacheStream = null;
+    }
+    
     @Override
     protected void finalize() throws Throwable {
         super.finalize();

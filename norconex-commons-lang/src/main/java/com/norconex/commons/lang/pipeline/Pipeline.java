@@ -21,6 +21,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 /**
  * Represent a very simple pipeline container for a list of executable tasks 
  * called "pipeline stages" (defined using
@@ -36,6 +39,8 @@ import java.util.List;
 //TODO make it implement List?
 public class Pipeline<T> implements IPipelineStage<T> {
 
+    private static final Logger LOG = LogManager.getLogger(Pipeline.class);
+    
     private final List<IPipelineStage<T>> stages = new ArrayList<>();
     
     /**
@@ -86,6 +91,7 @@ public class Pipeline<T> implements IPipelineStage<T> {
     public boolean execute(T context) throws PipelineException {
         for (IPipelineStage<T> stage : stages) {
             if (!stage.execute(context)) {
+                LOG.debug("Unsuccessful stage execution: " + stage);
                 return false;
             }
         }
