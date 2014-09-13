@@ -101,7 +101,7 @@ public class Content {
     /**
      * Releases any resources attached to this content (clears this content
      * cache).   
-     * @throws IOException 
+     * @throws IOException could not dispose content
      */
     public void dispose() throws IOException {
         if (cacheStream != null) {
