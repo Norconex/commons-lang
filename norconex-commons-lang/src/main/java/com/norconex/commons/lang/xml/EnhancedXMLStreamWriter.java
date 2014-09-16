@@ -316,7 +316,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter  {
     }
 
     @Override
-    public Object getProperty(String name) throws IllegalArgumentException {
+    public Object getProperty(String name) {
         return writer.getProperty(name);
     }
 

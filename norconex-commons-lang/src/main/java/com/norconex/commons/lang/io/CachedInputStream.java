@@ -151,7 +151,6 @@ public class CachedInputStream extends InputStream {
      * @param byteBuffer the InputStream cache.
      */
     /*default*/ CachedInputStream(ByteBuffer byteBuffer) {
-        //byteBuffer.rewind();
         this.byteBuffer = byteBuffer;
         this.cacheDirectory = null;
         firstRead = false;
@@ -340,5 +339,6 @@ public class CachedInputStream extends InputStream {
     @Override
     protected void finalize() throws Throwable {
         dispose();
+        super.finalize();
     }
 }

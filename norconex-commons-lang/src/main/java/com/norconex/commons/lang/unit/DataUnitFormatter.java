@@ -6,6 +6,8 @@ import java.text.NumberFormat;
 import java.util.Locale;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 
 /**
  * Formats a data unit as string.  This class is thread-safe.
@@ -17,6 +19,8 @@ public class DataUnitFormatter implements Serializable {
     private static final long serialVersionUID = -8672773710734223185L;
 
     private static final DataUnit[] DATA_UNITS = DataUnit.values();
+    private static final int K = 1024;
+    private static final int D = 10;
     
     private final Locale locale;
     private final int decimalPrecision;
@@ -95,7 +99,7 @@ public class DataUnitFormatter implements Serializable {
         long finalAmount = amount;
         int ordinalShift = 0;
         if (!fixedUnit) {
-            ordinalShift = (int) (Math.log(amount) / Math.log(1024));
+            ordinalShift = (int) (Math.log(amount) / Math.log(K));
             if (ordinalShift > 0) {
                 finalUnit = DATA_UNITS[Math.min(
                         unit.ordinal() + ordinalShift, DATA_UNITS.length -1)];
@@ -113,8 +117,8 @@ public class DataUnitFormatter implements Serializable {
                 long diff = originalBytes - finalBytes;
                 DataUnit previousUnit = DATA_UNITS[previousOrdinal];
                 long remainder = previousUnit.convert(diff, DataUnit.B);
-                long base = remainder * (long) Math.pow(10, decimalPrecision);
-                decimals = base / 1024;
+                long base = remainder * (long) Math.pow(D, decimalPrecision);
+                decimals = base / K;
             }
         }
 
@@ -134,45 +138,32 @@ public class DataUnitFormatter implements Serializable {
         b.append('\u00A0').append(finalUnit.toString());
         return b.toString();
     }
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + decimalPrecision;
-        result = prime * result + (fixedUnit ? 1231 : 1237);
-        result = prime * result + ((locale == null) ? 0 : locale.hashCode());
-        return result;
-    }
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        DataUnitFormatter other = (DataUnitFormatter) obj;
-        if (decimalPrecision != other.decimalPrecision) {
-            return false;
-        }
-        if (fixedUnit != other.fixedUnit) {
-            return false;
-        }
-        if (locale == null) {
-            if (other.locale != null) {
-                return false;
-            }
-        } else if (!locale.equals(other.locale)) {
-            return false;
-        }
-        return true;
-    }
+    
+    
+    
     @Override
     public String toString() {
         return "DataUnitFormatter [locale=" + locale + ", decimalPrecision="
                 + decimalPrecision + ", fixedUnit=" + fixedUnit + "]";
+    }
+    @Override
+    public boolean equals(final Object other) {
+        if (!(other instanceof DataUnitFormatter)) {
+            return false;
+        }
+        DataUnitFormatter castOther = (DataUnitFormatter) other;
+        return new EqualsBuilder().append(locale, castOther.locale)
+                .append(decimalPrecision, castOther.decimalPrecision)
+                .append(fixedUnit, castOther.fixedUnit).isEquals();
+    }
+    private transient int hashCode;
+
+    @Override
+    public int hashCode() {
+        if (hashCode == 0) {
+            hashCode = new HashCodeBuilder().append(locale)
+                    .append(decimalPrecision).append(fixedUnit).toHashCode();
+        }
+        return hashCode;
     }
 }

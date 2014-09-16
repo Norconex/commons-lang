@@ -19,6 +19,8 @@ package com.norconex.commons.lang.map;
 
 import java.io.Serializable;
 import java.util.Map;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 
 /**
  * A event representing a change of values in an {@link Map}.
@@ -84,65 +86,34 @@ public class MapChangeEvent<K, V> implements Serializable {
         return newValue;
     }
 
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((key == null) ? 0 : key.hashCode());
-        result = prime * result
-                + ((newValue == null) ? 0 : newValue.hashCode());
-        result = prime * result
-                + ((oldValue == null) ? 0 : oldValue.hashCode());
-        result = prime * result + ((source == null) ? 0 : source.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        MapChangeEvent<?,?> other = (MapChangeEvent<?,?>) obj;
-        if (key == null) {
-            if (other.key != null) {
-                return false;
-            }
-        } else if (!key.equals(other.key)) {
-            return false;
-        }
-        if (newValue == null) {
-            if (other.newValue != null) {
-                return false;
-            }
-        } else if (!newValue.equals(other.newValue)) {
-            return false;
-        }
-        if (oldValue == null) {
-            if (other.oldValue != null) {
-                return false;
-            }
-        } else if (!oldValue.equals(other.oldValue)) {
-            return false;
-        }
-        if (source == null) {
-            if (other.source != null) {
-                return false;
-            }
-        } else if (!source.equals(other.source)) {
-            return false;
-        }
-        return true;
-    }
+    
 
     @Override
     public String toString() {
         return "MapChangeEvent [source=" + source + ", key=" + key
                 + ", oldValue=" + oldValue + ", newValue=" + newValue + "]";
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        if (!(other instanceof MapChangeEvent)) {
+            return false;
+        }
+        MapChangeEvent<?, ?> castOther = (MapChangeEvent<?, ?>) other;
+        return new EqualsBuilder().append(source, castOther.source)
+                .append(key, castOther.key)
+                .append(oldValue, castOther.oldValue)
+                .append(newValue, castOther.newValue).isEquals();
+    }
+
+    private transient int hashCode;
+
+    @Override
+    public int hashCode() {
+        if (hashCode == 0) {
+            hashCode = new HashCodeBuilder().append(source).append(key)
+                    .append(oldValue).append(newValue).toHashCode();
+        }
+        return hashCode;
     }
 }

@@ -19,12 +19,19 @@ package com.norconex.commons.lang.pipeline;
 
 
 /**
- * A logical step in the pipepline.  Typically a action to be executed.
+ * A logical step in the pipepline.  Typically an action to be executed.
  * @author Pascal Essiembre
  * @param <T> pipeline context type
  * @since 1.5.0
  */
 public interface IPipelineStage<T> {
 
-    boolean execute(T context) throws PipelineException;
+    /**
+     * Executes this pipeline stage.  Implementors are encouraged to throw
+     * {@link PipelineException} upon errors.
+     * @param context pipeline context
+     * @return whether to continue pipeline execution or stop (<code>true</code>
+     *         to continue).
+     */
+    boolean execute(T context);
 }

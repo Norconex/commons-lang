@@ -62,7 +62,7 @@ public final class ContentType implements Serializable {
 
     private static final long serialVersionUID = 6416074869536512030L;
 
-    private static Logger LOG = LogManager.getLogger(ContentType.class);
+    private static final Logger LOG = LogManager.getLogger(ContentType.class);
     
     private static final Map<String, ContentType> REGISTRY = 
         new HashMap<String, ContentType>();

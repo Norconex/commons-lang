@@ -88,7 +88,7 @@ public class Pipeline<T> implements IPipelineStage<T> {
     }
     
     @Override
-    public boolean execute(T context) throws PipelineException {
+    public boolean execute(T context) {
         for (IPipelineStage<T> stage : stages) {
             if (!stage.execute(context)) {
                 LOG.debug("Unsuccessful stage execution: " + stage);

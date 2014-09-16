@@ -1,8 +1,5 @@
 package com.norconex.commons.lang.unit;
 
-
-
-
 /**
  * A <tt>DataUnit</tt> represents data amounts at a given unit of
  * granularity and provides utility methods to convert across units.
@@ -140,8 +137,12 @@ public enum DataUnit {
     /*default*/ long finer(long supplied, DataUnit targetUnit) {
         long m = a / targetUnit.a;
         long over = MAX/m;
-        if (supplied >  over) return Long.MAX_VALUE;
-        if (supplied < -over) return Long.MIN_VALUE;
+        if (supplied >  over) {
+            return Long.MAX_VALUE;
+        }
+        if (supplied < -over) {
+            return Long.MIN_VALUE;
+        }
         return supplied * m;
     }
     /*default*/ long coarser(long supplied, DataUnit targetUnit) {

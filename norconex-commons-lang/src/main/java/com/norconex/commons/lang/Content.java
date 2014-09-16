@@ -27,6 +27,8 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.NullInputStream;
 import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 import com.norconex.commons.lang.io.CachedInputStream;
 import com.norconex.commons.lang.unit.DataUnit;
@@ -39,6 +41,9 @@ import com.norconex.commons.lang.unit.DataUnit;
  * @since 1.5.0
  */
 public class Content {
+    
+    private static final Logger LOG = LogManager.getLogger(Content.class);
+    
     //TODO Have max cache size being JVM/classloader scope.  Check every 
     // x changes if we can still use memory before deciding to swap to file.
     // Maybe make have a few cache scope options.
@@ -73,13 +78,15 @@ public class Content {
         this(string, DEFAULT_MAX_MEMORY_CACHE_SIZE);
     }
     public Content(String string, int maxMemoryCacheSize) {
+        InputStream is = null;
         try {
-            InputStream is = IOUtils.toInputStream(string, CharEncoding.UTF_8);
-            cacheStream = new CachedInputStream(is, maxMemoryCacheSize);
+            is = IOUtils.toInputStream(string, CharEncoding.UTF_8);
         } catch (IOException e) {
-            throw new RuntimeException(
-                    "Cannot create content from string.", e);
+            LOG.error("Could not get input stream with UTF-8 encoding. "
+                    + "Trying with default encoding.", e);
+            is = IOUtils.toInputStream(string);
         }
+        cacheStream = new CachedInputStream(is, maxMemoryCacheSize);
     }
     /**
      * Creates an empty content.
@@ -112,7 +119,7 @@ public class Content {
     
     @Override
     protected void finalize() throws Throwable {
-        super.finalize();
         IOUtils.closeQuietly(cacheStream);
+        super.finalize();
     }
 }

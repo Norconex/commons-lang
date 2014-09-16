@@ -594,11 +594,11 @@ public final class FileUtil {
                 new ReverseFileInputStream(file), encoding));
         int remainingLinesToRead = numberOfLinesToRead;
 
-        
-        
         String line;
-        while ((line = reader.readLine()) != null 
-                && remainingLinesToRead-- > 0) {
+        while ((line = reader.readLine()) != null) {
+            if (remainingLinesToRead-- <= 0) {
+                break;
+            }
             String newLine = StringUtils.reverse(line);
             if (!stripBlankLines || StringUtils.isNotBlank(line)) {
                 if (filter != null && filter.accept(newLine)) {

@@ -39,7 +39,7 @@ import org.apache.log4j.Logger;
  */
 public final class ContentFamily {
     
-    private static Logger LOG = LogManager.getLogger(ContentFamily.class);
+    private static final Logger LOG = LogManager.getLogger(ContentFamily.class);
     
     private static final ResourceBundle BUNDLE_MAPPINGS;
     static {

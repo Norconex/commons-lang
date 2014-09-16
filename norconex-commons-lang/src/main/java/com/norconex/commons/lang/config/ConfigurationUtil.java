@@ -349,7 +349,7 @@ public final class ConfigurationUtil {
         tempFile.delete();
 
         if (!xmlConfiurable.equals(readConfigurable)) {
-            throw new RuntimeException(
+            throw new ConfigurationException(
                     "Saved and loaded XML are not the same.");
         }
     }

@@ -217,11 +217,9 @@ public class CachedOutputStream extends OutputStream {
     private void close(boolean clearCache) throws IOException {
         if (!closed) {
             closed = true;
-            if (byteBuffer != null) {
-                if (clearCache) {
-                    byteBuffer.clear();
-                    byteBuffer = null;
-                }
+            if (byteBuffer != null && clearCache) {
+                byteBuffer.clear();
+                byteBuffer = null;
             }
             if (outputStream != null) {
                 outputStream.flush();
@@ -233,12 +231,10 @@ public class CachedOutputStream extends OutputStream {
                 IOUtils.closeQuietly(cacheFileOutputStream);
                 cacheFileOutputStream = null;
             }
-            if (cacheFile != null) {
-                if (clearCache) {
-                    FileUtil.delete(cacheFile);
-                    LOG.debug("Deleted cache file: " + cacheFile);
-                    cacheFile = null;
-                }
+            if (cacheFile != null && clearCache) {
+                FileUtil.delete(cacheFile);
+                LOG.debug("Deleted cache file: " + cacheFile);
+                cacheFile = null;
             }
             cacheEmpty = true;
         }
@@ -273,7 +269,6 @@ public class CachedOutputStream extends OutputStream {
         RandomAccessFile f = new RandomAccessFile(cacheFile, "rw");
         FileChannel channel = f.getChannel();
         cacheFileOutputStream = Channels.newOutputStream(channel);
-        //byteBuffer.position(0);
         
         byteBuffer.flip();
         
@@ -290,5 +285,6 @@ public class CachedOutputStream extends OutputStream {
     @Override
     protected void finalize() throws Throwable {
         close();
+        super.finalize();
     }
 }
