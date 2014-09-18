@@ -264,11 +264,15 @@ public final class FileUtil {
                 if (date == null || FileUtils.isFileOlder(file, date)) {
                     String[] children = file.list();
                     if (file.isDirectory()
-                            && (children == null || children.length == 0)
-                            && !file.delete()) {
-                        LOG.error("Could not be delete directory: " + file);
+                            && (children == null || children.length == 0)) {
+                        try {
+                            FileUtil.delete(file);
+                            dirCount.increment();
+                        } catch (IOException e) {
+                            LOG.error("Could not be delete directory: "
+                                    + file, e);
+                        }                        
                     }
-                    dirCount.increment();
                 }
             }
         });
@@ -413,18 +417,7 @@ public final class FileUtil {
      * @param visitor the visitor
      */
     public static void visitAllFiles(File dir, IFileVisitor visitor) {
-        if (!dir.exists()) {
-            return;
-        } else if (dir.isDirectory()) {
-            String[] children = dir.list();
-            if (children != null) {
-                for (int i=0; i<children.length; i++) {
-                    visitAllFiles(new File(dir, children[i]), visitor);
-                }
-            }
-        } else {
-            visitor.visit(dir);
-        }
+        visitAllFiles(dir, visitor, null);
     }
     /**
      * Visits all files (and only files) under a directory, including 
@@ -438,13 +431,13 @@ public final class FileUtil {
         if (!dir.exists()) {
             return;
         } else if (dir.isDirectory()) {
-            File[] children = dir.listFiles(filter);
+            String[] children = dir.list();
             if (children != null) {
                 for (int i=0; i<children.length; i++) {
-                    visitAllFiles(children[i], visitor, filter);
+                    visitAllFiles(new File(dir, children[i]), visitor, filter);
                 }
             }
-        } else {
+        } else if (filter == null || filter.accept(dir)) {
             visitor.visit(dir);
         }
     }

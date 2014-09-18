@@ -41,9 +41,17 @@
         Deprecated ConfigurationLoader#loadXML(Reader) in favor of 
         ConfigurationUtil#newXMLConfiguration(Reader).
       </action>
+      <action dev="essiembp" type="update">
+        FileUtil#deleteEmptyDirs(File) now forces directory deletion using
+        FileUtil#delete(File)
+      </action>
       <action dev="essiembp" type="fix">
         Fixed content type display name for application/ccxml+xml not being
         mapped properly.
+      </action>
+      <action dev="essiembp" type="fix">
+        FileUtil#visitAllFiles(...) method now goes beyond 1 level deep
+        when browsing recursively.
       </action>
     </release>
 
