@@ -34,14 +34,19 @@ import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
-import com.norconex.commons.lang.MemoryUtil;
 import com.norconex.commons.lang.file.FileUtil;
-import com.norconex.commons.lang.unit.DataUnit;
+import com.norconex.commons.lang.io.CachedStreamFactory.MemoryTracker;
 
 /**
  * {@link InputStream} wrapper that can be re-read any number of times.  This 
  * class will cache the wrapped input steam content the first time it is read, 
  * and subsequent read will use the cache.   
+ * <p/>
+ * To create new instances of {@link CachedInputStream}, use the
+ * {@link CachedStreamFactory} class.   Reusing the same factory
+ * will ensure all {@link CachedInputStream} instances created share the same
+ * combined maximum memory.  Invoking one of the 
+ * <code>newInputStream(...)</code> methods on this class have the same effect.
  * <p/>
  * In order to re-use this InputStream, you must call {@link #rewind()} first
  * on it. Once done reading the stream, you will get the -1 character as 
@@ -67,20 +72,15 @@ import com.norconex.commons.lang.unit.DataUnit;
  * <p/>
  * @author Pascal Essiembre
  * @since 1.5
+ * @see CachedStreamFactory
  */
-public class CachedInputStream extends InputStream {
+public class CachedInputStream extends InputStream implements ICachedStream {
 
     private static final Logger LOG = 
             LogManager.getLogger(CachedInputStream.class);
     
-    public static final int DEFAULT_MAX_CACHE_MEMORY = 
-            (int) DataUnit.KB.toBytes(128);
-
-    private static final int MINIMUM_FREE_JVM_MEMORY_FOR_MEM_CACHE = 
-            (int) DataUnit.MB.toBytes(10);
-
-    
-    private final int maxCacheSize;
+    private final CachedStreamFactory factory;
+    private final MemoryTracker tracker;
     
     private InputStream inputStream;
     
@@ -93,7 +93,6 @@ public class CachedInputStream extends InputStream {
     private boolean firstRead = true;
     private boolean needNewStream = false;
     private boolean cacheEmpty = true;
-    private Integer bufferLimit = null;
     private boolean disposed = false;
     
     private final File cacheDirectory;
@@ -101,59 +100,15 @@ public class CachedInputStream extends InputStream {
     /**
      * Caches the wrapped InputStream.
      * @param is InputStream to cache
-     */
-    public CachedInputStream(InputStream is) {
-        this(is, DEFAULT_MAX_CACHE_MEMORY);
-    }
-
-    /**
-     * Caches the wrapped InputStream.
-     * @param is InputStream to cache
      * @param cacheDirectory directory where to store large content
      */
-    public CachedInputStream(
+    /*default*/ CachedInputStream(CachedStreamFactory factory, 
             InputStream is, File cacheDirectory) {
-        this(is, DEFAULT_MAX_CACHE_MEMORY, cacheDirectory);
-    }
-    
-    /**
-     * Caches the wrapped InputStream.
-     * @param is InputStream to cache
-     * @param maxCacheSize maximum byte size of memory cache 
-     *        (before caching to file).
-     */
-    public CachedInputStream(InputStream is, int maxCacheSize) {
-        this(is, maxCacheSize, null);
-    }
-    
-    /**
-     * Caches the wrapped InputStream.
-     * @param is InputStream to cache
-     * @param maxCacheSize maximum byte size of memory cache 
-     *        (before caching to file).
-     * @param cacheDirectory directory where to store large content
-     */
-    public CachedInputStream(
-            InputStream is, int maxCacheSize, File cacheDirectory) {
         super();
         
-        //TODO instead of checking for remaining memory (or in addition),
-        // have a static init parameter to specify absolut maximum
-        // memory all cached input streams can take?
-        
-        long freeMem = MemoryUtil.getFreeMemory(true);
-        if (freeMem < MINIMUM_FREE_JVM_MEMORY_FOR_MEM_CACHE) {
-            LOG.warn("Not enough memory remaining to create memory cache for "
-                    + "new CachedInputStream instance. Using file cache");
-            this.maxCacheSize = 0;
-        } else if (freeMem / 2 < maxCacheSize) {
-            LOG.info("Maximum memory cache for CachedInputStream cannot be "
-                    + "higher than half the remaining JVM memory. "
-                    + "Reducing it.");
-            this.maxCacheSize = (int) freeMem / 2;
-        } else {
-            this.maxCacheSize = maxCacheSize;
-        }
+        this.factory = factory;
+        this.tracker = factory.new MemoryTracker();
+
         
         memOutputStream = new ByteArrayOutputStream();
         
@@ -173,8 +128,10 @@ public class CachedInputStream extends InputStream {
      * Creates an input stream with an existing memory cache.
      * @param byteBuffer the InputStream cache.
      */
-    /*default*/ CachedInputStream(byte[] memCache) {
-        this.maxCacheSize = -1;
+    /*default*/ CachedInputStream(
+            CachedStreamFactory factory, byte[] memCache) {
+        this.factory = factory;
+        this.tracker = factory.new MemoryTracker();
         this.memCache = memCache;
         this.cacheDirectory = null;
         firstRead = false;
@@ -184,18 +141,15 @@ public class CachedInputStream extends InputStream {
      * Creates an input stream with an existing file cache.
      * @param cacheFile the file cache
      */
-    /*default*/ CachedInputStream(File cacheFile) {
-        this.maxCacheSize = -1;
+    /*default*/ CachedInputStream(CachedStreamFactory factory, File cacheFile) {
+        this.factory = factory;
+        this.tracker = factory.new MemoryTracker();
         this.fileCache = cacheFile;
         this.cacheDirectory = null;
         firstRead = false;
         needNewStream = true;
     }
 
-    /*default*/ Integer getBufferLimit() {
-        return bufferLimit;
-    }
-    
     @Override
     public int read() throws IOException {
         if (disposed) {
@@ -213,7 +167,7 @@ public class CachedInputStream extends InputStream {
             if (fileOutputStream != null) {
                 // Write to file cache
                 fileOutputStream.write(read);
-            } else if (memOutputStream.size() == maxCacheSize) {
+            } else if (!tracker.hasEnoughAvailableMemory(memOutputStream, 1)) {
                 // Too big: create file cache and write to it.
                 cacheToFile();
                 fileOutputStream.write(read);
@@ -248,7 +202,8 @@ public class CachedInputStream extends InputStream {
         if (firstRead) {
             if (fileOutputStream != null) {
                 fileOutputStream.write(b, 0, num);
-            } else if (memOutputStream.size() + num >= maxCacheSize) {
+            } else if (!tracker.hasEnoughAvailableMemory(
+                    memOutputStream, num)) {
                 cacheToFile();
                 fileOutputStream.write(b, 0, num);
             } else {
@@ -331,11 +286,46 @@ public class CachedInputStream extends InputStream {
     public boolean isDisposed() {
         return disposed;
     }
+
+    @Override
+    public long getMemCacheSize() {
+        if (memCache != null) {
+            return memCache.length;
+        }
+        if (memOutputStream != null) {
+            return memOutputStream.size();
+        }
+        return 0;
+    }
+    
+    /**
+     * Creates a new {@link CachedInputStream} using the same factory settings
+     * that were used to create this instance.
+     * @param file file to create the input stream from
+     * @return cached input stream
+     */
+    public CachedInputStream newInputStream(File file) {
+        return factory.newInputStream(file);
+    }
+    /**
+     * Creates a new {@link CachedInputStream} using the same factory settings
+     * that were used to create this instance.
+     * @param is input stream
+     * @return cached input stream
+     */
+    public CachedInputStream newInputStream(InputStream is) {
+        return factory.newInputStream(is);
+    }
+    
+    public CachedStreamFactory getStreamFactory() {
+        return factory;
+    }
     
     @SuppressWarnings("resource")
     private void cacheToFile() throws IOException {
         fileCache = File.createTempFile(
                 "CachedInputStream-", "-temp", cacheDirectory);
+        fileCache.deleteOnExit();
         LOG.debug("Reached max cache size. Swapping to file: " + fileCache);
         RandomAccessFile f = new RandomAccessFile(fileCache, "rw");
         FileChannel channel = f.getChannel();
@@ -352,7 +342,7 @@ public class CachedInputStream extends InputStream {
             RandomAccessFile f = new RandomAccessFile(fileCache, "r");
             FileChannel channel = f.getChannel();
             inputStream = Channels.newInputStream(channel);
-        } else {// if (memCache != null) {
+        } else {
             LOG.debug("Creating new input stream from memory cache.");
             inputStream = new ByteArrayInputStream(memCache);
         }

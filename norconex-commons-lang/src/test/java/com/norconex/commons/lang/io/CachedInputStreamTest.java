@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.input.NullInputStream;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -29,8 +30,6 @@ import org.apache.log4j.PatternLayout;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import com.norconex.commons.lang.unit.DataUnit;
 
 /**
  * @author Pascal Essiembre
@@ -52,8 +51,9 @@ public class CachedInputStreamTest {
         String content = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
         ByteArrayInputStream is = new ByteArrayInputStream(content.getBytes());
-        CachedInputStream cache = new CachedInputStream(
-                is, (int) DataUnit.B.toBytes(100));
+        
+        CachedStreamFactory factory = new CachedStreamFactory(200, 100);
+        CachedInputStream cache = factory.newInputStream(is);
         try {
             // first time should cache
             Assert.assertEquals(content, readCacheToString(cache));
@@ -66,12 +66,36 @@ public class CachedInputStreamTest {
     }
 
     @Test
-    public void testContentMatchFileCache() throws IOException {
+    public void testContentMatchPoolMaxFileCache() throws IOException {
+        CachedStreamFactory factory = new CachedStreamFactory(
+                200 * 1024, 150 * 1024);
+        CachedInputStream cache1 = null;
+        CachedInputStream cache2 = null;
+        try {
+            // first time loads 6 bytes
+            cache1 = factory.newInputStream(new NullInputStream(
+                    140 * 1024));
+            readCacheToString(cache1);
+//            Assert.assertEquals(content, readCacheToString(cache1));
+
+            
+            // first time loads 6 bytes, totaling 12, forcing file cache
+            cache2 = factory.newInputStream(new NullInputStream(
+                    140 * 1024));
+            readCacheToString(cache2);
+        }  finally {
+            IOUtils.closeQuietly(cache1);
+            IOUtils.closeQuietly(cache2);
+        }
+    }
+
+    @Test
+    public void testContentMatchInstanceFileCache() throws IOException {
         String content = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
         ByteArrayInputStream is = new ByteArrayInputStream(content.getBytes());
-        CachedInputStream cache = new CachedInputStream(
-                is, (int) DataUnit.B.toBytes(10));
+        CachedStreamFactory factory = new CachedStreamFactory(200, 10);
+        CachedInputStream cache = factory.newInputStream(is);
         try {
             // first time should cache
             Assert.assertEquals(content, readCacheToString(cache));
@@ -83,6 +107,7 @@ public class CachedInputStreamTest {
         }
     }
 
+    
     private String readCacheToString(InputStream is) throws IOException {
         long i;
         StringBuilder b = new StringBuilder();

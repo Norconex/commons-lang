@@ -29,8 +29,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.norconex.commons.lang.unit.DataUnit;
-
 /**
  * @author Pascal Essiembre
  */
@@ -49,8 +47,8 @@ public class CachedOutputStreamTest {
     public void testContentMatchMemCache() throws IOException {
         String content = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-        CachedOutputStream cache = 
-                new CachedOutputStream((int) DataUnit.B.toBytes(100));
+        CachedStreamFactory factory = new CachedStreamFactory(200, 100);
+        CachedOutputStream cache = factory.newOuputStream();
         InputStream is = null;
         
         try {
@@ -67,8 +65,9 @@ public class CachedOutputStreamTest {
     public void testContentMatchFileCache() throws IOException {
         String content = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-        CachedOutputStream cache = 
-                new CachedOutputStream((int) DataUnit.B.toBytes(10));
+        CachedStreamFactory factory = new CachedStreamFactory(200, 10);
+        CachedOutputStream cache = factory.newOuputStream();
+
         InputStream is = null;
         try {
             cache.write(content.getBytes());
