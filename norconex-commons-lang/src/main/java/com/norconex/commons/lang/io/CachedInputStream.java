@@ -25,23 +25,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
+import com.norconex.commons.lang.MemoryUtil;
 import com.norconex.commons.lang.file.FileUtil;
 import com.norconex.commons.lang.unit.DataUnit;
-
-//TODO check remaining memory and cache to file before capacity is reached
-// if preferable.
-// IDEA: use static counter that holds how much bytes were written by all
-// input streams.  Would need to synchronize get/set... could it affect
-// performance... or can we live with a small time-discrepancy?
 
 /**
  * {@link InputStream} wrapper that can be re-read any number of times.  This 
@@ -80,13 +75,21 @@ public class CachedInputStream extends InputStream {
     
     public static final int DEFAULT_MAX_CACHE_MEMORY = 
             (int) DataUnit.KB.toBytes(128);
+
+    private static final int MINIMUM_FREE_JVM_MEMORY_FOR_MEM_CACHE = 
+            (int) DataUnit.MB.toBytes(10);
+
+    
+    private final int maxCacheSize;
     
     private InputStream inputStream;
     
-    private ByteBuffer byteBuffer; 
+    private byte[] memCache;
+    private ByteArrayOutputStream memOutputStream;
     
-    private File cacheFile;
+    private File fileCache;
     private OutputStream fileOutputStream;
+    
     private boolean firstRead = true;
     private boolean needNewStream = false;
     private boolean cacheEmpty = true;
@@ -133,7 +136,27 @@ public class CachedInputStream extends InputStream {
     public CachedInputStream(
             InputStream is, int maxCacheSize, File cacheDirectory) {
         super();
-        byteBuffer = ByteBuffer.allocate(maxCacheSize);
+        
+        //TODO instead of checking for remaining memory (or in addition),
+        // have a static init parameter to specify absolut maximum
+        // memory all cached input streams can take?
+        
+        long freeMem = MemoryUtil.getFreeMemory(true);
+        if (freeMem < MINIMUM_FREE_JVM_MEMORY_FOR_MEM_CACHE) {
+            LOG.warn("Not enough memory remaining to create memory cache for "
+                    + "new CachedInputStream instance. Using file cache");
+            this.maxCacheSize = 0;
+        } else if (freeMem / 2 < maxCacheSize) {
+            LOG.info("Maximum memory cache for CachedInputStream cannot be "
+                    + "higher than half the remaining JVM memory. "
+                    + "Reducing it.");
+            this.maxCacheSize = (int) freeMem / 2;
+        } else {
+            this.maxCacheSize = maxCacheSize;
+        }
+        
+        memOutputStream = new ByteArrayOutputStream();
+        
         if (is instanceof BufferedInputStream) {
             this.inputStream = is;
         } else {
@@ -150,8 +173,9 @@ public class CachedInputStream extends InputStream {
      * Creates an input stream with an existing memory cache.
      * @param byteBuffer the InputStream cache.
      */
-    /*default*/ CachedInputStream(ByteBuffer byteBuffer) {
-        this.byteBuffer = byteBuffer;
+    /*default*/ CachedInputStream(byte[] memCache) {
+        this.maxCacheSize = -1;
+        this.memCache = memCache;
         this.cacheDirectory = null;
         firstRead = false;
         needNewStream = true;
@@ -161,7 +185,8 @@ public class CachedInputStream extends InputStream {
      * @param cacheFile the file cache
      */
     /*default*/ CachedInputStream(File cacheFile) {
-        this.cacheFile = cacheFile;
+        this.maxCacheSize = -1;
+        this.fileCache = cacheFile;
         this.cacheDirectory = null;
         firstRead = false;
         needNewStream = true;
@@ -186,12 +211,15 @@ public class CachedInputStream extends InputStream {
                 return read;
             }
             if (fileOutputStream != null) {
+                // Write to file cache
                 fileOutputStream.write(read);
-            } else if (byteBuffer.position() + 1 == byteBuffer.capacity()) {
+            } else if (memOutputStream.size() == maxCacheSize) {
+                // Too big: create file cache and write to it.
                 cacheToFile();
                 fileOutputStream.write(read);
             } else {
-                byteBuffer.put((byte) read);
+                // Write to memory cache
+                memOutputStream.write(read);
             }
             cacheEmpty = false;
             return read;
@@ -210,20 +238,21 @@ public class CachedInputStream extends InputStream {
             createInputStreamFromCache();
         }
         int num = inputStream.read(b, off, len);
+        cacheEmpty = false;
         if (num == -1) {
             return num;
         } else if (num > 0) {
-            cacheEmpty = false;
+//            cacheEmpty = false;
         }
 
         if (firstRead) {
             if (fileOutputStream != null) {
                 fileOutputStream.write(b, 0, num);
-            } else if (byteBuffer.position() + num >= byteBuffer.capacity()) {
+            } else if (memOutputStream.size() + num >= maxCacheSize) {
                 cacheToFile();
                 fileOutputStream.write(b, 0, num);
             } else {
-                byteBuffer.put(b, 0, num);
+                memOutputStream.write(b, 0, num);
             }
         }
         return num;
@@ -231,34 +260,41 @@ public class CachedInputStream extends InputStream {
     
     public void rewind() {
         if (!cacheEmpty) {
-            if (byteBuffer != null) {
-                bufferLimit = byteBuffer.position();
-            }
             IOUtils.closeQuietly(inputStream);
+            IOUtils.closeQuietly(memOutputStream);
             IOUtils.closeQuietly(fileOutputStream);
             fileOutputStream = null;
             firstRead = false;
             needNewStream = true;
+            if (memOutputStream != null) {
+                LOG.debug("Creating memory cache from cached stream.");
+                memCache = memOutputStream.toByteArray();
+                memOutputStream = null;
+            }
         }
     }
     
     public void dispose() throws IOException {
-        if (byteBuffer != null) {
-            byteBuffer.clear();
-            byteBuffer = null;
+        if (memCache != null) {
+            memCache = null;
         }
         if (inputStream != null) {
             inputStream.close();
             inputStream = null;
+        }
+        if (memOutputStream != null) {
+            memOutputStream.flush();
+            memOutputStream.close();
+            memOutputStream = null;
         }
         if (fileOutputStream != null) {
             fileOutputStream.flush();
             fileOutputStream.close();
             fileOutputStream = null;
         }
-        if (cacheFile != null) {
-            FileUtil.delete(cacheFile);
-            LOG.debug("Deleted cache file: " + cacheFile);
+        if (fileCache != null) {
+            FileUtil.delete(fileCache);
+            LOG.debug("Deleted cache file: " + fileCache);
         }
         disposed = true;
         cacheEmpty = true;
@@ -298,46 +334,33 @@ public class CachedInputStream extends InputStream {
     
     @SuppressWarnings("resource")
     private void cacheToFile() throws IOException {
-        cacheFile = File.createTempFile(
+        fileCache = File.createTempFile(
                 "CachedInputStream-", "-temp", cacheDirectory);
-        LOG.debug("Reached max cache size. Swapping to file: " + cacheFile);
-        RandomAccessFile f = new RandomAccessFile(cacheFile, "rw");
+        LOG.debug("Reached max cache size. Swapping to file: " + fileCache);
+        RandomAccessFile f = new RandomAccessFile(fileCache, "rw");
         FileChannel channel = f.getChannel();
         fileOutputStream = Channels.newOutputStream(channel);
 
-        byteBuffer.flip();
-        byte[] bytesToStore = new byte[byteBuffer.limit()];
-        byteBuffer.get(bytesToStore);
-        ByteArrayInputStream is = new ByteArrayInputStream(bytesToStore);
-        IOUtils.copy(is, fileOutputStream);
-        is.close();
-        byteBuffer.clear();
-        byteBuffer = null;
+        IOUtils.write(memOutputStream.toByteArray(), fileOutputStream);
+        memOutputStream = null;
     }
 
-    
     @SuppressWarnings("resource")
     private void createInputStreamFromCache() throws FileNotFoundException {
-        if (cacheFile != null) {
+        if (fileCache != null) {
             LOG.debug("Creating new input stream from file cache.");
-            RandomAccessFile f = new RandomAccessFile(cacheFile, "r");
+            RandomAccessFile f = new RandomAccessFile(fileCache, "r");
             FileChannel channel = f.getChannel();
             inputStream = Channels.newInputStream(channel);
-        } else {
+        } else {// if (memCache != null) {
             LOG.debug("Creating new input stream from memory cache.");
-            byteBuffer.flip();
-            if (bufferLimit != null) {
-                byteBuffer.limit(bufferLimit);
-            }
-            byte[] bytesToStore = new byte[byteBuffer.limit()];
-            byteBuffer.get(bytesToStore);
-            inputStream = new ByteArrayInputStream(bytesToStore);
+            inputStream = new ByteArrayInputStream(memCache);
         }
         needNewStream = false;
     }
     
     @Override
-    protected void finalize() throws Throwable {
+    protected void finalize() throws Throwable {        
         dispose();
         super.finalize();
     }

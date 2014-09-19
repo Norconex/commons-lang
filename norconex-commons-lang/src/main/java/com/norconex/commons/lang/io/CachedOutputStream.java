@@ -18,25 +18,22 @@
 package com.norconex.commons.lang.io;
 
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
+import com.norconex.commons.lang.MemoryUtil;
 import com.norconex.commons.lang.file.FileUtil;
 import com.norconex.commons.lang.unit.DataUnit;
-
-//TODO check remaining memory and cache to file before capacity is reached
-// if preferable.
 
 /**
  * {@link OutputStream} wrapper that caches the output so it can be retrieved
@@ -61,12 +58,19 @@ public class CachedOutputStream extends OutputStream {
     
     public static final int DEFAULT_MAX_CACHE_MEMORY = 
             (int) DataUnit.KB.toBytes(128);
+
+    private static final int MINIMUM_FREE_JVM_MEMORY_FOR_MEM_CACHE = 
+            (int) DataUnit.MB.toBytes(10);
+    
+    private final int maxCacheSize;
     
     private OutputStream outputStream;
     
-    private ByteBuffer byteBuffer; 
-    private File cacheFile;
-    private OutputStream cacheFileOutputStream;
+    private byte[] memCache;
+    private ByteArrayOutputStream memOutputStream;
+    
+    private File fileCache;
+    private OutputStream fileOutputStream;
     private boolean doneWriting = false;
     private boolean closed = false;
     private boolean cacheEmpty = true;
@@ -140,7 +144,23 @@ public class CachedOutputStream extends OutputStream {
     public CachedOutputStream(
             OutputStream out, int maxCacheSize, File cacheDirectory) {
         super();
-        byteBuffer = ByteBuffer.allocate(maxCacheSize);
+        
+        long freeMem = MemoryUtil.getFreeMemory(true);
+        if (freeMem < MINIMUM_FREE_JVM_MEMORY_FOR_MEM_CACHE) {
+            LOG.warn("Not enough memory remaining to create memory cache for "
+                    + "new CachedInputStream instance. Using file cache");
+            this.maxCacheSize = 0;
+        } else if (freeMem / 2 < maxCacheSize) {
+            LOG.info("Maximum memory cache for CachedInputStream cannot be "
+                    + "higher than half the remaining JVM memory. "
+                    + "Reducing it.");
+            this.maxCacheSize = (int) freeMem / 2;
+        } else {
+            this.maxCacheSize = maxCacheSize;
+        }
+
+        memOutputStream = new ByteArrayOutputStream();
+
         if (out != null) {
             if (out instanceof BufferedOutputStream) {
                 this.outputStream = out;
@@ -166,13 +186,16 @@ public class CachedOutputStream extends OutputStream {
         if (outputStream != null) {
             outputStream.write(b);
         }
-        if (cacheFileOutputStream != null) {
-            cacheFileOutputStream.write(b);
-        } else if (byteBuffer.position() + 1 == byteBuffer.capacity()) {
+        if (fileOutputStream != null) {
+            // Write to file cache
+            fileOutputStream.write(b);
+        } else if (memOutputStream.size() == maxCacheSize) {
+            // Too big: create file cache and write to it.
             cacheToFile();
-            cacheFileOutputStream.write(b);
+            fileOutputStream.write(b);
         } else {
-            byteBuffer.put((byte) b);
+            // Write to memory cache
+            memOutputStream.write(b);
         }
         cacheEmpty = false;
     }
@@ -186,14 +209,13 @@ public class CachedOutputStream extends OutputStream {
         if (outputStream != null) {
             outputStream.write(b, off, len);
         }
-        if (cacheFileOutputStream != null) {
-            cacheFileOutputStream.write(b, off, len);
-        } else if (byteBuffer.position() + (len - off) 
-                >= byteBuffer.capacity()) {
+        if (fileOutputStream != null) {
+            fileOutputStream.write(b, off, len);
+        } else if (memOutputStream.size() + (len - off) >= maxCacheSize) {
             cacheToFile();
-            cacheFileOutputStream.write(b, off, len);
+            fileOutputStream.write(b, off, len);
         } else {
-            byteBuffer.put(b, off, len);
+            memOutputStream.write(b, 0, len);
         }
         cacheEmpty = false;
     }
@@ -204,11 +226,15 @@ public class CachedOutputStream extends OutputStream {
                     + "closed CachedOutputStream.");
         }
         CachedInputStream is = null;
-        if (cacheFile != null) {
-            is = new CachedInputStream(cacheFile);
+        if (fileCache != null) {
+            is = new CachedInputStream(fileCache);
+        } else if (memCache != null) {
+            is = new CachedInputStream(memCache);
         } else {
-            ByteBuffer bbuf = byteBuffer.asReadOnlyBuffer();
-            is = new CachedInputStream(bbuf);
+            memCache = memOutputStream.toByteArray();
+            memOutputStream.close();
+            memOutputStream = null;
+            is = new CachedInputStream(memCache);
         }
         close(false);
         return is;
@@ -217,24 +243,28 @@ public class CachedOutputStream extends OutputStream {
     private void close(boolean clearCache) throws IOException {
         if (!closed) {
             closed = true;
-            if (byteBuffer != null && clearCache) {
-                byteBuffer.clear();
-                byteBuffer = null;
+            if (memCache != null && clearCache) {
+                memCache = null;
             }
             if (outputStream != null) {
                 outputStream.flush();
                 IOUtils.closeQuietly(outputStream);
                 outputStream = null;
             }
-            if (cacheFileOutputStream != null) {
-                cacheFileOutputStream.flush();
-                IOUtils.closeQuietly(cacheFileOutputStream);
-                cacheFileOutputStream = null;
+            if (fileOutputStream != null) {
+                fileOutputStream.flush();
+                IOUtils.closeQuietly(fileOutputStream);
+                fileOutputStream = null;
             }
-            if (cacheFile != null && clearCache) {
-                FileUtil.delete(cacheFile);
-                LOG.debug("Deleted cache file: " + cacheFile);
-                cacheFile = null;
+            if (fileCache != null && clearCache) {
+                FileUtil.delete(fileCache);
+                LOG.debug("Deleted cache file: " + fileCache);
+                fileCache = null;
+            }
+            if (memOutputStream != null && clearCache) {
+                memOutputStream.flush();
+                memOutputStream.close();
+                memOutputStream = null;
             }
             cacheEmpty = true;
         }
@@ -263,22 +293,15 @@ public class CachedOutputStream extends OutputStream {
     
     @SuppressWarnings("resource")
     private void cacheToFile() throws IOException {
-        cacheFile = File.createTempFile(
+        fileCache = File.createTempFile(
                 "CachedOutputStream-", "-temp", cacheDirectory);
-        LOG.debug("Reached max cache size. Swapping to file: " + cacheFile);
-        RandomAccessFile f = new RandomAccessFile(cacheFile, "rw");
+        LOG.debug("Reached max cache size. Swapping to file: " + fileCache);
+        RandomAccessFile f = new RandomAccessFile(fileCache, "rw");
         FileChannel channel = f.getChannel();
-        cacheFileOutputStream = Channels.newOutputStream(channel);
+        fileOutputStream = Channels.newOutputStream(channel);
         
-        byteBuffer.flip();
-        
-        byte[] bytesToStore = new byte[byteBuffer.limit()];
-        byteBuffer.get(bytesToStore);
-        ByteArrayInputStream is = new ByteArrayInputStream(bytesToStore);
-        IOUtils.copy(is, cacheFileOutputStream);
-        is.close();
-        byteBuffer.clear();
-        byteBuffer = null;
+        IOUtils.write(memOutputStream.toByteArray(), fileOutputStream);
+        memOutputStream = null;
     }
     
     

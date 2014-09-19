@@ -32,6 +32,9 @@
         and other types.
       </action>
       <action dev="essiembp" type="add">
+        New MemoryUtil class to quickly obtain free JVM memory.
+      </action>
+      <action dev="essiembp" type="add">
         Added content-type mappings for Content Family.
       </action>
       <action dev="essiembp" type="update">
