@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
 
@@ -45,7 +46,8 @@ public class CachedStreamFactory {
     private final int instanceMaxMemory;
     private final File cacheDirectory;
     
-    private final Map<ICachedStream, Void> streams = new WeakHashMap<>();
+    private final Map<ICachedStream, Void> streams = 
+            Collections.synchronizedMap(new WeakHashMap<ICachedStream, Void>());
     
     /**
      * Constructor.
@@ -90,9 +92,11 @@ public class CachedStreamFactory {
     
     /*default*/ int getPoolCurrentMemory() {
         int byteSize = 0;
-        for (ICachedStream stream : streams.keySet()) {
-            if (stream != null) {
-                byteSize += stream.getMemCacheSize();
+        synchronized (streams) {
+            for (ICachedStream stream : streams.keySet()) {
+                if (stream != null) {
+                    byteSize += stream.getMemCacheSize();
+                }
             }
         }
         return byteSize;
@@ -141,7 +145,9 @@ public class CachedStreamFactory {
     }
     
     private <T extends ICachedStream> T registerStream(T s) {
-        streams.put(s, null);
+        synchronized (streams) {
+            streams.put(s, null);
+        }
         return s;
     }
     
