@@ -178,11 +178,11 @@ public final class ConfigurationLoader {
         if (!configFile.exists()) {
             return null;
         }
-        XMLConfiguration config = new XMLConfiguration();
-        config.setDelimiterParsingDisabled(true);
+        XMLConfiguration xml = new XMLConfiguration();
+        ConfigurationUtil.disableDelimiterParsing(xml);
         Reader reader = new StringReader(loadString(configFile, variables));
         try {
-            config.load(reader);
+            xml.load(reader);
             reader.close();
         } catch (Exception e) {
             throw new ConfigurationException(
@@ -190,7 +190,7 @@ public final class ConfigurationLoader {
                   + "Probably a misconfiguration or the configuration XML "
                   + "is not well-formed.", e);
         }
-        return config;
+        return xml;
     }
 
     /**

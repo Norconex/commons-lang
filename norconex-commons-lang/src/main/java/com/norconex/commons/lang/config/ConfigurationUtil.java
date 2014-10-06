@@ -42,7 +42,32 @@ public final class ConfigurationUtil {
         super();
     }
    
+
+    /**
+     * Disables delimiter parsing for both attributes and elements.
+     * @param xml XML configuration
+     */
+    public static void disableDelimiterParsing(XMLConfiguration xml) {
+        xml.setListDelimiter('\0');
+        xml.setDelimiterParsingDisabled(true);
+        xml.setAttributeSplittingDisabled(true);
+    }
     
+    
+    /**
+     * This load method will return an Apache XML Configuration from
+     * from a {@link HierarchicalConfiguration}, with delimiter parsing 
+     * disabled. 
+     * @param c hierarchical configuration
+     * @return XMLConfiguration
+     * @since 1.5.0
+     */
+    public static XMLConfiguration newXMLConfiguration(
+            HierarchicalConfiguration c) {
+        XMLConfiguration xml = new XMLConfiguration(c);
+        disableDelimiterParsing(xml);
+        return xml;
+    }
     /**
      * This load method will return an Apache XML Configuration from
      * from a reader, with delimiter parsing disabled. 
@@ -52,7 +77,7 @@ public final class ConfigurationUtil {
      */
     public static XMLConfiguration newXMLConfiguration(Reader in) {
         XMLConfiguration xml = new XMLConfiguration();
-        xml.setDelimiterParsingDisabled(true);
+        disableDelimiterParsing(xml);
         try {
             xml.load(in);
         } catch (org.apache.commons.configuration.ConfigurationException e) {
@@ -287,7 +312,7 @@ public final class ConfigurationUtil {
             xml = (XMLConfiguration) node;
         } else {
             xml = new XMLConfiguration(node);
-            xml.setDelimiterParsingDisabled(true);
+            disableDelimiterParsing(xml);
         }
         StringWriter w = new StringWriter();
         try {
@@ -320,7 +345,9 @@ public final class ConfigurationUtil {
         if (sub == null) {
             return null;
         }
-        return new XMLConfiguration(sub);
+        XMLConfiguration xml = new XMLConfiguration(sub);
+        disableDelimiterParsing(xml);
+        return xml;
     }
     
     /**
