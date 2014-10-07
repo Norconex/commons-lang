@@ -18,17 +18,22 @@
 package com.norconex.commons.lang.config;
 
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.util.List;
 
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.lang3.CharEncoding;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+
+import com.norconex.commons.lang.file.FileUtil;
 
 /**
  * Utility methods when dealing with configuration files.
@@ -283,7 +288,7 @@ public final class ConfigurationUtil {
         try {
             if (key == null && defaultObject == null) {
                 return ConfigurationUtil.newInstance(
-                        node, defaultObject, supportXMLConfigurable);
+                        node, null, supportXMLConfigurable);
             }
             HierarchicalConfiguration subconfig = 
                     safeConfigurationAt(node, key);
@@ -364,16 +369,20 @@ public final class ConfigurationUtil {
         File tempFile = File.createTempFile("XMLConfigurableTester", ".xml");
         
         // Write
-        FileWriter out = new FileWriter(tempFile);
-        xmlConfiurable.saveToXML(out);
-        out.close();
+        Writer out = new OutputStreamWriter(
+                new FileOutputStream(tempFile), CharEncoding.UTF_8);
+        try {
+            xmlConfiurable.saveToXML(out);
+        } finally {
+            out.close();
+        }
         
         // Read
         XMLConfiguration xml = new ConfigurationLoader().loadXML(tempFile);
         IXMLConfigurable readConfigurable = 
                 (IXMLConfigurable) ConfigurationUtil.newInstance(xml);
 
-        tempFile.delete();
+        FileUtil.delete(tempFile);
 
         if (!xmlConfiurable.equals(readConfigurable)) {
             throw new ConfigurationException(

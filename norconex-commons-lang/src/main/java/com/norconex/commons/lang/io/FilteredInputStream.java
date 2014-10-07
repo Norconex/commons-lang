@@ -23,6 +23,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import org.apache.commons.lang3.CharEncoding;
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * Decorates an InputStream with a stream filter.  The stream filter
  * allows to control which line of text is being returned by the decorated
@@ -33,21 +36,39 @@ public class FilteredInputStream extends InputStream {
     
     private final BufferedReader bufferedInput;
     private final IInputStreamFilter filter;
+    private final String encoding;
     private InputStream lineStream;
     private boolean closed = false;
 
     /**
-     * Constructor.
+     * Constructor, using UTF-8 as the character encoding.
      * @param is input stream to filter
      * @param filter the filter to apply
      * @throws IOException i/o problem
      */
     public FilteredInputStream(InputStream is, IInputStreamFilter filter)
             throws IOException {
+        this(is, filter, null);
+    }
+    /**
+     * Constructor.
+     * @param is input stream to filter
+     * @param filter the filter to apply
+     * @param encoding character encoding
+     * @throws IOException i/o problem
+     * @since 1.5.0
+     */
+    public FilteredInputStream(
+            InputStream is, IInputStreamFilter filter, String encoding)
+            throws IOException {
         super();
-        
+        if (StringUtils.isBlank(encoding)) {
+            this.encoding = CharEncoding.UTF_8;
+        } else {
+            this.encoding = encoding;
+        }
         this.bufferedInput = new BufferedReader(
-                new InputStreamReader(is));
+                new InputStreamReader(is, this.encoding));
         this.filter = filter;
         nextLine();
     }
@@ -80,7 +101,7 @@ public class FilteredInputStream extends InputStream {
         while ((line = bufferedInput.readLine()) != null) {
             if (filter.accept(line)) {
                 line += "\n";
-                lineStream = new ByteArrayInputStream(line.getBytes());
+                lineStream = new ByteArrayInputStream(line.getBytes(encoding));
                 return true;
             }
         }

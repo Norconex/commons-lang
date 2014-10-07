@@ -52,6 +52,28 @@
         ConfigurationUtil and ConfigurationLoader now ensure full disabling
         in all methods of value splitting in attributes and elements.
       </action>
+      <action dev="essiembp" type="update">
+        FileUtil#head(File, int) now uses UTF-8 as default encoding.
+      </action>
+      <action dev="essiembp" type="update">
+        FilteredInputStream now uses UTF-8 as default encoding, and 
+        now offers an additional constructor accepting a character encoding.
+      </action>
+      <action dev="essiembp" type="update">
+        StreamGobbler now uses UTF-8 as default encoding, and 
+        now offers an additional constructor accepting a character encoding.
+        Also added #getType(), #getEncoding(), and #getStreamListeners()
+      </action>
+      <action dev="essiembp" type="update">
+        IOUtil#tail(InputStream, lineQty) now uses UTF-8 as default encoding, 
+        and now offers an overloaded method accepting a character encoding:
+        IOUtil#tail(InputStream, String, lineQty)
+      </action>
+      <action dev="essiembp" type="update">
+        IOUtil#head(InputStream, lineQty) now uses UTF-8 as default encoding, 
+        and now offers an overloaded method accepting a character encoding:
+        IOUtil#head(InputStream, String, lineQty)
+      </action>
       <action dev="essiembp" type="fix">
         Fixed content type display name for application/ccxml+xml not being
         mapped properly.

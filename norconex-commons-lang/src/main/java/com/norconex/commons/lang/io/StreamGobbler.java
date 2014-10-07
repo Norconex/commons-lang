@@ -26,6 +26,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.lang3.CharEncoding;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -46,7 +48,8 @@ public class StreamGobbler extends Thread {
     /** The input stream we are reading. */
     private final InputStream is;
     private final String type;
-
+    private final String encoding;
+    
     /**
      * Constructor.
      * @param is input stream
@@ -60,16 +63,31 @@ public class StreamGobbler extends Thread {
      * @param type an optional way to identify each line by adding a type
      */
     public StreamGobbler(InputStream is, String type) {
+        this(is, type, null);
+    }
+    /**
+     * Constructor.
+     * @param is input stream
+     * @param type an optional way to identify each line by adding a type
+     * @param encoding character encoding
+     * @since 1.5.0
+     */
+    public StreamGobbler(InputStream is, String type, String encoding) {
         super("StreamGobbler" + (type == null ? "": "-" + type));
         this.is = is;
         this.type = type;
+        this.encoding = encoding;
     }
     
     @Override
     public void run() {
         beforeStreaming();
         try {
-            InputStreamReader isr = new InputStreamReader(is);
+            String safeEncoding = encoding;
+            if (StringUtils.isBlank(safeEncoding)) {
+                safeEncoding = CharEncoding.UTF_8;
+            }
+            InputStreamReader isr = new InputStreamReader(is, safeEncoding);
             BufferedReader br = new BufferedReader(isr);
             String line = null;
             while ((line = br.readLine()) != null) {
@@ -94,6 +112,14 @@ public class StreamGobbler extends Thread {
     public synchronized void removeStreamListener(IStreamListener listener) {
         listeners.remove(listener);
     }
+    /**
+     * Returns stream listeners.
+     * @return the listeners
+     * @since 1.5.0
+     */
+    public IStreamListener[] getStreamListeners() {
+        return listeners.toArray(new IStreamListener[] {});
+    }
 
     /**
      * Invoked just before steaming begins, in a new thread.
@@ -110,6 +136,22 @@ public class StreamGobbler extends Thread {
         // do nothing (for subclasses)
     }
 
+    /**
+     * Gets the stream type.
+     * @return the type
+     * @since 1.5.0
+     */
+    public String getType() {
+        return type;
+    }
+    /**
+     * Gets the character encoding.
+     * @return character encoding
+     * @since 1.5.0
+     */
+    public String getEncoding() {
+        return encoding;
+    }
     private synchronized void fireLineStreamed(String line) {
         if (LOG.isDebugEnabled()) {
             if (type != null) {

@@ -19,8 +19,8 @@ package com.norconex.commons.lang.config;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -30,6 +30,7 @@ import java.util.Properties;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
@@ -227,7 +228,8 @@ public final class ConfigurationLoader {
 
         StringWriter sw = new StringWriter();
         try {
-            FileReader reader = new FileReader(configFile);
+            Reader reader = new InputStreamReader(
+                    new FileInputStream(configFile), CharEncoding.UTF_8);
             velocityEngine.evaluate(
                     context, sw, configFile.getAbsolutePath(), reader);
             reader.close();
@@ -279,7 +281,8 @@ public final class ConfigurationLoader {
 					}
 				}
             } else if (isVariableFile(vars, EXTENSION_PROPERTIES)) {
-                Reader r = new FileReader(vars);
+                Reader r = new InputStreamReader(
+                        new FileInputStream(vars), CharEncoding.UTF_8);
                 Properties props = new Properties();
                 props.load(r);
                 r.close();

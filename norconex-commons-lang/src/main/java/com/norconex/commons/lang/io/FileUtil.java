@@ -27,18 +27,8 @@ import java.util.Date;
 import java.util.LinkedList;
 
 import org.apache.commons.io.Charsets;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.SystemUtils;
-import org.apache.commons.lang3.math.NumberUtils;
-import org.apache.commons.lang3.mutable.MutableInt;
-import org.apache.commons.lang3.time.DateFormatUtils;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
-
-import com.norconex.commons.lang.Sleeper;
 
 /**
  * Utility methods when dealing with files and directories.
@@ -48,10 +38,6 @@ import com.norconex.commons.lang.Sleeper;
 @Deprecated
 public final class FileUtil {
 
-    private static final Logger LOG = LogManager.getLogger(FileUtil.class);
-    
-    private static final int MAX_FILE_OPERATION_ATTEMPTS = 10;
-    
     private FileUtil() {
         super();
     }
@@ -65,21 +51,8 @@ public final class FileUtil {
      * @return valid file name
      */
     public static String toSafeFileName(String unsafeFileName) {
-        if (unsafeFileName == null) {
-            return null;
-        }
-        StringBuilder b = new StringBuilder();
-        for (int i = 0; i < unsafeFileName.length(); i++){
-            char ch = unsafeFileName.charAt(i);
-            if (CharUtils.isAsciiAlphanumeric(ch) || ch == '-' || ch == '.') {
-                b.append(ch);
-            } else {
-                b.append('_');
-                b.append((int) ch);
-                b.append('_');
-            }
-        }
-        return b.toString();
+        return com.norconex.commons.lang.file.FileUtil.toSafeFileName(
+                unsafeFileName);
     }
     /**
      * Converts a "safe" file name originally created with 
@@ -88,22 +61,8 @@ public final class FileUtil {
      * @return original string
      */
     public static String fromSafeFileName(String safeFileName) {
-        if (safeFileName == null) {
-            return null;
-        }
-        StringBuilder b = new StringBuilder();
-        for (int i = 0; i < safeFileName.length(); i++){
-            char ch = safeFileName.charAt(i);
-            if (ch == '_') {
-                String intVal = StringUtils.substring(safeFileName, i + 1, 
-                        StringUtils.indexOf(safeFileName, '_', i + 1));
-                b.append((char) NumberUtils.toInt(intVal));
-                i += intVal.length() + 1;
-            } else {
-                b.append(ch);
-            }
-        }
-        return b.toString();
+        return com.norconex.commons.lang.file.FileUtil.fromSafeFileName(
+                safeFileName);
     }
     
     
@@ -124,21 +83,8 @@ public final class FileUtil {
      */
     public static void moveFileToDir(File sourceFile, File targetDir)
             throws IOException {
-        if (sourceFile == null || !sourceFile.isFile()) {
-            throw new IOException("Source file is not valid: " + sourceFile);
-        }
-        if (targetDir == null || 
-                targetDir.exists() && !targetDir.isDirectory()) {
-            throw new IOException("Target directory is not valid:" + targetDir);
-        }
-        if (!targetDir.exists()) {
-            targetDir.mkdirs();
-        }
-        
-        String fileName = sourceFile.getName();
-        File targetFile = new File(targetDir.getAbsolutePath()
-                + SystemUtils.PATH_SEPARATOR + fileName);
-        moveFile(sourceFile, targetFile);
+        com.norconex.commons.lang.file.FileUtil.moveFileToDir(
+            sourceFile, targetDir);
     }
 
     /**
@@ -158,31 +104,8 @@ public final class FileUtil {
      */
     public static void moveFile(File sourceFile, File targetFile)
             throws IOException {
-        
-        if (!isFile(sourceFile)) {
-            throw new IOException(
-                    "Source file is not a file or is not valid: " + sourceFile);
-        }
-        if (targetFile == null || targetFile.exists() && !targetFile.isFile()) {
-            throw new IOException(
-                    "Target file is not a file or is not valid: " + targetFile);
-        }
-        int failure = 0;
-        Exception ex = null;
-        while (failure < MAX_FILE_OPERATION_ATTEMPTS) {
-            if (targetFile.exists() && !targetFile.delete()
-                    || !sourceFile.renameTo(targetFile)) {
-                failure++;
-                Sleeper.sleepSeconds(1);
-                continue;
-            }
-            break;
-        }
-        if (failure >= MAX_FILE_OPERATION_ATTEMPTS) {
-            throw new IOException(
-                    "Could not move \"" + sourceFile + "\" to \"" 
-                            + targetFile + "\".", ex);
-        }
+        com.norconex.commons.lang.file.FileUtil.moveFile(
+                sourceFile, targetFile);
     }
     
     /**
@@ -199,24 +122,7 @@ public final class FileUtil {
      * @throws IOException cannot delete file.
      */
     public static void deleteFile(File file) throws IOException {
-        if (file == null || !file.exists()) {
-            return;
-        }
-        boolean success = false;
-        int failure = 0;
-        Exception ex = null;
-        while (!success && failure < MAX_FILE_OPERATION_ATTEMPTS) {
-            if (file.exists() && !FileUtils.deleteQuietly(file)) {
-                failure++;
-                Sleeper.sleepSeconds(1);
-                continue;
-            }
-            success = true;
-        }
-        if (!success) {
-            throw new IOException(
-                    "Could not delete \"" + file + "\".", ex);
-        }
+        com.norconex.commons.lang.file.FileUtil.delete(file);
     }
     
     /**
@@ -226,7 +132,8 @@ public final class FileUtil {
      * @return the number of deleted directories
      */
     public static int deleteEmptyDirs(File parentDir) {
-        return deleteEmptyDirs(parentDir, null);
+        return com.norconex.commons.lang.file.FileUtil.deleteEmptyDirs(
+                parentDir);
     }
 
     /**
@@ -240,25 +147,10 @@ public final class FileUtil {
      * @since 1.3.0
      */
     public static int deleteEmptyDirs(File parentDir, final Date date) {
-        final MutableInt dirCount = new MutableInt(0);
-        visitEmptyDirs(parentDir, new IFileVisitor() {
-            @Override
-            public void visit(File file) {
-                if (date == null || FileUtils.isFileOlder(file, date)) {
-                    String[] children = file.list();
-                    if (file.isDirectory()
-                            && (children == null || children.length == 0)
-                            && !file.delete()) {
-                        LOG.error("Could not be delete directory: " + file);
-                    }
-                    dirCount.increment();
-                }
-            }
-        });
-        return dirCount.intValue();
+        return com.norconex.commons.lang.file.FileUtil.deleteEmptyDirs(
+                parentDir, date);
     }
 
-    
     /**
      * Create all parent directories for a file if they do not exists.  
      * If they exist already, this method does nothing.  This method assumes
@@ -269,12 +161,7 @@ public final class FileUtil {
      * directories
      */
     public static File createDirsForFile(File file) throws IOException {
-        File parent = file.getParentFile();
-        if (parent != null) {
-            FileUtils.forceMkdir(parent);
-            return parent;
-        }
-        return new File("/");
+        return com.norconex.commons.lang.file.FileUtil.createDirsForFile(file);
     }
     
     /**
@@ -614,7 +501,8 @@ public final class FileUtil {
      * @throws IOException if the parent directory is not valid
      */
     public static File createDateDirs(File parentDir) throws IOException {
-        return createDateDirs(parentDir, new Date());
+        return com.norconex.commons.lang.file.FileUtil.createDateDirs(
+                parentDir);
     }
     /**
      * Creates (if not already existing) a series of directories reflecting
@@ -630,16 +518,8 @@ public final class FileUtil {
      */
     public static File createDateDirs(File parentDir, Date date)
             throws IOException {
-        if (parentDir != null && parentDir.exists() 
-                && !parentDir.isDirectory()) {
-            throw new IOException("Parent directory \"" + parentDir 
-                    + "\" already exists and is not a directory.");
-        }
-        File dateDir = new File(parentDir.getAbsolutePath()
-                + "/" + DateFormatUtils.format(date, "yyyy/MM/dd"));
-
-        dateDir.mkdirs();
-        return dateDir;
+        return com.norconex.commons.lang.file.FileUtil.createDateDirs(
+                parentDir, date);
     }
 
     /**
@@ -655,7 +535,8 @@ public final class FileUtil {
      * @throws IOException if the parent directory is not valid
      */
     public static File createDateTimeDirs(File parentDir) throws IOException {
-        return createDateTimeDirs(parentDir, new Date());
+        return com.norconex.commons.lang.file.FileUtil.createDateTimeDirs(
+                parentDir);
     }
     /**
      * Creates (if not already existing) a series of directories reflecting
@@ -673,16 +554,8 @@ public final class FileUtil {
      */
     public static File createDateTimeDirs(File parentDir, Date dateTime)
             throws IOException {
-        if (parentDir != null && parentDir.exists() 
-                && !parentDir.isDirectory()) {
-            throw new IOException("Parent directory \"" + parentDir 
-                    + "\" already exists and is not a directory.");
-        }
-        File dateDir = new File(parentDir.getAbsolutePath()
-                + "/" + DateFormatUtils.format(
-                        dateTime, "yyyy/MM/dd/HH/mm/ss"));
-        dateDir.mkdirs();
-        return dateDir;
+        return com.norconex.commons.lang.file.FileUtil.createDateTimeDirs(
+                parentDir, dateTime);
     }
     
     private static void assertNumOfLinesToRead(int num) {
@@ -698,10 +571,4 @@ public final class FileUtil {
             throw new IOException("Not a valid file: " + file);
         }
     }
-
-    //TODO make public as a null-safe method, along with similar methods?
-    private static boolean isFile(File file) {
-        return file != null && file.isFile();
-    }
-
 }

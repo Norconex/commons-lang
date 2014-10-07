@@ -26,9 +26,9 @@ import java.io.InputStreamReader;
 import java.util.Date;
 import java.util.LinkedList;
 
-import org.apache.commons.io.Charsets;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
@@ -132,7 +132,7 @@ public final class FileUtil {
             throw new IOException("Target directory is not valid:" + targetDir);
         }
         if (!targetDir.exists()) {
-            targetDir.mkdirs();
+            FileUtils.forceMkdir(targetDir);
         }
         
         String fileName = sourceFile.getName();
@@ -286,7 +286,7 @@ public final class FileUtil {
      * the last segment is a file or will be a file.
      * @param file the file to create parent directories for
      * @return The newly created parent directory
-     * @throws IOException if somethign went wrong creating the parent 
+     * @throws IOException if something went wrong creating the parent 
      * directories
      */
     public static File createDirsForFile(File file) throws IOException {
@@ -445,6 +445,7 @@ public final class FileUtil {
     /**
      * Returns the specified number of lines starting from the beginning
      * of a text file.
+     * Since 1.5.0, UTF-8 is used as the default encoding.
      * @param file the file to read lines from
      * @param numberOfLinesToRead the number of lines to read
      * @return array of file lines
@@ -452,7 +453,7 @@ public final class FileUtil {
      */
     public static String[] head(File file, int numberOfLinesToRead)
             throws IOException {
-        return head(file, Charsets.ISO_8859_1.toString(), numberOfLinesToRead);
+        return head(file, CharEncoding.UTF_8, numberOfLinesToRead);
     }
 
     /**
@@ -525,6 +526,7 @@ public final class FileUtil {
     /**
      * Returns the specified number of lines starting from the end
      * of a text file.
+     * Since 1.5.0, UTF-8 is used as the default encoding.
      * @param file the file to read lines from
      * @param numberOfLinesToRead the number of lines to read
      * @return array of file lines
@@ -532,7 +534,7 @@ public final class FileUtil {
      */
     public static String[] tail(File file, int numberOfLinesToRead)
             throws IOException {
-        return tail(file, Charsets.ISO_8859_1.toString(), numberOfLinesToRead);
+        return tail(file, CharEncoding.UTF_8, numberOfLinesToRead);
     }
 
     /**
@@ -637,15 +639,19 @@ public final class FileUtil {
      */
     public static File createDateDirs(File parentDir, Date date)
             throws IOException {
-        if (parentDir != null && parentDir.exists() 
-                && !parentDir.isDirectory()) {
+        if (parentDir == null) {
+            throw new IOException("Parent directory cannot be null.");
+        }
+        if (date == null) {
+            throw new IOException("Date cannot be null.");
+        }
+        if (parentDir.exists() && !parentDir.isDirectory()) {
             throw new IOException("Parent directory \"" + parentDir 
                     + "\" already exists and is not a directory.");
         }
         File dateDir = new File(parentDir.getAbsolutePath()
                 + "/" + DateFormatUtils.format(date, "yyyy/MM/dd"));
-
-        dateDir.mkdirs();
+        FileUtils.forceMkdir(dateDir);
         return dateDir;
     }
 
@@ -680,15 +686,20 @@ public final class FileUtil {
      */
     public static File createDateTimeDirs(File parentDir, Date dateTime)
             throws IOException {
-        if (parentDir != null && parentDir.exists() 
-                && !parentDir.isDirectory()) {
+        if (parentDir == null) {
+            throw new IOException("Parent directory cannot be null.");
+        }
+        if (dateTime == null) {
+            throw new IOException("Date cannot be null.");
+        }
+        if (parentDir.exists() && !parentDir.isDirectory()) {
             throw new IOException("Parent directory \"" + parentDir 
                     + "\" already exists and is not a directory.");
         }
         File dateDir = new File(parentDir.getAbsolutePath()
                 + "/" + DateFormatUtils.format(
                         dateTime, "yyyy/MM/dd/HH/mm/ss"));
-        dateDir.mkdirs();
+        FileUtils.forceMkdir(dateDir);
         return dateDir;
     }
     

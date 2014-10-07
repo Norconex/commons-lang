@@ -18,7 +18,6 @@
 package com.norconex.commons.lang.map;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,6 +26,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Serializable;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -162,8 +162,8 @@ public class Properties extends ObservableMap<String, List<String>>
     //--- Store ----------------------------------------------------------------
     /**
      * Writes this property list (key and element pairs) in this
-     * <code>Properties</code> table to the output stream in a format suitable
-     * for loading into a <code>Properties</code> table using the
+     * <code>Properties</code> table to the output stream as UTF-8 in a format 
+     * suitable for loading into a <code>Properties</code> table using the
      * {@link #load(InputStream) load} method.
      * Otherwise, the same considerations as
      * {@link #store(OutputStream, String)} apply.
@@ -172,10 +172,10 @@ public class Properties extends ObservableMap<String, List<String>>
      * @throws IOException problem storing to string
      */
     public String storeToString(String comments) throws IOException {
-        OutputStream os = new ByteArrayOutputStream();
-        store(os, comments);
-        String str = os.toString();
-        os.close();
+        StringWriter writer = new StringWriter();
+        store(writer, comments);
+        String str = writer.toString();
+        writer.close();
         return str;
     }
     /**
@@ -394,12 +394,13 @@ public class Properties extends ObservableMap<String, List<String>>
      */
     public synchronized void load(Map<?, ?> map) {
         if (map != null) {
-            for (Object keyObj : map.keySet()) {
+            for (Entry<?, ?> entry : map.entrySet()) {
+                Object keyObj = entry.getKey();
                 if (keyObj == null) {
                     continue;
                 }
                 String key = Objects.toString(keyObj, null);
-                Object valObj = map.get(keyObj);
+                Object valObj = entry.getValue();
                 if (valObj == null) {
                     valObj = StringUtils.EMPTY;
                 }
@@ -506,14 +507,15 @@ public class Properties extends ObservableMap<String, List<String>>
         p = null;
     }
     /**
-     * Reads a property list (key and element pairs) from the input
+     * Reads a property list (key and element pairs) from the UTF-8 input
      * string.  Otherwise, the same considerations as
      * {@link #load(InputStream)} apply.
      * @param str the string to load
      * @throws IOException problem loading string
      */
     public void loadFromString(String str) throws IOException {
-        InputStream is = new ByteArrayInputStream(str.getBytes());
+        InputStream is = new ByteArrayInputStream(
+                str.getBytes(CharEncoding.UTF_8));
         load(is);
         is.close();
     }

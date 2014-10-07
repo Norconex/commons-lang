@@ -31,6 +31,7 @@ import java.nio.channels.FileChannel;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -132,7 +133,7 @@ public class CachedInputStream extends InputStream implements ICachedStream {
             CachedStreamFactory factory, byte[] memCache) {
         this.factory = factory;
         this.tracker = factory.new MemoryTracker();
-        this.memCache = memCache;
+        this.memCache = ArrayUtils.clone(memCache);
         this.cacheDirectory = null;
         firstRead = false;
         needNewStream = true;
@@ -195,8 +196,6 @@ public class CachedInputStream extends InputStream implements ICachedStream {
         cacheEmpty = false;
         if (num == -1) {
             return num;
-        } else if (num > 0) {
-//            cacheEmpty = false;
         }
 
         if (firstRead) {

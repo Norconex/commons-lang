@@ -447,12 +447,12 @@ public class URLNormalizer implements Serializable {
         if (url.contains("?")) {
             // QueryString extends Properties which already has sorted keys.
             QueryString q = new HttpURL(url).getQueryString();
-            QueryString sorted = new QueryString();
-            Set<String> keys = new TreeSet<>(q.keySet());
-            for (String key : keys) {
-                sorted.put(key, q.get(key));
-            }
             if (q != null) {
+                QueryString sorted = new QueryString();
+                Set<String> keys = new TreeSet<>(q.keySet());
+                for (String key : keys) {
+                    sorted.put(key, q.get(key));
+                }
                 url = StringUtils.substringBefore(url, "?") + sorted.toString();
             }
         }

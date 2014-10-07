@@ -20,10 +20,11 @@ package com.norconex.commons.lang.config;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.Set;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.velocity.app.event.IncludeEventHandler;
@@ -67,18 +68,18 @@ public class RelativeIncludeEventHandler
                     FilenameUtils.getBaseName(inclFile) + ".properties");
             if (vars.exists() && vars.isFile()) {
                 Properties props = new Properties();
-                FileInputStream is;
+                FileInputStream is = null;
                 try {
                     is = new FileInputStream(vars);
                     props.load(is);
-                    is.close();
-                    Set<?> varNames = props.keySet();
-                    for (Object varName : varNames) {
-                        context.put((String) varName, props.get(varName));
+                    for (Entry<Object, Object> entry: props.entrySet()) {
+                        context.put((String) entry.getKey(), entry.getValue());
                     }
                 } catch (IOException e) {
                     LOG.error("Cannot load properties for template (skipped): "
                             + vars, e);
+                } finally {
+                    IOUtils.closeQuietly(is);
                 }
             }
         }
