@@ -19,7 +19,6 @@ package com.norconex.commons.lang.config;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.io.Serializable;
 import java.io.Writer;
 
 /**
@@ -28,7 +27,7 @@ import java.io.Writer;
  * properly (e.g. in Javadoc).
  * @author Pascal Essiembre
  */
-public interface IXMLConfigurable extends Serializable {
+public interface IXMLConfigurable {
 
     /**
      * Load XML configuration values and initialized this object with them.

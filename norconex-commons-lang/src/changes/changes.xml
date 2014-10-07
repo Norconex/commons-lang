@@ -74,6 +74,9 @@
         and now offers an overloaded method accepting a character encoding:
         IOUtil#head(InputStream, String, lineQty)
       </action>
+      <action dev="essiembp" type="update">
+        IXMLConfigurable no longer extends Serializable.
+      </action>
       <action dev="essiembp" type="fix">
         Fixed content type display name for application/ccxml+xml not being
         mapped properly.
