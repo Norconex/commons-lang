@@ -288,7 +288,7 @@ public final class ConfigurationUtil {
         try {
             if (key == null && defaultObject == null) {
                 return ConfigurationUtil.newInstance(
-                        node, null, supportXMLConfigurable);
+                        node, (T) null, supportXMLConfigurable);
             }
             HierarchicalConfiguration subconfig = 
                     safeConfigurationAt(node, key);
