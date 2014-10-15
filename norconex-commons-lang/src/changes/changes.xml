@@ -35,6 +35,10 @@
         New MemoryUtil class to quickly obtain free JVM memory.
       </action>
       <action dev="essiembp" type="add">
+        New methods on EqualsUtil for String equality: #equalsAnyIgnoreCase(...)
+        #equalsAllIgnoreCase(...), and #equalsNoneIgnoreCase(...).
+      </action>
+      <action dev="essiembp" type="add">
         Added content-type mappings for Content Family.
       </action>
       <action dev="essiembp" type="update">

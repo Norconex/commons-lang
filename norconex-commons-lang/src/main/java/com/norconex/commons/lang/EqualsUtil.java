@@ -19,6 +19,8 @@ package com.norconex.commons.lang;
 
 import java.util.Objects;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * Convenience methods related to object equality.
  * @author Pascal Essiembre
@@ -30,10 +32,10 @@ public final class EqualsUtil {
     }
 
     /**
-     * Whether a source object equals ANY of the target objects
+     * Whether a source object equals ANY of the target objects.
      * @param source object being tested for equality with targets
      * @param targets one or more objects to be tested with source for equality
-     * @return <code>true</code> if any of the target objects is equal
+     * @return <code>true</code> if any of the target objects are equal
      */
     public static boolean equalsAny(Object source, Object... targets) {
         if (targets == null) {
@@ -46,12 +48,31 @@ public final class EqualsUtil {
         }
         return false;
     }
+    /**
+     * Whether a source string equals ANY of the target string.
+     * @param source string being tested for equality with target strings
+     * @param targets one or more strings to be tested with source string 
+     *                for equality
+     * @return <code>true</code> if any of the target strings are equal
+     */
+    public static boolean equalsAnyIgnoreCase(
+            String source, String... targets) {
+        if (targets == null) {
+            return source == null;
+        }
+        for (String target : targets) {
+            if (StringUtils.equalsIgnoreCase(source, target)) {
+                return true;
+            }
+        }
+        return false;
+    }
     
     /**
      * Whether a source object equals ALL of the target objects
      * @param source object being tested for equality with targets
      * @param targets one or more objects to be tested with source for equality
-     * @return <code>true</code> if all of the target objects is equal
+     * @return <code>true</code> if all of the target objects are equal
      */
     public static boolean equalsAll(Object source, Object... targets) {
         if (targets == null) {
@@ -64,14 +85,44 @@ public final class EqualsUtil {
         }
         return true;
     }
-    
+    /**
+     * Whether a source string equals ALL of the target string.
+     * @param source string being tested for equality with target strings
+     * @param targets one or more strings to be tested with source string 
+     *                for equality
+     * @return <code>true</code> if all of the target strings are equal
+     */
+    public static boolean equalsAllIgnoreCase(
+            String source, String... targets) {
+        if (targets == null) {
+            return source == null;
+        }
+        for (String target : targets) {
+            if (!StringUtils.equalsIgnoreCase(source, target)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     /**
      * Whether a source object equals NONE of the target objects
      * @param source object being tested for equality with targets
      * @param targets one or more objects to be tested with source for equality
-     * @return <code>true</code> if none of the target objects is equal
+     * @return <code>true</code> if none of the target objects are equal
      */
     public static boolean equalsNone(Object source, Object... targets) {
         return !equalsAny(source, targets);
+    }
+    /**
+     * Whether a source string equals NONE of the target string.
+     * @param source string being tested for equality with target strings
+     * @param targets one or more strings to be tested with source string 
+     *                for equality
+     * @return <code>true</code> if none of the target strings are equal
+     */
+    public static boolean equalsNoneIgnoreCase(
+            String source, String... targets) {
+        return !equalsAnyIgnoreCase(source, targets);
     }
 }
