@@ -129,6 +129,26 @@ public final class ContentType implements Serializable {
     }
 
     /**
+     * Creates a null-safe array of content types.  The same number of elements
+     * as the supplied strings are returned.  A <code>null</code> value will
+     * return an empty array.  Each content types are individually obtained 
+     * by invoking {@link #valueOf(String)}.
+     * @param contentTypes the official media type names
+     * @return content type array.
+     */
+    public static ContentType[] valuesOf(String... contentTypes) {
+        if (!ArrayUtils.isEmpty(contentTypes)) {
+            ContentType[] cts = new ContentType[contentTypes.length];
+            for (int i = 0; i < contentTypes.length; i++) {
+                String ctString = contentTypes[i];
+                cts[i] = ContentType.valueOf(ctString);
+            }
+            return cts;
+        }
+        return new ContentType[] {};
+    }
+    
+    /**
      * Gets a name for the content type suitable for display to a user.
      * The system locale is used to defined the language of the display name.
      * If no name has been defined for a content type, the raw content type 

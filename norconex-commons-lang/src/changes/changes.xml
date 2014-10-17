@@ -41,6 +41,9 @@
       <action dev="essiembp" type="add">
         Added content-type mappings for Content Family.
       </action>
+      <action dev="essiembp" type="add">
+        New #valuesOf(String...) method on ContentType.
+      </action>
       <action dev="essiembp" type="update">
         Properties default content delimiter is now more unique.
       </action>
