@@ -54,7 +54,8 @@ public final class IOUtil {
      * Use of this method can often be a bad idea (especially on large streams)
      * since it needs to read the entire stream to return the last lines. 
      * If you are dealing with files, use 
-     * {@link FileUtil#tail(java.io.File, int)} instead, which can read
+     * {@link com.norconex.commons.lang.file.FileUtil#tail(
+     * java.io.File, int)} instead, which can read
      * a file starting from the end. 
      * @param is input stream
      * @param lineQty maximum number of lines to return
@@ -74,7 +75,8 @@ public final class IOUtil {
      * Use of this method can often be a bad idea (especially on large streams)
      * since it needs to read the entire stream to return the last lines. 
      * If you are dealing with files, use 
-     * {@link FileUtil#tail(File, String, int)} instead, which can read
+     * {@link com.norconex.commons.lang.file.FileUtil#tail(
+     * File, String, int)} instead, which can read
      * a file starting from the end. 
      * @param is input stream
      * @param encoding character encoding
