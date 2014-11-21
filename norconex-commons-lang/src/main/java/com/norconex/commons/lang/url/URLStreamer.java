@@ -19,23 +19,16 @@ package com.norconex.commons.lang.url;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.net.URL;
+import java.net.URLConnection;
+
+import javax.xml.bind.DatatypeConverter;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.AutoCloseInputStream;
 import org.apache.commons.lang3.time.StopWatch;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.Credentials;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.BasicResponseHandler;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -150,49 +143,41 @@ public final class URLStreamer {
     public static InputStream stream(
             String url, Credentials creds, HttpHost proxy, 
             Credentials proxyCreds) {
-        
-        CloseableHttpClient client = null;
-        HttpClientBuilder httpBuilder = HttpClientBuilder.create();
         try {
-            CredentialsProvider credsProvider = null;
+            URLConnection conn = null;
             if (proxy != null) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Streaming with proxy: "
                             + proxy.getHostName() + ":" + proxy.getPort());
                 }
-                httpBuilder.setProxy(proxy);
+                Proxy p = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(
+                        proxy.getHostName(), proxy.getPort()));
+                //Authenticator.
+                conn = new URL(url).openConnection(p);
                 if (proxyCreds != null) {
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("Streaming with proxy credentials.");
                     }
-                    credsProvider = new BasicCredentialsProvider();
-                    credsProvider.setCredentials(new AuthScope(
-                            proxy.getHostName(), proxy.getPort()), proxyCreds);
+                    conn.setRequestProperty("Proxy-Authorization", 
+                            base64BasicAuth(proxyCreds.getUsername(), 
+                                    proxyCreds.getPassword()));
                 }
+            } else {
+                conn = new URL(url).openConnection();
             }
             if (creds != null) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Streaming with credentials.");
                 }
-                if (credsProvider == null) {
-                    credsProvider = new BasicCredentialsProvider();
-                }                    
-                credsProvider.setCredentials(new AuthScope(
-                        AuthScope.ANY_HOST, HttpURL.DEFAULT_HTTP_PORT,
-                        AuthScope.ANY_REALM), creds);
+                conn.setRequestProperty("Authorization", base64BasicAuth(
+                        creds.getUsername(), creds.getPassword()));
             }
-            if (credsProvider != null) {
-                httpBuilder.setDefaultCredentialsProvider(credsProvider);
-            }
-            
-            final CloseableHttpClient finalClient = httpBuilder.build();
-            client = finalClient;
-            return responseInputStream(url, finalClient);
+            return responseInputStream(conn);
         } catch (IOException e) {
-            IOUtils.closeQuietly(client);
             throw new URLException("Could not stream URL: " + url, e);
         }
     }
+    
 
     /**
      * Streams URL content.
@@ -384,28 +369,48 @@ public final class URLStreamer {
     }
     
     private static InputStream responseInputStream(
-            String url, 
-            final CloseableHttpClient httpClient) 
-                    throws IOException {
-        HttpGet call = new HttpGet(url);
-        HttpResponse response = httpClient.execute(call);
-        int statusCode = response.getStatusLine().getStatusCode();
-        if (statusCode != HttpStatus.SC_OK) {
-            ResponseHandler<String> responseHandler = 
-                    new BasicResponseHandler();
-            LOG.error("Invalid HTTP response: " + statusCode
-                    + ". Response body is: " 
-                    + responseHandler.handleResponse(response));
-            throw new IOException("Cannot stream URL: " + url);
+            URLConnection conn) throws IOException {
+        conn.connect();
+        return new AutoCloseInputStream(conn.getInputStream());
+    }
+    private static String base64BasicAuth(String username, String password) {
+        String userpass = username + ':' + password;
+        return "Basic " 
+                + DatatypeConverter.printBase64Binary(userpass.getBytes());
+    }
+
+    
+    
+    public static class Credentials {
+        private final String username;
+        private final String password;
+        public Credentials(String username, String password) {
+            super();
+            this.username = username;
+            this.password = password;
         }
-        return new AutoCloseInputStream(response.getEntity().getContent()) {
-            @Override
-            public void close() throws IOException {
-                super.close();
-                if (httpClient != null) {
-                    IOUtils.closeQuietly(httpClient);
-                }
-            }
-        };
+        public String getUsername() {
+            return username;
+        }
+        public String getPassword() {
+            return password;
+        }
+    }
+
+    
+    public static class HttpHost {
+        private final String hostName;
+        private final int port;
+        public HttpHost(String hostName, int port) {
+            super();
+            this.hostName = hostName;
+            this.port = port;
+        }
+        public String getHostName() {
+            return hostName;
+        }
+        public int getPort() {
+            return port;
+        }
     }
 }
