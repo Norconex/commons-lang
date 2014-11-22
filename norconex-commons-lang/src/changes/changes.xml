@@ -45,6 +45,9 @@
         New #valuesOf(String...) method on ContentType.
       </action>
       <action dev="essiembp" type="update">
+        Now licensed under The Apache License, Version 2.0.
+      </action>
+      <action dev="essiembp" type="update">
         Properties default content delimiter is now more unique.
       </action>
       <action dev="essiembp" type="update">

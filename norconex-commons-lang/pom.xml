@@ -1,20 +1,17 @@
 <!-- 
-Copyright 2010-2013 Norconex Inc.
+   Copyright 2010-2014 Norconex Inc.
 
-This file is part of Norconex Commons Lang.
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
 
-Norconex Commons Lang is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+       http://www.apache.org/licenses/LICENSE-2.0
 
-Norconex Commons Lang is distributed in the hope that it will be useful, 
-but WITHOUT ANY WARRANTY; without even the implied warranty of 
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with Norconex Commons Lang. If not, see <http://www.gnu.org/licenses/>.
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -35,18 +32,8 @@ along with Norconex Commons Lang. If not, see <http://www.gnu.org/licenses/>.
 
   <licenses>
     <license>
-      <name>GNU GENERAL PUBLIC LICENSE, Version 3</name>
-      <url>http://www.gnu.org/licenses/gpl-3.0.txt</url>
-    </license>
-    <license>
-      <comments>
-        Norconex provides commercial licenses for all its open-source
-        products, designed to meet the development and distribution 
-        needs of commercial distributors
-        (such as OEMs, ISVs and VARs).  Please contact Norconex
-        for a commercial license at sales@norconex.com.
-      </comments>
-      <name>Commercial License</name>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
     </license>
   </licenses>
 
@@ -104,7 +91,7 @@ along with Norconex Commons Lang. If not, see <http://www.gnu.org/licenses/>.
         </resource>
         <resource>
             <filtering>false</filtering>
-            <directory>src/main/java</directory>
+            <directory>${project.build.sourceDirectory}</directory>
             <includes>
                 <include>**</include>
             </includes>
@@ -174,6 +161,26 @@ along with Norconex Commons Lang. If not, see <http://www.gnu.org/licenses/>.
         </configuration>
       </plugin>
       <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>license-maven-plugin</artifactId>
+        <version>1.7</version>
+        <executions>
+          <execution>
+            <id>download-licenses</id>
+            <goals>
+              <goal>download-licenses</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>create-license-list</id>
+            <goals>
+              <goal>add-third-party</goal>
+            </goals>
+            <phase>generate-resources</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
         <configuration>
           <descriptors>
@@ -196,13 +203,11 @@ along with Norconex Commons Lang. If not, see <http://www.gnu.org/licenses/>.
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>2.9.1</version>
         <configuration>
-          <overview>${basedir}/src/main/resources/javadoc-overview.html</overview>
+          <overview>${basedir}/src/main/javadoc/overview.html</overview>
           <show>protected</show>
           <detectLinks>true</detectLinks>
           <links>
             <link>http://junit.org/javadoc/4.11/</link>
-            <link>http://hc.apache.org/httpcomponents-core-ga/httpcore/apidocs/</link>
-            <link>http://hc.apache.org/httpcomponents-client-ga/httpclient/apidocs/</link>
           </links>
         </configuration>
         <executions>
@@ -323,8 +328,6 @@ along with Norconex Commons Lang. If not, see <http://www.gnu.org/licenses/>.
           <detectLinks>true</detectLinks>
           <links>
             <link>http://junit.org/javadoc/latest/</link>
-            <link>http://hc.apache.org/httpcomponents-core-ga/httpcore/apidocs/</link>
-            <link>http://hc.apache.org/httpcomponents-client-ga/httpclient/apidocs/</link>
           </links>
         </configuration>
         <reportSets>
