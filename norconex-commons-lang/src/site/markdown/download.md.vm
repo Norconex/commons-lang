@@ -27,21 +27,24 @@ $h2 Binaries
 
 Changes:
 
-  * Now requires Java 7 or higher.
-  * New DataUnit classe to perform data unit 
-    (KB, MB, GB, etc) conversions much like Java TimeUnit class.
-  * New DataUnitFormatter to format any data unit ot a human-readable format
-    taking into account locale and decimals
-  * New percentage formatter.
-  * New ContentType class to represent a file media/MIME type and obtain
-    its usual name, content family, and file extension(s).
-  * New ContentFamily class to represent a group of files of similar
-    content types. Useful for content categorization.
-  * New ObservableMap class.
+  * Now licensed under The Apache License, Version 2.0.
+  * New pipeline-related classes for a very simple pipeline framework for 
+    encapsulating executable tasks.
+  * New Content class, referencing or holding arbitrary content (text or 
+    binary).
+  * New CachedInputStream for caching input streams for re-use. Swaps memory 
+    overflow to file.
+  * New CachedOutputStream for caching output streams for re-use as 
+    InputStream. Swaps memory overflow to file.
+  * New EnhancedXMLStreamWriter class to facilitate writing of primitives and 
+    other types.
+  * More...
   * [View all changes]((changes-report.html))
 
 **Older Releases**
 
+  * [1.4.0]($releasePath/1.4.0/norconex-commons-lang-1.4.0.zip)<small>
+    [[Release Notes](changes-report.html#a1.4.0)]</small>
   * [1.3.2]($releasePath/1.3.2/norconex-commons-lang-1.3.2.zip)<small>
     [[Release Notes](changes-report.html#a1.3.2)]</small>
   * [1.3.1]($releasePath/1.3.1/norconex-commons-lang-1.3.1.zip)<small>

@@ -14,7 +14,7 @@
       </action>
       <action dev="essiembp" type="add">
         New Content class, referencing or holding arbitrary content 
-        (text of binary).
+        (text or binary).
       </action>
       <action dev="essiembp" type="add">
         New CachedInputStream for caching input streams for re-use.  

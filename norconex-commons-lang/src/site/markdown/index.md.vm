@@ -106,6 +106,8 @@ Other classes not fitting anyhere.  Includes:
   * Ways to test several objects at once for equality
   * Find classes in classpath, directories and jars
   * Percent formatter
+  * Pipeline classes
+  * EnhancedXMLStreamWriter
   
 Classes: [com.norconex.commons.lang.*](./apidocs/com/norconex/commons/lang/package-summary.html)
   

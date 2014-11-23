@@ -136,13 +136,12 @@
     <menu name="Maven Documentation" ref="reports"/>
 
     <menu name="Norconex Products">
-      <item name="Search Analytics" href="http://www.norconex.com/analytics"/>
+      <item name="Search Analytics" href="http://www.norconex.com/enterprise-search-software/search-analytics/"/>
+      <item name="Content Analytics" href="http://www.norconex.com/enterprise-search-software/content-analytics/"/>
       <item name="HTTP Collector" href="http://www.norconex.com/product/collector-http"/>
-      <item name="Committer" href="http://www.norconex.com/product/committer"/>
-      <item name="Importer"  href="http://www.norconex.com/product/importer"/>
+      <item name="Filesystem Collector" href="http://www.norconex.com/product/collector-filesystem"/>
       <item name="JEF" href="http://www.norconex.com/product/jef"/>
     </menu>
-
 
   </body>
 
