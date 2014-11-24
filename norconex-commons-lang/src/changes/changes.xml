@@ -7,7 +7,7 @@
   </properties>
   <body>
 
-    <release version="1.5.0" date="2014-??-??" description="Feature release">
+    <release version="1.5.0" date="2014-11-24" description="Feature release">
       <action dev="essiembre" type="add">
         New pipeline-related classes for a very simple pipeline framework for 
         encapsulating executable tasks.
