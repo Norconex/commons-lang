@@ -13,10 +13,6 @@
         encapsulating executable tasks.
       </action>
       <action dev="essiembre" type="add">
-        New Content class, referencing or holding arbitrary content 
-        (text or binary).
-      </action>
-      <action dev="essiembre" type="add">
         New CachedInputStream for caching input streams for re-use.  
         Swaps memory overflow to file.
       </action>
