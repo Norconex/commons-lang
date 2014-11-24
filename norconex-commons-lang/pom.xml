@@ -19,14 +19,14 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.norconex.commons</groupId>
   <artifactId>norconex-commons-lang</artifactId>
-  <version>1.5.0-SNAPSHOT</version>
+  <version>1.5.0</version>
   <packaging>jar</packaging>
   <name>Norconex Commons Lang</name>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <site.baseurl/>
-    <currentStableVersion>1.4.0</currentStableVersion>
+    <currentStableVersion>1.5.0</currentStableVersion>
   </properties>
   <inceptionYear>2008</inceptionYear>
 
@@ -240,31 +240,42 @@
         </executions>
       </plugin>
       <plugin>
-       <groupId>org.apache.maven.plugins</groupId>
-       <artifactId>maven-jar-plugin</artifactId>
-       <version>2.2</version>
-       <executions>
-         <execution>
-           <goals>
-             <goal>test-jar</goal>
-           </goals>
-         </execution>
-       </executions>
-     </plugin>
-     <plugin>
-       <groupId>org.apache.maven.plugins</groupId>
-       <artifactId>maven-gpg-plugin</artifactId>
-       <version>1.5</version>
-       <executions>
-         <execution>
-           <id>sign-artifacts</id>
-           <phase>verify</phase>
-           <goals>
-             <goal>sign</goal>
-           </goals>
-         </execution>
-       </executions>
-     </plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>2.2</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>test-jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-gpg-plugin</artifactId>
+        <version>1.5</version>
+        <executions>
+          <execution>
+            <id>sign-artifacts</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>sign</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.sonatype.plugins</groupId>
+        <artifactId>nexus-staging-maven-plugin</artifactId>
+        <version>1.6.3</version>
+        <extensions>true</extensions>
+        <configuration>
+          <serverId>ossrh</serverId>
+          <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+          <autoReleaseAfterClose>false</autoReleaseAfterClose>
+        </configuration>
+      </plugin>    
     </plugins>
   </build>
 
@@ -273,16 +284,14 @@
       <id>norconex-site-deployment</id>
       <url>${site.baseurl}/commons-lang</url>
     </site>
-    <repository>  
-      <id>norconex-release-repo</id>
-      <name>Norconex Release Repository</name>  
-      <url>s3://norconex/repo/release</url>  
-    </repository>  
-    <snapshotRepository>  
-      <id>norconex-snapshot-repo</id>  
-      <name>S3 Snapshot Repository</name>  
-      <url>s3://norconex/repo/snapshot/</url>  
-    </snapshotRepository>  
+    <snapshotRepository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    </snapshotRepository>
+    <repository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+    </repository>    
   </distributionManagement>
   
   <reporting>
