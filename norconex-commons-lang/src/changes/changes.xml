@@ -8,155 +8,155 @@
   <body>
 
     <release version="1.5.0" date="2014-??-??" description="Feature release">
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         New pipeline-related classes for a very simple pipeline framework for 
         encapsulating executable tasks.
       </action>
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         New Content class, referencing or holding arbitrary content 
         (text or binary).
       </action>
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         New CachedInputStream for caching input streams for re-use.  
         Swaps memory overflow to file.
       </action>
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         New CachedOutputStream for caching output streams for re-use as
         InputStream. Swaps memory overflow to file.
       </action>
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         New ByteBufferInputStream for reading a ByteBuffer as an InputStream.
       </action>
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         New EnhancedXMLStreamWriter class to facilitate writing of primitives
         and other types.
       </action>
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         New MemoryUtil class to quickly obtain free JVM memory.
       </action>
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         New methods on EqualsUtil for String equality: #equalsAnyIgnoreCase(...)
         #equalsAllIgnoreCase(...), and #equalsNoneIgnoreCase(...).
       </action>
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         Added content-type mappings for Content Family.
       </action>
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         New #valuesOf(String...) method on ContentType.
       </action>
-      <action dev="essiembp" type="update">
+      <action dev="essiembre" type="update">
         Now licensed under The Apache License, Version 2.0.
       </action>
-      <action dev="essiembp" type="update">
+      <action dev="essiembre" type="update">
         Properties default content delimiter is now more unique.
       </action>
-      <action dev="essiembp" type="update">
+      <action dev="essiembre" type="update">
         Deprecated ConfigurationLoader#loadXML(Reader) in favor of 
         ConfigurationUtil#newXMLConfiguration(Reader).
       </action>
-      <action dev="essiembp" type="update">
+      <action dev="essiembre" type="update">
         FileUtil#deleteEmptyDirs(File) now forces directory deletion using
         FileUtil#delete(File)
       </action>
-      <action dev="essiembp" type="update">
+      <action dev="essiembre" type="update">
         ConfigurationUtil and ConfigurationLoader now ensure full disabling
         in all methods of value splitting in attributes and elements.
       </action>
-      <action dev="essiembp" type="update">
+      <action dev="essiembre" type="update">
         FileUtil#head(File, int) now uses UTF-8 as default encoding.
       </action>
-      <action dev="essiembp" type="update">
+      <action dev="essiembre" type="update">
         FilteredInputStream now uses UTF-8 as default encoding, and 
         now offers an additional constructor accepting a character encoding.
       </action>
-      <action dev="essiembp" type="update">
+      <action dev="essiembre" type="update">
         StreamGobbler now uses UTF-8 as default encoding, and 
         now offers an additional constructor accepting a character encoding.
         Also added #getType(), #getEncoding(), and #getStreamListeners()
       </action>
-      <action dev="essiembp" type="update">
+      <action dev="essiembre" type="update">
         IOUtil#tail(InputStream, lineQty) now uses UTF-8 as default encoding, 
         and now offers an overloaded method accepting a character encoding:
         IOUtil#tail(InputStream, String, lineQty)
       </action>
-      <action dev="essiembp" type="update">
+      <action dev="essiembre" type="update">
         IOUtil#head(InputStream, lineQty) now uses UTF-8 as default encoding, 
         and now offers an overloaded method accepting a character encoding:
         IOUtil#head(InputStream, String, lineQty)
       </action>
-      <action dev="essiembp" type="update">
+      <action dev="essiembre" type="update">
         IXMLConfigurable no longer extends Serializable.
       </action>
-      <action dev="essiembp" type="fix">
+      <action dev="essiembre" type="fix">
         Fixed content type display name for application/ccxml+xml not being
         mapped properly.
       </action>
-      <action dev="essiembp" type="fix">
+      <action dev="essiembre" type="fix">
         FileUtil#visitAllFiles(...) method now goes beyond 1 level deep
         when browsing recursively.
       </action>
     </release>
 
     <release version="1.4.0" date="2014-07-09" description="Feature release">
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         New ClassFinder#findSubTypes(Class) method for finding subtypes in
         classpath using classpath roots.
       </action>
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         New DataUnit class to perform data unit (KB, MB, GB, etc) conversions
         much like Java TimeUnit class.
       </action>
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         New PercentFormatter to format fraction values as percentage string. 
       </action>
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         New DataUnitFormatter to format any data unit ot a human-readable format
         taking into account locale and decimals.
       </action>
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         New ContentType class to represent a file media/MIME type and obtain
         its usual name, content family, and file extension(s).
       </action>
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         New ContentFamily class to represent a group of files of similar
         content types. Useful for content categorization.
       </action>
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         Added new classes for listening to java.util.Map changes: 
         ObservableMap, MapChangeSupport, IMapChangeListener, and MapChangeEvent.
       </action>
-      <action dev="essiembp" type="update">
+      <action dev="essiembre" type="update">
         Deprecation of FileUtil#deleteFile(File) in favour of 
         FileUtil#delete(File).
       </action>
-      <action dev="essiembp" type="update">
+      <action dev="essiembre" type="update">
         FileUtil#delete(File) now invokes System.gc() upon deletion failure
         to fix a known java bug when trying to delete files on windows.
       </action>
-      <action dev="essiembp" type="update">
+      <action dev="essiembre" type="update">
         Properties now uses UTF-8 to load and store itself.
       </action>
-      <action dev="essiembp" type="update">
+      <action dev="essiembre" type="update">
         FileMonitor, FileUtil, IFileChangeListener, IFileVisitor are now 
         found under the com.norconex.commons.lang.file package.  Classes
         have been deprecated in former location.
       </action>
-      <action dev="essiembp" type="update">
+      <action dev="essiembre" type="update">
         Now requires Java 7 or higher.
       </action>
-      <action dev="essiembp" type="update">
+      <action dev="essiembre" type="update">
         Refactored Properties to extend ObservableMap so changes can 
         optionally be tracked.
       </action>
-      <action dev="essiembp" type="update">
+      <action dev="essiembre" type="update">
         URLNormalizer no longer rejects URLs with spaces in them. It will now
         convert spaces to %20 and log a warning.
       </action>
-      <action dev="essiembp" type="update">
+      <action dev="essiembre" type="update">
         Deprecation of ClassFinder#findImplementors(XXX) in favour of 
         ClassFinder#findSubTypes(XXX).
       </action>
-      <action dev="essiembp" type="fix">
+      <action dev="essiembre" type="fix">
         Fix FileUtil#tail(...) method when the file has less lines than the 
         amount requested.
       </action>
@@ -166,48 +166,48 @@
       <action dev="dimassip" type="fix">
         Fix Properties.remove to return null if key is non existent.
       </action>
-      <action dev="essiembp" type="fix">
+      <action dev="essiembre" type="fix">
         Fix junit test for converting IP to domain. Was failing due to wikipedia
         IP change.
       </action>
     </release>
 
     <release version="1.3.2" date="2014-06-16" description="Maintenance release">
-      <action dev="essiembp" type="update">
+      <action dev="essiembre" type="update">
         URLNormalizer no longer rejects URLs with spaces in them. It will now
         convert spaces to %20 and log a warning.
       </action>
-      <action dev="essiembp" type="fix">
+      <action dev="essiembre" type="fix">
         Fix junit test for converting IP to domain. Was failing due to wikipedia
         IP change.
       </action>
     </release>
 
     <release version="1.3.1" date="2014-03-06" description="Maintenance release">
-      <action dev="essiembp" type="fix">
+      <action dev="essiembre" type="fix">
         Fixed missing localized text for DurationUtil.
       </action>
     </release>
 
     <release version="1.3.0" date="2014-03-05" description="Feature release">
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         New YearMonthDay class for a local date without time.
       </action>
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         New YearMonthDayInterval (and unit test) class for a local date range
         without time.
       </action>
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         New FileMonitor and IFileChangeListener to be notified of file changes.
       </action>
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         New methods on FileUtil: 
           #visitEmptyDirs(File, IFileVisitor)
           #visitEmptyDirs(File, IFileVisitor, FileFilter)
           #visitAllDirs(File, IFileVisitor, FileFilter)
           #deleteEmptyDirs(File, Date)
       </action>
-      <action dev="essiembp" type="update">
+      <action dev="essiembre" type="update">
         Upgraded Apache HttpClient to version 4.3.2, Apache Commons 
         Configuration to 1.10, and Apache Commons Lang to 3.2.1.  
         Refactored affected code.
@@ -215,38 +215,38 @@
     </release>
 
     <release version="1.2.0" date="2014-01-10" description="Minor release">
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         New getter and setter for URL "path" on HttpURL.
       </action>
-      <action dev="essiembp" type="update">
+      <action dev="essiembre" type="update">
         Javadoc improvements.
       </action>
-      <action dev="essiembp" type="fix">
+      <action dev="essiembre" type="fix">
         HttpURL#getLastPathSegment() no longer returns the query string with it.
       </action>
-      <action dev="essiembp" type="fix">
+      <action dev="essiembre" type="fix">
         Jars are now closed properly in ClassFinder.
       </action>
-      <action dev="essiembp" type="fix">
+      <action dev="essiembre" type="fix">
         ClassFinder#findImplementors(...) now only returns concrete classes.
       </action>
     </release>
 
     <release version="1.1.0" date="2013-08-19" description="Minor release">
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         New #toSafeFileName and #fromSafeFileName method on FileUtil for 
         creating OS friendly file names out of any strings.
       </action>
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         New DurationUtil class for nice and easy formatting of time durations.
       </action>
-      <action dev="essiembp" type="fix">
+      <action dev="essiembre" type="fix">
         Fixed NullPointerException in FileUtil when deleting empty directories.
       </action>
     </release>
 
     <release version="1.0.0" date="2013-06-04" description="Open Source release">
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         Starting with this release, Norconex Commons Lang is open-source under 
         GPL3.
       </action>
