@@ -33,8 +33,6 @@ Changes:
   * Now licensed under The Apache License, Version 2.0.
   * New pipeline-related classes for a very simple pipeline framework for 
     encapsulating executable tasks.
-  * New Content class, referencing or holding arbitrary content (text or 
-    binary).
   * New CachedInputStream for caching input streams for re-use. Swaps memory 
     overflow to file.
   * New CachedOutputStream for caching output streams for re-use as 
