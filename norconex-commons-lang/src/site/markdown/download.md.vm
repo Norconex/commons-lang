@@ -17,8 +17,7 @@
 #set($h2 = '##')
 #set($h3 = '###')
 #set($h4 = '####')
-
-#set($nexusPath = "https://oss.sonatype.org/content/groups/public/com/norconex/commons/norconex-commons-lang")
+#set($nexusPath = "https://oss.sonatype.org/content/repositories/releases/com/norconex/commons/norconex-commons-lang")
 #set($releasePath = "http://norconex.s3.amazonaws.com/repo/release/com/norconex/commons/norconex-commons-lang")
 <head><title>Download</title><meta name="Author" content="Norconex Inc." /></head> 
 
