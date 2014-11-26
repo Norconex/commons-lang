@@ -28,15 +28,15 @@ import org.apache.log4j.Logger;
 
 /**
  * Represents a file Content-Type (also called MIME-Type or Media Type).
- * <p/>
+ * <br><br>
  * To detect the content type of a file, consider using an open-source library
  * such as <a href="https://tika.apache.org/">Apache Tika</a>.
- * <p/>
+ * <br><br>
  * To provide your own extension mappings or display names, copy the 
  * appropriate <code>.properties</code> file to your classpath root, with
  * the word "custom" inserted: <code>ContentType-custom-[...]</code>.
  * The actual custom names and classpath location are:
- * <p/>
+ * <br><br>
  * <table border="1">
  *   <tr>
  *     <th>Original</td>

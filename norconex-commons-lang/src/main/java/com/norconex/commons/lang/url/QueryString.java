@@ -31,7 +31,7 @@ import com.norconex.commons.lang.map.Properties;
 /**
  * Provides utility methods for getting and setting attributes on 
  * a URL query string. 
- * <p/>
+ * <br><br>
  * <b>Since 1.4</b>, query string parameters are stored and returned in the
  * order they were provided.
  * @author Pascal Essiembre

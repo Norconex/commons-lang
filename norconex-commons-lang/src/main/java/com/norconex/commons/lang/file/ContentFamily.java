@@ -28,12 +28,12 @@ import org.apache.log4j.Logger;
 /**
  * Represents a family of content types.  Typically, a broader, conceptual
  * object for related content types.
- * <p/>
+ * <br><br>
  * To provide your own content type mappings or display names, copy the 
  * appropriate <code>.properties</code> file to your classpath root, with
  * the word "custom" inserted: <code>ContentFamily-custom-[...]</code>.
  * The actual custom names and classpath location are:
- * <p/>
+ * <br><br>
  * <table border="1">
  *   <tr>
  *     <th>Original</td>

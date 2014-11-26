@@ -47,7 +47,7 @@ public final class IOUtil {
      * This method is null-safe.
      * If the input stream is null or empty, an empty string array will
      * be returned.  
-     * <p/>
+     * <br><br>
      * Use of this method can often be a bad idea (especially on large streams)
      * since it needs to read the entire stream to return the last lines. 
      * If you are dealing with files, use 
@@ -68,7 +68,7 @@ public final class IOUtil {
      * This method is null-safe.
      * If the input stream is null or empty, an empty string array will
      * be returned.  
-     * <p/>
+     * <br><br>
      * Use of this method can often be a bad idea (especially on large streams)
      * since it needs to read the entire stream to return the last lines. 
      * If you are dealing with files, use 

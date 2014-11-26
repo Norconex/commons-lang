@@ -39,35 +39,35 @@ import com.norconex.commons.lang.io.CachedStreamFactory.MemoryTracker;
  * {@link InputStream} wrapper that can be re-read any number of times.  This 
  * class will cache the wrapped input steam content the first time it is read, 
  * and subsequent read will use the cache.   
- * <p/>
+ * <br><br>
  * To create new instances of {@link CachedInputStream}, use the
  * {@link CachedStreamFactory} class.   Reusing the same factory
  * will ensure all {@link CachedInputStream} instances created share the same
  * combined maximum memory.  Invoking one of the 
  * <code>newInputStream(...)</code> methods on this class have the same effect.
- * <p/>
+ * <br><br>
  * In order to re-use this InputStream, you must call {@link #rewind()} first
  * on it. Once done reading the stream, you will get the -1 character as 
  * expected, and it will remain at that until you rewind or dispose.
- * <p/>
+ * <br><br>
  * Starting reading the stream again will start reading bytes from the 
  * beginning (re)using its internal cache.
- * <p/>
+ * <br><br>
  * Calling {@link #close()} has
  * no effect, and the cache data remains available for subsequent read.
- * <p/>
+ * <br><br>
  * To explicitly dispose of resources allocated to the cache, you can 
  * use the {@link #dispose()} method.  
  * Attempting to read a disposed instance will throw an {@link IOException}.
  * It is recommended you explicitly dispose of <code>CachedInputStream</code>
  * instances to speed up the release of resources. Otherwise, resources are
  * de-allocated automatically when the instance is finalized.
- * <p/>
+ * <br><br>
  * The internal cache stores read bytes into memory, up to to the 
  * specified maximum cache size. If content exceeds
  * the cache limit, the cache transforms itself into a fast file-based cache
  * of unlimited size.  Default memory cache size is 128 KB.
- * <p/>
+ * <br><br>
  * @author Pascal Essiembre
  * @since 1.5
  * @see CachedStreamFactory

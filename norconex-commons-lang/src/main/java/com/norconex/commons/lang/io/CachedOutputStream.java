@@ -38,18 +38,18 @@ import com.norconex.commons.lang.io.CachedStreamFactory.MemoryTracker;
  * to.  Obtaining an input stream before or instead of calling the close
  * method will not delete the cache content, but rather pass the reference 
  * to it to the CachedInputStream. 
- * <p/> 
+ * <br><br> 
  * To create new instances of {@link CachedOutputStream}, use the
  * {@link CachedStreamFactory} class.   Reusing the same factory
  * will ensure all {@link CachedOutputStream} instances created share the same
  * combined maximum memory.  Invoking one of the 
  * <code>newOutputStream(...)</code> methods on this class have the same effect.
- * <p/> 
+ * <br><br> 
  * The internal cache stores written bytes into memory, up to to the 
  * specified maximum cache size. If content exceeds
  * the cache limit, the cache transforms itself into a file-based cache
  * of unlimited size. Default memory cache size is 128 KB.
- * <p/>
+ * <br><br>
  * @author Pascal Essiembre
  * @since 1.5
  * @see CachedStreamFactory
