@@ -282,7 +282,7 @@
   <distributionManagement>
     <site>
       <id>norconex-site-deployment</id>
-      <url>${site.baseurl}/commons-lang</url>
+      <url>${site.baseurl}/../product/commons-lang</url>
     </site>
     <snapshotRepository>
       <id>ossrh</id>
