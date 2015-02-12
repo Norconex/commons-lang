@@ -7,6 +7,18 @@
   </properties>
   <body>
 
+    <release version="1.6.0-SNAPSHOT" date="2015-??-??" description="Feature release">
+      <action dev="essiembre" type="add">
+        New TextReader class for reading large text files, one chunk at a time,
+        splitting text wisely at paragraphs/sentences/words when possible.
+      </action>
+      <action dev="essiembre" type="add">
+        New method IOUtil#toBufferedReader(Reader) that ensure to return
+        either a BufferedReader wrapping original reader, or the reader itself
+        if it already implements BufferedReader.
+      </action>
+    </release>
+
     <release version="1.5.0" date="2014-11-24" description="Feature release">
       <action dev="essiembre" type="add">
         New pipeline-related classes for a very simple pipeline framework for 
