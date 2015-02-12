@@ -87,6 +87,7 @@
             <directory>${project.build.testSourceDirectory}</directory>
             <includes>
                 <include>**/*.html</include>
+                <include>**/*.txt</include>
             </includes>
         </resource>
         <resource>
