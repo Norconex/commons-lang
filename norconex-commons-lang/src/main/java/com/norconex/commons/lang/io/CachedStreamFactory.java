@@ -24,9 +24,9 @@ import java.util.WeakHashMap;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.input.NullInputStream;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.lang3.CharEncoding;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -112,8 +112,7 @@ public class CachedStreamFactory {
      * @return an empty cached input stream
      */
     public CachedInputStream newInputStream() {
-        return registerStream(new CachedInputStream(
-                this, new NullInputStream(0), cacheDirectory));
+        return newInputStream(StringUtils.EMPTY);
     }
     public CachedInputStream newInputStream(String content) {
         InputStream is = null;
