@@ -28,9 +28,25 @@ import org.junit.Test;
 public class TextReaderTest {
 
     
+    @Test
+    public void testSentenceBreaks() throws IOException {
+        
+        TextReader reader = getTextReader("funkyParagraphBreaks.txt", 60);
+        String text = null;
+        int count = 0;
+        while ((text = reader.readText()) != null) {
+            count++;
+            System.out.println("CHUNK #" + count + " = " + text);
+        }
+        reader.close();
+        // Realy should be 10?  There are blank lines
+        Assert.assertEquals("Wrong number of sentences", 13, count);
+    }
+
+    
     
     @Test
-    public void testFunkyParagraphBreaks() throws IOException {
+    public void testParagraphBreaks() throws IOException {
         
         TextReader reader = getTextReader("funkyParagraphBreaks.txt", 100);
         String text = null;
@@ -42,7 +58,15 @@ public class TextReaderTest {
         reader.close();
         Assert.assertEquals("Wrong number of text chunks returned", 5, count);
     }
-    
+
+    @Test
+    public void testNoBreak() throws IOException {
+        TextReader reader = getTextReader("funkyParagraphBreaks.txt", 1000);
+        String allContent = reader.readText();
+        reader.close();
+        Assert.assertEquals("Wrong number of characters returned.", 
+                400, allContent.length());
+    }
     
     private TextReader getTextReader(String file, int readSize) 
             throws UnsupportedEncodingException {

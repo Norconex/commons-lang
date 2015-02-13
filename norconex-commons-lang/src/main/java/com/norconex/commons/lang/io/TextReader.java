@@ -107,7 +107,19 @@ public class TextReader extends Reader {
             return null;
         }
         
-        buffer.append(text);
+        buffer.append(String.valueOf(text, 0, num));
+        
+        // Return all if we reached the end.
+        reader.mark(1);
+        if (reader.read() == -1) {
+            String t = buffer.toString();
+            buffer.setLength(0);
+            reader.reset();
+            return t;
+        } else {
+            reader.reset();
+        }
+        
 
         Matcher m = null;
         
