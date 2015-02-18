@@ -200,13 +200,19 @@ public final class ConfigurationUtil {
     }
 
     /**
-     * Creates a new instance of the class represented by the "class" attribute
+     * <p>Creates a new instance of the class represented by the "class" 
+     * attribute
      * on the sub-node of the node argument, matching the key provided.
      * The class must have an empty constructor.
      * If the class is an instance of {@link IXMLConfigurable}, the object 
      * created will be automatically populated by invoking the 
      * {@link IXMLConfigurable#loadFromXML(Reader)} method, 
-     * passing it the node XML automatically populated.
+     * passing it the node XML automatically populated.</p>
+     * 
+     * <p>Since 1.6.0, this method should throw a 
+     * {@link ConfigurationException} upon error. Use a method
+     * with a default value argument to avoid throwing exceptions.</p>
+     * 
      * @param node the node representing the class to instantiate.
      * @param key sub-node name/hierarchical path
      * @return a new object.
@@ -214,17 +220,23 @@ public final class ConfigurationUtil {
      */
     public static <T extends Object> T newInstance(
             HierarchicalConfiguration node, String key) {
-        return newInstance(node, key, null, true);
+        return newInstance(node, key, null, true, true);
     }
     /**
-     * Creates a new instance of the class represented by the "class" attribute
-     * on the sub-node of the node argument, matching the key provided.
+     * <p>Creates a new instance of the class represented by the "class" 
+     * attribute on the sub-node of the node argument, matching the key 
+     * provided.
      * The class must have an empty constructor.
      * If the class is an instance of {@link IXMLConfigurable} and 
      * <code>supportXMLConfigurable</code> is true, the object created
      * will be automatically populated by invoking the 
      * {@link IXMLConfigurable#loadFromXML(Reader)} method, 
-     * passing it the node XML automatically populated.
+     * passing it the node XML automatically populated.</p>
+     * 
+     * <p>Since 1.6.0, this method should throw a  
+     * {@link ConfigurationException} upon error. Use a method
+     * with a default value argument to avoid throwing exceptions.</p>
+     * 
      * @param node the node representing the class to instantiate.
      * @param key sub-node name/hierarchical path
      * @param supportXMLConfigurable automatically populates the object from XML
@@ -235,37 +247,48 @@ public final class ConfigurationUtil {
     public static <T extends Object> T newInstance(
             HierarchicalConfiguration node, String key, 
             boolean supportXMLConfigurable) {
-        return newInstance(node, key, null, supportXMLConfigurable);
+        return newInstance(node, key, null, supportXMLConfigurable, true);
     }
     /**
-     * Creates a new instance of the class represented by the "class" attribute
+     * <p>Creates a new instance of the class represented by the "class" 
+     * attribute
      * on the sub-node of the node argument, matching the key provided.
      * The class must have an empty constructor.
      * If the class is an instance of {@link IXMLConfigurable}, the object 
      * created will be automatically populated by invoking the 
      * {@link IXMLConfigurable#loadFromXML(Reader)} method, 
-     * passing it the node XML automatically populated.
+     * passing it the node XML automatically populated.</p>
+     * 
+     * <p>This method should not throw exception upon errors, but will return
+     * the default value instead (even if null). Use a method without
+     * a default value argument to get exception on errors.</p>
+     * 
      * @param node the node representing the class to instantiate.
      * @param defaultObject if returned object is null or undefined,
      *        returns this default object.
      * @param key sub-node name/hierarchical path
      * @return a new object.
-     * @throws ConfigurationException if instance cannot be created/populated
      */
     public static <T extends Object> T newInstance(
             HierarchicalConfiguration node, String key, 
             T defaultObject) {
-        return newInstance(node, key, defaultObject, true);
+        return newInstance(node, key, defaultObject, true, false);
     }
     /**
-     * Creates a new instance of the class represented by the "class" attribute
+     * <p>Creates a new instance of the class represented by the "class" 
+     * attribute
      * on the sub-node of the node argument, matching the key provided.
      * The class must have an empty constructor.
      * If the class is an instance of {@link IXMLConfigurable} and 
      * <code>supportXMLConfigurable</code> is true, the object created
      * will be automatically populated by invoking the 
      * {@link IXMLConfigurable#loadFromXML(Reader)} method, 
-     * passing it the node XML automatically populated.
+     * passing it the node XML automatically populated.</p>
+     * 
+     * <p>This method should not throw exception upon errors, but will return
+     * the default value instead (even if null). Use a method without
+     * a default value argument to get exception on errors.</p>
+     * 
      * @param node the node representing the class to instantiate.
      * @param defaultObject if returned object is null or undefined,
      *        returns this default object.
@@ -273,11 +296,17 @@ public final class ConfigurationUtil {
      * @param supportXMLConfigurable automatically populates the object from XML
      *        if it is implementing {@link IXMLConfigurable}.
      * @return a new object.
-     * @throws ConfigurationException if instance cannot be created/populated
      */
     public static <T extends Object> T newInstance(
             HierarchicalConfiguration node, String key, 
             T defaultObject, boolean supportXMLConfigurable) {
+        return newInstance(node, key, defaultObject, 
+                supportXMLConfigurable, false);
+    }
+    private static <T extends Object> T newInstance(
+            HierarchicalConfiguration node, String key, 
+            T defaultObject, boolean supportXMLConfigurable,
+            boolean canThrowException) {
         if (node == null) {
             return defaultObject;
         }
@@ -292,12 +321,23 @@ public final class ConfigurationUtil {
             return ConfigurationUtil.newInstance(
                     subconfig, defaultObject, supportXMLConfigurable);
         } catch (Exception e) {
-            LOG.warn("Could not instantiate object from configuration for "
-                   + "node: " + node.getRoot().getName() + " key: " + key, e);
+            if (canThrowException) {
+                if (e instanceof ConfigurationException) {
+                    throw (ConfigurationException) e;
+                } else {
+                    throw new ConfigurationException(
+                            "Could not instantiate object from configuration "
+                          + "for node: " + node.getRoot().getName() 
+                          + " key: " + key, e);
+                }
+            } else {
+                LOG.debug("Could not instantiate object from configuration "
+                        + "for node: " + node.getRoot().getName() 
+                        + " key: " + key, e);
+            }
             return defaultObject;
         }
     }
-    
     
     /**
      * Creates a new {@link Reader} from a {@link XMLConfiguration}.
