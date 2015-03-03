@@ -14,6 +14,7 @@
  */
 package com.norconex.commons.lang.io;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -59,6 +60,22 @@ public final class IOUtil {
         return new BufferedReader(reader);
     }
     
+    /**
+     * Wraps the input stream in a {@link BufferedInputStream} if not a subclass
+     * already.
+     * @param in the input stream to wrap if needed
+     * @return buffered input stream
+     * @since 1.6.0
+     */
+    public static BufferedInputStream toBufferedInputStream(InputStream in) {
+        if (in == null) {
+            throw new IllegalArgumentException("InputStream cannot be null");
+        }
+        if (BufferedInputStream.class.isAssignableFrom(in.getClass())) {
+            return (BufferedInputStream) in;
+        }
+        return new BufferedInputStream(in);
+    }
     
     /**
      * Gets the last lines from an input stream, using UTF-8.  

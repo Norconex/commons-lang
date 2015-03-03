@@ -13,13 +13,21 @@
         splitting text wisely at paragraphs/sentences/words when possible.
       </action>
       <action dev="essiembre" type="add">
-        New method IOUtil#toBufferedReader(Reader) that ensure to return
+        New method IOUtil#toBufferedReader(Reader) that ensures to return
         either a BufferedReader wrapping original reader, or the reader itself
         if it already implements BufferedReader.
+      </action>
+      <action dev="essiembre" type="add">
+        New method IOUtil#toBufferedInputStream(InputStream) that ensures to 
+        return either a BufferedInputStream wrapping original InputStream, or 
+        the input stream itself if it already implements BufferedInputStream.
       </action>
       <action dev="essiembre" type="update">
         ConfigurationUtil#newInstance(...) now throws an 
         ConfigurationExceptions upon error when no default value is supplied.
+      </action>
+      <action dev="essiembre" type="update">
+        Added SonaType snapshot repository to pom.xml.        
       </action>
     </release>
 
