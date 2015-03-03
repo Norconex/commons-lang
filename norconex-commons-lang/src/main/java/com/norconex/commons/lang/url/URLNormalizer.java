@@ -205,7 +205,7 @@ public class URLNormalizer implements Serializable {
     /**
      * Converts letters in URL-encoded escape sequences to upper case.<p>
      * <code>http://www.example.com/a%c2%b1b &rarr; 
-     *       http://www.example.com/a%C2%B1b</code></li>
+     *       http://www.example.com/a%C2%B1b</code>
      * @return this instance
      */
     public URLNormalizer upperCaseEscapeSequence() {
@@ -266,7 +266,7 @@ public class URLNormalizer implements Serializable {
      * <p>Adds a trailing slash (/) to a URL ending with a directory.  A URL is 
      * considered to end with a directory if the last path segment,
      * before fragment (#) or query string (?), does not contain a dot,
-     * typically representing an extension.<p>
+     * typically representing an extension.</p>
      *   
      * <p><b>Please Note:</b> URLs do not always denote a directory structure 
      * and many URLs can qualify to this method without truly representing a 
@@ -436,8 +436,8 @@ public class URLNormalizer implements Serializable {
     }
     /**
      * <p>Sorts query parameters.</p>
-     * <code>http://www.example.com/?z=bb&y=cc&z=aa &rarr;
-     *       http://www.example.com/?y=cc&z=bb&z=aa</code>
+     * <code>http://www.example.com/?z=bb&amp;y=cc&amp;z=aa &rarr;
+     *       http://www.example.com/?y=cc&amp;z=bb&amp;z=aa</code>
      * @return this instance
      */
     public URLNormalizer sortQueryParameters() {
@@ -457,8 +457,8 @@ public class URLNormalizer implements Serializable {
     }
     /**
      * <p>Removes empty parameters.</p>
-     * <code>http://www.example.com/display?a=b&a=&c=d&e=&f=g &rarr;
-     *       http://www.example.com/display?a=b&c=d&f=g</code>
+     * <code>http://www.example.com/display?a=b&amp;a=&amp;c=d&amp;e=&amp;f=g
+     * &rarr; http://www.example.com/display?a=b&amp;c=d&amp;f=g</code>
      * @return this instance
      */
     public URLNormalizer removeEmptyParameters() {

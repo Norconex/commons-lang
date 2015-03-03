@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,24 +22,14 @@ package com.norconex.commons.lang.map;
  */
 public class PropertiesException extends RuntimeException {
 
-    /** For serialization. */
     private static final long serialVersionUID = 3040976896770771979L;
 
-    /**
-     * @see Exception#Exception(java.lang.String)
-     */
     public PropertiesException(final String msg) {
         super(msg);
     }
-    /**
-     * @see Exception#Exception(java.lang.Throwable)
-     */
     public PropertiesException(final Throwable cause) {
         super(cause);
     }
-    /**
-     * @see Exception#Exception(java.lang.String, java.lang.Throwable)
-     */
     public PropertiesException(final String msg, final Throwable cause) {
         super(msg, cause);
     }

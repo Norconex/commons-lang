@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,10 +37,10 @@ import org.apache.log4j.Logger;
  * the word "custom" inserted: <code>ContentType-custom-[...]</code>.
  * The actual custom names and classpath location are:
  * <br><br>
- * <table border="1">
+ * <table border="1" summary="">
  *   <tr>
- *     <th>Original</td>
- *     <th>Custom</td>
+ *     <th>Original</th>
+ *     <th>Custom</th>
  *   </tr>
  *   <tr>
  *     <td>com.norconex.commmons.lang.file.ContentType-extensions.properties</td>

@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -97,6 +97,7 @@ public final class ConfigurationUtil {
      * {@link IXMLConfigurable#loadFromXML(Reader)} method, 
      * passing it the node XML automatically populated.
      * @param node the node representing the class to instantiate.
+     * @param <T> the type of the return value
      * @return a new object.
      * @throws ConfigurationException if instance cannot be created/populated
      */
@@ -116,6 +117,7 @@ public final class ConfigurationUtil {
      * @param node the node representing the class to instantiate.
      * @param supportXMLConfigurable automatically populates the object from XML
      *        if it is implementing {@link IXMLConfigurable}.
+     * @param <T> the type of the return value
      * @return a new object.
      * @throws ConfigurationException if instance cannot be created/populated
      */
@@ -136,6 +138,7 @@ public final class ConfigurationUtil {
      * @param node the node representing the class to instantiate.
      * @param defaultObject if returned object is null or undefined,
      *        returns this default object.
+     * @param <T> the type of the return value
      * @return a new object.
      * @throws ConfigurationException if instance cannot be created/populated
      */
@@ -157,6 +160,7 @@ public final class ConfigurationUtil {
      *        returns this default object.
      * @param supportXMLConfigurable automatically populates the object from XML
      *        if it is implementing {@link IXMLConfigurable}.
+     * @param <T> the type of the return value
      * @return a new object.
      * @throws ConfigurationException if instance cannot be created/populated
      */
@@ -215,6 +219,7 @@ public final class ConfigurationUtil {
      * 
      * @param node the node representing the class to instantiate.
      * @param key sub-node name/hierarchical path
+     * @param <T> the type of the return value
      * @return a new object.
      * @throws ConfigurationException if instance cannot be created/populated
      */
@@ -241,6 +246,7 @@ public final class ConfigurationUtil {
      * @param key sub-node name/hierarchical path
      * @param supportXMLConfigurable automatically populates the object from XML
      *        if it is implementing {@link IXMLConfigurable}.
+     * @param <T> the type of the return value
      * @return a new object.
      * @throws ConfigurationException if instance cannot be created/populated
      */
@@ -267,6 +273,7 @@ public final class ConfigurationUtil {
      * @param defaultObject if returned object is null or undefined,
      *        returns this default object.
      * @param key sub-node name/hierarchical path
+     * @param <T> the type of the return value
      * @return a new object.
      */
     public static <T extends Object> T newInstance(
@@ -295,6 +302,7 @@ public final class ConfigurationUtil {
      * @param key sub-node name/hierarchical path
      * @param supportXMLConfigurable automatically populates the object from XML
      *        if it is implementing {@link IXMLConfigurable}.
+     * @param <T> the type of the return value
      * @return a new object.
      */
     public static <T extends Object> T newInstance(

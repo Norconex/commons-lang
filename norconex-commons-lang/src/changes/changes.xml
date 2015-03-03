@@ -29,6 +29,9 @@
       <action dev="essiembre" type="update">
         Added SonaType snapshot repository to pom.xml.        
       </action>
+      <action dev="essiembre" type="update">
+        Javadoc improvements.
+      </action>
     </release>
 
     <release version="1.5.0" date="2014-11-24" description="Feature release">

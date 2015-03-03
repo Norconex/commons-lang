@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -94,8 +94,8 @@ import org.apache.velocity.runtime.RuntimeConstants;
  * <p><i>Configuration file myconfig.cfg:</i></p>
  * <pre>
  * &lt;myconfig&gt;
- *    &lt;host>$host&lt;/host&gt;
- *    &lt;port>$port&lt;/port&gt;
+ *    &lt;host&gt;$host&lt;/host&gt;
+ *    &lt;port&gt;$port&lt;/port&gt;
  *    #parse("../../shared/sharedconfig.cfg")
  * &lt;/myconfig&gt;</pre>
  * <p><i>Configuration loading:</i></p>
