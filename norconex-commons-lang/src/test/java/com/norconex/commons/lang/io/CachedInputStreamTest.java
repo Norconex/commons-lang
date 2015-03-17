@@ -20,6 +20,7 @@ import java.io.InputStream;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.NullInputStream;
+import org.apache.commons.lang3.CharEncoding;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -59,9 +60,37 @@ public class CachedInputStreamTest {
             Assert.assertEquals(content, readCacheToString(cache));
         }  finally {
             IOUtils.closeQuietly(cache);
+            cache.dispose();
         }
     }
 
+    @Test
+    public void testMarking() throws IOException {
+        String content = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+        ByteArrayInputStream is = new ByteArrayInputStream(content.getBytes());
+        
+        CachedStreamFactory factory = new CachedStreamFactory(200, 100);
+        CachedInputStream cache = factory.newInputStream(is);
+        try {
+            String enc = CharEncoding.US_ASCII;
+            byte[] bytes = null; 
+            bytes = new byte[5];
+            cache.read(bytes);
+            Assert.assertEquals("01234", new String(bytes, enc));
+            cache.mark(999);
+            cache.read(bytes);
+            Assert.assertEquals("56789", new String(bytes, enc));
+            cache.reset();
+            bytes = new byte[7];
+            cache.read(bytes);
+            Assert.assertEquals("56789AB", new String(bytes, enc));
+        }  finally {
+            IOUtils.closeQuietly(cache);
+            cache.dispose();
+        }
+    }
+    
     @Test
     public void testContentMatchPoolMaxFileCache() throws IOException {
         CachedStreamFactory factory = new CachedStreamFactory(
@@ -73,8 +102,6 @@ public class CachedInputStreamTest {
             cache1 = factory.newInputStream(new NullInputStream(
                     140 * 1024));
             readCacheToString(cache1);
-//            Assert.assertEquals(content, readCacheToString(cache1));
-
             
             // first time loads 6 bytes, totaling 12, forcing file cache
             cache2 = factory.newInputStream(new NullInputStream(
@@ -83,6 +110,8 @@ public class CachedInputStreamTest {
         }  finally {
             IOUtils.closeQuietly(cache1);
             IOUtils.closeQuietly(cache2);
+            cache1.dispose();
+            cache2.dispose();
         }
     }
 
@@ -101,10 +130,10 @@ public class CachedInputStreamTest {
             Assert.assertEquals(content, readCacheToString(cache));
         }  finally {
             IOUtils.closeQuietly(cache);
+            cache.dispose();
         }
     }
 
-    
     private String readCacheToString(InputStream is) throws IOException {
         long i;
         StringBuilder b = new StringBuilder();

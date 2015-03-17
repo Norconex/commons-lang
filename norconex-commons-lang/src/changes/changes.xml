@@ -13,6 +13,11 @@
         splitting text wisely at paragraphs/sentences/words when possible.
       </action>
       <action dev="essiembre" type="add">
+        New ByteArrayOutputStream class derived from the Apache IO class of the
+        same name, modified to offer methods to access subsets of bytes ranging
+        form zero to the total number of bytes written so far.
+      </action>
+      <action dev="essiembre" type="add">
         New method IOUtil#toBufferedReader(Reader) that ensures to return
         either a BufferedReader wrapping original reader, or the reader itself
         if it already implements BufferedReader.
@@ -21,6 +26,20 @@
         New method IOUtil#toBufferedInputStream(InputStream) that ensures to 
         return either a BufferedInputStream wrapping original InputStream, or 
         the input stream itself if it already implements BufferedInputStream.
+      </action>
+      <action dev="essiembre" type="add">
+        New method IOUtil#startsWith(InputStream, byte[]) that 
+        returns true if given input stream starts the specified bytes array.
+        (must support mark).
+      </action>
+      <action dev="essiembre" type="add">
+        New method IOUtil#borrowBytes(InputStream, int) that 
+        gets and resets the specified number of bytes from the input stream
+        (must support mark).
+      </action>
+      <action dev="essiembre" type="update">
+        CachedInputStream now supports mark(int). Mark value is always 
+        unlimited (argument is ignored).
       </action>
       <action dev="essiembre" type="update">
         ConfigurationUtil#newInstance(...) now throws an 
