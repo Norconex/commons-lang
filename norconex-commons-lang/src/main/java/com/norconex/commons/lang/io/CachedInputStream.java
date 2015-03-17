@@ -20,14 +20,13 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -68,8 +67,11 @@ import com.norconex.commons.lang.io.CachedStreamFactory.MemoryTracker;
  * the cache limit, the cache transforms itself into a fast file-based cache
  * of unlimited size.  Default memory cache size is 128 KB.
  * <br><br>
+ * <b>Starting with 1.6.0</b>, <code>mark(int)</code> is supported. The mark 
+ * limit is always unlimited so the method argument is ignored.
+ * <br><br>
  * @author Pascal Essiembre
- * @since 1.5
+ * @since 1.5.0
  * @see CachedStreamFactory
  */
 public class CachedInputStream extends InputStream implements ICachedStream {
@@ -86,7 +88,7 @@ public class CachedInputStream extends InputStream implements ICachedStream {
     private ByteArrayOutputStream memOutputStream;
     
     private File fileCache;
-    private OutputStream fileOutputStream;
+    private RandomAccessFile randomAccessFile;
     
     private boolean firstRead = true;
     private boolean needNewStream = false;
@@ -94,6 +96,10 @@ public class CachedInputStream extends InputStream implements ICachedStream {
     private boolean disposed = false;
     
     private final File cacheDirectory;
+    
+    private int count;        // total number of bytes read so far
+    private int pos = 0;      // byte position we are in
+    private int markpos = 0;  // position we want to go back to
     
     /**
      * Caches the wrapped InputStream.
@@ -148,12 +154,78 @@ public class CachedInputStream extends InputStream implements ICachedStream {
         needNewStream = true;
     }
 
+    /**
+     * Always <code>true</code> since 1.6.0.
+     * @return <code>true</code>
+     */
+    @Override
+    public boolean markSupported() {
+        return true;
+    }
+    /**
+     * The read limit value is ignored. Limit is always unlimited.
+     * Supported since 1.6.0.
+     * @param readlimit any value (ignored)
+     */
+    @Override
+    public synchronized void mark(int readlimit) {
+        markpos = pos;
+    }
+    /**
+     * If no mark has previously been set, it resets to the beginning.
+     * Supported since 1.6.0.
+     */
+    @Override
+    public synchronized void reset() throws IOException {
+        pos = markpos;
+    }
+
+    /**
+     * Whether caching is done in memory for this instance for what has been
+     * read so far. Otherwise, file-based caching is used.
+     * @return <code>true</code> if caching is in memory.
+     */
+    public boolean isInMemory() {
+        return fileCache == null;
+    }
+    
     @Override
     public int read() throws IOException {
         if (disposed) {
             throw new IOException("CachedInputStream has been disposed.");
         }
+        int cursor = pos;
+        if (cursor < count) {
+            int val = -1;
+            if (isInMemory()) {
+                if (memOutputStream != null) {
+                    val = memOutputStream.getByte(cursor);
+                } else {
+                    if (cursor >= memCache.length) {
+                        val = -1;
+                    } else {
+                        val = memCache[cursor];
+                    }
+                }
+            } else {
+                randomAccessFile.seek(cursor);
+                val = randomAccessFile.read();
+            }
+            if (val != -1) {
+                pos++;
+            }
+            return val;
+        }
+
+        int b = realRead(); 
+        if (b != -1) {
+            pos++;
+            count++;
+        }
+        return b;
+    }
         
+    private int realRead() throws IOException {
         if (needNewStream) {
             createInputStreamFromCache();
         }
@@ -162,13 +234,13 @@ public class CachedInputStream extends InputStream implements ICachedStream {
             if (read == -1) {
                 return read;
             }
-            if (fileOutputStream != null) {
+            if (randomAccessFile != null) {
                 // Write to file cache
-                fileOutputStream.write(read);
+                randomAccessFile.write(read);
             } else if (!tracker.hasEnoughAvailableMemory(memOutputStream, 1)) {
                 // Too big: create file cache and write to it.
                 cacheToFile();
-                fileOutputStream.write(read);
+                randomAccessFile.write(read);
             } else {
                 // Write to memory cache
                 memOutputStream.write(read);
@@ -186,6 +258,45 @@ public class CachedInputStream extends InputStream implements ICachedStream {
         if (disposed) {
             throw new IOException("CachedInputStream has been disposed.");
         }
+    
+        int cursor = pos;
+        int read = 0;
+        if (cursor < count) {
+            int toRead = Math.min(len, count - cursor);
+            if (isInMemory()) {
+                if (memOutputStream != null) {
+                    byte[] bytes = new byte[toRead];
+                    read = memOutputStream.getBytes(bytes, cursor);
+                    System.arraycopy(bytes, 0, b, off, toRead);
+                } else {
+                    if (cursor >= memCache.length) {
+                        read = -1;
+                    } else {
+                        System.arraycopy(memCache, cursor, b, off, toRead);
+                        read = toRead;
+                    }                    
+                }
+            } else {
+                randomAccessFile.seek(cursor);
+                read = randomAccessFile.read(b, off, toRead);
+            }
+            if (read != -1) {
+                pos += read;
+            }
+        }
+
+        if (read != -1 && read < len) {
+            int maxToRead = len - read;
+            read = realRead(b, off + read, maxToRead); 
+            if (read != -1) {
+                pos += read;
+                count += read;
+            }
+        }
+        return read;
+    }
+    
+    public int realRead(byte[] b, int off, int len) throws IOException {
         if (needNewStream) {
             createInputStreamFromCache();
         }
@@ -196,25 +307,53 @@ public class CachedInputStream extends InputStream implements ICachedStream {
         }
 
         if (firstRead) {
-            if (fileOutputStream != null) {
-                fileOutputStream.write(b, 0, num);
+            if (randomAccessFile != null) {
+                randomAccessFile.write(b, off, num);
             } else if (!tracker.hasEnoughAvailableMemory(
                     memOutputStream, num)) {
                 cacheToFile();
-                fileOutputStream.write(b, 0, num);
+                randomAccessFile.write(b, off, num);
             } else {
-                memOutputStream.write(b, 0, num);
+                memOutputStream.write(b, off, num);
             }
         }
         return num;
     }
     
+    /**
+     * If not already fully cached, forces the inner input stream to be
+     * fully cached.
+     * @throws IOException could not enforce full caching
+     */
+    public void enforceFullCaching() throws IOException {
+        if (firstRead) {
+            IOUtils.copy(this, new NullOutputStream());
+        }
+    }
+    
+    /**
+     * Rewinds this stream so it can be read again from the beginning.
+     * If this input stream was not fully read at least once, it will
+     * be fully read first, so its entirety is cached properly.
+     */
     public void rewind() {
         if (!cacheEmpty) {
+            // Rewinding a stream that we not fully read will truncate 
+            // it. We finish reading it all to avoid that.
+            if (firstRead) {
+                try {
+                    enforceFullCaching();
+                } catch (IOException e) {
+                    //TODO handle better
+                    throw new RuntimeException(e);
+                }
+            }
+            
+            // Rewind
             IOUtils.closeQuietly(inputStream);
             IOUtils.closeQuietly(memOutputStream);
-            IOUtils.closeQuietly(fileOutputStream);
-            fileOutputStream = null;
+            IOUtils.closeQuietly(randomAccessFile);
+            randomAccessFile = null;
             firstRead = false;
             needNewStream = true;
             if (memOutputStream != null) {
@@ -222,6 +361,10 @@ public class CachedInputStream extends InputStream implements ICachedStream {
                 memCache = memOutputStream.toByteArray();
                 memOutputStream = null;
             }
+            // Reset marking
+            pos = 0;
+            markpos = 0;
+            count = 0;
         }
     }
     
@@ -238,10 +381,9 @@ public class CachedInputStream extends InputStream implements ICachedStream {
             memOutputStream.close();
             memOutputStream = null;
         }
-        if (fileOutputStream != null) {
-            fileOutputStream.flush();
-            fileOutputStream.close();
-            fileOutputStream = null;
+        if (randomAccessFile != null) {
+            randomAccessFile.close();
+            randomAccessFile = null;
         }
         if (fileCache != null) {
             FileUtil.delete(fileCache);
@@ -317,17 +459,13 @@ public class CachedInputStream extends InputStream implements ICachedStream {
         return factory;
     }
     
-    @SuppressWarnings("resource")
     private void cacheToFile() throws IOException {
         fileCache = File.createTempFile(
                 "CachedInputStream-", "-temp", cacheDirectory);
         fileCache.deleteOnExit();
         LOG.debug("Reached max cache size. Swapping to file: " + fileCache);
-        RandomAccessFile f = new RandomAccessFile(fileCache, "rw");
-        FileChannel channel = f.getChannel();
-        fileOutputStream = Channels.newOutputStream(channel);
-
-        IOUtils.write(memOutputStream.toByteArray(), fileOutputStream);
+        randomAccessFile = new RandomAccessFile(fileCache, "rw");
+        randomAccessFile.write(memOutputStream.toByteArray());
         memOutputStream = null;
     }
 
