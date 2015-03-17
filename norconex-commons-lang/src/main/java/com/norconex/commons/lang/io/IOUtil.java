@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -44,6 +45,46 @@ public final class IOUtil {
         super();
     }
 
+    /**
+     * Whether the given input stream starts the specified bytes array
+     * or not.  The input stream must support marking. If the byte array
+     * or the input stream is null, then <code>false</code> is returned.
+     * @param is input stream
+     * @param bytes byte array to compare
+     * @return <code>true</code> if input stream starts with byte array
+     * @throws IOException if {@link InputStream#markSupported()} returns false
+     */
+    public static boolean startsWith(
+            InputStream is, byte[] bytes) throws IOException {
+        if (is == null || bytes == null) {
+            return false;
+        }
+        byte[] head = IOUtil.borrowBytes(is, bytes.length);
+        return Arrays.equals(bytes, head);
+    }    
+    
+    /**
+     * Gets and resets the specified number of bytes from the input stream.
+     * @param is input stream
+     * @param qty number of bytes to read
+     * @return byte array of length matching the quantity requested
+     * @throws IOException if {@link InputStream#markSupported()} returns false
+     */
+    public static byte[] borrowBytes(
+            InputStream is, int qty) throws IOException {
+        if (is == null) {
+            throw new IllegalArgumentException("Input stream cannot be null.");
+        } else if (!is.markSupported()) {
+            throw new IllegalArgumentException(
+                    "Input stream must support mark.");
+        }
+        is.mark(qty);
+        byte[] bytes = new byte[qty];
+        is.read(bytes);
+        is.reset();
+        return bytes;
+    }
+    
     /**
      * Wraps the reader in a {@link BufferedReader} if not a subclass already.
      * @param reader the reader to wrap if needed
