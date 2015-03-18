@@ -9,6 +9,10 @@
 
     <release version="1.6.0-SNAPSHOT" date="2015-??-??" description="Feature release">
       <action dev="essiembre" type="add">
+        New TimeIdGenerator class for generating time-based unique IDs that
+        are guaranteed to be ordered and unique within a JVM.
+      </action>
+      <action dev="essiembre" type="add">
         New TextReader class for reading large text files, one chunk at a time,
         splitting text wisely at paragraphs/sentences/words when possible.
       </action>
