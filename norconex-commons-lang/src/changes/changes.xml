@@ -46,6 +46,9 @@
         unlimited (argument is ignored).
       </action>
       <action dev="essiembre" type="update">
+        ContentType and ContentFamily now support BIG2 content type.
+      </action>
+      <action dev="essiembre" type="update">
         ConfigurationUtil#newInstance(...) now throws an 
         ConfigurationExceptions upon error when no default value is supplied.
       </action>
