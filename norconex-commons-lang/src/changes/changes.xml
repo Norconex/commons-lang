@@ -57,6 +57,9 @@
         Added SonaType snapshot repository to pom.xml.        
       </action>
       <action dev="essiembre" type="update">
+        Updated several maven plugins and added SonarQube maven plugin.
+      </action>
+      <action dev="essiembre" type="update">
         Javadoc improvements.
       </action>
     </release>

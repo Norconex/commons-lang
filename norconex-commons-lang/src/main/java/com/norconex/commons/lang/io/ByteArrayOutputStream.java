@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.ClosedInputStream;
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -49,6 +50,8 @@ import org.apache.commons.lang3.ArrayUtils;
  */
 public class ByteArrayOutputStream extends OutputStream {
 
+    public static final int DEFAULT_INITIAL_CAPACITY = 1024;
+    
     /** The list of buffers, which grows and never reduces. */
     private final List<byte[]> buffers = new ArrayList<byte[]>();
 
@@ -69,7 +72,7 @@ public class ByteArrayOutputStream extends OutputStream {
      * initially 1024 bytes. 
      */
     public ByteArrayOutputStream() {
-        this(1024);
+        this(DEFAULT_INITIAL_CAPACITY);
     }
 
     /**
@@ -86,7 +89,6 @@ public class ByteArrayOutputStream extends OutputStream {
         }
         synchronized (this) {
             this.bufferCapacity = size;
-            //needNewBuffer(size);
             addNewBuffer();
         }
 
@@ -112,8 +114,7 @@ public class ByteArrayOutputStream extends OutputStream {
         }
         int buffersIndex = pos / bufferCapacity;
         int bufPos = pos % bufferCapacity;
-        byte b = buffers.get(buffersIndex)[bufPos];
-        return b;
+        return buffers.get(buffersIndex)[bufPos];
     }
 
     /**
@@ -224,7 +225,7 @@ public class ByteArrayOutputStream extends OutputStream {
      * @throws IOException if an I/O error occurs while reading the input stream
      */
     public synchronized int write(InputStream in) throws IOException {
-        byte[] buffer = new byte[1024];
+        byte[] buffer = new byte[DEFAULT_INITIAL_CAPACITY];
         int readCount = 0;
         int length = 0;
         while ((length = in.read(buffer)) != -1) {
@@ -310,6 +311,7 @@ public class ByteArrayOutputStream extends OutputStream {
             throws IOException {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         output.write(input);
+        IOUtils.closeQuietly(input);
         return output.toBufferedInputStream();
     }
 

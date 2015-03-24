@@ -28,7 +28,6 @@ import org.apache.commons.io.FileUtils;
  * are no paragraph, it tries to split after the last sentence.  If no sentence
  * can be detected, it splits on the last word.  If no words are found,
  * it returns all it could read up to the maximum read size.
- * sentence
  * @author Pascal Essiembre
  * @since 1.6.0
  */
@@ -95,7 +94,7 @@ public class TextReader extends Reader {
 
     /**
      * Reads the next chunk of text, up to the maximum read size specified.
-     * It tries as much as possible to break long text into pagragraph,
+     * It tries as much as possible to break long text into paragraph,
      * sentences or words, before returning.  See class documentation.
      * @return text read
      * @throws IOException problem reading text.
