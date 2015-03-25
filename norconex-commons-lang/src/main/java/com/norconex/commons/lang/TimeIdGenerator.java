@@ -157,6 +157,7 @@ public final class TimeIdGenerator {
         long id = time * TIME_MULTIPLIER;
         id += getDupSequence(time == previousTime);
         previousTime = time;
+        previousGeneratedId = id;
         return id;
     }
     
