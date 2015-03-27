@@ -92,9 +92,13 @@ $h2 I/O
 
 Provides features for dealing with streams, such as:
   
+  * caching of input streams so they can be re-read at will
+  * caching of output stream
   * filter input streams using input stream filters (e.g. regex-based filter)
   * stream in reverse
   * create listeners that get notified when input stream is being read
+  * text reader for reading large text into smaller chunks, cut wisely
+    after a paragraph, sentence, or word.
 
 Classes: [com.norconex.commons.lang.io.*](./apidocs/com/norconex/commons/lang/io/package-summary.html)
 
@@ -108,6 +112,7 @@ Other classes not fitting anyhere.  Includes:
   * Percent formatter
   * Pipeline classes
   * EnhancedXMLStreamWriter
+  * Long unique ID generator
   
 Classes: [com.norconex.commons.lang.*](./apidocs/com/norconex/commons/lang/package-summary.html)
   
