@@ -1,5 +1,5 @@
 <!-- 
-   Copyright 2010-2014 Norconex Inc.
+   Copyright 2010-2015 Norconex Inc.
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.norconex.commons</groupId>
   <artifactId>norconex-commons-lang</artifactId>
-  <version>1.6.0-SNAPSHOT</version>
+  <version>1.6.0</version>
   <packaging>jar</packaging>
   <name>Norconex Commons Lang</name>
 
