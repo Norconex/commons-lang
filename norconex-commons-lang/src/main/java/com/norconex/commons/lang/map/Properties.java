@@ -997,7 +997,12 @@ public class Properties extends ObservableMap<String, List<String>>
         }
         String[] array = new String[values.length];
         for (int i = 0; i < array.length; i++) {
-            array[i] = Long.toString(values[i].getTime());
+            Date value = values[i];
+            if (value == null) {
+                array[i] = null;
+            } else {
+                array[i] = Long.toString(value.getTime());
+            }
         }
         return array;
     }

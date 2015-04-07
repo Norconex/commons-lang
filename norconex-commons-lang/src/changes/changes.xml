@@ -7,6 +7,13 @@
   </properties>
   <body>
 
+    <release version="1.6.1-SNAPSHOT" date="2015-??-??" description="Bug fix release">
+      <action dev="essiembre" type="fix">
+        Fix NullPointerException when passing a date array containing null
+        values in Properties#datesToStringArray(Date...).
+      </action>
+    </release>
+
     <release version="1.6.0" date="2015-03-27" description="Feature release">
       <action dev="essiembre" type="add">
         New TimeIdGenerator class for generating time-based unique IDs that
