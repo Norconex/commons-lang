@@ -7,7 +7,10 @@
   </properties>
   <body>
 
-    <release version="1.6.1-SNAPSHOT" date="2015-??-??" description="Bug fix release">
+    <release version="1.6.1-SNAPSHOT" date="2015-??-??" description="Maintenance release">
+      <action dev="essiembre" type="add">
+        Added a length() method to CachedInputStream.
+      </action>
       <action dev="essiembre" type="fix">
         Fix NullPointerException when passing a date array containing null
         values in Properties#datesToStringArray(Date...).

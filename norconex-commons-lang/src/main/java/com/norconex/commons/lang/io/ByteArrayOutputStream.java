@@ -30,7 +30,7 @@ import org.apache.commons.lang3.ArrayUtils;
 
 /**
  * <p>This class is an alternate version of
- * Java {@link ByteArrayInputStream}. This code is derived from the 
+ * Java {@link java.io.ByteArrayOutputStream}. This code is derived from the 
  * Apache {@link org.apache.commons.io.output.ByteArrayOutputStream}.
  * Like the Apache version, this class creates new byte arrays as it grows
  * without copying them into a larger one (for better performance).  

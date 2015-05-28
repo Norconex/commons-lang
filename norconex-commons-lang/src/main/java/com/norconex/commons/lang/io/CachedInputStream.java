@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -100,6 +100,10 @@ public class CachedInputStream extends InputStream implements ICachedStream {
     private int count;        // total number of bytes read so far
     private int pos = 0;      // byte position we are in
     private int markpos = 0;  // position we want to go back to
+
+    // undefined until a full read was performed
+    private static int UNDEFINED_LENGTH = -42;
+    private int length = UNDEFINED_LENGTH;
     
     /**
      * Caches the wrapped InputStream.
@@ -138,8 +142,11 @@ public class CachedInputStream extends InputStream implements ICachedStream {
         this.tracker = factory.new MemoryTracker();
         this.memCache = ArrayUtils.clone(memCache);
         this.cacheDirectory = null;
-        firstRead = false;
-        needNewStream = true;
+        this.firstRead = false;
+        this.needNewStream = true;
+        if (memCache != null) {
+            this.length = memCache.length;
+        }
     }
     /**
      * Creates an input stream with an existing file cache.
@@ -150,8 +157,11 @@ public class CachedInputStream extends InputStream implements ICachedStream {
         this.tracker = factory.new MemoryTracker();
         this.fileCache = cacheFile;
         this.cacheDirectory = null;
-        firstRead = false;
-        needNewStream = true;
+        this.firstRead = false;
+        this.needNewStream = true;
+        if (cacheFile != null && cacheFile.exists() && cacheFile.isFile()) {
+            this.length = (int) cacheFile.length();
+        }
     }
 
     /**
@@ -296,7 +306,7 @@ public class CachedInputStream extends InputStream implements ICachedStream {
         return read;
     }
     
-    public int realRead(byte[] b, int off, int len) throws IOException {
+    private int realRead(byte[] b, int off, int len) throws IOException {
         if (needNewStream) {
             createInputStreamFromCache();
         }
@@ -328,6 +338,8 @@ public class CachedInputStream extends InputStream implements ICachedStream {
     public void enforceFullCaching() throws IOException {
         if (firstRead) {
             IOUtils.copy(this, new NullOutputStream());
+            length = count;
+            firstRead = false;
         }
     }
     
@@ -344,28 +356,31 @@ public class CachedInputStream extends InputStream implements ICachedStream {
                 try {
                     enforceFullCaching();
                 } catch (IOException e) {
-                    //TODO handle better
-                    throw new RuntimeException(e);
+                    throw new StreamException("Could not read entire stream "
+                            + "so rewind() can occur safely.", e);
                 }
             }
-            
-            // Rewind
-            IOUtils.closeQuietly(inputStream);
-            IOUtils.closeQuietly(memOutputStream);
-            IOUtils.closeQuietly(randomAccessFile);
-            randomAccessFile = null;
-            firstRead = false;
-            needNewStream = true;
-            if (memOutputStream != null) {
-                LOG.debug("Creating memory cache from cached stream.");
-                memCache = memOutputStream.toByteArray();
-                memOutputStream = null;
-            }
-            // Reset marking
-            pos = 0;
-            markpos = 0;
-            count = 0;
+            resetStream();
         }
+    }
+    
+    private void resetStream() {
+        // Rewind
+        IOUtils.closeQuietly(inputStream);
+        IOUtils.closeQuietly(memOutputStream);
+        IOUtils.closeQuietly(randomAccessFile);
+        randomAccessFile = null;
+        firstRead = false;
+        needNewStream = true;
+        if (memOutputStream != null) {
+            LOG.debug("Creating memory cache from cached stream.");
+            memCache = memOutputStream.toByteArray();
+            memOutputStream = null;
+        }
+        // Reset marking
+        pos = 0;
+        markpos = 0;
+        count = 0;
     }
     
     public void dispose() throws IOException {
@@ -434,6 +449,49 @@ public class CachedInputStream extends InputStream implements ICachedStream {
             return memOutputStream.size();
         }
         return 0;
+    }
+    
+    /**
+     * <p>Gets the length of the cached input stream. The length represents the
+     * number of bytes that were read from this input stream, 
+     * after it was read entirely at least once.</p>
+     * <p><b>Note:</b> Invoking this method when this stream is only partially 
+     * read (on a first read) will force it to read entirely and cache the 
+     * inner input stream it wraps.  To prevent an unnecessary read cycle,
+     * it is always best to invoke this method after this stream was fully
+     * read through normal use first.
+     * </p>
+     * @return the byte length
+     * @since 1.6.1
+     */
+    public int length() {
+        if (length == UNDEFINED_LENGTH) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Obtaining stream length before a stream "
+                        + "of unknown lenght was fully read. "
+                        + "This forces a full "
+                        + "read just to get the length. To avoid this extra "
+                        + "read cycle, consider calling "
+                        + "the length() method after the stream has been "
+                        + "fully read at least once through regular usage.");
+            }
+
+            // Reset marking
+            int savedPos = pos;
+            int savedMarkpos = markpos;
+            try {
+                enforceFullCaching();
+                resetStream();
+                //TODO investigate having a seek(int) method instead
+                IOUtils.skip(this, savedPos);
+            } catch (IOException e) {
+                throw new StreamException("Could not read entire stream "
+                        + "to obtain its byte length.", e);
+            }
+            pos = savedPos;
+            markpos = savedMarkpos;
+        }
+        return length;
     }
     
     /**
