@@ -41,18 +41,20 @@ public class TextReader extends Reader {
     private final boolean removeTrailingDelimiter;
     private final StringBuilder buffer = new StringBuilder();
 
-    private static final int PATTERN_FLAGS = Pattern.MULTILINE 
-            | Pattern.DOTALL | Pattern.UNICODE_CHARACTER_CLASS;
+    private static final int PATTERN_FLAGS = 
+            Pattern.DOTALL | Pattern.UNICODE_CHARACTER_CLASS;
     
-    private final Pattern paragraphDelimiterPattern = Pattern.compile(
-            "(\\p{javaWhitespace}*[\\n\\r]\\p{javaWhitespace}*"
+    private static final Pattern PARAGRAPH_PATTERN = Pattern.compile(
+            "^.*(\\p{javaWhitespace}*[\\n\\r]\\p{javaWhitespace}*?"
           + "[\\n\\r]\\p{javaWhitespace}*)", PATTERN_FLAGS);
-    private final Pattern sentencePattern = Pattern.compile(
-            ".*((^\\p{javaWhitespace}*|[?!\\.]\\p{javaWhitespace}+)"
-          + "([^\\p{javaWhitespace}].+?)([?!\\.]\\p{javaWhitespace}+|\\n))", 
-          PATTERN_FLAGS);
-    private final Pattern wordDelimiterPattern = Pattern.compile(
-            "(\\p{javaWhitespace}+)", PATTERN_FLAGS);;
+//    private static final Pattern LINE_PATTERN = Pattern.compile(
+//            "^.*([\\n\\r]\\p{javaWhitespace}*)", 
+//            PATTERN_FLAGS);
+            
+    private static final Pattern SENTENCE_PATTERN = Pattern.compile(
+            "^.*[\\.\\?\\!](\\p{javaWhitespace}+|$)", PATTERN_FLAGS);
+    private static final Pattern WORD_PATTERN = Pattern.compile(
+            "^.*(\\p{javaWhitespace}+)", PATTERN_FLAGS);
 
     /**
      * Create a new text reader, reading 64KB at a time with 
@@ -123,21 +125,7 @@ public class TextReader extends Reader {
         Matcher m = null;
         
         // Try breaking at paragraph:
-        m = paragraphDelimiterPattern.matcher(buffer);
-        if(m.find()) {
-            int mStart = m.start(m.groupCount());
-            int mEnd = m.end(m.groupCount());
-            int substringEnd = mEnd;
-            if (removeTrailingDelimiter) {
-                substringEnd = mStart;
-            }
-            String t = buffer.substring(0, substringEnd);
-            buffer.delete(0, substringEnd);
-            return t;
-        }
-
-        // Try breaking at sentence:
-        m = sentencePattern.matcher(buffer);
+        m = PARAGRAPH_PATTERN.matcher(buffer);
         if(m.find()) {
             int mStart = m.start(1);
             int mEnd = m.end(1);
@@ -150,17 +138,56 @@ public class TextReader extends Reader {
             return t;
         }
 
-        // Try breaking at word:
-        m = wordDelimiterPattern.matcher(buffer);
+        // Try breaking at sentence:
+        m = SENTENCE_PATTERN.matcher(buffer);
         if(m.find()) {
-            int mStart = m.start(m.groupCount());
-            int mEnd = m.end(m.groupCount());
+            int mStart = m.start(1);
+            int mEnd = m.end(1);
             int substringEnd = mEnd;
             if (removeTrailingDelimiter) {
                 substringEnd = mStart;
             }
             String t = buffer.substring(0, substringEnd);
             buffer.delete(0, substringEnd);
+            return t;
+        }
+
+//        // Try breaking at line:
+//        m = LINE_PATTERN.matcher(buffer);
+//        if(m.find()) {
+//            int mStart = m.start(1);
+//            int mEnd = m.end(1);
+//            int substringEnd = mEnd;
+//            if (removeTrailingDelimiter) {
+//                substringEnd = mStart;
+//            }
+//            String t = buffer.substring(0, substringEnd);
+//            buffer.delete(0, substringEnd);
+//            return t;
+//        }
+//        
+        
+        
+        // Try breaking at word:
+        m = WORD_PATTERN.matcher(buffer);
+        if(m.find()) {
+            int mStart = m.start(1);
+            int mEnd = m.end(1);
+            int substringEnd = mEnd;
+            if (removeTrailingDelimiter) {
+                substringEnd = mStart;
+            }
+            String t = buffer.substring(0, substringEnd);
+            buffer.delete(0, substringEnd);            
+            
+//            int mStart = m.start(m.groupCount());
+//            int mEnd = m.end(m.groupCount());
+//            int substringEnd = mEnd;
+//            if (removeTrailingDelimiter) {
+//                substringEnd = mStart;
+//            }
+//            String t = buffer.substring(0, substringEnd);
+//            buffer.delete(0, substringEnd);
             return t;
         }
         

@@ -15,6 +15,10 @@
         Fix NullPointerException when passing a date array containing null
         values in Properties#datesToStringArray(Date...).
       </action>
+      <action dev="essiembre" type="fix">
+        Fix TextReader#readText(...) which could sometimes take
+        forever to return (if ever).
+      </action>
     </release>
 
     <release version="1.6.0" date="2015-03-27" description="Feature release">
