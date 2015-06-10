@@ -79,6 +79,8 @@ public class CachedInputStream extends InputStream implements ICachedStream {
     private static final Logger LOG = 
             LogManager.getLogger(CachedInputStream.class);
     
+    private static final int UNDEFINED_LENGTH = -42;
+
     private final CachedStreamFactory factory;
     private final MemoryTracker tracker;
     
@@ -102,7 +104,6 @@ public class CachedInputStream extends InputStream implements ICachedStream {
     private int markpos = 0;  // position we want to go back to
 
     // undefined until a full read was performed
-    private static int UNDEFINED_LENGTH = -42;
     private int length = UNDEFINED_LENGTH;
     
     /**
