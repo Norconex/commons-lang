@@ -47,9 +47,6 @@ public class TextReader extends Reader {
     private static final Pattern PARAGRAPH_PATTERN = Pattern.compile(
             "^.*(\\p{javaWhitespace}*[\\n\\r]\\p{javaWhitespace}*?"
           + "[\\n\\r]\\p{javaWhitespace}*)", PATTERN_FLAGS);
-//    private static final Pattern LINE_PATTERN = Pattern.compile(
-//            "^.*([\\n\\r]\\p{javaWhitespace}*)", 
-//            PATTERN_FLAGS);
             
     private static final Pattern SENTENCE_PATTERN = Pattern.compile(
             "^.*[\\.\\?\\!](\\p{javaWhitespace}+|$)", PATTERN_FLAGS);
@@ -152,22 +149,6 @@ public class TextReader extends Reader {
             return t;
         }
 
-//        // Try breaking at line:
-//        m = LINE_PATTERN.matcher(buffer);
-//        if(m.find()) {
-//            int mStart = m.start(1);
-//            int mEnd = m.end(1);
-//            int substringEnd = mEnd;
-//            if (removeTrailingDelimiter) {
-//                substringEnd = mStart;
-//            }
-//            String t = buffer.substring(0, substringEnd);
-//            buffer.delete(0, substringEnd);
-//            return t;
-//        }
-//        
-        
-        
         // Try breaking at word:
         m = WORD_PATTERN.matcher(buffer);
         if(m.find()) {
@@ -179,15 +160,6 @@ public class TextReader extends Reader {
             }
             String t = buffer.substring(0, substringEnd);
             buffer.delete(0, substringEnd);            
-            
-//            int mStart = m.start(m.groupCount());
-//            int mEnd = m.end(m.groupCount());
-//            int substringEnd = mEnd;
-//            if (removeTrailingDelimiter) {
-//                substringEnd = mStart;
-//            }
-//            String t = buffer.substring(0, substringEnd);
-//            buffer.delete(0, substringEnd);
             return t;
         }
         

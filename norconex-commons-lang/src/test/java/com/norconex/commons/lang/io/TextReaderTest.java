@@ -39,8 +39,7 @@ public class TextReaderTest {
             System.out.println("CHUNK #" + count + " = " + text);
         }
         reader.close();
-        // Realy should be 10?  There are blank lines
-        Assert.assertEquals("Wrong number of sentences", 13, count);
+        Assert.assertEquals("Wrong number of sentences", 10, count);
     }
 
     
