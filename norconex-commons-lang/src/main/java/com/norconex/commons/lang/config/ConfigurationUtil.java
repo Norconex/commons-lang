@@ -71,8 +71,17 @@ public final class ConfigurationUtil {
         return xml;
     }
     /**
-     * This load method will return an Apache XML Configuration from
-     * from a reader, with delimiter parsing disabled. 
+     * <p>This load method will return an Apache XML Configuration from
+     * from a reader, with delimiter parsing disabled.</p>
+     * <p><b>Note:</b> Leading and trailing white spaces are not preserved by 
+     * default.
+     * To preserve them, add <code>xml:space="preserve"</code> 
+     * to your tag, like this:
+     * </p>
+     * <pre>
+     *   &lt;mytag xml:space="preserve"&gt; &lt;/mytag&gt;
+     * </pre>
+     * <p>The above example will preserve the white space in the tag's body.
      * @param in input stream
      * @return XMLConfiguration
      * @since 1.5.0
