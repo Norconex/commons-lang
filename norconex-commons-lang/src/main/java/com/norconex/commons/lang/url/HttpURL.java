@@ -190,6 +190,10 @@ public class HttpURL implements Serializable {
             throw new URLException("Cannot convert to URL: " + url, e);
         }
     }
+    /**
+     * Returns a string representation of this URL.
+     * @return URL as a string
+     */
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
