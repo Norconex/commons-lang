@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,20 @@ package com.norconex.commons.lang.url;
 
 import java.io.Serializable;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 
+import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
  * This class act as a mutable URL, which could be a replacement
- * or "wrapper" to the {@link URL} class.
+ * or "wrapper" to the {@link URL} class. It can also be used as a safer way 
+ * to build a {@link URL} or a {@link URI} instance as it will properly escape 
+ * appropriate characters before creating those.
  * 
  * @author Pascal Essiembre
  */
@@ -43,26 +48,53 @@ public class HttpURL implements Serializable {
     private int port = DEFAULT_HTTP_PORT;
     private String path;
     private String protocol;
+    private final String encoding;
     
     /**
-     * Constructor.
+     * Creates a blank HttpURL using UTF-8 for URL encoding.
      */
     public HttpURL() {
-        super();
+        this("", null);
     }
 
     /**
-     * Constructor.
+     * Creates a new HttpURL from the URL object using UTF-8 for URL encoding.
      * @param url a URL
      */
     public HttpURL(URL url) {
         this(url.toString());
     }
     /**
-     * Constructor.
+     * Creates a new HttpURL from the URL string using UTF-8 for URL encoding.
      * @param url a URL
      */
     public HttpURL(String url) {
+        this(url, null);
+    }
+
+    /**
+     * Creates a new HttpURL from the URL object using the provided encoding
+     * for URL encoding.
+     * @param url a URL
+     * @param encoding character encoding
+     * @since 1.7.0
+     */
+    public HttpURL(URL url, String encoding) {
+        this(url.toString(), encoding);
+    }
+    /**
+     * Creates a new HttpURL from the URL string using the provided encoding
+     * for URL encoding.
+     * @param url a URL string
+     * @param encoding character encoding
+     * @since 1.7.0
+     */
+    public HttpURL(String url, String encoding) {
+        if (StringUtils.isBlank(encoding)) {
+            this.encoding = CharEncoding.UTF_8;
+        } else {
+            this.encoding = encoding;
+        }
         if (url.startsWith("http")) {
             URL urlwrap;
             try {
@@ -78,8 +110,18 @@ public class HttpURL implements Serializable {
         
         // Parameters
         if (StringUtils.contains(url, "?")) {
-            queryString = new QueryString(url);
+            queryString = new QueryString(url, encoding);
         }
+    }
+
+    
+    /**
+     * Gets the character encoding. Default is UTF-8.
+     * @return character encoding
+     * @since 1.7.0
+     */
+    public String getEncoding() {
+        return encoding;
     }
 
     /**
@@ -179,8 +221,10 @@ public class HttpURL implements Serializable {
         return segment;
     }
     /**
-     * Convert this HttpURL to a regular URL.
+     * Converts this HttpURL to a regular {@link URL}, making sure 
+     * appropriate characters are escaped properly.
      * @return a URL
+     * @throws URLException when URL is malformed
      */
     public URL toURL() {
         String url = toString();
@@ -191,7 +235,48 @@ public class HttpURL implements Serializable {
         }
     }
     /**
-     * Returns a string representation of this URL.
+     * Converts this HttpURL to a {@link URI}, making sure 
+     * appropriate characters are escaped properly.
+     * @return a URI
+     * @since 1.7.0
+     * @throws URLException when URL is malformed
+     */
+    public URI toURI() {
+        String url = toString();
+        try {
+            return new URI(url);
+        } catch (URISyntaxException e) {
+            throw new URLException("Cannot convert to URI: " + url, e);
+        }
+    }
+    /**
+     * <p>Converts the supplied URL to a {@link URL}, making sure 
+     * appropriate characters are encoded properly using UTF-8. This method
+     * is a short form of: </p>
+     * <pre>new HttpURL("http://example.com").toURL();</pre>
+     * @param url a URL string
+     * @return a URL object
+     * @since 1.7.0
+     * @throws URLException when URL is malformed
+     */
+    public static URL toURL(String url) {
+        return new HttpURL(url).toURL();
+    }
+    /**
+     * Converts the supplied URL to a {@link URI}, making sure 
+     * appropriate characters are encoded properly using UTF-8. This method
+     * is a short form of: </p>
+     * @param url a URL string
+     * @return a URI object
+     * @since 1.7.0
+     * @throws URLException when URL is malformed
+     */
+    public static URI toURI(String url) {
+        return new HttpURL(url).toURI();
+    }
+    
+    /**
+     * Returns a string representation of this URL, properly encoded.
      * @return URL as a string
      */
     @Override
@@ -205,8 +290,10 @@ public class HttpURL implements Serializable {
             b.append(port);
         }
         if (StringUtils.isNotBlank(path)) {
-            b.append('/');
-            b.append(path);
+            if (!path.startsWith("/")) {
+                b.append('/');
+            }
+            b.append(path.replaceAll("\\s", "+"));
         }
         if (queryString != null && !queryString.isEmpty()) {
             b.append(queryString.toString());
@@ -223,6 +310,7 @@ public class HttpURL implements Serializable {
                 .append(port)
                 .append(protocol)
                 .append(queryString)
+                .append(encoding)
                 .toHashCode();
     }
 
@@ -244,6 +332,7 @@ public class HttpURL implements Serializable {
                 .append(port, other.port)
                 .append(protocol, other.protocol)
                 .append(queryString, other.queryString)
+                .append(encoding, other.encoding)
                 .isEquals();
     }
 }

@@ -23,12 +23,12 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.collections4.bag.TreeBag;
 import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.LogManager;
@@ -151,7 +151,7 @@ public class URLNormalizer implements Serializable {
     private static final Pattern PATTERN_SCHEMA = Pattern.compile(
             "(.*?)(://.*)$",
             Pattern.CASE_INSENSITIVE);
-    
+
     private String url;
 
     /**
@@ -163,7 +163,8 @@ public class URLNormalizer implements Serializable {
     }
 
     /**
-     * Create a new <code>URLNormalizer</code> instance.
+     * Create a new <code>URLNormalizer</code> instance. Spaces in a URL
+     * are always converted to the plug sign (+).
      * @param url the url to normalize
      */
     public URLNormalizer(String url) {
@@ -173,8 +174,8 @@ public class URLNormalizer implements Serializable {
         try {
             if (StringUtils.contains(fixedURL, " ")) {
                 LOG.warn("URL syntax is invalid as it contains space "
-                        + "character(s). Replacing them with %20. URL: " + url);
-                fixedURL = StringUtils.replace(fixedURL, " ", "%20");
+                        + "character(s). Replacing them with +. URL: " + url);
+                fixedURL = StringUtils.replace(fixedURL, " ", "+");
             }
             new URI(fixedURL);
         } catch (URISyntaxException e) {
@@ -441,17 +442,21 @@ public class URLNormalizer implements Serializable {
      * @return this instance
      */
     public URLNormalizer sortQueryParameters() {
-        if (url.contains("?")) {
-            // QueryString extends Properties which already has sorted keys.
-            QueryString q = new HttpURL(url).getQueryString();
-            if (q != null) {
-                QueryString sorted = new QueryString();
-                Set<String> keys = new TreeSet<>(q.keySet());
-                for (String key : keys) {
-                    sorted.put(key, q.get(key));
-                }
-                url = StringUtils.substringBefore(url, "?") + sorted.toString();
-            }
+        // Does it have query parameters?
+        if (!url.contains("?")) {
+            return this;
+        }
+        // It does, so proceed
+        TreeBag<String> keyValues = new TreeBag<>();
+        String queryString = StringUtils.substringAfter(url, "?");
+        String[] params = StringUtils.split(queryString, '&');
+        for (String param : params) {
+            keyValues.add(param);
+        }
+        String sortedQueryString = StringUtils.join(keyValues, '&');
+        if (StringUtils.isNotBlank(sortedQueryString)) {
+            url = StringUtils.substringBefore(
+                    url, "?") + "?" + sortedQueryString;
         }
         return this;
     }
@@ -462,22 +467,28 @@ public class URLNormalizer implements Serializable {
      * @return this instance
      */
     public URLNormalizer removeEmptyParameters() {
-        QueryString q = new HttpURL(url).getQueryString();
-        if (q != null) {
-            QueryString newq = new QueryString();
-            for (String key : q.keySet()) {
-                List<String> values = q.get(key);
-                if (values == null || values.isEmpty()) {
-                    continue;
-                }
-                for (String value : values) {
-                    if (StringUtils.isNotBlank(value)) {
-                        newq.addString(key, value);
-                    }
-                }
+        // Does it have query parameters?
+        if (!url.contains("?")) {
+            return this;
+        }
+        // It does, so proceed
+        List<String> keyValues = new ArrayList<>();
+        String queryString = StringUtils.substringAfter(url, "?");
+        String[] params = StringUtils.split(queryString, '&');
+        for (String param : params) {
+            if (param.contains("=")
+                    && StringUtils.isNotBlank(
+                            StringUtils.substringAfter(param, "="))
+                    && StringUtils.isNotBlank(
+                            StringUtils.substringBefore(param, "="))) {
+                keyValues.add(param);
             }
-            url = newq.applyOnURL(url);
-        }        
+        }
+        String cleanQueryString = StringUtils.join(keyValues, '&');
+        if (StringUtils.isNotBlank(cleanQueryString)) {
+            url = StringUtils.substringBefore(
+                    url, "?") + "?" + cleanQueryString;
+        }
         return this;
     }
     /**

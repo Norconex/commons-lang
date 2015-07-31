@@ -214,13 +214,20 @@ public class URLNormalizerTest {
         t = "http://www.example.com/display?article=fred&lang=en";
         assertEquals(t, n(s).sortQueryParameters().toString());
         s = "http://www.example.com/?z=bb&y=cc&z=aa";
-        t = "http://www.example.com/?y=cc&z=bb&z=aa";
+        t = "http://www.example.com/?y=cc&z=aa&z=bb";
+        assertEquals(t, n(s).sortQueryParameters().toString());
+        // Sorting should not change encoding (except for space to +)
+        s = "http://www.example.com/spa ce?z=b%2Fb&y=c c&z=a/a";
+        t = "http://www.example.com/spa+ce?y=c+c&z=a/a&z=b%2Fb";
+        assertEquals(t, n(s).sortQueryParameters().toString());
+        s = "http://www.example.com/?z&y=c c&y=c c&a&d=&";
+        t = "http://www.example.com/?a&d=&y=c+c&y=c+c&z";
         assertEquals(t, n(s).sortQueryParameters().toString());
     }
     
     @Test
     public void testRemoveEmptyParameters() {
-        s = "http://www.example.com/display?a=b&a=&c=d&e=&f=g";
+        s = "http://www.example.com/display?a=b&a=&c=d&e=&f=g&h&=i";
         t = "http://www.example.com/display?a=b&c=d&f=g";
         assertEquals(t, n(s).removeEmptyParameters().toString());
     }    

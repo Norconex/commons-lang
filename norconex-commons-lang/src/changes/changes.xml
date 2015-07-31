@@ -7,6 +7,22 @@
   </properties>
   <body>
 
+    <release version="1.7.0-SNAPSHOT" date="2015-??-??" description="Feature release">
+      <action dev="essiembre" type="add">
+        Added static methods HttpURL#toURL(String), HttpURL#toURI(String)
+        and regular method HttpURL#getEncoding().
+        Can now specify URL encoding (charset) at construction time.
+      </action>
+      <action dev="essiembre" type="add">
+        Added new method QueryString#getEncoding().
+      </action>
+      <action dev="essiembre" type="update">
+        Spaces are now converted to + instead of %20.
+        URLNormalizer no longer URL-encode characters when sorting
+        or removing empty parameters (except for converting spaces to +).
+      </action>
+    </release>
+
     <release version="1.6.2" date="2015-07-21" description="Maintenance release">
       <action dev="essiembre" type="update">
         Jar manifest now includes implementation entries and 

@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -115,6 +115,15 @@ public class QueryString extends Properties {
         }
     }
 
+    /**
+     * Gets the character encoding. Default is UTF-8.
+     * @return character encoding
+     * @since 1.7.0
+     */
+    public String getEncoding() {
+        return encoding;
+    }
+    
     /**
      * Convert this <code>QueryString</code> to a URL-encoded string 
      * representation that can be appended as is to a URL with no query string.

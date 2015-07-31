@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,10 +25,15 @@ import javax.xml.stream.XMLStreamWriter;
 import org.apache.commons.lang3.StringUtils;
 
 /**
+ * <p>
+ * A version of {@link XMLStreamWriter} that adds convenience methods
+ * for adding simple elements and typed attributes.
+ * </p>
+ * 
  * @author Pascal Essiembre
  * @since 1.5.0
  */
-public class EnhancedXMLStreamWriter implements XMLStreamWriter  {
+public class EnhancedXMLStreamWriter implements XMLStreamWriter {
 
     private final XMLStreamWriter writer;
     private final boolean writeBlanks;
