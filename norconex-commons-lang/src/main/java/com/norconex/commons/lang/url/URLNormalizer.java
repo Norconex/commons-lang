@@ -173,8 +173,11 @@ public class URLNormalizer implements Serializable {
         String fixedURL = url;
         try {
             if (StringUtils.contains(fixedURL, " ")) {
-                LOG.warn("URL syntax is invalid as it contains space "
-                        + "character(s). Replacing them with +. URL: " + url);
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("URL syntax is invalid as it contains space "
+                            + "character(s). Replacing them with +. URL: "
+                            + url);
+                }
                 fixedURL = StringUtils.replace(fixedURL, " ", "+");
             }
             new URI(fixedURL);

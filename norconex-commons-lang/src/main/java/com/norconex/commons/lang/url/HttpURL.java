@@ -250,10 +250,12 @@ public class HttpURL implements Serializable {
         }
     }
     /**
-     * <p>Converts the supplied URL to a {@link URL}, making sure 
+     * <p>
+     * Converts the supplied URL to a {@link URL}, making sure 
      * appropriate characters are encoded properly using UTF-8. This method
-     * is a short form of: </p>
-     * <pre>new HttpURL("http://example.com").toURL();</pre>
+     * is a short form of:<br>
+     * <code>new HttpURL("http://example.com").toURL();</code>
+     * </p>
      * @param url a URL string
      * @return a URL object
      * @since 1.7.0
@@ -263,9 +265,11 @@ public class HttpURL implements Serializable {
         return new HttpURL(url).toURL();
     }
     /**
-     * Converts the supplied URL to a {@link URI}, making sure 
+     * <p>Converts the supplied URL to a {@link URI}, making sure 
      * appropriate characters are encoded properly using UTF-8. This method
-     * is a short form of: </p>
+     * is a short form of:<br>
+     * <code>new HttpURL("http://example.com").toURI();</code>
+     * </p>
      * @param url a URL string
      * @return a URI object
      * @since 1.7.0
