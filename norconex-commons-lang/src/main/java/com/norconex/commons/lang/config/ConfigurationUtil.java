@@ -344,13 +344,23 @@ public final class ConfigurationUtil {
                 } else {
                     throw new ConfigurationException(
                             "Could not instantiate object from configuration "
-                          + "for node: " + node.getRoot().getName() 
-                          + " key: " + key, e);
+                          + "for \"" + node.getRoot().getName() 
+                          + " -> " + key + "\".", e);
                 }
             } else {
-                LOG.debug("Could not instantiate object from configuration "
-                        + "for node: " + node.getRoot().getName() 
-                        + " key: " + key, e);
+                if (e instanceof ConfigurationException
+                        && e.getCause() != null
+                        && e.getCause() instanceof ClassNotFoundException) {
+                    LOG.error("You declared a class that does not exists "
+                            + "for \"" + node.getRoot().getName() 
+                            + " -> " + key + "\". "
+                            + "Check for typos in your XML and make sure that "
+                            + "class is part of your Java classpath.", e);
+                } else{ 
+                    LOG.debug("Could not instantiate object from configuration "
+                            + "for \"" + node.getRoot().getName() 
+                            + " -> " + key + "\".", e);
+                }
             }
             return defaultObject;
         }

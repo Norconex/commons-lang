@@ -17,10 +17,14 @@
         Added new method QueryString#getEncoding().
       </action>
       <action dev="essiembre" type="update">
-        Spaces are now converted to + instead of %20.
-        URLNormalizer no longer URL-encode characters when sorting
+        URLNormalizer now converts spaces to + instead of %20. In addition,
+        it no longer URL-encodes characters when sorting
         or removing empty parameters (except for converting spaces to +).
       </action>
+      <action dev="essiembre" type="update">
+        ConfigurationUtil#newInstance(...) will now log an ERROR instead of
+        DEBUG when a class is specified but not found in classpath.
+      </action>      
     </release>
 
     <release version="1.6.2" date="2015-07-21" description="Maintenance release">
