@@ -310,7 +310,7 @@ public class HttpURL implements Serializable {
      * <p>URL-Encodes a URL path. The provided string is assumed to represent
      * just the path portion of a URL.  Any characters that are not one
      * of the following is encoded: </p>
-     * <p><code>a-z A-Z 0-9 . - _ ~ ! $ & ' ( ) * + , ; = : @ / %</code></p>
+     * <p><code>a-z A-Z 0-9 . - _ ~ ! $ &amp; ' ( ) * + , ; = : @ / %</code></p>
      * @param path path portion of a URL
      * @return encoded path
      * @since 1.7.0
