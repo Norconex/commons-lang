@@ -12,6 +12,8 @@
         Added static methods HttpURL#toURL(String), HttpURL#toURI(String)
         and regular method HttpURL#getEncoding().
         Can now specify URL encoding (charset) at construction time.
+        Also added encodePath(String) method for URL-encoding the path portion
+        of a URL.
       </action>
       <action dev="essiembre" type="add">
         Added new method QueryString#getEncoding().

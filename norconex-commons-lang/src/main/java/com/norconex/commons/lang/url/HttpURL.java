@@ -21,6 +21,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.apache.commons.lang3.CharEncoding;
+import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -297,7 +298,7 @@ public class HttpURL implements Serializable {
             if (!path.startsWith("/")) {
                 b.append('/');
             }
-            b.append(path.replaceAll("\\s", "+"));
+            b.append(encodePath(path));
         }
         if (queryString != null && !queryString.isEmpty()) {
             b.append(queryString.toString());
@@ -305,6 +306,37 @@ public class HttpURL implements Serializable {
         return b.toString();
     }
 
+    /**
+     * <p>URL-Encodes a URL path. The provided string is assumed to represent
+     * just the path portion of a URL.  Any characters that are not one
+     * of the following is encoded: </p>
+     * <p><code>a-z A-Z 0-9 . - _ ~ ! $ & ' ( ) * + , ; = : @ / %</code></p>
+     * @param path path portion of a URL
+     * @return encoded path
+     * @since 1.7.0
+     */
+    public static String encodePath(String path) {
+        if (StringUtils.isBlank(path)) {
+            return path;
+        }
+        StringBuilder b = new StringBuilder();
+        for (char ch : path.toCharArray()) {
+            // Space to plus sign
+            if (ch == ' ') {
+                b.append('+');
+            // Valid: keep it as is.
+            } else if (CharUtils.isAsciiAlphanumeric(ch)
+                    || ".-_~!$&'()*+,;=:@/%".indexOf(ch) != -1)  {
+                b.append(ch);
+            // Invalid: encode it
+            } else {
+                String code = Integer.toHexString(ch).toUpperCase();
+                b.append('%');
+                b.append(code);
+            }
+        }
+        return b.toString();
+    }
     
     @Override
     public int hashCode() {
