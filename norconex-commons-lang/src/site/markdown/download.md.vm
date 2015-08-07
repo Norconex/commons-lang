@@ -26,37 +26,13 @@ $h2 Binaries
 
 **[Download Latest Release ${currentStableVersion}]($nexusPath/${currentStableVersion}/norconex-commons-lang-${currentStableVersion}.zip)**
 
-Changes:
-
-  * New TimeIdGenerator class for generating time-based unique IDs that
-    are guaranteed to be ordered and unique within a JVM.
-  * New TextReader class for reading large text files, one chunk at a time,
-    splitting text wisely at paragraphs/sentences/words when possible.
-  * New ByteArrayOutputStream class derived from the Apache IO class of the
-    same name, modified to offer methods to access subsets of bytes ranging
-    form zero to the total number of bytes written so far.
-  * New method IOUtil#toBufferedReader(Reader) that ensures to return
-    either a BufferedReader wrapping original reader, or the reader itself
-    if it already implements BufferedReader.
-  * New method IOUtil#toBufferedInputStream(InputStream) that ensures to 
-    return either a BufferedInputStream wrapping original InputStream, or 
-    the input stream itself if it already implements BufferedInputStream.
-  * New method IOUtil#startsWith(InputStream, byte[]) that 
-    returns true if given input stream starts the specified bytes array.
-    (must support mark).
-  * New method IOUtil#borrowBytes(InputStream, int) that 
-    gets and resets the specified number of bytes from the input stream
-    (must support mark).
-  * CachedInputStream now supports mark(int). Mark value is always 
-    unlimited (argument is ignored).
-  * ContentType and ContentFamily now support for BIG2 and
-    Quattro Pro content types.
-  * More...
-  * [View all changes]((changes-report.html))
+  * [Release Notes]((changes-report.html))
 
 **Older Releases**
 
-  * [1.6.1]($nexusPath/1.6.0/norconex-commons-lang-1.6.1.zip)<small>
+  * [1.6.2]($nexusPath/1.6.2/norconex-commons-lang-1.6.2.zip)<small>
+    [[Release Notes](changes-report.html#a1.6.2)]</small>
+  * [1.6.1]($nexusPath/1.6.1/norconex-commons-lang-1.6.1.zip)<small>
     [[Release Notes](changes-report.html#a1.6.1)]</small>
   * [1.6.0]($nexusPath/1.6.0/norconex-commons-lang-1.6.0.zip)<small>
     [[Release Notes](changes-report.html#a1.6.0)]</small>
