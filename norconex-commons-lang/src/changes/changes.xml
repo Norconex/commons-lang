@@ -7,6 +7,13 @@
   </properties>
   <body>
 
+    <release version="1.8.0-SNAPSHOT" date="2015-??-??" description="Feature release">
+      <action dev="essiembre" type="add">
+        New PropertyMatcher class for easily storing a condition for matching
+        a Properties key value.
+      </action>      
+    </release>
+
     <release version="1.7.0" date="2015-08-07" description="Feature release">
       <action dev="essiembre" type="add">
         Added static methods HttpURL#toURL(String), HttpURL#toURI(String)
