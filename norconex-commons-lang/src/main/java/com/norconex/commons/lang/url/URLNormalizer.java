@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,16 +19,17 @@ import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.collections4.bag.TreeBag;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.LogManager;
@@ -87,10 +88,13 @@ import com.norconex.commons.lang.EqualsUtil;
  *   <li>{@link #lowerCaseSchemeHost() 
  *       Convert scheme and host to lower case}</li>
  *   <li>{@link #upperCaseEscapeSequence()
- *       Convert escape sequence to uppercase}</li>
+ *       Convert escape sequence to upper case}</li>
  *   <li>{@link #decodeUnreservedCharacters()
  *       Decode percent-encoded unreserved characters}</li>
  *   <li>{@link #removeDefaultPort() Removing default ports}</li>
+ *   <li>{@link #encodeNonURICharacters() 
+ *       URL-Encode non-ASCII characters}</li>
+ *   <li>{@link #encodeSpaces() Encode spaces to plus sign}</li>
  * </ul>
  * 
  * <h3>Usually Preserving Semantics</h3>
@@ -107,7 +111,7 @@ import com.norconex.commons.lang.EqualsUtil;
  * <p>
  * These normalizations will fail to produce semantically equivalent URLs in
  * many cases.  They usually work best when you have a good understanding of 
- * the website behind the supplied URL and whether for that site, 
+ * the web site behind the supplied URL and whether for that site, 
  * which normalizations can be be considered to produce semantically equivalent 
  * URLs or not.
  * </p>
@@ -135,8 +139,7 @@ public class URLNormalizer implements Serializable {
 
     private static final long serialVersionUID = 7236478212865008971L;
 
-    private static final Logger LOG = LogManager.getLogger(
-            URLNormalizer.class);
+    private static final Logger LOG = LogManager.getLogger(URLNormalizer.class);
     
     private static final Pattern PATTERN_PERCENT_ENCODED_CHAR = 
             Pattern.compile("(%[0-9a-f]{2})", Pattern.CASE_INSENSITIVE);
@@ -159,36 +162,30 @@ public class URLNormalizer implements Serializable {
      * @param url the url to normalize
      */
     public URLNormalizer(URL url) {
-        this(url.toString());
+        this(Objects.toString(url, null));
     }
 
     /**
-     * Create a new <code>URLNormalizer</code> instance. Spaces in a URL
-     * are always converted to the plug sign (+).
+     * <p>
+     * Create a new <code>URLNormalizer</code> instance.
+     * </p><p>
+     * Since 1.8.0, spaces in URLs are no longer converted to + automatically.
+     * Use {@link #encodeNonURICharacters()} or {@link #encodeSpaces()}.
+     * </p>
      * @param url the url to normalize
      */
     public URLNormalizer(String url) {
         super();
-        // make sure URL is valid
-        String fixedURL = url;
+        if (StringUtils.isBlank(url)) {
+            throw new IllegalArgumentException("URL argument cannot be null.");
+        }
+        this.url = url.trim();
+        // Check it is a valid URL.
         try {
-            if (StringUtils.contains(fixedURL, " ")) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("URL syntax is invalid as it contains space "
-                            + "character(s). Replacing them with +. URL: "
-                            + url);
-                }
-                fixedURL = StringUtils.replace(fixedURL, " ", "+");
-            }
-            new URI(fixedURL);
-        } catch (URISyntaxException e) {
-            throw new URLException("Invalid URL syntax: " + url, e);
+            new URL(this.url);
+        } catch (MalformedURLException e) {
+            throw new URLException("Invalid URL: " + url, e);
         }
-        if (!CharEncoding.isSupported(CharEncoding.UTF_8)) {
-            throw new URLException(
-                    "UTF-8 is not supported by your system.");
-        }
-        this.url = fixedURL.trim();
     }
 
     /**
@@ -197,10 +194,10 @@ public class URLNormalizer implements Serializable {
      * @return this instance
      */
     public URLNormalizer lowerCaseSchemeHost() {
-        URI u = toURI(url);
-        url = Pattern.compile(u.getScheme(), 
+        URL u = toURL();
+        url = Pattern.compile(u.getProtocol(), 
                 Pattern.CASE_INSENSITIVE).matcher(url).replaceFirst(
-                        u.getScheme().toLowerCase());
+                        u.getProtocol().toLowerCase());
         url = Pattern.compile(u.getHost(), 
                 Pattern.CASE_INSENSITIVE).matcher(url).replaceFirst(
                         u.getHost().toLowerCase());
@@ -249,6 +246,45 @@ public class URLNormalizer implements Serializable {
         }
         return this;
     }
+    
+    /**
+     * <p>
+     * Encodes all characters that are not supported characters 
+     * in a URI (not to confuse with URL), as defined 
+     * by the <a href="http://tools.ietf.org/html/rfc3986">RFC 3986</a> 
+     * standard. This includes all non-ASCII characters.
+     * </p>
+     * <p>
+     * Since this method also encodes spaces to the plus sign (+), there is
+     * no need to also invoke {@link #encodeSpaces()}.
+     * </p>
+     * <code>http://www.example.com/^a [b]/ &rarr;
+     *       http://www.example.com/%5Ea+%5Bb%5D/</code>
+     * @return this instance
+     * @since 1.8.0
+     */
+    public URLNormalizer encodeNonURICharacters() {
+        url = toURI().toASCIIString();
+        return this;
+    }
+    /**
+     * <p>
+     * Encodes space characters into plus signs (+). 
+     * </p>
+     * <p>
+     * To encode all non-ASCII characters (including spaces), use 
+     * {@link #encodeNonURICharacters()} instead.
+     * </p>
+     * <code>http://www.example.com/a b c &rarr;
+     *       http://www.example.com/a+b+c</code> 
+     * @return this instance
+     * @since 1.8.0
+     */
+    public URLNormalizer encodeSpaces() {
+        url = StringUtils.replace(url, " ", "+");
+        return this;
+    }
+    
     /**
      * Removes the default port (80 for http, and 443 for https).<p>
      * <code>http://www.example.com:80/bar.html &rarr; 
@@ -256,11 +292,11 @@ public class URLNormalizer implements Serializable {
      * @return this instance
      */
     public URLNormalizer removeDefaultPort() {
-        URI u = toURI(url);
-        if ("http".equalsIgnoreCase(u.getScheme())
+        URL u = toURL();
+        if ("http".equalsIgnoreCase(u.getProtocol())
                 && u.getPort() == HttpURL.DEFAULT_HTTP_PORT) {
             url = url.replaceFirst(":" + HttpURL.DEFAULT_HTTP_PORT, "");
-        } else if ("https".equalsIgnoreCase(u.getScheme()) 
+        } else if ("https".equalsIgnoreCase(u.getProtocol()) 
                 && u.getPort() == HttpURL.DEFAULT_HTTPS_PORT) {
             url = url.replaceFirst(":" + HttpURL.DEFAULT_HTTPS_PORT, "");
         }
@@ -303,9 +339,47 @@ public class URLNormalizer implements Serializable {
      * @see URI#normalize()
      */
     public URLNormalizer removeDotSegments() {
-        url = toURI(url).normalize().toString();
+        // Single dots
+        url = url.replaceAll("(^|/)(\\.)(?=/)", "");
+
+        // Double dots
+        String path = toURL().getPath().trim();
+        String[] segments = path.split(
+                "(((?<=/\\.\\.)(?=/))|((?=/\\.\\.)(?=/))|(?=/))");
+        segments = ArrayUtils.removeElements(segments, "");
+        
+        int swallowCount = 0;
+        StringBuilder b = new StringBuilder();
+        boolean stopReplacement = false;
+        for (int i = segments.length - 1; i >= 0; i--){
+            String seg = segments[i];
+            if (stopReplacement) {
+                b.insert(0, seg);
+            } else if (seg.equals("/..")) {
+                swallowCount++;
+                if (swallowCount > countNonDoubleDotsSegments(segments, i)) {
+                    b.insert(0, seg);
+                    stopReplacement = true;
+                }
+            } else if (swallowCount > 0 && !seg.equals("/..")) {
+                swallowCount--;
+            } else {
+                b.insert(0, seg);
+            }
+        }
+        url = StringUtils.replaceOnce(url, path, b.toString());
         return this;
     }
+    private int countNonDoubleDotsSegments(String[] segments, int maxIndex) {
+        int count = 0;
+        for (int i = 0; i < maxIndex; i++) {
+            if (!segments[i].equals("/..")) {
+                count++;
+            }
+        }
+        return count;
+    }
+    
     /**
      * <p>Removes directory index files.  They are often not needed in URLs.</p>
      * <code>http://www.example.com/a/index.html &rarr;
@@ -333,7 +407,7 @@ public class URLNormalizer implements Serializable {
      * @return this instance
      */
     public URLNormalizer removeDirectoryIndex() {
-        String path = toURI(url).getPath();
+        String path = toURL().getPath();
         if (PATTERN_PATH_LAST_SEGMENT.matcher(path).matches()) {
             url = StringUtils.replaceOnce(
                    url, path, StringUtils.substringBeforeLast(path, "/") + "/");
@@ -358,7 +432,7 @@ public class URLNormalizer implements Serializable {
      * @return this instance
      */
     public URLNormalizer replaceIPWithDomainName() {
-        URI u = toURI(url);
+        URL u = toURL();
         if (!PATTERN_DOMAIN.matcher(u.getHost()).matches()) {
             try {
                 InetAddress addr = InetAddress.getByName(u.getHost());
@@ -410,7 +484,7 @@ public class URLNormalizer implements Serializable {
      * @return this instance
      */
     public URLNormalizer removeDuplicateSlashes() {
-        String path = toURI(url).getPath();
+        String path = toURL().getPath();
         String newPath = path.replaceAll("/{2,}", "/");
         url = StringUtils.replaceOnce(url, path, newPath);
         return this;
@@ -421,7 +495,7 @@ public class URLNormalizer implements Serializable {
      * @return this instance
      */
     public URLNormalizer removeWWW() {
-        String host = toURI(url).getHost();
+        String host = toURL().getHost();
         String newHost = StringUtils.removeStartIgnoreCase(host, "www.");
         url = StringUtils.replaceOnce(url, host, newHost);
         return this;
@@ -432,7 +506,7 @@ public class URLNormalizer implements Serializable {
      * @return this instance
      */
     public URLNormalizer addWWW() {
-        String host = toURI(url).getHost();
+        String host = toURL().getHost();
         if (!host.toLowerCase().startsWith("www.")) {
             url = StringUtils.replaceOnce(url, host, "www." + host);
         }
@@ -534,7 +608,7 @@ public class URLNormalizer implements Serializable {
         }
         return this;
     }
-        
+    
     /**
      * Returns the normalized URL as string.
      * @return URL
@@ -551,13 +625,7 @@ public class URLNormalizer implements Serializable {
         if (StringUtils.isBlank(url)) {
             return null;
         }
-        try {
-            return new URI(url);
-        } catch (URISyntaxException e) {
-            LOG.info("URL does not appear to be valid and cannot be parsed:"
-                    + url, e);
-            return null;
-        }
+        return HttpURL.toURI(url);
     }
     /**
      * Returns the normalized URL as {@link URL}.
@@ -576,19 +644,6 @@ public class URLNormalizer implements Serializable {
         }
     }
 
-    private static URI toURI(String url) {
-        if (StringUtils.isBlank(url)) {
-            return null;
-        }
-        try {
-            return new URI(url);
-        } catch (URISyntaxException e) {
-            LOG.info("URL does not appear to be valid and cannot be parsed:"
-                    + url);
-            return null;
-        }
-    }
-    
     private boolean isEncodedUnreservedCharacter(String enc) {
         // is ALPHA (a-zA-Z)
         if ((enc.compareTo("%41") >= 0 && enc.compareTo("%5A") <= 0)

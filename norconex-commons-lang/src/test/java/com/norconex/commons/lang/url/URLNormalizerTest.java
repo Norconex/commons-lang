@@ -16,8 +16,13 @@ package com.norconex.commons.lang.url;
 
 import static org.junit.Assert.assertEquals;
 
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 public class URLNormalizerTest {
@@ -25,12 +30,72 @@ public class URLNormalizerTest {
     private String s;
     private String t;
     
+    
+    @Before
+    public void before() {
+        Logger logger = Logger.getRootLogger();
+        logger.setLevel(Level.DEBUG);
+        logger.setAdditivity(false);
+        logger.addAppender(new ConsoleAppender(
+                new PatternLayout("%-5p [%C{1}] %m%n"), 
+                ConsoleAppender.SYSTEM_OUT));
+    }
+    
     @After
     public void tearDown() throws Exception {
         s = null;
         t = null;
     }
 
+    @Test
+    public void testAllAtOnce() {
+        s = "https://www.Example.org/0/../1/././%7ea_b:c\\d_|e~f!g "
+                + "h/./^i^J[k]//l./m/n/o/../../p/q/r?cc=&dd=ee&bb=aa"
+                + "#fragment";
+        t = "http://example.org/1/~a_b:c%5Cd_%7Ce~f!g+h/%5Ei%5EJ%5Bk%5D/l./"
+                + "m/p/q/r?bb=aa%23fragment%2F&dd=ee";
+        //System.out.println("original  : " + s);
+
+        URLNormalizer n = new URLNormalizer(s)
+                .addTrailingSlash()
+                .addWWW()
+                .decodeUnreservedCharacters()
+                .encodeNonURICharacters()
+                .lowerCaseSchemeHost()
+                .removeDefaultPort()
+                .removeDotSegments()
+                .removeDuplicateSlashes()
+                .removeEmptyParameters()
+                .removeFragment()
+                .removeSessionIds()
+                .removeTrailingQuestionMark()
+                .removeWWW()
+                .sortQueryParameters()
+                .unsecureScheme()
+                .upperCaseEscapeSequence()
+                ;
+//          System.out.println("toString(): " + n.toString());
+//          System.out.println("toURL()   : " + n.toURL());
+//          System.out.println("toURI()   : " + n.toURI());
+          assertEquals(t,  n.toString());
+          assertEquals(t,  n.toURL().toString());
+          assertEquals(t,  n.toURI().toString());
+    }
+
+    @Test
+    public void testEncodeNonURICharacters() {
+        s = "http://www.example.com/^a [b]/";
+        t = "http://www.example.com/%5Ea+%5Bb%5D/";
+        assertEquals(t, n(s).encodeNonURICharacters().toString());
+    }
+
+    @Test
+    public void testEncodeSpaces() {
+        s = "http://www.example.com/a b c";
+        t = "http://www.example.com/a+b+c";
+        assertEquals(t, n(s).encodeSpaces().toString());
+    }
+    
     @Test
     public void testLowerCaseSchemeHost() {
         s = "HTTP://www.Example.com/Hello.html";
@@ -216,12 +281,12 @@ public class URLNormalizerTest {
         s = "http://www.example.com/?z=bb&y=cc&z=aa";
         t = "http://www.example.com/?y=cc&z=aa&z=bb";
         assertEquals(t, n(s).sortQueryParameters().toString());
-        // Sorting should not change encoding (except for space to +)
+        // Sorting should not change encoding
         s = "http://www.example.com/spa ce?z=b%2Fb&y=c c&z=a/a";
-        t = "http://www.example.com/spa+ce?y=c+c&z=a/a&z=b%2Fb";
+        t = "http://www.example.com/spa ce?y=c c&z=a/a&z=b%2Fb";
         assertEquals(t, n(s).sortQueryParameters().toString());
         s = "http://www.example.com/?z&y=c c&y=c c&a&d=&";
-        t = "http://www.example.com/?a&d=&y=c+c&y=c+c&z";
+        t = "http://www.example.com/?a&d=&y=c c&y=c c&z";
         assertEquals(t, n(s).sortQueryParameters().toString());
     }
     
@@ -289,28 +354,10 @@ public class URLNormalizerTest {
         t = "http://12.eg.com/app";
         assertEquals(t, n(s).removeSessionIds().toString());
     }    
-    
-//     
-    
-//    /myservlet;jsessionid=1E6FEC0D14D044541DD84D2D013D29ED?_option=XX[b]'[/b];[    
-    //PHPSESSID=f9f2770d591366bc
-
-
+//  /myservlet;jsessionid=1E6FEC0D14D044541DD84D2D013D29ED?_option=XX[b]'[/b];[    
+//  PHPSESSID=f9f2770d591366bc
     
     private URLNormalizer n(String url) {
         return new URLNormalizer(url);
     }
-
-
-//
-//    @Test
-//    public void testLoadFromXML() {
-//        fail("Not yet implemented");
-//    }
-//
-//    @Test
-//    public void testSaveToXML() {
-//        fail("Not yet implemented");
-//    }
-
 }
