@@ -10,12 +10,16 @@
     <release version="1.8.0-SNAPSHOT" date="2015-??-??" description="Feature release">
       <action dev="essiembre" type="add">
         New normalization methods on URLNormalizer: #encodeNonURICharacters()
-        and #encodeSpaces(). With these, spaces are no longer 
-        escaped automatically by default.
+        and #encodeSpaces(). Spaces are no longer escaped automatically 
+        by default.
       </action>
       <action dev="essiembre" type="add">
         New PropertyMatcher class for easily storing a condition for matching
         a Properties key value.
+      </action>      
+      <action dev="essiembre" type="update">
+        HttpURL now keeps the URL fragment when present, and has accessors 
+        for it.
       </action>      
       <action dev="essiembre" type="fix">
         Fixed possible URISyntaxException in URLNormalizer for certain URLs.

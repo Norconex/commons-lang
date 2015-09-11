@@ -50,6 +50,7 @@ public class HttpURL implements Serializable {
     private String path;
     private String protocol;
     private final String encoding;
+    private String fragment;
     
     /**
      * Creates a blank HttpURL using UTF-8 for URL encoding.
@@ -110,6 +111,7 @@ public class HttpURL implements Serializable {
                 port = DEFAULT_HTTP_PORT;
             }
             path = urlwrap.getPath();
+            fragment = urlwrap.getRef();
         }
         
         // Parameters
@@ -209,6 +211,23 @@ public class HttpURL implements Serializable {
     public void setPort(int port) {
         this.port = port;
     }
+    
+    /**
+     * Gets the URL fragment.
+     * @return the fragment
+     * @since 1.8.0
+     */
+    public String getFragment() {
+        return fragment;
+    }
+    /**
+     * Sets the URL fragment.
+     * @param fragment the fragment to set
+     * @since 1.8.0
+     */
+    public void setFragment(String fragment) {
+        this.fragment = fragment;
+    }
 
     /**
      * Gets the last URL path segment without the query string.
@@ -306,6 +325,10 @@ public class HttpURL implements Serializable {
         if (queryString != null && !queryString.isEmpty()) {
             b.append(queryString.toString());
         }
+        if (fragment != null) {
+            b.append("#");
+            b.append(encodePath(fragment));
+        }
         return b.toString();
     }
 
@@ -349,6 +372,7 @@ public class HttpURL implements Serializable {
                 .append(port)
                 .append(protocol)
                 .append(queryString)
+                .append(fragment)
                 .append(encoding)
                 .toHashCode();
     }
@@ -371,6 +395,7 @@ public class HttpURL implements Serializable {
                 .append(port, other.port)
                 .append(protocol, other.protocol)
                 .append(queryString, other.queryString)
+                .append(fragment, other.fragment)
                 .append(encoding, other.encoding)
                 .isEquals();
     }
