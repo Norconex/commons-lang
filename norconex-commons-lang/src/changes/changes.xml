@@ -21,6 +21,11 @@
         HttpURL now keeps the URL fragment when present, and has accessors 
         for it.
       </action>      
+      <action dev="essiembre" type="update">
+        Properties#isCaseSensitiveKeys() is now deprecated in favor of
+        Properties#isCaseInsensitiveKeys() for consistency with 
+        constructor caseInsensitiveKeys argument.
+      </action>      
       <action dev="essiembre" type="fix">
         Fixed possible URISyntaxException in URLNormalizer for certain URLs.
       </action>

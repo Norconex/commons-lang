@@ -80,7 +80,7 @@ public class Properties extends ObservableMap<String, List<String>>
      */
     public static final String DEFAULT_MULTIVALUE_DELIMITER = "^|~";
     
-    private final boolean caseSensitiveKeys;
+    private final boolean caseInsensitiveKeys;
     private String multiValueDelimiter = DEFAULT_MULTIVALUE_DELIMITER;
     
     /**
@@ -94,12 +94,12 @@ public class Properties extends ObservableMap<String, List<String>>
     /**
      * Creates a new instance. Internally wraps a {@link HashMap} to 
      * store keys and values.
-     * @param caseSensitiveKeys methods taking a key argument 
-     *        will consider the key being passed without consideration
-     *        for character case.
+     * @param caseInsensitiveKeys when <code>true</code> methods taking a 
+     *        key argument will consider the key being passed without 
+     *        consideration for character case.
      */
-    public Properties(boolean caseSensitiveKeys) {
-        this(null, caseSensitiveKeys);
+    public Properties(boolean caseInsensitiveKeys) {
+        this(null, caseInsensitiveKeys);
     }
     
     /**
@@ -120,23 +120,33 @@ public class Properties extends ObservableMap<String, List<String>>
      * To use a {@code Map} to initialize values only, use the 
      * {@link #load(Map)} method.
      * @param map the Map to decorate 
-     * @param caseSensitiveKeys methods taking a key argument 
-     *        will consider the key being passed without consideration
-     *        for character case.
+     * @param caseInsensitiveKeys when <code>true</code> methods taking a 
+     *        key argument will consider the key being passed without 
+     *        consideration for character case.
      */
     public Properties(
-            Map<String, List<String>> map, boolean caseSensitiveKeys) {
+            Map<String, List<String>> map, boolean caseInsensitiveKeys) {
         super(map);
-        this.caseSensitiveKeys = caseSensitiveKeys;
+        this.caseInsensitiveKeys = caseInsensitiveKeys;
     }
 
     /**
      * Gets whether keys are case sensitive or not.
      * @return <code>true</code> if case sensitive
      * @since 1.4
+     * @deprecated Since 1.8.0, use {@link #isCaseInsensitiveKeys()}
      */
+    @Deprecated
     public boolean isCaseSensitiveKeys() {
-        return caseSensitiveKeys;
+        return !caseInsensitiveKeys;
+    }
+    /**
+     * Gets whether keys are case sensitive or not.
+     * @return <code>true</code> if case insensitive
+     * @since 1.8
+     */
+    public boolean isCaseInsensitiveKeys() {
+        return caseInsensitiveKeys;
     }
 
     /**
@@ -1251,7 +1261,7 @@ public class Properties extends ObservableMap<String, List<String>>
     //--- Other ----------------------------------------------------------------
     @Override
     public final List<String> get(Object key) {
-        if (!caseSensitiveKeys) {
+        if (!caseInsensitiveKeys) {
             return super.get(key);
         }
         List<String> values = new ArrayList<String>();
@@ -1266,7 +1276,7 @@ public class Properties extends ObservableMap<String, List<String>>
     @Override
     public final List<String> remove(Object key) {
         
-        if (!caseSensitiveKeys) {
+        if (!caseInsensitiveKeys) {
             return super.remove(key);
         } 
         
