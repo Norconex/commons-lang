@@ -269,7 +269,8 @@ public class URLNormalizer implements Serializable {
     }
     /**
      * <p>
-     * Encodes space characters into plus signs (+). 
+     * Encodes space characters into plus signs (+) if they are part of the
+     * query string. Spaces part of the URL path are percent-encoded to %20. 
      * </p>
      * <p>
      * To encode all non-ASCII characters (including spaces), use 
@@ -281,7 +282,15 @@ public class URLNormalizer implements Serializable {
      * @since 1.8.0
      */
     public URLNormalizer encodeSpaces() {
-        url = StringUtils.replace(url, " ", "+");
+        String path = StringUtils.substringBefore(url, "?");
+        path = StringUtils.replace(path, " ", "%20");
+        String qs = StringUtils.substringAfter(url, "?");
+        if (StringUtils.isNotBlank(qs)) {
+            qs = StringUtils.replace(qs, " ", "+");
+            url = path + "?" + qs;
+        } else {
+            url = path;
+        }
         return this;
     }
     

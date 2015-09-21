@@ -333,15 +333,30 @@ public class HttpURL implements Serializable {
     }
 
     /**
-     * <p>URL-Encodes a URL path. The provided string is assumed to represent
-     * just the path portion of a URL.  Any characters that are not one
-     * of the following are encoded: </p>
-     * <p><code>a-z A-Z 0-9 . - _ ~ ! $ &amp; ' ( ) * + , ; = : @ / %</code></p>
+     * <p>URL-Encodes the query string portion of a URL. The entire 
+     * string supplied is assumed to be a query string.
+     * @param queryString URL query string
+     * @return encoded path
+     * @since 1.8.0
+     */
+    public static String encodeQueryString(String queryString) {
+        if (StringUtils.isBlank(queryString)) {
+            return queryString;
+        }
+        return new QueryString(queryString).toString();
+    }
+    
+    /**
+     * <p>URL-Encodes a URL path.  The entire string supplied is assumed
+     * to be a URL path. 
      * @param path path portion of a URL
      * @return encoded path
      * @since 1.7.0
      */
     public static String encodePath(String path) {
+        // Any characters that are not one of the following are 
+        // percent-encoded (including spaces):
+        // a-z A-Z 0-9 . - _ ~ ! $ &amp; ' ( ) * + , ; = : @ / %
         if (StringUtils.isBlank(path)) {
             return path;
         }
@@ -349,7 +364,7 @@ public class HttpURL implements Serializable {
         for (char ch : path.toCharArray()) {
             // Space to plus sign
             if (ch == ' ') {
-                b.append('+');
+                b.append("%20");
             // Valid: keep it as is.
             } else if (CharUtils.isAsciiAlphanumeric(ch)
                     || ".-_~!$&'()*+,;=:@/%".indexOf(ch) != -1)  {

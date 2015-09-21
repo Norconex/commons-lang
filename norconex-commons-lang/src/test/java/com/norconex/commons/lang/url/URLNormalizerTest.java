@@ -52,7 +52,7 @@ public class URLNormalizerTest {
         s = "https://www.Example.org/0/../1/././%7ea_b:c\\d_|e~f!g "
                 + "h/./^i^J[k]//l./m/n/o/../../p/q/r?cc=&dd=ee&bb=aa"
                 + "#fragment";
-        t = "http://example.org/1/~a_b:c%5Cd_%7Ce~f!g+h/%5Ei%5EJ%5Bk%5D/l./"
+        t = "http://example.org/1/~a_b:c%5Cd_%7Ce~f!g%20h/%5Ei%5EJ%5Bk%5D/l./"
                 + "m/p/q/r?bb=aa%23fragment%2F&dd=ee";
         //System.out.println("original  : " + s);
 
@@ -84,15 +84,15 @@ public class URLNormalizerTest {
 
     @Test
     public void testEncodeNonURICharacters() {
-        s = "http://www.example.com/^a [b]/";
-        t = "http://www.example.com/%5Ea+%5Bb%5D/";
+        s = "http://www.example.com/^a [b]/c?d e=";
+        t = "http://www.example.com/%5Ea%20%5Bb%5D/c?d+e=";
         assertEquals(t, n(s).encodeNonURICharacters().toString());
     }
 
     @Test
     public void testEncodeSpaces() {
-        s = "http://www.example.com/a b c";
-        t = "http://www.example.com/a+b+c";
+        s = "http://www.example.com/a b c?d e=f g";
+        t = "http://www.example.com/a%20b%20c?d+e=f+g";
         assertEquals(t, n(s).encodeSpaces().toString());
     }
     
