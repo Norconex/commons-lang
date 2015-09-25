@@ -108,7 +108,11 @@ public class HttpURL implements Serializable {
             host = urlwrap.getHost();
             port = urlwrap.getPort();
             if (port < 0) {
-                port = DEFAULT_HTTP_PORT;
+                if (url.startsWith("https")) {
+                    port = DEFAULT_HTTPS_PORT;
+                } else {
+                    port = DEFAULT_HTTP_PORT;
+                }
             }
             path = urlwrap.getPath();
             fragment = urlwrap.getRef();
