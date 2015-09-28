@@ -88,7 +88,9 @@ public class Pipeline<T> implements IPipelineStage<T> {
     public boolean execute(T context) {
         for (IPipelineStage<T> stage : stages) {
             if (!stage.execute(context)) {
-                LOG.debug("Unsuccessful stage execution: " + stage);
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Pipeline execution stopped at stage: " + stage);
+                }
                 return false;
             }
         }
