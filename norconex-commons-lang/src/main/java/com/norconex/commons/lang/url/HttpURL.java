@@ -15,10 +15,12 @@
 package com.norconex.commons.lang.url;
 
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Locale;
 
 import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.CharUtils;
@@ -352,7 +354,8 @@ public class HttpURL implements Serializable {
     
     /**
      * <p>URL-Encodes a URL path.  The entire string supplied is assumed
-     * to be a URL path. 
+     * to be a URL path. Unsafe characters are percent-encoded using UTF-8
+     * (as specified by W3C standard).
      * @param path path portion of a URL
      * @return encoded path
      * @since 1.7.0
@@ -364,23 +367,35 @@ public class HttpURL implements Serializable {
         if (StringUtils.isBlank(path)) {
             return path;
         }
-        StringBuilder b = new StringBuilder();
+        StringBuilder sb = new StringBuilder();
         for (char ch : path.toCharArray()) {
             // Space to plus sign
             if (ch == ' ') {
-                b.append("%20");
+                sb.append("%20");
             // Valid: keep it as is.
             } else if (CharUtils.isAsciiAlphanumeric(ch)
                     || ".-_~!$&'()*+,;=:@/%".indexOf(ch) != -1)  {
-                b.append(ch);
+                sb.append(ch);
             // Invalid: encode it
             } else {
-                String code = Integer.toHexString(ch).toUpperCase();
-                b.append('%');
-                b.append(code);
+                byte[] bytes;
+                try {
+                    bytes = Character.toString(ch).getBytes(CharEncoding.UTF_8);
+                } catch (UnsupportedEncodingException e) {
+                    throw new URLException("UTF-8 not supported.", e);
+                }
+                for (byte b : bytes) {
+                    sb.append('%');
+                    int upper = (((int) b) >> 4) & 0xf;
+                    sb.append(Integer.toHexString(
+                            upper).toUpperCase(Locale.US));
+                    int lower = ((int) b) & 0xf;
+                    sb.append(Integer.toHexString(
+                            lower).toUpperCase(Locale.US));
+                }
             }
         }
-        return b.toString();
+        return sb.toString();
     }
     
     @Override

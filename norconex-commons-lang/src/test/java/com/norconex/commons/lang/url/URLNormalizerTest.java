@@ -82,6 +82,14 @@ public class URLNormalizerTest {
           assertEquals(t,  n.toURI().toString());
     }
 
+    
+    @Test
+    public void testEncodeUTF8Characters() {
+        s = "http://www.example.com/élève?série=0é0è";
+        t = "http://www.example.com/%C3%A9l%C3%A8ve?s%C3%A9rie=0%C3%A90%C3%A8";
+        assertEquals(t, n(s).encodeNonURICharacters().toString());
+    }
+    
     @Test
     public void testEncodeNonURICharacters() {
         s = "http://www.example.com/^a [b]/c?d e=";
