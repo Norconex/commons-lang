@@ -18,12 +18,20 @@
         the query string portion of a URL.
       </action>
       <action dev="essiembre" type="add">
+        New HttpURL#isPortDefault() method to quickly find out if a URL is 
+        using a default port for its protocol (http/https).
+      </action>
+      <action dev="essiembre" type="add">
         New PropertyMatcher class for easily storing a condition for matching
         a Properties key value.
       </action>      
       <action dev="essiembre" type="update">
         HttpURL now keeps the URL fragment when present, and has accessors 
         for it.
+      </action>
+      <action dev="essiembre" type="update">
+        HttpURL#toString() no longer returns the port when the protocol is 
+        https and the port is 443.
       </action>
       <action dev="essiembre" type="update">
         Properties#isCaseSensitiveKeys() is now deprecated in favor of
@@ -36,6 +44,10 @@
       </action>
       <action dev="essiembre" type="fix">
         Fixed possible URISyntaxException in URLNormalizer for certain URLs.
+      </action>
+      <action dev="essiembre" type="fix">
+        UTF-8 unicode values are now used to percent-encode the part portion
+        of a URL.
       </action>
     </release>
 

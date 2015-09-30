@@ -318,7 +318,8 @@ public class HttpURL implements Serializable {
         b.append(protocol);
         b.append("://");
         b.append(host);
-        if (port != DEFAULT_HTTP_PORT) {
+        
+        if (!isPortDefault()) {
             b.append(':');
             b.append(port);
         }
@@ -338,6 +339,20 @@ public class HttpURL implements Serializable {
         return b.toString();
     }
 
+    /**
+     * Whether this URL uses the default port for the protocol.  The default 
+     * port is 80 for "http" protocol, and 443 for "https". Other protocols
+     * are not supported and this method will always return false
+     * for them.
+     * @return <code>true</code> if the URL is using the default port.
+     * @since 1.8.0
+     */
+    public boolean isPortDefault() {
+        return "https".equalsIgnoreCase(protocol) && port == DEFAULT_HTTPS_PORT
+                || "http".equalsIgnoreCase(protocol)
+                        && port == DEFAULT_HTTP_PORT;
+    }
+    
     /**
      * <p>URL-Encodes the query string portion of a URL. The entire 
      * string supplied is assumed to be a query string.
