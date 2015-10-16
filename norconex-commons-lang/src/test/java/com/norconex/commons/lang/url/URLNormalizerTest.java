@@ -53,12 +53,13 @@ public class URLNormalizerTest {
                 + "h/./^i^J[k]//l./m/n/o/../../p/q/r?cc=&dd=ee&bb=aa"
                 + "#fragment";
         t = "http://example.org/1/~a_b:c%5Cd_%7Ce~f!g%20h/%5Ei%5EJ%5Bk%5D/l./"
-                + "m/p/q/r?bb=aa%23fragment%2F&dd=ee";
+                + "m/p/q/r/?bb=aa&dd=ee";
         //System.out.println("original  : " + s);
 
         URLNormalizer n = new URLNormalizer(s)
                 .addTrailingSlash()
                 .addWWW()
+                .removeFragment()
                 .decodeUnreservedCharacters()
                 .encodeNonURICharacters()
                 .lowerCaseSchemeHost()
@@ -66,7 +67,6 @@ public class URLNormalizerTest {
                 .removeDotSegments()
                 .removeDuplicateSlashes()
                 .removeEmptyParameters()
-                .removeFragment()
                 .removeSessionIds()
                 .removeTrailingQuestionMark()
                 .removeWWW()
