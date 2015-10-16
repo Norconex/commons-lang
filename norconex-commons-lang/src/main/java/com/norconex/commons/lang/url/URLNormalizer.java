@@ -326,9 +326,16 @@ public class URLNormalizer implements Serializable {
      * @return this instance
      */
     public URLNormalizer addTrailingSlash() {
-        String name = StringUtils.substringAfterLast(url, "/");
-        if (!name.contains(".") && !StringUtils.endsWith(name, "/")) {
-            url = url + "/";
+        String urlRoot = HttpURL.getRoot(url);
+        String path = toURL().getPath();
+        String urlRootAndPath = urlRoot + path;
+
+        String name = StringUtils.substringAfterLast(path, "/");
+        if (StringUtils.isNotBlank(name) && !name.contains(".")) {
+            String newPath = path + "/";
+            String newUrlRootAndPath = urlRoot + newPath;
+            url = StringUtils.replaceOnce(
+                    url, urlRootAndPath, newUrlRootAndPath);
         }
         return this;
     }    
@@ -493,9 +500,12 @@ public class URLNormalizer implements Serializable {
      * @return this instance
      */
     public URLNormalizer removeDuplicateSlashes() {
+        String urlRoot = HttpURL.getRoot(url);
         String path = toURL().getPath();
+        String urlRootAndPath = urlRoot + path;
         String newPath = path.replaceAll("/{2,}", "/");
-        url = StringUtils.replaceOnce(url, path, newPath);
+        String newUrlRootAndPath = urlRoot + newPath;
+        url = StringUtils.replaceOnce(url, urlRootAndPath, newUrlRootAndPath);
         return this;
     }
     /**

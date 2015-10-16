@@ -166,6 +166,16 @@ public class URLNormalizerTest {
         s = "http://www.example.com";
         t = "http://www.example.com";
         assertEquals(t, n(s).addTrailingSlash().toString());
+        s = "http://www.example.com/blah/?param=value";
+        t = "http://www.example.com/blah/?param=value";
+        assertEquals(t, n(s).addTrailingSlash().toString());
+        s = "http://www.example.com/blah?param=value";
+        t = "http://www.example.com/blah/?param=value";
+        assertEquals(t, n(s).addTrailingSlash().toString());
+        // This one is for HTTP Collector GitHub issue #163:
+        s = "http://www.example.com/";
+        t = "http://www.example.com/";
+        assertEquals(t, n(s).addTrailingSlash().toString());
     }
     @Test
     public void testRemoveDotSegments() {
@@ -255,6 +265,10 @@ public class URLNormalizerTest {
         assertEquals(t, n(s).removeDuplicateSlashes().toString());
         s = "http://www.example.com/a//b//c.html?path=/d//e///f";
         t = "http://www.example.com/a/b/c.html?path=/d//e///f";
+        assertEquals(t, n(s).removeDuplicateSlashes().toString());
+        // This one is for HTTP Collector GitHub issue #163:
+        s = "http://www.example.com//";
+        t = "http://www.example.com/";
         assertEquals(t, n(s).removeDuplicateSlashes().toString());
     }
 

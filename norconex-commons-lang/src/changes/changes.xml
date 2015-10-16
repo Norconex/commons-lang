@@ -22,6 +22,10 @@
         using a default port for its protocol (http/https).
       </action>
       <action dev="essiembre" type="add">
+        New HttpURL#getRoot() and HttpURL#getRoot(String) methods to extract
+        the URL "root" from URLs (left part up to and including, the host name).
+      </action>
+      <action dev="essiembre" type="add">
         New PropertyMatcher class for easily storing a condition for matching
         a Properties key value.
       </action>      
@@ -38,6 +42,16 @@
         Properties#isCaseInsensitiveKeys() for consistency with 
         constructor caseInsensitiveKeys argument.
       </action>      
+      <action dev="essiembre" type="fix">
+        Fixed URLNormalizer#removeDuplicateSlashes() to no longer consider
+        the two slashes between the protocol and hostname as being duplicates
+        in some cases.
+      </action>
+      <action dev="essiembre" type="fix">
+        Fixed URLNormalizer#addTrailingSlash() when the path was already
+        ending with one. Also adds one now when there are none and the path
+        is followed by a question mark or hash character.
+      </action>
       <action dev="essiembre" type="fix">
         HttpURL now sets the port as 443 when initialized with a secure URL
         (https).

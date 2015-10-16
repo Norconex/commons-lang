@@ -263,6 +263,19 @@ public class HttpURL implements Serializable {
             throw new URLException("Cannot convert to URL: " + url, e);
         }
     }
+    
+    /**
+     * Gets the root of this HttpUrl. That is the left part of a URL up to 
+     * and including the host name. A <code>null</code> or empty string returns
+     * a <code>null</code> document root.
+     * @return left part of a URL up to (and including the host name
+     * @throws URLException when URL is malformed
+     * @since 1.8.0
+     */
+    public String getRoot() {
+        return getRoot(toString());
+    }
+    
     /**
      * Converts this HttpURL to a {@link URI}, making sure 
      * appropriate characters are escaped properly.
@@ -306,6 +319,24 @@ public class HttpURL implements Serializable {
      */
     public static URI toURI(String url) {
         return new HttpURL(url).toURI();
+    }
+
+    /**
+     * <p>Gets the root of a URL. That is the left part of a URL up to and 
+     * including the host name. A <code>null</code> or empty string returns
+     * a <code>null</code> document root.
+     * This method is a short form of:<br>
+     * <code>new HttpURL("http://example.com/path").getRoot();</code>
+     * </p>
+     * @param url a URL string
+     * @return left part of a URL up to (and including the host name
+     * @since 1.8.0
+     */
+    public static String getRoot(String url) {
+        if (StringUtils.isBlank(url)) {
+            return null;
+        }
+        return url.replaceFirst("(.*?://.*?)([/?#].*)", "$1");
     }
     
     /**
