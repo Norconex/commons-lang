@@ -14,6 +14,10 @@
         by default.
       </action>
       <action dev="essiembre" type="add">
+        New HttpURL#toAbsolute(String, String) method for converting relative
+        URLs to absolute ones, based on another absolute URL.
+      </action>
+      <action dev="essiembre" type="add">
         New HttpURL#encodeQueryString(String) method for properly encoding
         the query string portion of a URL.
       </action>

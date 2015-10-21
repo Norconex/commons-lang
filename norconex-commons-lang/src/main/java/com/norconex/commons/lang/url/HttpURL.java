@@ -443,6 +443,47 @@ public class HttpURL implements Serializable {
         }
         return sb.toString();
     }
+
+    /**
+     * Converts a relative URL to an absolute one, based on the supplied
+     * base URL. The base URL is assumed to be a valid URL. Behavior
+     * is unexpected when base URL is invalid.
+     * @param baseURL URL to the reference is relative to
+     * @param relURL the relative URL portion to transform to absolute
+     * @return absolute URL
+     * @since 1.8.0
+     */
+    public static String toAbsolute(String baseURL, String relURL) {
+        // Relative to protocol
+        if (relURL.startsWith("//")) {
+            return StringUtils.substringBefore(baseURL, "//") + "//"
+                    + StringUtils.substringAfter(relURL, "//");
+        }
+        // Relative to domain name
+        if (relURL.startsWith("/")) {
+            return getRoot(baseURL) + relURL;
+        }
+        // Relative to full full page URL minus ? or #
+        if (relURL.startsWith("?") || relURL.startsWith("#")) {
+            // this is a relative url and should have the full page base
+            return baseURL.replaceFirst("(.*?)([\\?\\#])(.*)", "$1") + relURL;
+        }
+
+        // Relative to last directory/segment
+        if (!relURL.contains("://")) {
+            String base = baseURL.replaceFirst("(.*?)([\\?\\#])(.*)", "$1");
+            base = base.replaceFirst("(.*/)(.*)", "$1");
+            if (base.endsWith("/")) {
+                // This is a URL relative to the last URL segment
+                relURL = base + relURL;
+            } else {
+                relURL = base + "/" + relURL;
+            }
+        }
+
+        // Not detected as relative, so return as is
+        return relURL;
+    }
     
     @Override
     public int hashCode() {
