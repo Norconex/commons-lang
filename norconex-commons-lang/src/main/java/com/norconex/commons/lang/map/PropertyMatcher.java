@@ -92,7 +92,6 @@ public class PropertyMatcher {
     @Override
     public int hashCode() {
         return new HashCodeBuilder()
-                .appendSuper(super.hashCode())
                 .append(key)
                 .append(regex)
                 .append(caseSensitive)
@@ -105,7 +104,6 @@ public class PropertyMatcher {
         }
         PropertyMatcher castOther = (PropertyMatcher) other;
         return new EqualsBuilder()
-                .appendSuper(super.equals(castOther))
                 .append(key, castOther.key)
                 .append(regex, castOther.regex)
                 .append(caseSensitive, castOther.caseSensitive)
