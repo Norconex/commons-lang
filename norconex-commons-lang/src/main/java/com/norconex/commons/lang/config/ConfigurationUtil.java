@@ -449,6 +449,8 @@ public final class ConfigurationUtil {
         FileUtil.delete(tempFile);
 
         if (!xmlConfiurable.equals(readConfigurable)) {
+            LOG.error("BEFORE: " + xmlConfiurable);
+            LOG.error(" AFTER: " + readConfigurable);
             throw new ConfigurationException(
                     "Saved and loaded XML are not the same.");
         }

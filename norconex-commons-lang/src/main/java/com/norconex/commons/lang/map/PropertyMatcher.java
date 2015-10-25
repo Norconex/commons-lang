@@ -18,7 +18,10 @@ import java.util.Collection;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 /**
  * <p>Convenient way of checking whether at least one value for a key
@@ -88,47 +91,30 @@ public class PropertyMatcher {
     }
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + (caseSensitive ? 1231 : 1237);
-        result = prime * result + ((key == null) ? 0 : key.hashCode());
-        result = prime * result + ((regex == null) ? 0 : regex.hashCode());
-        return result;
+        return new HashCodeBuilder()
+                .appendSuper(super.hashCode())
+                .append(key)
+                .append(regex)
+                .append(caseSensitive)
+                .toHashCode();
     }
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
+    public boolean equals(final Object other) {
+        if (!(other instanceof PropertyMatcher)) {
             return false;
         }
-        if (!(obj instanceof PropertyMatcher)) {
-            return false;
-        }
-        PropertyMatcher other = (PropertyMatcher) obj;
-        if (caseSensitive != other.caseSensitive) {
-            return false;
-        }
-        if (key == null) {
-            if (other.key != null) {
-                return false;
-            }
-        } else if (!key.equals(other.key)) {
-            return false;
-        }
-        if (regex == null) {
-            if (other.regex != null) {
-                return false;
-            }
-        } else if (!regex.equals(other.regex)) {
-            return false;
-        }
-        return true;
+        PropertyMatcher castOther = (PropertyMatcher) other;
+        return new EqualsBuilder()
+                .appendSuper(super.equals(castOther))
+                .append(key, castOther.key)
+                .append(regex, castOther.regex)
+                .append(caseSensitive, castOther.caseSensitive)
+                .isEquals();
     }
     @Override
     public String toString() {
-        ToStringBuilder builder = new ToStringBuilder(this);
+        ToStringBuilder builder = 
+                new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE);
         builder.append("key", key);
         builder.append("regex", regex);
         builder.append("caseSensitive", caseSensitive);

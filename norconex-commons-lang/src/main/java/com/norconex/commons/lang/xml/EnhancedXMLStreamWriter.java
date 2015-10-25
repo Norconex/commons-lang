@@ -23,6 +23,8 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 /**
  * <p>
@@ -35,6 +37,9 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class EnhancedXMLStreamWriter implements XMLStreamWriter {
 
+    private static final Logger LOG = 
+            LogManager.getLogger(EnhancedXMLStreamWriter.class);
+    
     private final XMLStreamWriter writer;
     private final boolean writeBlanks;
 
@@ -44,7 +49,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
     public EnhancedXMLStreamWriter(Writer out, boolean writeBlanks) 
             throws XMLStreamException {
         super();
-        XMLOutputFactory factory = XMLOutputFactory.newInstance();
+        XMLOutputFactory factory = createXMLOutputFactory(out);
         writer = factory.createXMLStreamWriter(out);
         this.writeBlanks = writeBlanks;
     }
@@ -58,6 +63,30 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
         this.writeBlanks = writeBlanks;
     }
 
+    private static XMLOutputFactory createXMLOutputFactory(Writer out) {
+        XMLOutputFactory factory = XMLOutputFactory.newFactory();
+        // If using Woodstox factory, disable structure validation
+        // which can cause issues when you want to use the xml writer on 
+        // a stream that already has XML written to it (could cause 
+        // "multiple roots" error).
+        if (factory.getClass().getName().equals(
+                "com.ctc.wstx.stax.WstxOutputFactory")) {
+            try {
+                Object config = factory.getClass().getMethod(
+                        "getConfig").invoke(factory);
+                config.getClass().getMethod(
+                        "doValidateStructure", boolean.class).invoke(
+                                config, false);
+            } catch (Exception e) {
+                LOG.warn("Could not disable structure validation on "
+                        + "WstxOutputFactory. This can cause issues when "
+                        + "using EnhancedXMLStreamWriter on an partially "
+                        + "written XML stream (\"multiple roots\" error).");
+            }
+        }
+        return factory;
+    }
+    
     //--- New methods ----------------------------------------------------------
 
     public void writeAttributeInteger(String localName, Integer value) 

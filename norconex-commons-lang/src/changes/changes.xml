@@ -67,6 +67,12 @@
         UTF-8 unicode values are now used to percent-encode the part portion
         of a URL.
       </action>
+      <action dev="essiembre" type="fix">
+        When Woodstox factory is used as the XML parser, now disables 
+        structure validation which can cause issues when you want to use 
+        the xml writer on a stream that already has XML written to it 
+        (could cause "multiple roots" error).
+      </action>
     </release>
 
     <release version="1.7.0" date="2015-08-07" description="Feature release">
