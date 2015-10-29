@@ -46,6 +46,10 @@
         Properties#isCaseInsensitiveKeys() for consistency with 
         constructor caseInsensitiveKeys argument.
       </action>      
+      <action dev="essiembre" type="update">
+        Fixed URLNormalizer#removeDotSegments() is now implemented following
+        RFC3986 prescribed algorithm.
+      </action>
       <action dev="essiembre" type="fix">
         Fixed URLNormalizer#removeDuplicateSlashes() to no longer consider
         the two slashes between the protocol and hostname as being duplicates

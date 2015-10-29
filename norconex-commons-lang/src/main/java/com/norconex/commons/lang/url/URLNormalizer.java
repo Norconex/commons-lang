@@ -29,7 +29,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.collections4.bag.TreeBag;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.LogManager;
@@ -342,60 +341,116 @@ public class URLNormalizer implements Serializable {
     
     /**
      * <p>Removes the unnecessary "." and ".." segments from the URL path.
-     * {@link URI#normalize()} is invoked to perform this normalization.
-     * Refer to it for exact behavior.</p>
+     * </p>
+     * <p><b>As of 2.3.0</b>, the algorithm used to remove the dot segments
+     * is the one prescribed by 
+     * <a href="http://tools.ietf.org/html/rfc3986#section-5.2.4">RFC3986</a>.
+     * </p>
      * <code>http://www.example.com/../a/b/../c/./d.html &rarr;
      *       http://www.example.com/a/c/d.html</code>
      * <p><b>Please Note:</b> URLs do not always represent a clean hierarchy 
      * structure and the dots/double-dots may have a different signification
      * on some sites.  Removing them from a URL could potentially break
      * its semantic equivalence.</p>
-     * 
      * @return this instance
      * @see URI#normalize()
      */
     public URLNormalizer removeDotSegments() {
-        // Single dots
-        url = url.replaceAll("(^|/)(\\.)(?=/)", "");
-
-        // Double dots
         String path = toURL().getPath().trim();
-        String[] segments = path.split(
-                "(((?<=/\\.\\.)(?=/))|((?=/\\.\\.)(?=/))|(?=/))");
-        segments = ArrayUtils.removeElements(segments, "");
+
+        // (Bulleted comments are from RFC3986, section-5.2.4)
         
-        int swallowCount = 0;
-        StringBuilder b = new StringBuilder();
-        boolean stopReplacement = false;
-        for (int i = segments.length - 1; i >= 0; i--){
-            String seg = segments[i];
-            if (stopReplacement) {
-                b.insert(0, seg);
-            } else if (seg.equals("/..")) {
-                swallowCount++;
-                if (swallowCount > countNonDoubleDotsSegments(segments, i)) {
-                    b.insert(0, seg);
-                    stopReplacement = true;
+        // 1.  The input buffer is initialized with the now-appended path
+        //     components and the output buffer is initialized to the empty
+        //     string.
+        StringBuilder in = new StringBuilder(path);
+        StringBuilder out = new StringBuilder();
+        
+        // 2.  While the input buffer is not empty, loop as follows:
+        while (in.length() > 0) {
+
+            // A.  If the input buffer begins with a prefix of "../" or "./",
+            //     then remove that prefix from the input buffer; otherwise,
+            if (startsWith(in, "../")) {
+                deleteStart(in, "../");
+            } else if (startsWith(in, "./")) {
+                deleteStart(in, "./");
+            }
+
+            // B.  if the input buffer begins with a prefix of "/./" or "/.",
+            //     where "." is a complete path segment, then replace that
+            //     prefix with "/" in the input buffer; otherwise,
+            else if (startsWith(in, "/./")) {
+                replaceStart(in, "/./", "/");
+            } else if (equals(in, "/.")) {
+                replaceStart(in, "/.", "/");
+            }
+            
+            // C.  if the input buffer begins with a prefix of "/../" or "/..",
+            //     where ".." is a complete path segment, then replace that
+            //     prefix with "/" in the input buffer and remove the last
+            //     segment and its preceding "/" (if any) from the output
+            //     buffer; otherwise,
+            else if (startsWith(in, "/../")) {
+                replaceStart(in, "/../", "/");
+                removeLastSegment(out);
+            } else if (equals(in, "/..")) {
+                replaceStart(in, "/..", "/");
+                removeLastSegment(out);
+            }
+            
+            // D.  if the input buffer consists only of "." or "..", then remove
+            //      that from the input buffer; otherwise,
+            else if (equals(in, "..")) {
+                deleteStart(in, "..");
+            } else if (equals(in, ".")) {
+                deleteStart(in, ".");
+            }
+            
+            // E.  move the first path segment in the input buffer to the end of
+            //     the output buffer, including the initial "/" character (if
+            //     any) and any subsequent characters up to, but not including,
+            //     the next "/" character or the end of the input buffer.
+            else {
+                int nextSlashIndex = in.indexOf("/", 1);
+                if (nextSlashIndex > -1) {
+                    out.append(in.substring(0, nextSlashIndex));
+                    in.delete(0, nextSlashIndex);
+                } else {
+                    out.append(in);
+                    in.setLength(0);
                 }
-            } else if (swallowCount > 0 && !seg.equals("/..")) {
-                swallowCount--;
-            } else {
-                b.insert(0, seg);
             }
         }
-        url = StringUtils.replaceOnce(url, path, b.toString());
+
+        // 3.  Finally, the output buffer is returned as the result of
+        //     remove_dot_segments.
+        url = StringUtils.replaceOnce(url, path, out.toString());
         return this;
     }
-    private int countNonDoubleDotsSegments(String[] segments, int maxIndex) {
-        int count = 0;
-        for (int i = 0; i < maxIndex; i++) {
-            if (!segments[i].equals("/..")) {
-                count++;
-            }
-        }
-        return count;
+    private static boolean equals(StringBuilder b, String str) {
+        return b.length() == str.length() && b.indexOf(str) == 0;
     }
-    
+    private static boolean startsWith(StringBuilder b, String str) {
+        return b.indexOf(str) == 0;
+    }
+    private void replaceStart(
+            StringBuilder b, String toreplace, String replacement) {
+        deleteStart(b, toreplace);
+        b.insert(0, replacement);
+    }
+    private void deleteStart(StringBuilder b, String str) {
+        b.delete(0, str.length());
+    }
+    private void removeLastSegment(StringBuilder b) {
+        int index = b.lastIndexOf("/");
+        if (index == -1) {
+            b.setLength(0);
+        } else {
+            b.setLength(index);
+        }
+    }
+
     /**
      * <p>Removes directory index files.  They are often not needed in URLs.</p>
      * <code>http://www.example.com/a/index.html &rarr;

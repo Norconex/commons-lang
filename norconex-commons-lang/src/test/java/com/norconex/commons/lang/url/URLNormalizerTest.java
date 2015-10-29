@@ -16,6 +16,10 @@ package com.norconex.commons.lang.url;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -180,11 +184,58 @@ public class URLNormalizerTest {
     @Test
     public void testRemoveDotSegments() {
         s = "http://www.example.com/../a/b/../c/./d.html";
-        t = "http://www.example.com/../a/c/d.html";
+        t = "http://www.example.com/a/c/d.html";
         assertEquals(t, n(s).removeDotSegments().toString());
         s = "http://www.example.com/a/../b/../c/./d.html";
         t = "http://www.example.com/c/d.html";
         assertEquals(t, n(s).removeDotSegments().toString());
+        // From ticket #173:
+        s = "http://www.example.com/a/../../../../b/c/d/e/f.jpg";
+        t = "http://www.example.com/b/c/d/e/f.jpg";
+        assertEquals(t, n(s).removeDotSegments().toString());
+
+        //--- Tests from http://tools.ietf.org/html/rfc3986#section-5.4 ---
+        String urlRoot = "http://a.com";
+        Map<String, String> m = new HashMap<>();
+        
+        // 5.4.1 Normal Examples
+        m.put("/b/c/."             , "/b/c/");
+        m.put("/b/c/./"            , "/b/c/");
+        m.put("/b/c/.."            , "/b/");
+        m.put("/b/c/../"           , "/b/");
+        m.put("/b/c/../g"          , "/b/g");
+        m.put("/b/c/../.."         , "/");
+        m.put("/b/c/../../"        , "/");
+        m.put("/b/c/../../g"       , "/g");
+        
+        // 5.4.2. Abnormal Examples
+        m.put("/b/c/../../../g"    ,  "/g");
+        m.put("/b/c/../../../../g" ,  "/g");
+        
+        m.put("/./g"               ,  "/g");
+        m.put("/../g"              ,  "/g");
+        m.put("/b/c/g."            ,  "/b/c/g.");
+        m.put("/b/c/.g"            ,  "/b/c/.g");
+        m.put("/b/c/g.."           ,  "/b/c/g..");
+        m.put("/b/c/..g"           ,  "/b/c/..g");
+        
+        m.put("/b/c/./../g"        ,  "/b/g");
+        m.put("/b/c/./g/."         ,  "/b/c/g/");
+        m.put("/b/c/g/./h"         ,  "/b/c/g/h");
+        m.put("/b/c/g/../h"        ,  "/b/c/h");
+        m.put("/b/c/g;x=1/./y"     ,  "/b/c/g;x=1/y");
+        m.put("/b/c/g;x=1/../y"    ,  "/b/c/y");
+        
+        m.put("/b/c/g?y/./x"       ,  "/b/c/g?y/./x");
+        m.put("/b/c/g?y/../x"      ,  "/b/c/g?y/../x");
+        m.put("/b/c/g#s/./x"       ,  "/b/c/g#s/./x");
+        m.put("/b/c/g#s/../x"      ,  "/b/c/g#s/../x");
+
+        for (Entry<String, String> e : m.entrySet()) {
+            s = urlRoot + e.getKey();
+            t = urlRoot + e.getValue();
+            assertEquals(t, n(s).removeDotSegments().toString());
+        }
     }
     @Test
     public void testRemoveDirectoryIndex() {
