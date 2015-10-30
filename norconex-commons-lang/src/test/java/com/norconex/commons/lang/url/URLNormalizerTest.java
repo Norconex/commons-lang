@@ -124,7 +124,7 @@ public class URLNormalizerTest {
     
     @Test
     public void testDecodeUnreservedCharacters() {
-        // ALPHA (%41�%5A and %61�%7A), DIGIT (%30�%39), hyphen (%2D), 
+        // ALPHA (%41-%5A and %61-%7A), DIGIT (%30-%39), hyphen (%2D), 
         // period (%2E), underscore (%5F), or tilde (%7E) 
         s = "http://www.example.com/%41%42%59%5Aalpha"
                 + "%61%62%79%7A/digit%30%31%38%39/%2Dhyphen/period%2E"

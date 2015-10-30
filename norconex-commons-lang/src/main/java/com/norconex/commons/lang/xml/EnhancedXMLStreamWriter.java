@@ -49,7 +49,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
     public EnhancedXMLStreamWriter(Writer out, boolean writeBlanks) 
             throws XMLStreamException {
         super();
-        XMLOutputFactory factory = createXMLOutputFactory(out);
+        XMLOutputFactory factory = createXMLOutputFactory();
         writer = factory.createXMLStreamWriter(out);
         this.writeBlanks = writeBlanks;
     }
@@ -63,7 +63,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
         this.writeBlanks = writeBlanks;
     }
 
-    private static XMLOutputFactory createXMLOutputFactory(Writer out) {
+    private static XMLOutputFactory createXMLOutputFactory() {
         XMLOutputFactory factory = XMLOutputFactory.newFactory();
         // If using Woodstox factory, disable structure validation
         // which can cause issues when you want to use the xml writer on 
