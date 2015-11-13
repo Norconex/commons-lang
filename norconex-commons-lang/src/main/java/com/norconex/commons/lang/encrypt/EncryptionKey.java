@@ -24,8 +24,6 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
 
 /**
  * Pointer to the an encryption key, or the encryption key itself. An 
@@ -37,8 +35,6 @@ import org.apache.log4j.Logger;
  */
 public class EncryptionKey {
 
-    private static final Logger LOG = LogManager.getLogger(EncryptionKey.class);
-    
     public enum Source { 
         /** Value is the actual key. */
         KEY, 
@@ -110,35 +106,26 @@ public class EncryptionKey {
     
     private String fromEnv() {
         String key = System.getenv(value);
-        if (StringUtils.isBlank(key)) {
-            LOG.info("Key not found under environment variable \"" 
-                    + value + "\".");
-        }
+        //TODO allow a flag to optionally throw an exception when null?
         return key;
     }
     
     private String fromProperty() {
         String key = System.getProperty(value);
-        if (StringUtils.isBlank(key)) {
-            LOG.info("Key not found under system property \"" 
-                    + value + "\".");
-        }
+        //TODO allow a flag to optionally throw an exception when null?
         return key;
     }
 
     private String fromFile() {
         File file = new File(value);
         if (!file.isFile()) {
-            LOG.info("Key file is not a file or does not exists: "
+            throw new EncryptionException(
+                    "Key file is not a file or does not exists: "
                     + file.getAbsolutePath());
-            return null;
         }
         try {
             String key = FileUtils.readFileToString(file, CharEncoding.UTF_8);
-            if (StringUtils.isBlank(key)) {
-                LOG.info("Key not found under key file: "
-                        + file.getAbsolutePath());
-            }
+            //TODO allow a flag to optionally throw an exception when null?
             return key;
         } catch (IOException e) {
             throw new EncryptionException(
