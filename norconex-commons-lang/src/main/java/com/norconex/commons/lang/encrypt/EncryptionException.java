@@ -14,6 +14,12 @@
  */
 package com.norconex.commons.lang.encrypt;
 
+/**
+ * Runtime exception thrown if there is a problem with the encryption
+ * or decryption.
+ * @author Pascal Essiembre
+ * @since 1.9.0
+ */
 public class EncryptionException extends RuntimeException {
 
     private static final long serialVersionUID = -2107977615189833553L;

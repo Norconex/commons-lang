@@ -14,8 +14,6 @@
  */
 package com.norconex.commons.lang.encrypt;
 
-import java.io.File;
-import java.io.IOException;
 import java.io.PrintStream;
 import java.security.spec.AlgorithmParameterSpec;
 import java.security.spec.KeySpec;
@@ -27,16 +25,33 @@ import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.PBEParameterSpec;
 import javax.xml.bind.DatatypeConverter;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.CharEncoding;
-import org.apache.commons.lang3.StringUtils;
+
+import com.norconex.commons.lang.encrypt.EncryptionKey.ValueType;
 
 /**
- * Simplified encryption and decryption methods using the 
- * "PBEWithMD5AndDES" algorithm with a supplied security key.
+ * <p>Simplified encryption and decryption methods using the 
+ * "PBEWithMD5AndDES" algorithm with a supplied encryption key (which you 
+ * can also think of as a passphrase, or password).
  * The "salt" and iteration count used by this class are hard-coded. To have
  * more control and ensure a more secure approach, you should rely on another 
  * implementation or create your own.
+ * </p>
+ * <p>
+ * To use on the command prompt, use the following command to print usage
+ * options:
+ * </p>
+ * <pre>
+ * java -cp norconex-commons-lang-[version].jar com.norconex.commons.lang.encrypt.EncryptionUtil
+ * </pre>
+ * <p>
+ * For example, to use a encryption key store in a file to encrypt some text, 
+ * add the following arguments to the above command:
+ * </p>
+ * <pre>
+ * &lt;above_command&gt; encrypt -f "/path/to/key.txt" "Encrypt this text"
+ * </pre>
+ * 
  * @author Pascal Essiembre
  * @since 1.9.0
  */
@@ -46,34 +61,32 @@ public class EncryptionUtil {
         if (args.length != 4) {
             printUsage();
         }
-        String cmd = args[0];
-        String type = args[1];
-        String key = args[2];
-        String text = args[3];
-        if (cmd.equalsIgnoreCase("encrypt")) {
-            if (type.equalsIgnoreCase("-k")) {
-                System.out.println(encrypt(text, key));
-            } else if (type.equalsIgnoreCase("-f")) {
-                System.out.println(encryptWithKeyFile(text, new File(key)));
-            } else if (type.equalsIgnoreCase("-e")) {
-                System.out.println(encryptWithKeyEnv(text, key));
-            } else {
-                System.err.println("Unsupported type of key: " + type);
-                printUsage();
-            }
-        } else if (cmd.equalsIgnoreCase("decrypt")) {
-            if (type.equalsIgnoreCase("-k")) {
-                System.out.println(decrypt(text, key));
-            } else if (type.equalsIgnoreCase("-f")) {
-                System.out.println(decryptWithKeyFile(text, new File(key)));
-            } else if (type.equalsIgnoreCase("-e")) {
-                System.out.println(decryptWithKeyEnv(text, key));
-            } else {
-                System.err.println("Unsupported type of key: " + type);
-                printUsage();
-            }
+        String cmdArg = args[0];
+        String typeArg = args[1];
+        String keyArg = args[2];
+        String textArg = args[3];
+        
+        ValueType type = null;
+        if (typeArg.equalsIgnoreCase("-k")) {
+            type = ValueType.KEY;
+        } else if (typeArg.equalsIgnoreCase("-f")) {
+            type = ValueType.FILE;
+        } else if (typeArg.equalsIgnoreCase("-e")) {
+            type = ValueType.ENVIRONMENT;
+        } else if (typeArg.equalsIgnoreCase("-p")) {
+            type = ValueType.PROPERTY;
         } else {
-            System.err.println("Unsupported command: " + cmd);
+            System.err.println("Unsupported type of key: " + type);
+            printUsage();
+        }
+        
+        EncryptionKey key = new EncryptionKey(keyArg, type);
+        if (cmdArg.equalsIgnoreCase("encrypt")) {
+            System.out.println(encrypt(textArg, key));
+        } else if (cmdArg.equalsIgnoreCase("decrypt")) {
+            System.out.println(decrypt(textArg, key));
+        } else {
+            System.err.println("Unsupported command: " + cmdArg);
             printUsage();
         }
         System.exit(0);
@@ -83,27 +96,41 @@ public class EncryptionUtil {
         out.println("<appName> encrypt|decrypt -k|-f|-e key text");
         out.println();
         out.println("Where:");
-        out.println("  encrypt  encrypt the text with the given key.");
-        out.println("  decrypt  decrypt the text with the given key.");
-        out.println("  -k       key is the secret key.");
-        out.println("  -f       key is the file containing the secret key.");
+        out.println("  encrypt  encrypt the text with the given key");
+        out.println("  decrypt  decrypt the text with the given key");
+        out.println("  -k       key is the encryption key");
+        out.println("  -f       key is the file containing the encryption key");
         out.println("  -e       key is the environment variable holding the "
-                + "secret key.");
-        out.println("  key      the secret key (or file, or env. variable).");
+                + "encryption key");
+        out.println("  -p       key is the system property holding the "
+                + "encryption key");
+        out.println("  key      the encryption key (or file, or env. "
+                + "variable, etc.)");
         out.println("  text     text to encrypt or decrypt");
         System.exit(-1);
     }
     
     /**
-     * <p>Encrypts the given text with the encryption key supplied.</p>
+     * <p>Encrypts the given text with the encryption key supplied. If the
+     * encryption key is <code>null</code> or resolves to blank key,
+     * the text to encrypt will be returned unmodified.</p>
      * @param textToEncrypt text to be encrypted
-     * @param key security key which must be the same to encrypt and decrypt.
-     * @return encrypted text or <code>null</code> if one of 
-     * <code>textToEncrypt</code> or <code>key</code> is <code>null</code>.
+     * @param encryptionKey encryption key which must resolve to the same 
+     *        value to encrypt and decrypt the supplied text.
+     * @return encrypted text or <code>null</code> if 
+     * <code>textToEncrypt</code> is <code>null</code>.
      */
-    public static String encrypt(String textToEncrypt, String key) {
-        if (textToEncrypt == null || key == null) {
+    public static String encrypt(
+            String textToEncrypt, EncryptionKey encryptionKey) {
+        if (textToEncrypt == null) {
             return null;
+        }
+        if (encryptionKey == null) {
+            return textToEncrypt;
+        }
+        String key = encryptionKey.resolve();
+        if (key == null) {
+            return textToEncrypt;
         }
         
         // 8-byte Salt
@@ -138,71 +165,29 @@ public class EncryptionUtil {
             throw new EncryptionException("Encryption failed.", e);
         }
     }
-    /**
-     * <p>Encrypts the given text with the encryption key found in the 
-     * supplied environment variable name.</p>
-     * @param textToEncrypt text to be encrypted
-     * @param keyEnv environment variable name.
-     * @return encrypted text or <code>null</code> if the 
-     * <code>textToEncrypt</code> is <code>null</code>.
-     */
-    public static String encryptWithKeyEnv(
-            String textToEncrypt, String keyEnv) {
-        if (StringUtils.isBlank(keyEnv)) {
-            throw new EncryptionException("Environment variable name "
-                    + "cannot be null or blank.");
-        }
-        String key = System.getenv(keyEnv);
-        if (StringUtils.isBlank(key)) {
-            throw new EncryptionException("No key was found under the "
-                    + "environment variable named \"" + keyEnv + "\".");
-        }
-        return encrypt(textToEncrypt, key);
-    }
-    /**
-     * <p>Encrypts the given text with the encryption key found in the 
-     * supplied file. The text in the file is expected to be UTF-8.</p>
-     * @param textToEncrypt text to be encrypted
-     * @param keyFile file containing security key which must be the same 
-     *        to encrypt and decrypt.
-     * @return encrypted text or <code>null</code> if the 
-     * <code>textToEncrypt</code> is <code>null</code>.
-     */
-    public static String encryptWithKeyFile(
-            String textToEncrypt, File keyFile) {
-        if (keyFile == null ) {
-            throw new EncryptionException("Key file cannot be null.");
-        }
-        if (!keyFile.isFile()) {
-            throw new EncryptionException("Key file is not a file or does not "
-                    + "exists: " + keyFile);
-        }
-        try {
-            String key = FileUtils.readFileToString(
-                    keyFile, CharEncoding.UTF_8);
-            if (StringUtils.isBlank(key)) {
-                throw new EncryptionException(
-                        "No key was found in file: " + keyFile);
-            }
-            return encrypt(textToEncrypt, key);
-        } catch (IOException e) {
-            throw new EncryptionException(
-                    "Could not read key file.", e);
-        }
-    }
  
     /**
      * <p>Decrypts the given encrypted text with the encryption key supplied.
      * </p>
      * @param encryptedText text to be decrypted
-     * @param key security key which must be the same to encrypt and decrypt.
+     * @param encryptionKey encryption key which must resolve to the same 
+     *        value to encrypt and decrypt the supplied text.
      * @return decrypted text or <code>null</code> if one of 
      * <code>encryptedText</code> or <code>key</code> is <code>null</code>.
      */   
-    public static String decrypt(String encryptedText, String key) {
-        if (encryptedText == null || key == null) {
+    public static String decrypt(
+            String encryptedText, EncryptionKey encryptionKey) {
+        if (encryptedText == null) {
             return null;
         }
+        if (encryptionKey == null) {
+            return encryptedText;
+        }
+        String key = encryptionKey.resolve();
+        if (key == null) {
+            return encryptedText;
+        }        
+        
         // 8-byte Salt
         byte[] salt = {
             (byte)0xE3, (byte)0x03, (byte)0x9B, (byte)0xA9, 
@@ -234,58 +219,4 @@ public class EncryptionUtil {
             throw new EncryptionException("Decryption failed.", e);
         }
     }
-
-    /**
-     * <p>Decrypts the given encrypted text with the encryption key found in the 
-     * supplied environment variable name.</p>
-     * @param encryptedText text to be decrypted
-     * @param keyEnv environment variable name.
-     * @return decrypted text or <code>null</code> if the 
-     * <code>encryptedText</code> is <code>null</code>.
-     */
-    public static String decryptWithKeyEnv(
-            String encryptedText, String keyEnv) {
-        if (StringUtils.isBlank(keyEnv)) {
-            throw new EncryptionException("Environment variable name "
-                    + "cannot be null or blank.");
-        }
-        String key = System.getenv(keyEnv);
-        if (StringUtils.isBlank(key)) {
-            throw new EncryptionException("No key was found under the "
-                    + "environment variable named \"" + keyEnv + "\".");
-        }
-        return decrypt(encryptedText, key);
-    }
-    
-    /**
-     * <p>Encrypts the given encrypted text with the encryption key found in the 
-     * supplied file. The text in the file is expected to be UTF-8.</p>
-     * @param encryptedText text to be decrypted
-     * @param keyFile file containing security key which must be the same 
-     *        to encrypt and decrypt.
-     * @return decrypted text or <code>null</code> if the 
-     * <code>encryptedText</code> is <code>null</code>.
-     */
-    public static String decryptWithKeyFile(
-            String encryptedText, File keyFile) {
-        if (keyFile == null ) {
-            throw new EncryptionException("Key file cannot be null.");
-        }
-        if (!keyFile.isFile()) {
-            throw new EncryptionException("Key file is not a file or does not "
-                    + "exists: " + keyFile);
-        }
-        try {
-            String key = FileUtils.readFileToString(
-                    keyFile, CharEncoding.UTF_8);
-            if (StringUtils.isBlank(key)) {
-                throw new EncryptionException(
-                        "No key was found in file: " + keyFile);
-            }
-            return decrypt(encryptedText, key);
-        } catch (IOException e) {
-            throw new EncryptionException(
-                    "Could not read key file.", e);
-        }
-    }    
 }

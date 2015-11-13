@@ -21,7 +21,7 @@ public class EncryptionUtilTest {
 
     @Test
     public void testEncrypt() {
-        String key = "this is my secret key.";
+        EncryptionKey key = new EncryptionKey("this is my secret key.");
         String text = "please encode this text.";
         String encryptedText = EncryptionUtil.encrypt(text, key);
         String decryptedText = EncryptionUtil.decrypt(encryptedText, key);
