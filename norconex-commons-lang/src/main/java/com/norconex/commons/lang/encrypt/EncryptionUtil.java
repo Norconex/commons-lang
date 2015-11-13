@@ -15,6 +15,7 @@
 package com.norconex.commons.lang.encrypt;
 
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.security.spec.AlgorithmParameterSpec;
 import java.security.spec.KeySpec;
 
@@ -24,8 +25,6 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.PBEParameterSpec;
 import javax.xml.bind.DatatypeConverter;
-
-import org.apache.commons.lang3.CharEncoding;
 
 import com.norconex.commons.lang.encrypt.EncryptionKey.Source;
 
@@ -157,7 +156,7 @@ public class EncryptionUtil {
             // Create the ciphers
             ecipher.init(Cipher.ENCRYPT_MODE, secretKey, paramSpec);
             
-            byte[] utf8 = textToEncrypt.getBytes("UTF8");
+            byte[] utf8 = textToEncrypt.getBytes(StandardCharsets.UTF_8);
             byte[] enc = ecipher.doFinal(utf8);
             
             return DatatypeConverter.printBase64Binary(enc);
@@ -214,7 +213,7 @@ public class EncryptionUtil {
             
             byte[] dec = DatatypeConverter.parseBase64Binary(encryptedText);
             byte[] utf8 = dcipher.doFinal(dec);
-            return new String(utf8, CharEncoding.UTF_8);
+            return new String(utf8, StandardCharsets.UTF_8);
         } catch (Exception e) {
             throw new EncryptionException("Decryption failed.", e);
         }

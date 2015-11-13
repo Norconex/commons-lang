@@ -16,14 +16,9 @@ package com.norconex.commons.lang.encrypt;
 
 import java.io.File;
 import java.io.IOException;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.CharEncoding;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 /**
  * Pointer to the an encryption key, or the encryption key itself. An 
@@ -84,7 +79,7 @@ public class EncryptionKey {
      * for the specified type
      */
     public String resolve() {
-        if (StringUtils.isBlank(value)) {
+        if (value == null || value.trim().length() == 0) {
             return null;
         }
         if (source == null) {
@@ -124,38 +119,51 @@ public class EncryptionKey {
                     + file.getAbsolutePath());
         }
         try {
-            String key = FileUtils.readFileToString(file, CharEncoding.UTF_8);
+            String key = new String(Files.readAllBytes(
+                    Paths.get(value)), StandardCharsets.UTF_8);
             //TODO allow a flag to optionally throw an exception when null?
             return key;
         } catch (IOException e) {
             throw new EncryptionException(
                     "Could not read key file.", e);
         }
-    }    
+    }
     
-    @Override
-    public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .append("value", value)
-                .append("source", source)
-                .toString();
-    }
-    @Override
-    public boolean equals(final Object other) {
-        if (!(other instanceof EncryptionKey)) {
-            return false;
-        }
-        EncryptionKey castOther = (EncryptionKey) other;
-        return new EqualsBuilder()
-                .append(value, castOther.value)
-                .append(source, castOther.source)
-                .isEquals();
-    }
+    //TODO do not use Apache Commons Lang below to avoid the dependency.
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-                .append(value)
-                .append(source)
-                .toHashCode();
-    } 
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((source == null) ? 0 : source.hashCode());
+        result = prime * result + ((value == null) ? 0 : value.hashCode());
+        return result;
+    }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof EncryptionKey)) {
+            return false;
+        }
+        EncryptionKey other = (EncryptionKey) obj;
+        if (source != other.source) {
+            return false;
+        }
+        if (value == null) {
+            if (other.value != null) {
+                return false;
+            }
+        } else if (!value.equals(other.value)) {
+            return false;
+        }
+        return true;
+    }
+    @Override
+    public String toString() {
+        return "EncryptionKey [value=" + value + ", source=" + source + "]";
+    }    
 }
