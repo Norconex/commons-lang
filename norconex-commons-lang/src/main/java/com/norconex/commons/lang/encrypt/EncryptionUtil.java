@@ -27,7 +27,7 @@ import javax.xml.bind.DatatypeConverter;
 
 import org.apache.commons.lang3.CharEncoding;
 
-import com.norconex.commons.lang.encrypt.EncryptionKey.ValueType;
+import com.norconex.commons.lang.encrypt.EncryptionKey.Source;
 
 /**
  * <p>Simplified encryption and decryption methods using the 
@@ -66,15 +66,15 @@ public class EncryptionUtil {
         String keyArg = args[2];
         String textArg = args[3];
         
-        ValueType type = null;
+        Source type = null;
         if (typeArg.equalsIgnoreCase("-k")) {
-            type = ValueType.KEY;
+            type = Source.KEY;
         } else if (typeArg.equalsIgnoreCase("-f")) {
-            type = ValueType.FILE;
+            type = Source.FILE;
         } else if (typeArg.equalsIgnoreCase("-e")) {
-            type = ValueType.ENVIRONMENT;
+            type = Source.ENVIRONMENT;
         } else if (typeArg.equalsIgnoreCase("-p")) {
-            type = ValueType.PROPERTY;
+            type = Source.PROPERTY;
         } else {
             System.err.println("Unsupported type of key: " + type);
             printUsage();

@@ -39,7 +39,7 @@ public class EncryptionKey {
 
     private static final Logger LOG = LogManager.getLogger(EncryptionKey.class);
     
-    public enum ValueType { 
+    public enum Source { 
         /** Value is the actual key. */
         KEY, 
         /** Value is the path to a file containing the key. */
@@ -51,35 +51,32 @@ public class EncryptionKey {
     };
 
     private final String value;
-    private final ValueType valueType;
+    private final Source source;
     
     /**
      * Creates a new reference to an encryption key. The reference can either 
      * be the key itself, or a pointer to a file or environment variable
      * containing the key (as defined by the supplied value type).
      * @param value the encryption key
-     * @param valueType the type of value
+     * @param source the type of value
      */
-    public EncryptionKey(String value, ValueType valueType) {
+    public EncryptionKey(String value, Source source) {
         super();
         this.value = value;
-        this.valueType = valueType;
-        if (valueType == null) {
-            throw new EncryptionException("Value type cannot be null.");
-        }
+        this.source = source;
     }
     /**
      * Creates a new encryption key where the value is the actual key.
      * @param value the encryption key
      */
     public EncryptionKey(String value) {
-        this(value, ValueType.KEY);
+        this(value, Source.KEY);
     }
     public String getValue() {
         return value;
     }
-    public ValueType getValueType() {
-        return valueType;
+    public Source getSource() {
+        return source;
     }
 
     /**
@@ -94,7 +91,10 @@ public class EncryptionKey {
         if (StringUtils.isBlank(value)) {
             return null;
         }
-        switch (valueType) {
+        if (source == null) {
+            return value;
+        }
+        switch (source) {
         case KEY:
             return value;
         case FILE:
@@ -150,7 +150,7 @@ public class EncryptionKey {
     public String toString() {
         return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
                 .append("value", value)
-                .append("valueType", valueType)
+                .append("source", source)
                 .toString();
     }
     @Override
@@ -161,14 +161,14 @@ public class EncryptionKey {
         EncryptionKey castOther = (EncryptionKey) other;
         return new EqualsBuilder()
                 .append(value, castOther.value)
-                .append(valueType, castOther.valueType)
+                .append(source, castOther.source)
                 .isEquals();
     }
     @Override
     public int hashCode() {
         return new HashCodeBuilder()
                 .append(value)
-                .append(valueType)
+                .append(source)
                 .toHashCode();
     } 
 }
