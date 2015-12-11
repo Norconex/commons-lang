@@ -12,6 +12,10 @@
         New EncryptionUtil class to easily encrypt and decrypt any text using
         a security key.
       </action>
+      <action dev="essiembre" type="fix">
+        HttpURL#getRoot(String) not returns the proper root even when the 
+        URL contains invalid characters.
+      </action>
     </release>
     
     <release version="1.8.0" date="2015-11-01" description="Feature release">

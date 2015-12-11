@@ -336,7 +336,7 @@ public class HttpURL implements Serializable {
         if (StringUtils.isBlank(url)) {
             return null;
         }
-        return url.replaceFirst("(.*?://.*?)([/?#].*)", "$1");
+        return StringUtils.replacePattern(url, "(.*?://.*?)([/?#].*)", "$1");
     }
     
     /**
