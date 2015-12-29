@@ -144,7 +144,7 @@ public class EncryptionUtil {
         try {
             // Create the key
             KeySpec keySpec = new PBEKeySpec(
-                    key.toCharArray(), salt, iterationCount);
+                    key.trim().toCharArray(), salt, iterationCount);
             SecretKey secretKey = SecretKeyFactory.getInstance(
                 "PBEWithMD5AndDES").generateSecret(keySpec);
             ecipher = Cipher.getInstance(secretKey.getAlgorithm());
@@ -156,7 +156,7 @@ public class EncryptionUtil {
             // Create the ciphers
             ecipher.init(Cipher.ENCRYPT_MODE, secretKey, paramSpec);
             
-            byte[] utf8 = textToEncrypt.getBytes(StandardCharsets.UTF_8);
+            byte[] utf8 = textToEncrypt.trim().getBytes(StandardCharsets.UTF_8);
             byte[] enc = ecipher.doFinal(utf8);
             
             return DatatypeConverter.printBase64Binary(enc);
@@ -199,7 +199,7 @@ public class EncryptionUtil {
         try {
             // Create the key
             KeySpec keySpec = new PBEKeySpec(
-                    key.toCharArray(), salt, iterationCount);
+                    key.trim().toCharArray(), salt, iterationCount);
             SecretKey secretKey = SecretKeyFactory.getInstance(
                 "PBEWithMD5AndDES").generateSecret(keySpec);
             dcipher = Cipher.getInstance(secretKey.getAlgorithm());
@@ -211,7 +211,8 @@ public class EncryptionUtil {
             // Create the ciphers
             dcipher.init(Cipher.DECRYPT_MODE, secretKey, paramSpec);
             
-            byte[] dec = DatatypeConverter.parseBase64Binary(encryptedText);
+            byte[] dec = 
+                    DatatypeConverter.parseBase64Binary(encryptedText.trim());
             byte[] utf8 = dcipher.doFinal(dec);
             return new String(utf8, StandardCharsets.UTF_8);
         } catch (Exception e) {
