@@ -13,7 +13,11 @@
         a security key.
       </action>
       <action dev="essiembre" type="fix">
-        HttpURL#getRoot(String) not returns the proper root even when the 
+        HttpURL#toAbsolute(String, String) now handles relative URLs with
+        no leading slashes properly (e.g. "sample.html").
+      </action>
+      <action dev="essiembre" type="fix">
+        HttpURL#getRoot(String) now returns the proper root even when the 
         URL contains invalid characters.
       </action>
     </release>

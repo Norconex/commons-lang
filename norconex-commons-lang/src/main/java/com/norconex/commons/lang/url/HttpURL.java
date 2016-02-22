@@ -472,7 +472,9 @@ public class HttpURL implements Serializable {
         // Relative to last directory/segment
         if (!relURL.contains("://")) {
             String base = baseURL.replaceFirst("(.*?)([\\?\\#])(.*)", "$1");
-            base = base.replaceFirst("(.*/)(.*)", "$1");
+            if (StringUtils.countMatches(base, '/') > 2) {
+                base = base.replaceFirst("(.*/)(.*)", "$1");
+            }
             if (base.endsWith("/")) {
                 // This is a URL relative to the last URL segment
                 relURL = base + relURL;
