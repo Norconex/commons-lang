@@ -12,6 +12,16 @@
         New EncryptionUtil class to easily encrypt and decrypt any text using
         a security key.
       </action>
+      <action dev="essiembre" type="update">
+        Added support for the following BMP variations to ContentType:
+        application/bmp, application/x-bmp, application/x-win-bitmap,
+        image/ms-bmp, image/x-bitmap, image/x-bmp, image/x-ms-bmp,
+        image/x-win-bitmap, image/x-windows-bmp
+      </action>
+      <action dev="essiembre" type="update">
+        ContentType default file extension for image/jpeg is now .jpg to match
+        most frequent usage.
+      </action>
       <action dev="essiembre" type="fix">
         HttpURL#toAbsolute(String, String) now handles relative URLs with
         no leading slashes properly (e.g. "sample.html").
