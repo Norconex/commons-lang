@@ -623,7 +623,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the value
      */
     public final int getInt(String key, int defaultValue) {
-        String value = getString(key, "" + defaultValue);
+        String value = getString(key, Integer.toString(defaultValue));
         try {
             return Integer.parseInt(value);
         } catch (NumberFormatException e) {
@@ -689,7 +689,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the value
      */
     public final double getDouble(String key, double defaultValue) {
-        String value = getString(key, "" + defaultValue);
+        String value = getString(key, Double.toString(defaultValue));
         try {
             return Double.parseDouble(value);
         } catch (NumberFormatException e) {
@@ -755,7 +755,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the value
      */    
     public final long getLong(String key, long defaultValue) {
-        String value = getString(key, "" + defaultValue);
+        String value = getString(key, Long.toString(defaultValue));
         try {
             return Long.parseLong(value);
         } catch (NumberFormatException e) {
@@ -821,7 +821,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the value
      */    
     public final float getFloat(String key, float defaultValue) {
-        String value = getString(key, "" + defaultValue);
+        String value = getString(key, Float.toString(defaultValue));
         try {
             return Float.parseFloat(value);
         } catch (NumberFormatException e) {
@@ -1024,7 +1024,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the value
      */    
     public final boolean getBoolean(String key) {
-        return Boolean.valueOf(getString(key)).booleanValue();
+        return Boolean.parseBoolean(getString(key));
     }
     /**
      * Gets value as a boolean.
@@ -1033,8 +1033,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the value
      */        
     public final boolean getBoolean(String key, boolean defaultValue) {
-        return Boolean.valueOf(
-                getString(key, "" + defaultValue)).booleanValue();
+        return Boolean.parseBoolean(getString(key, Boolean.toString(defaultValue)));
     }
     /**
      * Gets values as a list of booleans.

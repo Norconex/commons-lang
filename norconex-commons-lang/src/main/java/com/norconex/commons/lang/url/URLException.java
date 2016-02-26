@@ -26,6 +26,7 @@ public class URLException extends RuntimeException {
      * Constructor.
      */
     public URLException() {
+        super();
     }
     /**
      * Constructor.

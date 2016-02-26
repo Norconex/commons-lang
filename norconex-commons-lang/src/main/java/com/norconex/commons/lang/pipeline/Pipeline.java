@@ -44,6 +44,7 @@ public class Pipeline<T> implements IPipelineStage<T> {
      * Constructor.
      */
     public Pipeline() {
+        super();
     }
     /**
      * Creates a new pipeline with the specified stages.

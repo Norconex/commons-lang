@@ -46,6 +46,11 @@ public class HttpURL implements Serializable {
     /** Default Secure URL HTTP Port. */
     public static final int DEFAULT_HTTPS_PORT = 443;
     
+    /** Constant for "http" protocol. */
+    public static final String PROTOCOL_HTTP = "http";
+    /** Constant for "https" protocol. */
+    public static final String PROTOCOL_HTTPS = "https";
+    
     private QueryString queryString;
     private String host;
     private int port = DEFAULT_HTTP_PORT;
@@ -110,7 +115,7 @@ public class HttpURL implements Serializable {
             host = urlwrap.getHost();
             port = urlwrap.getPort();
             if (port < 0) {
-                if (url.startsWith("https")) {
+                if (url.startsWith(PROTOCOL_HTTPS)) {
                     port = DEFAULT_HTTPS_PORT;
                 } else {
                     port = DEFAULT_HTTP_PORT;
@@ -200,7 +205,7 @@ public class HttpURL implements Serializable {
      * @return <code>true</code> if protocol is secure
      */
     public boolean isSecure() {
-        return getProtocol().equalsIgnoreCase("https");
+        return getProtocol().equalsIgnoreCase(PROTOCOL_HTTPS);
     }
 
     /**
@@ -379,7 +384,7 @@ public class HttpURL implements Serializable {
      * @since 1.8.0
      */
     public boolean isPortDefault() {
-        return "https".equalsIgnoreCase(protocol) && port == DEFAULT_HTTPS_PORT
+        return PROTOCOL_HTTPS.equalsIgnoreCase(protocol) && port == DEFAULT_HTTPS_PORT
                 || "http".equalsIgnoreCase(protocol)
                         && port == DEFAULT_HTTP_PORT;
     }
@@ -449,11 +454,12 @@ public class HttpURL implements Serializable {
      * base URL. The base URL is assumed to be a valid URL. Behavior
      * is unexpected when base URL is invalid.
      * @param baseURL URL to the reference is relative to
-     * @param relURL the relative URL portion to transform to absolute
+     * @param relativeURL the relative URL portion to transform to absolute
      * @return absolute URL
      * @since 1.8.0
      */
-    public static String toAbsolute(String baseURL, String relURL) {
+    public static String toAbsolute(String baseURL, String relativeURL) {
+        String relURL = relativeURL;
         // Relative to protocol
         if (relURL.startsWith("//")) {
             return StringUtils.substringBefore(baseURL, "//") + "//"

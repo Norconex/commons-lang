@@ -141,7 +141,7 @@ public final class URLStreamer {
             String url, Credentials creds, HttpHost proxy, 
             Credentials proxyCreds) {
         try {
-            URLConnection conn = null;
+            URLConnection conn;
             if (proxy != null) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Streaming with proxy: "
@@ -224,7 +224,7 @@ public final class URLStreamer {
         } catch (IOException e) {
             throw new URLException("Could not stream URL to string: " + url, e);
         }
-        if (LOG.isDebugEnabled()) {
+        if (LOG.isDebugEnabled() && watch != null) {
             watch.stop();
             LOG.debug("Streaming elapsed time: " + watch.toString());
         }
@@ -276,7 +276,7 @@ public final class URLStreamer {
         } catch (IOException e) {
             throw new URLException("Could not stream URL to string: " + url, e);
         }
-        if (LOG.isDebugEnabled()) {
+        if (LOG.isDebugEnabled() && watch != null) {
             watch.stop();
             LOG.debug("Streaming elapsed time: " + watch.toString());
         }
