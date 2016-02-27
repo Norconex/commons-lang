@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +44,7 @@ public class Pipeline<T> implements IPipelineStage<T> {
      * Constructor.
      */
     public Pipeline() {
+        super();
     }
     /**
      * Creates a new pipeline with the specified stages.

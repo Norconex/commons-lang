@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,63 +56,63 @@ public enum DataUnit {
 
     /** Byte. */
     B(1) {
-        public long toBytes(long a)     { return a; }
-        public long toKilobytes(long a) { return a/(KB.a/B.a); }
-        public long toMegabytes(long a) { return a/(MB.a/B.a); }
-        public long toGigabytes(long a) { return a/(GB.a/B.a); }
-        public long toTerabytes(long a) { return a/(TB.a/B.a); }
-        public long toPetabytes(long a) { return a/(PB.a/B.a); }
-        public long convert(long a, DataUnit u) { return u.toBytes(a); }
+        @Override public long toBytes(long a)     { return a; }
+        @Override public long toKilobytes(long a) { return a/(KB.a/B.a); }
+        @Override public long toMegabytes(long a) { return a/(MB.a/B.a); }
+        @Override public long toGigabytes(long a) { return a/(GB.a/B.a); }
+        @Override public long toTerabytes(long a) { return a/(TB.a/B.a); }
+        @Override public long toPetabytes(long a) { return a/(PB.a/B.a); }
+        @Override public long convert(long a, DataUnit u) { return u.toBytes(a); }
     },
     /** Kilobyte. */
     KB(1024) {
-        public long toBytes(long a)     { return finer(a, B); }
-        public long toKilobytes(long a) { return a; }
-        public long toMegabytes(long a) { return coarser(a, MB); }
-        public long toGigabytes(long a) { return coarser(a, GB); }
-        public long toTerabytes(long a) { return coarser(a, TB); }
-        public long toPetabytes(long a) { return coarser(a, PB); }
-        public long convert(long a, DataUnit u) { return u.toKilobytes(a); }
+        @Override public long toBytes(long a)     { return finer(a, B); }
+        @Override public long toKilobytes(long a) { return a; }
+        @Override public long toMegabytes(long a) { return coarser(a, MB); }
+        @Override public long toGigabytes(long a) { return coarser(a, GB); }
+        @Override public long toTerabytes(long a) { return coarser(a, TB); }
+        @Override public long toPetabytes(long a) { return coarser(a, PB); }
+        @Override public long convert(long a, DataUnit u) { return u.toKilobytes(a); }
     }, 
     /** Megabyte. */
     MB(KB.a * 1024) {
-        public long toBytes(long a)     { return finer(a, B); }
-        public long toKilobytes(long a) { return finer(a, KB); }
-        public long toMegabytes(long a) { return a; }
-        public long toGigabytes(long a) { return coarser(a, GB); }
-        public long toTerabytes(long a) { return coarser(a, TB); }
-        public long toPetabytes(long a) { return coarser(a, PB); }
-        public long convert(long a, DataUnit u) { return u.toMegabytes(a); }
+        @Override public long toBytes(long a)     { return finer(a, B); }
+        @Override public long toKilobytes(long a) { return finer(a, KB); }
+        @Override public long toMegabytes(long a) { return a; }
+        @Override public long toGigabytes(long a) { return coarser(a, GB); }
+        @Override public long toTerabytes(long a) { return coarser(a, TB); }
+        @Override public long toPetabytes(long a) { return coarser(a, PB); }
+        @Override public long convert(long a, DataUnit u) { return u.toMegabytes(a); }
     }, 
     /** Gigabyte. */
     GB(MB.a * 1024) {
-        public long toBytes(long a)     { return finer(a, B); }
-        public long toKilobytes(long a) { return finer(a, KB); }
-        public long toMegabytes(long a) { return finer(a, MB); }
-        public long toGigabytes(long a) { return a; }
-        public long toTerabytes(long a) { return coarser(a, TB); }
-        public long toPetabytes(long a) { return coarser(a, PB); }
-        public long convert(long a, DataUnit u) { return u.toGigabytes(a); }
+        @Override public long toBytes(long a)     { return finer(a, B); }
+        @Override public long toKilobytes(long a) { return finer(a, KB); }
+        @Override public long toMegabytes(long a) { return finer(a, MB); }
+        @Override public long toGigabytes(long a) { return a; }
+        @Override public long toTerabytes(long a) { return coarser(a, TB); }
+        @Override public long toPetabytes(long a) { return coarser(a, PB); }
+        @Override public long convert(long a, DataUnit u) { return u.toGigabytes(a); }
     }, 
     /** Terabyte. */
     TB(GB.a * 10244) {
-        public long toBytes(long a)     { return finer(a, B); }
-        public long toKilobytes(long a) { return finer(a, KB); }
-        public long toMegabytes(long a) { return finer(a, MB); }
-        public long toGigabytes(long a) { return finer(a, GB); }
-        public long toTerabytes(long a) { return a; }
-        public long toPetabytes(long a) { return coarser(a, PB); }
-        public long convert(long a, DataUnit u) { return u.toTerabytes(a); }
+        @Override public long toBytes(long a)     { return finer(a, B); }
+        @Override public long toKilobytes(long a) { return finer(a, KB); }
+        @Override public long toMegabytes(long a) { return finer(a, MB); }
+        @Override public long toGigabytes(long a) { return finer(a, GB); }
+        @Override public long toTerabytes(long a) { return a; }
+        @Override public long toPetabytes(long a) { return coarser(a, PB); }
+        @Override public long convert(long a, DataUnit u) { return u.toTerabytes(a); }
     }, 
     /** Petabyte. */
     PB(TB.a * 1024) {
-        public long toBytes(long a)     { return finer(a, B); }
-        public long toKilobytes(long a) { return finer(a, KB); }
-        public long toMegabytes(long a) { return finer(a, MB); }
-        public long toGigabytes(long a) { return finer(a, GB); }
-        public long toTerabytes(long a) { return finer(a, TB); }
-        public long toPetabytes(long a) { return a; }
-        public long convert(long a, DataUnit u) { return u.toPetabytes(a); }
+        @Override public long toBytes(long a)     { return finer(a, B); }
+        @Override public long toKilobytes(long a) { return finer(a, KB); }
+        @Override public long toMegabytes(long a) { return finer(a, MB); }
+        @Override public long toGigabytes(long a) { return finer(a, GB); }
+        @Override public long toTerabytes(long a) { return finer(a, TB); }
+        @Override public long toPetabytes(long a) { return a; }
+        @Override public long convert(long a, DataUnit u) { return u.toPetabytes(a); }
     };
     
     private static final long MAX = Long.MAX_VALUE;

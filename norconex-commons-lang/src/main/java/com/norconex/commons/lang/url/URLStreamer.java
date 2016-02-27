@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -141,7 +141,7 @@ public final class URLStreamer {
             String url, Credentials creds, HttpHost proxy, 
             Credentials proxyCreds) {
         try {
-            URLConnection conn = null;
+            URLConnection conn;
             if (proxy != null) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Streaming with proxy: "
@@ -152,9 +152,7 @@ public final class URLStreamer {
                 //Authenticator.
                 conn = new URL(url).openConnection(p);
                 if (proxyCreds != null) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("Streaming with proxy credentials.");
-                    }
+                    LOG.debug("Streaming with proxy credentials.");
                     conn.setRequestProperty("Proxy-Authorization", 
                             base64BasicAuth(proxyCreds.getUsername(), 
                                     proxyCreds.getPassword()));
@@ -224,7 +222,7 @@ public final class URLStreamer {
         } catch (IOException e) {
             throw new URLException("Could not stream URL to string: " + url, e);
         }
-        if (LOG.isDebugEnabled()) {
+        if (LOG.isDebugEnabled() && watch != null) {
             watch.stop();
             LOG.debug("Streaming elapsed time: " + watch.toString());
         }
@@ -276,7 +274,7 @@ public final class URLStreamer {
         } catch (IOException e) {
             throw new URLException("Could not stream URL to string: " + url, e);
         }
-        if (LOG.isDebugEnabled()) {
+        if (LOG.isDebugEnabled() && watch != null) {
             watch.stop();
             LOG.debug("Streaming elapsed time: " + watch.toString());
         }

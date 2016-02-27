@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,7 +61,7 @@ public final class ClassFinder {
      * @since 1.4.0
      */
     public static List<String> findSubTypes(Class<?> superClass) {
-        List<String> classes = new ArrayList<String>();
+        List<String> classes = new ArrayList<>();
         if (superClass == null) {
             return classes;
         }
@@ -94,7 +94,7 @@ public final class ClassFinder {
      */
     public static List<String> findSubTypes(
             List<File> files, Class<?> superClass) {
-        List<String> classes = new ArrayList<String>();
+        List<String> classes = new ArrayList<>();
         if (superClass == null || files == null) {
             return classes;
         }
@@ -131,12 +131,12 @@ public final class ClassFinder {
     public static List<String> findSubTypes(
             File file, Class<?> superClass) {
         if (superClass == null) {
-            return new ArrayList<String>();
+            return new ArrayList<>();
         }
         if (file == null || !file.exists()) {
             LOG.warn("Trying to find implementing classes from a null or "
                    + "non-existant file: " + file);
-            return new ArrayList<String>();
+            return new ArrayList<>();
         }
         if (file.isDirectory()) {
             return findSubTypesFromDirectory(
@@ -146,7 +146,7 @@ public final class ClassFinder {
             return findSubTypesFromJar(file, superClass);
         }
         LOG.warn("File not a JAR and not a directory.");
-        return new ArrayList<String>();
+        return new ArrayList<>();
     }
     /**
      * @deprecated since 1.4.0.  Replaced with 
@@ -155,6 +155,7 @@ public final class ClassFinder {
      * @param superClass the class from which to find subtypes
      * @return list of class names
      */
+    @Deprecated
     public static List<String> findImplementors(
             File file, Class<?> superClass) {
         return findSubTypes(file, superClass);
@@ -164,7 +165,7 @@ public final class ClassFinder {
     private static List<String> findSubTypesFromDirectory(
             File dir, Class<?> superClass) {
         
-        List<String> classes = new ArrayList<String>();
+        List<String> classes = new ArrayList<>();
         String dirPath = dir.getAbsolutePath();
 
         Collection<File> classFiles = FileUtils.listFiles(
@@ -187,7 +188,7 @@ public final class ClassFinder {
     private static List<String> findSubTypesFromJar(
             File jarFile, Class<?> superClass) {
         
-        List<String> classes = new ArrayList<String>();
+        List<String> classes = new ArrayList<>();
         ClassLoader loader = getClassLoader(jarFile);
         if (loader == null) {
             return classes;
@@ -195,6 +196,7 @@ public final class ClassFinder {
         JarFile jar = null;
         try {
             jar = new JarFile(jarFile); 
+            jar.close();
         } catch (IOException e) {
             LOG.error("Invalid JAR: " + jarFile, e);
             return classes;

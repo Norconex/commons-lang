@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.util.Map.Entry;
 import java.util.Properties;
 
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.velocity.app.event.IncludeEventHandler;
@@ -50,7 +49,7 @@ public class RelativeIncludeEventHandler
         // Get main template file
         String inclFile;
         if (includeResourcePath.startsWith("/")
-                || includeResourcePath.startsWith("\\")
+                || includeResourcePath.startsWith("\\") 
                 || includeResourcePath.startsWith("file://")
                 || includeResourcePath.matches("^[A-Za-z]:\\.*")) {
             inclFile = includeResourcePath;
@@ -65,9 +64,7 @@ public class RelativeIncludeEventHandler
                     FilenameUtils.getBaseName(inclFile) + ".properties");
             if (vars.exists() && vars.isFile()) {
                 Properties props = new Properties();
-                FileInputStream is = null;
-                try {
-                    is = new FileInputStream(vars);
+                try (FileInputStream is = new FileInputStream(vars)) {
                     props.load(is);
                     for (Entry<Object, Object> entry: props.entrySet()) {
                         context.put((String) entry.getKey(), entry.getValue());
@@ -75,8 +72,6 @@ public class RelativeIncludeEventHandler
                 } catch (IOException e) {
                     LOG.error("Cannot load properties for template (skipped): "
                             + vars, e);
-                } finally {
-                    IOUtils.closeQuietly(is);
                 }
             }
         }

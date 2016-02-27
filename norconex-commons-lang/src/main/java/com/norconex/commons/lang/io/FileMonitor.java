@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,20 +41,20 @@ public final class FileMonitor {
     private Map<String, FileMonitorTask> timerEntries;
 
     /**
+     * Constructor.
+     */
+    private FileMonitor() {
+        timer = new Timer(true);
+        timerEntries = new Hashtable<String, FileMonitorTask>();
+    }
+
+    /**
      * Gets the file monitor instance.
      * 
      * @return file monitor instance
      */
     public static FileMonitor getInstance() {
         return INSTANCE;
-    }
-
-    /**
-     * Constructor.
-     */
-    private FileMonitor() {
-        timer = new Timer(true);
-        timerEntries = new Hashtable<String, FileMonitorTask>();
     }
 
     /**
@@ -151,6 +151,7 @@ public final class FileMonitor {
             this.lastModified = monitoredFile.lastModified();
         }
 
+        @Override
         public void run() {
             long fileLastModified = monitoredFile.lastModified();
             if (fileLastModified != this.lastModified) {

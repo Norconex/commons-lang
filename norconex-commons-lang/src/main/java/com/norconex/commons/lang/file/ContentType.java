@@ -1,4 +1,4 @@
-/* Copyright 2010-2015 Norconex Inc.
+/* Copyright 2010-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,8 +61,7 @@ public final class ContentType implements Serializable {
 
     private static final Logger LOG = LogManager.getLogger(ContentType.class);
     
-    private static final Map<String, ContentType> REGISTRY = 
-        new HashMap<String, ContentType>();
+    private static final Map<String, ContentType> REGISTRY = new HashMap<>();
 
     private static final ResourceBundle BUNDLE_EXTENSIONS;
     static {

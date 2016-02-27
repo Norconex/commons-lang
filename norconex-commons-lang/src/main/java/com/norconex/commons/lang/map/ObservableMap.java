@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ public class ObservableMap<K,V> implements Map<K,V>, Serializable {
      */
     public ObservableMap(Map<K, V> map) {
         if (map == null) {
-            this.map = new HashMap<K, V>();
+            this.map = new HashMap<>();
         } else {
             this.map = map;
         }
@@ -121,8 +121,7 @@ public class ObservableMap<K,V> implements Map<K,V>, Serializable {
         Iterator<? extends Map.Entry<? extends K, ? extends V>> it = 
                 m.entrySet().iterator();
         while (it.hasNext()) {
-            Map.Entry<? extends K, ? extends V> entry = 
-                    (Map.Entry<? extends K, ? extends V>) it.next();
+            Map.Entry<? extends K, ? extends V> entry = it.next();
             put(entry.getKey(), entry.getValue());
         } 
     }
@@ -137,8 +136,7 @@ public class ObservableMap<K,V> implements Map<K,V>, Serializable {
         Iterator<? extends Map.Entry<? extends K, 
                 ? extends V>> it = oldMap.entrySet().iterator();
         while (it.hasNext()) {
-            Map.Entry<? extends K, ? extends V> entry = 
-                    (Map.Entry<? extends K, ? extends V>) it.next();
+            Map.Entry<? extends K, ? extends V> entry = it.next();
             mcs.fireMapChange(entry.getKey(), entry.getValue(), null);
         }
     }

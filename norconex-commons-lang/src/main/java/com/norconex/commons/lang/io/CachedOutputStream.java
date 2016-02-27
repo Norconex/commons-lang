@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -143,7 +143,7 @@ public class CachedOutputStream extends OutputStream
         if (fileOutputStream != null) {
             fileOutputStream.write(b, off, len);
         } else if (!tracker.hasEnoughAvailableMemory(
-                memOutputStream, (len - off))) {
+                memOutputStream, len - off)) {
             cacheToFile();
             fileOutputStream.write(b, off, len);
         } else {
@@ -157,7 +157,7 @@ public class CachedOutputStream extends OutputStream
             throw new IllegalStateException("Cannot get CachedInputStream on a "
                     + "closed CachedOutputStream.");
         }
-        CachedInputStream is = null;
+        CachedInputStream is;
         if (fileCache != null) {
             is = factory.newInputStream(fileCache);
         } else if (memCache != null) {

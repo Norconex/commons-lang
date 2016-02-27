@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,8 @@ public class DataUnitFormatter implements Serializable {
     private final Locale locale;
     private final int decimalPrecision;
     private final boolean fixedUnit;
+    
+    private transient int hashCode;
     
     /**
      * Creates a new DataUnit formatter with default system locale, 
@@ -111,9 +113,8 @@ public class DataUnitFormatter implements Serializable {
         // Use coarser unit if applicable to make value more human-readable
         DataUnit finalUnit = unit;
         long finalAmount = amount;
-        int ordinalShift = 0;
         if (!fixedUnit) {
-            ordinalShift = (int) (Math.log(amount) / Math.log(K));
+            int ordinalShift = (int) (Math.log(amount) / Math.log(K));
             if (ordinalShift > 0) {
                 finalUnit = DATA_UNITS[Math.min(
                         unit.ordinal() + ordinalShift, DATA_UNITS.length -1)];
@@ -170,7 +171,6 @@ public class DataUnitFormatter implements Serializable {
                 .append(decimalPrecision, castOther.decimalPrecision)
                 .append(fixedUnit, castOther.fixedUnit).isEquals();
     }
-    private transient int hashCode;
 
     @Override
     public int hashCode() {

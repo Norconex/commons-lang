@@ -1,4 +1,4 @@
-/* Copyright 2010-2015 Norconex Inc.
+/* Copyright 2010-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,11 @@ public class HttpURL implements Serializable {
     public static final int DEFAULT_HTTP_PORT = 80;
     /** Default Secure URL HTTP Port. */
     public static final int DEFAULT_HTTPS_PORT = 443;
+    
+    /** Constant for "http" protocol. */
+    public static final String PROTOCOL_HTTP = "http";
+    /** Constant for "https" protocol. */
+    public static final String PROTOCOL_HTTPS = "https";
     
     private QueryString queryString;
     private String host;
@@ -110,7 +115,7 @@ public class HttpURL implements Serializable {
             host = urlwrap.getHost();
             port = urlwrap.getPort();
             if (port < 0) {
-                if (url.startsWith("https")) {
+                if (url.startsWith(PROTOCOL_HTTPS)) {
                     port = DEFAULT_HTTPS_PORT;
                 } else {
                     port = DEFAULT_HTTP_PORT;
@@ -200,7 +205,7 @@ public class HttpURL implements Serializable {
      * @return <code>true</code> if protocol is secure
      */
     public boolean isSecure() {
-        return getProtocol().equalsIgnoreCase("https");
+        return getProtocol().equalsIgnoreCase(PROTOCOL_HTTPS);
     }
 
     /**
@@ -336,7 +341,7 @@ public class HttpURL implements Serializable {
         if (StringUtils.isBlank(url)) {
             return null;
         }
-        return url.replaceFirst("(.*?://.*?)([/?#].*)", "$1");
+        return StringUtils.replacePattern(url, "(.*?://.*?)([/?#].*)", "$1");
     }
     
     /**
@@ -379,7 +384,7 @@ public class HttpURL implements Serializable {
      * @since 1.8.0
      */
     public boolean isPortDefault() {
-        return "https".equalsIgnoreCase(protocol) && port == DEFAULT_HTTPS_PORT
+        return PROTOCOL_HTTPS.equalsIgnoreCase(protocol) && port == DEFAULT_HTTPS_PORT
                 || "http".equalsIgnoreCase(protocol)
                         && port == DEFAULT_HTTP_PORT;
     }
@@ -449,11 +454,12 @@ public class HttpURL implements Serializable {
      * base URL. The base URL is assumed to be a valid URL. Behavior
      * is unexpected when base URL is invalid.
      * @param baseURL URL to the reference is relative to
-     * @param relURL the relative URL portion to transform to absolute
+     * @param relativeURL the relative URL portion to transform to absolute
      * @return absolute URL
      * @since 1.8.0
      */
-    public static String toAbsolute(String baseURL, String relURL) {
+    public static String toAbsolute(String baseURL, String relativeURL) {
+        String relURL = relativeURL;
         // Relative to protocol
         if (relURL.startsWith("//")) {
             return StringUtils.substringBefore(baseURL, "//") + "//"
@@ -472,7 +478,9 @@ public class HttpURL implements Serializable {
         // Relative to last directory/segment
         if (!relURL.contains("://")) {
             String base = baseURL.replaceFirst("(.*?)([\\?\\#])(.*)", "$1");
-            base = base.replaceFirst("(.*/)(.*)", "$1");
+            if (StringUtils.countMatches(base, '/') > 2) {
+                base = base.replaceFirst("(.*/)(.*)", "$1");
+            }
             if (base.endsWith("/")) {
                 // This is a URL relative to the last URL segment
                 relURL = base + relURL;

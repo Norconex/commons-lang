@@ -78,5 +78,11 @@ public class HttpURLTest {
         t = "http://www.sample.com/xyz.html";
         assertEquals(t, HttpURL.toAbsolute(absURL, s));
     }
-    
+    //Test for issue https://github.com/Norconex/collector-http/issues/225
+    @Test
+    public void testFromDomainNoTrailSlashToRelativeNoLeadSlash() {
+        s = "http://www.sample.com";
+        t = "http://www.sample.com/xyz.html";
+        assertEquals(t, HttpURL.toAbsolute(s, "xyz.html"));
+    }
 }

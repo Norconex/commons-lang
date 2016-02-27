@@ -1,4 +1,4 @@
-/* Copyright 2010-2015 Norconex Inc.
+/* Copyright 2010-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,8 +69,8 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
         // which can cause issues when you want to use the xml writer on 
         // a stream that already has XML written to it (could cause 
         // "multiple roots" error).
-        if (factory.getClass().getName().equals(
-                "com.ctc.wstx.stax.WstxOutputFactory")) {
+        if ("com.ctc.wstx.stax.WstxOutputFactory".equals(
+                factory.getClass().getName())) {
             try {
                 Object config = factory.getClass().getMethod(
                         "getConfig").invoke(factory);

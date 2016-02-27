@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -374,7 +374,7 @@ public class Properties extends ObservableMap<String, List<String>>
         java.util.Properties p = new java.util.Properties();
         p.load(reader);
         for (String key : p.stringPropertyNames()) {
-            List<String> values = new ArrayList<String>();
+            List<String> values = new ArrayList<>();
             String value = p.getProperty(key);
             if (value != null) {
                 values.addAll(Arrays.asList(
@@ -502,7 +502,7 @@ public class Properties extends ObservableMap<String, List<String>>
             throws IOException {
         java.util.Properties p = new java.util.Properties();
         p.loadFromXML(in);
-        List<String> values = new ArrayList<String>();
+        List<String> values = new ArrayList<>();
         for (String key : p.stringPropertyNames()) {
             String value = p.getProperty(key);
             if (value != null) {
@@ -560,9 +560,9 @@ public class Properties extends ObservableMap<String, List<String>>
     public final List<String> getStrings(String key) {
         List<String> values = get(key);
         if (values == null) {
-            return new ArrayList<String>();
+            return new ArrayList<>();
         }
-        return new ArrayList<String>(values);
+        return new ArrayList<>(values);
     }
     /**
      * Sets one or multiple string values replacing existing ones.  
@@ -571,7 +571,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @param values the values to set
      */
     public final void setString(String key, String... values) {
-        List<String> list = new ArrayList<String>(values.length);
+        List<String> list = new ArrayList<>(values.length);
         for (String value : values) {
             if (value == null) {
                 list.add("");
@@ -590,7 +590,7 @@ public class Properties extends ObservableMap<String, List<String>>
     public final void addString(String key, String... values) {
         List<String> list = get(key);
         if (list == null) {
-            list = new ArrayList<String>(values.length);
+            list = new ArrayList<>(values.length);
         }
         for (String value : values) {
             if (value == null) {
@@ -623,7 +623,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the value
      */
     public final int getInt(String key, int defaultValue) {
-        String value = getString(key, "" + defaultValue);
+        String value = getString(key, Integer.toString(defaultValue));
         try {
             return Integer.parseInt(value);
         } catch (NumberFormatException e) {
@@ -640,7 +640,7 @@ public class Properties extends ObservableMap<String, List<String>>
         List<String> values = getStrings(key);
         String errVal = null;
         try {
-            List<Integer> ints = new ArrayList<Integer>(values.size());
+            List<Integer> ints = new ArrayList<>(values.size());
             for (String value : values) {
                 errVal = value;
                 ints.add(Integer.parseInt(value));
@@ -689,7 +689,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the value
      */
     public final double getDouble(String key, double defaultValue) {
-        String value = getString(key, "" + defaultValue);
+        String value = getString(key, Double.toString(defaultValue));
         try {
             return Double.parseDouble(value);
         } catch (NumberFormatException e) {
@@ -706,7 +706,7 @@ public class Properties extends ObservableMap<String, List<String>>
         List<String> values = getStrings(key);
         String errVal = null;
         try {
-            List<Double> list = new ArrayList<Double>(values.size());
+            List<Double> list = new ArrayList<>(values.size());
             for (String value : values) {
                 errVal = value;
                 list.add(Double.parseDouble(value));
@@ -755,7 +755,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the value
      */    
     public final long getLong(String key, long defaultValue) {
-        String value = getString(key, "" + defaultValue);
+        String value = getString(key, Long.toString(defaultValue));
         try {
             return Long.parseLong(value);
         } catch (NumberFormatException e) {
@@ -772,7 +772,7 @@ public class Properties extends ObservableMap<String, List<String>>
         List<String> values = getStrings(key);
         String errVal = null;
         try {
-            List<Long> list = new ArrayList<Long>(values.size());
+            List<Long> list = new ArrayList<>(values.size());
             for (String value : values) {
                 errVal = value;
                 list.add(Long.parseLong(value));
@@ -821,7 +821,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the value
      */    
     public final float getFloat(String key, float defaultValue) {
-        String value = getString(key, "" + defaultValue);
+        String value = getString(key, Float.toString(defaultValue));
         try {
             return Float.parseFloat(value);
         } catch (NumberFormatException e) {
@@ -838,7 +838,7 @@ public class Properties extends ObservableMap<String, List<String>>
         List<String> values = getStrings(key);
         String errVal = null;
         try {
-            List<Float> list = new ArrayList<Float>(values.size());
+            List<Float> list = new ArrayList<>(values.size());
             for (String value : values) {
                 errVal = value;
                 list.add(Float.parseFloat(value));
@@ -906,7 +906,7 @@ public class Properties extends ObservableMap<String, List<String>>
         List<String> values = getStrings(key);
         String errVal = null;
         try {
-            List<BigDecimal> list = new ArrayList<BigDecimal>(values.size());
+            List<BigDecimal> list = new ArrayList<>(values.size());
             for (String value : values) {
                 errVal = value;
                 list.add(new BigDecimal(value));
@@ -974,7 +974,7 @@ public class Properties extends ObservableMap<String, List<String>>
         List<String> values = getStrings(key);
         String errVal = null;
         try {
-            List<Date> list = new ArrayList<Date>(values.size());
+            List<Date> list = new ArrayList<>(values.size());
             for (String value : values) {
                 errVal = value;
                 list.add(new Date(Long.parseLong(value)));
@@ -1024,7 +1024,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the value
      */    
     public final boolean getBoolean(String key) {
-        return Boolean.valueOf(getString(key)).booleanValue();
+        return Boolean.parseBoolean(getString(key));
     }
     /**
      * Gets value as a boolean.
@@ -1033,8 +1033,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the value
      */        
     public final boolean getBoolean(String key, boolean defaultValue) {
-        return Boolean.valueOf(
-                getString(key, "" + defaultValue)).booleanValue();
+        return Boolean.parseBoolean(getString(key, Boolean.toString(defaultValue)));
     }
     /**
      * Gets values as a list of booleans.
@@ -1043,7 +1042,7 @@ public class Properties extends ObservableMap<String, List<String>>
      */
     public final List<Boolean> getBooleans(String key) {
         List<String> values = getStrings(key);
-        List<Boolean> list = new ArrayList<Boolean>(values.size());
+        List<Boolean> list = new ArrayList<>(values.size());
         for (String value : values) {
             list.add(Boolean.parseBoolean(value));
         }
@@ -1102,7 +1101,7 @@ public class Properties extends ObservableMap<String, List<String>>
         List<String> values = getStrings(key);
         String errVal = null;
         try {
-            List<Locale> list = new ArrayList<Locale>(values.size());
+            List<Locale> list = new ArrayList<>(values.size());
             for (String value : values) {
                 errVal = value;
                 list.add(LocaleUtils.toLocale(value));
@@ -1164,7 +1163,7 @@ public class Properties extends ObservableMap<String, List<String>>
      */
     public final List<File> getFiles(String key) {
         List<String> values = getStrings(key);
-        List<File> list = new ArrayList<File>(values.size());
+        List<File> list = new ArrayList<>(values.size());
         for (String value : values) {
             list.add(new File(value));
         }
@@ -1235,7 +1234,7 @@ public class Properties extends ObservableMap<String, List<String>>
      */
     public final List<Class<?>> getClasses(String key) {
         List<String> values = getStrings(key);
-        List<Class<?>> list = new ArrayList<Class<?>>(values.size());
+        List<Class<?>> list = new ArrayList<>(values.size());
         for (String value : values) {
             list.add(getClass(value));
         }
@@ -1264,7 +1263,7 @@ public class Properties extends ObservableMap<String, List<String>>
         if (!caseInsensitiveKeys) {
             return super.get(key);
         }
-        List<String> values = new ArrayList<String>();
+        List<String> values = new ArrayList<>();
         for (String k : keySet()) {
             if (StringUtils.equalsIgnoreCase(k, Objects.toString(key, null))) {
                 values.addAll(super.get(k));
@@ -1281,7 +1280,7 @@ public class Properties extends ObservableMap<String, List<String>>
         } 
         
         List<String> oldValues = null;    
-        List<String> keysToRemove = new ArrayList<String>();
+        List<String> keysToRemove = new ArrayList<>();
         for (Iterator<String> it = keySet().iterator(); it.hasNext();) {
             String k = it.next();
             if (StringUtils.equalsIgnoreCase(

@@ -1,4 +1,4 @@
-/* Copyright 2010-2015 Norconex Inc.
+/* Copyright 2010-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -177,8 +177,8 @@ public final class ConfigurationUtil {
     public static <T extends Object> T newInstance(
             HierarchicalConfiguration node, T defaultObject,
             boolean supportXMLConfigurable) {
-        T obj = null;
-        String clazz = null;
+        T obj;
+        String clazz;
         if (node == null) {
             return defaultObject;
         }
@@ -200,7 +200,7 @@ public final class ConfigurationUtil {
         if (obj == null) {
             return defaultObject;
         }
-        if (obj instanceof IXMLConfigurable) {
+        if (obj instanceof IXMLConfigurable && supportXMLConfigurable) {
             try {
                 ((IXMLConfigurable) obj).loadFromXML(newReader(node));
             } catch (IOException e) {
