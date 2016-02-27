@@ -1,4 +1,4 @@
-commons
+Norconex commons-lang
 =======
 
 Generic library shared between several projects.
