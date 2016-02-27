@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -152,9 +152,7 @@ public final class URLStreamer {
                 //Authenticator.
                 conn = new URL(url).openConnection(p);
                 if (proxyCreds != null) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("Streaming with proxy credentials.");
-                    }
+                    LOG.debug("Streaming with proxy credentials.");
                     conn.setRequestProperty("Proxy-Authorization", 
                             base64BasicAuth(proxyCreds.getUsername(), 
                                     proxyCreds.getPassword()));

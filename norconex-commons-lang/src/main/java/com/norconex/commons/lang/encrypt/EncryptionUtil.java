@@ -1,4 +1,4 @@
-/* Copyright 2015 Norconex Inc.
+/* Copyright 2015-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,6 +56,10 @@ import com.norconex.commons.lang.encrypt.EncryptionKey.Source;
  */
 public class EncryptionUtil {
     
+    private EncryptionUtil() {
+        super();
+    }
+
     public static void main(String[] args) {
         if (args.length != 4) {
             printUsage();
@@ -66,13 +70,13 @@ public class EncryptionUtil {
         String textArg = args[3];
         
         Source type = null;
-        if (typeArg.equalsIgnoreCase("-k")) {
+        if ("-k".equalsIgnoreCase(typeArg)) {
             type = Source.KEY;
-        } else if (typeArg.equalsIgnoreCase("-f")) {
+        } else if ("-f".equalsIgnoreCase(typeArg)) {
             type = Source.FILE;
-        } else if (typeArg.equalsIgnoreCase("-e")) {
+        } else if ("-e".equalsIgnoreCase(typeArg)) {
             type = Source.ENVIRONMENT;
-        } else if (typeArg.equalsIgnoreCase("-p")) {
+        } else if ("-p".equalsIgnoreCase(typeArg)) {
             type = Source.PROPERTY;
         } else {
             System.err.println("Unsupported type of key: " + type);
@@ -80,9 +84,9 @@ public class EncryptionUtil {
         }
         
         EncryptionKey key = new EncryptionKey(keyArg, type);
-        if (cmdArg.equalsIgnoreCase("encrypt")) {
+        if ("encrypt".equalsIgnoreCase(cmdArg)) {
             System.out.println(encrypt(textArg, key));
-        } else if (cmdArg.equalsIgnoreCase("decrypt")) {
+        } else if ("decrypt".equalsIgnoreCase(cmdArg)) {
             System.out.println(decrypt(textArg, key));
         } else {
             System.err.println("Unsupported command: " + cmdArg);

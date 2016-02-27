@@ -1,4 +1,4 @@
-/* Copyright 2015 Norconex Inc.
+/* Copyright 2015-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -100,15 +100,13 @@ public class EncryptionKey {
     }
     
     private String fromEnv() {
-        String key = System.getenv(value);
         //TODO allow a flag to optionally throw an exception when null?
-        return key;
+        return System.getenv(value);
     }
     
     private String fromProperty() {
-        String key = System.getProperty(value);
         //TODO allow a flag to optionally throw an exception when null?
-        return key;
+        return System.getProperty(value);
     }
 
     private String fromFile() {
@@ -119,10 +117,9 @@ public class EncryptionKey {
                     + file.getAbsolutePath());
         }
         try {
-            String key = new String(Files.readAllBytes(
-                    Paths.get(value)), StandardCharsets.UTF_8);
             //TODO allow a flag to optionally throw an exception when null?
-            return key;
+            return new String(Files.readAllBytes(
+                    Paths.get(value)), StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new EncryptionException(
                     "Could not read key file.", e);

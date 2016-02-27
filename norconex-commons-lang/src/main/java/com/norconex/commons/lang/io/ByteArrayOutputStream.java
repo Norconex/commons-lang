@@ -1,4 +1,4 @@
-/* Copyright 2015 Norconex Inc.
+/* Copyright 2015-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,7 +53,7 @@ public class ByteArrayOutputStream extends OutputStream {
     public static final int DEFAULT_INITIAL_CAPACITY = 1024;
     
     /** The list of buffers, which grows and never reduces. */
-    private final List<byte[]> buffers = new ArrayList<byte[]>();
+    private final List<byte[]> buffers = new ArrayList<>();
 
     /** The index of the current buffer. */
     private int currentBufferIndex;
@@ -149,7 +149,7 @@ public class ByteArrayOutputStream extends OutputStream {
         while (sourceBytesLeftToRead > 0) {
             byte[] sliceBuffer = buffers.get(sourceOffset / bufferCapacity);
             int sliceOffset = sourceOffset % bufferCapacity;
-            int lengthToRead = 0;
+            int lengthToRead;
             if (sourceBytesLeftToRead > bufferCapacity - sliceOffset) {
                 lengthToRead = bufferCapacity - sliceOffset;
             } else {
@@ -227,7 +227,7 @@ public class ByteArrayOutputStream extends OutputStream {
     public synchronized int write(InputStream in) throws IOException {
         byte[] buffer = new byte[DEFAULT_INITIAL_CAPACITY];
         int readCount = 0;
-        int length = 0;
+        int length;
         while ((length = in.read(buffer)) != -1) {
             readCount += length;
             write(buffer, 0, length);
@@ -329,8 +329,7 @@ public class ByteArrayOutputStream extends OutputStream {
         if (remaining == 0) {
             return new ClosedInputStream();
         }
-        List<ByteArrayInputStream> list = 
-                new ArrayList<ByteArrayInputStream>(buffers.size());
+        List<ByteArrayInputStream> list = new ArrayList<>(buffers.size());
         for (byte[] buf : buffers) {
             int c = Math.min(buf.length, remaining);
             list.add(new ByteArrayInputStream(buf, 0, c));
@@ -354,7 +353,7 @@ public class ByteArrayOutputStream extends OutputStream {
         if (remaining == 0) {
             return ArrayUtils.EMPTY_BYTE_ARRAY; 
         }
-        byte newbuf[] = new byte[remaining];
+        byte[] newbuf = new byte[remaining];
         int pos = 0;
         for (byte[] buf : buffers) {
             int c = Math.min(buf.length, remaining);

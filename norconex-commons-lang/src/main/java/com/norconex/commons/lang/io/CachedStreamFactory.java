@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -154,7 +154,7 @@ public class CachedStreamFactory {
         public boolean hasEnoughAvailableMemory(
                 ByteArrayOutputStream memOutputStream,
                 int bytesToAdd) {
-            int kbRead = (int) (memOutputStream.size() / CHECK_CHUNK_SIZE);
+            int kbRead = memOutputStream.size() / CHECK_CHUNK_SIZE;
             if (kbRead != kbReadSoFar) {
                 kbReadSoFar = kbRead;
                 poolRemaining = getPoolRemainingMemory();

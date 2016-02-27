@@ -1,4 +1,4 @@
-/* Copyright 2010-2015 Norconex Inc.
+/* Copyright 2010-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -382,7 +382,7 @@ public class URLNormalizer implements Serializable {
             //     prefix with "/" in the input buffer; otherwise,
             else if (startsWith(in, "/./")) {
                 replaceStart(in, "/./", "/");
-            } else if (equals(in, "/.")) {
+            } else if (equalStrings(in, "/.")) {
                 replaceStart(in, "/.", "/");
             }
             
@@ -394,16 +394,16 @@ public class URLNormalizer implements Serializable {
             else if (startsWith(in, "/../")) {
                 replaceStart(in, "/../", "/");
                 removeLastSegment(out);
-            } else if (equals(in, "/..")) {
+            } else if (equalStrings(in, "/..")) {
                 replaceStart(in, "/..", "/");
                 removeLastSegment(out);
             }
             
             // D.  if the input buffer consists only of "." or "..", then remove
             //      that from the input buffer; otherwise,
-            else if (equals(in, "..")) {
+            else if (equalStrings(in, "..")) {
                 deleteStart(in, "..");
-            } else if (equals(in, ".")) {
+            } else if (equalStrings(in, ".")) {
                 deleteStart(in, ".");
             }
             
@@ -428,7 +428,7 @@ public class URLNormalizer implements Serializable {
         url = StringUtils.replaceOnce(url, path, out.toString());
         return this;
     }
-    private static boolean equals(StringBuilder b, String str) {
+    private static boolean equalStrings(StringBuilder b, String str) {
         return b.length() == str.length() && b.indexOf(str) == 0;
     }
     private static boolean startsWith(StringBuilder b, String str) {

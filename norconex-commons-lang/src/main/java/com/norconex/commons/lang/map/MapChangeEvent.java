@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,8 @@ public class MapChangeEvent<K, V> implements Serializable {
     private final K key;
     private final V oldValue;
     private final V newValue;
+
+    private transient int hashCode;
 
     /**
      * Creates a new event.
@@ -102,8 +104,6 @@ public class MapChangeEvent<K, V> implements Serializable {
                 .append(oldValue, castOther.oldValue)
                 .append(newValue, castOther.newValue).isEquals();
     }
-
-    private transient int hashCode;
 
     @Override
     public int hashCode() {

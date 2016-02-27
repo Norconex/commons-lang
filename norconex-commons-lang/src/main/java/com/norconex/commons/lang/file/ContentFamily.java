@@ -1,4 +1,4 @@
-/* Copyright 2014-2015 Norconex Inc.
+/* Copyright 2014-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.norconex.commons.lang.file;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
@@ -116,9 +117,10 @@ public final class ContentFamily {
             familyId = BUNDLE_MAPPINGS.getString(contentType);
         }
         if (familyId == null) {
-            for (String partialContentType : WILD_MAPPINGS.keySet()) {
+            for (Entry<String, String> entry : WILD_MAPPINGS.entrySet()) {
+                String partialContentType = entry.getKey();
                 if (contentType.startsWith(partialContentType)) {
-                    familyId = WILD_MAPPINGS.get(partialContentType);
+                    familyId = entry.getValue();
                     break;
                 }
             }
