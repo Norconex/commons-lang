@@ -1019,7 +1019,10 @@ public class Properties extends ObservableMap<String, List<String>>
 
     //--- Boolean --------------------------------------------------------------
     /**
-     * Gets value as a boolean.
+     * Gets value as a boolean. The underlying string value matching 
+     * the key must exist and equal "true" (ignoring case) to return 
+     * <code>true</code>.  Any other value (including <code>null</code>) 
+     * will return <code>false</code>.
      * @param key property key
      * @return the value
      */    
@@ -1027,7 +1030,11 @@ public class Properties extends ObservableMap<String, List<String>>
         return Boolean.parseBoolean(getString(key));
     }
     /**
-     * Gets value as a boolean.
+     * Gets value as a boolean. The underlying string value matching 
+     * the key must exist and equal "true" (ignoring case) to return 
+     * <code>true</code>.  Any other value (including <code>null</code>) 
+     * will return <code>false</code>.  If there are no entries for the given
+     * key, the default value is returned instead.
      * @param key property key
      * @param defaultValue default value to return when original value is null.
      * @return the value
