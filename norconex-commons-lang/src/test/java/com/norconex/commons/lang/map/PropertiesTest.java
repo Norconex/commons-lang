@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,11 @@ import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
-import org.apache.commons.collections.ListUtils;
 import org.junit.Test;
 
 public class PropertiesTest {
@@ -34,8 +36,8 @@ public class PropertiesTest {
         properties.addString(key, value);
         String stored = properties.storeToString("");
         
-        // The default multi-value separator is ^^^. 
-        // It should NOT be applied when there is a single ^.
+        // The default multi-value separator should NOT be applied 
+        // when there is a single ^.
         properties = new Properties();
         properties.loadFromString(stored);
         List<String> values = properties.getStrings(key);
@@ -55,7 +57,7 @@ public class PropertiesTest {
     public void testRemoveCaseInsensitive() throws Exception {
         Properties properties = new Properties(true);
         List<String> list = asList("a", "b", "c");
-        properties.put("key".toUpperCase(), list);
+        properties.put("KEY", list);
         assertEquals(list, properties.remove("key"));
     }
     
@@ -66,8 +68,7 @@ public class PropertiesTest {
         List<String> list2 = asList("d", "e", "f");
         properties.put("Key", list1);
         properties.put("KEy", list2);
-        assertEquals(ListUtils.sum(list1, list2), 
-                properties.remove("key"));
+        assertEquals(list2, properties.remove("key"));
     }
     
     @Test
@@ -82,4 +83,38 @@ public class PropertiesTest {
         assertNull(properties.remove("key"));
     }
 
+    @Test
+    public void testAddDifferentCharacterCases() throws Exception {
+        Properties properties = new Properties(true);
+        properties.addString("KEY", "value1");
+        properties.addString("key", "value2");
+        
+        assertEquals(1, properties.keySet().size());
+        assertEquals(2, properties.get("kEy").size());
+    }
+    
+    @Test
+    public void testPutAll() throws Exception {
+        Map<String, List<String>> m = new TreeMap<>();
+        m.put("KEY", Arrays.asList("1", "2"));
+        m.put("key", Arrays.asList("3", "4"));
+
+        // Case insensitive
+        Properties props1 = new Properties(true);
+        props1.putAll(m);
+        
+        assertEquals(1, props1.keySet().size());
+        assertEquals(4, props1.get("kEy").size());
+        assertEquals(Arrays.asList("1", "2", "3", "4"), props1.get("kEy"));
+
+    
+        // Case sensitive
+        Properties props2 = new Properties(false);
+        props2.putAll(m);
+        
+        assertEquals(2, props2.keySet().size());
+        assertEquals(null, props2.get("kEy"));
+        assertEquals(Arrays.asList("1", "2"), props2.get("KEY"));
+    
+    }
 }

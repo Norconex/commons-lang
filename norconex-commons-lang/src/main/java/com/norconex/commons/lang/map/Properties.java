@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -71,6 +70,13 @@ import org.apache.log4j.Logger;
 public class Properties extends ObservableMap<String, List<String>>
         implements Serializable {
 
+    //TODO remove support for case sensitivity and provide a utility
+    //class that does it instead on any string-key maps? 
+    // OR, store it in a case sensitive way instead of keeping
+    // multiple keys of different cases around. Could provide
+    // options to put everyting lower, upper, or rely on first key
+    // entered (to know which case-version to use).
+    
     private static final long serialVersionUID = -7215126924574341L;
     private static final Logger LOG = LogManager.getLogger(Properties.class);
 
@@ -566,39 +572,36 @@ public class Properties extends ObservableMap<String, List<String>>
     }
     /**
      * Sets one or multiple string values replacing existing ones.  
-     * Setting a string with a <code>null</code> value will set a blank string.
+     * Setting a single <code>null</code> value or an empty string array is 
+     * the same as calling {@link #remove(Object)} with the same key. 
+     * When setting multiple values, <code>null</code> values are converted
+     * to blank strings.
      * @param key the key of the value to set
      * @param values the values to set
      */
     public final void setString(String key, String... values) {
-        List<String> list = new ArrayList<>(values.length);
-        for (String value : values) {
-            if (value == null) {
-                list.add("");
-            } else {
-                list.add(value);
-            }
+        if (ArrayUtils.isEmpty(values)) {
+            remove(key);
         }
-        put(key, list);
+        put(key, new ArrayList<>(Arrays.asList(values)));
     }
     /**
      * Adds one or multiple string values.  
-     * Adding a string with a <code>null</code> value will set a blank string.
+     * Adding a single <code>null</code> value has no effect. 
+     * When adding multiple values, <code>null</code> values are converted
+     * to blank strings.
      * @param key the key of the value to set
      * @param values the values to set
      */
     public final void addString(String key, String... values) {
+        if (ArrayUtils.isEmpty(values)) {
+            return;
+        }
         List<String> list = get(key);
         if (list == null) {
-            list = new ArrayList<>(values.length);
+            list = new ArrayList<>();
         }
-        for (String value : values) {
-            if (value == null) {
-                list.add("");
-            } else {
-                list.add(value);
-            }
-        }
+        list.addAll(Arrays.asList(values));
         put(key, list);
     }
 
@@ -1019,7 +1022,10 @@ public class Properties extends ObservableMap<String, List<String>>
 
     //--- Boolean --------------------------------------------------------------
     /**
-     * Gets value as a boolean.
+     * Gets value as a boolean. The underlying string value matching 
+     * the key must exist and equal "true" (ignoring case) to return 
+     * <code>true</code>.  Any other value (including <code>null</code>) 
+     * will return <code>false</code>.
      * @param key property key
      * @return the value
      */    
@@ -1027,7 +1033,11 @@ public class Properties extends ObservableMap<String, List<String>>
         return Boolean.parseBoolean(getString(key));
     }
     /**
-     * Gets value as a boolean.
+     * Gets value as a boolean. The underlying string value matching 
+     * the key must exist and equal "true" (ignoring case) to return 
+     * <code>true</code>.  Any other value (including <code>null</code>) 
+     * will return <code>false</code>.  If there are no entries for the given
+     * key, the default value is returned instead.
      * @param key property key
      * @param defaultValue default value to return when original value is null.
      * @return the value
@@ -1260,47 +1270,77 @@ public class Properties extends ObservableMap<String, List<String>>
     //--- Other ----------------------------------------------------------------
     @Override
     public final List<String> get(Object key) {
-        if (!caseInsensitiveKeys) {
-            return super.get(key);
-        }
-        List<String> values = new ArrayList<>();
-        for (String k : keySet()) {
-            if (StringUtils.equalsIgnoreCase(k, Objects.toString(key, null))) {
-                values.addAll(super.get(k));
-            }
-        }
-        return values;
+        return super.get(caseResolvedKey(key));
     }
 
     @Override
     public final List<String> remove(Object key) {
-        
-        if (!caseInsensitiveKeys) {
-            return super.remove(key);
-        } 
-        
-        List<String> oldValues = null;    
-        List<String> keysToRemove = new ArrayList<>();
-        for (Iterator<String> it = keySet().iterator(); it.hasNext();) {
-            String k = it.next();
-            if (StringUtils.equalsIgnoreCase(
-                    k, Objects.toString(key, null))) {
-                keysToRemove.add(k);
+        return super.remove(caseResolvedKey(key));
+    }
+
+    /* 
+     * Puts the list of values to the given key. Supplying a <code>null</code> 
+     * list has the same effect as calling {@link #remove(Object)} with 
+     * the same key.
+     */
+    @Override
+    public List<String> put(String key, List<String> values) {
+        if (values == null) {
+            return remove(key);
+        }
+        List<String> nullSafeValues = new ArrayList<>(values.size());
+        for (String value : nullSafeValues) {
+            if (value == null) {
+                nullSafeValues.add(StringUtils.EMPTY);
+            } else {
+                nullSafeValues.add(value);
             }
         }
-        for (String k : keysToRemove) {
-            List<String> previous = super.remove(k);
-            if (previous != null) {
-                if (oldValues == null) {
-                    oldValues = new ArrayList<>();
-                }
-                oldValues.addAll(previous);
-            }
-        }
-        return oldValues;
+        return super.put(caseResolvedKey(key), values);
     }
     
+    /* 
+     * When case insensitive, values of equal keys are merged into the first
+     * key encountered.
+     */
+    @Override
+    public void putAll(Map<? extends String, ? extends List<String>> m) {
+        if (!caseInsensitiveKeys) {
+            super.putAll(m);
+            return;
+        }
+        
+        if (m == null) {
+            return;
+        }
+        for (Entry<? extends String, ? extends List<String>> entry : 
+            m.entrySet()) {
+            String key = entry.getKey();
+            List<String> values = entry.getValue();
+            if (values != null) {
+                addString(key, values.toArray(ArrayUtils.EMPTY_STRING_ARRAY));
+            }
+        }
+    }
+
     //--- Privates -------------------------------------------------------------
+    // If a key already exists under a different case, return it, else
+    // return the one passed as argument
+    private String caseResolvedKey(Object key) {
+        String resolvedKey = Objects.toString(key, null);
+        if (!isCaseInsensitiveKeys()) {
+            return resolvedKey;
+        }
+        for (String existingKey : super.keySet()) {
+            if (StringUtils.equalsIgnoreCase(existingKey, resolvedKey)) {
+                resolvedKey = existingKey;
+                break;
+            }
+        }
+        return resolvedKey;
+    }
+    
+    
     private String[] classesToStringArray(Class<?>... values) {
         if (values == null) {
             return null;
