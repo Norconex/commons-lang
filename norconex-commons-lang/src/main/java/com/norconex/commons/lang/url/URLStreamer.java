@@ -25,6 +25,7 @@ import javax.xml.bind.DatatypeConverter;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.AutoCloseInputStream;
+import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -202,7 +203,7 @@ public final class URLStreamer {
     }
 
     /**
-     * Streams URL content to a String.
+     * Streams URL content to a String using UTF-8 character encoding.
      * @param url the URL to stream
      * @param creds credentials for a protected URL
      * @param proxy proxy to use to stream the URL
@@ -210,6 +211,20 @@ public final class URLStreamer {
      */
     public static String streamToString(
             String url, Credentials creds, HttpHost proxy) {
+        return streamToString(url, creds, proxy, CharEncoding.UTF_8);
+    }
+    
+    /**
+     * Streams URL content to a String.
+     * @param url the URL to stream
+     * @param creds credentials for a protected URL
+     * @param proxy proxy to use to stream the URL
+     * @param charEncoding character encoding
+     * @return a URL content as a String
+     */
+    public static String streamToString(
+            String url, Credentials creds, HttpHost proxy, 
+            String charEncoding) {
         StopWatch watch = null;
         if (LOG.isDebugEnabled()) {
             watch = new StopWatch();
@@ -218,7 +233,7 @@ public final class URLStreamer {
         }
         String out;
         try {
-            out = IOUtils.toString(stream(url, creds, proxy));
+            out = IOUtils.toString(stream(url, creds, proxy), charEncoding);
         } catch (IOException e) {
             throw new URLException("Could not stream URL to string: " + url, e);
         }
@@ -252,7 +267,7 @@ public final class URLStreamer {
     }
 
     /**
-     * Streams URL content to a String.
+     * Streams URL content to a String using UTF-8 character encoding.
      * @param url the URL to stream
      * @param creds credentials for a protected URL
      * @param proxy proxy to use to stream the URL
@@ -262,6 +277,22 @@ public final class URLStreamer {
     public static String streamToString(
             String url, Credentials creds, HttpHost proxy, 
             Credentials proxyCreds) {
+        return streamToString(
+                url, creds, proxy, proxyCreds, CharEncoding.UTF_8);
+    }
+    
+    /**
+     * Streams URL content to a String.
+     * @param url the URL to stream
+     * @param creds credentials for a protected URL
+     * @param proxy proxy to use to stream the URL
+     * @param proxyCreds credentials to access the proxy
+     * @param charEncoding character encoding
+     * @return a URL content as a String
+     */
+    public static String streamToString(
+            String url, Credentials creds, HttpHost proxy, 
+            Credentials proxyCreds, String charEncoding) {
         StopWatch watch = null;
         if (LOG.isDebugEnabled()) {
             watch = new StopWatch();
@@ -270,7 +301,8 @@ public final class URLStreamer {
         }
         String out;
         try {
-            out = IOUtils.toString(stream(url, creds, proxy, proxyCreds));
+            out = IOUtils.toString(
+                    stream(url, creds, proxy, proxyCreds), charEncoding);
         } catch (IOException e) {
             throw new URLException("Could not stream URL to string: " + url, e);
         }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
-   Copyright 2010-2014 Norconex Inc.
+   Copyright 2010-2016 Norconex Inc.
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@
           <span class="color-highlight">Norconex</span> Commons Lang
           ]]>
         </name>
-        <href>http://www.norconex.com/product/commons-lang/index.html</href>
+        <href>https://www.norconex.com/product/commons-lang/index.html</href>
       </brand>
       <slogan><![CDATA[
           Open-Source Generic Java Library
@@ -50,9 +50,9 @@
         <column>Norconex Products</column>
       </bottomNav>
       <bottomDescription><![CDATA[
-          <a href="http://www.norconex.com"><img src="./images/norconex_logo.png"></a><br />
+          <a href="https://www.norconex.com"><img src="./images/norconex_logo.png"></a><br />
           Norconex Commons Lang is released and actively maintained by 
-          <a href="http://www.norconex.com">Norconex</a>. 
+          <a href="https://www.norconex.com">Norconex</a>. 
           ]]>
       </bottomDescription>
       <skinAttribution>false</skinAttribution>
@@ -98,7 +98,7 @@
       <span class="color-highlight">Norconex</span> Commons Lang
       ]]>
     </name>
-    <href>http://www.norconex.com/product/commons-lang/index.html</href>
+    <href>https://www.norconex.com/product/commons-lang/index.html</href>
   </bannerLeft>
   <!-- 
   <bannerRight>
@@ -130,17 +130,17 @@
     <menu name="Main">
       <item name="Support" href="support.html"/>
       <item name="Licensing" href="license.html"/>
-      <item name="Norconex Site"  href="http://www.norconex.com"/>
+      <item name="Norconex Site"  href="https://www.norconex.com"/>
     </menu>
 
     <menu name="Maven Documentation" ref="reports"/>
 
     <menu name="Norconex Products">
-      <item name="Search Analytics" href="http://www.norconex.com/enterprise-search-software/search-analytics/"/>
-      <item name="Content Analytics" href="http://www.norconex.com/enterprise-search-software/content-analytics/"/>
-      <item name="HTTP Collector" href="http://www.norconex.com/product/collector-http"/>
-      <item name="Filesystem Collector" href="http://www.norconex.com/product/collector-filesystem"/>
-      <item name="JEF" href="http://www.norconex.com/product/jef"/>
+      <item name="Search Analytics" href="https://www.norconex.com/enterprise-search-software/search-analytics/"/>
+      <item name="Content Analytics" href="https://www.norconex.com/enterprise-search-software/content-analytics/"/>
+      <item name="HTTP Collector" href="https://www.norconex.com/collectors/collector-http/"/>
+      <item name="Filesystem Collector" href="https://www.norconex.com/collectors/collector-filesystem/"/>
+      <item name="JEF" href="https://www.norconex.com/jef/"/>
     </menu>
 
   </body>

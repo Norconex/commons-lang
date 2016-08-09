@@ -7,6 +7,27 @@
   </properties>
   <body>
 
+    <release version="1.9.1" date="2016-08-09" description="Maintenance release">
+      <action dev="essiembre" type="fix">
+        When case-insensitive, Fixed Properties#addString(...) that was adding 
+        values multiple times when a key was previously inserted with a 
+        different case and fixed Properties#keySet() that returns the right 
+        number of keys now.
+      </action>
+      <action dev="essiembre" type="update">
+        Dependency updates: Apache Commons IO 2.5.
+      </action>
+      <action dev="essiembre" type="update">
+        URLStreamer now has two new "streamToString" methods that accept
+        a character encoding argument. Versions without the character encoding
+        argument now assume UTF-8 as opposed to OS default charset.
+      </action>
+      <action dev="essiembre" type="update">
+        ConfigurationLoader#loadString(...) now assumes UTF-8 as opposed to OS 
+        default charset for loading variables.
+      </action>
+    </release>
+
     <release version="1.9.0" date="2016-02-27" description="Feature release">
       <action dev="essiembre" type="add">
         New EncryptionUtil class to easily encrypt and decrypt any text using
@@ -23,7 +44,7 @@
         most frequent usage.
       </action>
       <action dev="essiembre" type="update">
-        Maven dependency updates: Apache Commons Collections 4.1.
+        Dependency updates: Apache Commons Collections 4.1.
       </action>
       <action dev="essiembre" type="fix">
         HttpURL#toAbsolute(String, String) now handles relative URLs with

@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -113,6 +114,11 @@ public class CachedStreamFactory {
     public CachedInputStream newInputStream() {
         return newInputStream(StringUtils.EMPTY);
     }
+    /**
+     * Creates a new input stream, assuming UTF-8 content. 
+     * @param content content to stream
+     * @return cached input stream
+     */
     public CachedInputStream newInputStream(String content) {
         InputStream is = null;
         try {
@@ -120,7 +126,7 @@ public class CachedStreamFactory {
         } catch (IOException e) {
             LOG.error("Could not get input stream with UTF-8 encoding. "
                     + "Trying with default encoding.", e);
-            is = IOUtils.toInputStream(content);
+            is = IOUtils.toInputStream(content, Charset.defaultCharset());
         }
         return registerStream(new CachedInputStream(this, is, cacheDirectory));
     }

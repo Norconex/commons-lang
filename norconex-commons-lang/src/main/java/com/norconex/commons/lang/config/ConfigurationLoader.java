@@ -1,4 +1,4 @@
-/* Copyright 2010-2015 Norconex Inc.
+/* Copyright 2010-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -266,7 +266,7 @@ public final class ConfigurationLoader {
         try {
             if (isVariableFile(vars, EXTENSION_VARIABLES)) {
                 FileInputStream is = new FileInputStream(vars);
-				List<String> lines = IOUtils.readLines(is);
+				List<String> lines = IOUtils.readLines(is, CharEncoding.UTF_8);
                 is.close();
                 for (String line : lines) {
 					if (line.contains("=")) {
