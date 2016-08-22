@@ -7,6 +7,13 @@
   </properties>
   <body>
 
+    <release version="1.10.0-SNAPSHOT" date="2016-??-??" description="Feature release">
+      <action dev="essiembre" type="add">
+        New Jar-related utility classes for jar file version conflict detection
+        and resolution.
+      </action>
+    </release>
+
     <release version="1.9.1" date="2016-08-09" description="Maintenance release">
       <action dev="essiembre" type="update">
         Dependency updates: Apache Commons IO 2.5.
