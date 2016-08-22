@@ -7,7 +7,7 @@
   </properties>
   <body>
 
-    <release version="1.10.0-SNAPSHOT" date="2016-??-??" description="Feature release">
+    <release version="1.10.0" date="2016-08-22" description="Feature release">
       <action dev="essiembre" type="add">
         New Jar-related utility classes for jar file version conflict detection
         and resolution.
