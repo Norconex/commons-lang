@@ -113,7 +113,8 @@ Other classes not fitting anyhere.  Includes:
   * Pipeline classes
   * EnhancedXMLStreamWriter
   * Long unique ID generator
-  * Simple text encryption/decryption 
+  * Simple text encryption/decryption
+  * Jar copy version conflict resolution 
   
 Classes: [com.norconex.commons.lang.*](./apidocs/overview-summary.html)
   
