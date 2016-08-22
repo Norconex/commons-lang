@@ -559,7 +559,8 @@ public class Properties extends ObservableMap<String, List<String>>
         return s;
     }
     /**
-     * Gets values as a list of strings.
+     * Gets values as a list of strings. This method is null-safe. No matches
+     * returns an empty list.
      * @param key property key
      * @return the values
      */
