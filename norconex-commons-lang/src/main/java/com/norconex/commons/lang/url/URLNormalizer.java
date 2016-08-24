@@ -310,6 +310,7 @@ public class URLNormalizer implements Serializable {
         }
         return this;
     }
+
     /**
      * <p>Adds a trailing slash (/) to a URL ending with a directory.  A URL is 
      * considered to end with a directory if the last path segment,
@@ -323,8 +324,9 @@ public class URLNormalizer implements Serializable {
      * <code>http://www.example.com/alice &rarr; 
      *       http://www.example.com/alice/</code>
      * @return this instance
+     * @since 1.11.0 (renamed from "addTrailingSlash")
      */
-    public URLNormalizer addTrailingSlash() {
+    public URLNormalizer addDirectoryTrailingSlash() {
         String urlRoot = HttpURL.getRoot(url);
         String path = toURL().getPath();
         String urlRootAndPath = urlRoot + path;
@@ -337,7 +339,53 @@ public class URLNormalizer implements Serializable {
                     url, urlRootAndPath, newUrlRootAndPath);
         }
         return this;
-    }    
+    }
+    
+    /**
+     * <p>Adds a trailing slash (/) to a URL ending with a directory.  A URL is 
+     * considered to end with a directory if the last path segment,
+     * before fragment (#) or query string (?), does not contain a dot,
+     * typically representing an extension.</p>
+     *   
+     * <p><b>Please Note:</b> URLs do not always denote a directory structure 
+     * and many URLs can qualify to this method without truly representing a 
+     * directory. Adding a trailing slash to these URLs could potentially break
+     * its semantic equivalence.</p>
+     * <code>http://www.example.com/alice &rarr; 
+     *       http://www.example.com/alice/</code>
+     * @return this instance
+     * @deprecated Since 1.11.0, use {@link #addDirectoryTrailingSlash()}
+     */
+    @Deprecated
+    public URLNormalizer addTrailingSlash() {
+        return addDirectoryTrailingSlash();
+    }
+    
+    /**
+     * <p>Removes any trailing slash (/) from a URL, before fragment 
+     * (#) or query string (?).</p>
+     *   
+     * <p><b>Please Note:</b> Removing trailing slashes form URLs
+     * could potentially break their semantic equivalence.</p>
+     * <code>http://www.example.com/alice/ &rarr; 
+     *       http://www.example.com/alice</code>
+     * @return this instance
+     * @since 1.11.0
+     */
+    public URLNormalizer removeTrailingSlash() {
+        String urlRoot = HttpURL.getRoot(url);
+        String path = toURL().getPath();
+        String urlRootAndPath = urlRoot + path;
+
+        if (StringUtils.endsWith(path, "/")) {
+            String newPath = StringUtils.removeEnd(path, "/"); 
+            String newUrlRootAndPath = urlRoot + newPath;
+            url = StringUtils.replaceOnce(
+                    url, urlRootAndPath, newUrlRootAndPath);
+        }
+        return this;
+    }
+    
     
     /**
      * <p>Removes the unnecessary "." and ".." segments from the URL path.

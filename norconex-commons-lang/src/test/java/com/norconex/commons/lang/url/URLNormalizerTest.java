@@ -61,7 +61,7 @@ public class URLNormalizerTest {
         //System.out.println("original  : " + s);
 
         URLNormalizer n = new URLNormalizer(s)
-                .addTrailingSlash()
+                .addDirectoryTrailingSlash()
                 .addWWW()
                 .removeFragment()
                 .decodeUnreservedCharacters()
@@ -163,24 +163,53 @@ public class URLNormalizerTest {
     public void testAddTrailingSlash() {
         s = "http://www.example.com/alice";
         t = "http://www.example.com/alice/";
-        assertEquals(t, n(s).addTrailingSlash().toString());
+        assertEquals(t, n(s).addDirectoryTrailingSlash().toString());
         s = "http://www.example.com/alice.html";
         t = "http://www.example.com/alice.html";
-        assertEquals(t, n(s).addTrailingSlash().toString());
+        assertEquals(t, n(s).addDirectoryTrailingSlash().toString());
         s = "http://www.example.com";
         t = "http://www.example.com";
-        assertEquals(t, n(s).addTrailingSlash().toString());
+        assertEquals(t, n(s).addDirectoryTrailingSlash().toString());
         s = "http://www.example.com/blah/?param=value";
         t = "http://www.example.com/blah/?param=value";
-        assertEquals(t, n(s).addTrailingSlash().toString());
+        assertEquals(t, n(s).addDirectoryTrailingSlash().toString());
         s = "http://www.example.com/blah?param=value";
         t = "http://www.example.com/blah/?param=value";
-        assertEquals(t, n(s).addTrailingSlash().toString());
+        assertEquals(t, n(s).addDirectoryTrailingSlash().toString());
         // This one is for HTTP Collector GitHub issue #163:
         s = "http://www.example.com/";
         t = "http://www.example.com/";
-        assertEquals(t, n(s).addTrailingSlash().toString());
+        assertEquals(t, n(s).addDirectoryTrailingSlash().toString());
     }
+    
+    @Test
+    public void testRemoveTrailingSlash() {
+        s = "http://www.example.com/alice/";
+        t = "http://www.example.com/alice";
+        assertEquals(t, n(s).removeTrailingSlash().toString());
+        s = "http://www.example.com/alice.html";
+        t = "http://www.example.com/alice.html";
+        assertEquals(t, n(s).removeTrailingSlash().toString());
+        s = "http://www.example.com";
+        t = "http://www.example.com";
+        assertEquals(t, n(s).removeTrailingSlash().toString());
+        s = "http://www.example.com/blah/?param=value";
+        t = "http://www.example.com/blah?param=value";
+        assertEquals(t, n(s).removeTrailingSlash().toString());
+        s = "http://www.example.com/blah?param=value";
+        t = "http://www.example.com/blah?param=value";
+        assertEquals(t, n(s).removeTrailingSlash().toString());
+        s = "http://www.example.com/blah/#value";
+        t = "http://www.example.com/blah#value";
+        assertEquals(t, n(s).removeTrailingSlash().toString());
+        s = "http://www.example.com/blah#value";
+        t = "http://www.example.com/blah#value";
+        assertEquals(t, n(s).removeTrailingSlash().toString());
+        s = "http://www.example.com/";
+        t = "http://www.example.com";
+        assertEquals(t, n(s).removeTrailingSlash().toString());
+    }    
+    
     @Test
     public void testRemoveDotSegments() {
         s = "http://www.example.com/../a/b/../c/./d.html";
