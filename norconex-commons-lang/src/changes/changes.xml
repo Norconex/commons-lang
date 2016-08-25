@@ -15,6 +15,9 @@
         URLNormalizer#addTrailingSlash() has been deprecated in favor
         of URLNormalizer#addDirectoryTrailingSlash().
       </action>
+      <action dev="essiembre" type="update">
+        Dependency updates: Apache Commons Lang 2.6.
+      </action>
     </release>
 
     <release version="1.10.0" date="2016-08-22" description="Feature release">
