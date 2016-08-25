@@ -7,7 +7,20 @@
   </properties>
   <body>
 
-    <release version="1.10.0-SNAPSHOT" date="2016-??-??" description="Feature release">
+    <release version="1.11.0" date="2016-08-25" description="Feature release">
+      <action dev="essiembre" type="add">
+        New URLNormalizer#removeTrailingSlash() method. 
+      </action>
+      <action dev="essiembre" type="update">
+        URLNormalizer#addTrailingSlash() has been deprecated in favor
+        of URLNormalizer#addDirectoryTrailingSlash().
+      </action>
+      <action dev="essiembre" type="update">
+        Dependency updates: Apache Commons Lang 2.6.
+      </action>
+    </release>
+
+    <release version="1.10.0" date="2016-08-22" description="Feature release">
       <action dev="essiembre" type="add">
         New Jar-related utility classes for jar file version conflict detection
         and resolution.
