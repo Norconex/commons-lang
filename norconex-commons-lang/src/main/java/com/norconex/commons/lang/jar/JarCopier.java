@@ -307,7 +307,7 @@ public class JarCopier {
         info("How do you want to handle duplicates? For each Jar...");
         info("");
         info("  1) Copy source Jar only if greater or same version as target");
-        info("     Jar after renaming target Jar (.bak-[timestamp]).");
+        info("     Jar after renaming target Jar (preferred option).");
         info("");
         info("  2) Copy source Jar only if greater or same version as target");
         info("     Jar after deleting target Jar.");
@@ -340,8 +340,7 @@ public class JarCopier {
         info("");
         info("Your action:");
         info("");
-        info("  1) Copy source Jar after renaming target Jar "
-                + "(.bak-[timestamp]).");
+        info("  1) Copy source Jar after renaming target Jar.");
         info("");
         info("  2) Copy source Jar after deleting target Jar.");
         info("");
