@@ -86,6 +86,41 @@ public class URLNormalizerTest {
           assertEquals(t,  n.toURI().toString());
     }
 
+    @Test
+    public void testAddDomainTrailingSlash() {
+        s = "http://www.example.com";
+        t = "http://www.example.com/";
+        assertEquals(t, n(s).addDomainTrailingSlash().toString());
+
+        s = "http://www.example.com/";
+        t = "http://www.example.com/";
+        assertEquals(t, n(s).addDomainTrailingSlash().toString());
+
+        s = "http://www.example.com/blah";
+        t = "http://www.example.com/blah";
+        assertEquals(t, n(s).addDomainTrailingSlash().toString());
+
+        s = "http://www.example.com/blah/path";
+        t = "http://www.example.com/blah/path";
+        assertEquals(t, n(s).addDomainTrailingSlash().toString());
+        
+        s = "http://www.example.com?param1=value1&param2=value2";
+        t = "http://www.example.com/?param1=value1&param2=value2";
+        assertEquals(t, n(s).addDomainTrailingSlash().toString());
+
+        s = "http://www.example.com/?param1=value1&param2=value2";
+        t = "http://www.example.com/?param1=value1&param2=value2";
+        assertEquals(t, n(s).addDomainTrailingSlash().toString());
+
+        s = "http://www.example.com#hash";
+        t = "http://www.example.com/#hash";
+        assertEquals(t, n(s).addDomainTrailingSlash().toString());
+
+        s = "http://www.example.com/#hash";
+        t = "http://www.example.com/#hash";
+        assertEquals(t, n(s).addDomainTrailingSlash().toString());
+    }
+    
     
     @Test
     public void testEncodeUTF8Characters() {
@@ -98,6 +133,12 @@ public class URLNormalizerTest {
     public void testEncodeNonURICharacters() {
         s = "http://www.example.com/^a [b]/c?d e=";
         t = "http://www.example.com/%5Ea%20%5Bb%5D/c?d+e=";
+        assertEquals(t, n(s).encodeNonURICharacters().toString());
+        
+        //Test for https://github.com/Norconex/collector-http/issues/294
+        //Was failing when HTTP was uppercase
+        s = "HTTP://www.Example.com/";
+        t = "HTTP://www.Example.com/";
         assertEquals(t, n(s).encodeNonURICharacters().toString());
     }
 

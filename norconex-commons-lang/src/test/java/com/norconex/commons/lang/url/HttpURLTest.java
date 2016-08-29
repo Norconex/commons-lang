@@ -49,6 +49,13 @@ public class HttpURLTest {
     }
 
     @Test
+    public void testKeepProtocolUpperCase() {
+        s = "HTTP://www.example.com";
+        t = "HTTP://www.example.com";
+        assertEquals(t, new HttpURL(s).toString());
+    }
+    
+    @Test
     public void testToAbsoluteRelativeToProtocol() {
         s = "//www.relative.com/e/f.html";
         t = "https://www.relative.com/e/f.html";
