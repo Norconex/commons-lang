@@ -340,6 +340,29 @@ public class URLNormalizer implements Serializable {
         }
         return this;
     }
+
+    /**
+     * <p>Adds a trailing slash (/) right after the domain for URLs with no 
+     * path, before any fragment (#) or query string (?).</p>
+     *   
+     * <p><b>Please Note:</b> Adding a trailing slash to URLs could 
+     * potentially break its semantic equivalence.</p>
+     * <code>http://www.example.com &rarr; 
+     *       http://www.example.com/</code>
+     * @return this instance
+     * @since 1.12.0
+     */
+    public URLNormalizer addDomainTrailingSlash() {
+        String urlRoot = HttpURL.getRoot(url);
+        String path = toURL().getPath();
+        if (StringUtils.isNotBlank(path)) {
+            // there is a path so do nothing
+            return this;
+        }
+        String urlRootAndPath = urlRoot + "/";
+        url = StringUtils.replaceOnce(url, urlRoot, urlRootAndPath);
+        return this;
+    }
     
     /**
      * <p>Adds a trailing slash (/) to a URL ending with a directory.  A URL is 

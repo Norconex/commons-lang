@@ -104,18 +104,18 @@ public class HttpURL implements Serializable {
         } else {
             this.encoding = encoding;
         }
-        if (url.startsWith("http")) {
+        if (StringUtils.startsWithIgnoreCase(url, PROTOCOL_HTTP)) {
             URL urlwrap;
             try {
                 urlwrap = new URL(url);
             } catch (MalformedURLException e) {
                 throw new URLException("Could not interpret URL: " + url, e);
             }
-            protocol = urlwrap.getProtocol();
+            protocol = StringUtils.substringBefore(url, ":");
             host = urlwrap.getHost();
             port = urlwrap.getPort();
             if (port < 0) {
-                if (url.startsWith(PROTOCOL_HTTPS)) {
+                if (StringUtils.startsWithIgnoreCase(url, PROTOCOL_HTTPS)) {
                     port = DEFAULT_HTTPS_PORT;
                 } else {
                     port = DEFAULT_HTTP_PORT;
@@ -384,8 +384,9 @@ public class HttpURL implements Serializable {
      * @since 1.8.0
      */
     public boolean isPortDefault() {
-        return PROTOCOL_HTTPS.equalsIgnoreCase(protocol) && port == DEFAULT_HTTPS_PORT
-                || "http".equalsIgnoreCase(protocol)
+        return PROTOCOL_HTTPS.equalsIgnoreCase(protocol) 
+                && port == DEFAULT_HTTPS_PORT
+                || PROTOCOL_HTTP.equalsIgnoreCase(protocol)
                         && port == DEFAULT_HTTP_PORT;
     }
     
