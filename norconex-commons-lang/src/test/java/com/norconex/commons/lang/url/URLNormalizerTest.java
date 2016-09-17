@@ -418,6 +418,14 @@ public class URLNormalizerTest {
 
     @Test
     public void testSortQueryParameters() {
+        // test with fragment
+        s = "http://example.com?z=1&a=1#frag";
+        t = "http://example.com?a=1&z=1#frag";
+        assertEquals(t, n(s).sortQueryParameters().toString());
+        // test duplicate params
+        s = "http://example.com?z=1&a=1&a=1";
+        t = "http://example.com?a=1&a=1&z=1";
+        assertEquals(t, n(s).sortQueryParameters().toString());
         s = "http://www.example.com/display?lang=en&article=fred";
         t = "http://www.example.com/display?article=fred&lang=en";
         assertEquals(t, n(s).sortQueryParameters().toString());
