@@ -671,6 +671,14 @@ public class URLNormalizer implements Serializable {
         // It does, so proceed
         TreeBag<String> keyValues = new TreeBag<>();
         String queryString = StringUtils.substringAfter(url, "?");
+        
+        // extract and remove any fragments
+        String fragment = StringUtils.substringAfter(queryString, "#");
+        if (StringUtils.isNotBlank(fragment)) {
+            fragment = "#" + fragment;
+        }
+        queryString = StringUtils.substringBefore(queryString, "#");
+        
         String[] params = StringUtils.split(queryString, '&');
         for (String param : params) {
             keyValues.add(param);
@@ -678,8 +686,9 @@ public class URLNormalizer implements Serializable {
         String sortedQueryString = StringUtils.join(keyValues, '&');
         if (StringUtils.isNotBlank(sortedQueryString)) {
             url = StringUtils.substringBefore(
-                    url, "?") + "?" + sortedQueryString;
+                    url, "?") + "?" + sortedQueryString + fragment;
         }
+        
         return this;
     }
     /**
