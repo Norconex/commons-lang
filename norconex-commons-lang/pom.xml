@@ -19,7 +19,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.norconex.commons</groupId>
   <artifactId>norconex-commons-lang</artifactId>
-  <version>1.12.1</version>
+  <version>1.12.2</version>
   <packaging>jar</packaging>
   <name>Norconex Commons Lang</name>
 
@@ -27,7 +27,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <site.baseurl/>
-    <currentStableVersion>1.12.1</currentStableVersion>
+    <currentStableVersion>1.12.2</currentStableVersion>
   </properties>
   <inceptionYear>2008</inceptionYear>
 

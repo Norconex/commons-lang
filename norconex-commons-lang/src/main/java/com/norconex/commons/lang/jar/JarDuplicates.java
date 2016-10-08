@@ -53,7 +53,7 @@ public class JarDuplicates {
      * The best attempt is made to detect more recent version based
      * on version provided. Given version patterns may vary, there
      * is no guarantee of 100% accuracy, so use with caution.
-     * @return
+     * @return latest jar file
      */
     public JarFile getLatestVersion() {
         return jarFiles[0];

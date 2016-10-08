@@ -7,6 +7,12 @@
   </properties>
   <body>
 
+    <release version="1.12.2" date="2016-10-07" description="Bugfix release">
+      <action dev="essiembre" type="fix">
+        Fixed QueryString removing parameters without equal sign.
+      </action>
+    </release>
+
     <release version="1.12.1" date="2016-09-17" description="Bugfix release">
       <action dev="essiembre" type="fix">
         Fixed URLNormalizer#sortQueryParameters() not handling #fragments 

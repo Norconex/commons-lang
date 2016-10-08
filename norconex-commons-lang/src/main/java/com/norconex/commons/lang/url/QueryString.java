@@ -100,17 +100,22 @@ public class QueryString extends Properties {
         String[] paramParts = paramString.split("\\&");
         for (int i = 0; i < paramParts.length; i++) {
             String paramPart = paramParts[i];
+            String key;
+            String value;
             if (StringUtils.contains(paramPart, "=")) {
-                String key = StringUtils.substringBefore(paramPart, "=");
-                String value = StringUtils.substringAfter(paramPart, "=");
-                try {
-                    addString(URLDecoder.decode(key, this.encoding),
-                              URLDecoder.decode(value, this.encoding));
-                } catch (UnsupportedEncodingException e) {
-                    throw new URLException(
-                            "Cannot URL-decode query string (key=" 
-                                    + key + "; value=" + value + ").", e);
-                }
+                key = StringUtils.substringBefore(paramPart, "=");
+                value = StringUtils.substringAfter(paramPart, "=");
+            } else {
+                key = paramPart;
+                value = StringUtils.EMPTY;
+            }
+            try {
+                addString(URLDecoder.decode(key, this.encoding),
+                          URLDecoder.decode(value, this.encoding));
+            } catch (UnsupportedEncodingException e) {
+                throw new URLException(
+                        "Cannot URL-decode query string (key=" 
+                                + key + "; value=" + value + ").", e);
             }
         }
     }
