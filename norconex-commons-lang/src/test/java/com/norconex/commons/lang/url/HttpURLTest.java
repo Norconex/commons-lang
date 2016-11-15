@@ -1,4 +1,4 @@
-/* Copyright 2015 Norconex Inc.
+/* Copyright 2015-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -91,5 +91,57 @@ public class HttpURLTest {
         s = "http://www.sample.com";
         t = "http://www.sample.com/xyz.html";
         assertEquals(t, HttpURL.toAbsolute(s, "xyz.html"));
+    }
+
+    @Test
+    public void testHttpProtocolNoPort() {
+        s = "http://www.example.com/blah";
+        t = "http://www.example.com/blah";
+        assertEquals(t, new HttpURL(s).toString());
+    }
+    @Test
+    public void testHttpProtocolDefaultPort() {
+        s = "http://www.example.com:80/blah";
+        t = "http://www.example.com/blah";
+        assertEquals(t, new HttpURL(s).toString());
+    }
+    @Test
+    public void testHttpProtocolNonDefaultPort() {
+        s = "http://www.example.com:81/blah";
+        t = "http://www.example.com:81/blah";
+        assertEquals(t, new HttpURL(s).toString());
+    }
+
+    @Test
+    public void testHttpsProtocolNoPort() {
+        s = "https://www.example.com/blah";
+        t = "https://www.example.com/blah";
+        assertEquals(t, new HttpURL(s).toString());
+    }
+    @Test
+    public void testHttpsProtocolDefaultPort() {
+        s = "https://www.example.com:443/blah";
+        t = "https://www.example.com/blah";
+        assertEquals(t, new HttpURL(s).toString());
+    }
+    @Test
+    public void testHttpsProtocolNonDefaultPort() {
+        s = "https://www.example.com:444/blah";
+        t = "https://www.example.com:444/blah";
+        assertEquals(t, new HttpURL(s).toString());
+    }
+    
+    @Test
+    public void testNonHttpProtocolNoPort() {
+        s = "ftp://ftp.example.com/dir";
+        t = "ftp://ftp.example.com/dir";
+        assertEquals(t, new HttpURL(s).toString());
+    }
+
+    @Test
+    public void testNonHttpProtocolWithPort() {
+        s = "ftp://ftp.example.com:20/dir";
+        t = "ftp://ftp.example.com:20/dir";
+        assertEquals(t, new HttpURL(s).toString());
     }
 }

@@ -104,7 +104,7 @@ public class HttpURL implements Serializable {
         } else {
             this.encoding = encoding;
         }
-        if (StringUtils.startsWithIgnoreCase(url, PROTOCOL_HTTP)) {
+        if (url.matches("\\w+://.+")) {
             URL urlwrap;
             try {
                 urlwrap = new URL(url);
@@ -117,7 +117,8 @@ public class HttpURL implements Serializable {
             if (port < 0) {
                 if (StringUtils.startsWithIgnoreCase(url, PROTOCOL_HTTPS)) {
                     port = DEFAULT_HTTPS_PORT;
-                } else {
+                } else if (
+                        StringUtils.startsWithIgnoreCase(url, PROTOCOL_HTTP)) {
                     port = DEFAULT_HTTP_PORT;
                 }
             }
@@ -209,7 +210,9 @@ public class HttpURL implements Serializable {
     }
 
     /**
-     * Gets the URL port.
+     * Gets the URL port. If the protocol is other than 
+     * <code>http</code> or <code>https</code>, the port is -1 when 
+     * not specified.
      * @return the URL port
      */
     public int getPort() {
@@ -355,7 +358,7 @@ public class HttpURL implements Serializable {
         b.append("://");
         b.append(host);
         
-        if (!isPortDefault()) {
+        if (!isPortDefault() && port != -1) {
             b.append(':');
             b.append(port);
         }
