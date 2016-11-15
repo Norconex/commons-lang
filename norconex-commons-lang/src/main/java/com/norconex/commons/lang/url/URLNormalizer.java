@@ -745,7 +745,8 @@ public class URLNormalizer implements Serializable {
      */
     public URLNormalizer removeSessionIds() {
         if (StringUtils.containsIgnoreCase(url, ";jsessionid=")) {
-            url = url.replaceFirst("(;jsessionid=[0-9a-fA-F]*)", "");
+            url = url.replaceFirst(
+                    "(;jsessionid=([A-F0-9]+)((\\.\\w+)*))", "");
         } else {
             String u = StringUtils.substringBefore(url, "?");
             String q = StringUtils.substringAfter(url, "?");

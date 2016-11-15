@@ -7,6 +7,16 @@
   </properties>
   <body>
 
+    <release version="1.12.3" date="2016-11-15" description="Bugfix release">
+      <action dev="essiembre" type="update">
+        HttpURL no longer sets a null protocol when constructing non HTTP URLs.
+      </action>
+      <action dev="essiembre" type="fix">
+        Fixed URLNormalizer#removeSessionIds() not handling cases
+        where the jsessionid is followed by a dot and other word characters. 
+      </action>
+    </release>
+
     <release version="1.12.2" date="2016-10-07" description="Bugfix release">
       <action dev="essiembre" type="fix">
         Fixed QueryString removing parameters without equal sign.

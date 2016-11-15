@@ -488,6 +488,12 @@ public class URLNormalizerTest {
         t = "http://7.eg.com/app";
         assertEquals(t, n(s).removeSessionIds().toString());
 
+        //https://github.com/Norconex/collector-http/issues/311
+        s = "http://myurl.com;jsessionid="
+                + "E460A97852FA769CD9AD387095C680A9.tpdila09v_2?p=v";
+        t = "http://myurl.com?p=v";
+        assertEquals(t, n(s).removeSessionIds().toString());
+        
         //ASP
         s = "http://8.eg.com/app?y=z&ASPSESSIONIDSCQCTTCT=CMHFECGKC&a=b&c=d";
         t = "http://8.eg.com/app?y=z&a=b&c=d";
