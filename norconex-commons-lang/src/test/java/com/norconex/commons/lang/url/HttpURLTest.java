@@ -144,4 +144,11 @@ public class HttpURLTest {
         t = "ftp://ftp.example.com:20/dir";
         assertEquals(t, new HttpURL(s).toString());
     }
+    
+    @Test
+    public void testInvalidURL() {
+        s = "http://www.example.com/\"path\"";
+        t = "http://www.example.com/%22path%22";
+        assertEquals(t, new HttpURL(s).toString());
+    }
 }
