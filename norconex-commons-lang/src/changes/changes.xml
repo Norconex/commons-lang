@@ -7,6 +7,12 @@
   </properties>
   <body>
 
+    <release version="1.13.0-SNAPSHOT" date="2017-??-??" description="Feature release">
+      <action dev="essiembre" type="add">
+        New ConfigurationUtil#getCSVArray(...) methods.
+      </action>
+    </release>
+
     <release version="1.12.3" date="2016-11-15" description="Bugfix release">
       <action dev="essiembre" type="update">
         HttpURL no longer sets a null protocol when constructing non HTTP URLs.

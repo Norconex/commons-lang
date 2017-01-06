@@ -26,11 +26,15 @@ import java.util.List;
 
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.CharEncoding;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
 import com.norconex.commons.lang.file.FileUtil;
+
+//TODO move most methods to XMLConfigurationUtil under the .xml package,
+//along with moving IXMLConfigurable there?
 
 /**
  * Utility methods when dealing with configuration files.
@@ -456,7 +460,42 @@ public final class ConfigurationUtil {
         }
     }
 
-    // This method is because the regular configuration at MUST have 1
+    /**
+     * Gets a comma-separated-value string as a String array, trimming values 
+     * and removing any blank entries.  
+     * Commas can have any spaces before or after.
+     * Since {@link #newXMLConfiguration(Reader)} disables delimiter parsing,
+     * this method is an useful alternative to 
+     * {@link HierarchicalConfiguration#getStringArray(String)}.
+     * @param xml xml configuration
+     * @param key key to the element/attribute containing the string
+     * @return string array (or null)
+     * @since 1.13.0
+     */
+    public static String[] getCSVArray(
+            HierarchicalConfiguration xml, String key) {
+        return getCSVArray(xml, key, null);
+    }
+    /**
+     * Gets a comma-separated-value string as a String array, trimming values 
+     * and removing any blank entries.  
+     * Commas can have any spaces before or after.
+     * Since {@link #newXMLConfiguration(Reader)} disables delimiter parsing,
+     * this method is an useful alternative to 
+     * {@link HierarchicalConfiguration#getStringArray(String)}.
+     * @param xml xml configuration
+     * @param key key to the element/attribute containing the string
+     * @param defaultValues default values if the split returns null
+     *        or an empty array
+     * @return string array (or null)
+     * @since 1.13.0
+     */
+    public static String[] getCSVArray(
+            HierarchicalConfiguration xml, String key, String[] defaultValues) {
+        return splitCSV(xml.getString(key, null), defaultValues);
+    }
+    
+    // This method is because the regular configurationAt MUST have 1
     // entry or will fail, and the containsKey(String) method is not reliable
     // since it expects a value (body text) or returns false.
     private static HierarchicalConfiguration safeConfigurationAt(
@@ -466,6 +505,18 @@ public final class ConfigurationUtil {
             return subs.get(0);
         }
         return null;
+    }
+    
+    private static String[] splitCSV(String str, String[] defaultValues) {
+        if (str == null) {
+            return null;
+        }
+        String[] values = str.trim().split("(\\s*,\\s*)+");
+        if (ArrayUtils.isEmpty(values) 
+                && ArrayUtils.isNotEmpty(defaultValues)) {
+            return defaultValues;
+        }
+        return values;
     }
     
 }
