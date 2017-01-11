@@ -1,0 +1,7 @@
+TODO:
+==============
+
+- Redo DurationUtil to be more flexible (using fluid builder approach.
+  or check Apache or Java 8 equivalent classes if they can be made as flexible.
+
+- Also do a duration parser if the Java 8 one (or Apache) is not as flexible as desired. 

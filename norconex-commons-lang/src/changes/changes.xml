@@ -9,7 +9,8 @@
 
     <release version="1.13.0-SNAPSHOT" date="2017-??-??" description="Feature release">
       <action dev="essiembre" type="add">
-        New ConfigurationUtil#getCSVArray(...) methods.
+        New ConfigurationUtil#getCSVStringArray(...) and 
+        ConfigurationUtil#getCSVIntArray methods.
       </action>
     </release>
 

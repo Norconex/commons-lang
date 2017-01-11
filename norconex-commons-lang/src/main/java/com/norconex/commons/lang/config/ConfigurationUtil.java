@@ -468,13 +468,13 @@ public final class ConfigurationUtil {
      * this method is an useful alternative to 
      * {@link HierarchicalConfiguration#getStringArray(String)}.
      * @param xml xml configuration
-     * @param key key to the element/attribute containing the string
+     * @param key key to the element/attribute containing the CSV string
      * @return string array (or null)
      * @since 1.13.0
      */
-    public static String[] getCSVArray(
+    public static String[] getCSVStringArray(
             HierarchicalConfiguration xml, String key) {
-        return getCSVArray(xml, key, null);
+        return getCSVStringArray(xml, key, null);
     }
     /**
      * Gets a comma-separated-value string as a String array, trimming values 
@@ -484,15 +484,70 @@ public final class ConfigurationUtil {
      * this method is an useful alternative to 
      * {@link HierarchicalConfiguration#getStringArray(String)}.
      * @param xml xml configuration
-     * @param key key to the element/attribute containing the string
+     * @param key key to the element/attribute containing the CSV string
      * @param defaultValues default values if the split returns null
      *        or an empty array
      * @return string array (or null)
      * @since 1.13.0
      */
-    public static String[] getCSVArray(
+    public static String[] getCSVStringArray(
             HierarchicalConfiguration xml, String key, String[] defaultValues) {
-        return splitCSV(xml.getString(key, null), defaultValues);
+        String[] values = splitCSV(xml.getString(key, null));
+        if (ArrayUtils.isEmpty(values)) {
+            return defaultValues;
+        }
+        return values;
+    }
+
+    /**
+     * Gets a comma-separated-value string as an int array, removing any 
+     * blank entries.  
+     * Commas can have any spaces before or after.
+     * Invalid integers will log an error and assign zero instead.
+     * @param xml xml configuration
+     * @param key key to the element/attribute containing the CSV string
+     * @return int array (or null)
+     * @since 1.13.0
+     */
+    public static int[] getCSVIntArray(
+            HierarchicalConfiguration xml, String key) {
+        return getCSVIntArray(xml, key, null);
+    }
+    /**
+     * Gets a comma-separated-value string as an int array, removing any 
+     * blank entries.  
+     * Commas can have any spaces before or after.
+     * Invalid integers will log an error and assign zero instead.
+     * @param xml xml configuration
+     * @param key key to the element/attribute containing the CSV string
+     * @param defaultValues default values if the split returns null
+     *        or an empty array
+     * @return int array (or null)
+     * @since 1.13.0
+     */
+    public static int[] getCSVIntArray(
+            HierarchicalConfiguration xml, String key, int[] defaultValues) {
+        String[] strings = splitCSV(xml.getString(key, null));
+        if (ArrayUtils.isEmpty(strings)) {
+            return defaultValues;
+        }
+        int[] ints = new int[strings.length];
+        for (int i = 0; i < strings.length; i++) {
+            try {
+                ints[i] = Integer.parseInt(strings[i]);
+            } catch (NumberFormatException e) {
+                LOG.error("Invalid integer: " + strings[i], e);
+            }
+        }
+        return ints;
+    }
+    
+    // CVS Split: trim + remove blank entries 
+    private static String[] splitCSV(String str) {
+        if (str == null) {
+            return null;
+        }
+        return str.trim().split("(\\s*,\\s*)+");
     }
     
     // This method is because the regular configurationAt MUST have 1
@@ -505,18 +560,6 @@ public final class ConfigurationUtil {
             return subs.get(0);
         }
         return null;
-    }
-    
-    private static String[] splitCSV(String str, String[] defaultValues) {
-        if (str == null) {
-            return null;
-        }
-        String[] values = str.trim().split("(\\s*,\\s*)+");
-        if (ArrayUtils.isEmpty(values) 
-                && ArrayUtils.isNotEmpty(defaultValues)) {
-            return defaultValues;
-        }
-        return values;
     }
     
 }
