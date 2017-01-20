@@ -23,7 +23,7 @@ import org.apache.commons.configuration.XMLConfiguration;
 /**
  * Utility methods when dealing with configuration files.
  * @author Pascal Essiembre
- * @Deprecated Since 1.13.0, use {@link XMLConfigurationUtil}
+ * @deprecated Since 1.13.0, use {@link XMLConfigurationUtil}
  */
 @Deprecated
 public final class ConfigurationUtil {
