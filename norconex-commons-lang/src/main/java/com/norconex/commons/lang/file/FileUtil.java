@@ -224,16 +224,6 @@ public final class FileUtil {
     }
     
     /**
-     * @deprecated renamed to {@link #delete(File)}.
-     * @param file file or directory to delete
-     * @throws IOException cannot delete file.
-     */
-    @Deprecated
-    public static void deleteFile(File file) throws IOException {
-        delete(file);
-    }
-    
-    /**
      * Deletes all directories that are empty from a given parent directory.
      * @param parentDir the directory where to start looking for empty 
      *        directories

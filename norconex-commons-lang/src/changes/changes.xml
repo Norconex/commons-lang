@@ -29,7 +29,10 @@
         ConfigurationLoadedUtil now deprecated in favor of XMLConfigurationUtil.
       </action>      
       <action dev="essiembre" type="remove">
-        Removed deprecated ConfigurationLoaded#loadXML(Reader in) method.
+        Removed all classes/methods deprecated since 1.5.0: 
+        ConfigurationLoaded#loadXML(Reader in), .io.FileMonitor, .io.FileUtil,
+        .io.IFileChangeListener, .io.IFileVisitor, .file.FileUtil#deleteFile(File),
+        ClassFinder#findImplementors(...).
       </action>      
     </release>
 

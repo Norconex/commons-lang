@@ -54,7 +54,7 @@ import com.norconex.commons.lang.xml.ClasspathResourceResolver;
 /**
  * Utility methods when dealing with XML configuration files.
  * @author Pascal Essiembre
- * @since 1.13.0 (replaces now deprecated {@link ConfigurationUtil})
+ * @since 1.13.0 (replaces deprecated {@link ConfigurationUtil})
  */
 public final class XMLConfigurationUtil {
     private static final Logger LOG = 
