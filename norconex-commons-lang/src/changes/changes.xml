@@ -9,9 +9,28 @@
 
     <release version="1.13.0-SNAPSHOT" date="2017-??-??" description="Feature release">
       <action dev="essiembre" type="add">
-        New ConfigurationUtil#getCSVStringArray(...) and 
-        ConfigurationUtil#getCSVIntArray methods.
+        New CountingConsoleAppender for tracking how many log events of each type
+        were logged (log4j).
       </action>
+      <action dev="essiembre" type="add">
+        New ListErrorHandler which stores SAX Exceptions that can later 
+        be retrieved as lists.
+      </action>
+      <action dev="essiembre" type="add">
+        New ClasspathResourceResolver and ClasspathInput to resolve XSD schema
+        includes/imports relative to each other in classpath.
+      </action>
+      <action dev="essiembre" type="add">
+        New XMLConfigurationUtil class replacing ConfigurationUtil, offering
+        new methods: #getCSVStringArray(...), #getCSVIntArray(...), 
+        and #validate(...).
+      </action>
+      <action dev="essiembre" type="update">
+        ConfigurationLoadedUtil now deprecated in favor of XMLConfigurationUtil.
+      </action>      
+      <action dev="essiembre" type="remove">
+        Removed deprecated ConfigurationLoaded#loadXML(Reader in) method.
+      </action>      
     </release>
 
     <release version="1.12.3" date="2016-11-15" description="Bugfix release">

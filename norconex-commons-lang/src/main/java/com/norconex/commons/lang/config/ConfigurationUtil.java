@@ -14,35 +14,19 @@
  */
 package com.norconex.commons.lang.config;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.Reader;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.util.List;
 
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.CharEncoding;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
-
-import com.norconex.commons.lang.file.FileUtil;
-
-//TODO move most methods to XMLConfigurationUtil under the .xml package,
-//along with moving IXMLConfigurable there?
 
 /**
  * Utility methods when dealing with configuration files.
  * @author Pascal Essiembre
+ * @Deprecated Since 1.13.0, use {@link XMLConfigurationUtil}
  */
+@Deprecated
 public final class ConfigurationUtil {
-    private static final Logger LOG = 
-            LogManager.getLogger(ConfigurationUtil.class);
 
     private ConfigurationUtil() {
         super();
@@ -54,9 +38,7 @@ public final class ConfigurationUtil {
      * @param xml XML configuration
      */
     public static void disableDelimiterParsing(XMLConfiguration xml) {
-        xml.setListDelimiter('\0');
-        xml.setDelimiterParsingDisabled(true);
-        xml.setAttributeSplittingDisabled(true);
+        XMLConfigurationUtil.disableDelimiterParsing(xml);
     }
     
     
@@ -70,9 +52,7 @@ public final class ConfigurationUtil {
      */
     public static XMLConfiguration newXMLConfiguration(
             HierarchicalConfiguration c) {
-        XMLConfiguration xml = new XMLConfiguration(c);
-        disableDelimiterParsing(xml);
-        return xml;
+        return XMLConfigurationUtil.newXMLConfiguration(c);
     }
     /**
      * <p>This load method will return an Apache XML Configuration from
@@ -91,14 +71,7 @@ public final class ConfigurationUtil {
      * @since 1.5.0
      */
     public static XMLConfiguration newXMLConfiguration(Reader in) {
-        XMLConfiguration xml = new XMLConfiguration();
-        disableDelimiterParsing(xml);
-        try {
-            xml.load(in);
-        } catch (org.apache.commons.configuration.ConfigurationException e) {
-            throw new ConfigurationException("Cannot load XMLConfiguration", e);
-        }
-        return xml;
+        return XMLConfigurationUtil.newXMLConfiguration(in);
     }
 
     
@@ -116,7 +89,7 @@ public final class ConfigurationUtil {
      */
     public static <T extends Object> T newInstance(
             HierarchicalConfiguration node) {
-        return newInstance(node, null, true);
+        return XMLConfigurationUtil.newInstance(node);
     }
 
     /**
@@ -130,6 +103,7 @@ public final class ConfigurationUtil {
      * @param node the node representing the class to instantiate.
      * @param supportXMLConfigurable automatically populates the object from XML
      *        if it is implementing {@link IXMLConfigurable}.
+     *        Since 1.13.0, this flag is always considered <code>true</code>.
      * @param <T> the type of the return value
      * @return a new object.
      * @throws ConfigurationException if instance cannot be created/populated
@@ -137,7 +111,7 @@ public final class ConfigurationUtil {
     public static <T extends Object> T newInstance(
             HierarchicalConfiguration node,
             boolean supportXMLConfigurable) {
-        return newInstance(node, null, supportXMLConfigurable);
+        return XMLConfigurationUtil.newInstance(node);
     }
     
     
@@ -157,7 +131,7 @@ public final class ConfigurationUtil {
      */
     public static <T extends Object> T newInstance(
             HierarchicalConfiguration node, T defaultObject) {
-        return newInstance(node, defaultObject, true);
+        return XMLConfigurationUtil.newInstance(node, defaultObject);
     }
     
     /**
@@ -173,47 +147,15 @@ public final class ConfigurationUtil {
      *        returns this default object.
      * @param supportXMLConfigurable automatically populates the object from XML
      *        if it is implementing {@link IXMLConfigurable}.
+     *        Since 1.13.0, this flag is always considered <code>true</code>.
      * @param <T> the type of the return value
      * @return a new object.
      * @throws ConfigurationException if instance cannot be created/populated
      */
-    @SuppressWarnings("unchecked")
     public static <T extends Object> T newInstance(
             HierarchicalConfiguration node, T defaultObject,
             boolean supportXMLConfigurable) {
-        T obj;
-        String clazz;
-        if (node == null) {
-            return defaultObject;
-        }
-        clazz = node.getString("[@class]", null);
-        if (clazz != null) {
-            try {
-                obj = (T) Class.forName(clazz).newInstance();
-            } catch (Exception e) {
-                throw new ConfigurationException(
-                        "This class could not be instantiated: \""
-                        + clazz + "\".", e);
-            }
-        } else {
-            LOG.debug("A configuration entry was found without class "
-                   + "reference where one could have been provided; "
-                   + "using default value:" + defaultObject);
-            obj = defaultObject;
-        }
-        if (obj == null) {
-            return defaultObject;
-        }
-        if (obj instanceof IXMLConfigurable && supportXMLConfigurable) {
-            try {
-                ((IXMLConfigurable) obj).loadFromXML(newReader(node));
-            } catch (IOException e) {
-                throw new ConfigurationException(
-                        "Could not load new instance from XML \""
-                        + clazz + "\".", e);
-            }
-        }
-        return obj;
+        return XMLConfigurationUtil.newInstance(node, defaultObject);
     }
 
     /**
@@ -238,7 +180,7 @@ public final class ConfigurationUtil {
      */
     public static <T extends Object> T newInstance(
             HierarchicalConfiguration node, String key) {
-        return newInstance(node, key, null, true, true);
+        return XMLConfigurationUtil.newInstance(node, key);
     }
     /**
      * <p>Creates a new instance of the class represented by the "class" 
@@ -259,6 +201,7 @@ public final class ConfigurationUtil {
      * @param key sub-node name/hierarchical path
      * @param supportXMLConfigurable automatically populates the object from XML
      *        if it is implementing {@link IXMLConfigurable}.
+     *        Since 1.13.0, this flag is always considered <code>true</code>.
      * @param <T> the type of the return value
      * @return a new object.
      * @throws ConfigurationException if instance cannot be created/populated
@@ -266,7 +209,7 @@ public final class ConfigurationUtil {
     public static <T extends Object> T newInstance(
             HierarchicalConfiguration node, String key, 
             boolean supportXMLConfigurable) {
-        return newInstance(node, key, null, supportXMLConfigurable, true);
+        return XMLConfigurationUtil.newInstance(node, key);
     }
     /**
      * <p>Creates a new instance of the class represented by the "class" 
@@ -292,7 +235,7 @@ public final class ConfigurationUtil {
     public static <T extends Object> T newInstance(
             HierarchicalConfiguration node, String key, 
             T defaultObject) {
-        return newInstance(node, key, defaultObject, true, false);
+        return XMLConfigurationUtil.newInstance(node, key, defaultObject);
     }
     /**
      * <p>Creates a new instance of the class represented by the "class" 
@@ -315,61 +258,15 @@ public final class ConfigurationUtil {
      * @param key sub-node name/hierarchical path
      * @param supportXMLConfigurable automatically populates the object from XML
      *        if it is implementing {@link IXMLConfigurable}.
+     *        Since 1.13.0, this flag is always considered <code>true</code>.
      * @param <T> the type of the return value
      * @return a new object.
      */
     public static <T extends Object> T newInstance(
             HierarchicalConfiguration node, String key, 
             T defaultObject, boolean supportXMLConfigurable) {
-        return newInstance(node, key, defaultObject, 
-                supportXMLConfigurable, false);
+        return XMLConfigurationUtil.newInstance(node, key, defaultObject);
     }
-    private static <T extends Object> T newInstance(
-            HierarchicalConfiguration node, String key, 
-            T defaultObject, boolean supportXMLConfigurable,
-            boolean canThrowException) {
-        if (node == null) {
-            return defaultObject;
-        }
-        
-        try {
-            if (key == null && defaultObject == null) {
-                return ConfigurationUtil.newInstance(
-                        node, (T) null, supportXMLConfigurable);
-            }
-            HierarchicalConfiguration subconfig = 
-                    safeConfigurationAt(node, key);
-            return ConfigurationUtil.newInstance(
-                    subconfig, defaultObject, supportXMLConfigurable);
-        } catch (Exception e) {
-            if (canThrowException) {
-                if (e instanceof ConfigurationException) {
-                    throw (ConfigurationException) e;
-                } else {
-                    throw new ConfigurationException(
-                            "Could not instantiate object from configuration "
-                          + "for \"" + node.getRoot().getName() 
-                          + " -> " + key + "\".", e);
-                }
-            } else {
-                if (e instanceof ConfigurationException
-                        && e.getCause() != null
-                        && e.getCause() instanceof ClassNotFoundException) {
-                    LOG.error("You declared a class that does not exists "
-                            + "for \"" + node.getRoot().getName() 
-                            + " -> " + key + "\". "
-                            + "Check for typos in your XML and make sure that "
-                            + "class is part of your Java classpath.", e);
-                } else{ 
-                    LOG.debug("Could not instantiate object from configuration "
-                            + "for \"" + node.getRoot().getName() 
-                            + " -> " + key + "\".", e);
-                }
-            }
-            return defaultObject;
-        }
-    }
-    
     /**
      * Creates a new {@link Reader} from a {@link XMLConfiguration}.
      * Do not forget to close the reader instance when you are done with it.
@@ -380,23 +277,7 @@ public final class ConfigurationUtil {
      */
     public static Reader newReader(HierarchicalConfiguration node)
             throws IOException {
-        XMLConfiguration xml;
-        if (node instanceof XMLConfiguration) {
-            xml = (XMLConfiguration) node;
-        } else {
-            xml = new XMLConfiguration(node);
-            disableDelimiterParsing(xml);
-        }
-        StringWriter w = new StringWriter();
-        try {
-            xml.save(w);
-        } catch (org.apache.commons.configuration.ConfigurationException e) {
-            throw new ConfigurationException(
-                    "Could transform XML node to reader.", e);
-        }
-        StringReader r = new StringReader(w.toString());
-        w.close();
-        return r;
+        return XMLConfigurationUtil.newReader(node);
     }
     
     /**
@@ -411,16 +292,7 @@ public final class ConfigurationUtil {
      */
     public static XMLConfiguration getXmlAt(
             HierarchicalConfiguration node, String key) {
-        if (node == null) {
-            return null;
-        }
-        HierarchicalConfiguration sub = safeConfigurationAt(node, key);
-        if (sub == null) {
-            return null;
-        }
-        XMLConfiguration xml = new XMLConfiguration(sub);
-        disableDelimiterParsing(xml);
-        return xml;
+        return XMLConfigurationUtil.getXmlAt(node, key);
     }
     
     /**
@@ -433,133 +305,6 @@ public final class ConfigurationUtil {
      */
     public static void assertWriteRead(IXMLConfigurable xmlConfiurable)
             throws IOException {
-        
-        File tempFile = File.createTempFile("XMLConfigurableTester", ".xml");
-        
-        // Write
-        Writer out = new OutputStreamWriter(
-                new FileOutputStream(tempFile), CharEncoding.UTF_8);
-        try {
-            xmlConfiurable.saveToXML(out);
-        } finally {
-            out.close();
-        }
-        
-        // Read
-        XMLConfiguration xml = new ConfigurationLoader().loadXML(tempFile);
-        IXMLConfigurable readConfigurable = 
-                (IXMLConfigurable) ConfigurationUtil.newInstance(xml);
-
-        FileUtil.delete(tempFile);
-
-        if (!xmlConfiurable.equals(readConfigurable)) {
-            LOG.error("BEFORE: " + xmlConfiurable);
-            LOG.error(" AFTER: " + readConfigurable);
-            throw new ConfigurationException(
-                    "Saved and loaded XML are not the same.");
-        }
+        XMLConfigurationUtil.assertWriteRead(xmlConfiurable);
     }
-
-    /**
-     * Gets a comma-separated-value string as a String array, trimming values 
-     * and removing any blank entries.  
-     * Commas can have any spaces before or after.
-     * Since {@link #newXMLConfiguration(Reader)} disables delimiter parsing,
-     * this method is an useful alternative to 
-     * {@link HierarchicalConfiguration#getStringArray(String)}.
-     * @param xml xml configuration
-     * @param key key to the element/attribute containing the CSV string
-     * @return string array (or null)
-     * @since 1.13.0
-     */
-    public static String[] getCSVStringArray(
-            HierarchicalConfiguration xml, String key) {
-        return getCSVStringArray(xml, key, null);
-    }
-    /**
-     * Gets a comma-separated-value string as a String array, trimming values 
-     * and removing any blank entries.  
-     * Commas can have any spaces before or after.
-     * Since {@link #newXMLConfiguration(Reader)} disables delimiter parsing,
-     * this method is an useful alternative to 
-     * {@link HierarchicalConfiguration#getStringArray(String)}.
-     * @param xml xml configuration
-     * @param key key to the element/attribute containing the CSV string
-     * @param defaultValues default values if the split returns null
-     *        or an empty array
-     * @return string array (or null)
-     * @since 1.13.0
-     */
-    public static String[] getCSVStringArray(
-            HierarchicalConfiguration xml, String key, String[] defaultValues) {
-        String[] values = splitCSV(xml.getString(key, null));
-        if (ArrayUtils.isEmpty(values)) {
-            return defaultValues;
-        }
-        return values;
-    }
-
-    /**
-     * Gets a comma-separated-value string as an int array, removing any 
-     * blank entries.  
-     * Commas can have any spaces before or after.
-     * Invalid integers will log an error and assign zero instead.
-     * @param xml xml configuration
-     * @param key key to the element/attribute containing the CSV string
-     * @return int array (or null)
-     * @since 1.13.0
-     */
-    public static int[] getCSVIntArray(
-            HierarchicalConfiguration xml, String key) {
-        return getCSVIntArray(xml, key, null);
-    }
-    /**
-     * Gets a comma-separated-value string as an int array, removing any 
-     * blank entries.  
-     * Commas can have any spaces before or after.
-     * Invalid integers will log an error and assign zero instead.
-     * @param xml xml configuration
-     * @param key key to the element/attribute containing the CSV string
-     * @param defaultValues default values if the split returns null
-     *        or an empty array
-     * @return int array (or null)
-     * @since 1.13.0
-     */
-    public static int[] getCSVIntArray(
-            HierarchicalConfiguration xml, String key, int[] defaultValues) {
-        String[] strings = splitCSV(xml.getString(key, null));
-        if (ArrayUtils.isEmpty(strings)) {
-            return defaultValues;
-        }
-        int[] ints = new int[strings.length];
-        for (int i = 0; i < strings.length; i++) {
-            try {
-                ints[i] = Integer.parseInt(strings[i]);
-            } catch (NumberFormatException e) {
-                LOG.error("Invalid integer: " + strings[i], e);
-            }
-        }
-        return ints;
-    }
-    
-    // CVS Split: trim + remove blank entries 
-    private static String[] splitCSV(String str) {
-        if (str == null) {
-            return null;
-        }
-        return str.trim().split("(\\s*,\\s*)+");
-    }
-    
-    // This method is because the regular configurationAt MUST have 1
-    // entry or will fail, and the containsKey(String) method is not reliable
-    // since it expects a value (body text) or returns false.
-    private static HierarchicalConfiguration safeConfigurationAt(
-            HierarchicalConfiguration node, String key) {
-        List<HierarchicalConfiguration> subs = node.configurationsAt(key);
-        if (subs != null && !subs.isEmpty()) {
-            return subs.get(0);
-        }
-        return null;
-    }
-    
 }
