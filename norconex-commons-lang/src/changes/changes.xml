@@ -23,7 +23,7 @@
       <action dev="essiembre" type="add">
         New XMLConfigurationUtil class replacing ConfigurationUtil, offering
         new methods: #getCSVStringArray(...), #getCSVIntArray(...), 
-        and #validate(...).
+        and #validate(...), #loadFromXML(...).
       </action>
       <action dev="essiembre" type="update">
         ConfigurationLoadedUtil now deprecated in favor of XMLConfigurationUtil.

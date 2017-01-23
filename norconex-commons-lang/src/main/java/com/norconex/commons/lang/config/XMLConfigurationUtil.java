@@ -176,14 +176,7 @@ public final class XMLConfigurationUtil {
             return defaultObject;
         }
         if (obj instanceof IXMLConfigurable) {
-            try {
-                validate(obj.getClass(), node);
-                ((IXMLConfigurable) obj).loadFromXML(newReader(node));
-            } catch (IOException e) {
-                throw new ConfigurationException(
-                        "Could not load new instance from XML \""
-                        + clazz + "\".", e);
-            }
+            loadFromXML((IXMLConfigurable) obj, node);
         }
         return obj;
     }
@@ -371,6 +364,39 @@ public final class XMLConfigurationUtil {
                     "Could not validate class: " + clazz, e);
         } finally {
             IOUtils.closeQuietly(reader);
+        }
+    }
+    
+    /**
+     * Loads XML into the given object, performing validation first.
+     * Except for validation, it is the same as calling 
+     * {@link IXMLConfigurable#loadFromXML(Reader)} on an object.
+     * @param obj object to have loaded
+     * @param reader xml reader 
+     */
+    public static void loadFromXML(IXMLConfigurable obj, Reader reader) {
+        if (obj == null || reader == null) {
+            return;
+        }
+        loadFromXML(obj, XMLConfigurationUtil.newXMLConfiguration(reader));
+    }
+    /**
+     * Loads XML into the given object, performing validation first.
+     * @param obj object to have loaded
+     * @param node XML node to have loaded
+     */
+    public static void loadFromXML(
+            IXMLConfigurable obj, HierarchicalConfiguration node) {
+        if (obj == null || node == null) {
+            return;
+        }
+        try {
+            validate(obj.getClass(), node);
+            obj.loadFromXML(newReader(node));
+        } catch (IOException e) {
+            throw new ConfigurationException(
+                    "Could not load new instance from XML \""
+                    + obj.getClass() + "\".", e);
         }
     }
     
