@@ -570,17 +570,23 @@ public final class XMLConfigurationUtil {
             super();
             this.clazz = clazz;
         }
+        @Override
         public void warning(SAXParseException e) throws SAXException {
             errorCount++;
-            LOG.warn(clazz.getSimpleName() + ": " + e.getMessage());
+            LOG.warn(msg(e));
         }
+        @Override
         public void error(SAXParseException e) throws SAXException {
             errorCount++;
-            LOG.error(clazz.getSimpleName() + ": " + e.getMessage());
+            LOG.error(msg(e));
         }
+        @Override
         public void fatalError(SAXParseException e) throws SAXException {
             errorCount++;
-            LOG.fatal(clazz.getSimpleName() + ": " + e.getMessage());
+            LOG.fatal(msg(e));
+        }
+        private String msg(SAXParseException e) {
+            return "(XML) " + clazz.getSimpleName() + ": " + e.getMessage();
         }
     }
 }
