@@ -23,6 +23,8 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Layout;
 import org.apache.log4j.Level;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 import org.apache.log4j.spi.LoggingEvent;
 
@@ -38,6 +40,7 @@ public class CountingConsoleAppender extends ConsoleAppender {
 
     public static final Layout DEFAULT_LAYOUT = new PatternLayout("%-5p %m%n");
     private final Map<Level, AtomicInteger> counters = new HashMap<>();
+    private final Map<Class<?>, Logger> loggers = new HashMap<>();
     
     public CountingConsoleAppender() {
         this(DEFAULT_LAYOUT);
@@ -96,6 +99,41 @@ public class CountingConsoleAppender extends ConsoleAppender {
         }
     }
 
+    /**
+     * Starts counting log events for a class by creating a logger for that
+     * class and appending itself to it.  If a logger was already created 
+     * for the class, it will be reused (but the passed log level will be set
+     * on it).
+     * @param clazz class to count log events for
+     * @param logLevel minimum log level to track
+     */
+    public synchronized final void startCountingFor(
+            Class<?> clazz, Level logLevel) {
+        Logger logger = loggers.get(clazz);
+        if (logger == null) {
+            logger = LogManager.getLogger(clazz);
+            loggers.put(clazz, logger);
+        }
+        if (!logger.isAttached(this)) {
+            logger.addAppender(this);
+        }
+        logger.setLevel(logLevel);
+        logger.setAdditivity(false);
+    }
+    /**
+     * Stops counting log events for a class by removing this appender
+     * from the logger previously created for the supplied class.
+     * This method has no effect if {@link #startCountingFor(Class, Level)} 
+     * was not previously invoked with the same class.
+     * @param clazz class to stop counting log events for
+     */
+    public synchronized final void stopCountingFor(Class<?> clazz) {
+        Logger logger = loggers.get(clazz);
+        if (logger != null) {
+            logger.removeAppender(this);
+        }
+    }
+    
     private synchronized AtomicInteger getCounter(Level level) {
         AtomicInteger i = counters.get(level);
         if (i == null) {
