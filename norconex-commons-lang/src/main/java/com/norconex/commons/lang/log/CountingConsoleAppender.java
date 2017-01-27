@@ -107,7 +107,7 @@ public class CountingConsoleAppender extends ConsoleAppender {
      * @param clazz class to count log events for
      * @param logLevel minimum log level to track
      */
-    public synchronized final void startCountingFor(
+    public synchronized void startCountingFor(
             Class<?> clazz, Level logLevel) {
         Logger logger = loggers.get(clazz);
         if (logger == null) {
@@ -127,7 +127,7 @@ public class CountingConsoleAppender extends ConsoleAppender {
      * was not previously invoked with the same class.
      * @param clazz class to stop counting log events for
      */
-    public synchronized final void stopCountingFor(Class<?> clazz) {
+    public synchronized void stopCountingFor(Class<?> clazz) {
         Logger logger = loggers.get(clazz);
         if (logger != null) {
             logger.removeAppender(this);

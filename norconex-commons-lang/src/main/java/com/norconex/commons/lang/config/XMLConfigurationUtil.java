@@ -54,7 +54,7 @@ import com.norconex.commons.lang.xml.ClasspathResourceResolver;
 /**
  * Utility methods when dealing with XML configuration files.
  * @author Pascal Essiembre
- * @since 1.13.0 (replaces deprecated {@link ConfigurationUtil})
+ * @since 1.13.0
  */
 public final class XMLConfigurationUtil {
     private static final Logger LOG = 
@@ -239,11 +239,11 @@ public final class XMLConfigurationUtil {
         
         try {
             if (key == null && defaultObject == null) {
-                return XMLConfigurationUtil.newInstance(node, (T) null);
+                return newInstance(node, (T) null);
             }
             HierarchicalConfiguration subconfig = 
                     safeConfigurationAt(node, key);
-            return XMLConfigurationUtil.newInstance(subconfig, defaultObject);
+            return newInstance(subconfig, defaultObject);
         } catch (Exception e) {
             if (canThrowException) {
                 if (e instanceof ConfigurationException) {
@@ -378,7 +378,7 @@ public final class XMLConfigurationUtil {
         if (obj == null || reader == null) {
             return;
         }
-        loadFromXML(obj, XMLConfigurationUtil.newXMLConfiguration(reader));
+        loadFromXML(obj, newXMLConfiguration(reader));
     }
     /**
      * Loads XML into the given object, performing validation first.
@@ -449,7 +449,7 @@ public final class XMLConfigurationUtil {
         // Read
         XMLConfiguration xml = new ConfigurationLoader().loadXML(tempFile);
         IXMLConfigurable readConfigurable = 
-                (IXMLConfigurable) XMLConfigurationUtil.newInstance(xml);
+                (IXMLConfigurable) newInstance(xml);
 
         FileUtil.delete(tempFile);
 
