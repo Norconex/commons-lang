@@ -9,6 +9,11 @@
 
     <release version="1.13.0-SNAPSHOT" date="2017-??-??" description="Feature release">
       <action dev="essiembre" type="add">
+        New "exec" package containing classes moved from Norconex JEF API.
+        Those classes provide ways to easily execute external commands
+        as well as making code execution "retriable" in case of failure. 
+      </action>
+      <action dev="essiembre" type="add">
         New CountingConsoleAppender for tracking how many log events of each type
         were logged (log4j).
       </action>
