@@ -77,18 +77,14 @@ public class ExternalApp {
         }
 
         //--------
-        String data = "";
-        if (inFile != null) {
-            FileUtils.copyDirectory(inFile.getParentFile(), new File("/tmp/inExec/" + inFile.getParentFile().getName()));
-            data += "IN FILE: " + inFile.getAbsolutePath() + "\n";
+        if (type.equals(TYPE_INFILE_OUTFILE)) {
+            String data = "";
+            File logFile = new File("/tmp/inExec-" + System.currentTimeMillis() + ".txt"); 
+            data += "IN FILE: " + inFile + "\n";
             data += "exists: " + inFile.exists() + "\n";
-            if (outFile != null) {
-                data += "OUT FILE: " + outFile.getAbsolutePath() + "\n";
-                data += "exists: " + outFile.exists() + "\n";
-            }
-            FileUtils.writeStringToFile(new File("/tmp/" + inFile.getParentFile().getName() + "/inExecList.txt"), data);
-        } else {
-            FileUtils.writeStringToFile(new File("/tmp/inExec/inputIsNull.txt"), data);
+            data += "OUT FILE: " + outFile + "\n";
+            data += "exists: " + outFile.exists() + "\n";
+            FileUtils.writeStringToFile(logFile, data, StandardCharsets.UTF_8, true);
         }
         //--------
 
