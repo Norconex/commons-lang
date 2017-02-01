@@ -76,8 +76,22 @@ public class ExternalApp {
             outFile = new File(args[fileArgIndex]);
         }
 
-        ///-----------------------------
-        try {
+        //--------
+        String data = "";
+        if (inFile != null) {
+            FileUtils.copyDirectory(inFile.getParentFile(), new File("/tmp/inExec/" + inFile.getParentFile().getName()));
+            data += "IN FILE: " + inFile.getAbsolutePath() + "\n";
+            data += "exists: " + inFile.exists() + "\n";
+            if (outFile != null) {
+                data += "OUT FILE: " + outFile.getAbsolutePath() + "\n";
+                data += "exists: " + outFile.exists() + "\n";
+            }
+            FileUtils.writeStringToFile(new File("/tmp/" + inFile.getParentFile().getName() + "/inExecList.txt"), data);
+        } else {
+            FileUtils.writeStringToFile(new File("/tmp/inExec/inputIsNull.txt"), data);
+        }
+        //--------
+
         
         printEnvToStdout(ENV_STDOUT_BEFORE);
         printEnvToStderr(ENV_STDERR_BEFORE);
@@ -98,21 +112,6 @@ public class ExternalApp {
         printEnvToStderr(ENV_STDERR_AFTER);
         if (output != System.out) {
             output.close();
-        }
-        
-        //---------
-        } finally {
-            if (inFile != null) {
-                String data = "";
-                FileUtils.copyDirectory(inFile.getParentFile(), new File("/tmp/inExec/" + inFile.getParentFile().getName()));
-                data += "IN FILE: " + inFile.getAbsolutePath() + "\n";
-                data += "exists: " + inFile.exists() + "\n";
-                if (outFile != null) {
-                    data += "OUT FILE: " + outFile.getAbsolutePath() + "\n";
-                    data += "exists: " + outFile.exists() + "\n";
-                }
-                FileUtils.writeStringToFile(new File("/tmp/" + inFile.getParentFile().getName() + "/inExecList.txt"), data);
-            }
         }
     }
     
