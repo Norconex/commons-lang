@@ -16,13 +16,19 @@ package com.norconex.commons.lang.exec;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
+import org.apache.commons.lang3.text.translate.CharSequenceTranslator;
+import org.apache.commons.lang3.text.translate.LookupTranslator;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -44,16 +50,18 @@ public class SystemCommand {
 
     private static final Logger LOG = LogManager.getLogger(SystemCommand.class);
 
-    private static final String[] EMPTY_STRINGS = new String[] {};
     private static final String[] CMD_PREFIXES_WIN_LEGACY = 
-    		new String[] { "command.com", "/C" };
+            new String[] { "command.com", "/C" };
     private static final String[] CMD_PREFIXES_WIN_CURRENT = 
-			new String[] { "cmd.exe", "/C" };
+            new String[] { "cmd.exe", "/C" };
+    
     private static final IStreamListener[] EMPTY_LISTENERS =
     		new IStreamListener[] {};
     
     private final String[] command;
     private final File workdir;
+    // Null means inherit from those of java process
+    private Map<String, String> environmentVariables = null;
 
     private final List<IStreamListener> errorListeners =
             Collections.synchronizedList(new ArrayList<IStreamListener>());
@@ -67,6 +75,9 @@ public class SystemCommand {
      * directory of the current process.  If more than one command values
      * are passed, the first element of the array
      * is the command and subsequent elements are arguments.
+     * If your command or arguments contain spaces, they will be escaped
+     * according to your operating sytem (surrounding with double-quotes on 
+     * Windows and backslash on other operating systems).
      * @param command the command to run
      */
     public SystemCommand(String... command) {
@@ -77,6 +88,9 @@ public class SystemCommand {
      * Creates a command. If more than one command values
      * are passed, the first element of the array
      * is the command and subsequent elements are arguments.
+     * If your command or arguments contain spaces, they will be escaped
+     * according to your operating sytem (surrounding with double-quotes on 
+     * Windows and backslash on other operating systems).
      * @param command the command to run
      * @param workdir command working directory.
      */
@@ -143,6 +157,22 @@ public class SystemCommand {
         	outputListeners.remove(listener);
         }
     }
+    /**
+     * Gets environment variables.
+     * @return environment variables
+     */
+    public Map<String, String> getEnvironmentVariables() {
+        return environmentVariables;
+    }
+    /**
+     * Sets environment variables. Set to <code>null</code> (default) for the 
+     * command to inherit the environment of the current process.
+     * @param environmentVariables environment variables
+     */
+    public void setEnvironmentVariables(
+            Map<String, String> environmentVariables) {
+        this.environmentVariables = environmentVariables;
+    }
 
     /**
      * Returns whether the command is currently running.
@@ -171,17 +201,17 @@ public class SystemCommand {
     }
 
     /**
-     * Executes the given command and returns only when the underlying process
-     * stopped running.  
+     * Executes this system command and returns only when the underlying 
+     * process stopped running.  
      * @return process exit value
      * @throws SystemCommandException problem executing command
      */
     public int execute() throws SystemCommandException {
         return execute(false);
     }
-    
+
     /**
-     * Executes the given system command.  When run in the background,
+     * Executes this system command.  When run in the background,
      * this method does not wait for the process to complete before returning.
      * In such case the status code should always be 0 unless it terminated 
      * abruptly (may not reflect the process termination status).
@@ -196,24 +226,59 @@ public class SystemCommand {
      * @throws IllegalStateException when command is already running
      */
     public int execute(boolean runInBackground) throws SystemCommandException {
+        return execute(null, runInBackground);
+    }
+
+    /**
+     * Executes this system command with the given input and returns only when 
+     * the underlying process stopped running.
+     * @param input process input (fed to STDIN)  
+     * @return process exit value
+     * @throws SystemCommandException problem executing command
+     */
+    public int execute(InputStream input) throws SystemCommandException {
+        return execute(input, false);
+    }
+    
+    /**
+     * Executes this system command with the given input. When run in the 
+     * background, this method does not wait for the process to complete before
+     * returning.
+     * In such case the status code should always be 0 unless it terminated 
+     * abruptly (may not reflect the process termination status).
+     * When NOT run in the background, this method waits and returns 
+     * only when the underlying process stopped running.  
+     * Alternatively, to run a command asynchronously, you can wrap it in 
+     * its own thread.
+     * @param input process input (fed to STDIN)  
+     * @param runInBackground <code>true</code> to runs the system command in 
+     *         background.
+     * @return process exit value
+     * @throws SystemCommandException problem executing command
+     * @throws IllegalStateException when command is already running
+     */
+    public int execute(final InputStream input, boolean runInBackground) 
+            throws SystemCommandException {
         if (isRunning()) {
             throw new IllegalStateException(
                     "Command is already running: " + toString());
         }
         String[] cleanCommand = getCleanCommand();
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Executing: " + toString());
+            LOG.debug("Executing command: "
+                    + StringUtils.join(cleanCommand, " "));
         }
         try {
-            process = Runtime.getRuntime().exec(cleanCommand, null, workdir);
+            process = Runtime.getRuntime().exec(
+                    cleanCommand, environmentArray(), workdir);
         } catch (IOException e) {
             throw new SystemCommandException("Could not execute command: "
                     + toString(), e);
         }
         int exitValue = 0;
         if (runInBackground) {
-            ExecUtils.watchProcessOutput(
-                    process, 
+            ExecUtil.watchProcessOutput(
+                    process, input, 
                     outputListeners.toArray(EMPTY_LISTENERS),
                     errorListeners.toArray(EMPTY_LISTENERS));
             try {
@@ -223,21 +288,12 @@ public class SystemCommand {
                 // Do nothing
             }
         } else {
-            try {
-                exitValue = ExecUtils.watchProcess(
-                        process, 
-                        outputListeners.toArray(EMPTY_LISTENERS),
-                        errorListeners.toArray(EMPTY_LISTENERS));
-            } catch (InterruptedException e) {
-                throw new SystemCommandException(
-                        "Could not watch process for command: "
-                                + toString(), e);
-            }
+            exitValue = ExecUtil.watchProcess(
+                    process, input, 
+                    outputListeners.toArray(EMPTY_LISTENERS),
+                    errorListeners.toArray(EMPTY_LISTENERS));
         }
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Command returned with exit value " + exitValue
-            		+ ": " + toString());
-        }
+        
         if (exitValue != 0) {
             LOG.error("Command returned with exit value " + process.exitValue()
                     + ": " + toString());
@@ -254,27 +310,102 @@ public class SystemCommand {
         return StringUtils.join(command, " ");
     }
 
+    private String[] environmentArray() {
+        if (environmentVariables == null) {
+            return null;
+        }
+        List<String> envs = new ArrayList<>();
+        for (Entry<String, String> entry : environmentVariables.entrySet()) {
+            envs.add(entry.getKey() + "=" + entry.getValue());
+        }
+        return envs.toArray(ArrayUtils.EMPTY_STRING_ARRAY);
+    }
+    
     private String[] getCleanCommand() throws SystemCommandException {
-        if (ArrayUtils.isEmpty(command)) {
+        List<String> cmd = 
+                new ArrayList<>(Arrays.asList(ArrayUtils.nullToEmpty(command)));
+        String[] prefixes = getOSCommandPrefixes();
+        removePrefixes(cmd, prefixes);
+        if (cmd.isEmpty()) {
             throw new SystemCommandException("No command specified.");
         }
+
+        if (SystemUtils.IS_OS_WINDOWS) {
+            escapeWindows(cmd);
+        } else {
+            escapeNonWindows(cmd);
+        }
+        return ArrayUtils.addAll(
+                prefixes, cmd.toArray(ArrayUtils.EMPTY_STRING_ARRAY));
+    }
+    
+    // Removes OS prefixes from a command since they will be re-added
+    // and can affect processing logic if not
+    private void removePrefixes(List<String> cmd, String[] prefixes) {
+        if (ArrayUtils.isEmpty(prefixes) || cmd.isEmpty()) {
+            return;
+        }
+        for (int i = 0; i < prefixes.length; i++) {
+            String prefix = prefixes[i];
+            if (cmd.size() > i && prefix.equalsIgnoreCase(cmd.get(0))) {
+                cmd.remove(0);
+            } else {
+                return;
+            }
+        }
+    }
+    
+    // With windows, using cmd.exe /C requires putting arguments with 
+    // spaces in quotes, and then everything after cmd.exe /C in quotes
+    // as well. See:
+    // http://stackoverflow.com/questions/6376113/how-to-use-spaces-in-cmd
+    private void escapeWindows(List<String> cmd) {
+        // If only 1 arg, it could be the command plus args together so there
+        // is no way to tell if spaces should be escaped, so we assure they 
+        // were properly escaped to begin with.
+        if (cmd.size() == 1) {
+            cmd.add(0, "\"" + cmd.remove(0) + "\"");
+            return;
+        }
         
-        String[] prefixes = getOSCommandPrefixes();
-        if (ArrayUtils.isEmpty(prefixes)) {
-            return command;
+        StringBuilder b = new StringBuilder();
+        for (String arg : cmd) {
+            if (b.length() > 0) {
+                b.append(' ');
+            }
+            if (StringUtils.contains(arg, ' ') 
+                    && !arg.matches("^\\s*\".*\"\\s*$")) {
+                b.append('"');
+                b.append(arg);
+                b.append('"');
+            } else {
+                b.append(arg);
+            }
+        }
+        cmd.clear();
+        cmd.add("\"" + b + "\"");
+    }
+
+    // Escape spaces with a backslash if not already escaped
+    private void escapeNonWindows(List<String> cmd) {
+        // If only 1 arg, it could be the command plus args together so there
+        // is no way to tell if spaces should be escaped, so we assure they 
+        // were properly escaped to begin with.
+        if (cmd.size() == 1) {
+            return;
         }
 
-        // if command starts with same prefix, do not add it.
-        if (command[0].equalsIgnoreCase(prefixes[0])) {
-            return command;
+        for (int i = 0; i < cmd.size(); i++) {
+            if (StringUtils.contains(cmd.get(i), ' ')) {
+                cmd.add(i, escapeShell(cmd.remove(i)));
+            }
         }
-        
-        return ArrayUtils.addAll(prefixes, command);
     }
+
     
     private String[] getOSCommandPrefixes() {
     	if (SystemUtils.OS_NAME == null) {
-    		return EMPTY_STRINGS;
+    		return ArrayUtils.EMPTY_STRING_ARRAY;
     	}
     	if (SystemUtils.IS_OS_WINDOWS) {
     		if (SystemUtils.IS_OS_WINDOWS_95
@@ -285,6 +416,39 @@ public class SystemCommand {
             // NT, 2000, XP and up
 			return CMD_PREFIXES_WIN_CURRENT;
     	}
-    	return EMPTY_STRINGS;
+        return ArrayUtils.EMPTY_STRING_ARRAY;
+    }
+    
+    //TODO remove the following when Apache Commons Lang 3.6 is out, which
+    // will contain StringEscapeUtils#escapeShell(String)
+    private static final CharSequenceTranslator ESCAPE_XSI =
+            new LookupTranslator(
+              new String[][] {
+                {"|", "\\|"},
+                {"&", "\\&"},
+                {";", "\\;"},
+                {"<", "\\<"},
+                {">", "\\>"},
+                {"(", "\\("},
+                {")", "\\)"},
+                {"$", "\\$"},
+                {"`", "\\`"},
+                {"\\", "\\\\"},
+                {"\"", "\\\""},
+                {"'", "\\'"},
+                {" ", "\\ "},
+                {"\t", "\\\t"},
+                {"\r\n", ""},
+                {"\n", ""},
+                {"*", "\\*"},
+                {"?", "\\?"},
+                {"[", "\\["},
+                {"#", "\\#"},
+                {"~", "\\~"},
+                {"=", "\\="},
+                {"%", "\\%"},
+            });
+    private String escapeShell(String input) {
+        return ESCAPE_XSI.translate(input);
     }
 }
