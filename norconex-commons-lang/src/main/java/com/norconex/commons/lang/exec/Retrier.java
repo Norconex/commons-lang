@@ -155,6 +155,7 @@ public class Retrier {
     /**
      * Runs the {@link IRetriable} instance.  This method is not thread safe.
      * @param retriable the code to run
+     * @param <T> type of optional return value
      * @return execution output if any, or null
      * @throws RetriableException wrapper around last exception encountered
      * or exception thrown when max rerun attempts is reached.
