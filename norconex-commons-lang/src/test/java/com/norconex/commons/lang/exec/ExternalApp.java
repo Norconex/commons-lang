@@ -24,6 +24,7 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -75,6 +76,9 @@ public class ExternalApp {
             outFile = new File(args[fileArgIndex]);
         }
 
+        ///-----------------------------
+        try {
+        
         printEnvToStdout(ENV_STDOUT_BEFORE);
         printEnvToStderr(ENV_STDERR_BEFORE);
         OutputStream output = getOutputStream(outFile);
@@ -94,6 +98,21 @@ public class ExternalApp {
         printEnvToStderr(ENV_STDERR_AFTER);
         if (output != System.out) {
             output.close();
+        }
+        
+        //---------
+        } finally {
+            if (inFile != null) {
+                String data = "";
+                FileUtils.copyDirectory(inFile.getParentFile(), new File("/tmp/inExec/" + inFile.getParentFile().getName()));
+                data += "IN FILE: " + inFile.getAbsolutePath() + "\n";
+                data += "exists: " + inFile.exists() + "\n";
+                if (outFile != null) {
+                    data += "OUT FILE: " + outFile.getAbsolutePath() + "\n";
+                    data += "exists: " + outFile.exists() + "\n";
+                }
+                FileUtils.writeStringToFile(new File("/tmp/" + inFile.getParentFile().getName() + "/inExecList.txt"), data);
+            }
         }
     }
     
