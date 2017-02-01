@@ -42,7 +42,7 @@ public class SystemCommandTest {
     @Test
     public void testInFileOutFile() throws IOException, SystemCommandException {
         File inFile = inputAsFile();
-        File outFile = tempFolder.newFile();
+        File outFile = newTempFile();
         
         SystemCommand cmd = ExternalApp.newSystemCommand(
                 ExternalApp.TYPE_INFILE_OUTFILE, inFile, outFile);
@@ -50,6 +50,11 @@ public class SystemCommandTest {
         cmd.execute();
         Assert.assertEquals(expectedOutputAsString(), fileAsString(outFile));
         Assert.assertTrue("Listener missed some output.", l.capturedThemAll());
+        
+        System.out.println("IN FILE:  " + inFile.getAbsolutePath());
+        System.out.println(" exists?  " + inFile.exists());
+        System.out.println("OUT FILE: " + outFile.getAbsolutePath());
+        System.out.println(" exists?  " + outFile.exists());
     }
 
     @Test
@@ -67,7 +72,7 @@ public class SystemCommandTest {
     @Test
     public void testStdinOutFile() throws IOException, SystemCommandException {
         InputStream input = inputAsStream();
-        File outFile = tempFolder.newFile();
+        File outFile = newTempFile();
         
         SystemCommand cmd = ExternalApp.newSystemCommand(
                 ExternalApp.TYPE_STDIN_OUTFILE, outFile);
@@ -92,7 +97,7 @@ public class SystemCommandTest {
     }
     
     private File inputAsFile() throws IOException {
-        File inFile = tempFolder.newFile();
+        File inFile = newTempFile();
         FileUtils.copyInputStreamToFile(
                 getClass().getResourceAsStream(IN_FILE_PATH), inFile);
         return inFile;
@@ -106,6 +111,14 @@ public class SystemCommandTest {
     private String expectedOutputAsString() throws IOException {
         return IOUtils.toString(getClass().getResourceAsStream(
                 EXPECTED_OUT_FILE_PATH), StandardCharsets.UTF_8);
+    }
+    private File newTempFile() throws IOException {
+        File file = tempFolder.newFile();
+        if (!file.exists()) {
+            // Just making sure it exists
+            FileUtils.touch(file);
+        }
+        return file;
     }
     
     private ExternalAppListener addEnvAndListener(SystemCommand cmd) {

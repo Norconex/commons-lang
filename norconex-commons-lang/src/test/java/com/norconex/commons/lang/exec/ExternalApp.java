@@ -92,7 +92,9 @@ public class ExternalApp {
 
         printEnvToStdout(ENV_STDOUT_AFTER);
         printEnvToStderr(ENV_STDERR_AFTER);
-        output.close();
+        if (output != System.out) {
+            output.close();
+        }
     }
     
     
