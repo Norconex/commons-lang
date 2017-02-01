@@ -24,7 +24,6 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -76,19 +75,6 @@ public class ExternalApp {
             outFile = new File(args[fileArgIndex]);
         }
 
-        //--------
-        if (type.equals(TYPE_INFILE_OUTFILE)) {
-            String data = "";
-            File logFile = new File("/tmp/inExec-" + System.currentTimeMillis() + ".txt"); 
-            data += "IN FILE: " + inFile + "\n";
-            data += "exists: " + inFile.exists() + "\n";
-            data += "OUT FILE: " + outFile + "\n";
-            data += "exists: " + outFile.exists() + "\n";
-            FileUtils.writeStringToFile(logFile, data, StandardCharsets.UTF_8, true);
-        }
-        //--------
-
-        
         printEnvToStdout(ENV_STDOUT_BEFORE);
         printEnvToStderr(ENV_STDERR_BEFORE);
         OutputStream output = getOutputStream(outFile);

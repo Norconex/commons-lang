@@ -44,21 +44,11 @@ public class SystemCommandTest {
         File inFile = inputAsFile();
         File outFile = newTempFile();
 
-        FileUtils.copyDirectory(tempFolder.getRoot(), new File("/tmp/beforeExec/" + tempFolder.getRoot().getName()));
-        
         SystemCommand cmd = ExternalApp.newSystemCommand(
                 ExternalApp.TYPE_INFILE_OUTFILE, inFile, outFile);
         ExternalAppListener l = addEnvAndListener(cmd);
         cmd.execute();
 
-        FileUtils.copyDirectory(tempFolder.getRoot(), new File("/tmp/afterExec/" + tempFolder.getRoot().getName()));
-
-        
-        System.out.println("IN FILE:  " + inFile.getAbsolutePath());
-        System.out.println(" exists?  " + inFile.exists());
-        System.out.println("OUT FILE: " + outFile.getAbsolutePath());
-        System.out.println(" exists?  " + outFile.exists());
-        
         Assert.assertEquals(expectedOutputAsString(), fileAsString(outFile));
         Assert.assertTrue("Listener missed some output.", l.capturedThemAll());
         

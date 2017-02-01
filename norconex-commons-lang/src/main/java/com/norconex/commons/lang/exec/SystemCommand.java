@@ -389,15 +389,19 @@ public class SystemCommand {
     // Escape spaces with a backslash if not already escaped
     private void escapeNonWindows(List<String> cmd) {
         // If only 1 arg, it could be the command plus args together so there
-        // is no way to tell if spaces should be escaped, so we assure they 
-        // were properly escaped to begin with.
+        // is no way to tell if spaces should be escaped, so we assume they 
+        // were properly escaped to begin with and we break it up by 
+        // non-escaped spaces or the OS will thing the single string
+        // is one command (as opposed to command + args) and can fail.
         if (cmd.size() == 1) {
-            return;
-        }
-
-        for (int i = 0; i < cmd.size(); i++) {
-            if (StringUtils.contains(cmd.get(i), ' ')) {
-                cmd.add(i, escapeShell(cmd.remove(i)));
+            String[] parts = cmd.get(0).split("(?<!\\\\)\\s+");
+            cmd.clear();
+            cmd.addAll(Arrays.asList(parts));
+        } else {
+            for (int i = 0; i < cmd.size(); i++) {
+                if (StringUtils.contains(cmd.get(i), ' ')) {
+                    cmd.add(i, escapeShell(cmd.remove(i)));
+                }
             }
         }
     }
