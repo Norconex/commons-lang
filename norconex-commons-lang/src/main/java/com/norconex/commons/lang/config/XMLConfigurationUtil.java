@@ -114,6 +114,33 @@ public final class XMLConfigurationUtil {
     }
 
     /**
+     * <p>Creates a new instance of the class represented by the "class" 
+     * attribute on the supplied XML. 
+     *  The class must have an empty constructor.
+     * If the class is an instance of {@link IXMLConfigurable}, the object 
+     * created will be automatically populated by invoking the 
+     * {@link IXMLConfigurable#loadFromXML(Reader)} method, 
+     * passing it the node XML automatically populated.
+     * The reader is expected to hold an XML, which will
+     * first be converted to an {@link XMLConfiguration}. This method has the 
+     * same effect as invoking: 
+     * </p>
+     * <pre>
+     * XMLConfigurationUtil.newInstance(
+     *         XMLConfigurationUtil.newXMLConfiguration(reader));
+     * </pre>
+     * 
+     * @param reader the XML representing the class to instantiate.
+     * @param <T> the type of the return value
+     * @return a new object.
+     * @throws ConfigurationException if instance cannot be created/populated
+     */
+    public static <T extends Object> T newInstance(Reader reader) {
+        return XMLConfigurationUtil.newInstance(
+                XMLConfigurationUtil.newXMLConfiguration(reader));
+    }
+    
+    /**
      * Creates a new instance of the class represented by the "class" attribute
      * on the given node.  The class must have an empty constructor.
      * If the class is an instance of {@link IXMLConfigurable}, the object 
