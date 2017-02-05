@@ -17,6 +17,8 @@ package com.norconex.commons.lang.exec;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -24,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
@@ -263,15 +266,43 @@ public class SystemCommand {
             throw new IllegalStateException(
                     "Command is already running: " + toString());
         }
+        
+try {
+    FileUtils.writeStringToFile(new File("/tmp/sysCommandRaw.txt"), StringUtils.join(command, " "));
+} catch (IOException e1) {
+    // TODO Auto-generated catch block
+    e1.printStackTrace();
+}
+        
         String[] cleanCommand = getCleanCommand();
         if (LOG.isDebugEnabled()) {
             LOG.debug("Executing command: "
                     + StringUtils.join(cleanCommand, " "));
         }
         try {
+try {
+    FileUtils.writeStringToFile(new File("/tmp/sysCommandClean.txt"), StringUtils.join(cleanCommand, " "));
+} catch (IOException e1) {
+    // TODO Auto-generated catch block
+    e1.printStackTrace();
+}
+            
             process = Runtime.getRuntime().exec(
                     cleanCommand, environmentArray(), workdir);
         } catch (IOException e) {
+            
+try {
+    StringWriter sw = new StringWriter();
+    PrintWriter pw = new PrintWriter(sw);
+    e.printStackTrace(pw);
+    pw.flush();
+    FileUtils.writeStringToFile(new File("/tmp/sysCommandError.txt"), sw.toString());
+} catch (IOException e1) {
+    // TODO Auto-generated catch block
+    e1.printStackTrace();
+}
+            
+            
             throw new SystemCommandException("Could not execute command: "
                     + toString(), e);
         }
