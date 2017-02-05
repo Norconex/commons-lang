@@ -134,7 +134,7 @@ public class InputStreamConsumer extends Thread {
 
     /**
      * Starts this consumer thread and wait for it to complete before returning.
-     * @throw {@link StreamException} if streaming is interrupted while waiting
+     * @throws StreamException if streaming is interrupted while waiting
      */
     public synchronized void startAndWait() {
         start();
