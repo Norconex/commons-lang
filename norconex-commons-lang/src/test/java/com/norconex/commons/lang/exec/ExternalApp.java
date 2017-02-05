@@ -174,7 +174,11 @@ public class ExternalApp {
         
         String cp = cmd.replaceFirst(".*\\s+-cp\\s+(.*)\\s+"
                 + ExternalApp.class.getName() + ".*", "$1");
-        cp = StringUtils.strip(cp, "\"");
+        boolean isQuoted = false;
+        if (cp.matches("^\".*\"$")) {
+            isQuoted = true;
+            cp = StringUtils.strip(cp, "\"");
+        }
         StringBuilder b = new StringBuilder();
         Matcher m = Pattern.compile(".*?(;|$)").matcher(cp);
         while (m.find()) {
@@ -186,7 +190,9 @@ public class ExternalApp {
         cp = b.toString();
         cp = StringUtils.removeEnd(cp, ";");
         cp = cp.replace("\\", "\\\\");
-        cp = "\"" + cp + "\"";
+        if (isQuoted) {
+            cp = "\"" + cp + "\"";
+        }
         cmd = cmd.replaceFirst("(.*\\s+-cp\\s+)(.*)(\\s+"
                 + ExternalApp.class.getName() + ".*)", "$1" + cp + "$3");
         return cmd;

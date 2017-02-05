@@ -36,6 +36,7 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
 import com.norconex.commons.lang.io.IInputStreamListener;
+import com.norconex.commons.lang.io.InputStreamLineListener;
 
 /**
  * Represents a program to be executed by the underlying system
@@ -306,12 +307,19 @@ try {
             throw new SystemCommandException("Could not execute command: "
                     + toString(), e);
         }
+        
+        IInputStreamListener[] outListeners = 
+                outputListeners.toArray(EMPTY_LISTENERS);
+        
+        IInputStreamListener[] errListeners = 
+                errorListeners.toArray(EMPTY_LISTENERS);
+        ErrorTracker errorTracker = new ErrorTracker();
+        errListeners = ArrayUtils.add(errListeners, errorTracker);
+        
         int exitValue = 0;
         if (runInBackground) {
             ExecUtil.watchProcessAsync(
-                    process, input, 
-                    outputListeners.toArray(EMPTY_LISTENERS),
-                    errorListeners.toArray(EMPTY_LISTENERS));
+                    process, input, outListeners, errListeners);
             try {
                 // Check in case the process terminated abruptly.
                 exitValue = process.exitValue();
@@ -320,15 +328,14 @@ try {
             }
         } else {
             exitValue = ExecUtil.watchProcess(
-                    process, input, 
-                    outputListeners.toArray(EMPTY_LISTENERS),
-                    errorListeners.toArray(EMPTY_LISTENERS));
+                    process, input, outListeners, errListeners);
         }
         
         if (exitValue != 0) {
             LOG.error("Command returned with exit value " + process.exitValue()
-                    + " (command properly escaped?): "
-                    + StringUtils.join(cleanCommand, " "));
+                    + " (command properly escaped?). Command: "
+                    + StringUtils.join(cleanCommand, " ") + " Error: \""
+                    + errorTracker.b.toString() + "\"");
         }
         process = null;
         return exitValue;
@@ -486,6 +493,17 @@ try {
         cmd.add(wrappedCmd);
     }
 
+    private class ErrorTracker extends InputStreamLineListener {
+        private final StringBuilder b = new StringBuilder();
+        @Override
+        protected void lineStreamed(String type, String line) {
+            if (b.length() > 0) {
+                b.append('\n');
+            }
+            b.append(line);
+        }
+    }
+    
     //TODO remove the following when Apache Commons Lang 3.6 is out, which
     // will contain StringEscapeUtils#escapeShell(String)
     private static final CharSequenceTranslator ESCAPE_XSI =
