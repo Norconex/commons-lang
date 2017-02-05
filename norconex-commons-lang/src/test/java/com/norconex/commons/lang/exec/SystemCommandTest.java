@@ -17,8 +17,6 @@ package com.norconex.commons.lang.exec;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -143,15 +141,6 @@ public class SystemCommandTest {
         
         @Override
         public void lineStreamed(String type, String line) {
-            
-try {
-    FileUtils.writeStringToFile(new File("/tmp/lines.txt"), type + ":" + line, true);
-} catch (IOException e1) {
-    // TODO Auto-generated catch block
-    e1.printStackTrace();
-}
-            
-            
             if ("STDOUT".equals(type)) {
                 if (ExternalApp.ENV_STDOUT_BEFORE.equals(line)) {
                     stdoutBefore = true;
