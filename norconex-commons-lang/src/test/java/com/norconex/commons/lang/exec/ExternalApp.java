@@ -180,7 +180,7 @@ public class ExternalApp {
             cp = StringUtils.strip(cp, "\"");
         }
         StringBuilder b = new StringBuilder();
-        Matcher m = Pattern.compile(".*?(;|$)").matcher(cp);
+        Matcher m = Pattern.compile(".*?([;:]|$)").matcher(cp);
         while (m.find()) {
             String path = m.group();
             if (keepPath(path)) {
@@ -188,7 +188,7 @@ public class ExternalApp {
             }
         }
         cp = b.toString();
-        cp = StringUtils.removeEnd(cp, ";");
+        cp = StringUtils.stripEnd(cp, ":;");
         cp = cp.replace("\\", "\\\\");
         if (isQuoted) {
             cp = "\"" + cp + "\"";
