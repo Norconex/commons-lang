@@ -53,7 +53,7 @@ public class ClasspathResourceResolver implements LSResourceResolver {
      * @param relativeTo class to use as base for resolution
      */
     public ClasspathResourceResolver(Class<?> relativeTo) {
-        this(getPackageNameFromClass(relativeTo));
+        this(getPackageResourcePathFromClass(relativeTo));
     }
     /**
      * Resolves the resource relative to the given package path.
@@ -69,7 +69,7 @@ public class ClasspathResourceResolver implements LSResourceResolver {
             String publicId, String systemId, String baseURI) {
         String path = rootPath;
         if (baseURI != null) {
-            path = getPackageNameFromBaseURI(baseURI);
+            path = getPackageResourcePathFromBaseURI(baseURI);
         }
         String r = getResourcePath(path, systemId);
         InputStream resourceAsStream = getClass().getResourceAsStream(r);
@@ -84,14 +84,14 @@ public class ClasspathResourceResolver implements LSResourceResolver {
         }
         return newPath + systemId.replaceFirst("^(../)+", "");
     }
-    private static String getPackageNameFromClass(Class<?> klass) {
+    private static String getPackageResourcePathFromClass(Class<?> klass) {
         if (klass == null) {
             return StringUtils.EMPTY;
         }
         return "/" + klass.getPackage().getName().replace('.', '/') + "/";
         
     }
-    private String getPackageNameFromBaseURI(String baseURI) {
+    private String getPackageResourcePathFromBaseURI(String baseURI) {
         if (baseURI == null) {
             return StringUtils.EMPTY;
         }

@@ -14,18 +14,13 @@
  */
 package com.norconex.commons.lang.config;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.io.Writer;
 import java.util.List;
 
-import javax.xml.XMLConstants;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
@@ -35,7 +30,6 @@ import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -43,7 +37,6 @@ import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-import com.norconex.commons.lang.file.FileUtil;
 import com.norconex.commons.lang.xml.ClasspathResourceResolver;
 
 //TODO Add some of the convenience methods found in Collector/Crawler Loader?
@@ -60,6 +53,9 @@ public final class XMLConfigurationUtil {
     private static final Logger LOG = 
             LogManager.getLogger(XMLConfigurationUtil.class);
 
+    public static final String W3C_XML_SCHEMA_NS_URI_1_1 = 
+            "http://www.w3.org/XML/XMLSchema/v1.1";
+    
     private XMLConfigurationUtil() {
         super();
     }
@@ -336,14 +332,15 @@ public final class XMLConfigurationUtil {
         
         // Only validate if .xsd file exist in classpath for class
         String xsdResource = ClassUtils.getSimpleName(clazz) + ".xsd";
-        LOG.debug("Resource to validate: " + xsdResource);
+        LOG.debug("Class to validate: " + ClassUtils.getSimpleName(clazz));
         if (clazz.getResource(xsdResource) == null) {
+            LOG.debug("Resource not found for validation: " + xsdResource);
             return 0;
         }
-        
+
         // Go ahead: validate
         SchemaFactory schemaFactory = 
-                SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+                SchemaFactory.newInstance(W3C_XML_SCHEMA_NS_URI_1_1);
         schemaFactory.setResourceResolver(new ClasspathResourceResolver(clazz));
         
         Reader reader = null;
@@ -353,7 +350,8 @@ public final class XMLConfigurationUtil {
             } else {
                 reader = newReader((HierarchicalConfiguration) source);
             }
-            Schema schema = schemaFactory.newSchema(new StreamSource(xsdStream));
+            Schema schema = schemaFactory.newSchema(
+                    new StreamSource(xsdStream, getXSDResourcePath(clazz)));
             Validator validator = schema.newValidator();
             LogErrorHandler seh = new LogErrorHandler(clazz);
             validator.setErrorHandler(seh);
@@ -435,11 +433,8 @@ public final class XMLConfigurationUtil {
     public static void assertWriteRead(IXMLConfigurable xmlConfiurable)
             throws IOException {
         
-        File tempFile = File.createTempFile("XMLConfigurableTester", ".xml");
-        
         // Write
-        Writer out = new OutputStreamWriter(
-                new FileOutputStream(tempFile), CharEncoding.UTF_8);
+        StringWriter out = new StringWriter();
         try {
             xmlConfiurable.saveToXML(out);
         } finally {
@@ -447,11 +442,10 @@ public final class XMLConfigurationUtil {
         }
         
         // Read
-        XMLConfiguration xml = new ConfigurationLoader().loadXML(tempFile);
+        XMLConfiguration xml = newXMLConfiguration(
+                new StringReader(out.toString()));
         IXMLConfigurable readConfigurable = 
                 (IXMLConfigurable) newInstance(xml);
-
-        FileUtil.delete(tempFile);
 
         if (!xmlConfiurable.equals(readConfigurable)) {
             LOG.error("BEFORE: " + xmlConfiurable);
@@ -549,6 +543,13 @@ public final class XMLConfigurationUtil {
             return null;
         }
         return str.trim().split("(\\s*,\\s*)+");
+    }
+    
+    private static String getXSDResourcePath(Class<?> clazz) {
+        if (clazz == null) {
+            return null;
+        }
+        return "/" + clazz.getCanonicalName().replace('.', '/') + ".xsd";
     }
     
     // This method is because the regular configurationAt MUST have 1

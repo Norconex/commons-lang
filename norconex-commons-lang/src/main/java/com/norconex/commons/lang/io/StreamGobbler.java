@@ -34,7 +34,9 @@ import org.apache.log4j.Logger;
  * application freeze.  For example, this is a way to capture the STDOUT and
  * STDERR from a process.
  * @author Pascal Essiembre
+ * @deprecated As of 1.13.0, use {@link InputStreamConsumer} instead.
  */
+@Deprecated
 public class StreamGobbler extends Thread {
 
     private static final Logger LOG =

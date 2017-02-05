@@ -28,7 +28,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import com.norconex.commons.lang.io.IStreamListener;
+import com.norconex.commons.lang.io.InputStreamLineListener;
 
 public class SystemCommandTest {
 
@@ -132,7 +132,7 @@ public class SystemCommandTest {
         return l;
     }
     
-    class ExternalAppListener implements IStreamListener {
+    class ExternalAppListener extends InputStreamLineListener {
         private boolean stdoutBefore = false;
         private boolean stdoutAfter = false;
         private boolean stderrBefore = false;

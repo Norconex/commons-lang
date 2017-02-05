@@ -32,7 +32,7 @@ import org.apache.commons.lang3.text.translate.LookupTranslator;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
-import com.norconex.commons.lang.io.IStreamListener;
+import com.norconex.commons.lang.io.IInputStreamListener;
 
 /**
  * Represents a program to be executed by the underlying system
@@ -55,18 +55,18 @@ public class SystemCommand {
     private static final String[] CMD_PREFIXES_WIN_CURRENT = 
             new String[] { "cmd.exe", "/C" };
     
-    private static final IStreamListener[] EMPTY_LISTENERS =
-    		new IStreamListener[] {};
+    private static final IInputStreamListener[] EMPTY_LISTENERS =
+    		new IInputStreamListener[] {};
     
     private final String[] command;
     private final File workdir;
     // Null means inherit from those of java process
     private Map<String, String> environmentVariables = null;
 
-    private final List<IStreamListener> errorListeners =
-            Collections.synchronizedList(new ArrayList<IStreamListener>());
-    private final List<IStreamListener> outputListeners =
-            Collections.synchronizedList(new ArrayList<IStreamListener>());
+    private final List<IInputStreamListener> errorListeners =
+            Collections.synchronizedList(new ArrayList<IInputStreamListener>());
+    private final List<IInputStreamListener> outputListeners =
+            Collections.synchronizedList(new ArrayList<IInputStreamListener>());
 
     private Process process;
     
@@ -122,7 +122,7 @@ public class SystemCommand {
      * @param listener command error listener
      */
     public void addErrorListener(
-            final IStreamListener listener) {
+            final IInputStreamListener listener) {
         synchronized (errorListeners) {
         	errorListeners.add(0, listener);
         }
@@ -132,7 +132,7 @@ public class SystemCommand {
      * @param listener command error listener
      */
     public void removeErrorListener(
-            final IStreamListener listener) {
+            final IInputStreamListener listener) {
         synchronized (errorListeners) {
         	errorListeners.remove(listener);
         }
@@ -142,7 +142,7 @@ public class SystemCommand {
      * @param listener command output listener
      */
     public void addOutputListener(
-            final IStreamListener listener) {
+            final IInputStreamListener listener) {
         synchronized (outputListeners) {
         	outputListeners.add(0, listener);
         }
@@ -152,7 +152,7 @@ public class SystemCommand {
      * @param listener command output listener
      */
     public void removeOutputListener(
-            final IStreamListener listener) {
+            final IInputStreamListener listener) {
         synchronized (outputListeners) {
         	outputListeners.remove(listener);
         }
@@ -277,7 +277,7 @@ public class SystemCommand {
         }
         int exitValue = 0;
         if (runInBackground) {
-            ExecUtil.watchProcessOutput(
+            ExecUtil.watchProcessAsync(
                     process, input, 
                     outputListeners.toArray(EMPTY_LISTENERS),
                     errorListeners.toArray(EMPTY_LISTENERS));
@@ -296,7 +296,8 @@ public class SystemCommand {
         
         if (exitValue != 0) {
             LOG.error("Command returned with exit value " + process.exitValue()
-                    + ": " + toString());
+                    + " (command properly escaped?): "
+                    + StringUtils.join(cleanCommand, " "));
         }
         process = null;
         return exitValue;
@@ -324,19 +325,13 @@ public class SystemCommand {
     private String[] getCleanCommand() throws SystemCommandException {
         List<String> cmd = 
                 new ArrayList<>(Arrays.asList(ArrayUtils.nullToEmpty(command)));
-        String[] prefixes = getOSCommandPrefixes();
-        removePrefixes(cmd, prefixes);
         if (cmd.isEmpty()) {
             throw new SystemCommandException("No command specified.");
         }
 
-        if (SystemUtils.IS_OS_WINDOWS) {
-            escapeWindows(cmd);
-        } else {
-            escapeNonWindows(cmd);
-        }
-        return ArrayUtils.addAll(
-                prefixes, cmd.toArray(ArrayUtils.EMPTY_STRING_ARRAY));
+        escape(cmd);
+        wrapCommand(cmd);
+        return cmd.toArray(ArrayUtils.EMPTY_STRING_ARRAY);
     }
     
     // Removes OS prefixes from a command since they will be re-added
@@ -355,43 +350,77 @@ public class SystemCommand {
         }
     }
     
+    /**
+     * Escapes spaces in each parts of the command as well as special
+     * characters in some operating systems, if they are not already
+     * escaped. Escapes according to operating system escape mechanism.
+     * If there is only one part to the command (size-one list), it
+     * can be the entire command with arguments passed as one string. In such
+     * case, there are little ways to tell if spaces are part of an argument
+     * or separates two arguments, so no escaping is performed.
+     * @param command the command to escape.
+     */
+    public static void escape(List<String> command) {
+        if (SystemUtils.IS_OS_WINDOWS) {
+            escapeWindows(command);
+        } else {
+            escapeNonWindows(command);
+        }
+    }
+    
+    /**
+     * Escapes spaces in each parts of the command as well as special
+     * characters in some operating systems, if they are not already
+     * escaped. Escapes according to operating system escape mechanism.
+     * If there is only one part to the command (size-one array), it
+     * can be the entire command with arguments passed as one string. In such
+     * case, there are little ways to tell if spaces are part of an argument
+     * or separates two arguments, so no escaping is performed.
+     * @param command the command to escape.
+     * @return escaped command
+     */
+    public static String[] escape(String... command) {
+        List<String> list = new ArrayList<String>(Arrays.asList(command));
+        escape(list);
+        return list.toArray(ArrayUtils.EMPTY_STRING_ARRAY);
+    }
+    
+    
     // With windows, using cmd.exe /C requires putting arguments with 
     // spaces in quotes, and then everything after cmd.exe /C in quotes
     // as well. See:
     // http://stackoverflow.com/questions/6376113/how-to-use-spaces-in-cmd
-    private void escapeWindows(List<String> cmd) {
+    private static void escapeWindows(List<String> cmd) {
         // If only 1 arg, it could be the command plus args together so there
-        // is no way to tell if spaces should be escaped, so we assure they 
+        // is no way to tell if spaces should be escaped, so we assume they 
         // were properly escaped to begin with.
         if (cmd.size() == 1) {
-            cmd.add(0, "\"" + cmd.remove(0) + "\"");
+            //TODO attempt to escape arguments properly checking if 
+            //an argument starts with a driver letter and/or checking
+            //if a file exists as we combine the arguments until a file
+            //is found?  If found, escape the sequence.
             return;
         }
-        
-        StringBuilder b = new StringBuilder();
+
+        List<String> newCmd = new ArrayList<String>();
         for (String arg : cmd) {
-            if (b.length() > 0) {
-                b.append(' ');
-            }
             if (StringUtils.contains(arg, ' ') 
                     && !arg.matches("^\\s*\".*\"\\s*$")) {
-                b.append('"');
-                b.append(arg);
-                b.append('"');
+                newCmd.add('"' + arg + '"');
             } else {
-                b.append(arg);
+                newCmd.add(arg);
             }
         }
         cmd.clear();
-        cmd.add("\"" + b + "\"");
+        cmd.addAll(newCmd);
     }
 
     // Escape spaces with a backslash if not already escaped
-    private void escapeNonWindows(List<String> cmd) {
+    private static void escapeNonWindows(List<String> cmd) {
         // If only 1 arg, it could be the command plus args together so there
         // is no way to tell if spaces should be escaped, so we assume they 
         // were properly escaped to begin with and we break it up by 
-        // non-escaped spaces or the OS will thing the single string
+        // non-escaped spaces or the OS will not think the single string
         // is one command (as opposed to command + args) and can fail.
         if (cmd.size() == 1) {
             String[] parts = cmd.get(0).split("(?<!\\\\)\\s+");
@@ -406,23 +435,26 @@ public class SystemCommand {
         }
     }
 
-    
-    private String[] getOSCommandPrefixes() {
-    	if (SystemUtils.OS_NAME == null) {
-    		return ArrayUtils.EMPTY_STRING_ARRAY;
-    	}
-    	if (SystemUtils.IS_OS_WINDOWS) {
-    		if (SystemUtils.IS_OS_WINDOWS_95
-    				|| SystemUtils.IS_OS_WINDOWS_98
-    				|| SystemUtils.IS_OS_WINDOWS_ME) {
-    			return CMD_PREFIXES_WIN_LEGACY;
-    		}
+    private void wrapCommand(List<String> cmd) {
+        if (SystemUtils.OS_NAME == null || !SystemUtils.IS_OS_WINDOWS) {
+            return;
+        }
+        String[] prefixes; 
+        if (SystemUtils.IS_OS_WINDOWS_95
+                || SystemUtils.IS_OS_WINDOWS_98
+                || SystemUtils.IS_OS_WINDOWS_ME) {
+            prefixes = CMD_PREFIXES_WIN_LEGACY;
+        } else {
             // NT, 2000, XP and up
-			return CMD_PREFIXES_WIN_CURRENT;
-    	}
-        return ArrayUtils.EMPTY_STRING_ARRAY;
+            prefixes = CMD_PREFIXES_WIN_CURRENT;
+        }
+        removePrefixes(cmd, prefixes);
+        String wrappedCmd = "\"" + StringUtils.join(cmd, " ") + "\"";
+        cmd.clear();
+        cmd.addAll(Arrays.asList(prefixes));
+        cmd.add(wrappedCmd);
     }
-    
+
     //TODO remove the following when Apache Commons Lang 3.6 is out, which
     // will contain StringEscapeUtils#escapeShell(String)
     private static final CharSequenceTranslator ESCAPE_XSI =
@@ -452,7 +484,7 @@ public class SystemCommand {
                 {"=", "\\="},
                 {"%", "\\%"},
             });
-    private String escapeShell(String input) {
+    private static String escapeShell(String input) {
         return ESCAPE_XSI.translate(input);
     }
 }

@@ -23,6 +23,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -62,7 +64,7 @@ public class ExternalApp {
             System.err.println("    " + TYPE_STDIN_STDOUT);
             System.exit(-1);
         }
-        
+
         String type = args[0];
         int fileArgIndex = 1;
         File inFile = null;
@@ -150,11 +152,65 @@ public class ExternalApp {
             }
             javaTask.getCommandLine().createArgument().setLine(args);
 
-            String cmd = StringUtils.join(javaTask.getCommandLine(), " ");
+            String[] cmdArray = javaTask.getCommandLine().getCommandline();
+            cmdArray = SystemCommand.escape(cmdArray);
+            
+            String cmd = StringUtils.join(cmdArray, " ");
+            cmd = fixCommand(cmd);
             return cmd;
         } catch (BuildException e) {
             throw e;
         }
-    }    
+    }
+    
+    // Fix the command as necessary.
+    // Shorten the command by eliminating items we do not need
+    // from classpath and using shorter command aliases.  This is necessary
+    // to prevent keep only necessary to prevent command line length limitation
+    // on windows ("The command line is too long.").
+    private static String fixCommand(String command) {
+        String cmd = command;
+        cmd = cmd.replaceFirst(" -classpath ", " -cp ");
+        
+        String cp = cmd.replaceFirst(".*\\s+-cp\\s+(.*)\\s+"
+                + ExternalApp.class.getName() + ".*", "$1");
+        cp = StringUtils.strip(cp, "\"");
+        StringBuilder b = new StringBuilder();
+        Matcher m = Pattern.compile(".*?(;|$)").matcher(cp);
+        while (m.find()) {
+            String path = m.group();
+            if (keepPath(path)) {
+                b.append(path);
+            }
+        }
+        cp = b.toString();
+        cp = StringUtils.removeEnd(cp, ";");
+        cp = cp.replace("\\", "\\\\");
+        cp = "\"" + cp + "\"";
+        cmd = cmd.replaceFirst("(.*\\s+-cp\\s+)(.*)(\\s+"
+                + ExternalApp.class.getName() + ".*)", "$1" + cp + "$3");
+        return cmd;
+    }
+    
+    private static final String[] KEEPERS = new String[] {
+            "norconex-importer",
+            "norconex-commons-lang",
+            "junit",
+            "commons-io",
+            "commons-lang3",
+            "log4j",
+            "ant",
+    };
+    private static boolean keepPath(String path) {
+        if (StringUtils.isBlank(path)) {
+            return false;
+        }
+        for (String keeper : KEEPERS) {
+            if (path.contains(keeper)) {
+                return true;
+            }
+        }
+        return false;
+    }
     
 }

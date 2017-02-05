@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.w3c.dom.ls.LSInput;
 
 /**
@@ -28,6 +30,9 @@ import org.w3c.dom.ls.LSInput;
  */
 public class ClasspathInput implements LSInput {
 
+    private static final Logger LOG = 
+            LogManager.getLogger(ClasspathInput.class);
+    
     private String publicId;
     private String systemId;
     private BufferedInputStream inputStream;
@@ -79,11 +84,9 @@ public class ClasspathInput implements LSInput {
             try {
                 byte[] input = new byte[inputStream.available()];
                 inputStream.read(input);
-                String contents = new String(input);
-                return contents;
+                return new String(input);
             } catch (IOException e) {
-                e.printStackTrace();
-                System.out.println("Exception " + e);
+                LOG.error("Could not get string data.", e);
                 return null;
             }
         }

@@ -20,8 +20,8 @@ import java.io.OutputStream;
 
 import org.apache.commons.io.IOUtils;
 
-import com.norconex.commons.lang.io.IStreamListener;
-import com.norconex.commons.lang.io.StreamGobbler;
+import com.norconex.commons.lang.io.IInputStreamListener;
+import com.norconex.commons.lang.io.InputStreamConsumer;
 
 /**
  * Utility methods related to process execution. Checked exceptions
@@ -48,19 +48,19 @@ public final class ExecUtil {
      * Watches a running process.  This method will wait until the process
      * as finished executing before returning with its exit value.
      * It ensures the process does not hang on some platform by making use
-     * of the {@link StreamGobbler} to read its error and output stream.
+     * of the {@link InputStreamConsumer} to read its error and output stream.
      * @param process the process to watch
      * @return process exit value
      */
     public static int watchProcess(Process process) {
-        return watchProcess(
-                process, new IStreamListener[] {}, new IStreamListener[] {});
+        return watchProcess(process, 
+                new IInputStreamListener[] {}, new IInputStreamListener[] {});
     }
     /**
      * Watches a running process.  This method will wait until the process
      * as finished executing before returning with its exit value.
      * It ensures the process does not hang on some platform by making use
-     * of the {@link StreamGobbler} to read its error and output stream.
+     * of the {@link InputStreamConsumer} to read its error and output stream.
      * The listener will be notified every time an error or output line
      * gets written by the process.
      * The listener line type will either be "STDERR" or "STDOUT".
@@ -70,16 +70,16 @@ public final class ExecUtil {
      */
     public static int watchProcess(
             Process process,
-            IStreamListener listener) {
+            IInputStreamListener listener) {
         return watchProcess(process,
-                new IStreamListener[] {listener},
-                new IStreamListener[] {listener});
+                new IInputStreamListener[] {listener},
+                new IInputStreamListener[] {listener});
     }
     /**
      * Watches a running process.  This method will wait until the process
      * as finished executing before returning with its exit value.
      * It ensures the process does not hang on some platform by making use
-     * of the {@link StreamGobbler} to read its error and output stream.
+     * of the {@link InputStreamConsumer} to read its error and output stream.
      * The listener will be notified every time an error or output line
      * gets written by the process.
      * The listener line type will either be "STDERR" or "STDOUT".
@@ -89,7 +89,7 @@ public final class ExecUtil {
      */
     public static int watchProcess(
             Process process,
-            IStreamListener[] listeners) {
+            IInputStreamListener[] listeners) {
         return watchProcess(process, listeners, listeners);
     }
     
@@ -97,7 +97,7 @@ public final class ExecUtil {
      * Watches a running process.  This method will wait until the process
      * as finished executing before returning with its exit value.
      * It ensures the process does not hang on some platform by making use
-     * of the {@link StreamGobbler} to read its error and output stream.
+     * of the {@link InputStreamConsumer} to read its error and output stream.
      * The listener will be notified every time an error or output line
      * gets written by the process.
      * The listener line type will either be "STDERR" or "STDOUT".
@@ -109,17 +109,17 @@ public final class ExecUtil {
      */
     public static int watchProcess(
             Process process,
-            IStreamListener outputListener,
-            IStreamListener errorListener) throws InterruptedException {
+            IInputStreamListener outputListener,
+            IInputStreamListener errorListener) throws InterruptedException {
         return watchProcess(process,
-                new IStreamListener[] {outputListener},
-                new IStreamListener[] {errorListener});
+                new IInputStreamListener[] {outputListener},
+                new IInputStreamListener[] {errorListener});
     }
     /**
      * Watches a running process.  This method will wait until the process
      * as finished executing before returning with its exit value.
      * It ensures the process does not hang on some platform by making use
-     * of the {@link StreamGobbler} to read its error and output stream.
+     * of the {@link InputStreamConsumer} to read its error and output stream.
      * The listeners will be notified every time an error or output line
      * gets written by the process.
      * The listener line type will either be "STDERR" or "STDOUT".
@@ -130,8 +130,8 @@ public final class ExecUtil {
      */
     public static int watchProcess(
             Process process,
-            IStreamListener[] outputListeners,
-            IStreamListener[] errorListeners) {
+            IInputStreamListener[] outputListeners,
+            IInputStreamListener[] errorListeners) {
         return watchProcess(process, null, outputListeners, errorListeners);
     }
     /**
@@ -139,7 +139,7 @@ public final class ExecUtil {
      * This method will wait until the process
      * as finished executing before returning with its exit value.
      * It ensures the process does not hang on some platform by making use
-     * of the {@link StreamGobbler} to read its error and output stream.
+     * of the {@link InputStreamConsumer} to read its error and output stream.
      * The listeners will be notified every time an error or output line
      * gets written by the process.
      * The listener line type will either be "STDERR" or "STDOUT".
@@ -152,9 +152,9 @@ public final class ExecUtil {
     public static int watchProcess(
             Process process,
             InputStream input,
-            IStreamListener[] outputListeners,
-            IStreamListener[] errorListeners) {
-        watchProcessOutput(process, input, outputListeners, errorListeners);
+            IInputStreamListener[] outputListeners,
+            IInputStreamListener[] errorListeners) {
+        watchProcessAsync(process, input, outputListeners, errorListeners);
         try {
             return process.waitFor();
         } catch (InterruptedException e) {
@@ -165,44 +165,46 @@ public final class ExecUtil {
 
     /**
      * Watches process output.  This method is the same as 
-     * {@link #watchProcess(Process, IStreamListener, IStreamListener)}
+     * {@link #watchProcess(
+     *            Process, IInputStreamListener, IInputStreamListener)}
      * with the exception of not waiting for the process to complete before
      * returning.
      * @param process the process on which to watch outputs
      * @param outputListener the process output listeners
      * @param errorListener the process error listeners 
      */
-    public static void watchProcessOutput(
+    public static void watchProcessAsync(
             Process process,
-            IStreamListener outputListener,
-            IStreamListener errorListener) {
-        watchProcessOutput(process,
-                new IStreamListener[] {outputListener},
-                new IStreamListener[] {errorListener});
+            IInputStreamListener outputListener,
+            IInputStreamListener errorListener) {
+        watchProcessAsync(process,
+                new IInputStreamListener[] {outputListener},
+                new IInputStreamListener[] {errorListener});
     }
     
     
     /**
      * Watches process output.  This method is the same as 
-     * {@link #watchProcess(Process, IStreamListener[], IStreamListener[])}
+     * {@link #watchProcess(
+     *            Process, IInputStreamListener[], IInputStreamListener[])}
      * with the exception of not waiting for the process to complete before
      * returning.
      * @param process the process on which to watch outputs
      * @param outputListeners the process output listeners
      * @param errorListeners the process error listeners 
      */
-    public static void watchProcessOutput(
+    public static void watchProcessAsync(
             Process process,
-            IStreamListener[] outputListeners,
-            IStreamListener[] errorListeners) {
-        watchProcessOutput(process, null, outputListeners, errorListeners);
+            IInputStreamListener[] outputListeners,
+            IInputStreamListener[] errorListeners) {
+        watchProcessAsync(process, null, outputListeners, errorListeners);
     }
 
     /**
      * Watches process output while sending data to its STDIN.  
      * This method is the same as 
-     * {@link #watchProcess(
-     *         Process, InputStream, IStreamListener[], IStreamListener[])}
+     * {@link #watchProcess(Process, InputStream, 
+     *            IInputStreamListener[], IInputStreamListener[])}
      * with the exception of not waiting for the process to complete before
      * returning.
      * @param process the process on which to watch outputs
@@ -210,21 +212,19 @@ public final class ExecUtil {
      * @param outputListeners the process output listeners
      * @param errorListeners the process error listeners 
      */
-    public static void watchProcessOutput(
+    public static void watchProcessAsync(
             final Process process,
             final InputStream input,
-            final IStreamListener[] outputListeners,
-            final IStreamListener[] errorListeners) {
+            final IInputStreamListener[] outputListeners,
+            final IInputStreamListener[] errorListeners) {
         // listen for output
-        StreamGobbler output = 
-                new StreamGobbler(process.getInputStream(), STDOUT);
-        output.addStreamListener(outputListeners);
+        InputStreamConsumer output = new InputStreamConsumer(
+                process.getInputStream(), STDOUT, outputListeners);
         output.start();
 
         // listen for error
-        StreamGobbler error = 
-                new StreamGobbler(process.getErrorStream(), STDERR);
-        error.addStreamListener(errorListeners);
+        InputStreamConsumer error = new InputStreamConsumer(
+                process.getErrorStream(), STDERR, errorListeners);
         error.start();
 
         // send input
