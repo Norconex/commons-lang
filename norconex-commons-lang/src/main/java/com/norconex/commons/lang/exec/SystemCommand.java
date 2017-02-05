@@ -268,7 +268,7 @@ public class SystemCommand {
         }
         
 try {
-    FileUtils.writeStringToFile(new File("/tmp/sysCommandRaw.txt"), StringUtils.join(command, " "));
+    FileUtils.writeStringToFile(new File("/tmp/sysCommandRaw" + System.currentTimeMillis() + ".txt"), StringUtils.join(command, " "));
 } catch (IOException e1) {
     // TODO Auto-generated catch block
     e1.printStackTrace();
@@ -281,7 +281,7 @@ try {
         }
         try {
 try {
-    FileUtils.writeStringToFile(new File("/tmp/sysCommandClean.txt"), StringUtils.join(cleanCommand, " "));
+    FileUtils.writeStringToFile(new File("/tmp/sysCommandClean" + System.currentTimeMillis() + ".txt"), StringUtils.join(cleanCommand, " "));
 } catch (IOException e1) {
     // TODO Auto-generated catch block
     e1.printStackTrace();
@@ -296,7 +296,7 @@ try {
     PrintWriter pw = new PrintWriter(sw);
     e.printStackTrace(pw);
     pw.flush();
-    FileUtils.writeStringToFile(new File("/tmp/sysCommandError.txt"), sw.toString());
+    FileUtils.writeStringToFile(new File("/tmp/sysCommandError" + System.currentTimeMillis() + ".txt"), sw.toString());
 } catch (IOException e1) {
     // TODO Auto-generated catch block
     e1.printStackTrace();
