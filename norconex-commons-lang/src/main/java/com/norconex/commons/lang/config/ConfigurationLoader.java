@@ -23,6 +23,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.List;
 import java.util.Properties;
+import java.util.regex.Pattern;
 
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.io.FilenameUtils;
@@ -176,9 +177,16 @@ public final class ConfigurationLoader {
         if (!configFile.exists()) {
             return null;
         }
-        try (Reader reader = 
-                new StringReader(loadString(configFile, variables))) {
-            return XMLConfigurationUtil.newXMLConfiguration(reader);
+        try {
+            String xml = loadString(configFile, variables);
+            // clean-up extra duplicate declaration tags due to template
+            // includes/imports that could break parsing.
+            // Keep first <?xml... tag only, and delete all <!DOCTYPE...
+            // as they are not necessary to parse configs.
+            xml = Pattern.compile("((?!^)<\\?xml.*?\\?>|<\\!DOCTYPE.*?>)",
+                    Pattern.MULTILINE).matcher(xml).replaceAll("");
+            return XMLConfigurationUtil.newXMLConfiguration(
+                    new StringReader(xml));
         } catch (Exception e) {
             throw new ConfigurationException(
                     "Cannot load configuration file: \"" + configFile + "\". "
