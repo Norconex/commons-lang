@@ -1,7 +1,13 @@
 TODO:
 ==============
 
+- Consider splitting Properties by \u001e by default (record separator).
+
 - Redo DurationUtil to be more flexible (using fluid builder approach.
   or check Apache or Java 8 equivalent classes if they can be made as flexible.
+  Look at:
+    https://commons.apache.org/proper/commons-lang/javadocs/api-3.5/index.html?org/apache/commons/lang3/time/DurationFormatUtils.html
+    http://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatterBuilder.html
+    http://joda-time.sourceforge.net/apidocs/org/joda/time/format/PeriodFormatterBuilder.html
 
 - Also do a duration parser if the Java 8 one (or Apache) is not as flexible as desired. 
