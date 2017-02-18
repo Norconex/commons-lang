@@ -77,6 +77,10 @@ public class ClasspathResourceResolver implements LSResourceResolver {
     }
 
     private String getResourcePath(String path, String systemId) {
+        if (systemId.startsWith("/")) {
+            // Absolute path, no need to resolve
+            return systemId;
+        }
         int upCount = StringUtils.countMatches(systemId, "../");
         String newPath = path;
         for (int i = 0; i < upCount; i++) {
