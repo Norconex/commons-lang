@@ -19,6 +19,8 @@ import java.io.InputStream;
 import javax.xml.validation.SchemaFactory;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.w3c.dom.ls.LSInput;
 import org.w3c.dom.ls.LSResourceResolver;
 
@@ -42,6 +44,9 @@ import org.w3c.dom.ls.LSResourceResolver;
  */
 public class ClasspathResourceResolver implements LSResourceResolver {
 
+    private static final Logger LOG = 
+            LogManager.getLogger(ClasspathResourceResolver.class);
+    
     private final String rootPath;
 
     public ClasspathResourceResolver() {
@@ -73,6 +78,10 @@ public class ClasspathResourceResolver implements LSResourceResolver {
         }
         String r = getResourcePath(path, systemId);
         InputStream resourceAsStream = getClass().getResourceAsStream(r);
+        if (resourceAsStream == null) {
+            LOG.error("Resource not found: " + r
+                    + " (baseURI: " + baseURI + "; systemId: " + systemId);
+        }
         return new ClasspathInput(publicId, r, resourceAsStream);
     }
 

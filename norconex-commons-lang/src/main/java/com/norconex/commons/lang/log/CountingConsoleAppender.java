@@ -118,7 +118,6 @@ public class CountingConsoleAppender extends ConsoleAppender {
             logger.addAppender(this);
         }
         logger.setLevel(logLevel);
-        logger.setAdditivity(false);
     }
     /**
      * Stops counting log events for a class by removing this appender
