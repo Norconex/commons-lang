@@ -28,9 +28,11 @@ import javax.xml.validation.Validator;
 
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.configuration.tree.ConfigurationNode;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ClassUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.xml.sax.ErrorHandler;
@@ -268,31 +270,52 @@ public final class XMLConfigurationUtil {
                     safeConfigurationAt(node, key);
             return newInstance(subconfig, defaultObject);
         } catch (Exception e) {
-            if (canThrowException) {
-                if (e instanceof ConfigurationException) {
-                    throw (ConfigurationException) e;
-                } else {
-                    throw new ConfigurationException(
-                            "Could not instantiate object from configuration "
-                          + "for \"" + node.getRoot().getName() 
-                          + " -> " + key + "\".", e);
-                }
-            } else {
-                if (e instanceof ConfigurationException
-                        && e.getCause() != null
-                        && e.getCause() instanceof ClassNotFoundException) {
-                    LOG.error("You declared a class that does not exists "
-                            + "for \"" + node.getRoot().getName() 
-                            + " -> " + key + "\". "
-                            + "Check for typos in your XML and make sure that "
-                            + "class is part of your Java classpath.", e);
-                } else{ 
-                    LOG.debug("Could not instantiate object from configuration "
-                            + "for \"" + node.getRoot().getName() 
-                            + " -> " + key + "\".", e);
-                }
-            }
+            handleException(node.getRootNode(), key, e, canThrowException);
             return defaultObject;
+        }
+    }
+    private static void handleException(
+            ConfigurationNode rootNode, String key,
+            Exception e, boolean canThrowException) {
+        
+        // Throw exception
+        if (canThrowException) {
+            if (e instanceof ConfigurationException) {
+                throw (ConfigurationException) e;
+            } else {
+                throw new ConfigurationException(
+                        "Could not instantiate object from configuration "
+                      + "for \"" + rootNode.getName() 
+                      + " -> " + key + "\".", e);
+            }
+        }
+
+        // Log exception
+        if (e instanceof ConfigurationException
+                && e.getCause() != null) {
+            if (e.getCause() instanceof ClassNotFoundException) {
+                LOG.error("You declared a class that does not exists "
+                        + "for \"" + rootNode.getName() 
+                        + " -> " + key + "\". Check for typos in your "
+                        + "XML and make sure that "
+                        + "class is part of your Java classpath.", e);
+            } else if (e.getCause() instanceof SAXParseException) {
+                    String systemId = ((SAXParseException ) 
+                            e.getCause()).getSystemId();
+                    if (StringUtils.endsWith(systemId, ".xsd")) {
+                        LOG.error("XML Schema parsing error for \""
+                                + rootNode.getName() 
+                                + " -> " + key + "\". Schema: " + systemId, e);
+                    } else {
+                        LOG.error("XML parsing error for \""
+                                + rootNode.getName() 
+                                + " -> " + key + "\".", e);
+                    }
+            }
+        } else{ 
+            LOG.debug("Could not instantiate object from configuration "
+                    + "for \"" + rootNode.getName() 
+                    + " -> " + key + "\".", e);
         }
     }
     
