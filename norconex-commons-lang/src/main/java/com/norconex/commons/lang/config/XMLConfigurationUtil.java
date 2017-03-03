@@ -39,6 +39,8 @@ import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
+import com.norconex.commons.lang.time.DurationParser;
+import com.norconex.commons.lang.time.DurationParserException;
 import com.norconex.commons.lang.xml.ClasspathResourceResolver;
 
 //TODO Add some of the convenience methods found in Collector/Crawler Loader?
@@ -505,6 +507,27 @@ public final class XMLConfigurationUtil {
         }
     }
 
+    /**
+     * Gets a duration which can be a numerical value or a textual 
+     * representation of a duration as per {@link DurationParser}.
+     * If the duration does not exists for the given key or is blank, 
+     * the default value is returned. 
+     * If the key value is found but there are parsing errors, a 
+     * {@link DurationParserException} will be thrown.
+     * @param xml xml configuration
+     * @param key key to the element/attribute containing the duration
+     * @return duration in milliseconds
+     * @since 1.13.0
+     */
+    public static long getDuration(
+            HierarchicalConfiguration xml, String key, long defaultValue) {
+        String duration = xml.getString(key, null);
+        if (StringUtils.isBlank(duration)) {
+            return defaultValue;
+        }
+        return DurationParser.parse(duration);
+    }
+    
     /**
      * Gets a comma-separated-value string as a String array, trimming values 
      * and removing any blank entries.  
