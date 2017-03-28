@@ -44,7 +44,10 @@
       <action dev="essiembre" type="add">
         New DurationParser class to parse plain-English durations into 
         milliseconds (e.g., "5 minutes and 30 seconds" or "5m30s").
-      </action>      
+      </action>
+      <action dev="essiembre" type="add">
+        New URLNormalizer#removeTrailingHash() method.
+      </action>
       <action dev="essiembre" type="update">
         ConfigurationLoadedUtil now deprecated in favor of XMLConfigurationUtil.
       </action>      

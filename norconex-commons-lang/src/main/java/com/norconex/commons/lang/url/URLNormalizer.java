@@ -1,4 +1,4 @@
-/* Copyright 2010-2016 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -763,6 +763,24 @@ public class URLNormalizer implements Serializable {
         }
         return this;
     }
+    
+    /**
+     * <p>Removes trailing hash character ("#").</p>
+     * <code>http://www.example.com/path# &rarr;
+     *       http://www.example.com/path</code>
+     * <p>
+     * This only removes the hash character if it is the last character.
+     * To remove an entire URL fragment, use {@link #removeFragment()}.
+     * </p>
+     * @return this instance
+     * @since 1.13.0
+     */
+    public URLNormalizer removeTrailingHash() {
+        if (url.endsWith("#") && StringUtils.countMatches(url, "#") == 1) {
+            url = StringUtils.removeEnd(url, "#");
+        }
+        return this;
+    }    
     
     /**
      * Returns the normalized URL as string.

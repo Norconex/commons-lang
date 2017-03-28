@@ -29,17 +29,6 @@ public class URLNormalizerTest {
     private String s;
     private String t;
     
-    
-//    @Before
-//    public void before() {
-//        Logger logger = Logger.getRootLogger();
-//        logger.setLevel(Level.DEBUG);
-//        logger.setAdditivity(false);
-//        logger.addAppender(new ConsoleAppender(
-//                new PatternLayout("%-5p [%C{1}] %m%n"), 
-//                ConsoleAppender.SYSTEM_OUT));
-//    }
-    
     @After
     public void tearDown() throws Exception {
         s = null;
@@ -245,6 +234,19 @@ public class URLNormalizerTest {
         t = "http://www.example.com";
         assertEquals(t, n(s).removeTrailingSlash().toString());
     }    
+
+    @Test
+    public void testRemoveTrailingHash() {
+        s = "http://www.example.com/blah#";
+        t = "http://www.example.com/blah";
+        assertEquals(t, n(s).removeTrailingHash().toString());
+        s = "http://www.example.com/blah#whatever";
+        t = "http://www.example.com/blah#whatever";
+        assertEquals(t, n(s).removeTrailingHash().toString());
+        s = "http://www.example.com";
+        t = "http://www.example.com";
+        assertEquals(t, n(s).removeTrailingHash().toString());
+    }  
     
     @Test
     public void testRemoveDotSegments() {
