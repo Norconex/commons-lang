@@ -1,4 +1,4 @@
-/* Copyright 2016 Norconex Inc.
+/* Copyright 2016-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import java.util.TreeSet;
 import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.collections4.multimap.AbstractSetValuedMap;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -113,7 +114,9 @@ public final class JarDuplicateFinder {
                 } else {
                     System.out.print("   ");
                 }
-                System.out.println(jarFile.getPath());
+                System.out.println(jarFile.getPath() + " ["
+                        + DateFormatUtils.ISO_DATETIME_FORMAT.format(
+                                jarFile.getLastModified()) + "]");
             }
         }
     }

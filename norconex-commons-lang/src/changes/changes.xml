@@ -48,8 +48,16 @@
       <action dev="essiembre" type="add">
         New URLNormalizer#removeTrailingHash() method.
       </action>
+      <action dev="essiembre" type="add">
+        New JarFile#isSameVersion(...) and JarFile#isSameVersionAndTime(...) 
+        methods.
+      </action>
       <action dev="essiembre" type="update">
         ConfigurationLoadedUtil now deprecated in favor of XMLConfigurationUtil.
+      </action>      
+      <action dev="essiembre" type="update">
+        JarDuplicateFinder now checks the last modified date when two versions
+        are the same.
       </action>      
       <action dev="essiembre" type="update">
         Now relies on Apache Xerces to parse XML Shema 1.1.

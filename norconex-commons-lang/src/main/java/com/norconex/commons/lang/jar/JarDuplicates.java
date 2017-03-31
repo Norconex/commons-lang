@@ -1,4 +1,4 @@
-/* Copyright 2016 Norconex Inc.
+/* Copyright 2016-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,9 +69,9 @@ public class JarDuplicates {
         if (ArrayUtils.isEmpty(jarFiles)) {
             return false;
         }
-        String version = jarFiles[0].getVersion();
+        JarFile firstJar = jarFiles[0];
         for (JarFile jarFile : jarFiles) {
-            if (!Objects.equals(version, jarFile.getVersion())) {
+            if (!firstJar.isSameVersionAndTime(jarFile)) {
                 return true;
             }
         }
