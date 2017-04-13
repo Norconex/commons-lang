@@ -102,7 +102,7 @@ public final class JarDuplicateFinder {
     public static void main(String[] args) {
         List<JarDuplicates> dups = JarDuplicateFinder.findJarDuplicates(args);
         System.out.println("Found " + dups.size()
-                + " Jar(s) having ore more duplicates.");
+                + " Jar(s) having one or more duplicates.");
         for (JarDuplicates jarDuplicates : dups) {
             System.out.println();
             System.out.println(

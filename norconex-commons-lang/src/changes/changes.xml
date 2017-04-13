@@ -18,6 +18,11 @@
         when loaded (using XML Schema 1.1).
       </action>
       <action dev="essiembre" type="add">
+        Now distributed with new command-line scripts for encryption,
+        safe copying of jars, finding jar duplicates, and automating
+        the installation of this library into other projects.
+      </action>
+      <action dev="essiembre" type="add">
         New CountingConsoleAppender for tracking how many log events of each
         type were logged (log4j).
       </action>

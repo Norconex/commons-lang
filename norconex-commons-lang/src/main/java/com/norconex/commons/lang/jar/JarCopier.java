@@ -1,4 +1,4 @@
-/* Copyright 2016 Norconex Inc.
+/* Copyright 2016-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -317,7 +317,7 @@ public class JarCopier {
         info("  4) Copy source Jar regardless of target Jar");
         info("     (may overwrite or cause mixed versions).");
         info("");
-        info("  5) Let me chose for each files.");
+        info("  5) Let me choose for each files.");
 
         while (true) {
             info("");
