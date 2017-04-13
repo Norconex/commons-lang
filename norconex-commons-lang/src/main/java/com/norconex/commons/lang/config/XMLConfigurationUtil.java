@@ -516,6 +516,7 @@ public final class XMLConfigurationUtil {
      * {@link DurationParserException} will be thrown.
      * @param xml xml configuration
      * @param key key to the element/attribute containing the duration
+     * @param defaultValue default duration
      * @return duration in milliseconds
      * @since 1.13.0
      */
