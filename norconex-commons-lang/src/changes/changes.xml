@@ -57,6 +57,10 @@
         New JarFile#isSameVersion(...) and JarFile#isSameVersionAndTime(...) 
         methods.
       </action>
+      <action dev="essiembre" type="add">
+        New constructor for EnhancedXMLStreamWriter enabling support for 
+        indentation (pretty-print).
+      </action>
       <action dev="essiembre" type="update">
         ConfigurationLoadedUtil now deprecated in favor of XMLConfigurationUtil.
       </action>      
