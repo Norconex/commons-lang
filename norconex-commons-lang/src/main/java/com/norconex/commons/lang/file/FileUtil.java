@@ -1,4 +1,4 @@
-/* Copyright 2010-2016 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.commons.lang3.time.DateFormatUtils;
@@ -133,8 +132,7 @@ public final class FileUtil {
         }
         
         String fileName = sourceFile.getName();
-        File targetFile = new File(targetDir.getAbsolutePath()
-                + SystemUtils.PATH_SEPARATOR + fileName);
+        File targetFile = new File(targetDir, fileName);
         moveFile(sourceFile, targetFile);
     }
 

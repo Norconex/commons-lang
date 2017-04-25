@@ -115,8 +115,8 @@ public final class JarDuplicateFinder {
                     System.out.print("   ");
                 }
                 System.out.println(jarFile.getPath() + " ["
-                        + DateFormatUtils.ISO_DATETIME_FORMAT.format(
-                                jarFile.getLastModified()) + "]");
+                        + DateFormatUtils.ISO_8601_EXTENDED_DATETIME_FORMAT
+                                .format(jarFile.getLastModified()) + "]");
             }
         }
     }
