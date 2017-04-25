@@ -115,6 +115,7 @@ Other classes not fitting anyhere.  Includes:
   * Long unique ID generator
   * Simple text encryption/decryption
   * Jar copy version conflict resolution 
+  * Simplifies system command execution
   
 Classes: [com.norconex.commons.lang.*](./apidocs/overview-summary.html)
   
