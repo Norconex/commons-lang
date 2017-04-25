@@ -7,7 +7,7 @@
   </properties>
   <body>
 
-    <release version="1.13.0-SNAPSHOT" date="2017-??-??" description="Feature release">
+    <release version="1.13.0" date="2017-04-25" description="Feature release">
       <action dev="essiembre" type="add">
         New "exec" package containing classes moved from Norconex JEF API.
         Those classes provide ways to easily execute external commands
