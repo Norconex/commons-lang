@@ -1,4 +1,4 @@
-/* Copyright 2010-2016 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.List;
 import java.util.Properties;
+import java.util.regex.Pattern;
 
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.io.FilenameUtils;
@@ -176,19 +177,22 @@ public final class ConfigurationLoader {
         if (!configFile.exists()) {
             return null;
         }
-        XMLConfiguration xml = new XMLConfiguration();
-        ConfigurationUtil.disableDelimiterParsing(xml);
-        Reader reader = new StringReader(loadString(configFile, variables));
         try {
-            xml.load(reader);
-            reader.close();
+            String xml = loadString(configFile, variables);
+            // clean-up extra duplicate declaration tags due to template
+            // includes/imports that could break parsing.
+            // Keep first <?xml... tag only, and delete all <!DOCTYPE...
+            // as they are not necessary to parse configs.
+            xml = Pattern.compile("((?!^)<\\?xml.*?\\?>|<\\!DOCTYPE.*?>)",
+                    Pattern.MULTILINE).matcher(xml).replaceAll("");
+            return XMLConfigurationUtil.newXMLConfiguration(
+                    new StringReader(xml));
         } catch (Exception e) {
             throw new ConfigurationException(
                     "Cannot load configuration file: \"" + configFile + "\". "
                   + "Probably a misconfiguration or the configuration XML "
                   + "is not well-formed.", e);
         }
-        return xml;
     }
 
     /**
@@ -235,19 +239,6 @@ public final class ConfigurationLoader {
                     "Cannot load config file as a string: " + file, e);
         }
         return sw.toString();
-    }
-    
-    /**
-     * This load method will return an Apache XML Configuration without
-     * any Velocity parsing, variable substitution or Velocity directives. 
-     * @param in input stream
-     * @return XMLConfiguration
-     * @deprecated Since 1.5.0.  Use 
-     *             {@link ConfigurationUtil#newXMLConfiguration(Reader)} 
-     */
-    @Deprecated
-    public static XMLConfiguration loadXML(Reader in) {
-        return ConfigurationUtil.newXMLConfiguration(in);
     }
     
     private File getVariablesFile(String fullpath, String baseName) {

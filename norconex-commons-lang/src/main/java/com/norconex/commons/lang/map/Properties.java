@@ -70,6 +70,9 @@ import org.apache.log4j.Logger;
 public class Properties extends ObservableMap<String, List<String>>
         implements Serializable {
 
+    //TODO have getXXXRegex() methods to return all keys or values matching
+    // a regular expression
+    
     //TODO remove support for case sensitivity and provide a utility
     //class that does it instead on any string-key maps? 
     // OR, store it in a case sensitive way instead of keeping
@@ -1290,14 +1293,14 @@ public class Properties extends ObservableMap<String, List<String>>
             return remove(key);
         }
         List<String> nullSafeValues = new ArrayList<>(values.size());
-        for (String value : nullSafeValues) {
+        for (String value : values) {
             if (value == null) {
                 nullSafeValues.add(StringUtils.EMPTY);
             } else {
                 nullSafeValues.add(value);
             }
         }
-        return super.put(caseResolvedKey(key), values);
+        return super.put(caseResolvedKey(key), nullSafeValues);
     }
     
     /* 

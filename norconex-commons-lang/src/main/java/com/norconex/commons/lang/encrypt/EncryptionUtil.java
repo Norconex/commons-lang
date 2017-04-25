@@ -1,4 +1,4 @@
-/* Copyright 2015-2016 Norconex Inc.
+/* Copyright 2015-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,6 +50,10 @@ import com.norconex.commons.lang.encrypt.EncryptionKey.Source;
  * <pre>
  * &lt;above_command&gt; encrypt -f "/path/to/key.txt" "Encrypt this text"
  * </pre>
+ * <p>
+ * As of 1.13.0, you can also use the <code>encrypt.[sh|bat]</code> and
+ * <code>decrypt.[sh|bat]</code> files distributed with this library.
+ * </p>
  * 
  * @author Pascal Essiembre
  * @since 1.9.0
@@ -96,7 +100,7 @@ public class EncryptionUtil {
     }
     private static void printUsage() {
         PrintStream out = System.out;
-        out.println("<appName> encrypt|decrypt -k|-f|-e key text");
+        out.println("<appName> encrypt|decrypt -k|-f|-e|-p key text");
         out.println();
         out.println("Where:");
         out.println("  encrypt  encrypt the text with the given key");

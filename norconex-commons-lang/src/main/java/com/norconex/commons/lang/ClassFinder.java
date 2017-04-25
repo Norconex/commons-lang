@@ -103,18 +103,6 @@ public final class ClassFinder {
         }
         return classes;
     }
-    /**
-     * @deprecated since 1.4.0.  Replaced with 
-     * {@link #findSubTypes(List, Class)}.
-     * @param files directories and/or JARs to scan for classes
-     * @param superClass the class from which to find subtypes
-     * @return list of class names
-     */
-    @Deprecated
-    public static List<String> findImplementors(
-            List<File> files, Class<?> superClass) {
-        return findSubTypes(files, superClass);
-    }
     
     /**
      * Finds the names of all subtypes of the super class for the
@@ -148,19 +136,6 @@ public final class ClassFinder {
         LOG.warn("File not a JAR and not a directory.");
         return new ArrayList<>();
     }
-    /**
-     * @deprecated since 1.4.0.  Replaced with 
-     * {@link #findSubTypes(File, Class)}.
-     * @param file directory or JAR to scan for classes
-     * @param superClass the class from which to find subtypes
-     * @return list of class names
-     */
-    @Deprecated
-    public static List<String> findImplementors(
-            File file, Class<?> superClass) {
-        return findSubTypes(file, superClass);
-    }
-
     
     private static List<String> findSubTypesFromDirectory(
             File dir, Class<?> superClass) {

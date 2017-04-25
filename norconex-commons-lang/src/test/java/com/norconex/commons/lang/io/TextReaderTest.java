@@ -32,11 +32,12 @@ public class TextReaderTest {
     public void testSentenceBreaks() throws IOException {
         
         TextReader reader = getTextReader("funkyParagraphBreaks.txt", 60);
+        @SuppressWarnings("unused")
         String text = null;
         int count = 0;
         while ((text = reader.readText()) != null) {
             count++;
-            System.out.println("CHUNK #" + count + " = " + text);
+//            System.out.println("CHUNK #" + count + " = " + text);
         }
         reader.close();
         Assert.assertEquals("Wrong number of sentences", 10, count);
@@ -48,11 +49,12 @@ public class TextReaderTest {
     public void testParagraphBreaks() throws IOException {
         
         TextReader reader = getTextReader("funkyParagraphBreaks.txt", 100);
+        @SuppressWarnings("unused")
         String text = null;
         int count = 0;
         while ((text = reader.readText()) != null) {
             count++;
-            System.out.println("CHUNK #" + count + " = " + text);
+//            System.out.println("CHUNK #" + count + " = " + text);
         }
         reader.close();
         Assert.assertEquals("Wrong number of text chunks returned", 5, count);

@@ -1,4 +1,4 @@
-/* Copyright 2016 Norconex Inc.
+/* Copyright 2016-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,7 +70,8 @@ public class JarFile implements Comparable<JarFile> {
             this.baseName = fullName;
             this.version = null;
         }
-        this.comparableVersion = new Version(this.version);
+        this.comparableVersion = new Version(
+                this.version, this.path.lastModified());
     }
 
     public File getPath() {
@@ -112,6 +113,32 @@ public class JarFile implements Comparable<JarFile> {
                 .toHashCode();
     }
 
+    /**
+     * Gets whether this Jar has the same name and version as
+     * the provided jar.
+     * @param jarFile jar file
+     * @return <code>true</code> if the jar names and versions are the same.
+     * @since 1.13.0
+     */
+    public boolean isSameVersion(JarFile jarFile) {
+        if (jarFile == null) {
+            return false;
+        }
+        return fullName.equals(jarFile.fullName);
+    }
+    /**
+     * Gets whether this Jar has the same name and version as
+     * the provided jar, as well as the same last modified date.
+     * @param jarFile jar file
+     * @return <code>true</code> if the jar names, versions and last modified
+     *         dates are the same.
+     * @since 1.13.0
+     */
+    public boolean isSameVersionAndTime(JarFile jarFile) {
+        return isSameVersion(jarFile)
+                && path.lastModified() == jarFile.path.lastModified();
+    }
+    
     @Override
     public int compareTo(JarFile o) {
         int result = comparableVersion.compareTo(o.comparableVersion);
@@ -122,10 +149,13 @@ public class JarFile implements Comparable<JarFile> {
     }
     
     private class Version implements Comparable<Version> {
-        Object[] segments;
+        private Object[] segments;
+        private long lastModified;
+        
 
-        public Version(String version) {
+        public Version(String version, long lastModified) {
             super();
+            this.lastModified = lastModified;
             if (version == null) {
                 segments = new Object[0];
             } else {
@@ -203,8 +233,8 @@ public class JarFile implements Comparable<JarFile> {
                     }
                 }
             }
-            // it is a tie... weird this should not happen 
-            return 0;
+            // it is a tie... compare last modified
+            return Long.compare(lastModified, o.lastModified) * -1;
         }        
     }
 }

@@ -7,6 +7,82 @@
   </properties>
   <body>
 
+    <release version="1.13.0" date="2017-04-25" description="Feature release">
+      <action dev="essiembre" type="add">
+        New "exec" package containing classes moved from Norconex JEF API.
+        Those classes provide ways to easily execute external commands
+        as well as making code execution "retriable" in case of failure. 
+      </action>
+      <action dev="essiembre" type="add">
+        IXMLConfigurable classes having XML schemas (XSD) are now validated
+        when loaded (using XML Schema 1.1).
+      </action>
+      <action dev="essiembre" type="add">
+        Now distributed with new command-line scripts for encryption,
+        safe copying of jars, finding jar duplicates, and automating
+        the installation of this library into other projects.
+      </action>
+      <action dev="essiembre" type="add">
+        New CountingConsoleAppender for tracking how many log events of each
+        type were logged (log4j).
+      </action>
+      <action dev="essiembre" type="add">
+        New ListErrorHandler which stores SAX Exceptions that can later 
+        be retrieved as lists.
+      </action>
+      <action dev="essiembre" type="add">
+        New ClasspathResourceResolver and ClasspathInput to resolve XSD schema
+        includes/imports relative to each other in classpath.
+      </action>
+      <action dev="essiembre" type="add">
+        New XMLConfigurationUtil class replacing ConfigurationUtil, offering
+        new methods: #getCSVStringArray(...), #getCSVIntArray(...), 
+        #validate(...), #loadFromXML(...), #newInstance(Reader),
+        #getDuration(...)
+      </action>
+      <action dev="essiembre" type="add">
+        New IInputStreamListener, InputStreamLineListener, and 
+        InputStreamConsumer replacing now deprecated IStreamListener,
+        and StreamGobbler. These new classes allow streaming of binary content,
+        as well as text.
+      </action>
+      <action dev="essiembre" type="add">
+        New DurationParser class to parse plain-English durations into 
+        milliseconds (e.g., "5 minutes and 30 seconds" or "5m30s").
+      </action>
+      <action dev="essiembre" type="add">
+        New URLNormalizer#removeTrailingHash() method.
+      </action>
+      <action dev="essiembre" type="add">
+        New JarFile#isSameVersion(...) and JarFile#isSameVersionAndTime(...) 
+        methods.
+      </action>
+      <action dev="essiembre" type="add">
+        New constructor for EnhancedXMLStreamWriter enabling support for 
+        indentation (pretty-print).
+      </action>
+      <action dev="essiembre" type="update">
+        ConfigurationLoadedUtil now deprecated in favor of XMLConfigurationUtil.
+      </action>      
+      <action dev="essiembre" type="update">
+        JarDuplicateFinder now checks the last modified date when two versions
+        are the same.
+      </action>      
+      <action dev="essiembre" type="update">
+        Now relies on Apache Xerces to parse XML Shema 1.1.
+      </action>
+      <action dev="essiembre" type="update">
+        Dependency updates: Apache Commons Lang 3.5, Apache Ant 1.10.1, Apache
+        Collections 3.2.2.
+      </action>
+      <action dev="essiembre" type="remove">
+        Removed all classes/methods deprecated since 1.5.0: 
+        ConfigurationLoaded#loadXML(Reader in), .io.FileMonitor, .io.FileUtil,
+        .io.IFileChangeListener, .io.IFileVisitor, 
+        .file.FileUtil#deleteFile(File), ClassFinder#findImplementors(...).
+      </action>      
+    </release>
+
     <release version="1.12.3" date="2016-11-15" description="Bugfix release">
       <action dev="essiembre" type="update">
         HttpURL no longer sets a null protocol when constructing non HTTP URLs.

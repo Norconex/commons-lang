@@ -1,4 +1,4 @@
-/* Copyright 2010-2016 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,9 @@ import org.apache.log4j.Logger;
 /**
  * <p>
  * A version of {@link XMLStreamWriter} that adds convenience methods
- * for adding simple elements and typed attributes.
+ * for adding simple elements and typed attributes, as well as offering
+ * pretty-printing.  Can be used on its own or as a wrapper to an existing
+ * <code>XMLStreamWriter</code> instance.
  * </p>
  * 
  * @author Pascal Essiembre
@@ -41,28 +43,72 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
             LogManager.getLogger(EnhancedXMLStreamWriter.class);
     
     private final XMLStreamWriter writer;
+    //TODO consider constructor with new EnhancedXMLStreamWriterConfig instead
     private final boolean writeBlanks;
+    // -1 = no indent, 0 = new lines only, 1+ = new lines + num of spaces,
+    private final int indent;
+    private int depth = 0;
+    private boolean indentEnd = false; 
 
     public EnhancedXMLStreamWriter(Writer out) throws XMLStreamException {
         this(out, false);
     }
     public EnhancedXMLStreamWriter(Writer out, boolean writeBlanks) 
             throws XMLStreamException {
+        this(out, writeBlanks, -1);
+    }
+    /**
+     * Creates a new xml stream writer.
+     * @param out writer used to write XML
+     * @param writeBlanks <code>true</code> to write attributes/elements 
+     *        with no values
+     * @param indent how many spaces to use for indentation (-1=no indent; 
+     *        0=newline only; 1+=number of spaces after newline)
+     * @throws XMLStreamException problem creating XML stream writer
+     * @since 1.13.0
+     */
+    public EnhancedXMLStreamWriter(Writer out, boolean writeBlanks, int indent) 
+            throws XMLStreamException {
         super();
         XMLOutputFactory factory = createXMLOutputFactory();
         writer = factory.createXMLStreamWriter(out);
         this.writeBlanks = writeBlanks;
+        this.indent = indent;
     }
     public EnhancedXMLStreamWriter(XMLStreamWriter xmlStreamWriter) {
         this(xmlStreamWriter, false);
     }
     public EnhancedXMLStreamWriter(
             XMLStreamWriter xmlStreamWriter, boolean writeBlanks) {
+        this(xmlStreamWriter, writeBlanks, -1);
+    }
+    /**
+     * Creates a new xml stream writer.
+     * @param xmlStreamWriter wrapped stream writer
+     * @param writeBlanks <code>true</code> to write attributes/elements 
+     *        with no values
+     * @param indent how many spaces to use for indentation (-1=no indent; 
+     *        0=newline only; 1+=number of spaces after newline)
+     * @since 1.13.0
+     */
+    public EnhancedXMLStreamWriter(
+            XMLStreamWriter xmlStreamWriter, boolean writeBlanks, int indent) {
         super();
         this.writer = xmlStreamWriter;
         this.writeBlanks = writeBlanks;
+        this.indent = indent;
     }
 
+    private void indent() throws XMLStreamException { 
+        indentEnd = true;
+        if (indent > -1) {
+            writer.writeCharacters("\n"); 
+            if (indent > 0) {
+                writer.writeCharacters(StringUtils.repeat(' ', depth * indent));
+            }
+        }
+    }
+    
     private static XMLOutputFactory createXMLOutputFactory() {
         XMLOutputFactory factory = XMLOutputFactory.newFactory();
         // If using Woodstox factory, disable structure validation
@@ -167,11 +213,11 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
             throws XMLStreamException {
         String strValue = Objects.toString(value, null);
         if (StringUtils.isNotBlank(strValue)) {
-            writer.writeStartElement(localName);
-            writer.writeCharacters(strValue);
-            writer.writeEndElement();
+            writeStartElement(localName);
+            writeCharacters(strValue);
+            writeEndElement();
         } else if (writeBlanks) {
-            writer.writeEmptyElement(localName);
+            writeEmptyElement(localName);
         }
     }
     
@@ -179,40 +225,54 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
     
     @Override
     public void writeStartElement(String localName) throws XMLStreamException {
+        indent();
+        depth++;
         writer.writeStartElement(localName);
     }
 
     @Override
     public void writeStartElement(String namespaceURI, String localName)
             throws XMLStreamException {
+        indent();
+        depth++;
         writer.writeStartElement(namespaceURI, localName);
     }
 
     @Override
     public void writeStartElement(String prefix, String localName,
             String namespaceURI) throws XMLStreamException {
+        indent();
+        depth++;
         writer.writeStartElement(prefix, localName, namespaceURI);
     }
 
     @Override
     public void writeEmptyElement(String namespaceURI, String localName)
             throws XMLStreamException {
+        indent();
         writer.writeEmptyElement(namespaceURI, localName);
     }
 
     @Override
     public void writeEmptyElement(String prefix, String localName,
             String namespaceURI) throws XMLStreamException {
+        indent();
         writer.writeEmptyElement(prefix, localName, namespaceURI);
     }
 
     @Override
     public void writeEmptyElement(String localName) throws XMLStreamException {
+        indent();
         writer.writeEmptyElement(localName);
     }
 
     @Override
     public void writeEndElement() throws XMLStreamException {
+        depth--;
+        if (indentEnd) {
+            indent();
+        }
+        indentEnd = true;
         writer.writeEndElement();
     }
 
@@ -263,18 +323,21 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
 
     @Override
     public void writeComment(String data) throws XMLStreamException {
+        indent();
         writer.writeComment(data);
     }
 
     @Override
     public void writeProcessingInstruction(String target)
             throws XMLStreamException {
+        indent();
         writer.writeProcessingInstruction(target);
     }
 
     @Override
     public void writeProcessingInstruction(String target, String data)
             throws XMLStreamException {
+        indent();
         writer.writeProcessingInstruction(target, data);
     }
 
@@ -285,6 +348,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
 
     @Override
     public void writeDTD(String dtd) throws XMLStreamException {
+        indent();
         writer.writeDTD(dtd);
     }
 
@@ -311,7 +375,26 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
 
     @Override
     public void writeCharacters(String text) throws XMLStreamException {
-        writer.writeCharacters(text);
+        if (indent < 0) {
+            writer.writeCharacters(text);
+            return;
+        }
+
+        // We are indeting...
+        if (StringUtils.isNotBlank(text)) {
+            String[] lines = text.split("\n");
+            if (lines.length == 1) {
+                writer.writeCharacters(lines[0]);
+                indentEnd = false;
+            } else {
+                for (String line : lines) {
+                    indent();
+                    writer.writeCharacters(line);
+                }
+            }
+        } else {
+            indentEnd = false;
+        }
     }
 
     @Override

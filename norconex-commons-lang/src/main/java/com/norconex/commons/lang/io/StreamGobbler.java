@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,8 +34,9 @@ import org.apache.log4j.Logger;
  * application freeze.  For example, this is a way to capture the STDOUT and
  * STDERR from a process.
  * @author Pascal Essiembre
+ * @deprecated As of 1.13.0, use {@link InputStreamConsumer} instead.
  */
-@SuppressWarnings("nls")
+@Deprecated
 public class StreamGobbler extends Thread {
 
     private static final Logger LOG =

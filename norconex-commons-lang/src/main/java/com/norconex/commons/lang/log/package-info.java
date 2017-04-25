@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,22 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.norconex.commons.lang.io;
-
-import java.io.File;
-
 /**
- * Visitor to be used with <code>FileUtil.visit*</code> methods.
- * @see FileUtil
- * @author Pascal Essiembre
- * @deprecated Since 1.4.0, use 
- *     {@link com.norconex.commons.lang.file.IFileVisitor}
+ * Utility classes related to logging.
  */
-@Deprecated
-public interface IFileVisitor {
-    /**
-     * Visits a file or directory.
-     * @param file the file or directory being visited
-     */
-    void visit(File file);
-}
+package com.norconex.commons.lang.log;

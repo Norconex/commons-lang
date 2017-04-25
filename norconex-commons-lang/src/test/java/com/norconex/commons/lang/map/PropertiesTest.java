@@ -117,4 +117,28 @@ public class PropertiesTest {
         assertEquals(Arrays.asList("1", "2"), props2.get("KEY"));
     
     }
+
+    @Test
+    public void testPut() throws Exception {
+        List<String> list = Arrays.asList("1", null, "2", "");
+
+        // Case insensitive
+        Properties props1 = new Properties(true);
+        props1.put("key", list);
+        
+        assertEquals(1, props1.keySet().size());
+        assertEquals(4, props1.get("kEy").size());
+        assertEquals(Arrays.asList("1", "", "2", ""), props1.get("kEy"));
+
+    
+        // Case sensitive
+        Properties props2 = new Properties(false);
+        props2.put("key", list);
+        
+        assertEquals(1, props2.keySet().size());
+        assertEquals(null, props2.get("kEy"));
+        assertEquals(Arrays.asList("1", "", "2", ""), props2.get("key"));
+    
+    }
+
 }

@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,9 @@ package com.norconex.commons.lang.io;
  * given stream.
  * @author Pascal Essiembre
  * @see StreamGobbler
+ * @deprecated As of 1.13.0, use {@link IInputStreamListener} instead.
  */
+@Deprecated
 public interface IStreamListener {
     
     /**
