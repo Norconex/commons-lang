@@ -21,6 +21,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.List;
 
+import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
@@ -35,9 +36,16 @@ import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.apache.xerces.xni.NamespaceContext;
+import org.xml.sax.Attributes;
 import org.xml.sax.ErrorHandler;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.AttributesImpl;
+import org.xml.sax.helpers.XMLFilterImpl;
+import org.xml.sax.helpers.XMLReaderFactory;
 
 import com.norconex.commons.lang.time.DurationParser;
 import com.norconex.commons.lang.time.DurationParserException;
@@ -407,7 +415,10 @@ public final class XMLConfigurationUtil {
             Validator validator = schema.newValidator();
             LogErrorHandler seh = new LogErrorHandler(clazz);
             validator.setErrorHandler(seh);
-            validator.validate(new StreamSource(reader));
+            SAXSource saxSource = new SAXSource(new W3XMLNamespaceFilter(
+                    XMLReaderFactory.createXMLReader()), 
+                            new InputSource(reader));
+            validator.validate(saxSource);
             return seh.errorCount;
         } catch (SAXException | IOException e) {
             throw new ConfigurationException(
@@ -496,8 +507,7 @@ public final class XMLConfigurationUtil {
         // Read
         XMLConfiguration xml = newXMLConfiguration(
                 new StringReader(out.toString()));
-        IXMLConfigurable readConfigurable = 
-                (IXMLConfigurable) newInstance(xml);
+        IXMLConfigurable readConfigurable = newInstance(xml);
 
         if (!xmlConfiurable.equals(readConfigurable)) {
             LOG.error("BEFORE: " + xmlConfiurable);
@@ -661,7 +671,30 @@ public final class XMLConfigurationUtil {
             LOG.fatal(msg(e));
         }
         private String msg(SAXParseException e) {
-            return "(XML) " + clazz.getSimpleName() + ": " + e.getMessage();
+            return "(XML Validation) " 
+                    + clazz.getSimpleName() + ": " + e.getMessage();
         }
+    }
+    
+    // Filter out "xml:" name space so attributes like xml:space="preserve"
+    // are validated OK.
+    private static class W3XMLNamespaceFilter extends XMLFilterImpl {
+        public W3XMLNamespaceFilter(XMLReader parent) {
+            super(parent);
+        }
+        @Override
+        public void startElement(
+                String uri, String localName, String qName, Attributes atts) 
+                        throws SAXException {
+            for (int i = 0; i < atts.getLength(); i++) {
+                if (NamespaceContext.XML_URI.equals(atts.getURI(i))) {
+                    AttributesImpl modifiedAtts = new AttributesImpl(atts);
+                    modifiedAtts.removeAttribute(i);
+                    super.startElement(uri, localName, qName, modifiedAtts);
+                    return;
+                }
+            }
+            super.startElement(uri, localName, qName, atts);
+        }       
     }
 }
