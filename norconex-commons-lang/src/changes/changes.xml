@@ -7,6 +7,14 @@
   </properties>
   <body>
 
+    <release version="1.13.1" date="2017-05-16" description="Bugfix release">
+      <action dev="essiembre" type="fix">
+        Fixed XMLConfigurationUtil reporting a validation error when 
+        encountering attributes from the XML Namespace 
+        ("http://www.w3.org/XML/1998/namespace"), such as xml:space="preserve". 
+      </action>
+    </release>
+
     <release version="1.13.0" date="2017-04-25" description="Feature release">
       <action dev="essiembre" type="add">
         New "exec" package containing classes moved from Norconex JEF API.

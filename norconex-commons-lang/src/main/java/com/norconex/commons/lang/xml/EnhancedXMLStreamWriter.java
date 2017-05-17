@@ -30,8 +30,8 @@ import org.apache.log4j.Logger;
  * <p>
  * A version of {@link XMLStreamWriter} that adds convenience methods
  * for adding simple elements and typed attributes, as well as offering
- * pretty-printing.  Can be used on its own or as a wrapper to an existing
- * <code>XMLStreamWriter</code> instance.
+ * pretty-printing.  Can be used on its own with a Writer, 
+ * or as a wrapper to an existing <code>XMLStreamWriter</code> instance.
  * </p>
  * 
  * @author Pascal Essiembre
