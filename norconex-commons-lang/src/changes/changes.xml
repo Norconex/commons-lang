@@ -7,6 +7,12 @@
   </properties>
   <body>
 
+    <release version="1.14.0-SNAPSHOT" date="2017-??-??" description="Feature release">
+      <action dev="essiembre" type="add">
+        New CircularRange class. 
+      </action>
+    </release>
+
     <release version="1.13.1" date="2017-05-16" description="Bugfix release">
       <action dev="essiembre" type="fix">
         Fixed XMLConfigurationUtil reporting a validation error when 
