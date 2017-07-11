@@ -1,4 +1,4 @@
-/* Copyright 2010-2015 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,6 @@ import com.norconex.commons.lang.map.Properties;
  * order they were provided.
  * @author Pascal Essiembre
  */
-@SuppressWarnings("nls")
 public class QueryString extends Properties {
     
     private static final long serialVersionUID = 1744232652147275170L;
@@ -47,7 +46,7 @@ public class QueryString extends Properties {
      * Constructor.
      */
     public QueryString() {
-        this(CharEncoding.UTF_8);
+        this(StringUtils.EMPTY, CharEncoding.UTF_8);
     }
     
     /**
@@ -100,6 +99,9 @@ public class QueryString extends Properties {
         String[] paramParts = paramString.split("\\&");
         for (int i = 0; i < paramParts.length; i++) {
             String paramPart = paramParts[i];
+            if (StringUtils.isBlank(paramPart)) {
+                continue;
+            }
             String key;
             String value;
             if (StringUtils.contains(paramPart, "=")) {
