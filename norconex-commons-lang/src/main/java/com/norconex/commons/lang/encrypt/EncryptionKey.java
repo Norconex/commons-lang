@@ -16,6 +16,7 @@ package com.norconex.commons.lang.encrypt;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -28,7 +29,9 @@ import java.nio.file.Paths;
  * @since 1.9.0
  * @see EncryptionUtil
  */
-public class EncryptionKey {
+public class EncryptionKey implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     public enum Source { 
         /** Value is the actual key. */
@@ -39,7 +42,7 @@ public class EncryptionKey {
         ENVIRONMENT, 
         /** Value is the name of a JVM system property containing the key. */
         PROPERTY
-    };
+    }
 
     private final String value;
     private final Source source;
@@ -126,7 +129,8 @@ public class EncryptionKey {
         }
     }
     
-    //TODO do not use Apache Commons Lang below to avoid the dependency.
+    //Do not use Apache Commons Lang below to avoid any dependency
+    //when used on command-line with EncryptionUtil.
     @Override
     public int hashCode() {
         final int prime = 31;

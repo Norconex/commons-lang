@@ -9,6 +9,9 @@
 
     <release version="1.14.0-SNAPSHOT" date="2017-??-??" description="Feature release">
       <action dev="essiembre" type="add">
+        New ProxySettings class.
+      </action>
+      <action dev="essiembre" type="add">
         New CircularRange class. 
       </action>
       <action dev="essiembre" type="fix">

@@ -104,12 +104,18 @@
       <artifactId>ant</artifactId>
       <version>1.10.1</version>
       <scope>test</scope>
-    </dependency>    
-  </dependencies>
+    </dependency>
 
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
+    <!-- For optional Proxy class used only by some implementations. -->
+    <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpclient</artifactId>
+        <version>4.5.2</version>
+        <scope>provided</scope>
+    </dependency>
+
+    <!-- Fix transitive dependencies versions: -->    
+    <dependency>
         <groupId>commons-lang</groupId>
         <artifactId>commons-lang</artifactId>
         <version>2.6</version>
@@ -118,9 +124,8 @@
         <groupId>commons-collections</groupId>
         <artifactId>commons-collections</artifactId>
         <version>3.2.2</version>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>  
+    </dependency>
+  </dependencies>
 
   <build>
     <resources>
