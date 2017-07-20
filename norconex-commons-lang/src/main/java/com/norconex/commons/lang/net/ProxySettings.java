@@ -134,7 +134,7 @@ public class ProxySettings implements IXMLConfigurable, Serializable {
         return null;
     }
     public Credentials createCredentials() {
-        if (isSet()) {
+        if (isSet() && StringUtils.isNotBlank(proxyUsername)) {
             String password = 
                     EncryptionUtil.decrypt(proxyPassword, proxyPasswordKey);
             return new UsernamePasswordCredentials(proxyUsername, password);
