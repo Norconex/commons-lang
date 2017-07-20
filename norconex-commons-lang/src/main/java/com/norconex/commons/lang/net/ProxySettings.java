@@ -143,11 +143,12 @@ public class ProxySettings implements IXMLConfigurable, Serializable {
     }
     public CredentialsProvider createCredentialsProvider() {
         if (isSet()) {
-            CredentialsProvider credsProvider = new BasicCredentialsProvider();
-                credsProvider.setCredentials(
-                        createAuthScope(),
-                        createCredentials());
-            return credsProvider;
+            Credentials creds = createCredentials();
+            if (creds != null) {
+                CredentialsProvider cp = new BasicCredentialsProvider();
+                cp.setCredentials(createAuthScope(), creds);
+                return cp;
+            }
         }
         return null;
     }
