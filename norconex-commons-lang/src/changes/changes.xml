@@ -9,10 +9,17 @@
 
     <release version="1.14.0-SNAPSHOT" date="2017-??-??" description="Feature release">
       <action dev="essiembre" type="add">
+        New ResourceLoader class.
+      </action>
+      <action dev="essiembre" type="add">
         New ProxySettings class.
       </action>
       <action dev="essiembre" type="add">
         New CircularRange class. 
+      </action>
+      <action dev="essiembre" type="add">
+        New EqualsUtil#equalsMap(...) method for checking if two maps are equal,
+        regardless of entry order.
       </action>
       <action dev="essiembre" type="fix">
         Fixed QueryString setting "UTF-8" as the URL when invoking empty 

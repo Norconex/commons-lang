@@ -14,6 +14,7 @@
  */
 package com.norconex.commons.lang;
 
+import java.util.Map;
 import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
@@ -121,5 +122,28 @@ public final class EqualsUtil {
     public static boolean equalsNoneIgnoreCase(
             String source, String... targets) {
         return !equalsAnyIgnoreCase(source, targets);
+    }
+    
+    /**
+     * Compares that two maps are equals, regardless of entry orders.
+     * It does so by making sure the two maps are the same size
+     * and the first map contains all entries of the other one. 
+     * Map elements should implement <code>equals</code>.
+     * @param map1 first map 
+     * @param map2 second map
+     * @return <code>true</code> if the two maps are equal
+     * @since 1.14.0
+     */
+    public static boolean equalsMap(Map<?, ?> map1, Map<?,?> map2) {
+        if (map1 == null && map2 == null) {
+            return true;
+        }
+        if (map1 == null || map2 == null) {
+            return false;
+        }
+        if (map1.size() != map2.size()) {
+            return false;
+        }
+        return map1.entrySet().containsAll(map2.entrySet());
     }
 }
