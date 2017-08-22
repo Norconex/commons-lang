@@ -34,7 +34,7 @@ import org.apache.commons.io.FileUtils;
 public class TextReader extends Reader {
 
     public static final int DEFAULT_MAX_READ_SIZE = 
-            (int) (FileUtils.ONE_KB * 64);
+            (int) (FileUtils.ONE_KB * 128);
     
     private final BufferedReader reader;
     private final int maxReadSize;
