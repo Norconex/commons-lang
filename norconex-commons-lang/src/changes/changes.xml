@@ -21,8 +21,26 @@
         New EqualsUtil#equalsMap(...) method for checking if two maps are equal,
         regardless of entry order.
       </action>
+      <action dev="essiembre" type="add">
+        It is now possible to pass a Charset where a string was expected
+        for character encoding on a few utility classes.
+      </action>
+      <action dev="essiembre" type="add">
+        Added ZIP constant to ContentType.
+      </action>
       <action dev="essiembre" type="update">
         TextReader#DEFAULT_MAX_READ_SIZE has been increased from 64K to 128K.
+      </action>
+      <action dev="essiembre" type="update">
+        Dependency updates: Apache Commons Lang 3.6, Apache Commons Text 1.1,
+      </action>
+      <action dev="essiembre" type="update">
+        ContentType now works better with types with parameters. 
+        Added two new related methods: #toBaseTypeString() and #toBaseType().
+      </action>
+      <action dev="essiembre" type="fix">
+        Fixed CachedInputStream returning -1 or throwing EOF exception when
+        it should not.
       </action>
       <action dev="essiembre" type="fix">
         Fixed QueryString setting "UTF-8" as the URL when invoking empty 

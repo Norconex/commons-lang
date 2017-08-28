@@ -1,9 +1,16 @@
 TODO:
 ==============
 
-- Upgrade to Commons Configuration 2.x
+- Allows to specify a velocity-tools.properties or equivalent in classpath
+  root (e.g. classes/ folder) to define custom classes to be used by Velocity.
 
+- Upgrade to Commons Configuration 2.x
 - Upgrade to Apache Velocity 2.x when available in Maven.
+
+    - See after upgrading above two if we can get rid of 
+      Commons Collections 3.x and Commons Lang 2.x 
+
+- Upgrade to log4j v2.x (or java native?)
 
 - Modify Jar copier to handle cases where snapshot are timestamped instead and
   not being considered the latest when they should.  Like:

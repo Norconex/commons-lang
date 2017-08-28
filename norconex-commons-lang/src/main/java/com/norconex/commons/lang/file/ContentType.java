@@ -86,6 +86,8 @@ public final class ContentType implements Serializable {
     public static final ContentType CSV = new ContentType("text/csv");
     public static final ContentType TSV = 
             new ContentType("text/tab-separated-values");
+    /** @since 1.14.0*/
+    public static final ContentType ZIP = new ContentType("application/zip");
     
     // Common images:
     public static final ContentType JPEG = new ContentType("image/jpeg");
@@ -93,7 +95,7 @@ public final class ContentType implements Serializable {
     public static final ContentType BMP = new ContentType("image/bmp");
     public static final ContentType PNG = new ContentType("image/png");
 
-    private String contentType;
+    private final String type;
 
     /**
      * Constructor.
@@ -101,7 +103,7 @@ public final class ContentType implements Serializable {
      */
     private ContentType(String contentType) {
         super();
-        this.contentType = contentType;
+        this.type = contentType;
         REGISTRY.put(contentType, this);
     }
 
@@ -170,12 +172,12 @@ public final class ContentType implements Serializable {
             safeLocale = Locale.getDefault();
         }
         try {
-            return getDisplayBundle(safeLocale).getString(contentType);
+            return getDisplayBundle(safeLocale).getString(toBaseTypeString());
         } catch (MissingResourceException e) {
             LOG.debug("Could not find display name for content type: "
-                    + contentType);
+                    + type);
         }
-        return "[" + contentType + "]";
+        return "[" + type + "]";
     }
     private ResourceBundle getDisplayBundle(Locale locale) {
         ResourceBundle bundle = BUNDLE_DISPLAYNAMES.get(locale);
@@ -194,7 +196,7 @@ public final class ContentType implements Serializable {
     }
     
     public ContentFamily getContentFamily() {
-        return ContentFamily.forContentType(contentType);
+        return ContentFamily.forContentType(type);
     }
 
     /**
@@ -217,11 +219,11 @@ public final class ContentType implements Serializable {
      */
     public String[] getExtensions() {
         try {
-            String ext = BUNDLE_EXTENSIONS.getString(contentType);
+            String ext = BUNDLE_EXTENSIONS.getString(toBaseTypeString());
             return StringUtils.split(ext, ',');
         } catch (MissingResourceException e) {
             LOG.debug("Could not find extension(s) for content type: "
-                    + contentType);
+                    + type);
         }
         return ArrayUtils.EMPTY_STRING_ARRAY;
     }
@@ -232,7 +234,7 @@ public final class ContentType implements Serializable {
      * @return {@code true} if the given string matches this content type
      */
     public boolean matches(String contentType) {
-        return this.contentType.equals(StringUtils.trim(contentType));
+        return this.type.equals(StringUtils.trim(contentType));
     }
     
     @Override
@@ -240,7 +242,7 @@ public final class ContentType implements Serializable {
         final int prime = 31;
         int result = 1;
         result = prime * result
-                + ((contentType == null) ? 0 : contentType.hashCode());
+                + ((type == null) ? 0 : type.hashCode());
         return result;
     }
 
@@ -256,11 +258,11 @@ public final class ContentType implements Serializable {
             return false;
         }
         ContentType other = (ContentType) obj;
-        if (contentType == null) {
-            if (other.contentType != null) {
+        if (type == null) {
+            if (other.type != null) {
                 return false;
             }
-        } else if (!contentType.equals(other.contentType)) {
+        } else if (!type.equals(other.type)) {
             return false;
         }
         return true;
@@ -272,7 +274,29 @@ public final class ContentType implements Serializable {
      */
     @Override
     public String toString() {
-        return contentType;
+        return type;
+    }
+    /**
+     * Returns the raw content-type representation without any parameters
+     * (removes ";" and any values afterwards).
+     * @return content type as string without parameters
+     * @since 1.14.0
+     */
+    public String toBaseTypeString() {
+        return StringUtils.substringBefore(type, ";");
+    }
+    /**
+     * Returns a content-type without any parameters
+     * (removes ";" and any values afterwards).  Invoking a content type 
+     * without parameters will return itself.
+     * @return content type without parameters
+     * @since 1.14.0
+     */
+    public ContentType toBaseType() {
+        if (type.contains(";")) {
+            return ContentType.valueOf(toBaseTypeString());
+        }
+        return this;
     }
     
 }

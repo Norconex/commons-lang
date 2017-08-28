@@ -1,4 +1,4 @@
-/* Copyright 2010-2016 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,8 @@ import java.io.Serializable;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.math.BigDecimal;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -36,7 +38,6 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.LocaleUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.LogManager;
@@ -66,7 +67,6 @@ import org.apache.log4j.Logger;
  * data to its target format, a {@link PropertiesException} is thrown.</p>
  * @author Pascal Essiembre
  */
-@SuppressWarnings("nls")
 public class Properties extends ObservableMap<String, List<String>>
         implements Serializable {
 
@@ -234,7 +234,6 @@ public class Properties extends ObservableMap<String, List<String>>
             p.put(key, StringUtils.join(values, delimiter));
         }
         p.store(writer, comments);
-        p = null;
     }
     /**
      * Writes this {@link Map} (key and element pairs) to the output character
@@ -272,7 +271,7 @@ public class Properties extends ObservableMap<String, List<String>>
     public void store(OutputStream out, String comments, String delimiter) 
             throws IOException {
         store(new OutputStreamWriter(
-                out, CharEncoding.UTF_8), comments, delimiter);
+                out, StandardCharsets.UTF_8), comments, delimiter);
     }
     /**
      * Emits an XML document representing all of the properties contained
@@ -293,7 +292,7 @@ public class Properties extends ObservableMap<String, List<String>>
     public synchronized void storeToXML(
             OutputStream os, String comment)
             throws IOException {
-        storeToXML(os, comment, CharEncoding.UTF_8);        
+        storeToXML(os, comment, StandardCharsets.UTF_8);        
     }
     /**
      * Emits an XML document representing all of the properties contained
@@ -313,6 +312,28 @@ public class Properties extends ObservableMap<String, List<String>>
      */
     public synchronized void storeToXML(OutputStream os, String comment, 
             String encoding) throws IOException {
+        storeToXML(os, comment, Charset.forName(encoding), 
+                DEFAULT_MULTIVALUE_DELIMITER);
+    }
+    /**
+     * Emits an XML document representing all of the properties contained
+     * in this {@link Map}, using the specified encoding.
+     * If a key only has one value, then this method behavior is the
+     * exact same as the 
+     * {@link Properties#storeToXML(OutputStream, String, String)} method.
+     * Keys with multi-values are joined into a single string, using
+     * the default delimiter:
+     * {@link Properties#DEFAULT_MULTIVALUE_DELIMITER}
+     * @param os the output stream on which to emit the XML document.
+     * @param comment a description of the property list, or <code>null</code>
+     *        if no comment is desired.
+     * @param encoding character encoding
+     * @throws IOException i/o problem
+     * @see Properties#storeToXML(OutputStream, String, String)
+     * @since 1.14.0
+     */
+    public synchronized void storeToXML(OutputStream os, String comment, 
+            Charset encoding) throws IOException {
         storeToXML(os, comment, encoding, 
                 DEFAULT_MULTIVALUE_DELIMITER);
     }
@@ -335,13 +356,38 @@ public class Properties extends ObservableMap<String, List<String>>
      */
     public synchronized void storeToXML(OutputStream os, String comment, 
             String encoding, String delimiter) throws IOException {
+        storeToXML(os, comment, Charset.forName(encoding), delimiter);
+    }
+    /**
+     * Emits an XML document representing all of the properties contained
+     * in this {@link Map}, using the specified encoding.
+     * If a key only has one value, then this method behavior is the
+     * exact same as the 
+     * {@link Properties#storeToXML(OutputStream, String, String)} method.
+     * Keys with multi-values are joined into a single string, using
+     * the delimiter provided.
+     * @param os the output stream on which to emit the XML document.
+     * @param comment a description of the property list, or <code>null</code>
+     *        if no comment is desired.
+     * @param encoding character encoding
+     * @param delimiter delimiter string to used as a separator when joining 
+     *        multiple values for the same key.
+     * @throws IOException i/o problem
+     * @see Properties#storeToXML(OutputStream, String, String)
+     * @since 1.14.0
+     */
+    public synchronized void storeToXML(OutputStream os, String comment, 
+            Charset encoding, String delimiter) throws IOException {
         java.util.Properties p = new java.util.Properties();
         for (String key : keySet()) {
             List<String> values = getStrings(key);
             p.put(key, StringUtils.join(values, delimiter));
         }
-        p.storeToXML(os, comment, encoding);
-        p = null;
+        Charset safeEncoding = encoding;
+        if (encoding == null) {
+            safeEncoding = StandardCharsets.UTF_8;
+        }
+        p.storeToXML(os, comment, safeEncoding.toString());
     }
     
     //--- Load -----------------------------------------------------------------
@@ -391,7 +437,6 @@ public class Properties extends ObservableMap<String, List<String>>
             }
             put(key, values);
         }
-        p = null;
     }
 
     /**
@@ -454,7 +499,7 @@ public class Properties extends ObservableMap<String, List<String>>
      */
     public synchronized void load(InputStream inStream)
             throws IOException {
-        load(new InputStreamReader(inStream, CharEncoding.UTF_8),
+        load(new InputStreamReader(inStream, StandardCharsets.UTF_8),
                 DEFAULT_MULTIVALUE_DELIMITER);
     }
     /**
@@ -474,7 +519,8 @@ public class Properties extends ObservableMap<String, List<String>>
      */
     public synchronized void load(InputStream inStream, String delimiter)
             throws IOException {
-        load(new InputStreamReader(inStream, CharEncoding.UTF_8), delimiter);
+        load(new InputStreamReader(
+                inStream, StandardCharsets.UTF_8), delimiter);
     }
     /**
      * Loads all of the properties represented by the XML document on the
@@ -520,7 +566,6 @@ public class Properties extends ObservableMap<String, List<String>>
             }
             put(key, values);
         }
-        p = null;
     }
     /**
      * Reads a property list (key and element pairs) from the UTF-8 input
@@ -531,7 +576,7 @@ public class Properties extends ObservableMap<String, List<String>>
      */
     public void loadFromString(String str) throws IOException {
         InputStream is = new ByteArrayInputStream(
-                str.getBytes(CharEncoding.UTF_8));
+                str.getBytes(StandardCharsets.UTF_8));
         load(is);
         is.close();
     }

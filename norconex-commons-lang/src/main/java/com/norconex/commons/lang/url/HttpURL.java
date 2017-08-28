@@ -1,4 +1,4 @@
-/* Copyright 2010-2016 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,13 @@
 package com.norconex.commons.lang.url;
 
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
-import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -100,7 +99,7 @@ public class HttpURL implements Serializable {
      */
     public HttpURL(String url, String encoding) {
         if (StringUtils.isBlank(encoding)) {
-            this.encoding = CharEncoding.UTF_8;
+            this.encoding = StandardCharsets.UTF_8.toString();
         } else {
             this.encoding = encoding;
         }
@@ -434,11 +433,7 @@ public class HttpURL implements Serializable {
             // Invalid: encode it
             } else {
                 byte[] bytes;
-                try {
-                    bytes = Character.toString(ch).getBytes(CharEncoding.UTF_8);
-                } catch (UnsupportedEncodingException e) {
-                    throw new URLException("UTF-8 not supported.", e);
-                }
+                bytes = Character.toString(ch).getBytes(StandardCharsets.UTF_8);
                 for (byte b : bytes) {
                     sb.append('%');
                     int upper = (((int) b) >> 4) & 0xf;

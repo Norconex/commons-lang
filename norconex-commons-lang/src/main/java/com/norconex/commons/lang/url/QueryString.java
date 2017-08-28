@@ -19,10 +19,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import org.apache.commons.collections4.map.ListOrderedMap;
-import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
 
 import com.norconex.commons.lang.map.Properties;
@@ -46,7 +46,7 @@ public class QueryString extends Properties {
      * Constructor.
      */
     public QueryString() {
-        this(StringUtils.EMPTY, CharEncoding.UTF_8);
+        this(StringUtils.EMPTY, StandardCharsets.UTF_8.toString());
     }
     
     /**
@@ -88,7 +88,7 @@ public class QueryString extends Properties {
     public QueryString(String urlWithQueryString, String encoding) {
         super(new ListOrderedMap<String, List<String>>());
         if (StringUtils.isBlank(encoding)) {
-            this.encoding = CharEncoding.UTF_8;
+            this.encoding = StandardCharsets.UTF_8.toString();
         } else {
             this.encoding = encoding;
         }

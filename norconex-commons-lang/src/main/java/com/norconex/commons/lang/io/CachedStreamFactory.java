@@ -1,4 +1,4 @@
-/* Copyright 2014-2016 Norconex Inc.
+/* Copyright 2014-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,20 +15,16 @@
 package com.norconex.commons.lang.io;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
 
 /**
  * 
@@ -36,9 +32,6 @@ import org.apache.log4j.Logger;
  */
 public class CachedStreamFactory {
 
-    private static final Logger LOG = LogManager.getLogger(
-            CachedStreamFactory.class);
-    
     private final int poolMaxMemory;
     private final int instanceMaxMemory;
     private final File cacheDirectory;
@@ -120,15 +113,8 @@ public class CachedStreamFactory {
      * @return cached input stream
      */
     public CachedInputStream newInputStream(String content) {
-        InputStream is = null;
-        try {
-            is = IOUtils.toInputStream(content, CharEncoding.UTF_8);
-        } catch (IOException e) {
-            LOG.error("Could not get input stream with UTF-8 encoding. "
-                    + "Trying with default encoding.", e);
-            is = IOUtils.toInputStream(content, Charset.defaultCharset());
-        }
-        return registerStream(new CachedInputStream(this, is, cacheDirectory));
+        return registerStream(new CachedInputStream(this, IOUtils.toInputStream(
+                content, StandardCharsets.UTF_8), cacheDirectory));
     }
     public CachedInputStream newInputStream(File file) {
         return registerStream(new CachedInputStream(this, file));

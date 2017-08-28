@@ -20,12 +20,12 @@ import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.LinkedList;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -80,7 +80,7 @@ public final class FileUtil {
     /**
      * Converts a "safe" file name originally created with 
      * {@link #toSafeFileName(String)} into its original string.
-     * @param safeFileName the file name to convert to its origianl form
+     * @param safeFileName the file name to convert to its original form
      * @return original string
      */
     public static String fromSafeFileName(String safeFileName) {
@@ -169,9 +169,9 @@ public final class FileUtil {
                     || !sourceFile.renameTo(targetFile)) {
                 failure++;
                 Sleeper.sleepSeconds(1);
-                continue;
+            } else {
+                break;
             }
-            break;
         }
         if (failure >= MAX_FILE_OPERATION_ATTEMPTS) {
             throw new IOException(
@@ -438,7 +438,8 @@ public final class FileUtil {
      */
     public static String[] head(File file, int numberOfLinesToRead)
             throws IOException {
-        return head(file, CharEncoding.UTF_8, numberOfLinesToRead);
+        return head(file, StandardCharsets.UTF_8.toString(), 
+                numberOfLinesToRead);
     }
 
     /**
@@ -487,24 +488,23 @@ public final class FileUtil {
         assertFile(file);
         assertNumOfLinesToRead(numberOfLinesToRead);
         LinkedList<String> lines = new LinkedList<>();
-        BufferedReader reader = new BufferedReader(
-                new InputStreamReader(new FileInputStream(file), encoding));
-
-        int remainingLinesToRead = numberOfLinesToRead;
-        String line = StringUtils.EMPTY;
-        while(line != null && remainingLinesToRead-- > 0){
-             line = reader.readLine();
-             if (!stripBlankLines || StringUtils.isNotBlank(line)) {
-                 if (filter != null && filter.accept(line)) {
-                     lines.addFirst(line);
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(new FileInputStream(file), encoding))) {
+            int remainingLinesToRead = numberOfLinesToRead;
+            String line = StringUtils.EMPTY;
+            while(line != null && remainingLinesToRead-- > 0){
+                 line = reader.readLine();
+                 if (!stripBlankLines || StringUtils.isNotBlank(line)) {
+                     if (filter != null && filter.accept(line)) {
+                         lines.addFirst(line);
+                     } else {
+                         remainingLinesToRead++;
+                     }
                  } else {
                      remainingLinesToRead++;
                  }
-             } else {
-                 remainingLinesToRead++;
-             }
+            }
         }
-        reader.close();
         return lines.toArray(ArrayUtils.EMPTY_STRING_ARRAY);
     }
 
@@ -519,7 +519,8 @@ public final class FileUtil {
      */
     public static String[] tail(File file, int numberOfLinesToRead)
             throws IOException {
-        return tail(file, CharEncoding.UTF_8, numberOfLinesToRead);
+        return tail(file, 
+                StandardCharsets.UTF_8.toString(), numberOfLinesToRead);
     }
 
     /**
@@ -570,27 +571,27 @@ public final class FileUtil {
         assertFile(file);
         assertNumOfLinesToRead(numberOfLinesToRead);
         LinkedList<String> lines = new LinkedList<>();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(
-                new ReverseFileInputStream(file), encoding));
-        int remainingLinesToRead = numberOfLinesToRead;
-
-        String line;
-        while ((line = reader.readLine()) != null) {
-            if (remainingLinesToRead-- <= 0) {
-                break;
-            }
-            String newLine = StringUtils.reverse(line);
-            if (!stripBlankLines || StringUtils.isNotBlank(line)) {
-                if (filter != null && filter.accept(newLine)) {
-                    lines.addFirst(newLine);
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
+                new ReverseFileInputStream(file), encoding))) {
+            int remainingLinesToRead = numberOfLinesToRead;
+    
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (remainingLinesToRead-- <= 0) {
+                    break;
+                }
+                String newLine = StringUtils.reverse(line);
+                if (!stripBlankLines || StringUtils.isNotBlank(line)) {
+                    if (filter != null && filter.accept(newLine)) {
+                        lines.addFirst(newLine);
+                    } else {
+                        remainingLinesToRead++;
+                    }
                 } else {
                     remainingLinesToRead++;
                 }
-            } else {
-                remainingLinesToRead++;
             }
         }
-        reader.close();
         return lines.toArray(ArrayUtils.EMPTY_STRING_ARRAY);
     }
 
@@ -634,8 +635,8 @@ public final class FileUtil {
             throw new IOException("Parent directory \"" + parentDir 
                     + "\" already exists and is not a directory.");
         }
-        File dateDir = new File(parentDir.getAbsolutePath()
-                + "/" + DateFormatUtils.format(date, "yyyy/MM/dd"));
+        File dateDir = new File(parentDir.getAbsolutePath(),
+                DateFormatUtils.format(date, "yyyy/MM/dd"));
         FileUtils.forceMkdir(dateDir);
         return dateDir;
     }
@@ -681,9 +682,8 @@ public final class FileUtil {
             throw new IOException("Parent directory \"" + parentDir 
                     + "\" already exists and is not a directory.");
         }
-        File dateDir = new File(parentDir.getAbsolutePath()
-                + "/" + DateFormatUtils.format(
-                        dateTime, "yyyy/MM/dd/HH/mm/ss"));
+        File dateDir = new File(parentDir.getAbsolutePath(),
+                DateFormatUtils.format(dateTime, "yyyy/MM/dd/HH/mm/ss"));
         FileUtils.forceMkdir(dateDir);
         return dateDir;
     }

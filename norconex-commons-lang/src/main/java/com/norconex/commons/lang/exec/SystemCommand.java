@@ -27,8 +27,7 @@ import java.util.Map.Entry;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
-import org.apache.commons.lang3.text.translate.CharSequenceTranslator;
-import org.apache.commons.lang3.text.translate.LookupTranslator;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -387,7 +386,7 @@ public class SystemCommand {
      * @return escaped command
      */
     public static String[] escape(String... command) {
-        List<String> list = new ArrayList<String>(Arrays.asList(command));
+        List<String> list = new ArrayList<>(Arrays.asList(command));
         escape(list);
         return list.toArray(ArrayUtils.EMPTY_STRING_ARRAY);
     }
@@ -409,7 +408,7 @@ public class SystemCommand {
             return;
         }
 
-        List<String> newCmd = new ArrayList<String>();
+        List<String> newCmd = new ArrayList<>();
         for (String arg : cmd) {
             if (StringUtils.contains(arg, ' ') 
                     && !arg.matches("^\\s*\".*\"\\s*$")) {
@@ -436,7 +435,7 @@ public class SystemCommand {
         } else {
             for (int i = 0; i < cmd.size(); i++) {
                 if (StringUtils.contains(cmd.get(i), ' ')) {
-                    cmd.add(i, escapeShell(cmd.remove(i)));
+                    cmd.add(i, StringEscapeUtils.escapeXSI(cmd.remove(i)));
                 }
             }
         }
@@ -471,38 +470,5 @@ public class SystemCommand {
             }
             b.append(line);
         }
-    }
-    
-    //TODO remove the following when Apache Commons Lang 3.6 is out, which
-    // will contain StringEscapeUtils#escapeShell(String)
-    private static final CharSequenceTranslator ESCAPE_XSI =
-            new LookupTranslator(
-              new String[][] {
-                {"|", "\\|"},
-                {"&", "\\&"},
-                {";", "\\;"},
-                {"<", "\\<"},
-                {">", "\\>"},
-                {"(", "\\("},
-                {")", "\\)"},
-                {"$", "\\$"},
-                {"`", "\\`"},
-                {"\\", "\\\\"},
-                {"\"", "\\\""},
-                {"'", "\\'"},
-                {" ", "\\ "},
-                {"\t", "\\\t"},
-                {"\r\n", ""},
-                {"\n", ""},
-                {"*", "\\*"},
-                {"?", "\\?"},
-                {"[", "\\["},
-                {"#", "\\#"},
-                {"~", "\\~"},
-                {"=", "\\="},
-                {"%", "\\%"},
-            });
-    private static String escapeShell(String input) {
-        return ESCAPE_XSI.translate(input);
     }
 }
