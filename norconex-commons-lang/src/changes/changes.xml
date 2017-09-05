@@ -46,6 +46,10 @@
         Fixed QueryString setting "UTF-8" as the URL when invoking empty 
         constructor (now blank).
       </action>
+      <action dev="essiembre" type="fix">
+        Fixed DurationParser now returning default value in some cases
+        where the duration was invalid (returning 0 instead).
+      </action>
     </release>
 
     <release version="1.13.1" date="2017-05-16" description="Bugfix release">
