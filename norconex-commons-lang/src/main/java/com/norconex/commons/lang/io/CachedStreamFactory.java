@@ -96,7 +96,8 @@ public class CachedStreamFactory {
     }
     
     /*default*/ CachedInputStream newInputStream(byte[] bytes) {
-        return registerStream(new CachedInputStream(this, bytes));
+        return registerStream(
+                new CachedInputStream(this, cacheDirectory, bytes));
     }
 
     /**
@@ -113,22 +114,23 @@ public class CachedStreamFactory {
      * @return cached input stream
      */
     public CachedInputStream newInputStream(String content) {
-        return registerStream(new CachedInputStream(this, IOUtils.toInputStream(
-                content, StandardCharsets.UTF_8), cacheDirectory));
+        return registerStream(new CachedInputStream(this, cacheDirectory, 
+                IOUtils.toInputStream(content, StandardCharsets.UTF_8)));
     }
     public CachedInputStream newInputStream(File file) {
-        return registerStream(new CachedInputStream(this, file));
+        return registerStream(
+                new CachedInputStream(this, cacheDirectory, file));
     }
     public CachedInputStream newInputStream(InputStream is) {
-        return registerStream(new CachedInputStream(this, is, cacheDirectory));
+        return registerStream(new CachedInputStream(this, cacheDirectory, is));
     }
 
     public CachedOutputStream newOuputStream(OutputStream os) {
-        return registerStream(new CachedOutputStream(this, os, cacheDirectory));
+        return registerStream(new CachedOutputStream(this, cacheDirectory, os));
     }
     public CachedOutputStream newOuputStream() {
         return registerStream(
-                new CachedOutputStream(this, null, cacheDirectory));
+                new CachedOutputStream(this, cacheDirectory, null));
     }
     
     private <T extends ICachedStream> T registerStream(T s) {

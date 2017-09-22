@@ -1,4 +1,4 @@
-/* Copyright 2014-2016 Norconex Inc.
+/* Copyright 2014-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,11 +80,11 @@ public class CachedOutputStream extends OutputStream
      * will be written to as expected, but its content will be cached in this
      * instance.
      * @param factory Cached stream factory
-     * @param out OutputStream to cache
      * @param cacheDirectory directory where to store large content
+     * @param out OutputStream to cache
      */
     /*default*/ CachedOutputStream(CachedStreamFactory factory, 
-            OutputStream out, File cacheDirectory) {
+            File cacheDirectory, OutputStream out) {
         super();
 
         this.factory = factory;

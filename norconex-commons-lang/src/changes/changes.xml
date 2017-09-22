@@ -50,6 +50,10 @@
         Fixed DurationParser now returning default value in some cases
         where the duration was invalid (returning 0 instead).
       </action>
+      <action dev="essiembre" type="fix">
+        Fixed CachedInputStream sometimes returning null when using
+        #getCacheDirectory() method. 
+      </action>
     </release>
 
     <release version="1.13.1" date="2017-05-16" description="Bugfix release">
