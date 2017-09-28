@@ -9,6 +9,9 @@
 
     <release version="1.14.0-SNAPSHOT" date="2017-??-??" description="Feature release">
       <action dev="essiembre" type="add">
+        New StringUtil class.
+      </action>
+      <action dev="essiembre" type="add">
         New ResourceLoader class.
       </action>
       <action dev="essiembre" type="add">
@@ -16,6 +19,19 @@
       </action>
       <action dev="essiembre" type="add">
         New CircularRange class. 
+      </action>
+      <action dev="essiembre" type="add">
+        New method variation on EhancedXMLStreamWriter to overwrite the
+        default "writeBlanks" setting.
+      </action>
+      <action dev="essiembre" type="add">
+        New FileUtil#createURLDirs method for creating directories matching
+        URL segments. 
+      </action>
+      <action dev="essiembre" type="add">
+        New XMLConfigurationUtil#nullable* methods to consider empty 
+        tags/attributes as null whereas not having the tag at all uses
+        the default value.
       </action>
       <action dev="essiembre" type="add">
         New EqualsUtil#equalsMap(...) method for checking if two maps are equal,

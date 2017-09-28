@@ -14,6 +14,7 @@
  */
 package com.norconex.commons.lang.xml;
 
+import java.awt.Dimension;
 import java.io.Writer;
 import java.util.Objects;
 
@@ -44,7 +45,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
     
     private final XMLStreamWriter writer;
     //TODO consider constructor with new EnhancedXMLStreamWriterConfig instead
-    private final boolean writeBlanks;
+    private final boolean defaultWriteBlanks;
     // -1 = no indent, 0 = new lines only, 1+ = new lines + num of spaces,
     private final int indent;
     private int depth = 0;
@@ -53,6 +54,15 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
     public EnhancedXMLStreamWriter(Writer out) throws XMLStreamException {
         this(out, false);
     }
+    /**
+     * Creates a new xml stream writer.
+     * @param out writer used to write XML
+     * @param writeBlanks <code>true</code> to write attributes/elements 
+     *        with no values when invoking methods without the 
+     *        "writeBlanks" argument. This sets the default behavior which
+     *        can be overwritten using methods with "writeBlanks" argument. 
+     * @throws XMLStreamException problem creating XML stream writer
+     */
     public EnhancedXMLStreamWriter(Writer out, boolean writeBlanks) 
             throws XMLStreamException {
         this(out, writeBlanks, -1);
@@ -61,7 +71,9 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
      * Creates a new xml stream writer.
      * @param out writer used to write XML
      * @param writeBlanks <code>true</code> to write attributes/elements 
-     *        with no values
+     *        with no values when invoking methods without the 
+     *        "writeBlanks" argument. This sets the default behavior which
+     *        can be overwritten using methods with "writeBlanks" argument. 
      * @param indent how many spaces to use for indentation (-1=no indent; 
      *        0=newline only; 1+=number of spaces after newline)
      * @throws XMLStreamException problem creating XML stream writer
@@ -72,7 +84,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
         super();
         XMLOutputFactory factory = createXMLOutputFactory();
         writer = factory.createXMLStreamWriter(out);
-        this.writeBlanks = writeBlanks;
+        this.defaultWriteBlanks = writeBlanks;
         this.indent = indent;
     }
     public EnhancedXMLStreamWriter(XMLStreamWriter xmlStreamWriter) {
@@ -95,7 +107,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
             XMLStreamWriter xmlStreamWriter, boolean writeBlanks, int indent) {
         super();
         this.writer = xmlStreamWriter;
-        this.writeBlanks = writeBlanks;
+        this.defaultWriteBlanks = writeBlanks;
         this.indent = indent;
     }
 
@@ -133,41 +145,164 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
         return factory;
     }
     
-    //--- New methods ----------------------------------------------------------
+    //--- Attribute methods ----------------------------------------------------
 
     public void writeAttributeInteger(String localName, Integer value) 
             throws XMLStreamException {
-        writeAttributeObject(localName, value);
+        writeAttributeInteger(localName, value, defaultWriteBlanks);
+    }
+    /**
+     * Writes a Integer attribute.
+     * @param localName attribute name
+     * @param value Integer attribute value
+     * @param writeBlanks whether a blank value should be written as 
+     *                    an empty attribute.
+     * @throws XMLStreamException problem writing attribute
+     * @since 1.14.0
+     */
+    public void writeAttributeInteger(
+            String localName, Integer value, boolean writeBlanks) 
+            throws XMLStreamException {
+        writeAttributeObject(localName, value, writeBlanks);
     }
     public void writeAttributeLong(String localName, Long value) 
             throws XMLStreamException {
-        writeAttributeObject(localName, value);
+        writeAttributeLong(localName, value, defaultWriteBlanks);
+    }
+    /**
+     * Writes a Long attribute.
+     * @param localName attribute name
+     * @param value Long attribute value
+     * @param writeBlanks whether a blank value should be written as 
+     *                    an empty attribute.
+     * @throws XMLStreamException problem writing attribute
+     * @since 1.14.0
+     */
+    public void writeAttributeLong(
+            String localName, Long value, boolean writeBlanks) 
+            throws XMLStreamException {
+        writeAttributeObject(localName, value, writeBlanks);
     }
     public void writeAttributeFloat(String localName, Float value) 
             throws XMLStreamException {
-        writeAttributeObject(localName, value);
+        writeAttributeFloat(localName, value, defaultWriteBlanks);
+    }
+    /**
+     * Writes a Float attribute.
+     * @param localName attribute name
+     * @param value Float attribute value
+     * @param writeBlanks whether a blank value should be written as 
+     *                    an empty attribute.
+     * @throws XMLStreamException problem writing attribute
+     * @since 1.14.0
+     */
+    public void writeAttributeFloat(
+            String localName, Float value, boolean writeBlanks) 
+            throws XMLStreamException {
+        writeAttributeObject(localName, value, writeBlanks);
     }
     public void writeAttributeDouble(String localName, Double value) 
             throws XMLStreamException {
-        writeAttributeObject(localName, value);
+        writeAttributeDouble(localName, value, defaultWriteBlanks);
+    }
+    /**
+     * Writes a Double attribute.
+     * @param localName attribute name
+     * @param value Double attribute value
+     * @param writeBlanks whether a blank value should be written as 
+     *                    an empty attribute.
+     * @throws XMLStreamException problem writing attribute
+     * @since 1.14.0
+     */
+    public void writeAttributeDouble(
+            String localName, Double value, boolean writeBlanks) 
+            throws XMLStreamException {
+        writeAttributeObject(localName, value, writeBlanks);
     }
     public void writeAttributeBoolean(String localName, Boolean value) 
             throws XMLStreamException {
-        writeAttributeObject(localName, value);
+        writeAttributeBoolean(localName, value, defaultWriteBlanks);
+    }
+    /**
+     * Writes a Boolean attribute.
+     * @param localName attribute name
+     * @param value Boolean attribute value
+     * @param writeBlanks whether a blank value should be written as 
+     *                    an empty attribute.
+     * @throws XMLStreamException problem writing attribute
+     * @since 1.14.0
+     */
+    public void writeAttributeBoolean(
+            String localName, Boolean value, boolean writeBlanks) 
+            throws XMLStreamException {
+        writeAttributeObject(localName, value, writeBlanks);
     }
     public void writeAttributeString(String localName, String value) 
             throws XMLStreamException {
-        writeAttributeObject(localName, value);
+        writeAttributeString(localName, value, defaultWriteBlanks);
+    }
+    /**
+     * Writes a String attribute.
+     * @param localName attribute name
+     * @param value String attribute value
+     * @param writeBlanks whether a blank value should be written as 
+     *                    an empty attribute.
+     * @throws XMLStreamException problem writing attribute
+     * @since 1.14.0
+     */
+    public void writeAttributeString(
+            String localName, String value, boolean writeBlanks) 
+            throws XMLStreamException {
+        writeAttributeObject(localName, value, writeBlanks);
     }
     public void writeAttributeClass(String localName, Class<?> value) 
             throws XMLStreamException {
+        writeAttributeClass(localName, value, defaultWriteBlanks);
+    }
+    /**
+     * Writes an attribute containing a class name, getting it by invoking
+     * {@link Class#getCanonicalName()}. 
+     * @param localName attribute name
+     * @param value Class attribute value
+     * @param writeBlanks whether a blank value should be written as 
+     *                    an empty attribute.
+     * @throws XMLStreamException problem writing attribute
+     * @since 1.14.0
+     */
+    public void writeAttributeClass(
+            String localName, Class<?> value, boolean writeBlanks) 
+            throws XMLStreamException {
         if (value == null) {
-            writeAttributeObject(localName, null);
+            writeAttributeObject(localName, null, writeBlanks);
         } else {
-            writeAttributeObject(localName, value.getCanonicalName());
+            writeAttributeObject(
+                    localName, value.getCanonicalName(), writeBlanks);
         }
     }
-    private void writeAttributeObject(String localName, Object value)
+    /**
+     * Writes an attribute object by first converting it to string
+     * using its "toString()" method.
+     * @param localName attribute name
+     * @param value attribute value
+     * @throws XMLStreamException problem writing attribute
+     * @since 1.14.0
+     */    
+    public void writeAttributeObject(String localName, Object value)
+            throws XMLStreamException {
+        writeAttributeObject(localName, value, defaultWriteBlanks);
+    }
+    /**
+     * Writes an attribute object by first converting it to string
+     * using its "toString()" method.
+     * @param localName attribute name
+     * @param value attribute value
+     * @param writeBlanks whether a blank value should be written as 
+     *                    an empty attribute.
+     * @throws XMLStreamException problem writing attribute
+     * @since 1.14.0
+     */    
+    public void writeAttributeObject(
+            String localName, Object value, boolean writeBlanks)
             throws XMLStreamException {
         String strValue = Objects.toString(value, null);
         if (StringUtils.isNotBlank(strValue)) {
@@ -176,40 +311,206 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
             writeAttribute(localName, StringUtils.EMPTY);
         }
     }
+
+    //--- Element methods ------------------------------------------------------
     
     public void writeElementInteger(String localName, Integer value) 
             throws XMLStreamException {
-        writeElementObject(localName, value);
+        writeElementInteger(localName, value, defaultWriteBlanks);
+    }
+    /**
+     * Writes a simple Integer element.
+     * @param localName element (tag) name
+     * @param value the Integer value
+     * @param writeBlanks 
+     *        whether a blank value should be written as an empty element.
+     * @throws XMLStreamException problem writing element
+     * @since 1.14.0
+     */
+    public void writeElementInteger(
+            String localName, Integer value, boolean writeBlanks) 
+            throws XMLStreamException {
+        writeElementObject(localName, value, writeBlanks);
     }
     public void writeElementLong(String localName, Long value) 
             throws XMLStreamException {
-        writeElementObject(localName, value);
+        writeElementLong(localName, value, defaultWriteBlanks);
+    }
+    /**
+     * Writes a simple Long element.
+     * @param localName element (tag) name
+     * @param value the Long value
+     * @param writeBlanks 
+     *        whether a blank value should be written as an empty element.
+     * @throws XMLStreamException problem writing element
+     * @since 1.14.0
+     */
+    public void writeElementLong(
+            String localName, Long value, boolean writeBlanks) 
+            throws XMLStreamException {
+        writeElementObject(localName, value, writeBlanks);
     }
     public void writeElementFloat(String localName, Float value) 
             throws XMLStreamException {
-        writeElementObject(localName, value);
+        writeElementFloat(localName, value, defaultWriteBlanks);
+    }
+    /**
+     * Writes a simple Float element.
+     * @param localName element (tag) name
+     * @param value the Float value
+     * @param writeBlanks 
+     *        whether a blank value should be written as an empty element.
+     * @throws XMLStreamException problem writing element
+     * @since 1.14.0
+     */
+    public void writeElementFloat(
+            String localName, Float value, boolean writeBlanks) 
+            throws XMLStreamException {
+        writeElementObject(localName, value, writeBlanks);
     }
     public void writeElementDouble(String localName, Double value) 
             throws XMLStreamException {
-        writeElementObject(localName, value);
+        writeElementDouble(localName, value, defaultWriteBlanks);
+    }
+    /**
+     * Writes a simple Double element.
+     * @param localName element (tag) name
+     * @param value the Double value
+     * @param writeBlanks 
+     *        whether a blank value should be written as an empty element.
+     * @throws XMLStreamException problem writing element
+     * @since 1.14.0
+     */
+    public void writeElementDouble(
+            String localName, Double value, boolean writeBlanks) 
+            throws XMLStreamException {
+        writeElementObject(localName, value, writeBlanks);
     }
     public void writeElementBoolean(String localName, Boolean value) 
             throws XMLStreamException {
-        writeElementObject(localName, value);
+        writeElementBoolean(localName, value, defaultWriteBlanks);
+    }
+    /**
+     * Writes a simple Boolean element.
+     * @param localName element (tag) name
+     * @param value the Boolean value
+     * @param writeBlanks 
+     *        whether a blank value should be written as an empty element.
+     * @throws XMLStreamException problem writing element
+     * @since 1.14.0
+     */
+    public void writeElementBoolean(
+            String localName, Boolean value, boolean writeBlanks) 
+            throws XMLStreamException {
+        writeElementObject(localName, value, writeBlanks);
     }
     public void writeElementString(String localName, String value) 
             throws XMLStreamException {
-        writeElementObject(localName, value);
+        writeElementString(localName, value, defaultWriteBlanks);
+    }
+    /**
+     * Writes a simple string element.
+     * @param localName element (tag) name
+     * @param value the string value
+     * @param writeBlanks 
+     *        whether a blank value should be written as an empty element.
+     * @throws XMLStreamException problem writing element
+     * @since 1.14.0
+     */
+    public void writeElementString(
+            String localName, String value, boolean writeBlanks) 
+            throws XMLStreamException {
+        writeElementObject(localName, value, writeBlanks);
     }
     public void writeElementClass(String localName, Class<?> value) 
             throws XMLStreamException {
+        writeElementClass(localName, value, defaultWriteBlanks);
+    }
+    /**
+     * Writes a simple element containing a class name, getting it by invoking
+     * {@link Class#getCanonicalName()}.
+     * @param localName element (tag) name
+     * @param value the class
+     * @param writeBlanks 
+     *        whether a blank value should be written as an empty element.
+     * @throws XMLStreamException problem writing element
+     * @since 1.14.0
+     */
+    public void writeElementClass(
+            String localName, Class<?> value, boolean writeBlanks) 
+            throws XMLStreamException {
         if (value == null) {
-            writeElementObject(localName, null);
+            writeElementObject(localName, null, writeBlanks);
         } else {
-            writeElementObject(localName, value.getCanonicalName());
+            writeElementObject(
+                    localName, value.getCanonicalName(), writeBlanks);
         }
     }
-    private void writeElementObject(String localName, Object value)
+
+    /**
+     * Writes a simple element containing a Dimension.  The dimension
+     * will be written as [width]x[height] (e.g., 400x300) or just one
+     * numeric value if width and height are the same.
+     * @param localName element (tag) name
+     * @param value the dimension
+     * @throws XMLStreamException problem writing element
+     * @since 1.14.0
+     */
+    public void writeElementDimension(String localName, Dimension value) 
+            throws XMLStreamException {
+        writeElementDimension(localName, value, defaultWriteBlanks);
+    }
+    /**
+     * Writes a simple element containing a Dimension.  The dimension
+     * will be written as [width]x[height] (e.g., 400x300) or just one
+     * numeric value if width and height are the same.
+     * @param localName element (tag) name
+     * @param value the dimension
+     * @param writeBlanks 
+     *        whether a blank value should be written as an empty element.
+     * @throws XMLStreamException problem writing element
+     * @since 1.14.0
+     */
+    public void writeElementDimension(
+            String localName, Dimension value, boolean writeBlanks) 
+            throws XMLStreamException {
+        if (value == null) {
+            writeElementObject(localName, null, writeBlanks);
+        } else {
+            String str;
+            if (value.getWidth() == value.getHeight()) {
+                str = Integer.toString((int) value.getWidth());
+            } else {
+                str = Integer.toString((int) value.getWidth())
+                        + "x" + Integer.toString((int) value.getHeight());
+            }
+            writeElementObject(localName, str, writeBlanks);
+        }
+    }
+    /**
+     * Writes a simple element object by first converting it to string
+     * using its "toString()" method.
+     * @param localName element (tag) name
+     * @param value element (tag) value
+     * @throws XMLStreamException problem writing element
+     * @since 1.14.0
+     */
+    public void writeElementObject(String localName, Object value)
+            throws XMLStreamException {
+        writeElementObject(localName, value, defaultWriteBlanks);
+    }
+    /**
+     * Writes a simple element object by first converting it to string
+     * using its "toString()" method.
+     * @param localName element (tag) name
+     * @param value element (tag) value
+     * @param writeBlanks 
+     *        whether a blank value should be written as an empty element.
+     * @throws XMLStreamException problem writing element
+     * @since 1.14.0
+     */
+    public void writeElementObject(
+            String localName, Object value, boolean writeBlanks)
             throws XMLStreamException {
         String strValue = Objects.toString(value, null);
         if (StringUtils.isNotBlank(strValue)) {
@@ -380,7 +681,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
             return;
         }
 
-        // We are indeting...
+        // We are indenting...
         if (StringUtils.isNotBlank(text)) {
             String[] lines = text.split("\n");
             if (lines.length == 1) {

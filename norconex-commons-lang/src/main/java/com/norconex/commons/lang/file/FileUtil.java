@@ -20,6 +20,7 @@ import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.LinkedList;
@@ -35,6 +36,7 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
 import com.norconex.commons.lang.Sleeper;
+import com.norconex.commons.lang.StringUtil;
 import com.norconex.commons.lang.io.IInputStreamFilter;
 import com.norconex.commons.lang.io.ReverseFileInputStream;
 
@@ -625,20 +627,7 @@ public final class FileUtil {
      */
     public static File createDateDirs(File parentDir, Date date)
             throws IOException {
-        if (parentDir == null) {
-            throw new IOException("Parent directory cannot be null.");
-        }
-        if (date == null) {
-            throw new IOException("Date cannot be null.");
-        }
-        if (parentDir.exists() && !parentDir.isDirectory()) {
-            throw new IOException("Parent directory \"" + parentDir 
-                    + "\" already exists and is not a directory.");
-        }
-        File dateDir = new File(parentDir.getAbsolutePath(),
-                DateFormatUtils.format(date, "yyyy/MM/dd"));
-        FileUtils.forceMkdir(dateDir);
-        return dateDir;
+        return createDateTimeDirs(parentDir, date, "yyyy/MM/dd");
     }
 
     /**
@@ -672,6 +661,132 @@ public final class FileUtil {
      */
     public static File createDateTimeDirs(File parentDir, Date dateTime)
             throws IOException {
+        return createDateTimeDirs(parentDir, dateTime, "yyyy/MM/dd/HH/mm/ss");
+    }
+
+    /**
+     * <p>Creates (if not already existing) a series of directories
+     * matching URL segments, under a given parent directory.
+     * The returned file contains the full path to the directories,
+     * plus the file name (not created). The file name is the last URL
+     * segment (including query string and fragment).  Non-alphanumeric
+     * characters are escaped to be file-system-friendly.
+     * </p>
+     * <p>
+     * <b>Warning:</b> the path created may be too long for some file systems.
+     * To avoid issues with file names being too long, consider truncating
+     * the generated path by using 
+     * {@link #createURLDirs(File, URL, boolean)} instead.
+     * </p>
+     * @param parentDir the parent directory where to create date directories
+     * @param url the URL to create directories for, with file name.
+     * @return the directory representing the full path created, plus file name
+     * @throws IOException if the parent directory is not valid
+     */
+    public static File createURLDirs(File parentDir, URL url) 
+            throws IOException {
+        return createURLDirs(parentDir, url, false);
+    }
+    /**
+     * <p>Creates (if not already existing) a series of directories
+     * matching URL segments, under a given parent directory.
+     * The returned file contains the full path to the directories,
+     * plus the file name (not created). The file name is the last URL
+     * segment (including query string and fragment).  Non-alphanumeric
+     * characters are escaped to be file-system-friendly.
+     * </p>
+     * <p>
+     * <b>Warning:</b> the path created may be too long for some file systems.
+     * To avoid issues with file names being too long, consider truncating
+     * the generated path by using 
+     * {@link #createURLDirs(File, URL, boolean)} instead.
+     * </p>
+     * @param parentDir the parent directory where to create date directories
+     * @param url the URL to create directories for, with file name.
+     * @return the directory representing the full path created, plus file name
+     * @throws IOException if the parent directory is not valid
+     */
+    public static File createURLDirs(File parentDir, String url) 
+            throws IOException {
+        return createURLDirs(parentDir, url, false);
+    }
+    /**
+     * Creates (if not already existing) a series of directories
+     * matching URL segments, under a given parent directory.
+     * The returned file contains the full path to the directories,
+     * plus the file name (not created). The file name is the last URL
+     * segment (including query string and fragment).  Non-alphanumeric
+     * characters are escaped to be file-system-friendly.
+     * For the same reason,
+     * the full path created can be truncated with a hash code if more
+     * than 255 characters.  When truncating, the full path to the parent 
+     * directory must be 200 or less characters (to leave some room for the
+     * URL path).
+     * @param parentDir the parent directory where to create date directories
+     * @param url the URL to create directories for, with file name.
+     * @param truncate whether to truncate the directory to 255 characters max.
+     * @return the directory representing the full path created, plus file name
+     * @throws IOException if the parent directory is not valid
+     */
+    public static File createURLDirs(
+            File parentDir, URL url, boolean truncate) throws IOException {
+        if (url == null) {
+            throw new IOException("URL cannot be null.");
+        }
+        return createURLDirs(parentDir, url.toString(), truncate);
+    }
+    /**
+     * Creates (if not already existing) a series of directories
+     * matching URL segments, under a given parent directory.
+     * The returned file contains the full path to the directories,
+     * plus the file name (not created). The file name is the last URL
+     * segment (including query string and fragment).  Non-alphanumeric
+     * characters are escaped to be file-system-friendly.
+     * For the same reason,
+     * the full path created can be truncated with a hash code if more
+     * than 255 characters.  When truncating, the full path to the parent 
+     * directory must be 200 or less characters (to leave some room for the
+     * URL path).
+     * @param parentDir the parent directory where to create date directories
+     * @param url the URL to create directories for, with file name.
+     * @param truncate whether to truncate the directory to 255 characters max.
+     * @return the directory representing the full path created, plus file name
+     * @throws IOException if the parent directory is not valid
+     */
+    public static File createURLDirs(
+            File parentDir, String url, boolean truncate) throws IOException {
+        if (parentDir == null) {
+            throw new IOException("Parent directory cannot be null.");
+        }
+        if (url == null) {
+            throw new IOException("URL cannot be null.");
+        }
+        if (parentDir.exists() && !parentDir.isDirectory()) {
+            throw new IOException("Parent directory \"" + parentDir 
+                    + "\" already exists and is not a directory.");
+        }
+        if (truncate && parentDir.getAbsolutePath().length() > 200) {
+            throw new IOException("Parent directory \"" + parentDir 
+                    + "\" is too long (must be 200 characters or less).");
+        }
+        StringBuilder b = new StringBuilder(parentDir.getAbsolutePath());
+        String[] segs = url.split("/");
+        for (String seg : segs) {
+            b.append("/").append(toSafeFileName(seg));
+        }
+        String path = b.toString();
+        if (truncate) {
+            path = StringUtil.truncateWithHash(path, 255, '_');
+        }
+        File urlFile = new File(path);
+        createDirsForFile(urlFile);
+        return urlFile;
+    }
+    
+//    private static File createURLDirs()
+    
+    private static File createDateTimeDirs(
+            File parentDir, Date dateTime, String format) throws IOException {
         if (parentDir == null) {
             throw new IOException("Parent directory cannot be null.");
         }
@@ -683,7 +798,7 @@ public final class FileUtil {
                     + "\" already exists and is not a directory.");
         }
         File dateDir = new File(parentDir.getAbsolutePath(),
-                DateFormatUtils.format(dateTime, "yyyy/MM/dd/HH/mm/ss"));
+                DateFormatUtils.format(dateTime, format));
         FileUtils.forceMkdir(dateDir);
         return dateDir;
     }
