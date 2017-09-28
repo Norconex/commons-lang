@@ -34,6 +34,10 @@
         the default value.
       </action>
       <action dev="essiembre" type="add">
+        New XMLConfigurationUtil#keyExists methods to find if a key exists
+        in XML even if empty.
+      </action>
+      <action dev="essiembre" type="add">
         New EqualsUtil#equalsMap(...) method for checking if two maps are equal,
         regardless of entry order.
       </action>

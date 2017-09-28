@@ -22,7 +22,9 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamSource;
@@ -538,7 +540,7 @@ public final class XMLConfigurationUtil {
     public static BigDecimal getNullableBigDecimal(
             HierarchicalConfiguration xml, 
             String key, BigDecimal defaultValue) {
-        return xml.containsKey(key) 
+        return keyExists(xml, key) 
                 ? xml.getBigDecimal(key, null) : defaultValue;
     }
     /**
@@ -555,7 +557,7 @@ public final class XMLConfigurationUtil {
     public static BigInteger getNullableBigInteger(
             HierarchicalConfiguration xml, 
             String key, BigInteger defaultValue) {
-        return xml.containsKey(key)
+        return keyExists(xml, key)
                 ? xml.getBigInteger(key, null) : defaultValue;
     }
     /**
@@ -571,7 +573,7 @@ public final class XMLConfigurationUtil {
      */
     public static Boolean getNullableBoolean(
             HierarchicalConfiguration xml, String key, Boolean defaultValue) {
-        return xml.containsKey(key) ? xml.getBoolean(key, null) : defaultValue;
+        return keyExists(xml, key) ? xml.getBoolean(key, null) : defaultValue;
     }
     /**
      * Gets a Byte from XML configuration. Same as 
@@ -586,7 +588,7 @@ public final class XMLConfigurationUtil {
      */
     public static Byte getNullableByte(
             HierarchicalConfiguration xml, String key, Byte defaultValue) {
-        return xml.containsKey(key) ? xml.getByte(key, null) : defaultValue;
+        return keyExists(xml, key) ? xml.getByte(key, null) : defaultValue;
     }
     /**
      * Gets a Class from XML configuration. 
@@ -600,7 +602,7 @@ public final class XMLConfigurationUtil {
      */
     public static Class<?> getNullableClass(
             HierarchicalConfiguration xml, String key, Class<?> defaultValue) {
-        if (!xml.containsKey(key)) {
+        if (!keyExists(xml, key)) {
             return defaultValue;
         }
         String className = xml.getString(key, null);
@@ -627,7 +629,7 @@ public final class XMLConfigurationUtil {
      */
     public static Double getNullableDouble(
             HierarchicalConfiguration xml, String key, Double defaultValue) {
-        return xml.containsKey(key) ? xml.getDouble(key, null) : defaultValue;
+        return keyExists(xml, key) ? xml.getDouble(key, null) : defaultValue;
     }
     /**
      * Gets a Float from XML configuration. Same as 
@@ -642,7 +644,7 @@ public final class XMLConfigurationUtil {
      */
     public static Float getNullableFloat(
             HierarchicalConfiguration xml, String key, Float defaultValue) {
-        return xml.containsKey(key) ? xml.getFloat(key, null) : defaultValue;
+        return keyExists(xml, key) ? xml.getFloat(key, null) : defaultValue;
     }
     /**
      * Gets an Integer from XML configuration. Same as 
@@ -657,7 +659,7 @@ public final class XMLConfigurationUtil {
      */
     public static Integer getNullableInteger(
             HierarchicalConfiguration xml, String key, Integer defaultValue) {
-        return xml.containsKey(key) ? xml.getInteger(key, null) : defaultValue;
+        return keyExists(xml, key) ? xml.getInteger(key, null) : defaultValue;
     }
     /**
      * Gets a Long from XML configuration. Same as 
@@ -672,7 +674,7 @@ public final class XMLConfigurationUtil {
      */
     public static Long getNullableLong(
             HierarchicalConfiguration xml, String key, Long defaultValue) {
-        return xml.containsKey(key) ? xml.getLong(key, null) : defaultValue;
+        return keyExists(xml, key) ? xml.getLong(key, null) : defaultValue;
     }
     /**
      * Gets a Short from XML configuration. Same as 
@@ -687,7 +689,7 @@ public final class XMLConfigurationUtil {
      */
     public static Short getNullableShort(
             HierarchicalConfiguration xml, String key, Short defaultValue) {
-        return xml.containsKey(key) ? xml.getShort(key, null) : defaultValue;
+        return keyExists(xml, key) ? xml.getShort(key, null) : defaultValue;
     }
     /**
      * Gets a String from XML configuration. Same as 
@@ -702,7 +704,7 @@ public final class XMLConfigurationUtil {
      */
     public static String getNullableString(
             HierarchicalConfiguration xml, String key, String defaultValue) {
-        if (xml.containsKey(key)) {
+        if (keyExists(xml, key)) {
             return StringUtils.trimToNull(xml.getString(key, null));
         }
         return defaultValue;
@@ -719,7 +721,7 @@ public final class XMLConfigurationUtil {
      */
     public static Dimension getNullableDimension(
             HierarchicalConfiguration xml, String key, Dimension defaultValue) {
-        if (xml.containsKey(key)) {
+        if (keyExists(xml, key)) {
             String value = xml.getString(key, null);
             if (StringUtils.isBlank(value)) {
                 return null;
@@ -734,6 +736,20 @@ public final class XMLConfigurationUtil {
                     Integer.parseInt(wh[1].trim()));
         }
         return defaultValue;
+    }
+    
+    public static boolean keyExists(HierarchicalConfiguration xml, String key) {
+        Iterator<String> it = xml.getKeys();
+        while (it.hasNext()) {
+            String itKey = it.next();
+            if (!key.contains("[@")) {
+                itKey = itKey.replaceAll("\\[@.*?\\]", "");
+            }
+            if (Objects.equals(itKey, key)) {
+                return true;
+            }
+        }
+        return false;
     }
     
     /**
