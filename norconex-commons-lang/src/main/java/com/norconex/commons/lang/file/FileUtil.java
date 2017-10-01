@@ -770,7 +770,7 @@ public final class FileUtil {
                     + "\" is too long (must be 200 characters or less).");
         }
         StringBuilder b = new StringBuilder(parentDir.getAbsolutePath());
-        String[] segs = url.split("/");
+        String[] segs = url.replaceFirst("://", "/") .split("/");
         for (String seg : segs) {
             b.append("/").append(toSafeFileName(seg));
         }
@@ -782,8 +782,6 @@ public final class FileUtil {
         createDirsForFile(urlFile);
         return urlFile;
     }
-    
-//    private static File createURLDirs()
     
     private static File createDateTimeDirs(
             File parentDir, Date dateTime, String format) throws IOException {
