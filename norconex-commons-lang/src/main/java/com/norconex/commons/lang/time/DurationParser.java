@@ -84,11 +84,10 @@ public final class DurationParser {
 
     private static final Properties UNIT_LABELS = new Properties();
     static {
-        UNIT_LABELS.setMultiValueDelimiter(",");
         try {
             UNIT_LABELS.load(DurationParser.class.getResourceAsStream(
                     ClassUtils.getShortCanonicalName(DurationParser.class)
-                    + ".properties"), ",");
+                    + ".properties"), null, ",");
         } catch (IOException e) {
             throw new DurationParserException(
                     "Coult not initialize DurationParser.", e);

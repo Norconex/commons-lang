@@ -9,6 +9,9 @@
 
     <release version="1.14.0-SNAPSHOT" date="2017-??-??" description="Feature release">
       <action dev="essiembre" type="add">
+        Can now store and load Properties file as JSON.
+      </action>
+      <action dev="essiembre" type="add">
         New StringUtil class.
       </action>
       <action dev="essiembre" type="add">
@@ -49,10 +52,16 @@
         Added ZIP constant to ContentType.
       </action>
       <action dev="essiembre" type="update">
+        Properties with multi-values now have their values stored
+        as individual entries by default (as opposed to using a delimiter).
+        Also more storing/loading options are now available.
+      </action>
+      <action dev="essiembre" type="update">
         TextReader#DEFAULT_MAX_READ_SIZE has been increased from 64K to 128K.
       </action>
       <action dev="essiembre" type="update">
         Dependency updates: Apache Commons Lang 3.6, Apache Commons Text 1.1,
+        Open JSON 1.8.
       </action>
       <action dev="essiembre" type="update">
         ContentType now works better with types with parameters. 
@@ -74,6 +83,9 @@
         Fixed CachedInputStream sometimes returning null when using
         #getCacheDirectory() method. 
       </action>
+      <action dev="essiembre" type="remove">
+         Removed Properties#isCaseSensitiveKeys(), deprecated since 1.8.0.
+      </action>      
     </release>
 
     <release version="1.13.1" date="2017-05-16" description="Bugfix release">

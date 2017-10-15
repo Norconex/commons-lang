@@ -1,4 +1,4 @@
-/* Copyright 2010-2016 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,18 @@ package com.norconex.commons.lang.map;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
 import org.junit.Test;
+
+import com.norconex.commons.lang.EqualsUtil;
 
 public class PropertiesTest {
 
@@ -138,7 +143,66 @@ public class PropertiesTest {
         assertEquals(1, props2.keySet().size());
         assertEquals(null, props2.get("kEy"));
         assertEquals(Arrays.asList("1", "", "2", ""), props2.get("key"));
-    
     }
 
+    @Test
+    public void testMultiValuesWriterNoDelim() throws Exception {
+        StringWriter w = null;
+        Properties p = null;
+        
+        Properties original = new Properties();
+        original.addString("KEYsingleValueABC", "singleValueABC");
+        original.addString("KEYmultiValues", "t", "e", "s", "t");
+        original.addString("KEYsingleValueXYZ", "singleValueXYZ");
+
+        // String + Default
+        w = new StringWriter();
+        p = new Properties();
+        original.store(w, "Comment");
+        p.load(new StringReader(w.toString()));
+        assertTrue(EqualsUtil.equalsMap(original, p));
+
+        // XML
+        w = new StringWriter();
+        p = new Properties();
+        original.storeToXML(w, "Comment");
+        p.loadFromXML(new StringReader(w.toString()));
+        assertTrue(EqualsUtil.equalsMap(original, p));
+
+        // JSON
+        w = new StringWriter();
+        p = new Properties();
+        original.storeToJSON(w);
+        p.loadFromJSON(new StringReader(w.toString()));
+        assertTrue(EqualsUtil.equalsMap(original, p));
+    }
+    
+    @Test
+    public void testMultiValuesWriterDelim() throws Exception {
+        
+        StringWriter w = null;
+        Properties p = null;
+        
+        Properties original = new Properties();
+        original.addString("KEYsingleValueABC", "singleValueABC");
+        original.addString("KEYmultiValues", "t", "e", "s", "t");
+        original.addString("KEYsingleValueXYZ", "singleValueXYZ");
+
+        // String + Default
+        w = new StringWriter();
+        p = new Properties();
+        original.store(w, "Comment", "^^^");
+        p.load(new StringReader(w.toString()), "^^^");
+        assertTrue(EqualsUtil.equalsMap(original, p));
+
+        // XML
+        w = new StringWriter();
+        p = new Properties();
+        original.storeToXML(w, "Comment", "^^^");
+        p.loadFromXML(new StringReader(w.toString()), "^^^");
+        assertTrue(EqualsUtil.equalsMap(original, p));
+
+        // JSON
+        // JSON does not support delimiters
+    }    
 }
