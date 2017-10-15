@@ -211,6 +211,7 @@ public class CachedOutputStream extends OutputStream
      * Gets the cache directory where temporary cache files are created.
      * @return the cache directory
      */
+    @Override
     public final File getCacheDirectory() {
         return cacheDirectory;
     }

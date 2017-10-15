@@ -51,6 +51,9 @@
       <action dev="essiembre" type="add">
         Added ZIP constant to ContentType.
       </action>
+      <action dev="essiembre" type="add">
+        Added ICachedStream#getCacheDirectory().
+      </action>
       <action dev="essiembre" type="update">
         Properties with multi-values now have their values stored
         as individual entries by default (as opposed to using a delimiter).

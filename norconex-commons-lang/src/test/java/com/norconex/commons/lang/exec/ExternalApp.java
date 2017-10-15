@@ -18,11 +18,16 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Reader;
+import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,8 +40,11 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Java;
 import org.apache.tools.ant.types.Path;
 
+import com.norconex.commons.lang.map.Properties;
+
 /**
- * Sample external app that reverse word order in lines.
+ * Sample external app that reverse word order in lines and if metadata files
+ * are provided, also does the same for metadata values.
  * Also prints specific environment variables to STDOUT or STDERR.
  * @author Pascal Essiembre
  */
@@ -53,10 +61,12 @@ public class ExternalApp {
     public static final String ENV_STDERR_AFTER = "stderr_after";
     
     // reverse the word order in each lines
+    // if meta files are provided, reverse each values too
     public static void main(String[] args) throws IOException {
         if (args.length < 1) {
             System.err.println(
-                    "Expected arguments: <testType> [infile] [outfile]");
+                    "Expected arguments: <testType> [infile] [outfile] "
+                  + "[inMetaPropertiesFile outMetaPropertiesFile]");
             System.err.println("Where: <testType> is one of:");
             System.err.println("    " + TYPE_INFILE_OUTFILE);
             System.err.println("    " + TYPE_INFILE_STDOUT);
@@ -69,14 +79,19 @@ public class ExternalApp {
         int fileArgIndex = 1;
         File inFile = null;
         File outFile = null;
+        File inMetaFile = null;
+        File outMetaFile = null;
         if (type.contains("infile")) {
-            inFile = new File(args[fileArgIndex]);
-            fileArgIndex++;
+            inFile = new File(args[fileArgIndex++]);
         }
         if (type.contains("outfile")) {
-            outFile = new File(args[fileArgIndex]);
+            outFile = new File(args[fileArgIndex++]);
         }
-
+        if (args.length > fileArgIndex) {
+            inMetaFile = new File(args[fileArgIndex++]);
+            outMetaFile = new File(args[fileArgIndex++]);
+        }
+        
         printEnvToStdout(ENV_STDOUT_BEFORE);
         printEnvToStderr(ENV_STDERR_BEFORE);
         OutputStream output = getOutputStream(outFile);
@@ -84,9 +99,7 @@ public class ExternalApp {
             List<String> lines = 
                    IOUtils.readLines(input, StandardCharsets.UTF_8);
             for (String line : lines) {
-                String[] words =  line.split(" ");
-                ArrayUtils.reverse(words);
-                output.write(StringUtils.join(words, " ").getBytes());
+                output.write(reverseWords(line).getBytes());
                 output.write('\n');
                 output.flush();
             }
@@ -97,8 +110,31 @@ public class ExternalApp {
         if (output != System.out) {
             output.close();
         }
+        
+        // handle meta files
+        if (inMetaFile != null && outMetaFile != null) {
+            Properties p = new Properties();
+            try (Reader r = new FileReader(inMetaFile);
+                 Writer w = new FileWriter(outMetaFile)) {
+                p.load(r);
+                for (Entry<String, List<String>> entry : p.entrySet()) {
+                    String[] values = entry.getValue().toArray(
+                            ArrayUtils.EMPTY_STRING_ARRAY);
+                    for (int i = 0; i < values.length; i++) {
+                        values[i] = reverseWords(values[i]);
+                    }
+                    p.setString(entry.getKey(), values);
+                }
+                p.store(w);
+            }
+        }
     }
-    
+
+    private static String reverseWords(String str) {
+        String[] words =  str.split(" ");
+        ArrayUtils.reverse(words);
+        return StringUtils.join(words, " ");
+    }
     
     private static void printEnvToStdout(String varName) {
         String var = System.getenv(varName);
@@ -166,7 +202,7 @@ public class ExternalApp {
     // Fix the command as necessary.
     // Shorten the command by eliminating items we do not need
     // from classpath and using shorter command aliases.  This is necessary
-    // to prevent keep only necessary to prevent command line length limitation
+    // to prevent command line length limitation
     // on windows ("The command line is too long.").
     private static String fixCommand(String command) {
         String cmd = command;
@@ -206,6 +242,9 @@ public class ExternalApp {
             "commons-lang3",
             "log4j",
             "ant",
+            "commons-lang",
+            "commons-logging",
+            "commons-configuration",
     };
     private static boolean keepPath(String path) {
         if (StringUtils.isBlank(path)) {
