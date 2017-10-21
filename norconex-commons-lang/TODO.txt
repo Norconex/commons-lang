@@ -1,8 +1,11 @@
 TODO:
 ==============
 
+- Consider using Apache Commons Exec to replace SystemCommand?
+
 - Allows to specify a velocity-tools.properties or equivalent in classpath
-  root (e.g. classes/ folder) to define custom classes to be used by Velocity.
+  root (e.g. classes/ folder) to define custom classes/tools to be used 
+  by Velocity.
 
 - Upgrade to Commons Configuration 2.x
 - Upgrade to Apache Velocity 2.x when available in Maven.
@@ -10,15 +13,13 @@ TODO:
     - See after upgrading above two if we can get rid of 
       Commons Collections 3.x and Commons Lang 2.x 
 
-- Upgrade to log4j v2.x (or java native?)
+- Upgrade to slf4j.
 
 - Modify Jar copier to handle cases where snapshot are timestamped instead and
   not being considered the latest when they should.  Like:
   norconex-commons-lang-1.13.0-20170328.184247-17.jar vs 
   norconex-commons-lang-1.13.0-SNAPSHOT.jar
   https://github.com/Norconex/collector-http/issues/331#issuecomment-290196986
-
-- Consider splitting Properties by \u001e by default (record separator).
 
 - Redo DurationUtil to be more flexible (using fluid builder approach.
   or check Apache or Java 8 equivalent classes if they can be made as flexible.

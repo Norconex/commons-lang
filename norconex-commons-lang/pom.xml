@@ -28,6 +28,9 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <site.baseurl/>
     <currentStableVersion>1.13.1</currentStableVersion>
+    
+    <commons-lang3.version>3.6</commons-lang3.version>
+    <commons-configuration.version>1.10</commons-configuration.version>
   </properties>
   <inceptionYear>2008</inceptionYear>
 
@@ -88,7 +91,7 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
-      <version>3.6</version>
+      <version>${commons-lang3.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
@@ -103,7 +106,7 @@
     <dependency>
       <groupId>commons-configuration</groupId>
       <artifactId>commons-configuration</artifactId>
-      <version>1.10</version>
+      <version>${commons-configuration.version}</version>
     </dependency>
     <dependency>
       <groupId>log4j</groupId>
@@ -292,8 +295,8 @@
           <source>1.7</source>
           <detectLinks>false</detectLinks>
           <links>
-            <link>https://commons.apache.org/proper/commons-configuration/javadocs/v1.10/apidocs/</link>
-            <link>https://commons.apache.org/proper/commons-lang/javadocs/api-3.5/</link>
+            <link>https://commons.apache.org/proper/commons-configuration/javadocs/v${commons-configuration.version}/apidocs/</link>
+            <link>https://commons.apache.org/proper/commons-lang/javadocs/api-${commons-lang3.version}/</link>
           </links>
         </configuration>
         <executions>
@@ -451,8 +454,8 @@
           <source>1.7</source>
           <detectLinks>false</detectLinks>
           <links>
-            <link>https://commons.apache.org/proper/commons-configuration/javadocs/v1.10/apidocs/</link>
-            <link>https://commons.apache.org/proper/commons-lang/javadocs/api-3.5/</link>
+            <link>https://commons.apache.org/proper/commons-configuration/javadocs/v${commons-configuration.version}/apidocs/</link>
+            <link>https://commons.apache.org/proper/commons-lang/javadocs/api-${commons-lang3.version}/</link>
           </links>
         </configuration>
         <reportSets>

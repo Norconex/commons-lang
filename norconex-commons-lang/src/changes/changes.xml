@@ -71,6 +71,10 @@
         Added two new related methods: #toBaseTypeString() and #toBaseType().
       </action>
       <action dev="essiembre" type="fix">
+        Fixed SystemCommand not handling arguments with spaces when they 
+        are properly quoted.
+      </action>
+      <action dev="essiembre" type="fix">
         Fixed CachedInputStream returning -1 or throwing EOF exception when
         it should not.
       </action>
