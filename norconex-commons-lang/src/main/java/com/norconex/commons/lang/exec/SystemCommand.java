@@ -28,7 +28,6 @@ import java.util.StringTokenizer;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
-import org.apache.commons.text.StringEscapeUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -368,11 +367,11 @@ public class SystemCommand {
      * @param command the command to escape.
      */
     public static void escape(List<String> command) {
-        if (SystemUtils.IS_OS_WINDOWS) {
+//        if (SystemUtils.IS_OS_WINDOWS) {
             escapeWindows(command);
-        } else {
-            escapeNonWindows(command);
-        }
+//        } else {
+//            escapeNonWindows(command);
+//        }
     }
     
     /**
@@ -420,23 +419,24 @@ public class SystemCommand {
         cmd.addAll(newCmd);
     }
 
-    // Escape spaces with a backslash if not already escaped
-    private static void escapeNonWindows(List<String> cmd) {
-        // If only 1 arg, it can be the command plus args together so
-        // attempt to split as such.
-        if (cmd.size() == 1) {
-            String cmdLine = cmd.get(0);
-            cmd.clear();
-            cmd.addAll(Arrays.asList(translateCommandline(cmdLine)));
-        }
-        
-        // At this point we know we have command + args, escape. 
-        for (int i = 0; i < cmd.size(); i++) {
-            if (StringUtils.contains(cmd.get(i), ' ')) {
-                cmd.add(i, StringEscapeUtils.escapeXSI(cmd.remove(i)));
-            }
-        }
-    }
+//    // Escape spaces with a backslash if not already escaped
+//    private static void escapeNonWindows(List<String> cmd) {
+//        // If only 1 arg, it can be the command plus args together so
+//        // attempt to split as such.
+//        if (cmd.size() == 1) {
+//            String cmdLine = cmd.get(0);
+//            cmd.clear();
+//            cmd.addAll(Arrays.asList(translateCommandline(cmdLine)));
+//        }
+//        
+//        // At this point we know we have command + args, escape. 
+//        for (int i = 0; i < cmd.size(); i++) {
+//            cmd.add(i, StringEscapeUtils.escapeXSI(cmd.remove(i)));
+//            if (StringUtils.contains(cmd.get(i), ' ')) {
+//                cmd.add(i, StringEscapeUtils.escapeXSI(cmd.remove(i)));
+//            }
+//        }
+//    }
 
     private void wrapCommand(List<String> cmd) {
         if (SystemUtils.OS_NAME == null || !SystemUtils.IS_OS_WINDOWS) {
