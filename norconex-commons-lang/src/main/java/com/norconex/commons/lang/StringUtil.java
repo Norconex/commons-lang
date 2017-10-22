@@ -27,7 +27,7 @@ public final class StringUtil {
 
     private static final Logger LOG = LogManager.getLogger(StringUtil.class);
     
-    public static final int TRUNCATE_HASH_LENGTH = 24;
+    public static final int TRUNCATE_HASH_LENGTH = 12;
     
     private StringUtil() {
         super();
@@ -37,7 +37,7 @@ public final class StringUtil {
      * Truncate text larger than the given max Length and appends a hash
      * value from the truncated text.  The hash is added to fit within
      * the maxLength. The maxLength 
-     * argument must be minimum 24, to leave room for the hash.
+     * argument must be minimum 12, to leave room for the hash.
      * The hash is added without a separator.  To insert a separator between
      * the truncated text and the hash code, use 
      * {@link #truncateWithHash(String, int, char)}
@@ -53,7 +53,7 @@ public final class StringUtil {
      * Truncate text larger than the given max Length and appends a hash
      * value from the truncated text.  The hash is added to fit within
      * the maxLength. The maxLength 
-     * argument must be minimum 24, to leave room for the hash.
+     * argument must be minimum 12, to leave room for the hash.
      * Unless the hashSeparator is null ('\0'), it will be inserted
      * between the truncated text and the hash code.
      * @param text text to truncate
