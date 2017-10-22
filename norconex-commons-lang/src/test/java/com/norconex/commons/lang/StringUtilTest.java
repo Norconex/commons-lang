@@ -34,10 +34,10 @@ public class StringUtilTest {
         assertEquals(text, StringUtil.truncateWithHash(text, 33));
 
         // Test truncate needed with separator
-        assertEquals("I am a!" + " string with 33 characters.".hashCode(), 
+        assertEquals("I am a string with!" + " 33 characters.".hashCode(), 
                 StringUtil.truncateWithHash(text, 30, '!'));
         // Test truncate needed no separator
-        assertEquals("I am a" + " string with 33 characters.".hashCode(), 
+        assertEquals("I am a string with" + " 33 characters.".hashCode(), 
                 StringUtil.truncateWithHash(text, 30));
     }
 }
