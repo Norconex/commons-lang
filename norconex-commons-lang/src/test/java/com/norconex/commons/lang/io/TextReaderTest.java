@@ -68,6 +68,15 @@ public class TextReaderTest {
         Assert.assertEquals("Wrong number of characters returned.", 
                 400, allContent.length());
     }
+
+    @Test
+    public void testUnlimited() throws IOException {
+        TextReader reader = getTextReader("funkyParagraphBreaks.txt", -1);
+        String allContent = reader.readText();
+        reader.close();
+        Assert.assertEquals("Wrong number of characters returned.", 
+                400, allContent.length());
+    }
     
     private TextReader getTextReader(String file, int readSize) 
             throws UnsupportedEncodingException {

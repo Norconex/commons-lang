@@ -27,60 +27,66 @@ public final class StringUtil {
 
     private static final Logger LOG = LogManager.getLogger(StringUtil.class);
     
-    public static final int TRUNCATE_HASH_LENGTH = 12;
+    public static final int TRUNCATE_HASH_LENGTH = 10;
     
     private StringUtil() {
         super();
     }
 
     /**
-     * Truncate text larger than the given max Length and appends a hash
-     * value from the truncated text.  The hash is added to fit within
-     * the maxLength. The maxLength 
-     * argument must be minimum 12, to leave room for the hash.
+     * Truncate text larger than the given max length and appends a hash
+     * value from the truncated text. The hash size has 10 digits.
+     * The hash is added to fit within the maximum length supplied.
+     * For this reason, the <code>maxLength</code> argument must be 
+     * be minimum 10 for any truncation to occur.
      * The hash is added without a separator.  To insert a separator between
      * the truncated text and the hash code, use 
-     * {@link #truncateWithHash(String, int, char)}
+     * {@link #truncateWithHash(String, int, String)}
      * @param text text to truncate
      * @param maxLength maximum length the truncated text must have
      * @return truncated text, or original text if no truncation required
      */
     public static String truncateWithHash(
             String text, int maxLength) {
-       return truncateWithHash(text, maxLength, '\0'); 
+        return truncateWithHash(text, maxLength, null); 
     }
     /**
-     * Truncate text larger than the given max Length and appends a hash
-     * value from the truncated text.  The hash is added to fit within
-     * the maxLength. The maxLength 
-     * argument must be minimum 12, to leave room for the hash.
-     * Unless the hashSeparator is null ('\0'), it will be inserted
-     * between the truncated text and the hash code.
+     * Truncate text larger than the given max length and appends a hash
+     * value from the truncated text, with an optional separator in-between.
+     * The hash size has 10 digits. The hash and separator are added to fit 
+     * within the maximum length supplied. 
+     * For this reason, the <code>maxLength</code> argument must be 
+     * be minimum 10 + separator length for any truncation to occur.
      * @param text text to truncate
      * @param maxLength maximum length the truncated text must have
-     * @param hashSeparator character separating truncated text from hash code
+     * @param separator string separating truncated text from hash code
      * @return truncated text, or original text if no truncation required
      */
     public static String truncateWithHash(
-            String text, int maxLength, char hashSeparator) {
+            String text, int maxLength, String separator) {
         if (text == null) {
             return null;
-        }
-        if (maxLength < TRUNCATE_HASH_LENGTH) {
-            throw new IllegalArgumentException("\"maxLength\" (" 
-                    + maxLength + ") cannot be smaller than "
-                    + TRUNCATE_HASH_LENGTH + ".");
         }
         if (text.length() <= maxLength) {
             return text;
         }
-        int cutIndex = maxLength - TRUNCATE_HASH_LENGTH;
+        
+        int separatorLength = separator == null ? 0 : separator.length();
+        int roomLength = TRUNCATE_HASH_LENGTH + separatorLength;
+        
+        if (maxLength < roomLength) {
+            LOG.warn("\"maxLength\" is smaller than hash length ("
+                    + TRUNCATE_HASH_LENGTH + ") + separator length ("
+                    + separatorLength + "). No truncation will occur.");
+        }
+        int cutIndex = maxLength - roomLength;
         String truncated = StringUtils.left(text, cutIndex);
         int hash = StringUtils.substring(text, cutIndex).hashCode();
-        if (hashSeparator != '\0') {
-            truncated += Character.toString(hashSeparator);
+        if (separator != null) {
+            truncated += separator;
         }
-        truncated += Integer.toString(hash);
+        truncated += StringUtils.leftPad(StringUtils.stripStart(
+                Integer.toString(hash), "-"), TRUNCATE_HASH_LENGTH, '0');
         if (LOG.isTraceEnabled()) {
             LOG.trace("Truncated text: " + truncated);
         }

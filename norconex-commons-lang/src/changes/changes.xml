@@ -55,6 +55,10 @@
         Added ICachedStream#getCacheDirectory().
       </action>
       <action dev="essiembre" type="update">
+        TextReader default maxReadSize is now 10 million characters (from 
+        128,000) and now accepts -1 as the maxReadSize to mean unlimited.
+      </action>
+      <action dev="essiembre" type="update">
         Properties with multi-values now have their values stored
         as individual entries by default (as opposed to using a delimiter).
         Also more storing/loading options are now available.

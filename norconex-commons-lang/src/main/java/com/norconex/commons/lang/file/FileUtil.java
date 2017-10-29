@@ -776,7 +776,7 @@ public final class FileUtil {
         }
         String path = b.toString();
         if (truncate) {
-            path = StringUtil.truncateWithHash(path, 255, '_');
+            path = StringUtil.truncateWithHash(path, 255, "_");
         }
         File urlFile = new File(path);
         createDirsForFile(urlFile);
