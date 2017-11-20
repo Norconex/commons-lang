@@ -61,8 +61,8 @@ public class TextReader extends Reader {
             "^.*(\\p{javaWhitespace}+)", PATTERN_FLAGS);
 
     /**
-     * Create a new text reader, reading 64KB at a time with 
-     * {@link #readText()} is called.
+     * Create a new text reader, reading a maximum of 10 million characters
+     * at a time when {@link #readText()} is called.
      * @param reader a Reader
      */
     public TextReader(Reader reader) {

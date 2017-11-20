@@ -12,7 +12,8 @@
         Can now store and load Properties file as JSON.
       </action>
       <action dev="essiembre" type="add">
-        New StringUtil class.
+        New StringUtil class with truncation methods replacing the truncated
+        part with a hash code.
       </action>
       <action dev="essiembre" type="add">
         New ResourceLoader class.
@@ -64,7 +65,8 @@
         Also more storing/loading options are now available.
       </action>
       <action dev="essiembre" type="update">
-        TextReader#DEFAULT_MAX_READ_SIZE has been increased from 64K to 128K.
+        TextReader#DEFAULT_MAX_READ_SIZE has been increased from 64 thousand
+        to 10 million characters.
       </action>
       <action dev="essiembre" type="update">
         Dependency updates: Apache Commons Lang 3.6, Apache Commons Text 1.1,

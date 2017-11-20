@@ -16,6 +16,10 @@ package com.norconex.commons.lang;
 
 import static org.junit.Assert.assertEquals;
 
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+
 import org.junit.Test;
 
 /**
@@ -34,13 +38,49 @@ public class StringUtilTest {
         assertEquals(text, StringUtil.truncateWithHash(text, 33));
 
         // Test truncate needed with separator
-        assertEquals("I am a string with !" + "33 characters.".hashCode(), 
+        assertEquals("I am a string with !" + hash("33 characters."), 
                 StringUtil.truncateWithHash(text, 30, "!"));
         // Test truncate needed with bigger separator
-        assertEquals("I am a string wit---" + "h 33 characters.".hashCode(), 
+        assertEquals("I am a string wit---" + hash("h 33 characters."), 
                 StringUtil.truncateWithHash(text, 30, "---"));
         // Test truncate needed no separator
-        assertEquals("I am a string with 3" + "3 characters.".hashCode(), 
+        assertEquals("I am a string with 3" + hash("3 characters."), 
                 StringUtil.truncateWithHash(text, 30));
+    }
+    
+    @Test
+    public void testTruncateBytesWithHash() throws CharacterCodingException {
+        Charset utf8 = StandardCharsets.UTF_8;
+        
+        //total bytes: 52
+        //                               v20   v30
+        //numOfBytes:  111111111111111111212121333333223
+        String text = "Various 33 chars: é è ï ﮈ₡ὴḚᴙࢤՅǜ™";
+        
+//        char[] chars = text.toCharArray();
+//        for (char c : chars) {
+//            System.out.println(c + " : "
+//                    + Character.toString(c).getBytes(utf8).length);
+//        }
+//        System.out.println(text.getBytes(utf8).length);
+        
+        // Test no truncate needed
+        assertEquals(text, StringUtil.truncateBytesWithHash(text, utf8, 60));
+        // Test no truncate needed equal size
+        assertEquals(text, StringUtil.truncateBytesWithHash(text, utf8, 52));
+
+        // Test truncate needed with separator
+        assertEquals("Various 33 chars: é è ï ﮈ₡ὴ!" + hash("ḚᴙࢤՅǜ™"), 
+                StringUtil.truncateBytesWithHash(text, utf8, 48, "!"));
+        // Test truncate needed with bigger separator (3-bytes each chars)
+        assertEquals("Various 33 chars: é è ï ╠═╣" + hash("ﮈ₡ὴḚᴙࢤՅǜ™"), 
+                StringUtil.truncateBytesWithHash(text, utf8, 48, "╠═╣"));
+        // Test truncate needed no separator
+        assertEquals("Various 33 chars: é è ï ﮈ₡ὴ" + hash("ḚᴙࢤՅǜ™"), 
+                StringUtil.truncateBytesWithHash(text, utf8, 48));
+    }
+    
+    private String hash(String s) {
+        return StringUtil.getHash(s);
     }
 }
