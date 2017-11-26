@@ -1,4 +1,4 @@
-/* Copyright 2015-2016 Norconex Inc.
+/* Copyright 2015-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,21 +20,28 @@ import java.io.Reader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 /**
  * Reads text form an input stream, splitting it wisely whenever the text
  * is too large.  First tries to split after the last paragraph.  If there
  * are no paragraph, it tries to split after the last sentence.  If no sentence
  * can be detected, it splits on the last word.  If no words are found,
- * it returns all it could read up to the maximum read size.
+ * it returns all it could read up to the maximum read size in characters. 
+ * The default maximum number of characters to be read before splitting
+ * is 10 millions. Passing <code>-1</code> as the <code>maxReadSize</code> 
+ * will disable reading in batch and will read the entire text all at once.
  * @author Pascal Essiembre
  * @since 1.6.0
  */
 public class TextReader extends Reader {
 
-    public static final int DEFAULT_MAX_READ_SIZE = 
-            (int) (FileUtils.ONE_KB * 64);
+    private static final Logger LOG = LogManager.getLogger(TextReader.class);
+    
+    public static final int DEFAULT_MAX_READ_SIZE = 10000000;
     
     private final BufferedReader reader;
     private final int maxReadSize;
@@ -54,14 +61,13 @@ public class TextReader extends Reader {
             "^.*(\\p{javaWhitespace}+)", PATTERN_FLAGS);
 
     /**
-     * Create a new text reader, reading 64KB at a time with 
-     * {@link #readText()} is called.
+     * Create a new text reader, reading a maximum of 10 million characters
+     * at a time when {@link #readText()} is called.
      * @param reader a Reader
      */
     public TextReader(Reader reader) {
         this(reader, DEFAULT_MAX_READ_SIZE);
     }
-
     /**
      * Constructor.
      * @param reader a Reader
@@ -70,8 +76,6 @@ public class TextReader extends Reader {
     public TextReader(Reader reader, int maxReadSize) {
         this(reader, maxReadSize, false);
     }
-
-    
     /**
      * Constructor.
      * @param reader a Reader
@@ -99,6 +103,14 @@ public class TextReader extends Reader {
      * @throws IOException problem reading text.
      */
     public String readText() throws IOException {
+        if (maxReadSize == -1) {
+            String txt = IOUtils.toString(reader);
+            if (StringUtils.isEmpty(txt)) {
+                return null;
+            }
+            return txt;
+        }
+        
         char[] text = new char[maxReadSize - buffer.length()];
         int num = reader.read(text);
         if (num == -1) {
@@ -118,7 +130,6 @@ public class TextReader extends Reader {
             reader.reset();
         }
         
-
         Matcher m;
         
         // Try breaking at paragraph:
@@ -132,6 +143,7 @@ public class TextReader extends Reader {
             }
             String t = buffer.substring(0, substringEnd);
             buffer.delete(0, substringEnd);
+            LOG.debug("Reader text split after paragraph.");
             return t;
         }
 
@@ -146,6 +158,7 @@ public class TextReader extends Reader {
             }
             String t = buffer.substring(0, substringEnd);
             buffer.delete(0, substringEnd);
+            LOG.debug("Reader text split after sentence.");
             return t;
         }
 
@@ -160,12 +173,14 @@ public class TextReader extends Reader {
             }
             String t = buffer.substring(0, substringEnd);
             buffer.delete(0, substringEnd);            
+            LOG.debug("Reader text split after word.");
             return t;
         }
         
         
         String t = buffer.toString();
         buffer.setLength(0);
+        LOG.debug("Reader text split after maxReadSize.");
         return t;
     }
     
@@ -173,5 +188,4 @@ public class TextReader extends Reader {
     public void close() throws IOException {
         reader.close();
     }
-
 }

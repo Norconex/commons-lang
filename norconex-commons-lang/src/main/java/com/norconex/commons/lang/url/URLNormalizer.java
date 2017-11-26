@@ -22,6 +22,7 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -29,7 +30,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.collections4.bag.TreeBag;
-import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -233,8 +233,8 @@ public class URLNormalizer implements Serializable {
                 while (m.find()) {
                     String enc = m.group(1).toUpperCase();
                     if (isEncodedUnreservedCharacter(enc)) {
-                        m.appendReplacement(sb, 
-                                URLDecoder.decode(enc, CharEncoding.UTF_8));
+                        m.appendReplacement(sb, URLDecoder.decode(
+                                enc, StandardCharsets.UTF_8.toString()));
                     }
                 }
             } catch (UnsupportedEncodingException e) {

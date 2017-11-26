@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-
-import org.apache.commons.lang3.CharEncoding;
-import org.apache.commons.lang3.StringUtils;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Decorates an InputStream with a stream filter.  The stream filter
@@ -33,7 +32,7 @@ public class FilteredInputStream extends InputStream {
     
     private final BufferedReader bufferedInput;
     private final IInputStreamFilter filter;
-    private final String encoding;
+    private final Charset encoding;
     private InputStream lineStream;
     private boolean closed = false;
 
@@ -45,7 +44,29 @@ public class FilteredInputStream extends InputStream {
      */
     public FilteredInputStream(InputStream is, IInputStreamFilter filter)
             throws IOException {
-        this(is, filter, null);
+        this(is, filter, StandardCharsets.UTF_8);
+    }
+    /**
+     * Constructor.
+     * @param is input stream to filter
+     * @param filter the filter to apply
+     * @param encoding character encoding
+     * @throws IOException i/o problem
+     * @since 1.14.0
+     */
+    public FilteredInputStream(
+            InputStream is, IInputStreamFilter filter, Charset encoding)
+            throws IOException {
+        super();
+        if (encoding == null) {
+            this.encoding = StandardCharsets.UTF_8;
+        } else {
+            this.encoding = encoding;
+        }
+        this.bufferedInput = new BufferedReader(
+                new InputStreamReader(is, this.encoding));
+        this.filter = filter;
+        nextLine();
     }
     /**
      * Constructor.
@@ -58,16 +79,7 @@ public class FilteredInputStream extends InputStream {
     public FilteredInputStream(
             InputStream is, IInputStreamFilter filter, String encoding)
             throws IOException {
-        super();
-        if (StringUtils.isBlank(encoding)) {
-            this.encoding = CharEncoding.UTF_8;
-        } else {
-            this.encoding = encoding;
-        }
-        this.bufferedInput = new BufferedReader(
-                new InputStreamReader(is, this.encoding));
-        this.filter = filter;
-        nextLine();
+        this(is, filter, Charset.forName(encoding));
     }
 
     @Override

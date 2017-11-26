@@ -7,6 +7,100 @@
   </properties>
   <body>
 
+    <release version="1.14.0" date="2017-11-26" description="Feature release">
+      <action dev="essiembre" type="add">
+        Can now store and load Properties file as JSON.
+      </action>
+      <action dev="essiembre" type="add">
+        New StringUtil class with truncation methods replacing the truncated
+        part with a hash code.
+      </action>
+      <action dev="essiembre" type="add">
+        New ResourceLoader class.
+      </action>
+      <action dev="essiembre" type="add">
+        New ProxySettings class.
+      </action>
+      <action dev="essiembre" type="add">
+        New CircularRange class. 
+      </action>
+      <action dev="essiembre" type="add">
+        New method variation on EhancedXMLStreamWriter to overwrite the
+        default "writeBlanks" setting.
+      </action>
+      <action dev="essiembre" type="add">
+        New FileUtil#createURLDirs method for creating directories matching
+        URL segments. 
+      </action>
+      <action dev="essiembre" type="add">
+        New XMLConfigurationUtil#nullable* methods to consider empty 
+        tags/attributes as null whereas not having the tag at all uses
+        the default value.
+      </action>
+      <action dev="essiembre" type="add">
+        New XMLConfigurationUtil#keyExists methods to find if a key exists
+        in XML even if empty.
+      </action>
+      <action dev="essiembre" type="add">
+        New EqualsUtil#equalsMap(...) method for checking if two maps are equal,
+        regardless of entry order.
+      </action>
+      <action dev="essiembre" type="add">
+        It is now possible to pass a Charset where a string was expected
+        for character encoding on a few utility classes.
+      </action>
+      <action dev="essiembre" type="add">
+        Added ZIP constant to ContentType.
+      </action>
+      <action dev="essiembre" type="add">
+        Added ICachedStream#getCacheDirectory().
+      </action>
+      <action dev="essiembre" type="update">
+        TextReader default maxReadSize is now 10 million characters (from 
+        128,000) and now accepts -1 as the maxReadSize to mean unlimited.
+      </action>
+      <action dev="essiembre" type="update">
+        Properties with multi-values now have their values stored
+        as individual entries by default (as opposed to using a delimiter).
+        Also more storing/loading options are now available.
+      </action>
+      <action dev="essiembre" type="update">
+        TextReader#DEFAULT_MAX_READ_SIZE has been increased from 64 thousand
+        to 10 million characters.
+      </action>
+      <action dev="essiembre" type="update">
+        Dependency updates: Apache Commons Lang 3.6, Apache Commons Text 1.1,
+        Open JSON 1.8.
+      </action>
+      <action dev="essiembre" type="update">
+        ContentType now works better with types with parameters. 
+        Added two new related methods: #toBaseTypeString() and #toBaseType().
+      </action>
+      <action dev="essiembre" type="fix">
+        Fixed SystemCommand not handling arguments with spaces when they 
+        are properly quoted.
+      </action>
+      <action dev="essiembre" type="fix">
+        Fixed CachedInputStream returning -1 or throwing EOF exception when
+        it should not.
+      </action>
+      <action dev="essiembre" type="fix">
+        Fixed QueryString setting "UTF-8" as the URL when invoking empty 
+        constructor (now blank).
+      </action>
+      <action dev="essiembre" type="fix">
+        Fixed DurationParser now returning default value in some cases
+        where the duration was invalid (returning 0 instead).
+      </action>
+      <action dev="essiembre" type="fix">
+        Fixed CachedInputStream sometimes returning null when using
+        #getCacheDirectory() method. 
+      </action>
+      <action dev="essiembre" type="remove">
+         Removed Properties#isCaseSensitiveKeys(), deprecated since 1.8.0.
+      </action>      
+    </release>
+
     <release version="1.13.1" date="2017-05-16" description="Bugfix release">
       <action dev="essiembre" type="fix">
         Fixed XMLConfigurationUtil reporting a validation error when 

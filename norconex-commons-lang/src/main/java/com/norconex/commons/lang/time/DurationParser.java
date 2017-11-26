@@ -84,11 +84,10 @@ public final class DurationParser {
 
     private static final Properties UNIT_LABELS = new Properties();
     static {
-        UNIT_LABELS.setMultiValueDelimiter(",");
         try {
             UNIT_LABELS.load(DurationParser.class.getResourceAsStream(
                     ClassUtils.getShortCanonicalName(DurationParser.class)
-                    + ".properties"), ",");
+                    + ".properties"), null, ",");
         } catch (IOException e) {
             throw new DurationParserException(
                     "Coult not initialize DurationParser.", e);
@@ -168,7 +167,9 @@ public final class DurationParser {
         // Else parse the string
         Matcher m = PATTERN.matcher(duration);
         long ms = 0; 
+        boolean matchesPattern = false;
         while (m.find()) {
+            matchesPattern = true;
             String numGroup = m.group(1);
             String unitGroup = m.group(3).trim();
 
@@ -197,7 +198,13 @@ public final class DurationParser {
             }
             ms += unit.ms * val;
         }
-        return ms;
+        if (matchesPattern) {
+            return ms;
+        }
+        parseError(throwException, Level.ERROR, 
+                "Could not parse duration: \"" + duration
+              + "\". Invalid duration value.");
+        return defaultValue;
     }
     
     private static void parseError(

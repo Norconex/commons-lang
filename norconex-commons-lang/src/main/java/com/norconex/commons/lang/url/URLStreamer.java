@@ -1,4 +1,4 @@
-/* Copyright 2010-2016 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,12 +20,12 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 
 import javax.xml.bind.DatatypeConverter;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.AutoCloseInputStream;
-import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -211,7 +211,8 @@ public final class URLStreamer {
      */
     public static String streamToString(
             String url, Credentials creds, HttpHost proxy) {
-        return streamToString(url, creds, proxy, CharEncoding.UTF_8);
+        return streamToString(
+                url, creds, proxy, StandardCharsets.UTF_8.toString());
     }
     
     /**
@@ -277,8 +278,8 @@ public final class URLStreamer {
     public static String streamToString(
             String url, Credentials creds, HttpHost proxy, 
             Credentials proxyCreds) {
-        return streamToString(
-                url, creds, proxy, proxyCreds, CharEncoding.UTF_8);
+        return streamToString(url, creds, proxy, proxyCreds, 
+                StandardCharsets.UTF_8.toString());
     }
     
     /**

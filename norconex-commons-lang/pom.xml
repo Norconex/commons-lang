@@ -19,7 +19,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.norconex.commons</groupId>
   <artifactId>norconex-commons-lang</artifactId>
-  <version>1.13.1</version>
+  <version>1.14.0</version>
   <packaging>jar</packaging>
   <name>Norconex Commons Lang</name>
 
@@ -27,7 +27,10 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <site.baseurl/>
-    <currentStableVersion>1.13.1</currentStableVersion>
+    <currentStableVersion>1.14.0</currentStableVersion>
+    
+    <commons-lang3.version>3.6</commons-lang3.version>
+    <commons-configuration.version>1.10</commons-configuration.version>
   </properties>
   <inceptionYear>2008</inceptionYear>
 
@@ -53,6 +56,22 @@
   </repositories>
 
   <dependencies>
+
+    <!-- Fix transitive dependencies versions: -->
+        
+    <dependency>
+        <groupId>commons-lang</groupId>
+        <artifactId>commons-lang</artifactId>
+        <version>2.6</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-collections</groupId>
+        <artifactId>commons-collections</artifactId>
+        <version>3.2.2</version>
+    </dependency>
+
+    <!-- Other dependencies:  -->
+
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
@@ -72,7 +91,12 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
-      <version>3.5</version>
+      <version>${commons-lang3.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-text</artifactId>
+      <version>1.1</version>
     </dependency>
     <dependency>
       <groupId>org.apache.velocity</groupId>
@@ -82,7 +106,7 @@
     <dependency>
       <groupId>commons-configuration</groupId>
       <artifactId>commons-configuration</artifactId>
-      <version>1.10</version>
+      <version>${commons-configuration.version}</version>
     </dependency>
     <dependency>
       <groupId>log4j</groupId>
@@ -100,27 +124,28 @@
       <version>2.12-beta-r1667115</version>
     </dependency>
     <dependency>
+      <groupId>com.tdunning</groupId>
+      <artifactId>json</artifactId>
+      <version>1.8</version>    
+    </dependency>
+    
+    <!-- Switch to 1.10.1 or + when switching to Java 8. -->
+    <dependency>
       <groupId>org.apache.ant</groupId>
       <artifactId>ant</artifactId>
-      <version>1.10.1</version>
+      <version>1.9.9</version>
       <scope>test</scope>
-    </dependency>    
-  </dependencies>
+    </dependency>
 
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>commons-lang</groupId>
-        <artifactId>commons-lang</artifactId>
-        <version>2.6</version>
-      </dependency>
-      <dependency>
-        <groupId>commons-collections</groupId>
-        <artifactId>commons-collections</artifactId>
-        <version>3.2.2</version>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>  
+    <!-- For optional Proxy class used only by some implementations. -->
+    <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpclient</artifactId>
+        <version>4.5.3</version>
+        <scope>provided</scope>
+    </dependency>
+
+  </dependencies>
 
   <build>
     <resources>
@@ -270,8 +295,8 @@
           <source>1.7</source>
           <detectLinks>false</detectLinks>
           <links>
-            <link>https://commons.apache.org/proper/commons-configuration/javadocs/v1.10/apidocs/</link>
-            <link>https://commons.apache.org/proper/commons-lang/javadocs/api-3.5/</link>
+            <link>https://commons.apache.org/proper/commons-configuration/javadocs/v${commons-configuration.version}/apidocs/</link>
+            <link>https://commons.apache.org/proper/commons-lang/javadocs/api-${commons-lang3.version}/</link>
           </links>
         </configuration>
         <executions>
@@ -429,8 +454,8 @@
           <source>1.7</source>
           <detectLinks>false</detectLinks>
           <links>
-            <link>https://commons.apache.org/proper/commons-configuration/javadocs/v1.10/apidocs/</link>
-            <link>https://commons.apache.org/proper/commons-lang/javadocs/api-3.5/</link>
+            <link>https://commons.apache.org/proper/commons-configuration/javadocs/v${commons-configuration.version}/apidocs/</link>
+            <link>https://commons.apache.org/proper/commons-lang/javadocs/api-${commons-lang3.version}/</link>
           </links>
         </configuration>
         <reportSets>

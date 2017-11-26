@@ -21,6 +21,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Properties;
 import java.util.regex.Pattern;
@@ -28,7 +29,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
@@ -228,12 +228,10 @@ public final class ConfigurationLoader {
         }
 
         StringWriter sw = new StringWriter();
-        try {
-            Reader reader = new InputStreamReader(
-                    new FileInputStream(configFile), CharEncoding.UTF_8);
+        try (Reader reader = new InputStreamReader(
+                new FileInputStream(configFile), StandardCharsets.UTF_8)) {
             velocityEngine.evaluate(
                     context, sw, configFile.getAbsolutePath(), reader);
-            reader.close();
         } catch (Exception e) {
             throw new ConfigurationException(
                     "Cannot load config file as a string: " + file, e);
@@ -257,7 +255,8 @@ public final class ConfigurationLoader {
         try {
             if (isVariableFile(vars, EXTENSION_VARIABLES)) {
                 FileInputStream is = new FileInputStream(vars);
-				List<String> lines = IOUtils.readLines(is, CharEncoding.UTF_8);
+				List<String> lines = 
+				        IOUtils.readLines(is, StandardCharsets.UTF_8);
                 is.close();
                 for (String line : lines) {
 					if (line.contains("=")) {
@@ -269,11 +268,11 @@ public final class ConfigurationLoader {
 					}
 				}
             } else if (isVariableFile(vars, EXTENSION_PROPERTIES)) {
-                Reader r = new InputStreamReader(
-                        new FileInputStream(vars), CharEncoding.UTF_8);
                 Properties props = new Properties();
-                props.load(r);
-                r.close();
+                try (Reader r = new InputStreamReader(
+                        new FileInputStream(vars), StandardCharsets.UTF_8)) {
+                    props.load(r);
+                }
                 for (String key : props.stringPropertyNames()) {
                     context.put(key, props.getProperty(key));
                 }

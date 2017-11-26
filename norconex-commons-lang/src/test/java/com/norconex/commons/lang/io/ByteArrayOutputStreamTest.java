@@ -15,8 +15,8 @@
 package com.norconex.commons.lang.io;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
-import org.apache.commons.lang3.CharEncoding;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -41,7 +41,7 @@ public class ByteArrayOutputStreamTest {
         String val2 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         byte[] b = null;
         ByteArrayOutputStream out = new ByteArrayOutputStream(5);
-        String enc = CharEncoding.US_ASCII;
+        String enc = StandardCharsets.US_ASCII.toString();
         
         // test nothing written
         b = new byte[5];

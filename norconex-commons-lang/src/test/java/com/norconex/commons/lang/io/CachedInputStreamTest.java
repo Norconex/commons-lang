@@ -17,10 +17,10 @@ package com.norconex.commons.lang.io;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.NullInputStream;
-import org.apache.commons.lang3.CharEncoding;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -68,7 +68,7 @@ public class CachedInputStreamTest {
         CachedStreamFactory factory = new CachedStreamFactory(200, 100);
         CachedInputStream cache = factory.newInputStream(is);
         try {
-            String enc = CharEncoding.US_ASCII;
+            String enc = StandardCharsets.US_ASCII.toString();
             byte[] bytes = null; 
             bytes = new byte[5];
             cache.read(bytes);

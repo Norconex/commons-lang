@@ -1,4 +1,4 @@
-/* Copyright 2014-2016 Norconex Inc.
+/* Copyright 2014-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -113,13 +113,14 @@ public final class ContentFamily {
             return null;
         }
         String familyId = null;
-        if (BUNDLE_MAPPINGS.containsKey(contentType)) {
-            familyId = BUNDLE_MAPPINGS.getString(contentType);
+        String cleanType = StringUtils.substringBefore(contentType, ";");
+        if (BUNDLE_MAPPINGS.containsKey(cleanType)) {
+            familyId = BUNDLE_MAPPINGS.getString(cleanType);
         }
         if (familyId == null) {
             for (Entry<String, String> entry : WILD_MAPPINGS.entrySet()) {
                 String partialContentType = entry.getKey();
-                if (contentType.startsWith(partialContentType)) {
+                if (cleanType.startsWith(partialContentType)) {
                     familyId = entry.getValue();
                     break;
                 }
@@ -210,5 +211,4 @@ public final class ContentFamily {
     public String toString() {
         return getId();
     }
-    
 }

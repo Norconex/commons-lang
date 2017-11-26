@@ -1,4 +1,4 @@
-/* Copyright 2015 Norconex Inc.
+/* Copyright 2015-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@ package com.norconex.commons.lang.io;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 
-import org.apache.commons.lang3.CharEncoding;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -68,11 +68,20 @@ public class TextReaderTest {
         Assert.assertEquals("Wrong number of characters returned.", 
                 400, allContent.length());
     }
+
+    @Test
+    public void testUnlimited() throws IOException {
+        TextReader reader = getTextReader("funkyParagraphBreaks.txt", -1);
+        String allContent = reader.readText();
+        reader.close();
+        Assert.assertEquals("Wrong number of characters returned.", 
+                400, allContent.length());
+    }
     
     private TextReader getTextReader(String file, int readSize) 
             throws UnsupportedEncodingException {
         return new TextReader(new InputStreamReader(
-                getClass().getResourceAsStream(file), CharEncoding.UTF_8),
+                getClass().getResourceAsStream(file), StandardCharsets.UTF_8),
                 readSize);
     }
 }

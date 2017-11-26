@@ -14,12 +14,17 @@
  */
 package com.norconex.commons.lang.config;
 
+import java.awt.Dimension;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamSource;
@@ -504,6 +509,10 @@ public final class XMLConfigurationUtil {
             out.close();
         }
         
+        if (LOG.isTraceEnabled()) {
+            LOG.trace(out.toString());
+        }
+        
         // Read
         XMLConfiguration xml = newXMLConfiguration(
                 new StringReader(out.toString()));
@@ -517,6 +526,232 @@ public final class XMLConfigurationUtil {
         }
     }
 
+    /**
+     * Gets a BigDecimal from XML configuration. Same as 
+     * {@link XMLConfiguration#getBigDecimal(String, BigDecimal)} except that 
+     * the default value will only be returned if the key does not exist.
+     * If it exists and it is empty, <code>null</code> will be returned instead. 
+     * @param xml xml configuration
+     * @param key key to the element/attribute containing the value
+     * @param defaultValue value to be returned if the key does not exists.
+     * @return the actual value, the default value, or <code>null</code>
+     * @since 1.14.0
+     */
+    public static BigDecimal getNullableBigDecimal(
+            HierarchicalConfiguration xml, 
+            String key, BigDecimal defaultValue) {
+        return keyExists(xml, key) 
+                ? xml.getBigDecimal(key, null) : defaultValue;
+    }
+    /**
+     * Gets a BigInteger from XML configuration. Same as 
+     * {@link XMLConfiguration#getBigInteger(String, BigInteger)} except that 
+     * the default value will only be returned if the key does not exist.
+     * If it exists and it is empty, <code>null</code> will be returned instead. 
+     * @param xml xml configuration
+     * @param key key to the element/attribute containing the value
+     * @param defaultValue value to be returned if the key does not exists.
+     * @return the actual value, the default value, or <code>null</code>
+     * @since 1.14.0
+     */
+    public static BigInteger getNullableBigInteger(
+            HierarchicalConfiguration xml, 
+            String key, BigInteger defaultValue) {
+        return keyExists(xml, key)
+                ? xml.getBigInteger(key, null) : defaultValue;
+    }
+    /**
+     * Gets a Boolean from XML configuration. Same as 
+     * {@link XMLConfiguration#getBoolean(String, Boolean)} except that 
+     * the default value will only be returned if the key does not exist.
+     * If it exists and it is empty, <code>null</code> will be returned instead. 
+     * @param xml xml configuration
+     * @param key key to the element/attribute containing the value
+     * @param defaultValue value to be returned if the key does not exists.
+     * @return the actual value, the default value, or <code>null</code>
+     * @since 1.14.0
+     */
+    public static Boolean getNullableBoolean(
+            HierarchicalConfiguration xml, String key, Boolean defaultValue) {
+        return keyExists(xml, key) ? xml.getBoolean(key, null) : defaultValue;
+    }
+    /**
+     * Gets a Byte from XML configuration. Same as 
+     * {@link XMLConfiguration#getByte(String, Byte)} except that 
+     * the default value will only be returned if the key does not exist.
+     * If it exists and it is empty, <code>null</code> will be returned instead. 
+     * @param xml xml configuration
+     * @param key key to the element/attribute containing the value
+     * @param defaultValue value to be returned if the key does not exists.
+     * @return the actual value, the default value, or <code>null</code>
+     * @since 1.14.0
+     */
+    public static Byte getNullableByte(
+            HierarchicalConfiguration xml, String key, Byte defaultValue) {
+        return keyExists(xml, key) ? xml.getByte(key, null) : defaultValue;
+    }
+    /**
+     * Gets a Class from XML configuration. 
+     * The default value will only be returned if the key does not exist.
+     * If it exists and it is empty, <code>null</code> will be returned instead. 
+     * @param xml xml configuration
+     * @param key key to the element/attribute containing the value
+     * @param defaultValue value to be returned if the key does not exists.
+     * @return the actual value, the default value, or <code>null</code>
+     * @since 1.14.0
+     */
+    public static Class<?> getNullableClass(
+            HierarchicalConfiguration xml, String key, Class<?> defaultValue) {
+        if (!keyExists(xml, key)) {
+            return defaultValue;
+        }
+        String className = xml.getString(key, null);
+        if (StringUtils.isBlank(className)) {
+            return null;
+        }
+        try {
+            return Class.forName(className);
+        } catch (ClassNotFoundException e) {
+            throw new ConfigurationException(
+                    "Could not create Class: " + className, e);
+        }
+    }
+    /**
+     * Gets a Double from XML configuration. Same as 
+     * {@link XMLConfiguration#getDouble(String, Double)} except that 
+     * the default value will only be returned if the key does not exist.
+     * If it exists and it is empty, <code>null</code> will be returned instead. 
+     * @param xml xml configuration
+     * @param key key to the element/attribute containing the value
+     * @param defaultValue value to be returned if the key does not exists.
+     * @return the actual value, the default value, or <code>null</code>
+     * @since 1.14.0
+     */
+    public static Double getNullableDouble(
+            HierarchicalConfiguration xml, String key, Double defaultValue) {
+        return keyExists(xml, key) ? xml.getDouble(key, null) : defaultValue;
+    }
+    /**
+     * Gets a Float from XML configuration. Same as 
+     * {@link XMLConfiguration#getFloat(String, Float)} except that 
+     * the default value will only be returned if the key does not exist.
+     * If it exists and it is empty, <code>null</code> will be returned instead. 
+     * @param xml xml configuration
+     * @param key key to the element/attribute containing the value
+     * @param defaultValue value to be returned if the key does not exists.
+     * @return the actual value, the default value, or <code>null</code>
+     * @since 1.14.0
+     */
+    public static Float getNullableFloat(
+            HierarchicalConfiguration xml, String key, Float defaultValue) {
+        return keyExists(xml, key) ? xml.getFloat(key, null) : defaultValue;
+    }
+    /**
+     * Gets an Integer from XML configuration. Same as 
+     * {@link XMLConfiguration#getInteger(String, Integer)} except that 
+     * the default value will only be returned if the key does not exist.
+     * If it exists and it is empty, <code>null</code> will be returned instead. 
+     * @param xml xml configuration
+     * @param key key to the element/attribute containing the value
+     * @param defaultValue value to be returned if the key does not exists.
+     * @return the actual value, the default value, or <code>null</code>
+     * @since 1.14.0
+     */
+    public static Integer getNullableInteger(
+            HierarchicalConfiguration xml, String key, Integer defaultValue) {
+        return keyExists(xml, key) ? xml.getInteger(key, null) : defaultValue;
+    }
+    /**
+     * Gets a Long from XML configuration. Same as 
+     * {@link XMLConfiguration#getLong(String, Long)} except that 
+     * the default value will only be returned if the key does not exist.
+     * If it exists and it is empty, <code>null</code> will be returned instead. 
+     * @param xml xml configuration
+     * @param key key to the element/attribute containing the value
+     * @param defaultValue value to be returned if the key does not exists.
+     * @return the actual value, the default value, or <code>null</code>
+     * @since 1.14.0
+     */
+    public static Long getNullableLong(
+            HierarchicalConfiguration xml, String key, Long defaultValue) {
+        return keyExists(xml, key) ? xml.getLong(key, null) : defaultValue;
+    }
+    /**
+     * Gets a Short from XML configuration. Same as 
+     * {@link XMLConfiguration#getShort(String, Short)} except that 
+     * the default value will only be returned if the key does not exist.
+     * If it exists and it is empty, <code>null</code> will be returned instead. 
+     * @param xml xml configuration
+     * @param key key to the element/attribute containing the value
+     * @param defaultValue value to be returned if the key does not exists.
+     * @return the actual value, the default value, or <code>null</code>
+     * @since 1.14.0
+     */
+    public static Short getNullableShort(
+            HierarchicalConfiguration xml, String key, Short defaultValue) {
+        return keyExists(xml, key) ? xml.getShort(key, null) : defaultValue;
+    }
+    /**
+     * Gets a String from XML configuration. Same as 
+     * {@link XMLConfiguration#getString(String, String)} except that 
+     * the default value will only be returned if the key does not exist.
+     * If it exists and it is empty, <code>null</code> will be returned instead. 
+     * @param xml xml configuration
+     * @param key key to the element/attribute containing the value
+     * @param defaultValue value to be returned if the key does not exists.
+     * @return the actual value, the default value, or <code>null</code>
+     * @since 1.14.0
+     */
+    public static String getNullableString(
+            HierarchicalConfiguration xml, String key, String defaultValue) {
+        if (keyExists(xml, key)) {
+            return StringUtils.trimToNull(xml.getString(key, null));
+        }
+        return defaultValue;
+    }
+    /**
+     * Gets a Dimension from XML configuration (e.g., 400x500, or 200).  
+     * The default value will only be returned if the key does not exist.
+     * If it exists and it is empty, <code>null</code> will be returned instead. 
+     * @param xml xml configuration
+     * @param key key to the element/attribute containing the value
+     * @param defaultValue value to be returned if the key does not exists.
+     * @return the actual value, the default value, or <code>null</code>
+     * @since 1.14.0
+     */
+    public static Dimension getNullableDimension(
+            HierarchicalConfiguration xml, String key, Dimension defaultValue) {
+        if (keyExists(xml, key)) {
+            String value = xml.getString(key, null);
+            if (StringUtils.isBlank(value)) {
+                return null;
+            }
+            String[] wh = value.split("[xX]"); 
+            if (wh.length == 1) {
+                int val = Integer.parseInt(wh[0].trim());
+                return new Dimension(val, val);
+            }
+            return new Dimension(
+                    Integer.parseInt(wh[0].trim()), 
+                    Integer.parseInt(wh[1].trim()));
+        }
+        return defaultValue;
+    }
+    
+    public static boolean keyExists(HierarchicalConfiguration xml, String key) {
+        Iterator<String> it = xml.getKeys();
+        while (it.hasNext()) {
+            String itKey = it.next();
+            if (!key.contains("[@")) {
+                itKey = itKey.replaceAll("\\[@.*?\\]", "");
+            }
+            if (Objects.equals(itKey, key)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     /**
      * Gets a duration which can be a numerical value or a textual 
      * representation of a duration as per {@link DurationParser}.
@@ -625,6 +860,9 @@ public final class XMLConfigurationUtil {
     private static String[] splitCSV(String str) {
         if (str == null) {
             return null;
+        }
+        if (StringUtils.isBlank(str)) {
+            return ArrayUtils.EMPTY_STRING_ARRAY;
         }
         return str.trim().split("(\\s*,\\s*)+");
     }

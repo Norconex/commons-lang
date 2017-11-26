@@ -23,12 +23,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.StringTokenizer;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
-import org.apache.commons.lang3.text.translate.CharSequenceTranslator;
-import org.apache.commons.lang3.text.translate.LookupTranslator;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -368,11 +367,11 @@ public class SystemCommand {
      * @param command the command to escape.
      */
     public static void escape(List<String> command) {
-        if (SystemUtils.IS_OS_WINDOWS) {
+//        if (SystemUtils.IS_OS_WINDOWS) {
             escapeWindows(command);
-        } else {
-            escapeNonWindows(command);
-        }
+//        } else {
+//            escapeNonWindows(command);
+//        }
     }
     
     /**
@@ -387,7 +386,7 @@ public class SystemCommand {
      * @return escaped command
      */
     public static String[] escape(String... command) {
-        List<String> list = new ArrayList<String>(Arrays.asList(command));
+        List<String> list = new ArrayList<>(Arrays.asList(command));
         escape(list);
         return list.toArray(ArrayUtils.EMPTY_STRING_ARRAY);
     }
@@ -398,18 +397,16 @@ public class SystemCommand {
     // as well. See:
     // http://stackoverflow.com/questions/6376113/how-to-use-spaces-in-cmd
     private static void escapeWindows(List<String> cmd) {
-        // If only 1 arg, it could be the command plus args together so there
-        // is no way to tell if spaces should be escaped, so we assume they 
-        // were properly escaped to begin with.
+        // If only 1 arg, it can be the command plus args together so
+        // attempt to split as such.
         if (cmd.size() == 1) {
-            //TODO attempt to escape arguments properly checking if 
-            //an argument starts with a driver letter and/or checking
-            //if a file exists as we combine the arguments until a file
-            //is found?  If found, escape the sequence.
-            return;
+            String cmdLine = cmd.get(0);
+            cmd.clear();
+            cmd.addAll(Arrays.asList(translateCommandline(cmdLine)));
         }
-
-        List<String> newCmd = new ArrayList<String>();
+        
+        // At this point we know we have command + args, escape. 
+        List<String> newCmd = new ArrayList<>();
         for (String arg : cmd) {
             if (StringUtils.contains(arg, ' ') 
                     && !arg.matches("^\\s*\".*\"\\s*$")) {
@@ -422,25 +419,24 @@ public class SystemCommand {
         cmd.addAll(newCmd);
     }
 
-    // Escape spaces with a backslash if not already escaped
-    private static void escapeNonWindows(List<String> cmd) {
-        // If only 1 arg, it could be the command plus args together so there
-        // is no way to tell if spaces should be escaped, so we assume they 
-        // were properly escaped to begin with and we break it up by 
-        // non-escaped spaces or the OS will not think the single string
-        // is one command (as opposed to command + args) and can fail.
-        if (cmd.size() == 1) {
-            String[] parts = cmd.get(0).split("(?<!\\\\)\\s+");
-            cmd.clear();
-            cmd.addAll(Arrays.asList(parts));
-        } else {
-            for (int i = 0; i < cmd.size(); i++) {
-                if (StringUtils.contains(cmd.get(i), ' ')) {
-                    cmd.add(i, escapeShell(cmd.remove(i)));
-                }
-            }
-        }
-    }
+//    // Escape spaces with a backslash if not already escaped
+//    private static void escapeNonWindows(List<String> cmd) {
+//        // If only 1 arg, it can be the command plus args together so
+//        // attempt to split as such.
+//        if (cmd.size() == 1) {
+//            String cmdLine = cmd.get(0);
+//            cmd.clear();
+//            cmd.addAll(Arrays.asList(translateCommandline(cmdLine)));
+//        }
+//        
+//        // At this point we know we have command + args, escape. 
+//        for (int i = 0; i < cmd.size(); i++) {
+//            cmd.add(i, StringEscapeUtils.escapeXSI(cmd.remove(i)));
+//            if (StringUtils.contains(cmd.get(i), ' ')) {
+//                cmd.add(i, StringEscapeUtils.escapeXSI(cmd.remove(i)));
+//            }
+//        }
+//    }
 
     private void wrapCommand(List<String> cmd) {
         if (SystemUtils.OS_NAME == null || !SystemUtils.IS_OS_WINDOWS) {
@@ -456,12 +452,85 @@ public class SystemCommand {
             prefixes = CMD_PREFIXES_WIN_CURRENT;
         }
         removePrefixes(cmd, prefixes);
+        
         String wrappedCmd = "\"" + StringUtils.join(cmd, " ") + "\"";
         cmd.clear();
         cmd.addAll(Arrays.asList(prefixes));
         cmd.add(wrappedCmd);
     }
 
+    //XXX This method is taken from Apache Commons Exec "CommandLine" class.
+    //XXX It shall be removed once SystemCommand and related classes
+    //XXX are replaced with Apache Commons Exec classes.
+    //XXX https://commons.apache.org/proper/commons-exec/apidocs/src-html/org/apache/commons/exec/CommandLine.html
+    private static String[] translateCommandline(final String toProcess) {
+        if (toProcess == null || toProcess.length() == 0) {
+            // no command? no string
+            return new String[0];
+        }
+
+        // parse with a simple finite state machine
+
+        final int normal = 0;
+        final int inQuote = 1;
+        final int inDoubleQuote = 2;
+        int state = normal;
+        final StringTokenizer tok = 
+                new StringTokenizer(toProcess, "\"\' ", true);
+        final ArrayList<String> list = new ArrayList<String>();
+        StringBuilder current = new StringBuilder();
+        boolean lastTokenHasBeenQuoted = false;
+
+        while (tok.hasMoreTokens()) {
+            final String nextTok = tok.nextToken();
+            switch (state) {
+            case inQuote:
+                if ("\'".equals(nextTok)) {
+                    lastTokenHasBeenQuoted = true;
+                    state = normal;
+                } else {
+                    current.append(nextTok);
+                }
+                break;
+            case inDoubleQuote:
+                if ("\"".equals(nextTok)) {
+                    lastTokenHasBeenQuoted = true;
+                    state = normal;
+                } else {
+                    current.append(nextTok);
+                }
+                break;
+            default:
+                if ("\'".equals(nextTok)) {
+                    state = inQuote;
+                } else if ("\"".equals(nextTok)) {
+                    state = inDoubleQuote;
+                } else if (" ".equals(nextTok)) {
+                    if (lastTokenHasBeenQuoted || current.length() != 0) {
+                        list.add(current.toString());
+                        current = new StringBuilder();
+                    }
+                } else {
+                    current.append(nextTok);
+                }
+                lastTokenHasBeenQuoted = false;
+                break;
+            }
+        }
+
+        if (lastTokenHasBeenQuoted || current.length() != 0) {
+            list.add(current.toString());
+        }
+
+        if (state == inQuote || state == inDoubleQuote) {
+            throw new IllegalArgumentException("Unbalanced quotes in "
+                    + toProcess);
+        }
+
+        final String[] args = new String[list.size()];
+        return list.toArray(args);
+    }
+    
     private class ErrorTracker extends InputStreamLineListener {
         private final StringBuilder b = new StringBuilder();
         @Override
@@ -471,38 +540,5 @@ public class SystemCommand {
             }
             b.append(line);
         }
-    }
-    
-    //TODO remove the following when Apache Commons Lang 3.6 is out, which
-    // will contain StringEscapeUtils#escapeShell(String)
-    private static final CharSequenceTranslator ESCAPE_XSI =
-            new LookupTranslator(
-              new String[][] {
-                {"|", "\\|"},
-                {"&", "\\&"},
-                {";", "\\;"},
-                {"<", "\\<"},
-                {">", "\\>"},
-                {"(", "\\("},
-                {")", "\\)"},
-                {"$", "\\$"},
-                {"`", "\\`"},
-                {"\\", "\\\\"},
-                {"\"", "\\\""},
-                {"'", "\\'"},
-                {" ", "\\ "},
-                {"\t", "\\\t"},
-                {"\r\n", ""},
-                {"\n", ""},
-                {"*", "\\*"},
-                {"?", "\\?"},
-                {"[", "\\["},
-                {"#", "\\#"},
-                {"~", "\\~"},
-                {"=", "\\="},
-                {"%", "\\%"},
-            });
-    private static String escapeShell(String input) {
-        return ESCAPE_XSI.translate(input);
     }
 }

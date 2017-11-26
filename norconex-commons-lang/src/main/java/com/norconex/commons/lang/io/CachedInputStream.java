@@ -1,4 +1,4 @@
-/* Copyright 2014-2015 Norconex Inc.
+/* Copyright 2014-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -101,24 +101,24 @@ public class CachedInputStream extends InputStream implements ICachedStream {
     
     private int count;        // total number of bytes read so far
     private int pos = 0;      // byte position we are in
-    private int markpos = 0;  // position we want to go back to
+    private int markpos = -1; // position we want to go back to
 
     // undefined until a full read was performed
     private int length = UNDEFINED_LENGTH;
     
     /**
      * Caches the wrapped InputStream.
-     * @param is InputStream to cache
+     * @param factory stream factory
      * @param cacheDirectory directory where to store large content
+     * @param is InputStream to cache
      */
-    /*default*/ CachedInputStream(CachedStreamFactory factory, 
-            InputStream is, File cacheDirectory) {
+    /*default*/ CachedInputStream(
+            CachedStreamFactory factory, File cacheDirectory, InputStream is) {
         super();
         
         this.factory = factory;
         this.tracker = factory.new MemoryTracker();
 
-        
         memOutputStream = new ByteArrayOutputStream();
         
         if (is instanceof BufferedInputStream) {
@@ -126,23 +126,21 @@ public class CachedInputStream extends InputStream implements ICachedStream {
         } else {
             this.inputStream = new BufferedInputStream(is);
         }
-        if (cacheDirectory == null) {
-            this.cacheDirectory = FileUtils.getTempDirectory();
-        } else {
-            this.cacheDirectory = cacheDirectory;
-        }
+        this.cacheDirectory = nullSafeCacheDirectory(cacheDirectory);
     }
 
     /**
      * Creates an input stream with an existing memory cache.
+     * @param factory stream factory
+     * @param cacheDirectory directory where to store large content
      * @param byteBuffer the InputStream cache.
      */
     /*default*/ CachedInputStream(
-            CachedStreamFactory factory, byte[] memCache) {
+            CachedStreamFactory factory, File cacheDirectory, byte[] memCache) {
         this.factory = factory;
         this.tracker = factory.new MemoryTracker();
         this.memCache = ArrayUtils.clone(memCache);
-        this.cacheDirectory = null;
+        this.cacheDirectory = nullSafeCacheDirectory(cacheDirectory);
         this.firstRead = false;
         this.needNewStream = true;
         if (memCache != null) {
@@ -151,17 +149,30 @@ public class CachedInputStream extends InputStream implements ICachedStream {
     }
     /**
      * Creates an input stream with an existing file cache.
+     * @param factory stream factory
+     * @param cacheDirectory directory where to store large content
      * @param cacheFile the file cache
      */
-    /*default*/ CachedInputStream(CachedStreamFactory factory, File cacheFile) {
+    /*default*/ CachedInputStream(
+            CachedStreamFactory factory, File cacheDirectory, File cacheFile) {
         this.factory = factory;
         this.tracker = factory.new MemoryTracker();
         this.fileCache = cacheFile;
-        this.cacheDirectory = null;
+        this.cacheDirectory = nullSafeCacheDirectory(cacheDirectory);
         this.firstRead = false;
         this.needNewStream = true;
         if (cacheFile != null && cacheFile.exists() && cacheFile.isFile()) {
             this.length = (int) cacheFile.length();
+        }
+    }
+    
+    // Now called by all constructors to prevent NPE in case this instance
+    // is used to obtain the cache temp dir for other usage.
+    private static File nullSafeCacheDirectory(File cacheDir) {
+        if (cacheDir == null) {
+            return FileUtils.getTempDirectory();
+        } else {
+            return cacheDir;
         }
     }
 
@@ -189,6 +200,7 @@ public class CachedInputStream extends InputStream implements ICachedStream {
     @Override
     public synchronized void reset() throws IOException {
         pos = markpos;
+        markpos = -1;
     }
 
     /**
@@ -215,7 +227,9 @@ public class CachedInputStream extends InputStream implements ICachedStream {
                     if (cursor >= memCache.length) {
                         val = -1;
                     } else {
-                        val = memCache[cursor];
+                        // Adding 0xFF is necessary to make it signed and avoid
+                        // false -1.
+                        val = memCache[cursor] & 0xFF;
                     }
                 }
             } else {
@@ -295,14 +309,15 @@ public class CachedInputStream extends InputStream implements ICachedStream {
                 pos += read;
             }
         }
-
+        
         if (read != -1 && read < len) {
             int maxToRead = len - read;
-            read = realRead(b, off + read, maxToRead); 
-            if (read != -1) {
-                pos += read;
-                count += read;
+            int remainingRead = realRead(b, off + read, maxToRead); 
+            if (remainingRead != -1) {
+                pos += remainingRead;
+                count += remainingRead;
             }
+            read += remainingRead;
         }
         return read;
     }
@@ -380,7 +395,7 @@ public class CachedInputStream extends InputStream implements ICachedStream {
         }
         // Reset marking
         pos = 0;
-        markpos = 0;
+        markpos = -1;
         count = 0;
     }
     
@@ -424,6 +439,7 @@ public class CachedInputStream extends InputStream implements ICachedStream {
      * Gets the cache directory where temporary cache files are created.
      * @return the cache directory
      */
+    @Override
     public final File getCacheDirectory() {
         return cacheDirectory;
     }
@@ -528,12 +544,11 @@ public class CachedInputStream extends InputStream implements ICachedStream {
         memOutputStream = null;
     }
 
-    @SuppressWarnings("resource")
     private void createInputStreamFromCache() throws FileNotFoundException {
         if (fileCache != null) {
             LOG.debug("Creating new input stream from file cache.");
-            RandomAccessFile f = new RandomAccessFile(fileCache, "r");
-            FileChannel channel = f.getChannel();
+            randomAccessFile = new RandomAccessFile(fileCache, "r");
+            FileChannel channel = randomAccessFile.getChannel();
             inputStream = Channels.newInputStream(channel);
         } else {
             LOG.debug("Creating new input stream from memory cache.");

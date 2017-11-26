@@ -36,4 +36,15 @@ public class DurationParserTest {
         Assert.assertEquals(TEST_DURATION, DurationParser.parse(
                 "54days,18 hrs1min23 s"));
     }
+
+    @Test
+    public void testDefaultValue() {
+        Assert.assertEquals(2, DurationParser.parse("-5", 2));
+        try {
+            DurationParser.parse("-5");
+            Assert.fail("Should have thrown exception.");
+        } catch (Exception e) {
+            // swallow
+        }
+    }
 }
