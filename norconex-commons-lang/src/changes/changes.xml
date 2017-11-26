@@ -7,7 +7,7 @@
   </properties>
   <body>
 
-    <release version="1.14.0-SNAPSHOT" date="2017-??-??" description="Feature release">
+    <release version="1.14.0" date="2017-11-26" description="Feature release">
       <action dev="essiembre" type="add">
         Can now store and load Properties file as JSON.
       </action>
