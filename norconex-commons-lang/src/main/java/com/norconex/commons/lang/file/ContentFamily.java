@@ -23,8 +23,8 @@ import java.util.ResourceBundle;
 
 import org.apache.commons.collections4.map.ListOrderedMap;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 /**
  * Represents a family of content types.  Typically, a broader, conceptual
@@ -54,7 +54,7 @@ import org.apache.log4j.Logger;
  */
 public final class ContentFamily {
     
-    private static final Logger LOG = LogManager.getLogger(ContentFamily.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ContentFamily.class);
     
     private static final ResourceBundle BUNDLE_MAPPINGS;
     static {

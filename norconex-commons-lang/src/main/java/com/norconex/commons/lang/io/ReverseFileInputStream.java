@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import java.io.RandomAccessFile;
  * (from the end of file to its beginning). 
  * @author Pascal Essiembre
  */
-@SuppressWarnings("nls")
 public class ReverseFileInputStream extends InputStream {
 
     private static final int BUFFER_SIZE = 4096;

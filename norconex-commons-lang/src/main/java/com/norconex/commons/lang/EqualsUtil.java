@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,11 +54,11 @@ public final class EqualsUtil {
      * @return <code>true</code> if any of the target strings are equal
      */
     public static boolean equalsAnyIgnoreCase(
-            String source, String... targets) {
+            CharSequence source, CharSequence... targets) {
         if (targets == null) {
             return source == null;
         }
-        for (String target : targets) {
+        for (CharSequence target : targets) {
             if (StringUtils.equalsIgnoreCase(source, target)) {
                 return true;
             }
@@ -91,11 +91,11 @@ public final class EqualsUtil {
      * @return <code>true</code> if all of the target strings are equal
      */
     public static boolean equalsAllIgnoreCase(
-            String source, String... targets) {
+            CharSequence source, CharSequence... targets) {
         if (targets == null) {
             return source == null;
         }
-        for (String target : targets) {
+        for (CharSequence target : targets) {
             if (!StringUtils.equalsIgnoreCase(source, target)) {
                 return false;
             }

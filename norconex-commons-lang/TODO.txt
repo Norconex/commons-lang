@@ -1,7 +1,26 @@
 TODO:
 ==============
 
-- Consider using Apache Commons Exec to replace SystemCommand?
+- Add EncryptionKey save/load method on XMLConfigurationUtil.
+
+- Is Pipeline really needed with Java 8. Could functional interfaces do it?
+
+- Replace/refactor process execution to use new process features of Java 8.
+
+- See if we eliminate JEF, have more options in this lib.
+
+- Remove all @since 1.x???
+
+- Remove all classes supported by Apache Commons.
+
+- Reduce depedencies wherever possible.
+
+- Redo website so it looks closer to collectors?
+
+- Redo download page so we no longer need to have a "currentRelease" property
+  in pom.xml
+
+- Consider using Apache Commons Exec to replace SystemCommand? -- NO: Java 8
 
 - Allows to specify a velocity-tools.properties or equivalent in classpath
   root (e.g. classes/ folder) to define custom classes/tools to be used 

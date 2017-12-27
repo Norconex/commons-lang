@@ -1,4 +1,4 @@
-/* Copyright 2010-2016 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,8 @@ import java.util.jar.JarFile;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility class for finding names of classes implementing an interface or class
@@ -42,10 +43,10 @@ import org.apache.log4j.Logger;
  * 
  * @author Pascal Essiembre
  */
-@SuppressWarnings("nls")
 public final class ClassFinder {
 
-    private static final Logger LOG = Logger.getLogger(ClassFinder.class);
+    private static final Logger LOG = 
+            LoggerFactory.getLogger(ClassFinder.class);
 
     private ClassFinder() {
         super();
@@ -123,12 +124,12 @@ public final class ClassFinder {
         }
         if (file == null || !file.exists()) {
             LOG.warn("Trying to find implementing classes from a null or "
-                   + "non-existant file: " + file);
+                   + "non-existant file: {}", file);
             return new ArrayList<>();
         }
         if (file.isDirectory()) {
-            return findSubTypesFromDirectory(
-                    new File(file.getAbsolutePath() + "/"), superClass);
+            return findSubTypesFromDirectory(new File(
+                    file.getAbsolutePath() + File.separatorChar), superClass);
         }
         if (file.getName().endsWith(".jar")) {
             return findSubTypesFromJar(file, superClass);

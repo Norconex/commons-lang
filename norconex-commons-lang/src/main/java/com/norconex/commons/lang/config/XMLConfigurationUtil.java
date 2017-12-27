@@ -32,15 +32,18 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
-import org.apache.commons.configuration.HierarchicalConfiguration;
-import org.apache.commons.configuration.XMLConfiguration;
-import org.apache.commons.configuration.tree.ConfigurationNode;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.XMLConfiguration;
+import org.apache.commons.configuration2.builder.BasicConfigurationBuilder;
+import org.apache.commons.configuration2.builder.fluent.Parameters;
+import org.apache.commons.configuration2.io.FileHandler;
+import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.apache.xerces.xni.NamespaceContext;
 import org.xml.sax.Attributes;
 import org.xml.sax.ErrorHandler;
@@ -68,7 +71,7 @@ import com.norconex.commons.lang.xml.ClasspathResourceResolver;
  */
 public final class XMLConfigurationUtil {
     private static final Logger LOG = 
-            LogManager.getLogger(XMLConfigurationUtil.class);
+            LoggerFactory.getLogger(XMLConfigurationUtil.class);
 
     public static final String W3C_XML_SCHEMA_NS_URI_1_1 = 
             "http://www.w3.org/XML/XMLSchema/v1.1";
@@ -77,35 +80,40 @@ public final class XMLConfigurationUtil {
         super();
     }
    
-
-    /**
-     * Disables delimiter parsing for both attributes and elements.
-     * @param xml XML configuration
-     */
-    public static void disableDelimiterParsing(XMLConfiguration xml) {
-        xml.setListDelimiter('\0');
-        xml.setDelimiterParsingDisabled(true);
-        xml.setAttributeSplittingDisabled(true);
-    }
-    
-    
     /**
      * This load method will return an Apache XML Configuration from
-     * from a {@link HierarchicalConfiguration}, with delimiter parsing 
-     * disabled. 
+     * a {@link HierarchicalConfiguration}. 
      * @param c hierarchical configuration
      * @return XMLConfiguration
      * @since 1.5.0
      */
+    //TODO still required given it just returns now???
     public static XMLConfiguration newXMLConfiguration(
-            HierarchicalConfiguration c) {
-        XMLConfiguration xml = new XMLConfiguration(c);
-        disableDelimiterParsing(xml);
-        return xml;
+            HierarchicalConfiguration<ImmutableNode> c) {
+        return new XMLConfiguration(c);
     }
     /**
      * <p>This load method will return an Apache XML Configuration from
-     * from a reader, with delimiter parsing disabled.</p>
+     * an XML string.</p>
+     * <p><b>Note:</b> Leading and trailing white spaces are not preserved by 
+     * default.
+     * To preserve them, add <code>xml:space="preserve"</code> 
+     * to your tag, like this:
+     * </p>
+     * <pre>
+     *   &lt;mytag xml:space="preserve"&gt; &lt;/mytag&gt;
+     * </pre>
+     * <p>The above example will preserve the white space in the tag's body.
+     * @param xml XML string
+     * @return XMLConfiguration
+     * @since 2.0.0
+     */
+    public static XMLConfiguration newXMLConfiguration(String xml) {
+        return newXMLConfiguration(new StringReader(xml));
+    }
+    /**
+     * <p>This load method will return an Apache XML Configuration from
+     * a reader.</p>
      * <p><b>Note:</b> Leading and trailing white spaces are not preserved by 
      * default.
      * To preserve them, add <code>xml:space="preserve"</code> 
@@ -120,14 +128,17 @@ public final class XMLConfigurationUtil {
      * @since 1.5.0
      */
     public static XMLConfiguration newXMLConfiguration(Reader in) {
-        XMLConfiguration xml = new XMLConfiguration();
-        disableDelimiterParsing(xml);
         try {
-            xml.load(in);
-        } catch (org.apache.commons.configuration.ConfigurationException e) {
+            XMLConfiguration xml = new BasicConfigurationBuilder<>(
+                    XMLConfiguration.class).configure(
+                            new Parameters().xml()).getConfiguration();
+            FileHandler fh = new FileHandler(xml);
+            fh.load(in);
+            return xml;
+        } catch (
+                org.apache.commons.configuration2.ex.ConfigurationException e) {
             throw new ConfigurationException("Cannot load XMLConfiguration", e);
         }
-        return xml;
     }
 
     /**
@@ -170,7 +181,7 @@ public final class XMLConfigurationUtil {
      * @throws ConfigurationException if instance cannot be created/populated
      */
     public static <T extends Object> T newInstance(
-            HierarchicalConfiguration node) {
+            HierarchicalConfiguration<ImmutableNode> node) {
         return newInstance(node, (String) null);
     }
     
@@ -191,7 +202,7 @@ public final class XMLConfigurationUtil {
      */
     @SuppressWarnings("unchecked")
     public static <T extends Object> T newInstance(
-            HierarchicalConfiguration node, T defaultObject) {
+            HierarchicalConfiguration<ImmutableNode> node, T defaultObject) {
         T obj;
         String clazz;
         if (node == null) {
@@ -242,7 +253,7 @@ public final class XMLConfigurationUtil {
      * @throws ConfigurationException if instance cannot be created/populated
      */
     public static <T extends Object> T newInstance(
-            HierarchicalConfiguration node, String key) {
+            HierarchicalConfiguration<ImmutableNode> node, String key) {
         return newInstance(node, key, (T) null, true);
     }
     /**
@@ -267,11 +278,12 @@ public final class XMLConfigurationUtil {
      * @return a new object.
      */
     public static <T extends Object> T newInstance(
-            HierarchicalConfiguration node, String key, T defaultObject) {
+            HierarchicalConfiguration<ImmutableNode> node, 
+            String key, T defaultObject) {
         return newInstance(node, key, defaultObject, false);
     }
     private static <T extends Object> T newInstance(
-            HierarchicalConfiguration node, String key, 
+            HierarchicalConfiguration<ImmutableNode> node, String key, 
             T defaultObject, boolean canThrowException) {
         if (node == null) {
             return defaultObject;
@@ -281,16 +293,17 @@ public final class XMLConfigurationUtil {
             if (key == null && defaultObject == null) {
                 return newInstance(node, (T) null);
             }
-            HierarchicalConfiguration subconfig = 
+            HierarchicalConfiguration<ImmutableNode> subconfig = 
                     safeConfigurationAt(node, key);
             return newInstance(subconfig, defaultObject);
         } catch (Exception e) {
-            handleException(node.getRootNode(), key, e, canThrowException);
+            handleException(
+                    node.getRootElementName(), key, e, canThrowException);
             return defaultObject;
         }
     }
     private static void handleException(
-            ConfigurationNode rootNode, String key,
+            String rootNode, String key,
             Exception e, boolean canThrowException) {
         
         // Throw exception
@@ -300,8 +313,7 @@ public final class XMLConfigurationUtil {
             } else {
                 throw new ConfigurationException(
                         "Could not instantiate object from configuration "
-                      + "for \"" + rootNode.getName() 
-                      + " -> " + key + "\".", e);
+                      + "for \"" + rootNode + " -> " + key + "\".", e);
             }
         }
 
@@ -310,7 +322,7 @@ public final class XMLConfigurationUtil {
                 && e.getCause() != null) {
             if (e.getCause() instanceof ClassNotFoundException) {
                 LOG.error("You declared a class that does not exists "
-                        + "for \"" + rootNode.getName() 
+                        + "for \"" + rootNode
                         + " -> " + key + "\". Check for typos in your "
                         + "XML and make sure that "
                         + "class is part of your Java classpath.", e);
@@ -319,18 +331,16 @@ public final class XMLConfigurationUtil {
                             e.getCause()).getSystemId();
                     if (StringUtils.endsWith(systemId, ".xsd")) {
                         LOG.error("XML Schema parsing error for \""
-                                + rootNode.getName() 
+                                + rootNode 
                                 + " -> " + key + "\". Schema: " + systemId, e);
                     } else {
                         LOG.error("XML parsing error for \""
-                                + rootNode.getName() 
-                                + " -> " + key + "\".", e);
+                                + rootNode + " -> " + key + "\".", e);
                     }
             }
         } else{ 
             LOG.debug("Could not instantiate object from configuration "
-                    + "for \"" + rootNode.getName() 
-                    + " -> " + key + "\".", e);
+                    + "for \"" + rootNode + " -> " + key + "\".", e);
         }
     }
     
@@ -342,21 +352,22 @@ public final class XMLConfigurationUtil {
      * @throws ConfigurationException cannot read configuration
      * @throws IOException cannot read configuration
      */
-    public static Reader newReader(HierarchicalConfiguration node)
+    public static Reader newReader(
+            HierarchicalConfiguration<ImmutableNode> node)
             throws IOException {
         XMLConfiguration xml;
         if (node instanceof XMLConfiguration) {
             xml = (XMLConfiguration) node;
         } else {
             xml = new XMLConfiguration(node);
-            disableDelimiterParsing(xml);
         }
         StringWriter w = new StringWriter();
         try {
-            xml.save(w);
-        } catch (org.apache.commons.configuration.ConfigurationException e) {
+            xml.write(w);
+        } catch (
+                org.apache.commons.configuration2.ex.ConfigurationException e) {
             throw new ConfigurationException(
-                    "Could transform XML node to reader.", e);
+                    "Could transform XML node to writer.", e);
         }
         StringReader r = new StringReader(w.toString());
         w.close();
@@ -374,7 +385,8 @@ public final class XMLConfigurationUtil {
      * @param node the XML to validate
      * @return the number of errors/warnings
      */
-    public static int validate(Class<?> clazz, HierarchicalConfiguration node) {
+    public static int validate(Class<?> clazz, 
+            HierarchicalConfiguration<ImmutableNode> node) {
         return doValidate(clazz, node);
     }
     /**
@@ -389,6 +401,7 @@ public final class XMLConfigurationUtil {
     public static int validate(Class<?> clazz, Reader xml) {
         return doValidate(clazz, xml);
     }
+    @SuppressWarnings("unchecked")
     private static int doValidate(Class<?> clazz, Object source) {
         // Only validate if IXMLConfigurable
         if (clazz == null || !IXMLConfigurable.class.isAssignableFrom(clazz)) {
@@ -413,7 +426,8 @@ public final class XMLConfigurationUtil {
             if (source instanceof Reader) {
                 reader = (Reader) source;
             } else {
-                reader = newReader((HierarchicalConfiguration) source);
+                reader = newReader(
+                        (HierarchicalConfiguration<ImmutableNode>) source);
             }
             Schema schema = schemaFactory.newSchema(
                     new StreamSource(xsdStream, getXSDResourcePath(clazz)));
@@ -451,8 +465,8 @@ public final class XMLConfigurationUtil {
      * @param obj object to have loaded
      * @param node XML node to have loaded
      */
-    public static void loadFromXML(
-            IXMLConfigurable obj, HierarchicalConfiguration node) {
+    public static void loadFromXML(IXMLConfigurable obj, 
+            HierarchicalConfiguration<ImmutableNode> node) {
         if (obj == null || node == null) {
             return;
         }
@@ -477,16 +491,16 @@ public final class XMLConfigurationUtil {
      * @return a XML configuration that contains this sub tree
      */
     public static XMLConfiguration getXmlAt(
-            HierarchicalConfiguration node, String key) {
+            HierarchicalConfiguration<ImmutableNode> node, String key) {
         if (node == null) {
             return null;
         }
-        HierarchicalConfiguration sub = safeConfigurationAt(node, key);
+        HierarchicalConfiguration<ImmutableNode> sub = 
+                safeConfigurationAt(node, key);
         if (sub == null) {
             return null;
         }
         XMLConfiguration xml = new XMLConfiguration(sub);
-        disableDelimiterParsing(xml);
         return xml;
     }
     
@@ -494,17 +508,17 @@ public final class XMLConfigurationUtil {
      * Convenience class for testing that a {@link IXMLConfigurable} instance
      * can be written, and read into an new instance that is equal as per
      * {@link #equals(Object)}.
-     * @param xmlConfiurable the instance to test if it writes/read properly
+     * @param xmlConfigurable the instance to test if it writes/read properly
      * @throws IOException Cannot read/write
      * @throws ConfigurationException Cannot load configuration
      */
-    public static void assertWriteRead(IXMLConfigurable xmlConfiurable)
+    public static void assertWriteRead(IXMLConfigurable xmlConfigurable)
             throws IOException {
         
         // Write
         StringWriter out = new StringWriter();
         try {
-            xmlConfiurable.saveToXML(out);
+            xmlConfigurable.saveToXML(out);
         } finally {
             out.close();
         }
@@ -518,8 +532,8 @@ public final class XMLConfigurationUtil {
                 new StringReader(out.toString()));
         IXMLConfigurable readConfigurable = newInstance(xml);
 
-        if (!xmlConfiurable.equals(readConfigurable)) {
-            LOG.error("BEFORE: " + xmlConfiurable);
+        if (!xmlConfigurable.equals(readConfigurable)) {
+            LOG.error("BEFORE: " + xmlConfigurable);
             LOG.error(" AFTER: " + readConfigurable);
             throw new ConfigurationException(
                     "Saved and loaded XML are not the same.");
@@ -538,7 +552,7 @@ public final class XMLConfigurationUtil {
      * @since 1.14.0
      */
     public static BigDecimal getNullableBigDecimal(
-            HierarchicalConfiguration xml, 
+            HierarchicalConfiguration<ImmutableNode> xml, 
             String key, BigDecimal defaultValue) {
         return keyExists(xml, key) 
                 ? xml.getBigDecimal(key, null) : defaultValue;
@@ -555,7 +569,7 @@ public final class XMLConfigurationUtil {
      * @since 1.14.0
      */
     public static BigInteger getNullableBigInteger(
-            HierarchicalConfiguration xml, 
+            HierarchicalConfiguration<ImmutableNode> xml, 
             String key, BigInteger defaultValue) {
         return keyExists(xml, key)
                 ? xml.getBigInteger(key, null) : defaultValue;
@@ -572,7 +586,8 @@ public final class XMLConfigurationUtil {
      * @since 1.14.0
      */
     public static Boolean getNullableBoolean(
-            HierarchicalConfiguration xml, String key, Boolean defaultValue) {
+            HierarchicalConfiguration<ImmutableNode> xml,
+            String key, Boolean defaultValue) {
         return keyExists(xml, key) ? xml.getBoolean(key, null) : defaultValue;
     }
     /**
@@ -587,7 +602,8 @@ public final class XMLConfigurationUtil {
      * @since 1.14.0
      */
     public static Byte getNullableByte(
-            HierarchicalConfiguration xml, String key, Byte defaultValue) {
+            HierarchicalConfiguration<ImmutableNode> xml,
+            String key, Byte defaultValue) {
         return keyExists(xml, key) ? xml.getByte(key, null) : defaultValue;
     }
     /**
@@ -601,7 +617,8 @@ public final class XMLConfigurationUtil {
      * @since 1.14.0
      */
     public static Class<?> getNullableClass(
-            HierarchicalConfiguration xml, String key, Class<?> defaultValue) {
+            HierarchicalConfiguration<ImmutableNode> xml,
+            String key, Class<?> defaultValue) {
         if (!keyExists(xml, key)) {
             return defaultValue;
         }
@@ -628,7 +645,8 @@ public final class XMLConfigurationUtil {
      * @since 1.14.0
      */
     public static Double getNullableDouble(
-            HierarchicalConfiguration xml, String key, Double defaultValue) {
+            HierarchicalConfiguration<ImmutableNode> xml,
+            String key, Double defaultValue) {
         return keyExists(xml, key) ? xml.getDouble(key, null) : defaultValue;
     }
     /**
@@ -642,8 +660,11 @@ public final class XMLConfigurationUtil {
      * @return the actual value, the default value, or <code>null</code>
      * @since 1.14.0
      */
+    //TODO remove these in favor of versions returning Float? e.g.:
+    //         xml.getFloat("key", (Float) null);
     public static Float getNullableFloat(
-            HierarchicalConfiguration xml, String key, Float defaultValue) {
+            HierarchicalConfiguration<ImmutableNode> xml, 
+            String key, Float defaultValue) {
         return keyExists(xml, key) ? xml.getFloat(key, null) : defaultValue;
     }
     /**
@@ -658,7 +679,8 @@ public final class XMLConfigurationUtil {
      * @since 1.14.0
      */
     public static Integer getNullableInteger(
-            HierarchicalConfiguration xml, String key, Integer defaultValue) {
+            HierarchicalConfiguration<ImmutableNode> xml, 
+            String key, Integer defaultValue) {
         return keyExists(xml, key) ? xml.getInteger(key, null) : defaultValue;
     }
     /**
@@ -673,7 +695,8 @@ public final class XMLConfigurationUtil {
      * @since 1.14.0
      */
     public static Long getNullableLong(
-            HierarchicalConfiguration xml, String key, Long defaultValue) {
+            HierarchicalConfiguration<ImmutableNode> xml,
+            String key, Long defaultValue) {
         return keyExists(xml, key) ? xml.getLong(key, null) : defaultValue;
     }
     /**
@@ -688,7 +711,8 @@ public final class XMLConfigurationUtil {
      * @since 1.14.0
      */
     public static Short getNullableShort(
-            HierarchicalConfiguration xml, String key, Short defaultValue) {
+            HierarchicalConfiguration<ImmutableNode> xml,
+            String key, Short defaultValue) {
         return keyExists(xml, key) ? xml.getShort(key, null) : defaultValue;
     }
     /**
@@ -703,7 +727,8 @@ public final class XMLConfigurationUtil {
      * @since 1.14.0
      */
     public static String getNullableString(
-            HierarchicalConfiguration xml, String key, String defaultValue) {
+            HierarchicalConfiguration<ImmutableNode> xml,
+            String key, String defaultValue) {
         if (keyExists(xml, key)) {
             return StringUtils.trimToNull(xml.getString(key, null));
         }
@@ -720,7 +745,8 @@ public final class XMLConfigurationUtil {
      * @since 1.14.0
      */
     public static Dimension getNullableDimension(
-            HierarchicalConfiguration xml, String key, Dimension defaultValue) {
+            HierarchicalConfiguration<ImmutableNode> xml, 
+            String key, Dimension defaultValue) {
         if (keyExists(xml, key)) {
             String value = xml.getString(key, null);
             if (StringUtils.isBlank(value)) {
@@ -738,7 +764,8 @@ public final class XMLConfigurationUtil {
         return defaultValue;
     }
     
-    public static boolean keyExists(HierarchicalConfiguration xml, String key) {
+    public static boolean keyExists(
+            HierarchicalConfiguration<ImmutableNode> xml, String key) {
         Iterator<String> it = xml.getKeys();
         while (it.hasNext()) {
             String itKey = it.next();
@@ -766,7 +793,8 @@ public final class XMLConfigurationUtil {
      * @since 1.13.0
      */
     public static long getDuration(
-            HierarchicalConfiguration xml, String key, long defaultValue) {
+            HierarchicalConfiguration<ImmutableNode> xml, 
+            String key, long defaultValue) {
         String duration = xml.getString(key, null);
         if (StringUtils.isBlank(duration)) {
             return defaultValue;
@@ -787,7 +815,7 @@ public final class XMLConfigurationUtil {
      * @since 1.13.0
      */
     public static String[] getCSVStringArray(
-            HierarchicalConfiguration xml, String key) {
+            HierarchicalConfiguration<ImmutableNode> xml, String key) {
         return getCSVStringArray(xml, key, null);
     }
     /**
@@ -805,7 +833,8 @@ public final class XMLConfigurationUtil {
      * @since 1.13.0
      */
     public static String[] getCSVStringArray(
-            HierarchicalConfiguration xml, String key, String[] defaultValues) {
+            HierarchicalConfiguration<ImmutableNode> xml, 
+            String key, String[] defaultValues) {
         String[] values = splitCSV(xml.getString(key, null));
         if (ArrayUtils.isEmpty(values)) {
             return defaultValues;
@@ -824,7 +853,7 @@ public final class XMLConfigurationUtil {
      * @since 1.13.0
      */
     public static int[] getCSVIntArray(
-            HierarchicalConfiguration xml, String key) {
+            HierarchicalConfiguration<ImmutableNode> xml, String key) {
         return getCSVIntArray(xml, key, null);
     }
     /**
@@ -840,7 +869,8 @@ public final class XMLConfigurationUtil {
      * @since 1.13.0
      */
     public static int[] getCSVIntArray(
-            HierarchicalConfiguration xml, String key, int[] defaultValues) {
+            HierarchicalConfiguration<ImmutableNode> xml,
+            String key, int[] defaultValues) {
         String[] strings = splitCSV(xml.getString(key, null));
         if (ArrayUtils.isEmpty(strings)) {
             return defaultValues;
@@ -877,9 +907,10 @@ public final class XMLConfigurationUtil {
     // This method is because the regular configurationAt MUST have 1
     // entry or will fail, and the containsKey(String) method is not reliable
     // since it expects a value (body text) or returns false.
-    private static HierarchicalConfiguration safeConfigurationAt(
-            HierarchicalConfiguration node, String key) {
-        List<HierarchicalConfiguration> subs = node.configurationsAt(key);
+    private static HierarchicalConfiguration<ImmutableNode> safeConfigurationAt(
+            HierarchicalConfiguration<ImmutableNode> node, String key) {
+        List<HierarchicalConfiguration<ImmutableNode>> subs = 
+                node.configurationsAt(key);
         if (subs != null && !subs.isEmpty()) {
             return subs.get(0);
         }
@@ -906,7 +937,7 @@ public final class XMLConfigurationUtil {
         @Override
         public void fatalError(SAXParseException e) throws SAXException {
             errorCount++;
-            LOG.fatal(msg(e));
+            LOG.error(msg(e));
         }
         private String msg(SAXParseException e) {
             return "(XML Validation) " 

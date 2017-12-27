@@ -22,8 +22,8 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 /**
  * Reads text form an input stream, splitting it wisely whenever the text
@@ -39,7 +39,7 @@ import org.apache.log4j.Logger;
  */
 public class TextReader extends Reader {
 
-    private static final Logger LOG = LogManager.getLogger(TextReader.class);
+    private static final Logger LOG = LoggerFactory.getLogger(TextReader.class);
     
     public static final int DEFAULT_MAX_READ_SIZE = 10000000;
     

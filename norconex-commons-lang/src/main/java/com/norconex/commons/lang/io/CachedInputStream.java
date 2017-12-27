@@ -28,8 +28,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 import com.norconex.commons.lang.file.FileUtil;
 import com.norconex.commons.lang.io.CachedStreamFactory.MemoryTracker;
@@ -77,7 +77,7 @@ import com.norconex.commons.lang.io.CachedStreamFactory.MemoryTracker;
 public class CachedInputStream extends InputStream implements ICachedStream {
 
     private static final Logger LOG = 
-            LogManager.getLogger(CachedInputStream.class);
+            LoggerFactory.getLogger(CachedInputStream.class);
     
     private static final int UNDEFINED_LENGTH = -42;
 

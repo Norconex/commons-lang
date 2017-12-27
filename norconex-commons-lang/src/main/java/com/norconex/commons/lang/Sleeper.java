@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import java.util.concurrent.TimeUnit;
  * 
  * @author Pascal Essiembre
  */
-@SuppressWarnings("nls")
 public final class Sleeper {
 
     /** Number of milliseconds representing 1 second. */
@@ -45,6 +44,7 @@ public final class Sleeper {
         try {
             Thread.sleep(milliseconds);
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             throw new SleeperException("Cannot sleep.", e);
         }
     }
@@ -59,6 +59,7 @@ public final class Sleeper {
         try {
             Thread.sleep(milis, nanoRemains);
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             throw new SleeperException("Cannot sleep.", e);
         }
     }

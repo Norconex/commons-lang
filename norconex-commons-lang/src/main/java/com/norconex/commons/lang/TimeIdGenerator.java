@@ -1,4 +1,4 @@
-/* Copyright 2015 Norconex Inc.
+/* Copyright 2015-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@ import java.math.BigDecimal;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * <p>
@@ -122,7 +122,7 @@ import org.apache.log4j.Logger;
 public final class TimeIdGenerator {
 
     private static final Logger LOG = 
-            LogManager.getLogger(TimeIdGenerator.class);
+            LoggerFactory.getLogger(TimeIdGenerator.class);
     
     private static final AtomicInteger DUP_SEQUENCE = new AtomicInteger();
     private static final long MILLIS_ROLLOVER_VALUE = 
@@ -145,14 +145,14 @@ public final class TimeIdGenerator {
      * once will return {@code -1}. 
      * @return the last id generated
      */
-    public synchronized static long last() {
+    public static synchronized long last() {
         return previousGeneratedId;
     }
     /**
      * Generates a new number unique within this JVM.  
      * @return a long value
      */
-    public synchronized static long next() {
+    public static synchronized long next() {
         long time = System.currentTimeMillis() % MILLIS_ROLLOVER_VALUE;
         long id = time * TIME_MULTIPLIER;
         id += getDupSequence(time == previousTime);

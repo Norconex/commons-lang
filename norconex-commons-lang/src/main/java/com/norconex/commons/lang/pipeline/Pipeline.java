@@ -1,4 +1,4 @@
-/* Copyright 2014-2016 Norconex Inc.
+/* Copyright 2014-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 /**
  * Represent a very simple pipeline container for a list of executable tasks 
@@ -36,7 +36,7 @@ import org.apache.log4j.Logger;
 //TODO make it implement List?
 public class Pipeline<T> implements IPipelineStage<T> {
 
-    private static final Logger LOG = LogManager.getLogger(Pipeline.class);
+    private static final Logger LOG = LoggerFactory.getLogger(Pipeline.class);
     
     private final List<IPipelineStage<T>> stages = new ArrayList<>();
     

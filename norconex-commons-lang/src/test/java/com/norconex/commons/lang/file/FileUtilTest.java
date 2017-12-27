@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,6 @@ package com.norconex.commons.lang.file;
 
 import org.junit.Assert;
 import org.junit.Test;
-
-import com.norconex.commons.lang.file.FileUtil;
 
 public class FileUtilTest {
 

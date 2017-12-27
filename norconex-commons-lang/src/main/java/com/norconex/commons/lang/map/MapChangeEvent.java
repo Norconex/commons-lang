@@ -1,4 +1,4 @@
-/* Copyright 2010-2016 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,9 @@ package com.norconex.commons.lang.map;
 
 import java.io.Serializable;
 import java.util.Map;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
  * A event representing a change of values in an {@link Map}.

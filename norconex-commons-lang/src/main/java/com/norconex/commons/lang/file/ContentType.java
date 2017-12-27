@@ -1,4 +1,4 @@
-/* Copyright 2010-2016 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,8 @@ import java.util.ResourceBundle;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 /**
  * Represents a file Content-Type (also called MIME-Type or Media Type).
@@ -59,7 +59,7 @@ public final class ContentType implements Serializable {
 
     private static final long serialVersionUID = 6416074869536512030L;
 
-    private static final Logger LOG = LogManager.getLogger(ContentType.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ContentType.class);
     
     private static final Map<String, ContentType> REGISTRY = new HashMap<>();
 

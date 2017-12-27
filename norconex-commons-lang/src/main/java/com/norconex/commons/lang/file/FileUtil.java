@@ -32,8 +32,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.commons.lang3.time.DateFormatUtils;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 import com.norconex.commons.lang.Sleeper;
 import com.norconex.commons.lang.StringUtil;
@@ -46,7 +46,7 @@ import com.norconex.commons.lang.io.ReverseFileInputStream;
  */
 public final class FileUtil {
 
-    private static final Logger LOG = LogManager.getLogger(FileUtil.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FileUtil.class);
     
     private static final int MAX_FILE_OPERATION_ATTEMPTS = 10;
     

@@ -97,7 +97,6 @@ public class FilteredInputStream extends InputStream {
         return ch;
     }
 
-    @SuppressWarnings("nls")
     private boolean nextLine() throws IOException {
         if (lineStream != null) {
             lineStream.close();

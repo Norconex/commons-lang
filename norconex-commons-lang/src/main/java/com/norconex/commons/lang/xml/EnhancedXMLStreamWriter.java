@@ -24,8 +24,8 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 /**
  * <p>
@@ -41,7 +41,7 @@ import org.apache.log4j.Logger;
 public class EnhancedXMLStreamWriter implements XMLStreamWriter {
 
     private static final Logger LOG = 
-            LogManager.getLogger(EnhancedXMLStreamWriter.class);
+            LoggerFactory.getLogger(EnhancedXMLStreamWriter.class);
     
     private final XMLStreamWriter writer;
     //TODO consider constructor with new EnhancedXMLStreamWriterConfig instead

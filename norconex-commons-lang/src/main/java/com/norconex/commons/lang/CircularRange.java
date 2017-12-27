@@ -22,12 +22,13 @@ import org.apache.commons.lang3.Range;
 /**
  * <p>
  * A range from a possible set of values that rolls over when defined circular
- * start and end is reached. Because the range is circular, there is no
+ * start or end is reached. Because the range is circular, there is no
  * concept of before and after and maximum range can be smaller than minimum. 
- * Otherwise similar to Apache Commons Lang {@link Range} class.
+ * This class is otherwise similar to Apache Commons Lang {@link Range} class.
  * </p> 
  * @param <T> the range type
  * @author Pascal Essiembre
+ * @since 1.14.0
  */
 public final class CircularRange<T> implements Serializable {
 

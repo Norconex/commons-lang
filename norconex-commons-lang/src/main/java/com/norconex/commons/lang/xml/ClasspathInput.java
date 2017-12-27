@@ -19,8 +19,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.w3c.dom.ls.LSInput;
 
 /**
@@ -31,7 +31,7 @@ import org.w3c.dom.ls.LSInput;
 public class ClasspathInput implements LSInput {
 
     private static final Logger LOG = 
-            LogManager.getLogger(ClasspathInput.class);
+            LoggerFactory.getLogger(ClasspathInput.class);
     
     private String publicId;
     private String systemId;

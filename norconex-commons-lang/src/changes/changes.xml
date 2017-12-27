@@ -7,6 +7,29 @@
   </properties>
   <body>
 
+    <release version="2.0.0-SNAPSHOT" date="2018-??-??" description="Major release">
+      <action dev="essiembre" type="update">
+        Now requires Java 8 or higher.
+      </action>
+      <action dev="essiembre" type="update">
+        Now uses SLF4J instead of Log4J for logging.
+      </action>
+      <action dev="essiembre" type="update">
+        EqualsUtil now uses CharSequence instead of String where String was
+        used as argument.
+      </action>
+      <action dev="essiembre" type="update">
+        Dependency updates: Apache Commons Lang 3.7, 
+        Apache Commons Configuration 2.2, Apache Commons BeanUtils 1.9.3.
+      </action>
+      <action dev="essiembre" type="remove">
+         Removed all deprecated classes and methods from version 1.x.
+      </action>      
+      <action dev="essiembre" type="remove">
+         Removed CountingConsoleAppender, MemoryUtil#getFreeMemory(boolean).
+      </action>
+    </release>
+
     <release version="1.14.0" date="2017-11-26" description="Feature release">
       <action dev="essiembre" type="add">
         Can now store and load Properties file as JSON.

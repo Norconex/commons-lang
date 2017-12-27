@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
-import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.configuration2.XMLConfiguration;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -121,7 +121,6 @@ import org.apache.velocity.runtime.RuntimeConstants;
  * </p>
  * @author Pascal Essiembre
  */
-@SuppressWarnings("nls")
 public final class ConfigurationLoader {
     
     private static final String EXTENSION_PROPERTIES = ".properties";
@@ -139,8 +138,6 @@ public final class ConfigurationLoader {
         velocityEngine.setProperty(RuntimeConstants.RESOURCE_LOADER, "file");
         velocityEngine.setProperty(
                 RuntimeConstants.FILE_RESOURCE_LOADER_PATH, "");
-        velocityEngine.setProperty(RuntimeConstants.RUNTIME_LOG_LOGSYSTEM_CLASS,
-        	      "org.apache.velocity.runtime.log.Log4JLogChute");
         velocityEngine.setProperty("runtime.log", "");
     }
 

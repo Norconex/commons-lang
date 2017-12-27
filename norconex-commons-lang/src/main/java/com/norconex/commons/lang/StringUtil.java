@@ -22,8 +22,8 @@ import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * String-related utility methods not found in popular libraries.
@@ -32,7 +32,7 @@ import org.apache.log4j.Logger;
  */
 public final class StringUtil {
 
-    private static final Logger LOG = LogManager.getLogger(StringUtil.class);
+    private static final Logger LOG = LoggerFactory.getLogger(StringUtil.class);
     
     public static final int TRUNCATE_HASH_LENGTH = 10;
     
@@ -82,9 +82,9 @@ public final class StringUtil {
         int roomLength = TRUNCATE_HASH_LENGTH + separatorLength;
         
         if (maxLength < roomLength) {
-            LOG.warn("\"maxLength\" is smaller than hash length ("
-                    + TRUNCATE_HASH_LENGTH + ") + separator length ("
-                    + separatorLength + "). No truncation will occur.");
+            LOG.warn("\"maxLength\" is smaller than hash length ({}) "
+                    + "+ separator length ({}). No truncation will occur.",
+                    TRUNCATE_HASH_LENGTH, separatorLength);
         }
         int cutIndex = maxLength - roomLength;
         String truncated = StringUtils.left(text, cutIndex);
@@ -169,7 +169,7 @@ public final class StringUtil {
             byte[] bytes, Charset charset, int maxByteLength)
                     throws CharacterCodingException {
         if (bytes == null) {
-            return null;
+            return bytes;
         }
         return truncateBytesWithHash(bytes, charset, maxByteLength, null);
     }    
@@ -193,7 +193,7 @@ public final class StringUtil {
             byte[] bytes, Charset charset, int maxByteLength, String separator)
                     throws CharacterCodingException {
         if (bytes == null) {
-            return null;
+            return bytes;
         }
         if (bytes.length <= maxByteLength) {
             return bytes;
@@ -211,9 +211,9 @@ public final class StringUtil {
         int roomLength = hashLength + separatorLength;
         
         if (maxByteLength < roomLength) {
-            LOG.warn("\"maxLength\" is smaller in bytes than hash length ("
-                    + hashLength + ") + separator length ("
-                    + separatorLength + "). No truncation will occur.");
+            LOG.warn("\"maxLength\" is smaller in bytes than hash length ({}) "
+                    + "+ separator length ({}). No truncation will occur.",
+                    hashLength, separatorLength);
         }
 
         int cutIndex = maxByteLength - roomLength;

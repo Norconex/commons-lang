@@ -1,4 +1,4 @@
-/* Copyright 2010-2016 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,11 +21,10 @@ import java.util.Map.Entry;
 import java.util.Properties;
 
 import org.apache.commons.io.FilenameUtils;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.apache.velocity.app.event.IncludeEventHandler;
 import org.apache.velocity.context.Context;
-import org.apache.velocity.util.ContextAware;
 
 /**
  * Velocity include event handler that check for includes both relative
@@ -33,19 +32,14 @@ import org.apache.velocity.util.ContextAware;
  * otherwise.   Used by {@link ConfigurationLoader}.
  * @author Pascal Essiembre
  */
-public class RelativeIncludeEventHandler 
-        implements IncludeEventHandler, ContextAware {
+public class RelativeIncludeEventHandler implements IncludeEventHandler {
 
-    private static final Logger LOG = LogManager.getLogger(
+    private static final Logger LOG = LoggerFactory.getLogger(
             RelativeIncludeEventHandler.class);
-    private Context context;
-    
+
     @Override
-    @SuppressWarnings("nls")
-    public String includeEvent(
-            String includeResourcePath,
-            String currentResourcePath, 
-            String directiveName) {
+    public String includeEvent(Context context, String includeResourcePath,
+            String currentResourcePath, String directiveName) {
         // Get main template file
         String inclFile;
         if (includeResourcePath.startsWith("/")
@@ -77,10 +71,4 @@ public class RelativeIncludeEventHandler
         }
         return inclFile;
     }
-
-    @Override
-    public void setContext(Context context) {
-        this.context = context;
-    }
-
 }

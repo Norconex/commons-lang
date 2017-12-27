@@ -25,8 +25,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 import com.norconex.commons.lang.file.FileUtil;
 
@@ -40,7 +40,7 @@ import com.norconex.commons.lang.file.FileUtil;
  */
 public class JarCopier {
 
-    private static final Logger LOG = LogManager.getLogger(JarCopier.class);
+    private static final Logger LOG = LoggerFactory.getLogger(JarCopier.class);
     
     /**
      * Copy source Jar only if greater or same version as target

@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,23 +33,6 @@ public final class MemoryUtil {
      * @return JVM free memory in bytes
      */
     public static long getFreeMemory() {
-        return getFreeMemory(false);
-    }
-    
-    /**
-     * Gets the JVM free memory.
-     * The free memory is calculated by taking the JVM current free memory, plus
-     * the difference between the maximum possible JVM memory and the
-     * total JVM memory taken so far.
-     * @param attemptGC <code>true</code> to attempts to perform garbage 
-     *     collection to free up as much unused memory as possible 
-     *     before assessing how much memory remains in the JVM instance.
-     * @return JVM free memory in bytes
-     */
-    public static long getFreeMemory(boolean attemptGC) {
-        if (attemptGC) {
-            System.gc();
-        }
         Runtime runtime = Runtime.getRuntime();
         return runtime.freeMemory() 
                 + (runtime.maxMemory() - runtime.totalMemory());

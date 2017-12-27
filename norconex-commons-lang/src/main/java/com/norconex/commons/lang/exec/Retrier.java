@@ -15,8 +15,8 @@
 package com.norconex.commons.lang.exec;
 
 import org.apache.commons.collections4.queue.CircularFifoQueue;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 import com.norconex.commons.lang.Sleeper;
 
@@ -31,7 +31,7 @@ import com.norconex.commons.lang.Sleeper;
  */
 public class Retrier {
 
-    private static final Logger LOG = LogManager.getLogger(Retrier.class);
+    private static final Logger LOG = LoggerFactory.getLogger(Retrier.class);
 
     /** Default maximum number of retries. */
     public static final int DEFAULT_MAX_RETRIES = 10;

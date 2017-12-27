@@ -31,8 +31,8 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.collections4.bag.TreeBag;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 import com.norconex.commons.lang.EqualsUtil;
 
@@ -138,7 +138,7 @@ public class URLNormalizer implements Serializable {
 
     private static final long serialVersionUID = 7236478212865008971L;
 
-    private static final Logger LOG = LogManager.getLogger(URLNormalizer.class);
+    private static final Logger LOG = LoggerFactory.getLogger(URLNormalizer.class);
     
     private static final Pattern PATTERN_PERCENT_ENCODED_CHAR = 
             Pattern.compile("(%[0-9a-f]{2})", Pattern.CASE_INSENSITIVE);

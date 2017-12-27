@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -31,15 +26,6 @@ import org.junit.Test;
  */
 public class CachedOutputStreamTest {
 
-    @Before
-    public void before() {
-        Logger logger = LogManager.getRootLogger();
-        logger.addAppender(new ConsoleAppender(
-                new PatternLayout("%-5p [%C{1}] %m%n"), 
-                ConsoleAppender.SYSTEM_OUT));
-        logger.setAdditivity(false);
-    }
-    
     @Test
     public void testContentMatchMemCache() throws IOException {
         String content = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";

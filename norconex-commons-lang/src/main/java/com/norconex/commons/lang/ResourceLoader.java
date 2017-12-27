@@ -21,7 +21,8 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility class for loading resource from class loader, relative to 
@@ -32,8 +33,16 @@ import org.apache.log4j.Logger;
  */
 public final class ResourceLoader {
 
-    private static final Logger LOG = Logger.getLogger(ResourceLoader.class);
+    private static final Logger LOG = 
+            LoggerFactory.getLogger(ResourceLoader.class);
 
+    /** @since 2.0.0 */
+    public static final String TXT = ".txt";
+    /** @since 2.0.0 */
+    public static final String HTML = ".html";
+    /** @since 2.0.0 */
+    public static final String XML = ".xml";
+    
     private ResourceLoader() {
         super();
     }
@@ -50,7 +59,7 @@ public final class ResourceLoader {
      */
     public static InputStream getStream(Class<?> clazz, String suffix) {
         if (clazz == null) {
-            LOG.debug("Class is null for suffix: " + suffix);
+            LOG.debug("Class is null for suffix: {}", suffix);
             return null;
         }
         return clazz.getResourceAsStream(clazz.getSimpleName() + suffix);
@@ -69,8 +78,8 @@ public final class ResourceLoader {
     public static Reader getReader(Class<?> clazz, String suffix) {
         InputStream is = getStream(clazz, suffix);
         if (is == null) {
-            LOG.debug("InputStream is null for class/suffix: "
-                    + clazz + "/" + suffix);
+            LOG.debug("InputStream is null for class/suffix: {}/{}",
+                    clazz, suffix);
             return null;
         }
         return new InputStreamReader(is, StandardCharsets.UTF_8);
@@ -88,15 +97,15 @@ public final class ResourceLoader {
     public static String getString(Class<?> clazz, String suffix) {
         Reader r = getReader(clazz, suffix);
         if (r == null) {
-            LOG.debug("Reader is null for class/suffix: "
-                    + clazz + "/" + suffix);
+            LOG.debug("Reader is null for class/suffix: {}/{}",
+                    clazz, suffix);
             return null;
         }
         try {
             return IOUtils.toString(r);
         } catch (IOException e) {
-            LOG.error("Could not load class/suffix as string: "
-                    + clazz + "/" + suffix, e);
+            LOG.error("Could not load class/suffix as string: {}/{}",
+                    clazz, suffix, e);
             return null;
         }
     }
@@ -107,7 +116,7 @@ public final class ResourceLoader {
      * @return XML stream or <code>null</code>
      */
     public static InputStream getXmlStream(Class<?> clazz) {
-        return getStream(clazz, ".xml");
+        return getStream(clazz, XML);
     }
     /**
      * Gets a UTF-8 reader from resource matching class name with ".xml" suffix.
@@ -115,7 +124,7 @@ public final class ResourceLoader {
      * @return XML reader or <code>null</code>
      */
     public static Reader getXmlReader(Class<?> clazz) {
-        return getReader(clazz, ".xml");
+        return getReader(clazz, XML);
     }
     /**
      * Gets a UTF-8 string from resource matching class name with ".xml" suffix.
@@ -123,7 +132,7 @@ public final class ResourceLoader {
      * @return XML string or <code>null</code>
      */
     public static String getXmlString(Class<?> clazz) {
-        return getString(clazz, ".xml");
+        return getString(clazz, XML);
     }
     /**
      * Gets a stream from a resource matching class name with ".txt" suffix.
@@ -131,7 +140,7 @@ public final class ResourceLoader {
      * @return text stream or <code>null</code>
      */
     public static InputStream getTxtStream(Class<?> clazz) {
-        return getStream(clazz, ".txt");
+        return getStream(clazz, TXT);
     }
     /**
      * Gets a UTF-8 reader from resource matching class name with ".txt" suffix.
@@ -139,7 +148,7 @@ public final class ResourceLoader {
      * @return text reader or <code>null</code>
      */
     public static Reader getTxtReader(Class<?> clazz) {
-        return getReader(clazz, ".txt");
+        return getReader(clazz, TXT);
     }
     /**
      * Gets a UTF-8 string from resource matching class name with ".txt" suffix.
@@ -147,7 +156,7 @@ public final class ResourceLoader {
      * @return text string or <code>null</code>
      */
     public static String getTxtString(Class<?> clazz) {
-        return getString(clazz, ".txt");
+        return getString(clazz, TXT);
     }
     /**
      * Gets a stream from a resource matching class name with ".html" suffix.
@@ -155,7 +164,7 @@ public final class ResourceLoader {
      * @return HTML stream or <code>null</code>
      */
     public static InputStream getHtmlStream(Class<?> clazz) {
-        return getStream(clazz, ".html");
+        return getStream(clazz, HTML);
     }
     /**
      * Gets a UTF-8 reader from resource matching class name with ".html" 
@@ -164,7 +173,7 @@ public final class ResourceLoader {
      * @return HTML reader or <code>null</code>
      */
     public static Reader getHtmlReader(Class<?> clazz) {
-        return getReader(clazz, ".html");
+        return getReader(clazz, HTML);
     }
     /**
      * Gets a UTF-8 string from resource matching class name with ".html" 
@@ -173,6 +182,6 @@ public final class ResourceLoader {
      * @return HTML string or <code>null</code>
      */
     public static String getHtmlString(Class<?> clazz) {
-        return getString(clazz, ".html");
+        return getString(clazz, HTML);
     }
 }

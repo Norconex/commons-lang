@@ -23,10 +23,8 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.apache.log4j.Level;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
-import org.apache.log4j.Priority;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.map.Properties;
 
@@ -80,14 +78,14 @@ import com.norconex.commons.lang.map.Properties;
 public final class DurationParser {
 
     private static final Logger LOG = 
-            LogManager.getLogger(DurationParser.class);
+            LoggerFactory.getLogger(DurationParser.class);
 
     private static final Properties UNIT_LABELS = new Properties();
     static {
         try {
             UNIT_LABELS.load(DurationParser.class.getResourceAsStream(
                     ClassUtils.getShortCanonicalName(DurationParser.class)
-                    + ".properties"), null, ",");
+                    + ".properties"), ",");
         } catch (IOException e) {
             throw new DurationParserException(
                     "Coult not initialize DurationParser.", e);
@@ -147,7 +145,7 @@ public final class DurationParser {
             String duration, long defaultValue, boolean throwException) {
         
         if (StringUtils.isBlank(duration)) {
-            parseError(throwException, Level.DEBUG, "Blank duration value.");
+            LOG.debug("Blank duration value. Using default: {}.", defaultValue);
             return defaultValue;
         }
         
@@ -158,9 +156,8 @@ public final class DurationParser {
 
         // There must be at least one digit
         if (!duration.matches(".*\\d+.*")) {
-            parseError(throwException, Level.ERROR, 
-                    "Could not parse duration: \"" 
-                  + duration+ "\". No number.");
+            parseError(throwException, 
+                    "Could not parse duration: \"{}\". No number.", duration);
             return defaultValue;
         }
         
@@ -175,25 +172,25 @@ public final class DurationParser {
 
             String num = numGroup.replace(',', '.');
             if (!NumberUtils.isParsable(num)) {
-                parseError(throwException, Level.ERROR, 
-                        "Could not parse duration: \"" + duration
-                      + "\". Invalid duration value: " + numGroup);
+                parseError(throwException, 
+                        "Could not parse duration: \"{}\". "
+                      + "Invalid duration value: \"{}\".", duration, numGroup);
                 return defaultValue;
             }
             float val = NumberUtils.toFloat(num, -1);
             if (val == -1) {
-                parseError(throwException, Level.ERROR, 
-                        "Could not parse duration: \"" + duration
-                      + "\". Invalid duration value: " + numGroup);
+                parseError(throwException, 
+                        "Could not parse duration: \"{}\". "
+                      + "Invalid duration value: \"{}\".", duration, numGroup);
                 return defaultValue;
             }
 
             String unitStr = unitGroup.replaceFirst("^(\\w+)(.*)", "$1");
             Unit unit = getUnit(unitStr);
             if (unit == null) {
-                parseError(throwException, Level.ERROR, 
-                        "Could not parse duration: \"" + duration
-                      + "\". Unknown unit: \"" + unitStr + "\".");
+                parseError(throwException, 
+                        "Could not parse duration: \"{}\". "
+                      + "Unknown unit: \"{}\".", duration, unitStr);
                 return defaultValue;
             }
             ms += unit.ms * val;
@@ -201,18 +198,18 @@ public final class DurationParser {
         if (matchesPattern) {
             return ms;
         }
-        parseError(throwException, Level.ERROR, 
-                "Could not parse duration: \"" + duration
-              + "\". Invalid duration value.");
+        parseError(throwException, 
+                "Could not parse duration: \"{}\". Invalid duration value.", 
+                duration);
         return defaultValue;
     }
     
     private static void parseError(
-            boolean throwException, Priority logLevel, String message) {
+            boolean throwException, String message, Object... args) {
         if (throwException) {
             throw new DurationParserException(message);
         }
-        LOG.log(logLevel, message);
+        LOG.error(message, args);
     }
     
     private static synchronized Unit getUnit(String label) {

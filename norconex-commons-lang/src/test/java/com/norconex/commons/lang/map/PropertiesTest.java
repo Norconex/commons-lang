@@ -158,14 +158,14 @@ public class PropertiesTest {
         // String + Default
         w = new StringWriter();
         p = new Properties();
-        original.store(w, "Comment");
+        original.store(w);
         p.load(new StringReader(w.toString()));
         assertTrue(EqualsUtil.equalsMap(original, p));
 
         // XML
         w = new StringWriter();
         p = new Properties();
-        original.storeToXML(w, "Comment");
+        original.storeToXML(w);
         p.loadFromXML(new StringReader(w.toString()));
         assertTrue(EqualsUtil.equalsMap(original, p));
 
@@ -191,14 +191,14 @@ public class PropertiesTest {
         // String + Default
         w = new StringWriter();
         p = new Properties();
-        original.store(w, "Comment", "^^^");
+        original.store(w, "^^^");
         p.load(new StringReader(w.toString()), "^^^");
         assertTrue(EqualsUtil.equalsMap(original, p));
 
         // XML
         w = new StringWriter();
         p = new Properties();
-        original.storeToXML(w, "Comment", "^^^");
+        original.storeToXML(w, "^^^");
         p.loadFromXML(new StringReader(w.toString()), "^^^");
         assertTrue(EqualsUtil.equalsMap(original, p));
 

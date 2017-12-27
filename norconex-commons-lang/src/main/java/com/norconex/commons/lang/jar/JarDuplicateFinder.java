@@ -26,8 +26,8 @@ import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.collections4.multimap.AbstractSetValuedMap;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 /**
  * Utility class for finding multiple instances of the same Jar that exists
@@ -41,7 +41,7 @@ import org.apache.log4j.Logger;
 public final class JarDuplicateFinder {
 
     private static final Logger LOG = 
-            LogManager.getLogger(JarDuplicateFinder.class);
+            LoggerFactory.getLogger(JarDuplicateFinder.class);
     
     private JarDuplicateFinder() {
         super();

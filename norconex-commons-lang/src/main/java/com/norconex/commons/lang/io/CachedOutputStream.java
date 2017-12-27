@@ -24,8 +24,8 @@ import java.nio.channels.FileChannel;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 import com.norconex.commons.lang.file.FileUtil;
 import com.norconex.commons.lang.io.CachedStreamFactory.MemoryTracker;
@@ -57,7 +57,7 @@ public class CachedOutputStream extends OutputStream
         implements ICachedStream {
 
     private static final Logger LOG = 
-            LogManager.getLogger(CachedOutputStream.class);
+            LoggerFactory.getLogger(CachedOutputStream.class);
     
     private final CachedStreamFactory factory;
     private final MemoryTracker tracker;

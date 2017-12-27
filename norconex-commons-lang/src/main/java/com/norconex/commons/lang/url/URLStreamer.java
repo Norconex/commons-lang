@@ -27,17 +27,16 @@ import javax.xml.bind.DatatypeConverter;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.AutoCloseInputStream;
 import org.apache.commons.lang3.time.StopWatch;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 /**
  * Provides a quick and easy way to stream a URL.
  * @author Pascal Essiembre
  */
-@SuppressWarnings("nls")
 public final class URLStreamer {
 
-    private static final Logger LOG = LogManager.getLogger(URLStreamer.class);
+    private static final Logger LOG = LoggerFactory.getLogger(URLStreamer.class);
     
     private URLStreamer() {
         super();
