@@ -29,11 +29,11 @@ import javax.xml.bind.DatatypeConverter;
 import com.norconex.commons.lang.encrypt.EncryptionKey.Source;
 
 /**
- * <p>Simplified encryption and decryption methods using the 
- * "PBEWithMD5AndDES" algorithm with a supplied encryption key (which you 
+ * <p>Simplified encryption and decryption methods using the
+ * "PBEWithMD5AndDES" algorithm with a supplied encryption key (which you
  * can also think of as a passphrase, or password).
  * The "salt" and iteration count used by this class are hard-coded. To have
- * more control and ensure a more secure approach, you should rely on another 
+ * more control and ensure a more secure approach, you should rely on another
  * implementation or create your own.
  * </p>
  * <p>
@@ -44,7 +44,7 @@ import com.norconex.commons.lang.encrypt.EncryptionKey.Source;
  * java -cp norconex-commons-lang-[version].jar com.norconex.commons.lang.encrypt.EncryptionUtil
  * </pre>
  * <p>
- * For example, to use a encryption key store in a file to encrypt some text, 
+ * For example, to use a encryption key store in a file to encrypt some text,
  * add the following arguments to the above command:
  * </p>
  * <pre>
@@ -54,12 +54,12 @@ import com.norconex.commons.lang.encrypt.EncryptionKey.Source;
  * As of 1.13.0, you can also use the <code>encrypt.[sh|bat]</code> and
  * <code>decrypt.[sh|bat]</code> files distributed with this library.
  * </p>
- * 
+ *
  * @author Pascal Essiembre
  * @since 1.9.0
  */
 public class EncryptionUtil {
-    
+
     private EncryptionUtil() {
         super();
     }
@@ -72,7 +72,7 @@ public class EncryptionUtil {
         String typeArg = args[1];
         String keyArg = args[2];
         String textArg = args[3];
-        
+
         Source type = null;
         if ("-k".equalsIgnoreCase(typeArg)) {
             type = Source.KEY;
@@ -86,7 +86,7 @@ public class EncryptionUtil {
             System.err.println("Unsupported type of key: " + type);
             printUsage();
         }
-        
+
         EncryptionKey key = new EncryptionKey(keyArg, type);
         if ("encrypt".equalsIgnoreCase(cmdArg)) {
             System.out.println(encrypt(textArg, key));
@@ -116,33 +116,11 @@ public class EncryptionUtil {
         out.println("  text     text to encrypt or decrypt");
         System.exit(-1);
     }
-    
-    /**
-     * <p>Encrypts the given text with the encryption key supplied. If the
-     * encryption key is <code>null</code> or resolves to blank key,
-     * the text to encrypt will be returned unmodified.</p>
-     * @param textToEncrypt text to be encrypted
-     * @param encryptionKey encryption key which must resolve to the same 
-     *        value to encrypt and decrypt the supplied text.
-     * @return encrypted text or <code>null</code> if 
-     * <code>textToEncrypt</code> is <code>null</code>.
-     */
-    public static String encrypt(
-            String textToEncrypt, EncryptionKey encryptionKey) {
-        if (textToEncrypt == null) {
-            return null;
-        }
-        if (encryptionKey == null) {
-            return textToEncrypt;
-        }
-        String key = encryptionKey.resolve();
-        if (key == null) {
-            return textToEncrypt;
-        }
-        
+
+    private static String encryptLegacy(String textToEncrypt, String key) {
         // 8-byte Salt
         byte[] salt = {
-            (byte)0xE3, (byte)0x03, (byte)0x9B, (byte)0xA9, 
+            (byte)0xE3, (byte)0x03, (byte)0x9B, (byte)0xA9,
             (byte)0xC8, (byte)0x16, (byte)0x35, (byte)0x56
         };
         // Iteration count
@@ -158,46 +136,29 @@ public class EncryptionUtil {
             ecipher = Cipher.getInstance(secretKey.getAlgorithm());
 
             // Prepare the parameter to the ciphers
-            AlgorithmParameterSpec paramSpec = 
+            AlgorithmParameterSpec paramSpec =
                     new PBEParameterSpec(salt, iterationCount);
 
             // Create the ciphers
             ecipher.init(Cipher.ENCRYPT_MODE, secretKey, paramSpec);
-            
+
             byte[] utf8 = textToEncrypt.trim().getBytes(StandardCharsets.UTF_8);
             byte[] enc = ecipher.doFinal(utf8);
-            
+
             return DatatypeConverter.printBase64Binary(enc);
         } catch (Exception e) {
             throw new EncryptionException("Encryption failed.", e);
         }
     }
- 
-    /**
-     * <p>Decrypts the given encrypted text with the encryption key supplied.
-     * </p>
-     * @param encryptedText text to be decrypted
-     * @param encryptionKey encryption key which must resolve to the same 
-     *        value to encrypt and decrypt the supplied text.
-     * @return decrypted text or <code>null</code> if one of 
-     * <code>encryptedText</code> or <code>key</code> is <code>null</code>.
-     */   
-    public static String decrypt(
-            String encryptedText, EncryptionKey encryptionKey) {
-        if (encryptedText == null) {
-            return null;
-        }
-        if (encryptionKey == null) {
-            return encryptedText;
-        }
-        String key = encryptionKey.resolve();
-        if (key == null) {
-            return encryptedText;
-        }        
-        
+
+    private static String encryptStrong(String textToEncrypt, String key) {
+        return encryptLegacy(textToEncrypt, key);
+    }
+
+    private static String decryptLegacy(String encryptedText, String key) {
         // 8-byte Salt
         byte[] salt = {
-            (byte)0xE3, (byte)0x03, (byte)0x9B, (byte)0xA9, 
+            (byte)0xE3, (byte)0x03, (byte)0x9B, (byte)0xA9,
             (byte)0xC8, (byte)0x16, (byte)0x35, (byte)0x56
         };
         // Iteration count
@@ -213,18 +174,91 @@ public class EncryptionUtil {
             dcipher = Cipher.getInstance(secretKey.getAlgorithm());
 
             // Prepare the parameter to the ciphers
-            AlgorithmParameterSpec paramSpec = 
+            AlgorithmParameterSpec paramSpec =
                     new PBEParameterSpec(salt, iterationCount);
 
             // Create the ciphers
             dcipher.init(Cipher.DECRYPT_MODE, secretKey, paramSpec);
-            
-            byte[] dec = 
+
+            byte[] dec =
                     DatatypeConverter.parseBase64Binary(encryptedText.trim());
             byte[] utf8 = dcipher.doFinal(dec);
             return new String(utf8, StandardCharsets.UTF_8);
         } catch (Exception e) {
             throw new EncryptionException("Decryption failed.", e);
+        }
+    }
+
+    private static String decryptStrong(String encryptedText, String key) {
+        return decryptLegacy(encryptedText, key);
+    }
+
+    private static String decryptAutomatic(String encryptedText, String key) {
+        return decryptLegacy(encryptedText, key);
+
+    }
+
+    /**
+     * <p>Encrypts the given text with the encryption key supplied. If the
+     * encryption key is <code>null</code> or resolves to blank key,
+     * the text to encrypt will be returned unmodified.</p>
+     * @param textToEncrypt text to be encrypted
+     * @param encryptionKey encryption key which must resolve to the same
+     *        value to encrypt and decrypt the supplied text.
+     * @return encrypted text or <code>null</code> if
+     * <code>textToEncrypt</code> is <code>null</code>.
+     */
+    public static String encrypt(String textToEncrypt, EncryptionKey encryptionKey) {
+        if (textToEncrypt == null) {
+            return null;
+        }
+        if (encryptionKey == null) {
+            return textToEncrypt;
+        }
+        String key = encryptionKey.resolve();
+        if (key == null) {
+            return textToEncrypt;
+        }
+        switch (encryptionKey.getAlgorithm()) {
+            case LEGACY:
+                return encryptLegacy(textToEncrypt, key);
+            case STRONG:
+            case AUTO:
+            default:
+                return encryptStrong(textToEncrypt, key);
+        }
+    }
+
+    /**
+     * <p>Decrypts the given encrypted text with the encryption key supplied.
+     * </p>
+     * @param encryptedText text to be decrypted
+     * @param encryptionKey encryption key which must resolve to the same
+     *        value to encrypt and decrypt the supplied text.
+     * @return decrypted text or <code>null</code> if one of
+     * <code>encryptedText</code> or <code>key</code> is <code>null</code>.
+     */
+    public static String decrypt(
+            String encryptedText, EncryptionKey encryptionKey) {
+        if (encryptedText == null) {
+            return null;
+        }
+        if (encryptionKey == null) {
+            return encryptedText;
+        }
+        String key = encryptionKey.resolve();
+        if (key == null) {
+            return encryptedText;
+        }
+
+        switch (encryptionKey.getAlgorithm()) {
+            case LEGACY:
+                return decryptLegacy(encryptedText, key);
+            case STRONG:
+                return decryptStrong(encryptedText, key);
+            case AUTO:
+            default:
+                return decryptAutomatic(encryptedText, key);
         }
     }
 }

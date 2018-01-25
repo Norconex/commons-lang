@@ -22,9 +22,10 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 /**
- * Pointer to the an encryption key, or the encryption key itself. An 
- * encryption key can be seen as equivalent to a secret key, 
+ * Pointer to the an encryption key, or the encryption key itself. An
+ * encryption key can be seen as equivalent to a secret key,
  * passphrase or password.
+ *
  * @author Pascal Essiembre
  * @since 1.9.0
  * @see EncryptionUtil
@@ -33,38 +34,62 @@ public class EncryptionKey implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    public enum Source { 
+    public enum Source {
         /** Value is the actual key. */
-        KEY, 
+        KEY,
         /** Value is the path to a file containing the key. */
-        FILE, 
+        FILE,
         /** Value is the name of an environment variable containing the key. */
-        ENVIRONMENT, 
+        ENVIRONMENT,
         /** Value is the name of a JVM system property containing the key. */
         PROPERTY
     }
 
+    public enum Algorithm {
+        /** Algorithm is determined automatically, using a magic number in the stronger key */
+        AUTO,
+        /** Algorithm is the newer, stronger algorithm */
+        STRONG,
+        /** Algorithm is the legacy algorithm */
+        LEGACY
+    }
+
     private final String value;
     private final Source source;
-    
+    private final Algorithm algorithm;
+
     /**
-     * Creates a new reference to an encryption key. The reference can either 
+     * Creates a new reference to an encryption key. The reference can either
      * be the key itself, or a pointer to a file or environment variable
      * containing the key (as defined by the supplied value type).
+     *
+     * @param value the encryption key
+     * @param source the type of value
+     * @param algorithm the algorithm to use
+     */
+    public EncryptionKey(String value, Source source, Algorithm algorithm) {
+        super();
+        this.value = value;
+        this.source = source;
+        this.algorithm = algorithm;
+    }
+    /**
+     * Creates a new reference to an encryption key. The reference can either
+     * be the key itself, or a pointer to a file or environment variable
+     * containing the key (as defined by the supplied value type).
+     *
      * @param value the encryption key
      * @param source the type of value
      */
     public EncryptionKey(String value, Source source) {
-        super();
-        this.value = value;
-        this.source = source;
+        this(value, source, Algorithm.AUTO);
     }
     /**
-     * Creates a new encryption key where the value is the actual key.
+     * Creates a new encryption key where the value is the actual key, and the algorithm is determined automatically.
      * @param value the encryption key
      */
     public EncryptionKey(String value) {
-        this(value, Source.KEY);
+        this(value, Source.KEY, Algorithm.AUTO);
     }
     public String getValue() {
         return value;
@@ -72,13 +97,15 @@ public class EncryptionKey implements Serializable {
     public Source getSource() {
         return source;
     }
-
+    public Algorithm getAlgorithm() {
+        return algorithm;
+    }
     /**
-     * Locate the key according to its value type and return it.  This 
-     * method will always resolve the value each type it is invoked and 
+     * Locate the key according to its value type and return it.  This
+     * method will always resolve the value each type it is invoked and
      * never caches the key, unless the key value specified at construction
      * time is the actual key.
-     * @return encryption key or <code>null</code> if the key does not exist 
+     * @return encryption key or <code>null</code> if the key does not exist
      * for the specified type
      */
     public String resolve() {
@@ -101,12 +128,12 @@ public class EncryptionKey implements Serializable {
             return null;
         }
     }
-    
+
     private String fromEnv() {
         //TODO allow a flag to optionally throw an exception when null?
         return System.getenv(value);
     }
-    
+
     private String fromProperty() {
         //TODO allow a flag to optionally throw an exception when null?
         return System.getProperty(value);
@@ -128,7 +155,7 @@ public class EncryptionKey implements Serializable {
                     "Could not read key file.", e);
         }
     }
-    
+
     //Do not use Apache Commons Lang below to avoid any dependency
     //when used on command-line with EncryptionUtil.
     @Override
@@ -136,6 +163,7 @@ public class EncryptionKey implements Serializable {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((source == null) ? 0 : source.hashCode());
+        result = prime * result + ((algorithm == null) ? 0 : algorithm.hashCode());
         result = prime * result + ((value == null) ? 0 : value.hashCode());
         return result;
     }
@@ -154,6 +182,9 @@ public class EncryptionKey implements Serializable {
         if (source != other.source) {
             return false;
         }
+        if (algorithm != other.algorithm) {
+            return false;
+        }
         if (value == null) {
             if (other.value != null) {
                 return false;
@@ -165,6 +196,6 @@ public class EncryptionKey implements Serializable {
     }
     @Override
     public String toString() {
-        return "EncryptionKey [value=" + value + ", source=" + source + "]";
-    }    
+        return "EncryptionKey [value=" + value + ", source=" + source + ", algorithm=" + algorithm + "]";
+    }
 }

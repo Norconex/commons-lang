@@ -30,12 +30,17 @@ public class PasswordKeyUtil {
     public static EncryptionKey loadKeyFrom(XMLConfiguration xml, EncryptionKey defaultKey) {
         String xmlKey = xml.getString("passwordKey", null);
         String xmlSource = xml.getString("passwordKeySource", null);
+        String xmlAlgorithm = xml.getString("passwordKeyAlgorithm", null);
         if (StringUtils.isNotBlank(xmlKey)) {
             EncryptionKey.Source source = null;
+            EncryptionKey.Algorithm algorithm = null;
             if (StringUtils.isNotBlank(xmlSource)) {
                 source = EncryptionKey.Source.valueOf(xmlSource.toUpperCase());
             }
-            return new EncryptionKey(xmlKey, source);
+            if (StringUtils.isNotBlank(xmlAlgorithm)) {
+                algorithm = EncryptionKey.Algorithm.valueOf(xmlAlgorithm.toUpperCase());
+            }
+            return new EncryptionKey(xmlKey, source, algorithm);
         }
         return defaultKey;
     }
@@ -56,6 +61,10 @@ public class PasswordKeyUtil {
             writer.writeElementString("passwordKey", passwordKey.getValue());
             if (passwordKey.getSource() != null) {
                 writer.writeElementString("passwordKeySource",
+                        passwordKey.getSource().name().toLowerCase());
+            }
+            if (passwordKey.getSource() != null) {
+                writer.writeElementString("passwordKeyAlgorithm",
                         passwordKey.getSource().name().toLowerCase());
             }
         }
