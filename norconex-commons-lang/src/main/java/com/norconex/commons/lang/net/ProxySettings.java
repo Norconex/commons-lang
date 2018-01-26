@@ -1,4 +1,4 @@
-/* Copyright 2017 Norconex Inc.
+/* Copyright 2017-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -214,6 +214,7 @@ public class ProxySettings implements IXMLConfigurable, Serializable {
     /**
      * Saves assuming we are already in a parent tag.
      * @param out XML stream writer
+     * @throws XMLStreamException problem saving stream to XML
      */
     public void saveProxyToXML(XMLStreamWriter out) throws XMLStreamException {
         EnhancedXMLStreamWriter writer;
