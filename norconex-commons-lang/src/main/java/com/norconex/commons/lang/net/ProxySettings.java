@@ -214,7 +214,7 @@ public class ProxySettings implements IXMLConfigurable, Serializable {
     /**
      * Saves assuming we are already in a parent tag.
      * @param out XML stream writer
-     * @throws XMLStreamException 
+     * @throws XMLStreamException problem saving stream to XML
      */
     public void saveProxyToXML(XMLStreamWriter out) throws XMLStreamException {
         EnhancedXMLStreamWriter writer;

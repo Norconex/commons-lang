@@ -114,7 +114,7 @@ public final class StringUtil {
      * @param maxByteLength maximum byte length the truncated text must have
      * @return truncated character byte array, or original text if no 
      *         truncation required
-     * @throws CharacterCodingException 
+     * @throws CharacterCodingException character coding problem
      */
     public static String truncateBytesWithHash(String text, 
             Charset charset, int maxByteLength) 
@@ -142,7 +142,7 @@ public final class StringUtil {
      * @param separator string separating truncated text from hash code
      * @return truncated character byte array, or original text if no 
      *         truncation required
-     * @throws CharacterCodingException 
+     * @throws CharacterCodingException character coding problem
      */
     public static String truncateBytesWithHash(String text, 
             Charset charset, int maxByteLength, String separator) 
@@ -169,7 +169,7 @@ public final class StringUtil {
      * @param maxByteLength maximum byte length the truncated text must have
      * @return truncated character byte array, or original text if no 
      *         truncation required
-     * @throws CharacterCodingException 
+     * @throws CharacterCodingException character coding problem 
      */
     public static byte[] truncateBytesWithHash(
             byte[] bytes, Charset charset, int maxByteLength)
@@ -195,7 +195,7 @@ public final class StringUtil {
      * @param separator string separating truncated text from hash code
      * @return truncated character byte array, or original text if no 
      *         truncation required
-     * @throws CharacterCodingException 
+     * @throws CharacterCodingException character coding problem
      */
     public static byte[] truncateBytesWithHash(
             byte[] bytes, Charset charset, int maxByteLength, String separator)
