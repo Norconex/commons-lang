@@ -138,6 +138,8 @@ public final class ConfigurationLoader {
         velocityEngine.setProperty(RuntimeConstants.RESOURCE_LOADER, "file");
         velocityEngine.setProperty(
                 RuntimeConstants.FILE_RESOURCE_LOADER_PATH, "");
+        velocityEngine.setProperty(RuntimeConstants.INPUT_ENCODING, "UTF-8");
+        velocityEngine.setProperty(RuntimeConstants.ENCODING_DEFAULT, "UTF-8");
         velocityEngine.setProperty("runtime.log", "");
     }
 
