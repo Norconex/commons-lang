@@ -19,7 +19,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.norconex.commons</groupId>
   <artifactId>norconex-commons-lang</artifactId>
-  <version>1.14.0</version>
+  <version>1.14.1-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>Norconex Commons Lang</name>
 

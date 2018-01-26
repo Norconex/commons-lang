@@ -1,4 +1,4 @@
-/* Copyright 2017 Norconex Inc.
+/* Copyright 2017-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -110,9 +110,11 @@ public final class StringUtil {
      * For this reason, the <code>maxByteLength</code> argument must be 
      * be large enough for any truncation to occur.
      * @param text text to truncate
+     * @param charset character encoding
      * @param maxByteLength maximum byte length the truncated text must have
      * @return truncated character byte array, or original text if no 
      *         truncation required
+     * @throws CharacterCodingException 
      */
     public static String truncateBytesWithHash(String text, 
             Charset charset, int maxByteLength) 
@@ -135,10 +137,12 @@ public final class StringUtil {
      * For this reason, the <code>maxByteLength</code> argument must be 
      * be large enough for any truncation to occur.
      * @param text text to truncate
+     * @param charset character encoding
      * @param maxByteLength maximum byte length the truncated text must have
      * @param separator string separating truncated text from hash code
      * @return truncated character byte array, or original text if no 
      *         truncation required
+     * @throws CharacterCodingException 
      */
     public static String truncateBytesWithHash(String text, 
             Charset charset, int maxByteLength, String separator) 
@@ -161,9 +165,11 @@ public final class StringUtil {
      * For this reason, the <code>maxByteLength</code> argument must be 
      * be large enough for any truncation to occur.
      * @param bytes byte array of text to truncate
+     * @param charset character encoding
      * @param maxByteLength maximum byte length the truncated text must have
      * @return truncated character byte array, or original text if no 
      *         truncation required
+     * @throws CharacterCodingException 
      */
     public static byte[] truncateBytesWithHash(
             byte[] bytes, Charset charset, int maxByteLength)
@@ -184,10 +190,12 @@ public final class StringUtil {
      * For this reason, the <code>maxByteLength</code> argument must be 
      * be large enough for any truncation to occur.
      * @param bytes byte array of text to truncate
+     * @param charset character encoding
      * @param maxByteLength maximum byte length the truncated text must have
      * @param separator string separating truncated text from hash code
      * @return truncated character byte array, or original text if no 
      *         truncation required
+     * @throws CharacterCodingException 
      */
     public static byte[] truncateBytesWithHash(
             byte[] bytes, Charset charset, int maxByteLength, String separator)

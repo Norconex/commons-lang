@@ -7,6 +7,12 @@
   </properties>
   <body>
 
+    <release version="1.14.1-SNAPSHOT" date="2018-??-??" description="Maintenance release">
+      <action dev="essiembre" type="update">
+        ConfigurationLoader now sets the Velocity character encoding to UTF-8. 
+      </action>
+    </release>
+
     <release version="1.14.0" date="2017-11-26" description="Feature release">
       <action dev="essiembre" type="add">
         Can now store and load Properties file as JSON.

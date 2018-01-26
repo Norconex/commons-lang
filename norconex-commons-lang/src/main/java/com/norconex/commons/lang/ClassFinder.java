@@ -1,4 +1,4 @@
-/* Copyright 2010-2016 Norconex Inc.
+/* Copyright 2010-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,6 @@ import org.apache.log4j.Logger;
  * 
  * @author Pascal Essiembre
  */
-@SuppressWarnings("nls")
 public final class ClassFinder {
 
     private static final Logger LOG = Logger.getLogger(ClassFinder.class);
@@ -127,8 +126,7 @@ public final class ClassFinder {
             return new ArrayList<>();
         }
         if (file.isDirectory()) {
-            return findSubTypesFromDirectory(
-                    new File(file.getAbsolutePath() + "/"), superClass);
+            return findSubTypesFromDirectory(file, superClass);
         }
         if (file.getName().endsWith(".jar")) {
             return findSubTypesFromJar(file, superClass);
