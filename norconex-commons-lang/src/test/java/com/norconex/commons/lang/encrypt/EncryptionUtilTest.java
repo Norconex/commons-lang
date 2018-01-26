@@ -27,4 +27,22 @@ public class EncryptionUtilTest {
         String decryptedText = EncryptionUtil.decrypt(encryptedText, key);
         Assert.assertEquals(text, decryptedText);
     }
+
+    @Test
+    public void testEncryptTwice() {
+        EncryptionKey key = new EncryptionKey("this is my secret key.");
+        String text = "please encrypt this text.";
+        String encryptedText1 = EncryptionUtil.encrypt(text, key);
+        String encryptedText2 = EncryptionUtil.encrypt(text, key);
+        Assert.assertNotEquals(encryptedText1, encryptedText2);
+    }
+
+    @Test
+    public void testDecryptLegacy() {
+        EncryptionKey key = new EncryptionKey("This is an encryption key");
+        String expectedClearText = "Please encrypt this text";
+        String encryptedText = "aeEFKa0uXMUHT4UyeFtuHjm37NQw3vEaxY03EkkD2qM=";
+        String actualClearText = EncryptionUtil.decrypt(encryptedText, key);
+        Assert.assertEquals(expectedClearText, actualClearText);
+    }
 }
