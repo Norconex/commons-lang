@@ -36,6 +36,7 @@ import org.apache.http.client.CredentialsProvider;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
+import com.norconex.commons.lang.config.PasswordKeyUtil;
 import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.commons.lang.encrypt.EncryptionKey;
 import com.norconex.commons.lang.encrypt.EncryptionUtil;
@@ -43,7 +44,7 @@ import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 
 /**
  * Convenience class for implementation requiring proxy settings.
- * 
+ *
  * @author Pascal Essiembre
  * @since 1.14.0
  */
@@ -58,7 +59,7 @@ public class ProxySettings implements IXMLConfigurable, Serializable {
     private String proxyPassword;
     private EncryptionKey proxyPasswordKey;
     private String proxyRealm;
-    
+
     public ProxySettings() {
         super();
     }
@@ -120,7 +121,7 @@ public class ProxySettings implements IXMLConfigurable, Serializable {
     public boolean isSet() {
         return StringUtils.isNotBlank(proxyHost);
     }
-    
+
     public void copyFrom(ProxySettings another) {
         proxyHost = another.proxyHost;
         proxyPort = another.proxyPort;
@@ -130,7 +131,7 @@ public class ProxySettings implements IXMLConfigurable, Serializable {
         proxyPasswordKey = another.proxyPasswordKey;
         proxyRealm = another.proxyRealm;
     }
-    
+
     /**
      * Creates an Apache {@link HttpHost}.
      * @return HttpHost or <code>null</code> if proxy is not set.
@@ -149,7 +150,7 @@ public class ProxySettings implements IXMLConfigurable, Serializable {
     }
     public Credentials createCredentials() {
         if (isSet() && StringUtils.isNotBlank(proxyUsername)) {
-            String password = 
+            String password =
                     EncryptionUtil.decrypt(proxyPassword, proxyPasswordKey);
             return new UsernamePasswordCredentials(proxyUsername, password);
         }
@@ -170,7 +171,7 @@ public class ProxySettings implements IXMLConfigurable, Serializable {
     protected String getXmlTag() {
         return "proxy";
     }
-    
+
     /**
      * Loads from a {@link #getXmlTag()} tag.
      * @param in XML reader
@@ -189,8 +190,7 @@ public class ProxySettings implements IXMLConfigurable, Serializable {
         proxyScheme = xml.getString("proxyScheme", proxyScheme);
         proxyUsername = xml.getString("proxyUsername", proxyUsername);
         proxyPassword = xml.getString("proxyPassword", proxyPassword);
-        proxyPasswordKey = 
-                loadXMLPasswordKey(xml, "proxyPasswordKey", proxyPasswordKey);
+        proxyPasswordKey = PasswordKeyUtil.loadKeyFrom(xml, proxyPasswordKey);
         proxyRealm = xml.getString("proxyRealm", proxyRealm);
     }
     /**
@@ -227,36 +227,10 @@ public class ProxySettings implements IXMLConfigurable, Serializable {
         writer.writeElementString("proxyScheme", proxyScheme);
         writer.writeElementString("proxyUsername", proxyUsername);
         writer.writeElementString("proxyPassword", proxyPassword);
-        saveXMLPasswordKey(writer, "proxyPasswordKey", proxyPasswordKey);
+        PasswordKeyUtil.saveKeyTo(writer, proxyPasswordKey);
         writer.writeElementString("proxyRealm", proxyRealm);
     }
 
-    private void saveXMLPasswordKey(EnhancedXMLStreamWriter writer, 
-            String field, EncryptionKey key) throws XMLStreamException {
-        if (key == null) {
-            return;
-        }
-        writer.writeElementString(field, key.getValue());
-        if (key.getSource() != null) {
-            writer.writeElementString(
-                    field + "Source", key.getSource().name().toLowerCase());
-        }
-    }
-    
-    private EncryptionKey loadXMLPasswordKey(
-            XMLConfiguration xml, String field, EncryptionKey defaultKey) {
-        String xmlKey = xml.getString(field, null);
-        String xmlSource = xml.getString(field + "Source", null);
-        if (StringUtils.isBlank(xmlKey)) {
-            return defaultKey;
-        }
-        EncryptionKey.Source source = null;
-        if (StringUtils.isNotBlank(xmlSource)) {
-            source = EncryptionKey.Source.valueOf(xmlSource.toUpperCase());
-        }
-        return new EncryptionKey(xmlKey, source);
-    }
-    
     @Override
     public boolean equals(final Object other) {
         if (!(other instanceof ProxySettings)) {
@@ -298,5 +272,5 @@ public class ProxySettings implements IXMLConfigurable, Serializable {
                 .append("proxyPasswordKey", proxyPasswordKey)
                 .append("proxyRealm", proxyRealm)
                 .toString();
-    }    
+    }
 }

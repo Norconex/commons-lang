@@ -14,8 +14,14 @@
  */
 package com.norconex.commons.lang.encrypt;
 
+import java.security.NoSuchAlgorithmException;
+
+import javax.crypto.Cipher;
+
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
+
 
 public class EncryptionUtilTest {
 
@@ -44,5 +50,20 @@ public class EncryptionUtilTest {
         String encryptedText = "aeEFKa0uXMUHT4UyeFtuHjm37NQw3vEaxY03EkkD2qM=";
         String actualClearText = EncryptionUtil.decrypt(encryptedText, key);
         Assert.assertEquals(expectedClearText, actualClearText);
+    }
+
+    @Test
+    public void testAes256bitEncryptionKey() throws NoSuchAlgorithmException {
+
+        // NOTE: this test should be true on Java 8 u162+ or on Java 9, or on any Java where JCE Unlimited Strength has been applied
+        Assume.assumeTrue(Cipher.getMaxAllowedKeyLength("AES") >= 256);
+
+        // Create round-trip encryption key
+        EncryptionKey key = new EncryptionKey("This as an encryption key", 256);
+        String text = "please encrypt this text";
+        String encryptedText = EncryptionUtil.encrypt(text, key);
+        String decryptedText = EncryptionUtil.decrypt(encryptedText, key);
+
+        Assert.assertEquals(text, decryptedText);
     }
 }

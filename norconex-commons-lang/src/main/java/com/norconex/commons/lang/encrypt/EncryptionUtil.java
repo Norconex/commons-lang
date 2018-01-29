@@ -164,7 +164,7 @@ public class EncryptionUtil {
 
         // Iteration count
         int iterationCount = 1000;
-        int keySize = 128;
+        int keySize = encryptionKey.getSize();
         Cipher ecipher;
 
         try {
@@ -225,7 +225,7 @@ public class EncryptionUtil {
 
         // Iteration count
         int iterationCount = 1000;
-        int keySize = 128;
+        int keySize = encryptionKey.getSize();
         Cipher dcipher;
 
         try {

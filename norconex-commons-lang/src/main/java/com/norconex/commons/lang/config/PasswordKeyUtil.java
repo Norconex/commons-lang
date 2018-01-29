@@ -30,12 +30,13 @@ public class PasswordKeyUtil {
     public static EncryptionKey loadKeyFrom(XMLConfiguration xml, EncryptionKey defaultKey) {
         String xmlKey = xml.getString("passwordKey", null);
         String xmlSource = xml.getString("passwordKeySource", null);
+        Integer size = xml.getInteger("passwordKeySize", EncryptionKey.DEFAULT_KEY_SIZE);
         if (StringUtils.isNotBlank(xmlKey)) {
             EncryptionKey.Source source = null;
             if (StringUtils.isNotBlank(xmlSource)) {
                 source = EncryptionKey.Source.valueOf(xmlSource.toUpperCase());
             }
-            return new EncryptionKey(xmlKey, source);
+            return new EncryptionKey(xmlKey, source, size);
         }
         return defaultKey;
     }
@@ -54,11 +55,11 @@ public class PasswordKeyUtil {
     public static void saveKeyTo(EnhancedXMLStreamWriter writer, EncryptionKey passwordKey) throws XMLStreamException {
         if (passwordKey != null) {
             writer.writeElementString("passwordKey", passwordKey.getValue());
+            writer.writeElementInteger("passwordKeySize", passwordKey.getSize());
             if (passwordKey.getSource() != null) {
                 writer.writeElementString("passwordKeySource",
                         passwordKey.getSource().name().toLowerCase());
             }
         }
     }
-
 }
