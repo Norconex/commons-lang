@@ -171,7 +171,8 @@ public class EncryptionUtil {
             // Create the key
             KeySpec keySpec = new PBEKeySpec(
                     key.trim().toCharArray(), salt, iterationCount, keySize);
-            SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+            SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+
             SecretKey secretKeyTemp = factory.generateSecret(keySpec);
             SecretKey secretKey = new SecretKeySpec(secretKeyTemp.getEncoded(), "AES");
 
@@ -237,7 +238,7 @@ public class EncryptionUtil {
             // Create the key
             KeySpec keySpec = new PBEKeySpec(
                     key.trim().toCharArray(), salt, iterationCount, keySize);
-            SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+            SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
             SecretKey secretKeyTemp = factory.generateSecret(keySpec);
             SecretKey secretKey = new SecretKeySpec(secretKeyTemp.getEncoded(), "AES");
 
