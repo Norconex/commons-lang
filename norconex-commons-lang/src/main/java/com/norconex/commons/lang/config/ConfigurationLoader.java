@@ -140,7 +140,6 @@ public final class ConfigurationLoader {
                 RuntimeConstants.FILE_RESOURCE_LOADER_PATH, "");
         velocityEngine.setProperty(RuntimeConstants.INPUT_ENCODING, "UTF-8");
         velocityEngine.setProperty(RuntimeConstants.OUTPUT_ENCODING, "UTF-8");
-        velocityEngine.setProperty(RuntimeConstants.ENCODING_DEFAULT, "UTF-8");
         velocityEngine.setProperty(RuntimeConstants.RUNTIME_LOG_LOGSYSTEM_CLASS,
         	      "org.apache.velocity.runtime.log.Log4JLogChute");
         velocityEngine.setProperty("runtime.log", "");
