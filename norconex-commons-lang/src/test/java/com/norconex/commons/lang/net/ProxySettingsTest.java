@@ -1,4 +1,4 @@
-/* Copyright 2017 Norconex Inc.
+/* Copyright 2017-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ public class ProxySettingsTest {
         ProxySettings ps = new ProxySettings();
         ps.setProxyHost("myhost");
         ps.setProxyPassword("mypassword");
-        ps.setProxyPasswordKey(new EncryptionKey("keyvalue", Source.KEY));
+        ps.setProxyPasswordKey(new EncryptionKey("keyvalue", Source.KEY, 256));
         ps.setProxyPort(99);
         ps.setProxyRealm("realm");
         ps.setProxyScheme("sheme");
