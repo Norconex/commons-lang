@@ -1,4 +1,4 @@
-/* Copyright 2015-2016 Norconex Inc.
+/* Copyright 2015-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,10 +53,10 @@ public class EncryptionKey implements Serializable {
     /**
      * Creates a new reference to an encryption key. The reference can either
      * be the key itself, or a pointer to a file or environment variable
-     * containing the key (as defined by the supplied value type).  The actual value
-     * can be any sort of string, and it is converted to an encryption key of length size
-     * using cryptographic algorithms.   If the size is specified, it must be supported by
-     * your version of Java.
+     * containing the key (as defined by the supplied value type).  The actual 
+     * value can be any sort of string, and it is converted to an encryption 
+     * key of length size using cryptographic algorithms. If the size is 
+     * specified, it must be supported by your version of Java.
      *
      * @param value the encryption key
      * @param size the size in bits of the encryption key
@@ -79,8 +79,8 @@ public class EncryptionKey implements Serializable {
         this(value, source, DEFAULT_KEY_SIZE);
     }
     /**
-     * Creates a new encryption key where the value is the actual key, and the number
-     * of key bits to generate is the size.
+     * Creates a new encryption key where the value is the actual key, and the
+     * number of key bits to generate is the size.
      * @param value the encrption key
      * @param size the encryption key size in bits
      */
@@ -100,6 +100,12 @@ public class EncryptionKey implements Serializable {
     public Source getSource() {
         return source;
     }
+    /**
+     * Gets the size in bits of the encryption key. Default is 
+     * {@value #DEFAULT_KEY_SIZE}.
+     * @return size in bits of the encryption key
+     * @since 1.15.0
+     */
     public int getSize() {
         return  (size != null ? size : DEFAULT_KEY_SIZE);
     }
@@ -204,6 +210,7 @@ public class EncryptionKey implements Serializable {
     }
     @Override
     public String toString() {
-        return "EncryptionKey [value=" + value + ", source=" + source + ", size=" + size + "]";
+        return "EncryptionKey [value=" + value
+                + ", source=" + source + ", size=" + size + "]";
     }
 }

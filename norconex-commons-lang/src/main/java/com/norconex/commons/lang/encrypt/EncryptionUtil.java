@@ -1,4 +1,4 @@
-/* Copyright 2015-2017 Norconex Inc.
+/* Copyright 2015-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,24 +14,16 @@
  */
 package com.norconex.commons.lang.encrypt;
 
+import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.security.AlgorithmParameters;
 import java.security.GeneralSecurityException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.security.spec.AlgorithmParameterSpec;
-import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.util.Arrays;
 
-import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.IvParameterSpec;
@@ -41,15 +33,17 @@ import javax.crypto.spec.SecretKeySpec;
 import javax.xml.bind.DatatypeConverter;
 
 import com.norconex.commons.lang.encrypt.EncryptionKey.Source;
-import com.norconex.commons.lang.io.ByteArrayOutputStream;
 
 /**
  * <p>Simplified encryption and decryption methods using the
- * "PBEWithMD5AndDES" algorithm with a supplied encryption key (which you
- * can also think of as a passphrase, or password).
- * The "salt" and iteration count used by this class are hard-coded. To have
- * more control and ensure a more secure approach, you should rely on another
- * implementation or create your own.
+ * <a href="https://en.wikipedia.org/wiki/Advanced_Encryption_Standard">
+ * Advanced Encryption Standard (AES)</a> (since 1.15.0) with a supplied 
+ * encryption key (which you can also think of as a passphrase, or password).
+ * </p>
+ * <p>
+ * The "salt" and iteration count used by this class are hard-coded. To use
+ * a different encryption or have more control over its creation, 
+ * you should rely on another implementation or create your own.
  * </p>
  * <p>
  * To use on the command prompt, use the following command to print usage
@@ -141,16 +135,9 @@ public class EncryptionUtil {
      *        value to encrypt and decrypt the supplied text.
      * @return encrypted text or <code>null</code> if
      * <code>textToEncrypt</code> is <code>null</code>.
-     * @throws NoSuchAlgorithmException
-     * @throws UnsupportedEncodingException
      */
     public static String encrypt(
             String textToEncrypt, EncryptionKey encryptionKey) {
-        // 8-byte Salt
-        byte[] salt = {
-            (byte)0xE3, (byte)0x03, (byte)0x9B, (byte)0xA9,
-            (byte)0xC8, (byte)0x16, (byte)0x35, (byte)0x56
-        };
         if (textToEncrypt == null) {
             return null;
         }
@@ -162,6 +149,11 @@ public class EncryptionUtil {
             return textToEncrypt;
         }
 
+        // 8-byte Salt
+        byte[] salt = {
+            (byte)0xE3, (byte)0x03, (byte)0x9B, (byte)0xA9,
+            (byte)0xC8, (byte)0x16, (byte)0x35, (byte)0x56
+        };
         // Iteration count
         int iterationCount = 1000;
         int keySize = encryptionKey.getSize();
@@ -171,10 +163,12 @@ public class EncryptionUtil {
             // Create the key
             KeySpec keySpec = new PBEKeySpec(
                     key.trim().toCharArray(), salt, iterationCount, keySize);
-            SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+            SecretKeyFactory factory = 
+                    SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
 
             SecretKey secretKeyTemp = factory.generateSecret(keySpec);
-            SecretKey secretKey = new SecretKeySpec(secretKeyTemp.getEncoded(), "AES");
+            SecretKey secretKey = 
+                    new SecretKeySpec(secretKeyTemp.getEncoded(), "AES");
 
             ecipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
             ecipher.init(Cipher.ENCRYPT_MODE, secretKey);
@@ -185,13 +179,11 @@ public class EncryptionUtil {
             byte[] utf8 = textToEncrypt.trim().getBytes(StandardCharsets.UTF_8);
             byte[] cipherBytes = ecipher.doFinal(utf8);
 
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            bos.write(iv);
-            bos.write(cipherBytes);
-            bos.close();
-            byte[] cryptMessage = bos.toByteArray();
-
-            return DatatypeConverter.printBase64Binary(cryptMessage);
+            try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+                bos.write(iv);
+                bos.write(cipherBytes);
+                return DatatypeConverter.printBase64Binary(bos.toByteArray());
+            }
         } catch (Exception e) {
             throw new EncryptionException("Encryption failed.", e);
         }
@@ -208,11 +200,6 @@ public class EncryptionUtil {
      */
     public static String decrypt(
             String encryptedText, EncryptionKey encryptionKey) {
-        // 8-byte Salt
-        byte[] salt = {
-            (byte)0xE3, (byte)0x03, (byte)0x9B, (byte)0xA9,
-            (byte)0xC8, (byte)0x16, (byte)0x35, (byte)0x56
-        };
         if (encryptedText == null) {
             return null;
         }
@@ -224,23 +211,33 @@ public class EncryptionUtil {
             return encryptedText;
         }
 
+        // 8-byte Salt
+        byte[] salt = {
+            (byte)0xE3, (byte)0x03, (byte)0x9B, (byte)0xA9,
+            (byte)0xC8, (byte)0x16, (byte)0x35, (byte)0x56
+        };
         // Iteration count
         int iterationCount = 1000;
         int keySize = encryptionKey.getSize();
         Cipher dcipher;
 
         try {
-            // Separate the encrypted data into the salt and the encrypted message
-            byte[] cryptMessage = DatatypeConverter.parseBase64Binary(encryptedText.trim());
+            // Separate the encrypted data into the salt and the 
+            // encrypted message
+            byte[] cryptMessage = 
+                    DatatypeConverter.parseBase64Binary(encryptedText.trim());
             byte[] iv = Arrays.copyOf(cryptMessage, 16);
-            byte[] cryptBytes = Arrays.copyOfRange(cryptMessage, 16, cryptMessage.length);
+            byte[] cryptBytes = Arrays.copyOfRange(
+                    cryptMessage, 16, cryptMessage.length);
 
             // Create the key
             KeySpec keySpec = new PBEKeySpec(
                     key.trim().toCharArray(), salt, iterationCount, keySize);
-            SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+            SecretKeyFactory factory = 
+                    SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
             SecretKey secretKeyTemp = factory.generateSecret(keySpec);
-            SecretKey secretKey = new SecretKeySpec(secretKeyTemp.getEncoded(), "AES");
+            SecretKey secretKey = 
+                    new SecretKeySpec(secretKeyTemp.getEncoded(), "AES");
 
             IvParameterSpec ivParamSpec = new IvParameterSpec(iv);
 
@@ -251,6 +248,7 @@ public class EncryptionUtil {
             return new String(utf8, StandardCharsets.UTF_8);
         } catch (Exception original) {
             try {
+                // Support for text encrypted before version 1.15.0.
                 return decryptLegacy(encryptedText, key);
             } catch (GeneralSecurityException subsequent) {
                 throw new EncryptionException("Decryption failed.", original);
@@ -258,7 +256,8 @@ public class EncryptionUtil {
         }
     }
 
-    private static String decryptLegacy(String encryptedText, String key) throws GeneralSecurityException {
+    private static String decryptLegacy(String encryptedText, String key) 
+            throws GeneralSecurityException {
         // 8-byte Salt
         byte[] salt = {
             (byte)0xE3, (byte)0x03, (byte)0x9B, (byte)0xA9,
@@ -282,10 +281,7 @@ public class EncryptionUtil {
         // Create the ciphers
         dcipher.init(Cipher.DECRYPT_MODE, secretKey, paramSpec);
 
-        byte[] dec =
-                DatatypeConverter.parseBase64Binary(encryptedText.trim());
-        byte[] utf8 = dcipher.doFinal(dec);
-        return new String(utf8, StandardCharsets.UTF_8);
+        byte[] dec = DatatypeConverter.parseBase64Binary(encryptedText.trim());
+        return new String(dcipher.doFinal(dec), StandardCharsets.UTF_8);
     }
-
 }

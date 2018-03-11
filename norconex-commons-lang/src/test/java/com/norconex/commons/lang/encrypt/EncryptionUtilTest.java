@@ -1,4 +1,4 @@
-/* Copyright 2015 Norconex Inc.
+/* Copyright 20185 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,7 +55,8 @@ public class EncryptionUtilTest {
     @Test
     public void testAes256bitEncryptionKey() throws NoSuchAlgorithmException {
 
-        // NOTE: this test should be true on Java 8 u162+ or on Java 9, or on any Java where JCE Unlimited Strength has been applied
+        // NOTE: this test should be true on Java 8 u162+ or on Java 9, or on
+        // any Java where JCE Unlimited Strength has been applied
         Assume.assumeTrue(Cipher.getMaxAllowedKeyLength("AES") >= 256);
 
         // Create round-trip encryption key

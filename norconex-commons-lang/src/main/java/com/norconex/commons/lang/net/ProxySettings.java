@@ -1,4 +1,4 @@
-/* Copyright 2017 Norconex Inc.
+/* Copyright 2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,10 +36,10 @@ import org.apache.http.client.CredentialsProvider;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
-import com.norconex.commons.lang.config.PasswordKeyUtil;
 import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.commons.lang.encrypt.EncryptionKey;
 import com.norconex.commons.lang.encrypt.EncryptionUtil;
+import com.norconex.commons.lang.encrypt.EncryptionXMLUtil;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 
 /**
@@ -190,7 +190,8 @@ public class ProxySettings implements IXMLConfigurable, Serializable {
         proxyScheme = xml.getString("proxyScheme", proxyScheme);
         proxyUsername = xml.getString("proxyUsername", proxyUsername);
         proxyPassword = xml.getString("proxyPassword", proxyPassword);
-        proxyPasswordKey = PasswordKeyUtil.loadKeyFrom(xml, proxyPasswordKey);
+        proxyPasswordKey = EncryptionXMLUtil.loadFromXML(
+                xml, "proxyPassword", proxyPasswordKey);
         proxyRealm = xml.getString("proxyRealm", proxyRealm);
     }
     /**
@@ -214,22 +215,27 @@ public class ProxySettings implements IXMLConfigurable, Serializable {
     /**
      * Saves assuming we are already in a parent tag.
      * @param out XML stream writer
-     * @throws XMLStreamException problem saving stream to XML
+     * @throws IOException problem saving stream to XML
      */
-    public void saveProxyToXML(XMLStreamWriter out) throws XMLStreamException {
+    public void saveProxyToXML(XMLStreamWriter out) throws IOException {
         EnhancedXMLStreamWriter writer;
         if (out instanceof EnhancedXMLStreamWriter) {
             writer = (EnhancedXMLStreamWriter) out;
         } else {
             writer = new EnhancedXMLStreamWriter(out);
         }
-        writer.writeElementString("proxyHost", proxyHost);
-        writer.writeElementInteger("proxyPort", proxyPort);
-        writer.writeElementString("proxyScheme", proxyScheme);
-        writer.writeElementString("proxyUsername", proxyUsername);
-        writer.writeElementString("proxyPassword", proxyPassword);
-        PasswordKeyUtil.saveKeyTo(writer, proxyPasswordKey);
-        writer.writeElementString("proxyRealm", proxyRealm);
+        try {
+            writer.writeElementString("proxyHost", proxyHost);
+            writer.writeElementInteger("proxyPort", proxyPort);
+            writer.writeElementString("proxyScheme", proxyScheme);
+            writer.writeElementString("proxyUsername", proxyUsername);
+            writer.writeElementString("proxyPassword", proxyPassword);
+            EncryptionXMLUtil.saveToXML(
+                    writer, "proxyPassword", proxyPasswordKey);
+            writer.writeElementString("proxyRealm", proxyRealm);
+        } catch (XMLStreamException e) {
+            throw new IOException("Cannot save as XML.", e);
+        }
     }
 
     @Override
