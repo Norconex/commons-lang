@@ -1,4 +1,4 @@
-/* Copyright 2010-2017 Norconex Inc.
+/* Copyright 2010-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Iterator;
@@ -42,9 +43,9 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.LoggerFactory;
-import org.slf4j.Logger;
 import org.apache.xerces.xni.NamespaceContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
@@ -70,6 +71,7 @@ import com.norconex.commons.lang.xml.ClasspathResourceResolver;
  * @since 1.13.0
  */
 public final class XMLConfigurationUtil {
+    
     private static final Logger LOG = 
             LoggerFactory.getLogger(XMLConfigurationUtil.class);
 
@@ -220,7 +222,7 @@ public final class XMLConfigurationUtil {
         } else {
             LOG.debug("A configuration entry was found without class "
                    + "reference where one could have been provided; "
-                   + "using default value:" + defaultObject);
+                   + "using default value: {}", defaultObject);
             obj = defaultObject;
         }
         if (obj == null) {
@@ -363,7 +365,8 @@ public final class XMLConfigurationUtil {
         }
         StringWriter w = new StringWriter();
         try {
-            xml.write(w);
+            FileHandler fh = new FileHandler(xml);
+            fh.save(w);
         } catch (
                 org.apache.commons.configuration2.ex.ConfigurationException e) {
             throw new ConfigurationException(
@@ -481,6 +484,41 @@ public final class XMLConfigurationUtil {
     }
     
     /**
+     * Saves an object as XML on the writer.  This effectively check
+     * if the object implement {@link IXMLConfigurable} and invokes
+     * {@link IXMLConfigurable#saveToXML(Writer)} if so. Otherwise,
+     * it simply write the class name with a "class" attribute on 
+     * the given default tag name.
+     * @param obj the object to write as XML
+     * @param writer where to write the XML
+     * @param defTagName default tag name to use when not implementing 
+     *                   {@link IXMLConfigurable}
+     * @since 2.0.0
+     */
+    public static void saveToXML(Object obj, Writer writer, String defTagName) {
+        if (obj == null) {
+            return;
+        }
+        
+        try {
+            if (obj instanceof IXMLConfigurable) {
+                    ((IXMLConfigurable) obj).saveToXML(writer);
+            } else {
+                writer.write("<");
+                writer.write(defTagName);
+                writer.write(" class=\"");
+                writer.write(obj.getClass().getName());
+                writer.write("\"/>");
+            }
+            writer.flush();
+        } catch (IOException e) {
+            throw new ConfigurationException(
+                    "Could not save object to XML \""
+                    + obj.getClass() + "\".", e);        
+        }
+    }
+    
+    /**
      * This method is the same as 
      * {@link HierarchicalConfiguration#configurationAt(String)}, except that
      * it first checks if the key exists before attempting to retrieve it, 
@@ -500,8 +538,7 @@ public final class XMLConfigurationUtil {
         if (sub == null) {
             return null;
         }
-        XMLConfiguration xml = new XMLConfiguration(sub);
-        return xml;
+        return new XMLConfiguration(sub);
     }
     
     /**

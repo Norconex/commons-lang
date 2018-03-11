@@ -1,4 +1,4 @@
-/* Copyright 2010-2017 Norconex Inc.
+/* Copyright 2010-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,8 +28,8 @@ import java.util.StringTokenizer;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
-import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.io.IInputStreamListener;
 import com.norconex.commons.lang.io.InputStreamLineListener;
@@ -48,7 +48,8 @@ import com.norconex.commons.lang.io.InputStreamLineListener;
  */
 public class SystemCommand {
 
-    private static final Logger LOG = LoggerFactory.getLogger(SystemCommand.class);
+    private static final Logger LOG = 
+            LoggerFactory.getLogger(SystemCommand.class);
 
     private static final String[] CMD_PREFIXES_WIN_LEGACY = 
             new String[] { "command.com", "/C" };

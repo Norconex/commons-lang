@@ -26,6 +26,8 @@ import java.io.Writer;
  */
 public interface IXMLConfigurable {
 
+    //TODO have a xmlElementName ?
+    
     /**
      * Load XML configuration values and initialized this object with them.
      * @param in XML input stream

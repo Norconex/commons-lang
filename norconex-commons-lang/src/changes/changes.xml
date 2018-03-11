@@ -8,6 +8,19 @@
   <body>
 
     <release version="2.0.0-SNAPSHOT" date="2018-??-??" description="Major release">
+      <action dev="essiembre" type="add">
+        New DateUtil class for converting between java.util.Date to/from
+        local date/time.
+      </action>
+      <action dev="essiembre" type="add">
+        New XMLConfigurationUtil#saveToXML method.
+      </action>
+      <action dev="essiembre" type="add">
+        New FileUtil#createDateFormattedDirs method.
+      </action>
+      <action dev="essiembre" type="add">
+        New accessors for LocalDateTime on Properties.
+      </action>
       <action dev="essiembre" type="update">
         Now requires Java 8 or higher.
       </action>

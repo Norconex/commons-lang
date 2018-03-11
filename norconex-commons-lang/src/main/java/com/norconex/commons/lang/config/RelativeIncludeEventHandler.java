@@ -1,4 +1,4 @@
-/* Copyright 2010-2017 Norconex Inc.
+/* Copyright 2010-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,10 +21,10 @@ import java.util.Map.Entry;
 import java.util.Properties;
 
 import org.apache.commons.io.FilenameUtils;
-import org.slf4j.LoggerFactory;
-import org.slf4j.Logger;
 import org.apache.velocity.app.event.IncludeEventHandler;
 import org.apache.velocity.context.Context;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Velocity include event handler that check for includes both relative
@@ -34,8 +34,8 @@ import org.apache.velocity.context.Context;
  */
 public class RelativeIncludeEventHandler implements IncludeEventHandler {
 
-    private static final Logger LOG = LoggerFactory.getLogger(
-            RelativeIncludeEventHandler.class);
+    private static final Logger LOG = 
+            LoggerFactory.getLogger(RelativeIncludeEventHandler.class);
 
     @Override
     public String includeEvent(Context context, String includeResourcePath,

@@ -1,4 +1,4 @@
-/* Copyright 2010-2017 Norconex Inc.
+/* Copyright 2010-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.LinkedList;
 
@@ -32,8 +33,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.commons.lang3.time.DateFormatUtils;
-import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.Sleeper;
 import com.norconex.commons.lang.StringUtil;
@@ -57,7 +58,8 @@ public final class FileUtil {
     /**
      * Converts any String to a valid file-system file name representation. The 
      * valid file name is constructed so it can be written to virtually any 
-     * operating system.
+     * operating system.  It will escape every characters that are not
+     * alphanumeric, hyphen, or dot.
      * Use {@link #fromSafeFileName(String)} to get back the original name.
      * @param unsafeFileName the file name to make safe.
      * @return valid file name
@@ -627,7 +629,7 @@ public final class FileUtil {
      */
     public static File createDateDirs(File parentDir, Date date)
             throws IOException {
-        return createDateTimeDirs(parentDir, date, "yyyy/MM/dd");
+        return createDateFormattedDirs(parentDir, date, "yyyy/MM/dd");
     }
 
     /**
@@ -661,8 +663,46 @@ public final class FileUtil {
      */
     public static File createDateTimeDirs(File parentDir, Date dateTime)
             throws IOException {
-        return createDateTimeDirs(parentDir, dateTime, "yyyy/MM/dd/HH/mm/ss");
+        return createDateFormattedDirs(
+                parentDir, dateTime, "yyyy/MM/dd/HH/mm/ss");
     }
+    
+    /**
+     * Creates (if not already existing) a series of directories reflecting
+     * the specified date format (from {@link SimpleDateFormat}), 
+     * under a given parent directory.
+     * Use forward slash in your date format for creating sub-directories.  
+     * For example,
+     * a date of 2000-12-31T13:34:12 with a format of 
+     * <code>yyyy/MM/dd/HH-mm-ss</code> will create the following directory 
+     * structure:
+     * <code>
+     *    /&lt;parentDir&gt;/2000/12/31/13-34-12/
+     * </code>
+     * @param parentDir the parent directory where to create date directories
+     * @param dateTime the date to create directories from
+     * @param format the format to use for creating a date-formatted directory
+     * @return the directory representing the full path created
+     * @throws IOException if the parent directory is not valid
+     * @since 2.0.0
+     */
+    public static File createDateFormattedDirs(
+            File parentDir, Date dateTime, String format) throws IOException {
+        if (parentDir == null) {
+            throw new IOException("Parent directory cannot be null.");
+        }
+        if (dateTime == null) {
+            throw new IOException("Date cannot be null.");
+        }
+        if (parentDir.exists() && !parentDir.isDirectory()) {
+            throw new IOException("Parent directory \"" + parentDir 
+                    + "\" already exists and is not a directory.");
+        }
+        File dateDir = new File(parentDir.getAbsolutePath(),
+                DateFormatUtils.format(dateTime, format));
+        FileUtils.forceMkdir(dateDir);
+        return dateDir;
+    }    
 
     /**
      * <p>Creates (if not already existing) a series of directories
@@ -781,24 +821,6 @@ public final class FileUtil {
         File urlFile = new File(path);
         createDirsForFile(urlFile);
         return urlFile;
-    }
-    
-    private static File createDateTimeDirs(
-            File parentDir, Date dateTime, String format) throws IOException {
-        if (parentDir == null) {
-            throw new IOException("Parent directory cannot be null.");
-        }
-        if (dateTime == null) {
-            throw new IOException("Date cannot be null.");
-        }
-        if (parentDir.exists() && !parentDir.isDirectory()) {
-            throw new IOException("Parent directory \"" + parentDir 
-                    + "\" already exists and is not a directory.");
-        }
-        File dateDir = new File(parentDir.getAbsolutePath(),
-                DateFormatUtils.format(dateTime, format));
-        FileUtils.forceMkdir(dateDir);
-        return dateDir;
     }
     
     private static void assertNumOfLinesToRead(int num) {

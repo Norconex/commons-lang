@@ -1,4 +1,4 @@
-/* Copyright 2010-2017 Norconex Inc.
+/* Copyright 2010-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@
 package com.norconex.commons.lang.exec;
 
 import org.apache.commons.collections4.queue.CircularFifoQueue;
-import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.Sleeper;
 
@@ -32,7 +32,7 @@ import com.norconex.commons.lang.Sleeper;
 public class Retrier {
 
     private static final Logger LOG = LoggerFactory.getLogger(Retrier.class);
-
+    
     /** Default maximum number of retries. */
     public static final int DEFAULT_MAX_RETRIES = 10;
     /** Default wait time (milliseconds) before making a new attempt. */

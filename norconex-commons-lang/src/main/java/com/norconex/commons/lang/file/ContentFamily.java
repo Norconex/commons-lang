@@ -1,4 +1,4 @@
-/* Copyright 2014-2017 Norconex Inc.
+/* Copyright 2014-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,8 @@ import java.util.ResourceBundle;
 
 import org.apache.commons.collections4.map.ListOrderedMap;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Represents a family of content types.  Typically, a broader, conceptual
@@ -54,7 +54,8 @@ import org.slf4j.Logger;
  */
 public final class ContentFamily {
     
-    private static final Logger LOG = LoggerFactory.getLogger(ContentFamily.class);
+    private static final Logger LOG = 
+            LoggerFactory.getLogger(ContentFamily.class);
     
     private static final ResourceBundle BUNDLE_MAPPINGS;
     static {

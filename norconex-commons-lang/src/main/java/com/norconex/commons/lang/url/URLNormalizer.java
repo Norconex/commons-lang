@@ -1,4 +1,4 @@
-/* Copyright 2010-2017 Norconex Inc.
+/* Copyright 2010-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -138,7 +138,8 @@ public class URLNormalizer implements Serializable {
 
     private static final long serialVersionUID = 7236478212865008971L;
 
-    private static final Logger LOG = LoggerFactory.getLogger(URLNormalizer.class);
+    private static final Logger LOG = 
+            LoggerFactory.getLogger(URLNormalizer.class);
     
     private static final Pattern PATTERN_PERCENT_ENCODED_CHAR = 
             Pattern.compile("(%[0-9a-f]{2})", Pattern.CASE_INSENSITIVE);

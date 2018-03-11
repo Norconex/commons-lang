@@ -27,6 +27,9 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -43,13 +46,14 @@ import org.apache.commons.configuration2.XMLPropertiesConfiguration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.LocaleUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
-import org.slf4j.LoggerFactory;
-import org.slf4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * <p>This class is a enhanced version of {@link java.util.Properties}
@@ -156,29 +160,6 @@ public class Properties extends ObservableMap<String, List<String>>
      */
     public boolean isCaseInsensitiveKeys() {
         return caseInsensitiveKeys;
-    }
-
-    /**
-     * Gets multiple value string delimiter.
-     * @return multiple value string delimiter
-     * @since 1.4
-     * @deprecated Since 1.14.0, always returns <code>null</code>.
-     */
-    @Deprecated
-    public String getMultiValueDelimiter() {
-        LOG.warn("getMultiValueDelimiter() is deprecated.");
-        return null;
-    }
-    /**
-     * Sets multiple value string delimiter.
-     * @param multiValueDelimiter multiple value string delimiter
-     * @since 1.4
-     * @deprecated Since 1.14.0, calling this method has no effect.
-     * Pass a delimiter to store/load methods instead if needed.
-     */
-    @Deprecated
-    public void setMultiValueDelimiter(String multiValueDelimiter) {
-        LOG.warn("setMultiValueDelimiter(String) is deprecated.");
     }
 
     //--- Store ----------------------------------------------------------------
@@ -662,11 +643,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the value
      */
     public final String getString(String key, String defaultValue) {
-        String s = getString(key);
-        if (s == null) {
-            return defaultValue;
-        }
-        return s;
+        return ObjectUtils.defaultIfNull(getString(key), defaultValue);
     }
     /**
      * Gets values as a list of strings. This method is null-safe. No matches
@@ -1005,11 +982,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the value
      */    
     public final BigDecimal getBigDecimal(String key, BigDecimal defaultValue) {
-        BigDecimal value = getBigDecimal(key);
-        if (value == null) {
-            return defaultValue;
-        }
-        return value;
+        return ObjectUtils.defaultIfNull(getBigDecimal(key), defaultValue);
     }
     /**
      * Gets values as a list of BigDecimals.
@@ -1048,6 +1021,94 @@ public class Properties extends ObservableMap<String, List<String>>
         addString(key, toStringArray(values));
     }
     
+    //--- LocalDateTime --------------------------------------------------------
+    /**
+     * Gets value as a local date-time. The date must be a valid date-time 
+     * as defined by {@link DateTimeFormatter#ISO_LOCAL_DATE_TIME}.
+     * @param key property key
+     * @return the value
+     * @since 2.0.0
+     */    
+    public final LocalDateTime getLocalDateTime(String key) {
+        String value = getString(key);
+        if (StringUtils.isBlank(value)) {
+            return null;
+        }
+        try {
+            return LocalDateTime.parse(value);
+        } catch (DateTimeParseException e) {
+            throw createTypedException(
+                    "Could not parse LocalDateTime value.", key, value, e);
+        }
+    }
+    /**
+     * Gets value as a local date-time. The date must be a valid date-time 
+     * as defined by {@link DateTimeFormatter#ISO_LOCAL_DATE_TIME}.
+     * @param key property key
+     * @param defaultValue default value to return when original value is null.
+     * @return the value
+     * @since 2.0.0
+     */    
+    public final LocalDateTime getLocalDateTime(
+            String key, LocalDateTime defaultValue) {
+        return ObjectUtils.defaultIfNull(getLocalDateTime(key), defaultValue);
+    }
+    /**
+     * Gets values as a list of local date-times. Each date must be a valid 
+     * date-time as defined by {@link DateTimeFormatter#ISO_LOCAL_DATE_TIME}.
+     * @param key property key
+     * @return the values
+     * @since 2.0.0
+     */    
+    public final List<LocalDateTime> getLocalDateTimes(String key) {
+        List<String> values = getStrings(key);
+        String errVal = null;
+        try {
+            List<LocalDateTime> list = new ArrayList<>(values.size());
+            for (String value : values) {
+                errVal = value;
+                list.add(LocalDateTime.parse(value));
+            }
+            return list;
+        } catch (DateTimeParseException e) {
+            throw createTypedException(
+                    "Could not parse LocalDateTime value.", key, errVal, e);
+        }
+    }
+    /**
+     * Sets one or multiple local date-time values, replacing existing ones.  
+     * @param key the key of the values to set
+     * @param values the values to set
+     * @since 2.0.0
+     */
+    public final void setLocalDateTime(String key, LocalDateTime... values) {
+        setString(key, localDateTimesToStringArray(values));
+    }
+    /**
+     * Add one or multiple local date-time values.  
+     * @param key the key of the values to set
+     * @param values the values to set
+     * @since 2.0.0
+     */
+    public final void addLocalDateTime(String key, LocalDateTime... values) {
+        addString(key, localDateTimesToStringArray(values));
+    }
+    private String[] localDateTimesToStringArray(LocalDateTime... values) {
+        if (values == null) {
+            return null;
+        }
+        String[] array = new String[values.length];
+        for (int i = 0; i < array.length; i++) {
+            LocalDateTime value = values[i];
+            if (value == null) {
+                array[i] = null;
+            } else {
+                array[i] = value.toString();
+            }
+        }
+        return array;
+    }
+
     //--- Date -----------------------------------------------------------------
     /**
      * Gets value as a date.
@@ -1073,11 +1134,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the value
      */    
     public final Date getDate(String key, Date defaultValue) {
-        Date value = getDate(key);
-        if (value == null) {
-            return defaultValue;
-        }
-        return value;
+        return ObjectUtils.defaultIfNull(getDate(key), defaultValue);
     }
     /**
      * Gets values as a list of dates.
@@ -1129,8 +1186,8 @@ public class Properties extends ObservableMap<String, List<String>>
             }
         }
         return array;
-    }
-
+    }    
+    
     //--- Boolean --------------------------------------------------------------
     /**
      * Gets value as a boolean. The underlying string value matching 
@@ -1271,11 +1328,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return a File
      */
     public final File getFile(String key, File defaultValue) {
-        File value = getFile(key);
-        if (value == null) {
-            return defaultValue;
-        }
-    	return value;
+        return ObjectUtils.defaultIfNull(getFile(key), defaultValue);
     }
     /**
      * Gets values as a list of files.
@@ -1342,11 +1395,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return initialized class
      */
     public final Class<?> getClass(String key, Class<?> defaultValue) {
-        Class<?> value = getClass(key);
-        if (value == null) {
-            return defaultValue;
-        }
-    	return value;
+        return ObjectUtils.defaultIfNull(getClass(key), defaultValue);
     }
     /**
      * Gets values as a list of initialized classes.
