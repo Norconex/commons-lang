@@ -42,7 +42,7 @@ public final class FileMonitor {
      */
     private FileMonitor() {
         timer = new Timer(true);
-        timerEntries = new Hashtable<String, FileMonitorTask>();
+        timerEntries = new Hashtable<>();
     }
 
     /**

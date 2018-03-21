@@ -1,8 +1,6 @@
 TODO:
 ==============
 
-- Add EncryptionKey save/load method on XMLConfigurationUtil.
-
 - Is Pipeline really needed with Java 8. Could functional interfaces do it?
 
 - Replace/refactor process execution to use new process features of Java 8.

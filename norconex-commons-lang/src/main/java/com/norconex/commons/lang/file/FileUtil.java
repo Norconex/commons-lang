@@ -25,6 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.LinkedList;
+import java.util.Objects;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -688,22 +689,43 @@ public final class FileUtil {
      */
     public static File createDateFormattedDirs(
             File parentDir, Date dateTime, String format) throws IOException {
-        if (parentDir == null) {
-            throw new IOException("Parent directory cannot be null.");
-        }
-        if (dateTime == null) {
-            throw new IOException("Date cannot be null.");
-        }
+        Objects.requireNonNull(parentDir, "parentDir");
+        Objects.requireNonNull(dateTime, "dateTime");
         if (parentDir.exists() && !parentDir.isDirectory()) {
             throw new IOException("Parent directory \"" + parentDir 
                     + "\" already exists and is not a directory.");
         }
-        File dateDir = new File(parentDir.getAbsolutePath(),
-                DateFormatUtils.format(dateTime, format));
-        FileUtils.forceMkdir(dateDir);
-        return dateDir;
+        File dir = toDateFormattedDir(parentDir, dateTime, format);
+        FileUtils.forceMkdir(dir);
+        return dir;
     }    
 
+    /**
+     * Gets (but does not create) a series of directories reflecting
+     * the specified date format (from {@link SimpleDateFormat}), 
+     * under a given parent directory.
+     * Use forward slash in your date format for creating sub-directories.  
+     * For example,
+     * a date of 2000-12-31T13:34:12 with a format of 
+     * <code>yyyy/MM/dd/HH-mm-ss</code> will create the following directory 
+     * structure:
+     * <code>
+     *    /&lt;parentDir&gt;/2000/12/31/13-34-12/
+     * </code>
+     * @param parentDir the parent directory where to create date directories
+     * @param dateTime the date to create directories from
+     * @param format the format to use for creating a date-formatted directory
+     * @return the directory representing the full path created
+     * @since 2.0.0
+     */
+    public static File toDateFormattedDir(
+            File parentDir, Date dateTime, String format) {
+        Objects.requireNonNull(parentDir, "parentDir");
+        Objects.requireNonNull(dateTime, "dateTime");
+        return new File(parentDir.getAbsolutePath(),
+                DateFormatUtils.format(dateTime, format));
+    }
+    
     /**
      * <p>Creates (if not already existing) a series of directories
      * matching URL segments, under a given parent directory.
@@ -718,7 +740,7 @@ public final class FileUtil {
      * the generated path by using 
      * {@link #createURLDirs(File, URL, boolean)} instead.
      * </p>
-     * @param parentDir the parent directory where to create date directories
+     * @param parentDir the parent directory where to create URL directories
      * @param url the URL to create directories for, with file name.
      * @return the directory representing the full path created, plus file name
      * @throws IOException if the parent directory is not valid
@@ -741,7 +763,7 @@ public final class FileUtil {
      * the generated path by using 
      * {@link #createURLDirs(File, URL, boolean)} instead.
      * </p>
-     * @param parentDir the parent directory where to create date directories
+     * @param parentDir the parent directory where to create URL directories
      * @param url the URL to create directories for, with file name.
      * @return the directory representing the full path created, plus file name
      * @throws IOException if the parent directory is not valid
@@ -762,7 +784,7 @@ public final class FileUtil {
      * than 255 characters.  When truncating, the full path to the parent 
      * directory must be 200 or less characters (to leave some room for the
      * URL path).
-     * @param parentDir the parent directory where to create date directories
+     * @param parentDir the parent directory where to create URL directories
      * @param url the URL to create directories for, with file name.
      * @param truncate whether to truncate the directory to 255 characters max.
      * @return the directory representing the full path created, plus file name
@@ -787,7 +809,7 @@ public final class FileUtil {
      * than 255 characters.  When truncating, the full path to the parent 
      * directory must be 200 or less characters (to leave some room for the
      * URL path).
-     * @param parentDir the parent directory where to create date directories
+     * @param parentDir the parent directory where to create URL directories
      * @param url the URL to create directories for, with file name.
      * @param truncate whether to truncate the directory to 255 characters max.
      * @return the directory representing the full path created, plus file name
@@ -795,18 +817,110 @@ public final class FileUtil {
      */
     public static File createURLDirs(
             File parentDir, String url, boolean truncate) throws IOException {
-        if (parentDir == null) {
-            throw new IOException("Parent directory cannot be null.");
-        }
-        if (url == null) {
-            throw new IOException("URL cannot be null.");
-        }
+        
+        Objects.requireNonNull(parentDir, "parentDir");
+        Objects.requireNonNull(url, "url");
         if (parentDir.exists() && !parentDir.isDirectory()) {
             throw new IOException("Parent directory \"" + parentDir 
                     + "\" already exists and is not a directory.");
         }
+        File dir = toURLDir(parentDir, url, truncate);
+        createDirsForFile(dir);
+        return dir;
+    }
+
+    /**
+     * <p>Gets (but does not create) a directory matching URL segments, 
+     * under a given parent directory.
+     * The returned file contains the full path to the directories,
+     * plus the file name. The file name is the last URL
+     * segment (including query string and fragment).  Non-alphanumeric
+     * characters are escaped to be file-system-friendly.
+     * </p>
+     * <p>
+     * <b>Warning:</b> the path created may be too long for some file systems.
+     * To avoid issues with file names being too long, consider truncating
+     * the generated path by using 
+     * {@link #toURLDir(File, URL, boolean)} instead.
+     * </p>
+     * @param parentDir the parent directory where to create URL directories
+     * @param url the URL to create directories for, with file name.
+     * @return the directory representing the full path created, plus file name
+     * @since 2.0.0
+     */
+    public static File toURLDir(File parentDir, URL url) {
+        return toURLDir(parentDir, url, false);
+    }
+    /**
+     * <p>Gets (but does not create) a directory matching URL segments, 
+     * under a given parent directory.
+     * The returned file contains the full path to the directories,
+     * plus the file name. The file name is the last URL
+     * segment (including query string and fragment).  Non-alphanumeric
+     * characters are escaped to be file-system-friendly.
+     * </p>
+     * <p>
+     * <b>Warning:</b> the path created may be too long for some file systems.
+     * To avoid issues with file names being too long, consider truncating
+     * the generated path by using 
+     * {@link #toURLDir(File, URL, boolean)} instead.
+     * </p>
+     * @param parentDir the parent directory where to create URL directories
+     * @param url the URL to create directories for, with file name.
+     * @return the directory representing the full path created, plus file name
+     * @since 2.0.0
+     */
+    public static File toURLDir(File parentDir, String url) {
+        return toURLDir(parentDir, url, false);
+    }
+    /**
+     * Gets (but does not create) a directory matching URL segments, 
+     * under a given parent directory.
+     * The returned file contains the full path to the directories,
+     * plus the file name. The file name is the last URL
+     * segment (including query string and fragment).  Non-alphanumeric
+     * characters are escaped to be file-system-friendly.
+     * For the same reason,
+     * the full path created can be truncated with a hash code if more
+     * than 255 characters.  When truncating, the full path to the parent 
+     * directory must be 200 or less characters (to leave some room for the
+     * URL path).
+     * @param parentDir the parent directory where to create URL directories
+     * @param url the URL to create directories for, with file name.
+     * @param truncate whether to truncate the directory to 255 characters max.
+     * @return the directory representing the full path created, plus file name
+     * @since 2.0.0
+     */
+    public static File toURLDir(
+            File parentDir, URL url, boolean truncate) {
+        Objects.requireNonNull(url, "url");
+        return toURLDir(parentDir, url.toString(), truncate);
+    }
+    
+    /**
+     * Gets (but does not create) a directory matching URL segments, 
+     * under a given parent directory.
+     * The returned file contains the full path to the directories,
+     * plus the file name. The file name is the last URL
+     * segment (including query string and fragment).  Non-alphanumeric
+     * characters are escaped to be file-system-friendly.
+     * For the same reason,
+     * the full path created can be truncated with a hash code if more
+     * than 255 characters.  When truncating, the full path to the parent 
+     * directory must be 200 or less characters (to leave some room for the
+     * URL path).
+     * @param parentDir the parent directory where to create URL directories
+     * @param url the URL to create directories for, with file name.
+     * @param truncate whether to truncate the directory to 255 characters max.
+     * @return the directory representing the full path created, plus file name
+     * @since 2.0.0
+     */
+    public static File toURLDir(
+            File parentDir, String url, boolean truncate) {
+        Objects.requireNonNull(parentDir, "parentDir");
+        Objects.requireNonNull(url, "url");
         if (truncate && parentDir.getAbsolutePath().length() > 200) {
-            throw new IOException("Parent directory \"" + parentDir 
+            throw new IllegalArgumentException("Parent directory \"" + parentDir 
                     + "\" is too long (must be 200 characters or less).");
         }
         StringBuilder b = new StringBuilder(parentDir.getAbsolutePath());
@@ -818,10 +932,8 @@ public final class FileUtil {
         if (truncate) {
             path = StringUtil.truncateWithHash(path, 255, "_");
         }
-        File urlFile = new File(path);
-        createDirsForFile(urlFile);
-        return urlFile;
-    }
+        return new File(path);
+    }    
     
     private static void assertNumOfLinesToRead(int num) {
         if (num <= 0) {

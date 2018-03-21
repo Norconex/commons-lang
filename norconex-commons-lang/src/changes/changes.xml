@@ -16,7 +16,11 @@
         New XMLConfigurationUtil#saveToXML method.
       </action>
       <action dev="essiembre" type="add">
-        New FileUtil#createDateFormattedDirs method.
+        New FileUtil#createDateFormattedDirs and FileUtil#toDateFormattedDir
+        methods.
+      </action>
+      <action dev="essiembre" type="add">
+        New FileUtil#toURLDir methods.
       </action>
       <action dev="essiembre" type="add">
         New accessors for LocalDateTime on Properties.
