@@ -25,6 +25,8 @@ import java.io.Serializable;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -40,6 +42,10 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
+import org.apache.commons.beanutils.BeanUtilsBean;
+import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.beanutils.PropertyUtilsBean;
+import org.apache.commons.beanutils.SuppressPropertiesBeanIntrospector;
 import org.apache.commons.configuration2.FileBasedConfiguration;
 import org.apache.commons.configuration2.PropertiesConfiguration;
 import org.apache.commons.configuration2.XMLPropertiesConfiguration;
@@ -54,6 +60,8 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.norconex.commons.lang.bean.ExtendedBeanUtilsBean;
 
 /**
  * <p>This class is a enhanced version of {@link java.util.Properties}
@@ -105,6 +113,9 @@ public class Properties extends ObservableMap<String, List<String>>
     
     //TODO still support this?
     private final boolean caseInsensitiveKeys;
+
+    private final PropertyUtilsBean propertyUtilsBean;
+    private final BeanUtilsBean beanUtilsBean;
     
     /**
      * Create a new instance with case-sensitive keys.
@@ -151,8 +162,18 @@ public class Properties extends ObservableMap<String, List<String>>
             Map<String, List<String>> map, boolean caseInsensitiveKeys) {
         super(map);
         this.caseInsensitiveKeys = caseInsensitiveKeys;
+        
+        
+        //--- PropertyUtilsBean ---
+        // Make sure objects needing more than "toString" are handled in
+        // load(Map<?, ?> map) {
+        this.propertyUtilsBean = new PropertyUtilsBean();
+        this.propertyUtilsBean.addBeanIntrospector(
+                SuppressPropertiesBeanIntrospector.SUPPRESS_CLASS);
+        
+        this.beanUtilsBean = new ExtendedBeanUtilsBean();
     }
-
+    
     /**
      * Gets whether keys are case sensitive or not.
      * @return <code>true</code> if case insensitive
@@ -308,7 +329,6 @@ public class Properties extends ObservableMap<String, List<String>>
         store(writer, delimiter, true);
     }
     
-    
     //TODO only support Writer???
     //TODO rename save/load instead of load/store?   Or better: read/write?
     // input is either Writer or OuputStream
@@ -391,6 +411,43 @@ public class Properties extends ObservableMap<String, List<String>>
         writer.write('}');
         writer.flush();
     }
+
+    /**
+     * Copy all properties in this map to the given bean, mapping keys
+     * to setter methods of the same name. Existing bean values for matching
+     * accessors are overwritten. Other values are left intact.
+     * <code>null</code> beans are ignored. 
+     * @param bean the object to store properties into
+     * @since 2.0.0
+     */
+    public void storeToBean(Object bean) {
+        if (bean == null) {
+            return;
+        }
+        try {
+            for (Entry<String, List<String>> it : entrySet()) {
+                String property = it.getKey();
+                List<String> values = it.getValue();
+                if (property == null || values.isEmpty()
+                        || !PropertyUtils.isWriteable(bean, property)) {
+                    continue;
+                }
+                
+                Class<?> type = PropertyUtils.getPropertyType(bean, property);
+                Object value = values;
+
+                if (!type.isArray() && !Iterable.class.isAssignableFrom(type)) {
+                    value = values.get(0);
+                }
+                
+                beanUtilsBean.copyProperty(bean, property, value);
+            }
+        } catch (IllegalAccessException | InvocationTargetException
+                | NoSuchMethodException e) {
+            throw new PropertiesException(
+                    "Could not store Properties into given bean.", e);
+        }
+    }
     
     //--- Load -----------------------------------------------------------------
     
@@ -428,22 +485,30 @@ public class Properties extends ObservableMap<String, List<String>>
                 if (keyObj == null) {
                     continue;
                 }
-                String key = Objects.toString(keyObj, null);
+                String key = toString(keyObj);
                 Object valObj = entry.getValue();
                 if (valObj == null) {
                     valObj = StringUtils.EMPTY;
                 }
                 Iterable<?> it = null;
                 if (valObj.getClass().isArray()) {
-                    it = Arrays.asList((Object[]) valObj);
+                    if(valObj.getClass().getComponentType().isPrimitive()) {
+                        List<Object> objs = new ArrayList<>();
+                        for (int i = 0; i < Array.getLength(valObj); i++) {
+                            objs.add(Array.get(valObj, i));
+                        }
+                        it = objs;
+                    } else {
+                        it = Arrays.asList((Object[]) valObj);
+                    }
                 } else if (valObj instanceof Iterable) {
                     it = (Iterable<?>) valObj;
                 }
                 if (it == null) {
-                    addString(key, Objects.toString(valObj, null));
+                    addString(key, toString(valObj));
                 } else {
                     for (Object val : it) {
-                        addString(key, Objects.toString(val, null));
+                        addString(key, toString(val));
                     }
                 }
             }
@@ -620,6 +685,25 @@ public class Properties extends ObservableMap<String, List<String>>
                 String val = array.getString(i);
                 addString(key, val);
             }
+        }
+    }
+
+    /**
+     * Converts all the bean properties into entries in this instance. 
+     * <code>null</code> beans are ignored. 
+     * @param bean the object to load properties from
+     * @since 2.0.0
+     */
+    public void loadFromBean(Object bean) {
+        if (bean == null) {
+            return;
+        }
+        try {
+            load(propertyUtilsBean.describe(bean));
+        } catch (IllegalAccessException | InvocationTargetException 
+                | NoSuchMethodException e) {
+            throw new PropertiesException(
+                    "Could not load Properties from given bean.", e);
         }
     }
     
@@ -1426,6 +1510,16 @@ public class Properties extends ObservableMap<String, List<String>>
     public final void addClass(String key, Class<?>... values) {
         addString(key, classesToStringArray(values));
     }
+    private String[] classesToStringArray(Class<?>... values) {
+        if (values == null) {
+            return null;
+        }
+        String[] array = new String[values.length];
+        for (int i = 0; i < array.length; i++) {
+            array[i] = values[i].getName();
+        }
+        return array;
+    }
 
     //--- Other ----------------------------------------------------------------
     @Override
@@ -1500,17 +1594,6 @@ public class Properties extends ObservableMap<String, List<String>>
         return resolvedKey;
     }
     
-    
-    private String[] classesToStringArray(Class<?>... values) {
-        if (values == null) {
-            return null;
-        }
-        String[] array = new String[values.length];
-        for (int i = 0; i < array.length; i++) {
-            array[i] = values[i].getName();
-        }
-        return array;
-    }
     private PropertiesException createTypedException(
             String msg, String key, String value, Exception cause) {
         String message = msg + " [key=" + key + "; value=" + value + "].";
@@ -1524,8 +1607,27 @@ public class Properties extends ObservableMap<String, List<String>>
         String[] strArray = new String[array.length];
         for (int i = 0; i < array.length; i++) {
             strArray[i] = Objects.toString(array[i], StringUtils.EMPTY);
-            
+            //TODO ------------------------------------- REALLY? ^^^^^
         }
         return strArray;
+    }
+    // TODO consider calling this from toStringArray(array) and have 
+    // Class, Date, etc, setters call that method. But check
+    // implications of EMPTY vs null. (why have empty for elements in in array,
+    // and null otherwise?) Should always be null or not kept in array.
+    private String toString(Object obj) {
+        if (obj == null) {
+            return null;
+        }
+        if (obj instanceof Class) {
+            return ((Class<?>) obj).getName();
+        }
+        if (obj instanceof Date) {
+            return Long.toString(((Date) obj).getTime());
+        }
+        if (obj instanceof File) {
+            return ((File) obj).getPath();
+        }
+        return obj.toString();
     }
 }
