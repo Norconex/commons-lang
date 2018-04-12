@@ -430,6 +430,8 @@ public class Properties extends ObservableMap<String, List<String>>
                 List<String> values = it.getValue();
                 if (property == null || values.isEmpty()
                         || !PropertyUtils.isWriteable(bean, property)) {
+                    LOG.debug("Property is not writable (no setter?): {}", 
+                            property);
                     continue;
                 }
                 

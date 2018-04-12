@@ -35,6 +35,6 @@ public class LocaleConverter extends AbstractConverter {
         if (value == null) {
             return null;
         }
-        return type.cast(LocaleUtils.toLocale(value.toString()));
+        return type.cast(LocaleUtils.toLocale(value.toString().trim()));
     }
 }
