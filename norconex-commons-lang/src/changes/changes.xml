@@ -9,12 +9,19 @@
 
     <release version="2.0.0-SNAPSHOT" date="2018-??-??" description="Major release">
       <action dev="essiembre" type="add">
+        New Event class and IEventListener interface.
+      </action>
+      <action dev="essiembre" type="add">
         New ExtendedBeanUtilsBean that supports copying of either combination
         of collections or array, as well as providing new converters for
         Date, LocaleDateTime, and Locale.
       </action>
       <action dev="essiembre" type="add">
         New Properties#loadFromBean and Properties#storeToBean methods.
+      </action>
+      <action dev="essiembre" type="add">
+        New ConfigurationValidationError class now returned by 
+        XMLConfigurationUtil validation methods.
       </action>
       <action dev="essiembre" type="add">
         New DateUtil class for converting between java.util.Date to/from
@@ -45,7 +52,8 @@
       </action>
       <action dev="essiembre" type="update">
         Dependency updates: Apache Commons Lang 3.7, 
-        Apache Commons Configuration 2.2, Apache Commons BeanUtils 1.9.3.
+        Apache Commons Configuration 2.2, Apache Commons BeanUtils 1.9.3,
+        Apache Velocity 2.0.
       </action>
       <action dev="essiembre" type="fix">
         Properties#load(Map) now handles primitive array values properly,

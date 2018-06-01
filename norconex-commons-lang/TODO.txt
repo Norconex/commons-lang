@@ -1,6 +1,9 @@
 TODO:
 ==============
 
+- Maybe add a new IEventListener scanner for automatic registration in an 
+  event manager.
+
 - Is Pipeline really needed with Java 8. Could functional interfaces do it?
 
 - Replace/refactor process execution to use new process features of Java 8.
@@ -9,9 +12,9 @@ TODO:
 
 - Remove all @since 1.x???
 
-- Remove all classes supported by Apache Commons.
+- Remove all classes that are already part of Apache Commons.
 
-- Reduce depedencies wherever possible.
+- Reduce dependencies wherever possible.
 
 - Redo website so it looks closer to collectors?
 
@@ -23,14 +26,6 @@ TODO:
 - Allows to specify a velocity-tools.properties or equivalent in classpath
   root (e.g. classes/ folder) to define custom classes/tools to be used 
   by Velocity.
-
-- Upgrade to Commons Configuration 2.x
-- Upgrade to Apache Velocity 2.x when available in Maven.
-
-    - See after upgrading above two if we can get rid of 
-      Commons Collections 3.x and Commons Lang 2.x 
-
-- Upgrade to slf4j.
 
 - Modify Jar copier to handle cases where snapshot are timestamped instead and
   not being considered the latest when they should.  Like:

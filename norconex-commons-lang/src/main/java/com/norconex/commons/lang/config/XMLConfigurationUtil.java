@@ -23,6 +23,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -56,6 +57,7 @@ import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.XMLFilterImpl;
 import org.xml.sax.helpers.XMLReaderFactory;
 
+import com.norconex.commons.lang.config.ConfigurationValidationError.Severity;
 import com.norconex.commons.lang.time.DurationParser;
 import com.norconex.commons.lang.time.DurationParserException;
 import com.norconex.commons.lang.xml.ClasspathResourceResolver;
@@ -386,9 +388,9 @@ public final class XMLConfigurationUtil {
      * the same name as the class, but with the ".xsd" extension.
      * @param clazz the class to validate the XML for
      * @param node the XML to validate
-     * @return the number of errors/warnings
+     * @return list of errors/warnings or empty (never <code>null</code>)
      */
-    public static int validate(Class<?> clazz, 
+    public static List<ConfigurationValidationError> validate(Class<?> clazz, 
             HierarchicalConfiguration<ImmutableNode> node) {
         return doValidate(clazz, node);
     }
@@ -399,16 +401,21 @@ public final class XMLConfigurationUtil {
      * the same name as the class, but with the ".xsd" extension.
      * @param clazz the class to validate the XML for
      * @param xml the XML to validate
-     * @return the number of errors/warnings
+     * @return list of errors/warnings or empty (never <code>null</code>)
      */
-    public static int validate(Class<?> clazz, Reader xml) {
+    public static List<ConfigurationValidationError> validate(
+            Class<?> clazz, Reader xml) {
         return doValidate(clazz, xml);
     }
     @SuppressWarnings("unchecked")
-    private static int doValidate(Class<?> clazz, Object source) {
+    private static List<ConfigurationValidationError> doValidate(
+            Class<?> clazz, Object source) {
+        
+        List<ConfigurationValidationError> errors = new ArrayList<>();
+        
         // Only validate if IXMLConfigurable
         if (clazz == null || !IXMLConfigurable.class.isAssignableFrom(clazz)) {
-            return 0;
+            return errors;
         }
         
         // Only validate if .xsd file exist in classpath for class
@@ -416,7 +423,7 @@ public final class XMLConfigurationUtil {
         LOG.debug("Class to validate: " + ClassUtils.getSimpleName(clazz));
         if (clazz.getResource(xsdResource) == null) {
             LOG.debug("Resource not found for validation: " + xsdResource);
-            return 0;
+            return errors;
         }
 
         // Go ahead: validate
@@ -435,13 +442,13 @@ public final class XMLConfigurationUtil {
             Schema schema = schemaFactory.newSchema(
                     new StreamSource(xsdStream, getXSDResourcePath(clazz)));
             Validator validator = schema.newValidator();
-            LogErrorHandler seh = new LogErrorHandler(clazz);
+            LogErrorHandler seh = new LogErrorHandler(clazz, errors);
             validator.setErrorHandler(seh);
             SAXSource saxSource = new SAXSource(new W3XMLNamespaceFilter(
                     XMLReaderFactory.createXMLReader()), 
                             new InputSource(reader));
             validator.validate(saxSource);
-            return seh.errorCount;
+            return errors;
         } catch (SAXException | IOException e) {
             throw new ConfigurationException(
                     "Could not validate class: " + clazz, e);
@@ -456,26 +463,32 @@ public final class XMLConfigurationUtil {
      * {@link IXMLConfigurable#loadFromXML(Reader)} on an object.
      * @param obj object to have loaded
      * @param reader xml reader 
+     * @return list of errors/warnings or empty (never <code>null</code>)
      */
-    public static void loadFromXML(IXMLConfigurable obj, Reader reader) {
+    public static List<ConfigurationValidationError> loadFromXML(
+            IXMLConfigurable obj, Reader reader) {
         if (obj == null || reader == null) {
-            return;
+            return new ArrayList<>();
         }
-        loadFromXML(obj, newXMLConfiguration(reader));
+        return loadFromXML(obj, newXMLConfiguration(reader));
     }
     /**
      * Loads XML into the given object, performing validation first.
      * @param obj object to have loaded
      * @param node XML node to have loaded
+     * @return list of errors/warnings or empty (never <code>null</code>)
      */
-    public static void loadFromXML(IXMLConfigurable obj, 
+    public static List<ConfigurationValidationError> loadFromXML(
+            IXMLConfigurable obj, 
             HierarchicalConfiguration<ImmutableNode> node) {
         if (obj == null || node == null) {
-            return;
+            return new ArrayList<>();
         }
         try {
-            validate(obj.getClass(), node);
+            List<ConfigurationValidationError> errors = 
+                    validate(obj.getClass(), node);
             obj.loadFromXML(newReader(node));
+            return errors;
         } catch (IOException e) {
             throw new ConfigurationException(
                     "Could not load new instance from XML \""
@@ -483,6 +496,7 @@ public final class XMLConfigurationUtil {
         }
     }
     
+
     /**
      * Saves an object as XML on the writer.  This effectively check
      * if the object implement {@link IXMLConfigurable} and invokes
@@ -955,26 +969,31 @@ public final class XMLConfigurationUtil {
     }
     
     private static class LogErrorHandler implements ErrorHandler {
-        private int errorCount = 0; 
         private final Class<?> clazz;
-        public LogErrorHandler(Class<?> clazz) {
+        private final List<ConfigurationValidationError> errors;
+        public LogErrorHandler(
+                Class<?> clazz, List<ConfigurationValidationError> errors) {
             super();
             this.clazz = clazz;
+            this.errors = errors;
         }
         @Override
         public void warning(SAXParseException e) throws SAXException {
-            errorCount++;
-            LOG.warn(msg(e));
+            String msg = msg(e);
+            errors.add(new ConfigurationValidationError(Severity.WARNING, msg));
+            LOG.warn(msg);
         }
         @Override
         public void error(SAXParseException e) throws SAXException {
-            errorCount++;
-            LOG.error(msg(e));
+            String msg = msg(e);
+            errors.add(new ConfigurationValidationError(Severity.ERROR, msg));
+            LOG.error(msg);
         }
         @Override
         public void fatalError(SAXParseException e) throws SAXException {
-            errorCount++;
-            LOG.error(msg(e));
+            String msg = msg(e);
+            errors.add(new ConfigurationValidationError(Severity.FATAL, msg));
+            LOG.error(msg);
         }
         private String msg(SAXParseException e) {
             return "(XML Validation) " 
