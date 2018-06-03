@@ -30,6 +30,10 @@ $h2 Binaries
 
 **Older Releases**
 
+  * [1.13.1]($nexusPath/1.13.1/norconex-commons-lang-1.13.1.zip)<small>
+    [[Release Notes](changes-report.html#a1.13.1)]</small>
+  * [1.13.0]($nexusPath/1.13.0/norconex-commons-lang-1.13.0.zip)<small>
+    [[Release Notes](changes-report.html#a1.13.0)]</small>
   * [1.12.3]($nexusPath/1.12.2/norconex-commons-lang-1.12.3.zip)<small>
     [[Release Notes](changes-report.html#a1.12.3)]</small>
   * [1.12.2]($nexusPath/1.12.2/norconex-commons-lang-1.12.2.zip)<small>

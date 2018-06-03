@@ -510,6 +510,29 @@ public class URLNormalizerTest {
     }    
 //  /myservlet;jsessionid=1E6FEC0D14D044541DD84D2D013D29ED?_option=XX[b]'[/b];[    
 //  PHPSESSID=f9f2770d591366bc
+
+    // Test for supporting file:// scheme, from here:
+    // https://github.com/Norconex/commons-lang/issues/11    
+    @Test
+    public void testFileScheme() {
+        
+        // Encode non-URI characters 
+        s = "file:///etc/some dir/my file.txt";
+        t = "file:///etc/some%20dir/my%20file.txt";
+        assertEquals(t, n(s).encodeNonURICharacters().toString());
+            
+        s = "file://./dir/another-dir/path";
+        t = "file://./dir/another-dir/path";
+        assertEquals(t, n(s).encodeNonURICharacters().toString());
+
+        s = "file://localhost/c:/WINDOWS/éà.txt";
+        t = "file://localhost/c:/WINDOWS/%C3%A9%C3%A0.txt";
+        assertEquals(t, n(s).encodeNonURICharacters().toString());
+
+        s = "file:///c:/WINDOWS/file.txt";
+        t = "file:///c:/WINDOWS/file.txt";
+        assertEquals(t, n(s).encodeNonURICharacters().toString());
+    }
     
     private URLNormalizer n(String url) {
         return new URLNormalizer(url);
