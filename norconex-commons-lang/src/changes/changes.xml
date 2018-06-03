@@ -18,6 +18,13 @@
       <action dev="essiembre" type="update">
         ConfigurationLoader now sets the Velocity character encoding to UTF-8. 
       </action>
+      <action dev="essiembre" type="update">
+        HttpURL now extract protocols before first colon, no longer requiring
+        two forward slash.  Also more lenient towards relative URLs.  
+      </action>
+      <action dev="essiembre" type="update">
+        QueryString now strips out fragments when part of a URL. 
+      </action>
     </release>
 
     <release version="1.14.0" date="2017-11-26" description="Feature release">

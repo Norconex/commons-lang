@@ -94,6 +94,7 @@ public class QueryString extends Properties {
         }
         String paramString = urlWithQueryString;
         if (StringUtils.contains(paramString, "?")) {
+            paramString = StringUtils.substringBefore(paramString, "#");
             paramString = paramString.replaceAll("(.*?)(\\?)(.*)", "$3");
         }
         String[] paramParts = paramString.split("\\&");
