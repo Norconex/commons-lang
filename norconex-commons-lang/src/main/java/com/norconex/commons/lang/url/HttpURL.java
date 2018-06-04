@@ -1,4 +1,4 @@
-/* Copyright 2010-2017 Norconex Inc.
+/* Copyright 2010-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
  * 
  * @author Pascal Essiembre
  */
-@SuppressWarnings("nls")
+//TODO rename MutableURL
 public class HttpURL implements Serializable {
 
     private static final long serialVersionUID = -8886393027925815099L;
@@ -52,7 +52,7 @@ public class HttpURL implements Serializable {
     
     private QueryString queryString;
     private String host;
-    private int port = DEFAULT_HTTP_PORT;
+    private int port = -1;
     private String path;
     private String protocol;
     private final String encoding;
@@ -103,31 +103,38 @@ public class HttpURL implements Serializable {
         } else {
             this.encoding = encoding;
         }
-        if (url.matches("\\w+://.+")) {
+        
+        String u = StringUtils.trimToEmpty(url); 
+        if (u.matches("[a-zA-Z][a-zA-Z0-9\\+\\-\\.]*:.*")) {
             URL urlwrap;
             try {
-                urlwrap = new URL(url);
+                urlwrap = new URL(u);
             } catch (MalformedURLException e) {
-                throw new URLException("Could not interpret URL: " + url, e);
+                throw new URLException("Could not interpret URL: " + u, e);
             }
-            protocol = StringUtils.substringBefore(url, ":");
+            protocol = StringUtils.substringBefore(u, ":");
             host = urlwrap.getHost();
             port = urlwrap.getPort();
             if (port < 0) {
-                if (StringUtils.startsWithIgnoreCase(url, PROTOCOL_HTTPS)) {
+                if (StringUtils.startsWithIgnoreCase(u, PROTOCOL_HTTPS)) {
                     port = DEFAULT_HTTPS_PORT;
                 } else if (
-                        StringUtils.startsWithIgnoreCase(url, PROTOCOL_HTTP)) {
+                        StringUtils.startsWithIgnoreCase(u, PROTOCOL_HTTP)) {
                     port = DEFAULT_HTTP_PORT;
                 }
             }
             path = urlwrap.getPath();
             fragment = urlwrap.getRef();
+        } else {
+            path = u.replaceFirst("^(.*?)([\\?\\#])(.*)", "$1");
+            if (StringUtils.contains(u, "#")) {
+                fragment = u.replaceFirst("^(.*?)(\\#)(.*)", "$3");
+            }
         }
         
         // Parameters
-        if (StringUtils.contains(url, "?")) {
-            queryString = new QueryString(url, encoding);
+        if (StringUtils.contains(u, "?")) {
+            queryString = new QueryString(u, encoding);
         }
     }
 
@@ -353,16 +360,20 @@ public class HttpURL implements Serializable {
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
-        b.append(protocol);
-        b.append("://");
-        b.append(host);
-        
+        if (StringUtils.isNotBlank(protocol)) {
+            b.append(protocol);
+            b.append("://");
+        }
+        if (StringUtils.isNotBlank(host)) {
+            b.append(host);
+        }
         if (!isPortDefault() && port != -1) {
             b.append(':');
             b.append(port);
         }
         if (StringUtils.isNotBlank(path)) {
-            if (!path.startsWith("/")) {
+            // If no scheme/host/port, leave the path as is
+            if (b.length() > 0 && !path.startsWith("/")) {
                 b.append('/');
             }
             b.append(encodePath(path));

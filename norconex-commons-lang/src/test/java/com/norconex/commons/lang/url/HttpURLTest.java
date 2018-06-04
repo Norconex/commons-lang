@@ -1,4 +1,4 @@
-/* Copyright 2015-2017 Norconex Inc.
+/* Copyright 2015-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -144,6 +144,63 @@ public class HttpURLTest {
     public void testInvalidURL() {
         s = "http://www.example.com/\"path\"";
         t = "http://www.example.com/%22path%22";
+        assertEquals(t, new HttpURL(s).toString());
+    }
+    
+    @Test
+    public void testURLWithLeadingTrailingSpaces() {
+        s = "  http://www.example.com/path  ";
+        t = "http://www.example.com/path";
+        assertEquals(t, new HttpURL(s).toString());
+    }
+
+    @Test
+    public void testNullOrBlankURLs() {
+        s = null;
+        t = "";
+        assertEquals(t, new HttpURL(s).toString());
+        s = "";
+        t = "";
+        assertEquals(t, new HttpURL(s).toString());
+        s = "  ";
+        t = "";
+        assertEquals(t, new HttpURL(s).toString());
+    }
+
+    @Test
+    public void testRelativeURLs() {
+        s = "./blah";
+        t = "./blah";
+        assertEquals(t, new HttpURL(s).toString());
+        s = "/blah";
+        t = "/blah";
+        assertEquals(t, new HttpURL(s).toString());
+        s = "blah?param=value#frag";
+        t = "blah?param=value#frag";
+        assertEquals(t, new HttpURL(s).toString());
+    }
+
+    @Test
+    public void testFileProtocol() {
+        // Encode non-URI characters 
+        s = "file:///etc/some dir/my file.txt";
+        t = "file:///etc/some%20dir/my%20file.txt";
+        assertEquals(t, new HttpURL(s).toString());
+            
+        s = "file://./dir/another-dir/path";
+        t = "file://./dir/another-dir/path";
+        assertEquals(t, new HttpURL(s).toString());
+
+        s = "file://localhost/c:/WINDOWS/éà.txt";
+        t = "file://localhost/c:/WINDOWS/%C3%A9%C3%A0.txt";
+        assertEquals(t, new HttpURL(s).toString());
+
+        s = "file:///c:/WINDOWS/file.txt";
+        t = "file:///c:/WINDOWS/file.txt";
+        assertEquals(t, new HttpURL(s).toString());
+
+        s = "file:/c:/WINDOWS/file.txt";
+        t = "file:///c:/WINDOWS/file.txt";
         assertEquals(t, new HttpURL(s).toString());
     }
 }
