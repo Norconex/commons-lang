@@ -7,6 +7,26 @@
   </properties>
   <body>
 
+    <release version="1.15.0" date="2018-06-03" description="Feature release">
+      <action dev="davisda4,essiembre" type="add">
+        New EncryptionXMLUtil class offering methods to facilitate integration 
+        of EncryptionKey with IXMLConfigurable objects (or other XML objects). 
+      </action>
+      <action dev="davisda4" type="update">
+        EncryptionUtil now uses AES for encryption and supports custom key size. 
+      </action>
+      <action dev="essiembre" type="update">
+        ConfigurationLoader now sets the Velocity character encoding to UTF-8. 
+      </action>
+      <action dev="essiembre" type="update">
+        HttpURL now extract protocols before first colon, no longer requiring
+        two forward slash.  Also more lenient towards relative URLs.  
+      </action>
+      <action dev="essiembre" type="update">
+        QueryString now strips out fragments when part of a URL. 
+      </action>
+    </release>
+
     <release version="1.14.0" date="2017-11-26" description="Feature release">
       <action dev="essiembre" type="add">
         Can now store and load Properties file as JSON.
