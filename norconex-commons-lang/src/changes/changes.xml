@@ -7,7 +7,8 @@
   </properties>
   <body>
 
-    <release version="2.0.0-SNAPSHOT" date="2018-??-??" description="Major release">
+    <release version="2.0.0-SNAPSHOT" date="2018-??-??" 
+             description="Major release. NOT a drop-in replacement for 1.x">
       <action dev="essiembre" type="add">
         New Event class and IEventListener interface.
       </action>
