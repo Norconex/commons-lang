@@ -7,7 +7,7 @@
   </properties>
   <body>
 
-    <release version="1.15.0-SNAPSHOT" date="2018-??-??" description="Maintenance release">
+    <release version="1.15.0" date="2018-06-03" description="Feature release">
       <action dev="davisda4,essiembre" type="add">
         New EncryptionXMLUtil class offering methods to facilitate integration 
         of EncryptionKey with IXMLConfigurable objects (or other XML objects). 
