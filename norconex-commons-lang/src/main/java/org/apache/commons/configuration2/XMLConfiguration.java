@@ -15,16 +15,6 @@
  * limitations under the License.
  */
 
-/* ****************************************************************************
- * NOTE:
- * This file was copied from Apache Configuration2 and was modified to fix a 
- * xml:space="preserve" issue.
- * Apache ticket: https://issues.apache.org/jira/browse/CONFIGURATION-703
- * 
- * It will be deleted once fixed in Configuration2.
- * ****************************************************************************
- */
-
 package org.apache.commons.configuration2;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -640,7 +630,12 @@ public class XMLConfiguration extends BaseHierarchicalConfiguration implements
             }
         }
 
-        boolean childrenFlag = hasChildren || (attributes.size() > 1 && !VALUE_PRESERVE.equals(attributes.get(ATTR_SPACE)));
+        boolean childrenFlag = false;
+        if (hasChildren || trimFlag) {
+            childrenFlag = hasChildren || attributes.size() > 1;
+        }
+        
+//        boolean childrenFlag = hasChildren || attributes.size() > 1;
         String text = determineValue(buffer.toString(), childrenFlag, trimFlag);
         if (text.length() > 0 || (!childrenFlag && level != 0))
         {

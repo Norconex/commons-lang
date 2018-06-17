@@ -1,4 +1,4 @@
-/* Copyright 2017 Norconex Inc.
+/* Copyright 2017-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,9 @@
  */
 package com.norconex.commons.lang.time;
 
+import java.time.Duration;
+import java.util.Locale;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -26,22 +29,46 @@ public class DurationParserTest {
     private static final long TEST_DURATION = 
             54 * DAY + 18 * HOUR + 1 * MINUTE + 23 * SECOND;
     
+    private final DurationParser englishParser = new DurationParser();
+    private final DurationParser frenchParser = 
+            new DurationParser().withLocale(Locale.FRENCH);
+    
     @Test
-    public void testDurationParser() {
-        Assert.assertEquals(TEST_DURATION, DurationParser.parse("54d18h1m23s"));
-        Assert.assertEquals(TEST_DURATION, DurationParser.parse(
+    public void testParseToMilliseconds() {
+        Assert.assertEquals(TEST_DURATION, englishParser.parseToMillis(
+                "54d18h1m23s"));
+        Assert.assertEquals(TEST_DURATION, englishParser.parseToMillis( 
                 "54 days, 18 hours, 1 minute, and 23 seconds"));
-        Assert.assertEquals(TEST_DURATION, DurationParser.parse(
+        Assert.assertEquals(TEST_DURATION, englishParser.parseToMillis(
                 "54 days, 18 hours, 1 minute, and 23 seconds"));
-        Assert.assertEquals(TEST_DURATION, DurationParser.parse(
+        Assert.assertEquals(TEST_DURATION, englishParser.parseToMillis(
                 "54days,18 hrs1min23 s"));
+
+        Assert.assertEquals(TEST_DURATION, frenchParser.parseToMillis(
+                "54 jours, 18 heures, 1m et 23 secondes"));
     }
 
     @Test
+    public void testParseToDuration() {
+        Duration duration = Duration.ofMillis(TEST_DURATION);
+        Assert.assertEquals(duration, englishParser.parse("54d18h1m23s"));
+        Assert.assertEquals(duration, englishParser.parse( 
+                "54 days, 18 hours, 1 minute, and 23 seconds"));
+        Assert.assertEquals(duration, englishParser.parse( 
+                "54 days, 18 hours, 1 minute, and 23 seconds"));
+        Assert.assertEquals(duration, englishParser.parse( 
+                "54days,18 hrs1min23 s"));
+
+        Assert.assertEquals(duration, frenchParser.parse( 
+                "54 jours, 18 heures, 1m et 23 secondes"));
+    }
+
+    
+    @Test
     public void testDefaultValue() {
-        Assert.assertEquals(2, DurationParser.parse("-5", 2));
+        Assert.assertEquals(2, englishParser.parseToMillis("-5", 2));
         try {
-            DurationParser.parse("-5");
+            englishParser.parse("-5");
             Assert.fail("Should have thrown exception.");
         } catch (Exception e) {
             // swallow

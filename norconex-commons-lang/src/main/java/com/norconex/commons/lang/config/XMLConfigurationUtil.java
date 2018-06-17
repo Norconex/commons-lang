@@ -23,6 +23,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -325,26 +326,26 @@ public final class XMLConfigurationUtil {
         if (e instanceof ConfigurationException
                 && e.getCause() != null) {
             if (e.getCause() instanceof ClassNotFoundException) {
-                LOG.error("You declared a class that does not exists "
-                        + "for \"" + rootNode
-                        + " -> " + key + "\". Check for typos in your "
+                LOG.error("You declared a class that does not exists for "
+                        + "\"{} -> {}\". Check for typos in your "
                         + "XML and make sure that "
-                        + "class is part of your Java classpath.", e);
+                        + "class is part of your Java classpath.", 
+                        rootNode, key, e);
             } else if (e.getCause() instanceof SAXParseException) {
                     String systemId = ((SAXParseException ) 
                             e.getCause()).getSystemId();
                     if (StringUtils.endsWith(systemId, ".xsd")) {
-                        LOG.error("XML Schema parsing error for \""
-                                + rootNode 
-                                + " -> " + key + "\". Schema: " + systemId, e);
+                        LOG.error("XML Schema parsing error for "
+                                + "\"{} -> {}\". Schema: {}", 
+                                rootNode, key, systemId, e);
                     } else {
-                        LOG.error("XML parsing error for \""
-                                + rootNode + " -> " + key + "\".", e);
+                        LOG.error("XML parsing error for \"{} -> "
+                                + "{}\".", rootNode, key, e);
                     }
             }
         } else{ 
             LOG.debug("Could not instantiate object from configuration "
-                    + "for \"" + rootNode + " -> " + key + "\".", e);
+                    + "for \"{} -> \".", rootNode, key, e);
         }
     }
     
@@ -420,9 +421,9 @@ public final class XMLConfigurationUtil {
         
         // Only validate if .xsd file exist in classpath for class
         String xsdResource = ClassUtils.getSimpleName(clazz) + ".xsd";
-        LOG.debug("Class to validate: " + ClassUtils.getSimpleName(clazz));
+        LOG.debug("Class to validate: {}", ClassUtils.getSimpleName(clazz));
         if (clazz.getResource(xsdResource) == null) {
-            LOG.debug("Resource not found for validation: " + xsdResource);
+            LOG.debug("Resource not found for validation: {}", xsdResource);
             return errors;
         }
 
@@ -584,8 +585,8 @@ public final class XMLConfigurationUtil {
         IXMLConfigurable readConfigurable = newInstance(xml);
 
         if (!xmlConfigurable.equals(readConfigurable)) {
-            LOG.error("BEFORE: " + xmlConfigurable);
-            LOG.error(" AFTER: " + readConfigurable);
+            LOG.error("BEFORE: {}", xmlConfigurable);
+            LOG.error(" AFTER: {}", readConfigurable);
             throw new ConfigurationException(
                     "Saved and loaded XML are not the same.");
         }
@@ -843,14 +844,14 @@ public final class XMLConfigurationUtil {
      * @return duration in milliseconds
      * @since 1.13.0
      */
-    public static long getDuration(
+    public static Duration getDuration(
             HierarchicalConfiguration<ImmutableNode> xml, 
-            String key, long defaultValue) {
+            String key, Duration defaultValue) {
         String duration = xml.getString(key, null);
         if (StringUtils.isBlank(duration)) {
             return defaultValue;
         }
-        return DurationParser.parse(duration);
+        return new DurationParser().parse(duration);
     }
     
     /**
