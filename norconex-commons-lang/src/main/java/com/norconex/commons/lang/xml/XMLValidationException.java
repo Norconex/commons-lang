@@ -12,26 +12,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.norconex.commons.lang.config;
+package com.norconex.commons.lang.xml;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import com.norconex.commons.lang.config.ConfigurationException;
 
 /**
  * Runtime exception for configuration related issues.
  * @author Pascal Essiembre
  * @since 2.0.0
+ * @see XML#validate(Class)
  */
-public class ConfigurationValidationException extends ConfigurationException {
+public class XMLValidationException extends ConfigurationException {
 
     private static final long serialVersionUID = 1L;
     
-    private final List<ConfigurationValidationError> errors = new ArrayList<>();
+    private final List<XMLValidationError> errors = new ArrayList<>();
     
     /**
      * Constructor.
      */
-    public ConfigurationValidationException() {
+    public XMLValidationException() {
         super();
     }
 
@@ -39,13 +42,13 @@ public class ConfigurationValidationException extends ConfigurationException {
      * Constructor.
      * @param errors configuration errors (e.g. schema validation errors)
      */
-    public ConfigurationValidationException(
-            List<ConfigurationValidationError> errors) {
+    public XMLValidationException(
+            List<XMLValidationError> errors) {
         super();
         this.errors.addAll(errors);
     }
     
-    public List<ConfigurationValidationError> getErrors() {
+    public List<XMLValidationError> getErrors() {
         return errors;
     }
 }

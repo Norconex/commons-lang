@@ -19,20 +19,20 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
-import org.apache.commons.configuration2.XMLConfiguration;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.runtime.RuntimeConstants;
+
+import com.norconex.commons.lang.xml.XML;
 
 /**
  * <p>Class parsing a Velocity template (which can have parse/include 
@@ -157,22 +157,22 @@ public final class ConfigurationLoader {
     }
 
     /**
-     * Loads a configuration file.
+     * Loads an XML configuration file.
      * @param configFile XML configuration file
      * @return Apache XMLConfiguration instance
      */
-    public XMLConfiguration loadXML(File configFile) {
+    public XML loadXML(File configFile) {
         return loadXML(configFile, null);
     }
 
     /**
-     * Loads a configuration file.
+     * Loads an XML configuration file.
      * @param configFile XML configuration file
      * @param variables path to .variables or .properties file defining 
      *        variables. 
      * @return Apache XMLConfiguration instance
      */
-    public XMLConfiguration loadXML(File configFile, File variables) {
+    public XML loadXML(File configFile, File variables) {
         if (!configFile.exists()) {
             return null;
         }
@@ -184,8 +184,7 @@ public final class ConfigurationLoader {
             // as they are not necessary to parse configs.
             xml = Pattern.compile("((?!^)<\\?xml.*?\\?>|<\\!DOCTYPE.*?>)",
                     Pattern.MULTILINE).matcher(xml).replaceAll("");
-            return XMLConfigurationUtil.newXMLConfiguration(
-                    new StringReader(xml));
+            return new XML(xml);
         } catch (Exception e) {
             throw new ConfigurationException(
                     "Cannot load configuration file: \"" + configFile + "\". "

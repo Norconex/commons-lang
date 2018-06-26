@@ -46,10 +46,8 @@ import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.beanutils.PropertyUtilsBean;
 import org.apache.commons.beanutils.SuppressPropertiesBeanIntrospector;
-import org.apache.commons.configuration2.FileBasedConfiguration;
-import org.apache.commons.configuration2.PropertiesConfiguration;
-import org.apache.commons.configuration2.XMLPropertiesConfiguration;
-import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.apache.commons.io.input.ReaderInputStream;
+import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.LocaleUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -93,11 +91,11 @@ import com.norconex.commons.lang.bean.ExtendedBeanUtilsBean;
  * its desired type, a {@link PropertiesException} is thrown.</p>
  * @author Pascal Essiembre
  */
-//TODO document that version 2 only deals with UTF-8.  Maybe offer charset in 
-//constructor?
 public class Properties extends ObservableMap<String, List<String>>
         implements Serializable {
 
+    public static final String DEFAULT_JAVA_PROPERTIES_DELIMITER = "\u241E"; 
+    
     //TODO have getXXXRegex() methods to return all keys or values matching
     // a regular expression
     
@@ -141,7 +139,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * As of version <b>1.4</b> the {@code Map} argument is decorated so that
      * modifications to this instance will also modify the supplied {@code Map}.
      * To use a {@code Map} to initialize values only, use the 
-     * {@link #load(Map)} method.
+     * {@link #loadFromMap(Map)} method.
      * @param map the Map to decorate 
      */
     public Properties(Map<String, List<String>> map) {
@@ -152,7 +150,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * As of version <b>1.4</b> the {@code Map} argument is decorated so that
      * modifications to this instance will also modify the supplied {@code Map}.
      * To use a {@code Map} to initialize values only, use the 
-     * {@link #load(Map)} method.
+     * {@link #loadFromMap(Map)} method.
      * @param map the Map to decorate 
      * @param caseInsensitiveKeys when <code>true</code> methods taking a 
      *        key argument will consider the key being passed without 
@@ -163,14 +161,12 @@ public class Properties extends ObservableMap<String, List<String>>
         super(map);
         this.caseInsensitiveKeys = caseInsensitiveKeys;
         
-        
         //--- PropertyUtilsBean ---
         // Make sure objects needing more than "toString" are handled in
-        // load(Map<?, ?> map) {
+        // loadFromMap(Map<?, ?> map) {
         this.propertyUtilsBean = new PropertyUtilsBean();
         this.propertyUtilsBean.addBeanIntrospector(
                 SuppressPropertiesBeanIntrospector.SUPPRESS_CLASS);
-        
         this.beanUtilsBean = new ExtendedBeanUtilsBean();
     }
     
@@ -185,90 +181,90 @@ public class Properties extends ObservableMap<String, List<String>>
 
     //--- Store ----------------------------------------------------------------
     /**
-     * Writes this property list (key and element pairs) in this
-     * <code>Properties</code> table to the output stream as UTF-8 in a format 
-     * suitable for loading into a <code>Properties</code> table using the
-     * {@link #load(InputStream) load} method.
-     * Otherwise, the same considerations as
-     * {@link #store(OutputStream, String)} apply.
-     * @param   comments   a description of the property list.
+     * Returns this {@link Map} in a format 
+     * compatible with {@link java.util.Properties#store(Writer, String)}.
+     * Multi-value properties
+     * are merged, joined by the symbol for record separator (U+241E).
      * @return the properties as string
-     * @throws IOException problem storing to string
+     * @since 2.0.0
      */
-    public String storeToString(String comments) throws IOException {
-        StringWriter writer = new StringWriter();
-        store(writer, comments);
-        String str = writer.toString();
-        writer.close();
-        return str;
+    @Override
+    public String toString() {
+        try {
+            StringWriter writer = new StringWriter();
+            storeToProperties(writer);
+            String str = writer.toString();
+            writer.close();
+            return str;
+        } catch (IOException e) {
+            throw new PropertiesException("Could not convert to string.", e);
+        }
     }
+    
     /**
-     * Writes this {@link Map} (key and element pairs) to the output character
-     * stream in a format suitable for using the 
-     * {@link #load(Reader)} method. 
-     * If you need compatibility with {@link java.util.Properties}
-     * consider using {@link #store(Writer, String)} instead. 
+     * Stores this {@link Map} in a format 
+     * compatible with {@link java.util.Properties#store(Writer, String)}.
+     * Multi-value properties
+     * are merged, joined by the symbol for record separator (U+241E).
      * @param   writer     an output character stream writer.
      * @throws IOException i/o problem
-     * @since 1.14.0
+     * @since 2.0.0
      */
-    public void store(Writer writer) throws IOException {
-        store(writer, null);
+    public void storeToProperties(Writer writer) throws IOException {
+        storeToProperties(writer, null);
     }    
     /**
-     * Writes this {@link Map} (key and element pairs) to the output character
-     * stream in a format suitable for using the 
-     * {@link #load(Reader, String)} method. 
-     * This method ensure multi-value properties will be written on the same
-     * line, joining them by the specified delimiter. The delimiter
-     * must be non-blank or values won't be joined.
-     * This variant can be useful for compatibility with 
-     * {@link java.util.Properties}, which does not support multiple values 
-     * per keys.
+     * Stores this {@link Map} in a format 
+     * compatible with {@link java.util.Properties#store(Writer, String)}.
+     * Multi-value properties
+     * are merged, joined by the supplied delimiter character.
+     * If the delimiter is <code>null</code>, the 
+     * symbol for record separator (U+241E) is used.
      * @param   writer     an output character stream writer.
      * @param delimiter string to used as a separator when joining 
      *        multiple values for the same key.
      * @throws IOException i/o problem
+     * @since 2.0.0
      */
-    public void store(Writer writer, String delimiter)
+    public void storeToProperties(Writer writer, String delimiter)
             throws IOException {
-        store(writer, delimiter, false);
+        storeToJavaUtilProperties(writer, delimiter, false);
     }
     /**
-     * Writes this {@link Map} (key and element pairs) to the output character
-     * stream as UTF-8 in a format suitable for using the 
-     * {@link #load(InputStream)} method. 
-     * If you need compatibility with {@link java.util.Properties}
-     * consider using {@link #store(OutputStream, String)} instead. 
+     * Stores this {@link Map} in a format 
+     * compatible with {@link java.util.Properties#store(OutputStream, String)}.
+     * Multi-value properties
+     * are merged, joined by the symbol for record separator (U+241E).
      * @param   out      an output stream.
      * @throws IOException i/o problem
+     * @since 2.0.0
      */
-    public void store(OutputStream out) throws IOException {
-        store(out, null);
+    public void storeToProperties(OutputStream out) throws IOException {
+        storeToProperties(out, null);
     }
     /**
-     * Writes this {@link Map} (key and element pairs) to the output character
-     * stream as UTF-8 in a format suitable for using the 
-     * {@link #load(InputStream)} method. 
-     * This method ensure multi-value properties will be written on the same
-     * line, joining them by the specified delimiter.
-     * This variant can be useful for compatibility with 
-     * {@link java.util.Properties}, which does not support multiple values 
-     * per keys.
+     * Stores this {@link Map} in a format 
+     * compatible with {@link java.util.Properties#store(OutputStream, String)}.
+     * Multi-value properties
+     * are merged, joined by the supplied delimiter character.
+     * If the delimiter is <code>null</code>, the 
+     * symbol for record separator (U+241E) is used.
      * @param   out      an output stream.
      * @param delimiter delimiter string to used as a separator when joining 
      *        multiple values for the same key.
      * @throws IOException i/o problem
+     * @since 2.0.0
      */
-    public void store(OutputStream out, String delimiter) throws IOException {
-        store(out, delimiter, false);
+    public void storeToProperties(OutputStream out, String delimiter) throws IOException {
+        storeToJavaUtilProperties(out, delimiter, false);
     }
 
     /**
-     * Writes this {@link Map} as XML to the output character
-     * stream using UTF-8 in a format suitable for using the 
-     * {@link #loadFromXML(InputStream)} method. 
-     * @param os the output stream on which to emit the XML document.
+     * Stores this {@link Map} in a UTF-8 format compatible with 
+     * {@link java.util.Properties#storeToXML(OutputStream, String)}.
+     * Multi-value properties
+     * are merged, joined by the symbol for record separator (U+241E).
+     * @param os the output stream on which to store the XML document.
      * @throws IOException i/o problem
      * @since 1.14.0
      */
@@ -277,31 +273,28 @@ public class Properties extends ObservableMap<String, List<String>>
     }    
     
     /**
-     * Writes this {@link Map} as XML to the output character
-     * stream using UTF-8 in a format suitable for using the 
-     * {@link #loadFromXML(InputStream)} method. 
-     * This method ensure multi-value properties will be written on the same
-     * line, joining them by the specified delimiter (if not null).
-     * This variant can be useful for compatibility with 
-     * {@link java.util.Properties}, which does not support multiple values 
-     * per keys.
-     * @param os the output stream on which to emit the XML document.
+     * Stores this {@link Map} in a UTF-8 format compatible with 
+     * {@link java.util.Properties#storeToXML(OutputStream, String)}.
+     * Multi-value properties
+     * are merged, joined by the supplied delimiter character.
+     * If the delimiter is <code>null</code>, the 
+     * symbol for record separator (U+241E) is used.
+     * @param os the output stream on which to store the XML document.
      * @param delimiter delimiter string to used as a separator when joining 
      *        multiple values for the same key.
      * @throws IOException i/o problem
+     * @since 1.14.0
      */
-    public void storeToXML(OutputStream os, 
-            String delimiter) throws IOException {
-        store(os, delimiter, true);
+    public void storeToXML(
+            OutputStream os, String delimiter) throws IOException {
+        storeToJavaUtilProperties(os, delimiter, true);
     }
 
     /**
-     * Writes this {@link Map} as XML to the writer in a format suitable 
-     * for using the 
-     * {@link #loadFromXML(Reader)} method. 
-     * If you need compatibility with {@link java.util.Properties}
-     * consider using {@link #storeToXML(Writer, String)} 
-     * instead. 
+     * Stores this {@link Map} in a UTF-8 format compatible with 
+     * {@link java.util.Properties#storeToXML(OutputStream, String)}.
+     * Multi-value properties
+     * are merged, joined by the symbol for record separator (U+241E).
      * @param writer writer on which to store the XML document.
      * @throws IOException i/o problem
      * @since 1.14.0
@@ -311,14 +304,12 @@ public class Properties extends ObservableMap<String, List<String>>
     }    
     
     /**
-     * Writes this {@link Map} as XML to the writer 
-     * in a format suitable for using the 
-     * {@link #loadFromXML(InputStream)} method. 
-     * This method ensure multi-value properties will be written on the same
-     * line, joining them by the specified delimiter (if not null).
-     * This variant can be useful for compatibility with 
-     * {@link java.util.Properties}, which does not support multiple values 
-     * per keys.
+     * Stores this {@link Map} in a UTF-8 format compatible with 
+     * {@link java.util.Properties#storeToXML(OutputStream, String)}.
+     * Multi-value properties
+     * are merged, joined by the supplied delimiter character.
+     * If the delimiter is <code>null</code>, the 
+     * symbol for record separator (U+241E) is used.
      * @param writer the writer on which to store the XML document.
      * @param delimiter delimiter string to used as a separator when joining 
      *        multiple values for the same key.
@@ -326,44 +317,36 @@ public class Properties extends ObservableMap<String, List<String>>
      */
     public void storeToXML(Writer writer, String delimiter) 
             throws IOException {
-        store(writer, delimiter, true);
+        storeToJavaUtilProperties(writer, delimiter, true);
+    }
+
+    
+    private synchronized void storeToJavaUtilProperties(
+            Object output, String delimiter, boolean isXML) throws IOException {
+        java.util.Properties p = new java.util.Properties();
+        String sep = StringUtils.defaultIfEmpty(
+                delimiter, DEFAULT_JAVA_PROPERTIES_DELIMITER);
+        for (Entry<String, List<String>> entry : entrySet()) {
+            p.setProperty(
+                    entry.getKey(), 
+                    StringUtils.join(entry.getValue(), sep));
+        }
+        if (output instanceof Writer) {
+            if (isXML) {
+                p.storeToXML(new WriterOutputStream((Writer) output, 
+                        StandardCharsets.UTF_8), "");
+            } else {
+                p.store((Writer) output, "");
+            }
+        } else {
+            if (isXML) {
+                p.storeToXML((OutputStream) output, "");
+            } else {
+                p.store((OutputStream) output, "");
+            }
+        }
     }
     
-    //TODO only support Writer???
-    //TODO rename save/load instead of load/store?   Or better: read/write?
-    // input is either Writer or OuputStream
-    //TODO remove "store" in favor of toXML() toProperties toJSON and 
-    //fromXML(), etc...
-    private synchronized void store(Object output, 
-            String delimiter, boolean isXML)  throws IOException {
-        FileBasedConfiguration p;
-        if (isXML) {
-            p = new XMLPropertiesConfiguration();
-        } else {
-            p = new PropertiesConfiguration();
-        }
-
-        for (Entry<String, List<String>> entry : entrySet()) {
-            String key = entry.getKey();
-            List<String> values = entry.getValue();
-            if (StringUtils.isEmpty(delimiter)) {
-                p.setProperty(key, values);
-            } else {
-                p.setProperty(key, StringUtils.join(values, delimiter));
-            }
-        }
-        try {
-            if (output instanceof Writer) {
-                p.write((Writer) output);
-            } else {
-                p.write(new OutputStreamWriter(
-                        (OutputStream) output, StandardCharsets.UTF_8));
-            }
-        } catch (ConfigurationException e) {
-            throw new IOException(e);
-        }
-    }
-
     /**
      * Writes this {@link Map} as JSON to the output stream as UTF-8 in a format 
      * suitable for using the {@link #loadFromJSON(InputStream)} method. 
@@ -456,13 +439,13 @@ public class Properties extends ObservableMap<String, List<String>>
     /**
      * Reads a property list (key and element pairs) from the input
      * string.  Otherwise, the same considerations as
-     * {@link #load(InputStream)} apply.
+     * {@link #loadFromProperties(InputStream)} apply.
      * @param str the string to load
      * @throws IOException problem loading string
      */
-    public void loadFromString(String str) throws IOException {
+    public void fromString(String str) throws IOException {
         Reader r = new StringReader(str);
-        load(r);
+        loadFromProperties(r);
         r.close();
     }
 
@@ -477,10 +460,10 @@ public class Properties extends ObservableMap<String, List<String>>
      * <p>Changes to this instance
      * won't be reflected in the given <code>Map</code>.  If you want otherwise,
      * use invoke the constructor with a <code>Map</code> argument.</p>
-     * 
      * @param map the map containing values to load
+     * @since 2.0.0
      */
-    public synchronized void load(Map<?, ?> map) {
+    public synchronized void loadFromMap(Map<?, ?> map) {
         if (map != null) {
             for (Entry<?, ?> entry : map.entrySet()) {
                 Object keyObj = entry.getKey();
@@ -518,61 +501,70 @@ public class Properties extends ObservableMap<String, List<String>>
     }
     
     /**
-     * Reads and creates a property list from the reader, created by (or having
-     * same format as) {@link #store(Writer)} method. 
+     * Loads this {@link Map} from an input of a format 
+     * compatible with {@link java.util.Properties#load(Reader)}.
+     * Multi-value properties
+     * are split using the symbol for record separator (U+241E).
      * @param   reader   the input character stream.
      * @throws IOException i/o problem
+     * @since 2.0.0
      */
-    public void load(Reader reader) throws IOException {
-        load(reader, null);
+    public void loadFromProperties(Reader reader) throws IOException {
+        loadFromProperties(reader, null);
     }
     /**
-     * Reads and creates a property list from the reader, created by (or having
-     * same format as) {@link #store(Writer, String)} method. 
-     * If a key was stored with multiple values using a delimiter, 
-     * this method will split these values appropriately provided the 
-     * supplied delimiter is the same.
+     * Loads this {@link Map} from an input of a format 
+     * compatible with {@link java.util.Properties#load(Reader)}.
+     * Multi-value properties
+     * are split using the supplied delimiter string.
+     * If the delimiter is <code>null</code>, the symbol for record separator 
+     * (U+241E) is used.
      * @param   reader   the input character stream.
      * @param delimiter delimiter string to used to parse a multi-value key.
      * @throws IOException i/o problem
-     * @see Properties#load(Reader)
+     * @since 2.0.0
      */
-    public void load(Reader reader, String delimiter)
+    public void loadFromProperties(Reader reader, String delimiter)
             throws IOException {
-        load(reader, delimiter, false);
+        loadFromJavaUtilProperties(reader, delimiter, false);
     }
     
     /**
-     * Reads and creates a property list from the input stream (UTF8), 
-     * created by (or having
-     * same format as) {@link #store(OutputStream)} method. 
+     * Loads this {@link Map} from an input of a format 
+     * compatible with {@link java.util.Properties#load(InputStream)}.
+     * Multi-value properties
+     * are split using the symbol for record separator (U+241E).
      * @param   inStream   the input stream.
      * @throws IOException i/o problem
-     * @see Properties#load(InputStream)
+     * @since 2.0.0
      */
-    public synchronized void load(InputStream inStream) throws IOException {
-        load(inStream, null);
+    public synchronized void loadFromProperties(
+            InputStream inStream) throws IOException {
+        loadFromProperties(inStream, null);
     }
     /**
-     * Reads and creates a property list from the input stream (UTF8), 
-     * created by (or having
-     * same format as) {@link #store(OutputStream, String)} method. 
-     * If a key was stored with multiple values using a delimiter, 
-     * this method will split these values appropriately provided the 
-     * supplied delimiter is the same.
+     * Loads this {@link Map} from an input of a format 
+     * compatible with {@link java.util.Properties#load(InputStream)}.
+     * Multi-value properties
+     * are split using the supplied delimiter string.
+     * If the delimiter is <code>null</code>, the symbol for record separator 
+     * (U+241E) is used.
      * @param   inStream   the input stream.
      * @param delimiter delimiter string to used to parse a multi value
      *        key.
      * @throws IOException i/o problem
-     * @since 1.14.0
+     * @since 2.0.0
      */
-    public synchronized void load(InputStream inStream, String delimiter)
-            throws IOException {
-        load(inStream, delimiter, false);
+    public synchronized void loadFromProperties(
+            InputStream inStream, String delimiter) throws IOException {
+        loadFromJavaUtilProperties(inStream, delimiter, false);
     }
+    
     /**
-     * Loads all of the properties represented by the XML document on the
-     * specified input stream into this instance.
+     * Loads this {@link Map} from an input of a format 
+     * compatible with {@link java.util.Properties#loadFromXML(InputStream)}.
+     * Multi-value properties
+     * are split using the symbol for record separator (U+241E).
      * @param in in the input stream from which to read the XML document.
      * @throws IOException i/o problem
      */
@@ -580,11 +572,12 @@ public class Properties extends ObservableMap<String, List<String>>
         loadFromXML(in, null);
     }
     /**
-     * Loads all of the properties represented by the XML document on the
-     * specified input stream into this instance.
-     * If a key was stored with multiple values using a delimiter, 
-     * this method will split these values appropriately provided the 
-     * supplied delimiter is the same. 
+     * Loads this {@link Map} from an input of a format 
+     * compatible with {@link java.util.Properties#load(InputStream)}.
+     * Multi-value properties
+     * are split using the supplied delimiter string.
+     * If the delimiter is <code>null</code>, the symbol for record separator 
+     * (U+241E) is used.
      * @param in in the input stream from which to read the XML document.
      * @param delimiter delimiter string to used to parse a multi-value key.
      * @throws IOException i/o problem
@@ -592,12 +585,14 @@ public class Properties extends ObservableMap<String, List<String>>
      */
     public void loadFromXML(InputStream in, String delimiter)
             throws IOException {
-        load(in, delimiter, true);
+        loadFromJavaUtilProperties(in, delimiter, true);
     }
 
     /**
-     * Loads all of the properties from the XML document reader
-     * into this instance.
+     * Loads this {@link Map} from an input of a format 
+     * compatible with {@link java.util.Properties#loadFromXML(InputStream)}.
+     * Multi-value properties
+     * are split using the symbol for record separator (U+241E).
      * @param reader the reader from which to read the XML document.
      * @throws IOException i/o problem
      * @since 1.14.0
@@ -606,11 +601,13 @@ public class Properties extends ObservableMap<String, List<String>>
         loadFromXML(reader, null);
     }
     /**
-     * Loads all of the properties from the XML document reader
-     * into this instance.
-     * If a key was stored with multiple values using a delimiter, 
-     * this method will split these values appropriately provided the 
-     * supplied delimiter is the same. 
+    /**
+     * Loads this {@link Map} from an input of a format 
+     * compatible with {@link java.util.Properties#load(InputStream)}.
+     * Multi-value properties
+     * are split using the supplied delimiter string.
+     * If the delimiter is <code>null</code>, the symbol for record separator 
+     * (U+241E) is used.
      * @param reader reader from which to read the XML document.
      * @param delimiter delimiter string to used to parse a multi-value key.
      * @throws IOException i/o problem
@@ -618,39 +615,38 @@ public class Properties extends ObservableMap<String, List<String>>
      */
     public void loadFromXML(Reader reader, String delimiter)
             throws IOException {
-        load(reader, delimiter, true);
+        loadFromJavaUtilProperties(reader, delimiter, true);
     }
     
     // input is Reader or InputStream
-    private synchronized void load(
+    private synchronized void loadFromJavaUtilProperties(
             Object input, String delimiter, boolean isXML) throws IOException {
-        FileBasedConfiguration p;
-        if (isXML) {
-            p = new XMLPropertiesConfiguration();
+        
+        java.util.Properties p = new java.util.Properties();
+        String sep = StringUtils.defaultIfEmpty(
+                delimiter, DEFAULT_JAVA_PROPERTIES_DELIMITER);
+
+        if (input instanceof Reader) {
+            if (isXML) {
+                p.loadFromXML(new ReaderInputStream(
+                        (Reader) input, StandardCharsets.UTF_8));
+            } else {
+                p.load((Reader) input);
+            }
         } else {
-            p = new PropertiesConfiguration();
+            if (isXML) {
+                p.loadFromXML((InputStream) input);
+            } else {
+                p.load((InputStream) input);
+            }
         }
 
-        try {
-            if (input instanceof Reader) {
-                p.read((Reader) input);
-            } else {
-                p.read(new InputStreamReader(
-                        (InputStream) input, StandardCharsets.UTF_8));
+        for (Entry<Object, Object> entry : p.entrySet()) {
+            if (entry.getKey() != null) {
+                addString(entry.getKey().toString(),
+                        StringUtils.splitByWholeSeparator(
+                                Objects.toString(entry.getValue(), null), sep));
             }
-        } catch (ConfigurationException e) {
-            throw new IOException(e);
-        }
-        
-        Iterator<String> it = p.getKeys();
-        while (it.hasNext()) {
-            String key = it.next();
-            if (StringUtils.isEmpty(delimiter)) {
-                addString(key, p.getStringArray(key));
-            } else {
-                addString(key, StringUtils.split(
-                        p.getString(key, StringUtils.EMPTY), delimiter));
-            }            
         }
     }    
 
@@ -701,7 +697,7 @@ public class Properties extends ObservableMap<String, List<String>>
             return;
         }
         try {
-            load(propertyUtilsBean.describe(bean));
+            loadFromMap(propertyUtilsBean.describe(bean));
         } catch (IllegalAccessException | InvocationTargetException 
                 | NoSuchMethodException e) {
             throw new PropertiesException(

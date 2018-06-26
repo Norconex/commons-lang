@@ -21,12 +21,11 @@ import java.io.Writer;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-import org.apache.commons.configuration2.XMLConfiguration;
 import org.apache.commons.lang3.StringUtils;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.xml.XML;
 
 /**
  * <p>
@@ -53,12 +52,11 @@ public class EncryptionXMLUtil {
      */
     public static EncryptionKey loadFromXML(
             Reader in, String tagPrefix, EncryptionKey defaultKey) {
-        XMLConfiguration xml = XMLConfigurationUtil.newXMLConfiguration(in);
+        XML xml = new XML(in);
         return loadFromXML(xml, tagPrefix, defaultKey);
     }
     /**
-     * Convenience method for loading an encryption key from an 
-     * {@link XMLConfiguration}. 
+     * Convenience method for loading an encryption key from an {@link XML}. 
      * @param xml xml configuration
      * @param tagPrefix prefix of the XML tag names being loaded. 
      * @param defaultKey default encryption key
@@ -66,7 +64,7 @@ public class EncryptionXMLUtil {
      * @see IXMLConfigurable
      */
     public static EncryptionKey loadFromXML(
-            XMLConfiguration xml, String tagPrefix, EncryptionKey defaultKey) {
+            XML xml, String tagPrefix, EncryptionKey defaultKey) {
         String tagKey = StringUtils.trimToEmpty(tagPrefix);
         tagKey = tagKey.length() > 0 ? tagKey + "Key" : "key";
         String tagSource = tagKey + "Source";

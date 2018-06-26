@@ -8,7 +8,7 @@
   <body>
 
     <release version="2.0.0-SNAPSHOT" date="2018-??-??" 
-             description="Major release. NOT a drop-in replacement for 1.x">
+             description="Major release. NOT a drop-in replacement for 1.x.">
       <action dev="essiembre" type="add">
         New DurationFormatter.
       </action>
@@ -24,15 +24,16 @@
         New Properties#loadFromBean and Properties#storeToBean methods.
       </action>
       <action dev="essiembre" type="add">
-        New ConfigurationValidationError class now returned by 
-        XMLConfigurationUtil validation methods.
+        New XML class replacing XMLConfigurationUtil. Now relying on 
+        Java XML/XPath instead of Apache Configuration and white spaces are now always preserved. 
+      </action>
+      <action dev="essiembre" type="add">
+        New XMLValidationError class now returned by 
+        XML validation methods.
       </action>
       <action dev="essiembre" type="add">
         New DateUtil class for converting between java.util.Date to/from
         local date/time.
-      </action>
-      <action dev="essiembre" type="add">
-        New XMLConfigurationUtil#saveToXML method.
       </action>
       <action dev="essiembre" type="add">
         New FileUtil#createDateFormattedDirs and FileUtil#toDateFormattedDir
@@ -60,7 +61,7 @@
       </action>
       <action dev="essiembre" type="update">
         Dependency updates: Apache Commons Lang 3.7, 
-        Apache Commons Configuration 2.2, Apache Commons BeanUtils 1.9.3,
+        Apache Commons BeanUtils 1.9.3,
         Apache Velocity 2.0.
       </action>
       <action dev="essiembre" type="update">
@@ -75,6 +76,12 @@
       </action>      
       <action dev="essiembre" type="remove">
         Removed CountingConsoleAppender, MemoryUtil#getFreeMemory(boolean).
+      </action>
+      <action dev="essiembre" type="remove">
+        Removed XMLConfigurationUtil (replaced by XML).
+      </action>
+      <action dev="essiembre" type="remove">
+        Removed Apache Configuration dependency.
       </action>
     </release>
 

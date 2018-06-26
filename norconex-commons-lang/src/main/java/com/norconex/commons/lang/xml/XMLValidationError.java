@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.norconex.commons.lang.config;
+package com.norconex.commons.lang.xml;
 
 import java.io.Serializable;
 
@@ -27,9 +27,9 @@ import org.apache.commons.lang3.builder.ToStringStyle;
  * The severity is only used as indicator. 
  * @author Pascal Essiembre
  * @since 2.0.0
- * @see XMLConfigurationUtil#validate(Class, java.io.Reader)
+ * @see XML#validate(Class)
  */
-public class ConfigurationValidationError implements Serializable {
+public class XMLValidationError implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -38,7 +38,7 @@ public class ConfigurationValidationError implements Serializable {
     private final Severity severity;
     private final String message;
     
-    public ConfigurationValidationError(Severity severity, String message) {
+    public XMLValidationError(Severity severity, String message) {
         super();
         this.severity = severity;
         this.message = message;

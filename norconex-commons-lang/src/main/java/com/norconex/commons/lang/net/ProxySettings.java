@@ -22,7 +22,6 @@ import java.io.Writer;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-import org.apache.commons.configuration2.XMLConfiguration;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -36,11 +35,11 @@ import org.apache.http.client.CredentialsProvider;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.commons.lang.encrypt.EncryptionKey;
 import com.norconex.commons.lang.encrypt.EncryptionUtil;
 import com.norconex.commons.lang.encrypt.EncryptionXMLUtil;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.xml.XML;
 
 /**
  * Convenience class for implementation requiring proxy settings.
@@ -178,15 +177,15 @@ public class ProxySettings implements IXMLConfigurable, Serializable {
      */
     @Override
     public void loadFromXML(Reader in) throws IOException {
-        loadProxyFromXML(XMLConfigurationUtil.newXMLConfiguration(in));
+        loadProxyFromXML(new XML(in));
     }
     /**
      * Loads assuming we are already in a parent tag.
      * @param xml XML configuration
      */
-    public void loadProxyFromXML(XMLConfiguration xml) {
+    public void loadProxyFromXML(XML xml) {
         proxyHost = xml.getString("proxyHost", proxyHost);
-        proxyPort = xml.getInt("proxyPort", proxyPort);
+        proxyPort = xml.getInteger("proxyPort", proxyPort);
         proxyScheme = xml.getString("proxyScheme", proxyScheme);
         proxyUsername = xml.getString("proxyUsername", proxyUsername);
         proxyPassword = xml.getString("proxyPassword", proxyPassword);

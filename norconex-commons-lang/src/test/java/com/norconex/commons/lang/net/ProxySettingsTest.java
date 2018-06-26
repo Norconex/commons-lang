@@ -18,9 +18,9 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.commons.lang.encrypt.EncryptionKey;
 import com.norconex.commons.lang.encrypt.EncryptionKey.Source;
+import com.norconex.commons.lang.xml.XML;
 
 public class ProxySettingsTest {
 
@@ -35,6 +35,6 @@ public class ProxySettingsTest {
         ps.setProxyScheme("sheme");
         ps.setProxyUsername("username");
         
-        XMLConfigurationUtil.assertWriteRead(ps);
+        XML.assertWriteRead(ps);
     }
 }

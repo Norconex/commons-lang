@@ -14,27 +14,25 @@
  */
 package com.norconex.commons.lang.config;
 
-import org.apache.commons.configuration2.XMLConfiguration;
-import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.junit.Assert;
 import org.junit.Test;
+
+import com.norconex.commons.lang.xml.XML;
 
 public class ConfigurationTest {
 
     @Test
-    public void testPreserveWhiteSpace() throws ConfigurationException {
-        String xml = 
+    public void testPreserveWhiteSpace() {
+        XML xml = new XML( 
                   "<test>"
-                + "<tagNoPreserve>   </tagNoPreserve>"
-                + "<tagPreserve xml:space=\"preserve\">   </tagPreserve>"
-                + "<tagNested xml:space=\"preserve\">"
+                + "<tagPreserve>   </tagPreserve>"
+                + "<tagNested>"
                 + "  <nested>   </nested>"
                 + "</tagNested>"
-                + "</test>";
+                + "</test>");
                 
-        XMLConfiguration c = XMLConfigurationUtil.newXMLConfiguration(xml);
-        Assert.assertEquals("", c.getString("tagNoPreserve"));
-        Assert.assertEquals("   ", c.getString("tagNested.nested"));
-        Assert.assertEquals("   ", c.getString("tagPreserve"));
+        Assert.assertNull(xml.getString("tagNotPresent"));
+        Assert.assertEquals("   ", xml.getString("tagNested/nested"));
+        Assert.assertEquals("   ", xml.getString("tagPreserve"));
     }
 }
