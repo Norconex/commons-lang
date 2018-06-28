@@ -31,6 +31,7 @@ import org.apache.commons.lang3.time.DateUtils;
  * @author Pascal Essiembre
  * @since 1.3.0
  */
+//TODO check if Java LocalDate offers the same now.
 public final class YearMonthDay 
         implements Comparable<YearMonthDay>, Serializable {
 

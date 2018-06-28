@@ -57,7 +57,7 @@ import com.norconex.commons.lang.xml.XML;
  * It is essentially the same, but has more options (e.g. multi-line support)
  * and gotchas (e.g. must escape certain characters). Please
  * refer to the corresponding 
- * <a href="http://docs.oracle.com/javase/6/docs/api/java/util/Properties.html#load(java.io.Reader)">
+ * <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Properties.html#load-java.io.Reader-">
  * Java API documentation</a> for exact syntax and parsing logic.</p> 
  * 
  * <p>When both <code>.variables</code> and <code>.properties</code> exist
@@ -116,7 +116,7 @@ import com.norconex.commons.lang.xml.XML;
  * Other Velocity directives are supported 
  * (if-else statements, foreach loops, macros,
  * etc).  Refer to 
- * <a href="http://velocity.apache.org/engine/devel/user-guide.html">
+ * <a href="https://velocity.apache.org/engine/2.0/user-guide.html">
  * Velocity User Guide</a> for complete syntax and template documentation. 
  * </p>
  * @author Pascal Essiembre
@@ -138,8 +138,10 @@ public final class ConfigurationLoader {
         velocityEngine.setProperty(RuntimeConstants.RESOURCE_LOADER, "file");
         velocityEngine.setProperty(
                 RuntimeConstants.FILE_RESOURCE_LOADER_PATH, "");
-        velocityEngine.setProperty(RuntimeConstants.INPUT_ENCODING, "UTF-8");
-        velocityEngine.setProperty(RuntimeConstants.ENCODING_DEFAULT, "UTF-8");
+        velocityEngine.setProperty(RuntimeConstants.INPUT_ENCODING,
+                StandardCharsets.UTF_8.toString());
+        velocityEngine.setProperty(RuntimeConstants.ENCODING_DEFAULT,
+                StandardCharsets.UTF_8.toString());
         velocityEngine.setProperty("runtime.log", "");
     }
 
@@ -157,21 +159,33 @@ public final class ConfigurationLoader {
     }
 
     /**
+     * <p>
      * Loads an XML configuration file.
+     * </p>
+     * <p>
+     * Version 1.x users can use the (deprecated)
+     * {@link XMLConfigurationUtil#loadXML(File)} method instead.
+     * </p>
      * @param configFile XML configuration file
      * @return Apache XMLConfiguration instance
      */
+    @SuppressWarnings("javadoc")
     public XML loadXML(File configFile) {
         return loadXML(configFile, null);
     }
 
     /**
      * Loads an XML configuration file.
+     * <p>
+     * Version 1.x users can use the (deprecated)
+     * {@link XMLConfigurationUtil#loadXML(File)} method instead.
+     * </p>
      * @param configFile XML configuration file
      * @param variables path to .variables or .properties file defining 
      *        variables. 
      * @return Apache XMLConfiguration instance
      */
+    @SuppressWarnings("javadoc")
     public XML loadXML(File configFile, File variables) {
         if (!configFile.exists()) {
             return null;
@@ -192,7 +206,7 @@ public final class ConfigurationLoader {
                   + "is not well-formed.", e);
         }
     }
-
+    
     /**
      * Loads a configuration file as a string.
      * @param configFile configuration file

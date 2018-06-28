@@ -35,7 +35,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
  * 
  * @author Pascal Essiembre
  */
-//TODO rename MutableURL
+//TODO rename MutableURL (really? what about the static methods?  Maybe "Url"?)
 public class HttpURL implements Serializable {
 
     private static final long serialVersionUID = -8886393027925815099L;

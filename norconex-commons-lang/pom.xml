@@ -143,6 +143,14 @@
         <scope>provided</scope>
     </dependency>
 
+    <!-- Kept for optional backward compatibility. Usage now deprecated. -->
+    <dependency>
+      <groupId>commons-configuration</groupId>
+      <artifactId>commons-configuration</artifactId>
+      <version>1.10</version>
+      <scope>provided</scope>
+    </dependency>
+
   </dependencies>
 
   <build>

@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 
-import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.lang3.StringUtils;
@@ -97,13 +96,8 @@ public class EncryptionXMLUtil {
     public static void saveToXML(
             Writer writer, String tagPrefix, EncryptionKey encryptionKey) 
                     throws IOException {
-        try {
-            saveToXML(new EnhancedXMLStreamWriter(writer), 
-                    tagPrefix, encryptionKey);
-        } catch (XMLStreamException e) {
-            throw new IOException("Cannot save as XML.", e);
-    
-        }
+        saveToXML(new EnhancedXMLStreamWriter(writer), 
+                tagPrefix, encryptionKey);
     }
     /**
      * Convenience method for saving an encryption key to an 
@@ -124,24 +118,20 @@ public class EncryptionXMLUtil {
         String tagSource = tagKey + "Source";
         String tagSize = tagKey + "Size";
 
-        try {
-            EnhancedXMLStreamWriter w = null;
-            if (writer instanceof EnhancedXMLStreamWriter) {
-                w = (EnhancedXMLStreamWriter) writer;
-            } else {
-                w = new EnhancedXMLStreamWriter(writer);
+        EnhancedXMLStreamWriter w = null;
+        if (writer instanceof EnhancedXMLStreamWriter) {
+            w = (EnhancedXMLStreamWriter) writer;
+        } else {
+            w = new EnhancedXMLStreamWriter(writer);
+        }
+        
+        if (encryptionKey != null) {
+            w.writeElementString(tagKey, encryptionKey.getValue());
+            w.writeElementInteger(tagSize, encryptionKey.getSize());
+            if (encryptionKey.getSource() != null) {
+                w.writeElementString(tagSource,
+                        encryptionKey.getSource().name().toLowerCase());
             }
-            
-            if (encryptionKey != null) {
-                w.writeElementString(tagKey, encryptionKey.getValue());
-                w.writeElementInteger(tagSize, encryptionKey.getSize());
-                if (encryptionKey.getSource() != null) {
-                    w.writeElementString(tagSource,
-                            encryptionKey.getSource().name().toLowerCase());
-                }
-            }
-        } catch (XMLStreamException e) {
-            throw new IOException("Cannot save as XML.", e);
         }
     }
 }

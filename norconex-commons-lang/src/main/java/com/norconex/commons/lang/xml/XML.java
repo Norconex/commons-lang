@@ -20,6 +20,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -174,7 +175,7 @@ public class XML {
      * If the class is an instance of {@link IXMLConfigurable}, the object 
      * created will be automatically populated by invoking the 
      * {@link IXMLConfigurable#loadFromXML(Reader)} method, 
-     * passing it the node XML automatically populated.
+     * passing it the node XML.
      * @param <T> the type of the return value
      * @return a new object.
      * @throws XMLException if instance cannot be created/populated
@@ -188,7 +189,7 @@ public class XML {
      * If the class is an instance of {@link IXMLConfigurable}, the object 
      * created will be automatically populated by invoking the 
      * {@link IXMLConfigurable#loadFromXML(Reader)} method, 
-     * passing it the node XML automatically populated.
+     * passing it the node XML.
      * @param defaultObject if returned object is null or undefined,
      *        returns this default object.
      * @param <T> the type of the return value
@@ -229,15 +230,14 @@ public class XML {
 
     /**
      * <p>Creates a new instance of the class represented by the "class" 
-     * attribute
-     * on the sub-node of the node argument, matching the key provided.
+     * attribute on the node matching the expression.
      * The class must have an empty constructor.
      * If the class is an instance of {@link IXMLConfigurable}, the object 
      * created will be automatically populated by invoking the 
      * {@link IXMLConfigurable#loadFromXML(Reader)} method, 
-     * passing it the node XML automatically populated.</p>
+     * passing it the node XML.</p>
      * 
-     * <p>Since 1.6.0, this method should throw a 
+     * <p>This method should throw a 
      * {@link XMLException} upon error. Use a method
      * with a default value argument to avoid throwing exceptions.</p>
      * 
@@ -246,22 +246,21 @@ public class XML {
      * @return a new object.
      * @throws XMLException if instance cannot be created/populated
      */
-    public <T extends Object> T getChildObject(String xpathExpression) {
-        return getChildObject(xpathExpression, (T) null, true);
+    public <T extends Object> T getObject(String xpathExpression) {
+        return getObject(xpathExpression, (T) null, true);
     }
     /**
      * <p>Creates a new instance of the class represented by the "class" 
-     * attribute
-     * on the sub-node of the node argument, matching the key provided.
+     * attribute on the node matching the expression.
      * The class must have an empty constructor.
      * If the class is an instance of {@link IXMLConfigurable}, the object 
      * created will be automatically populated by invoking the 
      * {@link IXMLConfigurable#loadFromXML(Reader)} method, 
-     * passing it the node XML automatically populated.</p>
+     * passing it the node XML.</p>
      * 
      * <p>This method should not throw exception upon errors, but will return
      * the default value instead (even if null). Use a method without
-     * a default value argument to get exception on errors.</p>
+     * a default value argument to get exceptions on errors.</p>
      * 
      * @param defaultObject if returned object is null or undefined,
      *        returns this default object.
@@ -269,11 +268,11 @@ public class XML {
      * @param <T> the type of the return value
      * @return a new object.
      */
-    public <T extends Object> T getChildObject(
+    public <T> T getObject(
             String xpathExpression, T defaultObject) {
-        return getChildObject(xpathExpression, defaultObject, false);
+        return getObject(xpathExpression, defaultObject, false);
     }
-    private <T extends Object> T getChildObject(String xpathExpression, 
+    private <T> T getObject(String xpathExpression, 
             T defaultObject, boolean canThrowException) {
         if (node == null) {
             return defaultObject;
@@ -283,22 +282,92 @@ public class XML {
             if (xpathExpression == null && defaultObject == null) {
                 return toObject((T) null);
             }
-            return getChildXML(xpathExpression).toObject(defaultObject);
+            return getXML(xpathExpression).toObject(defaultObject);
         } catch (Exception e) {
             handleException(
                     node.getNodeName(), xpathExpression, e, canThrowException);
             return defaultObject;
         }
     }
-    
+    /**
+     * <p>Creates an instance list from classes represented by the "class" 
+     * attribute on the nodes matching the expression.
+     * The classes must have an empty constructor.
+     * If a class is an instance of {@link IXMLConfigurable}, the object 
+     * created will be automatically populated by invoking the 
+     * {@link IXMLConfigurable#loadFromXML(Reader)} method, 
+     * passing it the node XML.</p>
+     * 
+     * <p>This method should not throw exception upon errors, but will return
+     * the default value instead (even if null). Use a method without
+     * a default value argument to get exceptions on errors.</p>
+     * 
+     * @param xpathExpression xpath expression
+     * @param defaultObjects if returned list is empty,
+     *        returns this default list.
+     * @param <T> the type of the return value
+     * @return a new object.
+     * @throws XMLException if instance cannot be created/populated
+     */
+    public <T> List<T> getObjectList(
+            String xpathExpression, List<T> defaultObjects) {
+        List<T> list = new ArrayList<>();
+        List<XML> xmls = getXMLList(xpathExpression);
+        for (XML xml : xmls) {
+            if (xml != null) {
+                list.add(xml.toObject());
+            }
+        }
+        if (list.isEmpty()) {
+            return defaultObjects;
+        }
+        return list;
+    }
+    /**
+     * <p>Creates an instance list from classes represented by the "class" 
+     * attribute on the nodes matching the expression.
+     * The classes must have an empty constructor.
+     * If a class is an instance of {@link IXMLConfigurable}, the object 
+     * created will be automatically populated by invoking the 
+     * {@link IXMLConfigurable#loadFromXML(Reader)} method, 
+     * passing it the node XML.</p>
+     * 
+     * <p>This method should throw a 
+     * {@link XMLException} upon error. Use a method
+     * with a default value argument to avoid throwing exceptions.</p>
+     * 
+     * @param xpathExpression xpath expression
+     * @param <T> the type of the return value
+     * @return a new object.
+     * @throws XMLException if instance cannot be created/populated
+     */
+    public <T> List<T> getObjectList(String xpathExpression) {
+        return getObjectList(xpathExpression, Collections.emptyList());
+    }
     
     //TODO getElement(s) and getAttribute(s) which are direct references to 
     // elements attributes (not xpath)
     
-    public XML getChildXML(String xpathExpression) {
+    /**
+     * Gets the xml subset matching the xpath expression.
+     * @param xpathExpression expression to match
+     * @return XML
+     */
+    public XML getXML(String xpathExpression) {
         return new XML(getNode(xpathExpression));
     }
-    
+    /**
+     * Gets the XML subsets matching the xpath expression.
+     * @param xpathExpression expression to match
+     * @return XML list
+     */
+    public List<XML> getXMLList(String xpathExpression) {
+        List<XML> list = new ArrayList<>();
+        for (Node node : getNodeList(xpathExpression)) {
+            list.add(new XML(node));
+        }
+        return list;
+    }
     
     private static void handleException(
             String rootNode, String key,
@@ -523,7 +592,7 @@ public class XML {
         // Write
         String xmlStr;
         try (StringWriter out = new StringWriter()) {
-            xmlConfigurable.saveToXML(out);
+            xmlConfigurable.saveToXML(out, "tag");
             xmlStr = out.toString();
         } catch (IOException e) {
             throw new XMLException("Could not save XML.", e);

@@ -65,20 +65,28 @@
         Apache Velocity 2.0.
       </action>
       <action dev="essiembre" type="update">
-        DurationUtil not deprecated in favor of DurationFormatter.
+        Some of the load/store methods in Properties have been renamed for 
+        consistency.
+      </action>
+      <action dev="essiembre" type="update">
+        IXMLConfigurable#saveToXML has been deprecated in favor of a new
+        method accepting element name as argument.
+      </action>
+      <action dev="essiembre" type="remove">
+        XMLConfigurationUtil now deprecated in favor of XML.
+      </action>
+      <action dev="essiembre" type="update">
+        DurationUtil now deprecated in favor of DurationFormatter.
       </action>
       <action dev="essiembre" type="fix">
         Properties#load(Map) now handles primitive array values properly,
         as well as Class, Date, and File types.
       </action>
       <action dev="essiembre" type="remove">
-        Removed all deprecated classes and methods from version 1.x.
+        Removed some deprecated classes and methods from version 1.x.
       </action>      
       <action dev="essiembre" type="remove">
         Removed CountingConsoleAppender, MemoryUtil#getFreeMemory(boolean).
-      </action>
-      <action dev="essiembre" type="remove">
-        Removed XMLConfigurationUtil (replaced by XML).
       </action>
       <action dev="essiembre" type="remove">
         Removed Apache Configuration dependency.

@@ -19,9 +19,6 @@ import java.io.Reader;
 import java.io.Serializable;
 import java.io.Writer;
 
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -167,23 +164,9 @@ public class ProxySettings implements IXMLConfigurable, Serializable {
         return null;
     }
 
-    protected String getXmlTag() {
-        return "proxy";
-    }
-
-    /**
-     * Loads from a {@link #getXmlTag()} tag.
-     * @param in XML reader
-     */
     @Override
     public void loadFromXML(Reader in) throws IOException {
-        loadProxyFromXML(new XML(in));
-    }
-    /**
-     * Loads assuming we are already in a parent tag.
-     * @param xml XML configuration
-     */
-    public void loadProxyFromXML(XML xml) {
+        XML xml = new XML(in);
         proxyHost = xml.getString("proxyHost", proxyHost);
         proxyPort = xml.getInteger("proxyPort", proxyPort);
         proxyScheme = xml.getString("proxyScheme", proxyScheme);
@@ -193,48 +176,21 @@ public class ProxySettings implements IXMLConfigurable, Serializable {
                 xml, "proxyPassword", proxyPasswordKey);
         proxyRealm = xml.getString("proxyRealm", proxyRealm);
     }
-    /**
-     * Saves to a {@link #getXmlTag()} tag.
-     * @param out XML writer
-     */
+
     @Override
-    public void saveToXML(Writer out) throws IOException {
-        try {
-            EnhancedXMLStreamWriter writer = new EnhancedXMLStreamWriter(out);
-            writer.writeStartElement(getXmlTag());
-            writer.writeAttribute("class", getClass().getCanonicalName());
-            writer.flush();
-            saveProxyToXML(writer);
-            writer.flush();
-            writer.writeEndElement();
-        } catch (XMLStreamException e) {
-            throw new IOException("Cannot save as XML.", e);
-        }
-    }
-    /**
-     * Saves assuming we are already in a parent tag.
-     * @param out XML stream writer
-     * @throws IOException problem saving stream to XML
-     */
-    public void saveProxyToXML(XMLStreamWriter out) throws IOException {
-        EnhancedXMLStreamWriter writer;
-        if (out instanceof EnhancedXMLStreamWriter) {
-            writer = (EnhancedXMLStreamWriter) out;
-        } else {
-            writer = new EnhancedXMLStreamWriter(out);
-        }
-        try {
-            writer.writeElementString("proxyHost", proxyHost);
-            writer.writeElementInteger("proxyPort", proxyPort);
-            writer.writeElementString("proxyScheme", proxyScheme);
-            writer.writeElementString("proxyUsername", proxyUsername);
-            writer.writeElementString("proxyPassword", proxyPassword);
-            EncryptionXMLUtil.saveToXML(
-                    writer, "proxyPassword", proxyPasswordKey);
-            writer.writeElementString("proxyRealm", proxyRealm);
-        } catch (XMLStreamException e) {
-            throw new IOException("Cannot save as XML.", e);
-        }
+    public void saveToXML(Writer out, String tagName) throws IOException {
+        EnhancedXMLStreamWriter writer = new EnhancedXMLStreamWriter(out);
+        writer.writeStartElement(tagName);
+        writer.writeAttribute("class", getClass().getCanonicalName());
+        writer.writeElementString("proxyHost", proxyHost);
+        writer.writeElementInteger("proxyPort", proxyPort);
+        writer.writeElementString("proxyScheme", proxyScheme);
+        writer.writeElementString("proxyUsername", proxyUsername);
+        writer.writeElementString("proxyPassword", proxyPassword);
+        EncryptionXMLUtil.saveToXML(
+                writer, "proxyPassword", proxyPasswordKey);
+        writer.writeElementString("proxyRealm", proxyRealm);
+        writer.writeEndElement();
     }
 
     @Override
