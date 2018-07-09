@@ -186,6 +186,9 @@ public class Regex {
      * @return compiled pattern
      */
     public Pattern compile(String pattern) {
+        if (pattern == null) {
+            throw new IllegalArgumentException("Pattern cannot be null.");
+        }
         int f = 0;
         for (int i : flags) {
             f |= i;
@@ -209,6 +212,9 @@ public class Regex {
      * @return matcher
      */
     public Matcher matcher(String pattern, CharSequence text) {
+        if (text == null) {
+            throw new IllegalArgumentException("Text cannot be null.");
+        }
         return compile(pattern).matcher(text);
     }
 }
