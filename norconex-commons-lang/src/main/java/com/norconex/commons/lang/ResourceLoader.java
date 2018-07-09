@@ -25,15 +25,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Utility class for loading resource from class loader, relative to 
+ * Utility class for loading resource from class loader, relative to
  * a given class.
- * 
+ *
  * @author Pascal Essiembre
  * @since 1.14.0
  */
 public final class ResourceLoader {
 
-    private static final Logger LOG = 
+    private static final Logger LOG =
             LoggerFactory.getLogger(ResourceLoader.class);
 
     /** @since 2.0.0 */
@@ -42,38 +42,38 @@ public final class ResourceLoader {
     public static final String HTML = ".html";
     /** @since 2.0.0 */
     public static final String XML = ".xml";
-    
+
     private ResourceLoader() {
         super();
     }
 
     /**
      * Gets a resource from class loader as stream. The resource is
-     * relative to the given class, with the same name as the class, but 
-     * with the supplied suffix.  
+     * relative to the given class, with the same name as the class, but
+     * with the supplied suffix.
      * @param clazz the class to load related resource
-     * @param suffix the suffix of the file to load with the same name 
+     * @param suffix the suffix of the file to load with the same name
      *        as class
      * @return input stream or <code>null</code> if class is <code>null</code>
-     *         or resource could not be found. 
+     *         or resource could not be found.
      */
     public static InputStream getStream(Class<?> clazz, String suffix) {
         if (clazz == null) {
             LOG.debug("Class is null for suffix: {}", suffix);
             return null;
         }
-        return clazz.getResourceAsStream(clazz.getSimpleName() + suffix);
-        
+        return clazz.getClassLoader().getResourceAsStream(
+                clazz.getSimpleName() + suffix);
     }
     /**
      * Gets a UTF-8 resource from class loader as a reader. The resource is
-     * relative to the given class, with the same name as the class, but 
-     * with the supplied suffix.  
+     * relative to the given class, with the same name as the class, but
+     * with the supplied suffix.
      * @param clazz the class to load related resource
-     * @param suffix the suffix of the file to load with the same name 
+     * @param suffix the suffix of the file to load with the same name
      *        as class
      * @return reader or <code>null</code> if class is <code>null</code>
-     *         or resource could not be found. 
+     *         or resource could not be found.
      */
     public static Reader getReader(Class<?> clazz, String suffix) {
         InputStream is = getStream(clazz, suffix);
@@ -86,13 +86,13 @@ public final class ResourceLoader {
     }
     /**
      * Gets a UTF-8 a resource from class loader as a string. The resource is
-     * relative to the given class, with the same name as the class, but 
-     * with the supplied suffix.  
+     * relative to the given class, with the same name as the class, but
+     * with the supplied suffix.
      * @param clazz the class to load related resource
-     * @param suffix the suffix of the file to load with the same name 
+     * @param suffix the suffix of the file to load with the same name
      *        as class
      * @return string or <code>null</code> if class is <code>null</code>
-     *         or resource could not be found. 
+     *         or resource could not be found.
      */
     public static String getString(Class<?> clazz, String suffix) {
         Reader r = getReader(clazz, suffix);
@@ -167,7 +167,7 @@ public final class ResourceLoader {
         return getStream(clazz, HTML);
     }
     /**
-     * Gets a UTF-8 reader from resource matching class name with ".html" 
+     * Gets a UTF-8 reader from resource matching class name with ".html"
      * suffix.
      * @param clazz the class to load related resource
      * @return HTML reader or <code>null</code>
@@ -176,7 +176,7 @@ public final class ResourceLoader {
         return getReader(clazz, HTML);
     }
     /**
-     * Gets a UTF-8 string from resource matching class name with ".html" 
+     * Gets a UTF-8 string from resource matching class name with ".html"
      * suffix.
      * @param clazz the class to load related resource
      * @return HTML string or <code>null</code>

@@ -155,8 +155,7 @@
       <resource>
         <directory>${project.build.testSourceDirectory}</directory>
         <includes>
-          <include>**/*.html</include>
-          <include>**/*.txt</include>
+          <include>**</include>
         </includes>
       </resource>
       <resource>
@@ -298,7 +297,6 @@
           <source>1.8</source>
           <detectLinks>false</detectLinks>
           <links>
-            <link>https://commons.apache.org/proper/commons-configuration/javadocs/v${commons-configuration.version}/apidocs/</link>
             <link>https://commons.apache.org/proper/commons-lang/javadocs/api-${commons-lang3.version}/</link>
           </links>
         </configuration>
@@ -457,7 +455,6 @@
           <source>1.8</source>
           <detectLinks>false</detectLinks>
           <links>
-            <link>https://commons.apache.org/proper/commons-configuration/javadocs/v${commons-configuration.version}/apidocs/</link>
             <link>https://commons.apache.org/proper/commons-lang/javadocs/api-${commons-lang3.version}/</link>
           </links>
         </configuration>
