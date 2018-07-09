@@ -16,20 +16,66 @@ package com.norconex.commons.lang.encrypt;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Reader;
 import java.io.Serializable;
+import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import org.apache.commons.lang3.StringUtils;
+
+import com.norconex.commons.lang.config.IXMLConfigurable;
+import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.xml.XML;
+
 /**
- * Pointer to the an encryption key, or the encryption key itself. An
+ * <p>Pointer to the an encryption key, or the encryption key itself. An
  * encryption key can be seen as equivalent to a secret key,
- * passphrase or password.
+ * passphrase or password.</p>
+ * 
+ * <p>
+ * Because this class is immutable, it does not implement 
+ * {@link IXMLConfigurable} directly, but static methods
+ * {@link #saveToXML(Writer, String, EncryptionKey)} and
+ * {@link #loadFromXML(Reader, EncryptionKey)} can be used instead.
+ * The usage example below is for when used embedded in a parent configuration.
+ * </p>
+ * 
+ * <h3>XML configuration usage:</h3>
+ * 
+ * <p>
+ * The tag name "passwordKey" may be named differently by consuming classes.
+ * </p>
+ * 
+ * <pre>
+ *  &lt;passwordKey"&gt;
+ *      &lt;value&gt;(The actual key or reference to it.)&lt;/value&gt;
+ *      &lt;source&gt;(One of: key, file, environment, property.)&lt;/source&gt;
+ *      &lt;size&gt;(Size in bits of encryption key. Default is 128.)&lt;/size&gt;
+ *  &lt;/passwordKey&gt;
+ * </pre>
+ * <h4>Usage example:</h4> 
+ * <p>
+ * This example uses a key store in a file to decrypt a password for 
+ * user credentials: 
+ * </p>
+ * <pre>
+ *  ...
+ *  &lt;username&gt;goldorak&lt;/username&gt;
+ *  &lt;password&gt;3ncryp73d&lt;/password&gt;
+ *  &lt;passwordKey&gt;
+ *      &lt;value&gt;/path/to/my.key&lt;/value&gt;
+ *      &lt;source&gt;file&lt;/source&gt;
+ *  &lt;/passwordKey&gt;
+ *  ...
+ * </pre> 
+ * 
  * @author Pascal Essiembre
  * @since 1.9.0
  * @see EncryptionUtil
  */
-public class EncryptionKey implements Serializable {
+public final class EncryptionKey implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -166,6 +212,70 @@ public class EncryptionKey implements Serializable {
         }
     }
 
+    /**
+     * Loads an encryption key from XML. 
+     * @param reader xml configuration
+     * @param defaultKey default encryption key
+     * @return encryption key
+     * @since 2.0.0
+     */
+    public static EncryptionKey loadFromXML(
+            Reader reader, EncryptionKey defaultKey) {
+        return loadFromXML(new XML(reader), defaultKey);
+    }
+    /**
+     * Loads an encryption key from XML. 
+     * @param xml xml configuration
+     * @param defaultKey default encryption key
+     * @return encryption key
+     * @since 2.0.0
+     */
+    public static EncryptionKey loadFromXML(XML xml, EncryptionKey defaultKey) {
+        String value = xml.getString("value");
+        if (StringUtils.isNotBlank(value)) {
+            String source = xml.getString("source");
+            Integer size = xml.getInteger("size", DEFAULT_KEY_SIZE);
+            EncryptionKey.Source enumSource = null;
+            if (StringUtils.isNotBlank(source)) {
+                enumSource = EncryptionKey.Source.valueOf(source.toUpperCase());
+            }
+            return new EncryptionKey(value, enumSource, size);
+        }
+        return defaultKey;
+    }
+
+    /**
+     * Saves an encryption key to XML.
+     * @param writer writer
+     * @param elementName the parent element name
+     * @param key encryption key
+     * @since 2.0.0
+     */
+    public static void saveToXML(
+            Writer writer, String elementName, EncryptionKey key) {
+        saveToXML(new EnhancedXMLStreamWriter(writer), elementName, key);
+    }
+    /**
+     * Saves an encryption key to XML.
+     * @param writer XML writer
+     * @param elementName the parent element name
+     * @param key encryption key
+     * @since 2.0.0
+     */
+    public static void saveToXML(EnhancedXMLStreamWriter writer, 
+            String elementName, EncryptionKey key) {
+        if (key != null) {
+            writer.writeStartElement(elementName);
+            writer.writeElementString("value", key.getValue());
+            writer.writeElementInteger("size", key.getSize());
+            if (key.getSource() != null) {
+                writer.writeElementString("source",
+                        key.getSource().name().toLowerCase());
+            }
+            writer.writeEndElement();
+        }
+    }
+    
     //Do not use Apache Commons Lang below to avoid any dependency
     //when used on command-line with EncryptionUtil.
     @Override
@@ -208,6 +318,7 @@ public class EncryptionKey implements Serializable {
         }
         return true;
     }
+    
     @Override
     public String toString() {
         return "EncryptionKey [value=" + value

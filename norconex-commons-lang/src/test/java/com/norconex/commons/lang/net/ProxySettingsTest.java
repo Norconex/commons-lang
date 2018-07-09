@@ -34,7 +34,7 @@ public class ProxySettingsTest {
         ps.setProxyRealm("realm");
         ps.setProxyScheme("sheme");
         ps.setProxyUsername("username");
-        
-        XML.assertWriteRead(ps);
+
+        XML.assertWriteRead(ps, "proxy");
     }
 }

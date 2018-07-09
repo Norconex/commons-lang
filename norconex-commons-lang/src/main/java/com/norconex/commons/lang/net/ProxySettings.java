@@ -22,7 +22,7 @@ import java.io.Writer;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
@@ -34,7 +34,6 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.encrypt.EncryptionKey;
 import com.norconex.commons.lang.encrypt.EncryptionUtil;
-import com.norconex.commons.lang.encrypt.EncryptionXMLUtil;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.commons.lang.xml.XML;
 
@@ -172,8 +171,8 @@ public class ProxySettings implements IXMLConfigurable, Serializable {
         proxyScheme = xml.getString("proxyScheme", proxyScheme);
         proxyUsername = xml.getString("proxyUsername", proxyUsername);
         proxyPassword = xml.getString("proxyPassword", proxyPassword);
-        proxyPasswordKey = EncryptionXMLUtil.loadFromXML(
-                xml, "proxyPassword", proxyPasswordKey);
+        proxyPasswordKey = EncryptionKey.loadFromXML(
+                xml.getXML("proxyPasswordKey"), proxyPasswordKey);
         proxyRealm = xml.getString("proxyRealm", proxyRealm);
     }
 
@@ -187,52 +186,22 @@ public class ProxySettings implements IXMLConfigurable, Serializable {
         writer.writeElementString("proxyScheme", proxyScheme);
         writer.writeElementString("proxyUsername", proxyUsername);
         writer.writeElementString("proxyPassword", proxyPassword);
-        EncryptionXMLUtil.saveToXML(
-                writer, "proxyPassword", proxyPasswordKey);
+        EncryptionKey.saveToXML(writer, "proxyPasswordKey", proxyPasswordKey);
         writer.writeElementString("proxyRealm", proxyRealm);
         writer.writeEndElement();
     }
 
     @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof ProxySettings)) {
-            return false;
-        }
-        ProxySettings castOther = (ProxySettings) other;
-        return new EqualsBuilder()
-                .append(proxyHost, castOther.proxyHost)
-                .append(proxyPort, castOther.proxyPort)
-                .append(proxyScheme, castOther.proxyScheme)
-                .append(proxyUsername, castOther.proxyUsername)
-                .append(proxyPassword, castOther.proxyPassword)
-                .append(proxyPasswordKey, castOther.proxyPasswordKey)
-                .append(proxyRealm, castOther.proxyRealm)
-                .isEquals();
+        return EqualsBuilder.reflectionEquals(this, other);
     }
-
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-                .append(proxyHost)
-                .append(proxyPort)
-                .append(proxyScheme)
-                .append(proxyUsername)
-                .append(proxyPassword)
-                .append(proxyPasswordKey)
-                .append(proxyRealm)
-                .toHashCode();
+        return HashCodeBuilder.reflectionHashCode(this);
     }
-
     @Override
     public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .append("proxyHost", proxyHost)
-                .append("proxyPort", proxyPort)
-                .append("proxyScheme", proxyScheme)
-                .append("proxyUsername", proxyUsername)
-                .append("proxyPassword", proxyPassword)
-                .append("proxyPasswordKey", proxyPasswordKey)
-                .append("proxyRealm", proxyRealm)
-                .toString();
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

@@ -28,29 +28,30 @@ public interface IXMLConfigurable {
 
     /**
      * Load XML configuration values and initialized this object with them.
-     * @param in XML input stream
+     * @param reader XML input stream
      * @throws IOException something went wrong reading the XML
      */
-    void loadFromXML(Reader in) throws IOException;
+    void loadFromXML(Reader reader) throws IOException;
 
     /**
      * Saves this object as XML.
-     * @param out XML writer
+     * @param writer XML writer
      * @throws IOException something went wrong writing the XML
      * @deprecated Since 2.0.0, use {@link #saveToXML(Writer, String)}.
      */
     @Deprecated
-    default void saveToXML(Writer out) throws IOException {
+    default void saveToXML(Writer writer) throws IOException {
         //NOOP
     };
     
     /**
      * Saves this object as XML.
-     * @param out XML writer
+     * @param writer XML writer
      * @param elementName XML element name
      * @throws IOException something went wrong writing the XML
      */
-    default void saveToXML(Writer out, String elementName) throws IOException {
-        saveToXML(out);
+    default void saveToXML(Writer writer, String elementName) 
+            throws IOException {
+        saveToXML(writer);
     }
 }

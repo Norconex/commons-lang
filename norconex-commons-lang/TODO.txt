@@ -1,6 +1,14 @@
 TODO:
 ==============
 
+- Have IXMLConfigurable save/LoadXML take XML. Add setters to XML.
+
+- Have option to not do validation on loading of dom, in case a consuming
+  class wants to modify the DOM before validation.
+
+- EnhancedXMLStreamWriter: eliminate concept of "writeBlanks" and always 
+  write them for elements with text only (and attributes?)?
+
 - Maybe add a new IEventListener scanner for automatic registration in an 
   event manager.
 

@@ -15,7 +15,11 @@
 package com.norconex.commons.lang.xml;
 
 import java.awt.Dimension;
+import java.io.File;
+import java.io.IOException;
+import java.io.StringWriter;
 import java.io.Writer;
+import java.util.List;
 import java.util.Objects;
 
 import javax.xml.namespace.NamespaceContext;
@@ -23,9 +27,12 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.norconex.commons.lang.config.IXMLConfigurable;
 
 /**
  * <p>
@@ -50,7 +57,9 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
     private static final Logger LOG = 
             LoggerFactory.getLogger(EnhancedXMLStreamWriter.class);
     
-    private final XMLStreamWriter writer;
+    private final XMLStreamWriter streamWriter;
+    private final Writer writer;
+
     //TODO consider constructor with new EnhancedXMLStreamWriterConfig instead
     //TODO blanks should always be written???
     private final boolean defaultWriteBlanks;
@@ -59,23 +68,23 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
     private int depth = 0;
     private boolean indentEnd = false; 
 
-    public EnhancedXMLStreamWriter(Writer out) {
-        this(out, false);
+    public EnhancedXMLStreamWriter(Writer writer) {
+        this(writer, false);
     }
     /**
      * Creates a new xml stream writer.
-     * @param out writer used to write XML
+     * @param writer writer used to write XML
      * @param writeBlanks <code>true</code> to write attributes/elements 
      *        with no values when invoking methods without the 
      *        "writeBlanks" argument. This sets the default behavior which
      *        can be overwritten using methods with "writeBlanks" argument. 
      */
-    public EnhancedXMLStreamWriter(Writer out, boolean writeBlanks) {
-        this(out, writeBlanks, -1);
+    public EnhancedXMLStreamWriter(Writer writer, boolean writeBlanks) {
+        this(writer, writeBlanks, -1);
     }
     /**
      * Creates a new xml stream writer.
-     * @param out writer used to write XML
+     * @param writer writer used to write XML
      * @param writeBlanks <code>true</code> to write attributes/elements 
      *        with no values when invoking methods without the 
      *        "writeBlanks" argument. This sets the default behavior which
@@ -85,11 +94,12 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
      * @since 1.13.0
      */
     public EnhancedXMLStreamWriter(
-            Writer out, boolean writeBlanks, int indent) {
+            Writer writer, boolean writeBlanks, int indent) {
         super();
         try {
             XMLOutputFactory factory = createXMLOutputFactory();
-            writer = factory.createXMLStreamWriter(out);
+            this.writer = writer;
+            this.streamWriter = factory.createXMLStreamWriter(writer);
             this.defaultWriteBlanks = writeBlanks;
             this.indent = indent;
         } catch (XMLStreamException e) {
@@ -97,37 +107,24 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
                     "Could not create EnhancedXMLStreamWriter.", e);
         }
     }
-    public EnhancedXMLStreamWriter(XMLStreamWriter xmlStreamWriter) {
-        this(xmlStreamWriter, false);
-    }
-    public EnhancedXMLStreamWriter(
-            XMLStreamWriter xmlStreamWriter, boolean writeBlanks) {
-        this(xmlStreamWriter, writeBlanks, -1);
-    }
-    /**
-     * Creates a new xml stream writer.
-     * @param xmlStreamWriter wrapped stream writer
-     * @param writeBlanks <code>true</code> to write attributes/elements 
-     *        with no values
-     * @param indent how many spaces to use for indentation (-1=no indent; 
-     *        0=newline only; 1+=number of spaces after newline)
-     * @since 1.13.0
-     */
-    public EnhancedXMLStreamWriter(
-            XMLStreamWriter xmlStreamWriter, boolean writeBlanks, int indent) {
-        super();
-        this.writer = xmlStreamWriter;
-        this.defaultWriteBlanks = writeBlanks;
-        this.indent = indent;
-    }
 
+    /**
+     * Gets the underlying writer, after flushing this XML stream writer.
+     * @return the writer
+     * @since 2.0.0
+     */
+    public Writer getWriter() {
+        flush();
+        return writer;
+    }
+    
     private void indent() { 
         try {
             indentEnd = true;
             if (indent > -1) {
-                writer.writeCharacters("\n"); 
+                streamWriter.writeCharacters("\n"); 
                 if (indent > 0) {
-                    writer.writeCharacters(
+                    streamWriter.writeCharacters(
                             StringUtils.repeat(' ', depth * indent));
                 }
             }
@@ -162,9 +159,6 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
     
     //--- Attribute methods ----------------------------------------------------
 
-    public void writeAttributeInteger(String localName, Integer value) {
-        writeAttributeInteger(localName, value, defaultWriteBlanks);
-    }
     /**
      * Writes a Integer attribute.
      * @param localName attribute name
@@ -177,9 +171,10 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
             String localName, Integer value, boolean writeBlanks) {
         writeAttributeObject(localName, value, writeBlanks);
     }
-    public void writeAttributeLong(String localName, Long value) {
-        writeAttributeLong(localName, value, defaultWriteBlanks);
+    public void writeAttributeInteger(String localName, Integer value) {
+        writeAttributeInteger(localName, value, defaultWriteBlanks);
     }
+
     /**
      * Writes a Long attribute.
      * @param localName attribute name
@@ -192,9 +187,10 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
             String localName, Long value, boolean writeBlanks) {
         writeAttributeObject(localName, value, writeBlanks);
     }
-    public void writeAttributeFloat(String localName, Float value) {
-        writeAttributeFloat(localName, value, defaultWriteBlanks);
+    public void writeAttributeLong(String localName, Long value) {
+        writeAttributeLong(localName, value, defaultWriteBlanks);
     }
+
     /**
      * Writes a Float attribute.
      * @param localName attribute name
@@ -207,9 +203,10 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
             String localName, Float value, boolean writeBlanks) {
         writeAttributeObject(localName, value, writeBlanks);
     }
-    public void writeAttributeDouble(String localName, Double value) {
-        writeAttributeDouble(localName, value, defaultWriteBlanks);
+    public void writeAttributeFloat(String localName, Float value) {
+        writeAttributeFloat(localName, value, defaultWriteBlanks);
     }
+
     /**
      * Writes a Double attribute.
      * @param localName attribute name
@@ -222,9 +219,10 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
             String localName, Double value, boolean writeBlanks) {
         writeAttributeObject(localName, value, writeBlanks);
     }
-    public void writeAttributeBoolean(String localName, Boolean value) {
-        writeAttributeBoolean(localName, value, defaultWriteBlanks);
+    public void writeAttributeDouble(String localName, Double value) {
+        writeAttributeDouble(localName, value, defaultWriteBlanks);
     }
+
     /**
      * Writes a Boolean attribute.
      * @param localName attribute name
@@ -237,9 +235,10 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
             String localName, Boolean value, boolean writeBlanks) {
         writeAttributeObject(localName, value, writeBlanks);
     }
-    public void writeAttributeString(String localName, String value) {
-        writeAttributeString(localName, value, defaultWriteBlanks);
+    public void writeAttributeBoolean(String localName, Boolean value) {
+        writeAttributeBoolean(localName, value, defaultWriteBlanks);
     }
+
     /**
      * Writes a String attribute.
      * @param localName attribute name
@@ -252,17 +251,29 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
             String localName, String value, boolean writeBlanks) {
         writeAttributeObject(localName, value, writeBlanks);
     }
-    public void writeAttributeClass(String localName, Class<?> value) {
-        writeAttributeClass(localName, value, defaultWriteBlanks);
+    public void writeAttributeString(String localName, String value) {
+        writeAttributeString(localName, value, defaultWriteBlanks);
     }
-
+    
     /**
      * Write a "class" attribute with the value obtained from
      * getting it by invoking {@link Class#getCanonicalName()}.
      * @param value the class to write
+     * @param writeBlanks whether a blank value should be written as 
+     *                    an empty attribute.
+     * @since 2.0.0
+     */
+    public void writeAttributeClass(Class<?> value, boolean writeBlanks) {
+        writeAttributeClass("class", value, writeBlanks);
+    }
+    /**
+     * Write a "class" attribute with the value obtained from
+     * getting it by invoking {@link Class#getCanonicalName()}.
+     * @param value the class to write
+     * @since 2.0.0
      */
     public void writeAttributeClass(Class<?> value) {
-        writeAttributeClass("class", value, defaultWriteBlanks);
+        writeAttributeClass(value, defaultWriteBlanks);
     }
     /**
      * Writes an attribute containing a class name, getting it by invoking
@@ -282,6 +293,37 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
                     localName, value.getCanonicalName(), writeBlanks);
         }
     }
+    public void writeAttributeClass(String localName, Class<?> value) {
+        writeAttributeClass(localName, value, defaultWriteBlanks);
+    }
+
+    /**
+     * Write a "disabled" attribute.
+     * @param value <code>true</code> or <code>false</code>
+     * @param writeBlanks whether a blank value should be written as 
+     *                    an empty attribute.
+     * @since 2.0.0
+     */
+    public void writeAttributeDisabled(Boolean value, boolean writeBlanks) {
+        writeAttributeBoolean("disabled", value, writeBlanks);
+    }
+    /**
+     * Write a "disabled" attribute.
+     * @param value <code>true</code> or <code>false</code>
+     * @since 2.0.0
+     */
+    public void writeAttributeDisabled(boolean value) {
+        writeAttributeBoolean("disabled", value, defaultWriteBlanks);
+    }
+    /**
+     * Write a "disabled" attribute set to <code>true</code>.
+     * @since 2.0.0
+     */
+    public void writeAttributeDisabled() {
+        writeAttributeBoolean("disabled", true, defaultWriteBlanks);
+    }
+
+    
     /**
      * Writes an attribute object by first converting it to string
      * using its "toString()" method.
@@ -311,11 +353,59 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
         }
     }
 
-    //--- Element methods ------------------------------------------------------
+    /**
+     * Writes an attribute by converting a list into a comma-separated 
+     * string.
+     * @param localName attribute name
+     * @param values the values to write
+     * @since 2.0.0
+     */
+    public void writeAttributeDelimited(
+            String localName, List<?> values) {
+        writeAttributeDelimited(localName, values, ",");
+    }    
+    /**
+     * Writes an attribute by converting a list into a comma-separated 
+     * string.
+     * @param localName attribute name
+     * @param values the values to write
+     * @param delimiter the string separating each values
+     * @since 2.0.0
+     */
+    public void writeAttributeDelimited(
+            String localName, List<?> values, String delimiter) {
+        writeAttributeString(localName, StringUtils.join(values, delimiter));
+    }    
     
-    public void writeElementInteger(String localName, Integer value) {
-        writeElementInteger(localName, value, defaultWriteBlanks);
+    
+    //--- Element methods ------------------------------------------------------
+
+    /**
+     * Writes an empty element with a "disabled" attribute set to 
+     * <code>true</code>.
+     * @param localName element (tag) name
+     * @since 2.0.0
+     */
+    public void writeElementDisabled(String localName) {
+        writeStartElement(localName);
+        writeAttributeBoolean("disabled", true);
+        writeEndElement();
     }
+    
+    /**
+     * Writes an empty element with a "disabled" attribute set to 
+     * <code>true</code> and a "class" attribute matching the class name.
+     * @param localName element (tag) name
+     * @param clazz the class
+     * @since 2.0.0
+     */
+    public void writeElementDisabled(String localName, Class<?> clazz) {
+        writeStartElement(localName);
+        writeAttributeClass(clazz);
+        writeAttributeBoolean("disabled", true);
+        writeEndElement();
+    }
+    
     /**
      * Writes a simple Integer element.
      * @param localName element (tag) name
@@ -328,9 +418,10 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
             String localName, Integer value, boolean writeBlanks) {
         writeElementObject(localName, value, writeBlanks);
     }
-    public void writeElementLong(String localName, Long value) {
-        writeElementLong(localName, value, defaultWriteBlanks);
+    public void writeElementInteger(String localName, Integer value) {
+        writeElementInteger(localName, value, defaultWriteBlanks);
     }
+
     /**
      * Writes a simple Long element.
      * @param localName element (tag) name
@@ -343,9 +434,10 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
             String localName, Long value, boolean writeBlanks) {
         writeElementObject(localName, value, writeBlanks);
     }
-    public void writeElementFloat(String localName, Float value) {
-        writeElementFloat(localName, value, defaultWriteBlanks);
+    public void writeElementLong(String localName, Long value) {
+        writeElementLong(localName, value, defaultWriteBlanks);
     }
+
     /**
      * Writes a simple Float element.
      * @param localName element (tag) name
@@ -358,9 +450,10 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
             String localName, Float value, boolean writeBlanks) {
         writeElementObject(localName, value, writeBlanks);
     }
-    public void writeElementDouble(String localName, Double value) {
-        writeElementDouble(localName, value, defaultWriteBlanks);
+    public void writeElementFloat(String localName, Float value) {
+        writeElementFloat(localName, value, defaultWriteBlanks);
     }
+
     /**
      * Writes a simple Double element.
      * @param localName element (tag) name
@@ -373,9 +466,10 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
             String localName, Double value, boolean writeBlanks) {
         writeElementObject(localName, value, writeBlanks);
     }
-    public void writeElementBoolean(String localName, Boolean value) {
-        writeElementBoolean(localName, value, defaultWriteBlanks);
+    public void writeElementDouble(String localName, Double value) {
+        writeElementDouble(localName, value, defaultWriteBlanks);
     }
+
     /**
      * Writes a simple Boolean element.
      * @param localName element (tag) name
@@ -388,9 +482,10 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
             String localName, Boolean value, boolean writeBlanks) {
         writeElementObject(localName, value, writeBlanks);
     }
-    public void writeElementString(String localName, String value) {
-        writeElementString(localName, value, defaultWriteBlanks);
+    public void writeElementBoolean(String localName, Boolean value) {
+        writeElementBoolean(localName, value, defaultWriteBlanks);
     }
+
     /**
      * Writes a simple string element.
      * @param localName element (tag) name
@@ -403,9 +498,10 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
             String localName, String value, boolean writeBlanks) {
         writeElementObject(localName, value, writeBlanks);
     }
-    public void writeElementClass(String localName, Class<?> value) {
-        writeElementClass(localName, value, defaultWriteBlanks);
+    public void writeElementString(String localName, String value) {
+        writeElementString(localName, value, defaultWriteBlanks);
     }
+
     /**
      * Writes a simple element containing a class name, getting it by invoking
      * {@link Class#getCanonicalName()}.
@@ -424,7 +520,32 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
                     localName, value.getCanonicalName(), writeBlanks);
         }
     }
+    public void writeElementClass(String localName, Class<?> value) {
+        writeElementClass(localName, value, defaultWriteBlanks);
+    }
 
+    /**
+     * Writes a {@link File} element.
+     * @param localName element (tag) name
+     * @param value the File
+     * @param writeBlanks 
+     *        whether a blank value should be written as an empty element.
+     * @since 2.0.0
+     */
+    public void writeElementFile(
+            String localName, File value, boolean writeBlanks) {
+        writeElementObject(localName, value, writeBlanks);
+    }
+    /**
+     * Writes a {@link File} element.
+     * @param localName element (tag) name
+     * @param value the File
+     * @since 2.0.0
+     */
+    public void writeElementFile(String localName, File value) {
+        writeElementFile(localName, value, defaultWriteBlanks);
+    }
+    
     /**
      * Writes a simple element containing a Dimension.  The dimension
      * will be written as [width]x[height] (e.g., 400x300) or just one
@@ -461,24 +582,69 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
             writeElementObject(localName, str, writeBlanks);
         }
     }
+
     /**
-     * Writes a simple element object by first converting it to string
-     * using its "toString()" method.
+     * Writes a list of objects.
+     * @param parentLocalName parent tag wrapping child elements 
+     *        (set to <code>null</code> for no parent)
+     * @param localName element (tag) name
+     * @param values the list
+     * @param writeBlanks 
+     *        whether a blank value should be written as an empty element.
+     * @since 2.0.0
+     */
+    public void writeElementObjectList(String parentLocalName,
+            String localName, List<?> values, boolean writeBlanks) {
+        boolean hasParent = StringUtils.isNotBlank(parentLocalName);
+        if (CollectionUtils.isEmpty(values) && hasParent) {
+            writeElementObject(parentLocalName, null, writeBlanks);
+        }
+        if (hasParent) {
+            writeStartElement(parentLocalName);
+        }
+        for (Object value : values) {
+            writeElementObject(localName, value, writeBlanks);
+        }
+        if (hasParent) {
+            writeEndElement();
+        }
+    }
+    /**
+     * Writes a list of objects.
+     * @param parentLocalName parent tag wrapping child elements 
+     *        (set to <code>null</code> for no parent)
+     * @param localName element (tag) name
+     * @param values the list
+     * @since 2.0.0
+     */
+    public void writeElementObjectList(String parentLocalName, 
+            String localName, List<?> values) {
+        writeElementObjectList(
+                parentLocalName, localName, values, defaultWriteBlanks);
+    }    
+    
+    /**
+     * Writes an element object as string.
+     * The object is converted to string using its
+     * "toString()" method and written as a characters into a single element.
      * @param localName element (tag) name
      * @param value element (tag) value
      * @since 1.14.0
+     * @see #writeObject(String, Object)
      */
     public void writeElementObject(String localName, Object value) {
         writeElementObject(localName, value, defaultWriteBlanks);
     }
     /**
-     * Writes a simple element object by first converting it to string
-     * using its "toString()" method.
+     * Writes an element object as string.
+     * The object is converted to string using its
+     * "toString()" method and written as a characters into a single element.
      * @param localName element (tag) name
      * @param value element (tag) value
      * @param writeBlanks 
      *        whether a blank value should be written as an empty element.
      * @since 1.14.0
+     * @see #writeObject(String, Object)
      */
     public void writeElementObject(
             String localName, Object value, boolean writeBlanks) {
@@ -491,6 +657,120 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
             writeEmptyElement(localName);
         }
     }
+
+    /**
+     * Writes an element by converting a list into a comma-separated 
+     * string.
+     * @param localName element name
+     * @param values the values to write
+     * @since 2.0.0
+     */
+    public void writeElementDelimited(
+            String localName, List<?> values) {
+        writeElementDelimited(localName, values, ",");
+    }    
+    /**
+     * Writes an element by converting a list into a comma-separated 
+     * string.
+     * @param localName element name
+     * @param values the values to write
+     * @param delimiter the string separating each values
+     * @since 2.0.0
+     */
+    public void writeElementDelimited(
+            String localName, List<?> values, String delimiter) {
+        writeElementString(localName, StringUtils.join(values, delimiter));
+    }        
+    
+    /**
+     * Writes an object. If the object implements {@link IXMLConfigurable},
+     * its is responsible for creating its own XML through its
+     * {@link IXMLConfigurable#saveToXML(Writer, String)} method.
+     * Otherwise, an empty element is created with the "class" attribute
+     * matching the object class canonical name. 
+     * @param localName element (tag) name
+     * @param value the object to write
+     * @since 2.0.0
+     * @see #writeElementObject(String, Object)
+     */
+    public void writeObject(String localName, Object value) {
+        writeObject(localName, value, false);
+    }
+    /**
+     * Writes an object. If the object implements {@link IXMLConfigurable},
+     * its is responsible for creating its own XML through its
+     * {@link IXMLConfigurable#saveToXML(Writer, String)} method.
+     * Otherwise, an empty element is created with the "class" attribute
+     * matching the object class canonical name. 
+     * @param localName element (tag) name
+     * @param value the object to write
+     * @param disabled whether the object should have the "diabled" attribute
+     * @since 2.0.0
+     * @see #writeElementObject(String, Object)
+     */
+    public void writeObject(String localName, Object value, boolean disabled) {
+        if (value == null) {
+            if (disabled) {
+                writeElementDisabled(localName);
+            }
+            return;
+        }
+        if (value instanceof IXMLConfigurable) {
+            flush();
+            try {
+                StringWriter sw = new StringWriter();
+                ((IXMLConfigurable) value).saveToXML(sw, localName);
+                String xml = sw.toString();
+                if (disabled) {
+                    xml = xml.replace("<" + localName + " class=\"" , 
+                            "<" + localName + " disabled=\"true\" class=\"" );                    
+                }
+                writer.write(xml);
+                writer.flush();
+            } catch (IOException e) {
+                throw new XMLException(
+                        "Could not save XML-configurable class for \""
+                        + localName + "\".", e);
+            }
+            flush();
+        } else {
+            writeStartElement(localName);
+            writeAttributeClass(value.getClass());
+            writeEndElement();
+        }
+    }    
+    /**
+     * Writes a list of objects.
+     * If an object implements {@link IXMLConfigurable},
+     * its is responsible for creating its own XML through its
+     * {@link IXMLConfigurable#saveToXML(Writer, String)} method.
+     * Otherwise, an empty element is created with the "class" attribute
+     * matching the object class canonical name. 
+     * @param parentLocalName parent tag wrapping child elements 
+     *        (set to <code>null</code> for no parent)
+     * @param localName element (tag) name
+     * @param values the objects to write
+     * @since 2.0.0
+     * @see #writeElementObjectList(String, String, List)
+     */
+    public void writeObjectList(String parentLocalName, 
+            String localName, List<? extends Object> values) {
+        
+        boolean hasParent = StringUtils.isNotBlank(parentLocalName);
+        if (CollectionUtils.isEmpty(values) && hasParent) {
+            writeElementObject(parentLocalName, null, defaultWriteBlanks);
+        }
+        if (hasParent) {
+            writeStartElement(parentLocalName);
+        }
+        for (Object value : values) {
+            writeObject(localName, value);
+        }
+        if (hasParent) {
+            writeEndElement();
+        }
+    }
+    
     
     //--- Overridden methods ---------------------------------------------------
     
@@ -499,18 +779,45 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
         indent();
         depth++;
         try {
-            writer.writeStartElement(localName);
+            streamWriter.writeStartElement(localName);
         } catch (XMLStreamException e) {
             throw new XMLException("Could not write start element.", e);
         }
     }
 
+    /**
+     * Writes a start element of the supplied name, with a "class" attribute
+     * for the given class.  
+     * @param localName tag name
+     * @param clazz name of class, or <code>null</code>
+     * @since 2.0.0
+     */
+    public void writeStartElement(String localName, Class<?> clazz) {
+        writeStartElement(localName);
+        writeAttributeClass(clazz);
+    }
+
+    /**
+     * Writes a start element of the supplied name, with a "class" attribute
+     * for the given class, and a "disabled" attribute if <code>true</code>.  
+     * @param localName tag name
+     * @param clazz name of class, or <code>null</code>
+     * @param disabled <code>true</code> to disable this class
+     * @since 2.0.0
+     */
+    public void writeStartElement(
+            String localName, Class<?> clazz, boolean disabled) {
+        writeStartElement(localName);
+        writeAttributeClass(clazz);
+        writeAttributeDisabled(disabled);
+    }
+    
     @Override
     public void writeStartElement(String namespaceURI, String localName) {
         indent();
         depth++;
         try {
-            writer.writeStartElement(namespaceURI, localName);
+            streamWriter.writeStartElement(namespaceURI, localName);
         } catch (XMLStreamException e) {
             throw new XMLException("Could not write start element.", e);
         }
@@ -522,7 +829,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
         indent();
         depth++;
         try {
-            writer.writeStartElement(prefix, localName, namespaceURI);
+            streamWriter.writeStartElement(prefix, localName, namespaceURI);
         } catch (XMLStreamException e) {
             throw new XMLException("Could not write start element.", e);
         }
@@ -532,7 +839,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
     public void writeEmptyElement(String namespaceURI, String localName) {
         indent();
         try {
-            writer.writeEmptyElement(namespaceURI, localName);
+            streamWriter.writeEmptyElement(namespaceURI, localName);
         } catch (XMLStreamException e) {
             throw new XMLException("Could not write empty element.", e);
         }
@@ -543,7 +850,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
             String prefix, String localName, String namespaceURI) {
         indent();
         try {
-            writer.writeEmptyElement(prefix, localName, namespaceURI);
+            streamWriter.writeEmptyElement(prefix, localName, namespaceURI);
         } catch (XMLStreamException e) {
             throw new XMLException("Could not write empty element.", e);
         }
@@ -553,7 +860,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
     public void writeEmptyElement(String localName) {
         indent();
         try {
-            writer.writeEmptyElement(localName);
+            streamWriter.writeEmptyElement(localName);
         } catch (XMLStreamException e) {
             throw new XMLException("Could not write empty element.", e);
         }
@@ -567,7 +874,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
         }
         indentEnd = true;
         try {
-            writer.writeEndElement();
+            streamWriter.writeEndElement();
         } catch (XMLStreamException e) {
             throw new XMLException("Could not write end attribute.", e);
         }
@@ -576,7 +883,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
     @Override
     public void writeEndDocument() {
         try {
-            writer.writeEndDocument();
+            streamWriter.writeEndDocument();
         } catch (XMLStreamException e) {
             throw new XMLException("Could not write end document.", e);
         }
@@ -585,7 +892,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
     @Override
     public void close() {
         try {
-            writer.close();
+            streamWriter.close();
         } catch (XMLStreamException e) {
             throw new XMLException("Could not close.", e);
         }
@@ -594,7 +901,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
     @Override
     public void flush() {
         try {
-            writer.flush();
+            streamWriter.flush();
         } catch (XMLStreamException e) {
             throw new XMLException("Could not flush.", e);
         }
@@ -603,7 +910,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
     @Override
     public void writeAttribute(String localName, String value) {
         try {
-            writer.writeAttribute(localName, value);
+            streamWriter.writeAttribute(localName, value);
         } catch (XMLStreamException e) {
             throw new XMLException("Could not write XML attribute.", e);
         }
@@ -612,7 +919,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
     public void writeAttribute(String prefix, String namespaceURI,
             String localName, String value) {
         try {
-            writer.writeAttribute(prefix, namespaceURI, localName, value);
+            streamWriter.writeAttribute(prefix, namespaceURI, localName, value);
         } catch (XMLStreamException e) {
             throw new XMLException("Could not write XML attribute.", e);
         }
@@ -621,7 +928,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
     public void writeAttribute(
             String namespaceURI, String localName, String value) {
         try {
-            writer.writeAttribute(namespaceURI, localName, value);
+            streamWriter.writeAttribute(namespaceURI, localName, value);
         } catch (XMLStreamException e) {
             throw new XMLException("Could not write XML attribute.", e);
         }
@@ -630,7 +937,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
     @Override
     public void writeNamespace(String prefix, String namespaceURI) {
         try {
-            writer.writeNamespace(prefix, namespaceURI);
+            streamWriter.writeNamespace(prefix, namespaceURI);
         } catch (XMLStreamException e) {
             throw new XMLException("Could not write namespace.", e);
         }
@@ -639,7 +946,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
     @Override
     public void writeDefaultNamespace(String namespaceURI) {
         try {
-            writer.writeDefaultNamespace(namespaceURI);
+            streamWriter.writeDefaultNamespace(namespaceURI);
         } catch (XMLStreamException e) {
             throw new XMLException("Could not write default namespace.", e);
         }
@@ -649,7 +956,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
     public void writeComment(String data) {
         indent();
         try {
-            writer.writeComment(data);
+            streamWriter.writeComment(data);
         } catch (XMLStreamException e) {
             throw new XMLException("Could not write comment.", e);
         }
@@ -659,7 +966,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
     public void writeProcessingInstruction(String target) {
         indent();
         try {
-            writer.writeProcessingInstruction(target);
+            streamWriter.writeProcessingInstruction(target);
         } catch (XMLStreamException e) {
             throw new XMLException(
                     "Could not write processing instruction.", e);
@@ -670,7 +977,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
     public void writeProcessingInstruction(String target, String data) {
         indent();
         try {
-            writer.writeProcessingInstruction(target, data);
+            streamWriter.writeProcessingInstruction(target, data);
         } catch (XMLStreamException e) {
             throw new XMLException(
                     "Could not write processing instruction.", e);
@@ -680,7 +987,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
     @Override
     public void writeCData(String data) {
         try {
-            writer.writeCData(data);
+            streamWriter.writeCData(data);
         } catch (XMLStreamException e) {
             throw new XMLException("Could not write CDATA.", e);
         }
@@ -690,7 +997,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
     public void writeDTD(String dtd) {
         indent();
         try {
-            writer.writeDTD(dtd);
+            streamWriter.writeDTD(dtd);
         } catch (XMLStreamException e) {
             throw new XMLException("Could not write DTD.", e);
         }
@@ -699,7 +1006,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
     @Override
     public void writeEntityRef(String name) {
         try {
-            writer.writeEntityRef(name);
+            streamWriter.writeEntityRef(name);
         } catch (XMLStreamException e) {
             throw new XMLException("Could not write entity ref.", e);
         }
@@ -708,7 +1015,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
     @Override
     public void writeStartDocument() {
         try {
-            writer.writeStartDocument();
+            streamWriter.writeStartDocument();
         } catch (XMLStreamException e) {
             throw new XMLException("Could not write start document.", e);
         }
@@ -717,7 +1024,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
     @Override
     public void writeStartDocument(String version) {
         try {
-            writer.writeStartDocument(version);
+            streamWriter.writeStartDocument(version);
         } catch (XMLStreamException e) {
             throw new XMLException("Could not write start document.", e);
         }
@@ -726,7 +1033,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
     @Override
     public void writeStartDocument(String encoding, String version) {
         try {
-            writer.writeStartDocument(encoding, version);
+            streamWriter.writeStartDocument(encoding, version);
         } catch (XMLStreamException e) {
             throw new XMLException("Could not write start document.", e);
         }
@@ -736,7 +1043,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
     public void writeCharacters(String text) {
         try {
             if (indent < 0) {
-                writer.writeCharacters(text);
+                streamWriter.writeCharacters(text);
                 return;
             }
 
@@ -744,12 +1051,12 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
             if (StringUtils.isNotBlank(text)) {
                 String[] lines = text.split("\n");
                 if (lines.length == 1) {
-                    writer.writeCharacters(lines[0]);
+                    streamWriter.writeCharacters(lines[0]);
                     indentEnd = false;
                 } else {
                     for (String line : lines) {
                         indent();
-                        writer.writeCharacters(line);
+                        streamWriter.writeCharacters(line);
                     }
                 }
             } else {
@@ -763,7 +1070,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
     @Override
     public void writeCharacters(char[] text, int start, int len) {
         try {
-            writer.writeCharacters(text, start, len);
+            streamWriter.writeCharacters(text, start, len);
         } catch (XMLStreamException e) {
             throw new XMLException("Could not write characters.", e);
         }
@@ -772,7 +1079,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
     @Override
     public String getPrefix(String uri) {
         try {
-            return writer.getPrefix(uri);
+            return streamWriter.getPrefix(uri);
         } catch (XMLStreamException e) {
             throw new XMLException("Could not get prefix.", e);
         }
@@ -781,7 +1088,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
     @Override
     public void setPrefix(String prefix, String uri) {
         try {
-            writer.setPrefix(prefix, uri);
+            streamWriter.setPrefix(prefix, uri);
         } catch (XMLStreamException e) {
             throw new XMLException("Could not set prefix.", e);
         }
@@ -790,7 +1097,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
     @Override
     public void setDefaultNamespace(String uri) {
         try {
-            writer.setDefaultNamespace(uri);
+            streamWriter.setDefaultNamespace(uri);
         } catch (XMLStreamException e) {
             throw new XMLException("Could not set default namespace.", e);
         }
@@ -799,7 +1106,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
     @Override
     public void setNamespaceContext(NamespaceContext context) {
         try {
-            writer.setNamespaceContext(context);
+            streamWriter.setNamespaceContext(context);
         } catch (XMLStreamException e) {
             throw new XMLException("Could not set namespace context.", e);
         }
@@ -807,11 +1114,11 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
 
     @Override
     public NamespaceContext getNamespaceContext() {
-        return writer.getNamespaceContext();
+        return streamWriter.getNamespaceContext();
     }
 
     @Override
     public Object getProperty(String name) {
-        return writer.getProperty(name);
+        return streamWriter.getProperty(name);
     }
 }

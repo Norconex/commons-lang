@@ -34,8 +34,10 @@ import com.norconex.commons.lang.xml.XML;
  *
  * @author Pascal Essiembre
  * @since 1.15.0
+ * @deprecated Since 2.0.0, use {@link EncryptionKey} save/load methods.
  */
-public class EncryptionXMLUtil {
+@Deprecated
+public final class EncryptionXMLUtil {
 
     private EncryptionXMLUtil() {
         super();
@@ -110,7 +112,7 @@ public class EncryptionXMLUtil {
      * @throws IOException problem saving to XML
      * @see IXMLConfigurable
      */
-    public static void saveToXML(XMLStreamWriter writer, 
+    public static void saveToXML(EnhancedXMLStreamWriter writer, 
             String tagPrefix, EncryptionKey encryptionKey) throws IOException {
 
         String tagKey = StringUtils.trimToEmpty(tagPrefix);
@@ -118,18 +120,11 @@ public class EncryptionXMLUtil {
         String tagSource = tagKey + "Source";
         String tagSize = tagKey + "Size";
 
-        EnhancedXMLStreamWriter w = null;
-        if (writer instanceof EnhancedXMLStreamWriter) {
-            w = (EnhancedXMLStreamWriter) writer;
-        } else {
-            w = new EnhancedXMLStreamWriter(writer);
-        }
-        
         if (encryptionKey != null) {
-            w.writeElementString(tagKey, encryptionKey.getValue());
-            w.writeElementInteger(tagSize, encryptionKey.getSize());
+            writer.writeElementString(tagKey, encryptionKey.getValue());
+            writer.writeElementInteger(tagSize, encryptionKey.getSize());
             if (encryptionKey.getSource() != null) {
-                w.writeElementString(tagSource,
+                writer.writeElementString(tagSource,
                         encryptionKey.getSource().name().toLowerCase());
             }
         }

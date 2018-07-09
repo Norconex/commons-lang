@@ -16,6 +16,9 @@
         New Event class and IEventListener interface.
       </action>
       <action dev="essiembre" type="add">
+        New Regex and KeyValueExtractor classes.
+      </action>
+      <action dev="essiembre" type="add">
         New ExtendedBeanUtilsBean that supports copying of either combination
         of collections or array, as well as providing new converters for
         Date, LocaleDateTime, and Locale.
@@ -25,7 +28,8 @@
       </action>
       <action dev="essiembre" type="add">
         New XML class replacing XMLConfigurationUtil. Now relying on 
-        Java XML/XPath instead of Apache Configuration and white spaces are now always preserved. 
+        Java XML/XPath instead of Apache Configuration and white spaces are now
+        always preserved. 
       </action>
       <action dev="essiembre" type="add">
         New XMLValidationError class now returned by 
@@ -46,10 +50,19 @@
         New accessors for LocalDateTime on Properties.
       </action>
       <action dev="essiembre" type="update">
+        New SLF4JUtil class.
+      </action>
+      <action dev="essiembre" type="update">
         Now requires Java 8 or higher.
       </action>
       <action dev="essiembre" type="update">
         Now uses SLF4J instead of Log4J for logging.
+      </action>
+      <action dev="essiembre" type="update">
+        New convenience methods on EnhancedXMLStreamWriter.
+      </action>
+      <action dev="essiembre" type="update">
+        EncryptionXMLUtil is now deprecated (methods moved to EncryptionKey).
       </action>
       <action dev="essiembre" type="update">
         DurationParser now returns a Duration and must be instantiated.

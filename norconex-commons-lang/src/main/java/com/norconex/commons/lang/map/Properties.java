@@ -66,55 +66,57 @@ import com.norconex.commons.lang.bean.ExtendedBeanUtilsBean;
  * that enforces the use of String keys and values internally, but offers many
  * convenience methods for storing and retrieving multiple values of different
  * types (e.g. Integer, Locale, File, etc). It also supports properties with
- * multiple values.  You can also see this class as a 
- * string-based multi-value map with helpful methods. While it does not extend 
+ * multiple values.  You can also see this class as a
+ * string-based multi-value map with helpful methods. While it does not extend
  * {@link java.util.Properties}, it offers similar load and store
  * methods and can be used as a replacement for it in many cases.</p>
  * <p>This class extends {@link ObservableMap} which means you can listen
  * for property changes.</p>
- * 
+ *
  * <p>To insert values, there are <i>set</i> methods and <i>add</i> methods.
- * The <i>set</i> methods will replace any value(s) already present under the 
- * given key.  It is essentially the same behavior as 
- * {@link Map#put(Object, Object)}.  The <i>add</i> method will add the 
+ * The <i>set</i> methods will replace any value(s) already present under the
+ * given key.  It is essentially the same behavior as
+ * {@link Map#put(Object, Object)}.  The <i>add</i> method will add the
  * new value(s) to the list of already existing ones (if any).
  * </p>
- * 
+ *
  * <p><b>Since 1.14.0</b>, the storing of entries with multiple values
  * will create one file entry per value. To preserve old behavior and
  * force multiple values to be on the same line, use the store/load
- * method accepting a joining delimiter. That version also 
+ * method accepting a joining delimiter. That version also
  * introduced storing and loading as JSON.
  * </p>
- * 
- * <p>Upon encountering a problem in parsing a value to 
+ *
+ * <p>Upon encountering a problem in parsing a value to
  * its desired type, a {@link PropertiesException} is thrown.</p>
  * @author Pascal Essiembre
  */
 public class Properties extends ObservableMap<String, List<String>>
         implements Serializable {
 
-    public static final String DEFAULT_JAVA_PROPERTIES_DELIMITER = "\u241E"; 
-    
+    public static final String DEFAULT_JAVA_PROPERTIES_DELIMITER = "\\u241E";
+
+    //TODO rename plural methods to getXxxList()?
+
     //TODO have getXXXRegex() methods to return all keys or values matching
     // a regular expression
-    
+
     //TODO remove support for case sensitivity and provide a utility
-    //class that does it instead on any string-key maps? 
+    //class that does it instead on any string-key maps?
     // OR, store it in a case sensitive way instead of keeping
     // multiple keys of different cases around. Could provide
     // options to put everyting lower, upper, or rely on first key
     // entered (to know which case-version to use).
-    
+
     private static final long serialVersionUID = -7215126924574341L;
     private static final Logger LOG = LoggerFactory.getLogger(Properties.class);
-    
+
     //TODO still support this?
     private final boolean caseInsensitiveKeys;
 
     private final PropertyUtilsBean propertyUtilsBean;
     private final BeanUtilsBean beanUtilsBean;
-    
+
     /**
      * Create a new instance with case-sensitive keys.
      * Internally wraps a {@link HashMap} to store keys and values.
@@ -124,23 +126,23 @@ public class Properties extends ObservableMap<String, List<String>>
     }
 
     /**
-     * Creates a new instance. Internally wraps a {@link HashMap} to 
+     * Creates a new instance. Internally wraps a {@link HashMap} to
      * store keys and values.
-     * @param caseInsensitiveKeys when <code>true</code> methods taking a 
-     *        key argument will consider the key being passed without 
+     * @param caseInsensitiveKeys when <code>true</code> methods taking a
+     *        key argument will consider the key being passed without
      *        consideration for character case.
      */
     public Properties(boolean caseInsensitiveKeys) {
         this(null, caseInsensitiveKeys);
     }
-    
+
     /**
      * Decorates {@code Map} as a {@code Properties}.
      * As of version <b>1.4</b> the {@code Map} argument is decorated so that
      * modifications to this instance will also modify the supplied {@code Map}.
-     * To use a {@code Map} to initialize values only, use the 
+     * To use a {@code Map} to initialize values only, use the
      * {@link #loadFromMap(Map)} method.
-     * @param map the Map to decorate 
+     * @param map the Map to decorate
      */
     public Properties(Map<String, List<String>> map) {
         this(map, false);
@@ -149,18 +151,18 @@ public class Properties extends ObservableMap<String, List<String>>
      * Decorates a {@code Map} argument as a {@code Properties}.
      * As of version <b>1.4</b> the {@code Map} argument is decorated so that
      * modifications to this instance will also modify the supplied {@code Map}.
-     * To use a {@code Map} to initialize values only, use the 
+     * To use a {@code Map} to initialize values only, use the
      * {@link #loadFromMap(Map)} method.
-     * @param map the Map to decorate 
-     * @param caseInsensitiveKeys when <code>true</code> methods taking a 
-     *        key argument will consider the key being passed without 
+     * @param map the Map to decorate
+     * @param caseInsensitiveKeys when <code>true</code> methods taking a
+     *        key argument will consider the key being passed without
      *        consideration for character case.
      */
     public Properties(
             Map<String, List<String>> map, boolean caseInsensitiveKeys) {
         super(map);
         this.caseInsensitiveKeys = caseInsensitiveKeys;
-        
+
         //--- PropertyUtilsBean ---
         // Make sure objects needing more than "toString" are handled in
         // loadFromMap(Map<?, ?> map) {
@@ -169,7 +171,7 @@ public class Properties extends ObservableMap<String, List<String>>
                 SuppressPropertiesBeanIntrospector.SUPPRESS_CLASS);
         this.beanUtilsBean = new ExtendedBeanUtilsBean();
     }
-    
+
     /**
      * Gets whether keys are case sensitive or not.
      * @return <code>true</code> if case insensitive
@@ -181,7 +183,7 @@ public class Properties extends ObservableMap<String, List<String>>
 
     //--- Store ----------------------------------------------------------------
     /**
-     * Returns this {@link Map} in a format 
+     * Returns this {@link Map} in a format
      * compatible with {@link java.util.Properties#store(Writer, String)}.
      * Multi-value properties
      * are merged, joined by the symbol for record separator (U+241E).
@@ -200,9 +202,9 @@ public class Properties extends ObservableMap<String, List<String>>
             throw new PropertiesException("Could not convert to string.", e);
         }
     }
-    
+
     /**
-     * Stores this {@link Map} in a format 
+     * Stores this {@link Map} in a format
      * compatible with {@link java.util.Properties#store(Writer, String)}.
      * Multi-value properties
      * are merged, joined by the symbol for record separator (U+241E).
@@ -212,16 +214,16 @@ public class Properties extends ObservableMap<String, List<String>>
      */
     public void storeToProperties(Writer writer) throws IOException {
         storeToProperties(writer, null);
-    }    
+    }
     /**
-     * Stores this {@link Map} in a format 
+     * Stores this {@link Map} in a format
      * compatible with {@link java.util.Properties#store(Writer, String)}.
      * Multi-value properties
      * are merged, joined by the supplied delimiter character.
-     * If the delimiter is <code>null</code>, the 
+     * If the delimiter is <code>null</code>, the
      * symbol for record separator (U+241E) is used.
      * @param   writer     an output character stream writer.
-     * @param delimiter string to used as a separator when joining 
+     * @param delimiter string to used as a separator when joining
      *        multiple values for the same key.
      * @throws IOException i/o problem
      * @since 2.0.0
@@ -231,7 +233,7 @@ public class Properties extends ObservableMap<String, List<String>>
         storeToJavaUtilProperties(writer, delimiter, false);
     }
     /**
-     * Stores this {@link Map} in a format 
+     * Stores this {@link Map} in a format
      * compatible with {@link java.util.Properties#store(OutputStream, String)}.
      * Multi-value properties
      * are merged, joined by the symbol for record separator (U+241E).
@@ -243,14 +245,14 @@ public class Properties extends ObservableMap<String, List<String>>
         storeToProperties(out, null);
     }
     /**
-     * Stores this {@link Map} in a format 
+     * Stores this {@link Map} in a format
      * compatible with {@link java.util.Properties#store(OutputStream, String)}.
      * Multi-value properties
      * are merged, joined by the supplied delimiter character.
-     * If the delimiter is <code>null</code>, the 
+     * If the delimiter is <code>null</code>, the
      * symbol for record separator (U+241E) is used.
      * @param   out      an output stream.
-     * @param delimiter delimiter string to used as a separator when joining 
+     * @param delimiter delimiter string to used as a separator when joining
      *        multiple values for the same key.
      * @throws IOException i/o problem
      * @since 2.0.0
@@ -260,7 +262,7 @@ public class Properties extends ObservableMap<String, List<String>>
     }
 
     /**
-     * Stores this {@link Map} in a UTF-8 format compatible with 
+     * Stores this {@link Map} in a UTF-8 format compatible with
      * {@link java.util.Properties#storeToXML(OutputStream, String)}.
      * Multi-value properties
      * are merged, joined by the symbol for record separator (U+241E).
@@ -269,18 +271,18 @@ public class Properties extends ObservableMap<String, List<String>>
      * @since 1.14.0
      */
     public void storeToXML(OutputStream os) throws IOException {
-        storeToXML(os, null);        
-    }    
-    
+        storeToXML(os, null);
+    }
+
     /**
-     * Stores this {@link Map} in a UTF-8 format compatible with 
+     * Stores this {@link Map} in a UTF-8 format compatible with
      * {@link java.util.Properties#storeToXML(OutputStream, String)}.
      * Multi-value properties
      * are merged, joined by the supplied delimiter character.
-     * If the delimiter is <code>null</code>, the 
+     * If the delimiter is <code>null</code>, the
      * symbol for record separator (U+241E) is used.
      * @param os the output stream on which to store the XML document.
-     * @param delimiter delimiter string to used as a separator when joining 
+     * @param delimiter delimiter string to used as a separator when joining
      *        multiple values for the same key.
      * @throws IOException i/o problem
      * @since 1.14.0
@@ -291,7 +293,7 @@ public class Properties extends ObservableMap<String, List<String>>
     }
 
     /**
-     * Stores this {@link Map} in a UTF-8 format compatible with 
+     * Stores this {@link Map} in a UTF-8 format compatible with
      * {@link java.util.Properties#storeToXML(OutputStream, String)}.
      * Multi-value properties
      * are merged, joined by the symbol for record separator (U+241E).
@@ -300,27 +302,27 @@ public class Properties extends ObservableMap<String, List<String>>
      * @since 1.14.0
      */
     public void storeToXML(Writer writer) throws IOException {
-        storeToXML(writer, null);        
-    }    
-    
+        storeToXML(writer, null);
+    }
+
     /**
-     * Stores this {@link Map} in a UTF-8 format compatible with 
+     * Stores this {@link Map} in a UTF-8 format compatible with
      * {@link java.util.Properties#storeToXML(OutputStream, String)}.
      * Multi-value properties
      * are merged, joined by the supplied delimiter character.
-     * If the delimiter is <code>null</code>, the 
+     * If the delimiter is <code>null</code>, the
      * symbol for record separator (U+241E) is used.
      * @param writer the writer on which to store the XML document.
-     * @param delimiter delimiter string to used as a separator when joining 
+     * @param delimiter delimiter string to used as a separator when joining
      *        multiple values for the same key.
      * @throws IOException i/o problem
      */
-    public void storeToXML(Writer writer, String delimiter) 
+    public void storeToXML(Writer writer, String delimiter)
             throws IOException {
         storeToJavaUtilProperties(writer, delimiter, true);
     }
 
-    
+
     private synchronized void storeToJavaUtilProperties(
             Object output, String delimiter, boolean isXML) throws IOException {
         java.util.Properties p = new java.util.Properties();
@@ -328,12 +330,12 @@ public class Properties extends ObservableMap<String, List<String>>
                 delimiter, DEFAULT_JAVA_PROPERTIES_DELIMITER);
         for (Entry<String, List<String>> entry : entrySet()) {
             p.setProperty(
-                    entry.getKey(), 
+                    entry.getKey(),
                     StringUtils.join(entry.getValue(), sep));
         }
         if (output instanceof Writer) {
             if (isXML) {
-                p.storeToXML(new WriterOutputStream((Writer) output, 
+                p.storeToXML(new WriterOutputStream((Writer) output,
                         StandardCharsets.UTF_8), "");
             } else {
                 p.store((Writer) output, "");
@@ -346,10 +348,10 @@ public class Properties extends ObservableMap<String, List<String>>
             }
         }
     }
-    
+
     /**
-     * Writes this {@link Map} as JSON to the output stream as UTF-8 in a format 
-     * suitable for using the {@link #loadFromJSON(InputStream)} method. 
+     * Writes this {@link Map} as JSON to the output stream as UTF-8 in a format
+     * suitable for using the {@link #loadFromJSON(InputStream)} method.
      * @param os the output stream on which to store the properties.
      * @throws IOException i/o problem
      * @since 1.14.0
@@ -358,9 +360,9 @@ public class Properties extends ObservableMap<String, List<String>>
         storeToJSON(new OutputStreamWriter(os, StandardCharsets.UTF_8));
     }
     /**
-     * Writes this {@link Map} as JSON to the writer in a format 
-     * suitable for using the 
-     * {@link #loadFromJSON(Reader)} method. 
+     * Writes this {@link Map} as JSON to the writer in a format
+     * suitable for using the
+     * {@link #loadFromJSON(Reader)} method.
      * @param writer the writer on which to store the XML document.
      * @throws IOException i/o problem
      * @since 1.14.0
@@ -399,7 +401,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * Copy all properties in this map to the given bean, mapping keys
      * to setter methods of the same name. Existing bean values for matching
      * accessors are overwritten. Other values are left intact.
-     * <code>null</code> beans are ignored. 
+     * <code>null</code> beans are ignored.
      * @param bean the object to store properties into
      * @since 2.0.0
      */
@@ -413,18 +415,18 @@ public class Properties extends ObservableMap<String, List<String>>
                 List<String> values = it.getValue();
                 if (property == null || values.isEmpty()
                         || !PropertyUtils.isWriteable(bean, property)) {
-                    LOG.debug("Property is not writable (no setter?): {}", 
+                    LOG.debug("Property is not writable (no setter?): {}",
                             property);
                     continue;
                 }
-                
+
                 Class<?> type = PropertyUtils.getPropertyType(bean, property);
                 Object value = values;
 
                 if (!type.isArray() && !Iterable.class.isAssignableFrom(type)) {
                     value = values.get(0);
                 }
-                
+
                 beanUtilsBean.copyProperty(bean, property, value);
             }
         } catch (IllegalAccessException | InvocationTargetException
@@ -433,9 +435,9 @@ public class Properties extends ObservableMap<String, List<String>>
                     "Could not store Properties into given bean.", e);
         }
     }
-    
+
     //--- Load -----------------------------------------------------------------
-    
+
     /**
      * Reads a property list (key and element pairs) from the input
      * string.  Otherwise, the same considerations as
@@ -450,13 +452,13 @@ public class Properties extends ObservableMap<String, List<String>>
     }
 
     /**
-     * <p>Reads all key/value pairs in the given map, and 
-     * add them to this <code>Map</code>.  Keys and values are converted to 
+     * <p>Reads all key/value pairs in the given map, and
+     * add them to this <code>Map</code>.  Keys and values are converted to
      * strings using their toString() method, with exception
      * of values being arrays or collections.  In such case, the entry
      * is considered a multi-value one and each value will be converted
      * to individual strings. <code>null</code> keys are ignored.
-     * <code>null</code> values are converted to an empty string.</p> 
+     * <code>null</code> values are converted to an empty string.</p>
      * <p>Changes to this instance
      * won't be reflected in the given <code>Map</code>.  If you want otherwise,
      * use invoke the constructor with a <code>Map</code> argument.</p>
@@ -499,9 +501,9 @@ public class Properties extends ObservableMap<String, List<String>>
             }
         }
     }
-    
+
     /**
-     * Loads this {@link Map} from an input of a format 
+     * Loads this {@link Map} from an input of a format
      * compatible with {@link java.util.Properties#load(Reader)}.
      * Multi-value properties
      * are split using the symbol for record separator (U+241E).
@@ -513,11 +515,11 @@ public class Properties extends ObservableMap<String, List<String>>
         loadFromProperties(reader, null);
     }
     /**
-     * Loads this {@link Map} from an input of a format 
+     * Loads this {@link Map} from an input of a format
      * compatible with {@link java.util.Properties#load(Reader)}.
      * Multi-value properties
      * are split using the supplied delimiter string.
-     * If the delimiter is <code>null</code>, the symbol for record separator 
+     * If the delimiter is <code>null</code>, the symbol for record separator
      * (U+241E) is used.
      * @param   reader   the input character stream.
      * @param delimiter delimiter string to used to parse a multi-value key.
@@ -528,9 +530,9 @@ public class Properties extends ObservableMap<String, List<String>>
             throws IOException {
         loadFromJavaUtilProperties(reader, delimiter, false);
     }
-    
+
     /**
-     * Loads this {@link Map} from an input of a format 
+     * Loads this {@link Map} from an input of a format
      * compatible with {@link java.util.Properties#load(InputStream)}.
      * Multi-value properties
      * are split using the symbol for record separator (U+241E).
@@ -543,11 +545,11 @@ public class Properties extends ObservableMap<String, List<String>>
         loadFromProperties(inStream, null);
     }
     /**
-     * Loads this {@link Map} from an input of a format 
+     * Loads this {@link Map} from an input of a format
      * compatible with {@link java.util.Properties#load(InputStream)}.
      * Multi-value properties
      * are split using the supplied delimiter string.
-     * If the delimiter is <code>null</code>, the symbol for record separator 
+     * If the delimiter is <code>null</code>, the symbol for record separator
      * (U+241E) is used.
      * @param   inStream   the input stream.
      * @param delimiter delimiter string to used to parse a multi value
@@ -559,9 +561,9 @@ public class Properties extends ObservableMap<String, List<String>>
             InputStream inStream, String delimiter) throws IOException {
         loadFromJavaUtilProperties(inStream, delimiter, false);
     }
-    
+
     /**
-     * Loads this {@link Map} from an input of a format 
+     * Loads this {@link Map} from an input of a format
      * compatible with {@link java.util.Properties#loadFromXML(InputStream)}.
      * Multi-value properties
      * are split using the symbol for record separator (U+241E).
@@ -572,11 +574,11 @@ public class Properties extends ObservableMap<String, List<String>>
         loadFromXML(in, null);
     }
     /**
-     * Loads this {@link Map} from an input of a format 
+     * Loads this {@link Map} from an input of a format
      * compatible with {@link java.util.Properties#load(InputStream)}.
      * Multi-value properties
      * are split using the supplied delimiter string.
-     * If the delimiter is <code>null</code>, the symbol for record separator 
+     * If the delimiter is <code>null</code>, the symbol for record separator
      * (U+241E) is used.
      * @param in in the input stream from which to read the XML document.
      * @param delimiter delimiter string to used to parse a multi-value key.
@@ -589,7 +591,7 @@ public class Properties extends ObservableMap<String, List<String>>
     }
 
     /**
-     * Loads this {@link Map} from an input of a format 
+     * Loads this {@link Map} from an input of a format
      * compatible with {@link java.util.Properties#loadFromXML(InputStream)}.
      * Multi-value properties
      * are split using the symbol for record separator (U+241E).
@@ -602,11 +604,11 @@ public class Properties extends ObservableMap<String, List<String>>
     }
     /**
     /**
-     * Loads this {@link Map} from an input of a format 
+     * Loads this {@link Map} from an input of a format
      * compatible with {@link java.util.Properties#load(InputStream)}.
      * Multi-value properties
      * are split using the supplied delimiter string.
-     * If the delimiter is <code>null</code>, the symbol for record separator 
+     * If the delimiter is <code>null</code>, the symbol for record separator
      * (U+241E) is used.
      * @param reader reader from which to read the XML document.
      * @param delimiter delimiter string to used to parse a multi-value key.
@@ -617,11 +619,11 @@ public class Properties extends ObservableMap<String, List<String>>
             throws IOException {
         loadFromJavaUtilProperties(reader, delimiter, true);
     }
-    
+
     // input is Reader or InputStream
     private synchronized void loadFromJavaUtilProperties(
             Object input, String delimiter, boolean isXML) throws IOException {
-        
+
         java.util.Properties p = new java.util.Properties();
         String sep = StringUtils.defaultIfEmpty(
                 delimiter, DEFAULT_JAVA_PROPERTIES_DELIMITER);
@@ -648,7 +650,7 @@ public class Properties extends ObservableMap<String, List<String>>
                                 Objects.toString(entry.getValue(), null), sep));
             }
         }
-    }    
+    }
 
     /**
      * Loads all of the properties from the JSON document input stream
@@ -662,7 +664,7 @@ public class Properties extends ObservableMap<String, List<String>>
             return;
         }
         loadFromJSON(new InputStreamReader(in, "UTF-8"));
-    }    
+    }
     /**
      * Loads all of the properties from the JSON document reader
      * into this instance.
@@ -687,8 +689,8 @@ public class Properties extends ObservableMap<String, List<String>>
     }
 
     /**
-     * Converts all the bean properties into entries in this instance. 
-     * <code>null</code> beans are ignored. 
+     * Converts all the bean properties into entries in this instance.
+     * <code>null</code> beans are ignored.
      * @param bean the object to load properties from
      * @since 2.0.0
      */
@@ -698,13 +700,13 @@ public class Properties extends ObservableMap<String, List<String>>
         }
         try {
             loadFromMap(propertyUtilsBean.describe(bean));
-        } catch (IllegalAccessException | InvocationTargetException 
+        } catch (IllegalAccessException | InvocationTargetException
                 | NoSuchMethodException e) {
             throw new PropertiesException(
                     "Could not load Properties from given bean.", e);
         }
     }
-    
+
     //--- String ---------------------------------------------------------------
     /**
      * Gets value as string.
@@ -741,9 +743,9 @@ public class Properties extends ObservableMap<String, List<String>>
         return new ArrayList<>(values);
     }
     /**
-     * Sets one or multiple string values replacing existing ones.  
-     * Setting a single <code>null</code> value or an empty string array is 
-     * the same as calling {@link #remove(Object)} with the same key. 
+     * Sets one or multiple string values replacing existing ones.
+     * Setting a single <code>null</code> value or an empty string array is
+     * the same as calling {@link #remove(Object)} with the same key.
      * When setting multiple values, <code>null</code> values are converted
      * to blank strings.
      * @param key the key of the value to set
@@ -756,8 +758,8 @@ public class Properties extends ObservableMap<String, List<String>>
         put(key, new ArrayList<>(Arrays.asList(values)));
     }
     /**
-     * Adds one or multiple string values.  
-     * Adding a single <code>null</code> value has no effect. 
+     * Adds one or multiple string values.
+     * Adding a single <code>null</code> value has no effect.
      * When adding multiple values, <code>null</code> values are converted
      * to blank strings.
      * @param key the key of the value to set
@@ -825,7 +827,7 @@ public class Properties extends ObservableMap<String, List<String>>
         }
     }
     /**
-     * Sets one or multiple integer values, replacing existing ones.  
+     * Sets one or multiple integer values, replacing existing ones.
      * @param key the key of the values to set
      * @param values the values to set
      */
@@ -833,14 +835,14 @@ public class Properties extends ObservableMap<String, List<String>>
         setString(key, toStringArray(ArrayUtils.toObject(values)));
     }
     /**
-     * Adds one or multiple integer values values.  
+     * Adds one or multiple integer values values.
      * @param key the key of the values to set
      * @param values the values to set
      */
     public final void addInt(String key, int... values) {
         addString(key, toStringArray(ArrayUtils.toObject(values)));
     }
-    
+
     //--- Double ---------------------------------------------------------------
     /**
      * Gets value as a double.
@@ -891,7 +893,7 @@ public class Properties extends ObservableMap<String, List<String>>
         }
     }
     /**
-     * Sets one or multiple double values, replacing existing ones.  
+     * Sets one or multiple double values, replacing existing ones.
      * @param key the key of the values to set
      * @param values the values to set
      */
@@ -899,7 +901,7 @@ public class Properties extends ObservableMap<String, List<String>>
         setString(key, toStringArray(ArrayUtils.toObject(values)));
     }
     /**
-     * Adds one or multiple double values.  
+     * Adds one or multiple double values.
      * @param key the key of the values to set
      * @param values the values to set
      */
@@ -926,7 +928,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @param key property key
      * @param defaultValue default value to return when original value is null.
      * @return the value
-     */    
+     */
     public final long getLong(String key, long defaultValue) {
         String value = getString(key, Long.toString(defaultValue));
         try {
@@ -957,7 +959,7 @@ public class Properties extends ObservableMap<String, List<String>>
         }
     }
     /**
-     * Sets one or multiple long values, replacing existing ones.  
+     * Sets one or multiple long values, replacing existing ones.
      * @param key the key of the values to set
      * @param values the values to set
      */
@@ -965,20 +967,20 @@ public class Properties extends ObservableMap<String, List<String>>
         setString(key, toStringArray(ArrayUtils.toObject(values)));
     }
     /**
-     * Add one or multiple long values.  
+     * Add one or multiple long values.
      * @param key the key of the values to set
      * @param values the values to set
      */
     public final void addLong(String key, long... values) {
         addString(key, toStringArray(ArrayUtils.toObject(values)));
     }
-    
+
     //--- Float ----------------------------------------------------------------
     /**
      * Gets value as a float.
      * @param key property key
      * @return the value
-     */    
+     */
     public final float getFloat(String key) {
         try {
             return Float.parseFloat(getString(key));
@@ -992,7 +994,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @param key property key
      * @param defaultValue default value to return when original value is null.
      * @return the value
-     */    
+     */
     public final float getFloat(String key, float defaultValue) {
         String value = getString(key, Float.toString(defaultValue));
         try {
@@ -1023,7 +1025,7 @@ public class Properties extends ObservableMap<String, List<String>>
         }
     }
     /**
-     * Sets one or multiple float values, replacing existing ones.  
+     * Sets one or multiple float values, replacing existing ones.
      * @param key the key of the values to set
      * @param values the values to set
      */
@@ -1031,20 +1033,20 @@ public class Properties extends ObservableMap<String, List<String>>
         setString(key, toStringArray(ArrayUtils.toObject(values)));
     }
     /**
-     * Adds one or multiple long values.  
+     * Adds one or multiple long values.
      * @param key the key of the values to set
      * @param values the values to set
      */
     public final void addFloat(String key, float... values) {
         addString(key, toStringArray(ArrayUtils.toObject(values)));
     }
-    
+
     //--- BigDecimal -----------------------------------------------------------
     /**
      * Gets value as a BigDecimal.
      * @param key property key
      * @return the value
-     */    
+     */
     public final BigDecimal getBigDecimal(String key) {
         String value = getString(key);
         if (value == null || value.trim().length() == 0) {
@@ -1062,7 +1064,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @param key property key
      * @param defaultValue default value to return when original value is null.
      * @return the value
-     */    
+     */
     public final BigDecimal getBigDecimal(String key, BigDecimal defaultValue) {
         return ObjectUtils.defaultIfNull(getBigDecimal(key), defaultValue);
     }
@@ -1070,7 +1072,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * Gets values as a list of BigDecimals.
      * @param key property key
      * @return the values
-     */    
+     */
     public final List<BigDecimal> getBigDecimals(String key) {
         List<String> values = getStrings(key);
         String errVal = null;
@@ -1087,7 +1089,7 @@ public class Properties extends ObservableMap<String, List<String>>
         }
     }
     /**
-     * Sets one or multiple BigDecimal values, replacing existing ones.  
+     * Sets one or multiple BigDecimal values, replacing existing ones.
      * @param key the key of the values to set
      * @param values the values to set
      */
@@ -1095,22 +1097,22 @@ public class Properties extends ObservableMap<String, List<String>>
         setString(key, toStringArray(values));
     }
     /**
-     * Add one or multiple BigDecimal values.  
+     * Add one or multiple BigDecimal values.
      * @param key the key of the values to set
      * @param values the values to set
      */
     public final void addBigDecimal(String key, BigDecimal... values) {
         addString(key, toStringArray(values));
     }
-    
+
     //--- LocalDateTime --------------------------------------------------------
     /**
-     * Gets value as a local date-time. The date must be a valid date-time 
+     * Gets value as a local date-time. The date must be a valid date-time
      * as defined by {@link DateTimeFormatter#ISO_LOCAL_DATE_TIME}.
      * @param key property key
      * @return the value
      * @since 2.0.0
-     */    
+     */
     public final LocalDateTime getLocalDateTime(String key) {
         String value = getString(key);
         if (StringUtils.isBlank(value)) {
@@ -1124,24 +1126,24 @@ public class Properties extends ObservableMap<String, List<String>>
         }
     }
     /**
-     * Gets value as a local date-time. The date must be a valid date-time 
+     * Gets value as a local date-time. The date must be a valid date-time
      * as defined by {@link DateTimeFormatter#ISO_LOCAL_DATE_TIME}.
      * @param key property key
      * @param defaultValue default value to return when original value is null.
      * @return the value
      * @since 2.0.0
-     */    
+     */
     public final LocalDateTime getLocalDateTime(
             String key, LocalDateTime defaultValue) {
         return ObjectUtils.defaultIfNull(getLocalDateTime(key), defaultValue);
     }
     /**
-     * Gets values as a list of local date-times. Each date must be a valid 
+     * Gets values as a list of local date-times. Each date must be a valid
      * date-time as defined by {@link DateTimeFormatter#ISO_LOCAL_DATE_TIME}.
      * @param key property key
      * @return the values
      * @since 2.0.0
-     */    
+     */
     public final List<LocalDateTime> getLocalDateTimes(String key) {
         List<String> values = getStrings(key);
         String errVal = null;
@@ -1158,7 +1160,7 @@ public class Properties extends ObservableMap<String, List<String>>
         }
     }
     /**
-     * Sets one or multiple local date-time values, replacing existing ones.  
+     * Sets one or multiple local date-time values, replacing existing ones.
      * @param key the key of the values to set
      * @param values the values to set
      * @since 2.0.0
@@ -1167,7 +1169,7 @@ public class Properties extends ObservableMap<String, List<String>>
         setString(key, localDateTimesToStringArray(values));
     }
     /**
-     * Add one or multiple local date-time values.  
+     * Add one or multiple local date-time values.
      * @param key the key of the values to set
      * @param values the values to set
      * @since 2.0.0
@@ -1196,7 +1198,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * Gets value as a date.
      * @param key property key
      * @return the value
-     */    
+     */
     public final Date getDate(String key) {
         String value = getString(key);
         if (StringUtils.isBlank(value)) {
@@ -1214,7 +1216,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @param key property key
      * @param defaultValue default value to return when original value is null.
      * @return the value
-     */    
+     */
     public final Date getDate(String key, Date defaultValue) {
         return ObjectUtils.defaultIfNull(getDate(key), defaultValue);
     }
@@ -1222,7 +1224,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * Gets values as a list of dates.
      * @param key property key
      * @return the values
-     */    
+     */
     public final List<Date> getDates(String key) {
         List<String> values = getStrings(key);
         String errVal = null;
@@ -1239,7 +1241,7 @@ public class Properties extends ObservableMap<String, List<String>>
         }
     }
     /**
-     * Sets one or multiple date values, replacing existing ones.  
+     * Sets one or multiple date values, replacing existing ones.
      * @param key the key of the values to set
      * @param values the values to set
      */
@@ -1247,7 +1249,7 @@ public class Properties extends ObservableMap<String, List<String>>
         setString(key, datesToStringArray(values));
     }
     /**
-     * Add one or multiple date values.  
+     * Add one or multiple date values.
      * @param key the key of the values to set
      * @param values the values to set
      */
@@ -1268,30 +1270,30 @@ public class Properties extends ObservableMap<String, List<String>>
             }
         }
         return array;
-    }    
-    
+    }
+
     //--- Boolean --------------------------------------------------------------
     /**
-     * Gets value as a boolean. The underlying string value matching 
-     * the key must exist and equal "true" (ignoring case) to return 
-     * <code>true</code>.  Any other value (including <code>null</code>) 
+     * Gets value as a boolean. The underlying string value matching
+     * the key must exist and equal "true" (ignoring case) to return
+     * <code>true</code>.  Any other value (including <code>null</code>)
      * will return <code>false</code>.
      * @param key property key
      * @return the value
-     */    
+     */
     public final boolean getBoolean(String key) {
         return Boolean.parseBoolean(getString(key));
     }
     /**
-     * Gets value as a boolean. The underlying string value matching 
-     * the key must exist and equal "true" (ignoring case) to return 
-     * <code>true</code>.  Any other value (including <code>null</code>) 
+     * Gets value as a boolean. The underlying string value matching
+     * the key must exist and equal "true" (ignoring case) to return
+     * <code>true</code>.  Any other value (including <code>null</code>)
      * will return <code>false</code>.  If there are no entries for the given
      * key, the default value is returned instead.
      * @param key property key
      * @param defaultValue default value to return when original value is null.
      * @return the value
-     */        
+     */
     public final boolean getBoolean(String key, boolean defaultValue) {
         return Boolean.parseBoolean(getString(key, Boolean.toString(defaultValue)));
     }
@@ -1309,7 +1311,7 @@ public class Properties extends ObservableMap<String, List<String>>
         return list;
     }
     /**
-     * Sets one or multiple boolean values, replacing existing ones.  
+     * Sets one or multiple boolean values, replacing existing ones.
      * @param key the key of the values to set
      * @param values the values to set
      */
@@ -1317,20 +1319,20 @@ public class Properties extends ObservableMap<String, List<String>>
         setString(key, toStringArray(ArrayUtils.toObject(values)));
     }
     /**
-     * Adds one or multiple boolean values.  
+     * Adds one or multiple boolean values.
      * @param key the key of the values to set
      * @param values the values to set
      */
     public final void addBoolean(String key, boolean... values) {
         addString(key, toStringArray(ArrayUtils.toObject(values)));
     }
-    
+
     //--- Locale ---------------------------------------------------------------
     /**
      * Gets value as a locale.
      * @param key property key
      * @return the value
-     */    
+     */
     public final Locale getLocale(String key) {
         try {
             return LocaleUtils.toLocale(getString(key));
@@ -1344,7 +1346,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @param key property key
      * @param defaultValue default value to return when original value is null.
      * @return the value
-     */        
+     */
     public final Locale getLocale(String key, Locale defaultValue) {
         try {
             return LocaleUtils.toLocale(getString(key));
@@ -1373,7 +1375,7 @@ public class Properties extends ObservableMap<String, List<String>>
         }
     }
     /**
-     * Sets one or multiple locale values, replacing existing ones.  
+     * Sets one or multiple locale values, replacing existing ones.
      * @param key the key of the values to set
      * @param values the values to set
      */
@@ -1381,17 +1383,17 @@ public class Properties extends ObservableMap<String, List<String>>
         setString(key, toStringArray(values));
     }
     /**
-     * Adds one or multiple locale values.  
+     * Adds one or multiple locale values.
      * @param key the key of the values to set
      * @param values the values to set
      */
     public final void addLocale(String key, Locale... values) {
         addString(key, toStringArray(values));
     }
-    
+
     //--- File -----------------------------------------------------------------
     /**
-     * Gets a file, assuming key value is a file system path. 
+     * Gets a file, assuming key value is a file system path.
      * @param key properties key
      * @return a File
      */
@@ -1403,7 +1405,7 @@ public class Properties extends ObservableMap<String, List<String>>
     	return new File(filePath);
     }
     /**
-     * Gets a file, assuming key value is a file system path. 
+     * Gets a file, assuming key value is a file system path.
      * @param key properties key
      * @param defaultValue default file being returned if no file has been
      *        defined for the given key in the properties.
@@ -1426,7 +1428,7 @@ public class Properties extends ObservableMap<String, List<String>>
         return list;
     }
     /**
-     * Sets one or multiple file values, replacing existing ones.  
+     * Sets one or multiple file values, replacing existing ones.
      * @param key the key of the values to set
      * @param values the values to set
      */
@@ -1434,7 +1436,7 @@ public class Properties extends ObservableMap<String, List<String>>
         setString(key, filesToStringArray(values));
     }
     /**
-     * Adds one or multiple file values.  
+     * Adds one or multiple file values.
      * @param key the key of the values to set
      * @param values the values to set
      */
@@ -1451,11 +1453,11 @@ public class Properties extends ObservableMap<String, List<String>>
         }
         return array;
     }
-    
+
     //--- Class ----------------------------------------------------------------
     /**
      * Gets a class, assuming key value is a fully qualified class name
-     * available in the classloader. 
+     * available in the classloader.
      * @param key properties key
      * @return initialized class
      */
@@ -1470,7 +1472,7 @@ public class Properties extends ObservableMap<String, List<String>>
     }
     /**
      * Gets a class, assuming key value is a fully qualified class name
-     * available in the classloader. 
+     * available in the classloader.
      * @param key properties key
      * @param defaultValue default file being returned if no class has been
      *        defined for the given key in the properties.
@@ -1493,7 +1495,7 @@ public class Properties extends ObservableMap<String, List<String>>
         return list;
     }
     /**
-     * Sets one or multiple class values, replacing existing ones.  
+     * Sets one or multiple class values, replacing existing ones.
      * @param key the key of the values to set
      * @param values the values to set
      */
@@ -1501,7 +1503,7 @@ public class Properties extends ObservableMap<String, List<String>>
         setString(key, classesToStringArray(values));
     }
     /**
-     * Adds one or multiple class values.  
+     * Adds one or multiple class values.
      * @param key the key of the values to set
      * @param values the values to set
      */
@@ -1530,9 +1532,9 @@ public class Properties extends ObservableMap<String, List<String>>
         return super.remove(caseResolvedKey(key));
     }
 
-    /* 
-     * Puts the list of values to the given key. Supplying a <code>null</code> 
-     * list has the same effect as calling {@link #remove(Object)} with 
+    /*
+     * Puts the list of values to the given key. Supplying a <code>null</code>
+     * list has the same effect as calling {@link #remove(Object)} with
      * the same key.
      */
     @Override
@@ -1550,8 +1552,8 @@ public class Properties extends ObservableMap<String, List<String>>
         }
         return super.put(caseResolvedKey(key), nullSafeValues);
     }
-    
-    /* 
+
+    /*
      * When case insensitive, values of equal keys are merged into the first
      * key encountered.
      */
@@ -1561,11 +1563,11 @@ public class Properties extends ObservableMap<String, List<String>>
             super.putAll(m);
             return;
         }
-        
+
         if (m == null) {
             return;
         }
-        for (Entry<? extends String, ? extends List<String>> entry : 
+        for (Entry<? extends String, ? extends List<String>> entry :
             m.entrySet()) {
             String key = entry.getKey();
             List<String> values = entry.getValue();
@@ -1591,7 +1593,7 @@ public class Properties extends ObservableMap<String, List<String>>
         }
         return resolvedKey;
     }
-    
+
     private PropertiesException createTypedException(
             String msg, String key, String value, Exception cause) {
         String message = msg + " [key=" + key + "; value=" + value + "].";
@@ -1609,7 +1611,7 @@ public class Properties extends ObservableMap<String, List<String>>
         }
         return strArray;
     }
-    // TODO consider calling this from toStringArray(array) and have 
+    // TODO consider calling this from toStringArray(array) and have
     // Class, Date, etc, setters call that method. But check
     // implications of EMPTY vs null. (why have empty for elements in in array,
     // and null otherwise?) Should always be null or not kept in array.

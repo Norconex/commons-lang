@@ -27,10 +27,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <site.baseurl/>
-    <currentStableVersion>1.15.0</currentStableVersion>
-    
     <commons-lang3.version>3.7</commons-lang3.version>
-    <commons-configuration.version>2.2.2</commons-configuration.version>
   </properties>
   <inceptionYear>2008</inceptionYear>
 
