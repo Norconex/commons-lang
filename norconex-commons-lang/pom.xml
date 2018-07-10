@@ -153,19 +153,10 @@
   <build>
     <resources>
       <resource>
-        <directory>${project.build.testSourceDirectory}</directory>
-        <includes>
-          <include>**</include>
-        </includes>
-        <excludes>
-          <exclude>**/*.java</exclude>
-        </excludes>
-      </resource>
-      <resource>
         <filtering>false</filtering>
         <directory>${project.build.sourceDirectory}</directory>
         <includes>
-          <include>**</include>
+          <include>**/*</include>
         </includes>
         <excludes>
           <exclude>**/*.java</exclude>
@@ -175,10 +166,29 @@
         <filtering>false</filtering>
         <directory>src/main/resources</directory>
         <includes>
-          <include>**</include>
+          <include>**/*</include>
         </includes>
       </resource>
     </resources>
+    <testResources>
+      <testResource>
+        <filtering>false</filtering>
+        <directory>${project.build.testSourceDirectory}</directory>
+        <includes>
+          <include>**/*</include>
+        </includes>
+        <excludes>
+          <exclude>**/*.java</exclude>
+        </excludes>
+      </testResource>
+      <testResource>
+        <filtering>false</filtering>
+        <directory>src/test/resources</directory>
+        <includes>
+          <include>**/*</include>
+        </includes>
+      </testResource>
+    </testResources>
     <extensions>
       <extension>
         <groupId>org.apache.maven.wagon</groupId>

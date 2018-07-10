@@ -62,7 +62,7 @@ public final class ResourceLoader {
             LOG.debug("Class is null for suffix: {}", suffix);
             return null;
         }
-        return clazz.getClassLoader().getResourceAsStream(
+        return clazz.getResourceAsStream(
                 clazz.getSimpleName() + suffix);
     }
     /**
