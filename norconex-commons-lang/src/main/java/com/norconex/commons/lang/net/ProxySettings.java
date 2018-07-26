@@ -14,10 +14,7 @@
  */
 package com.norconex.commons.lang.net;
 
-import java.io.IOException;
-import java.io.Reader;
 import java.io.Serializable;
-import java.io.Writer;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -34,7 +31,6 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.encrypt.EncryptionKey;
 import com.norconex.commons.lang.encrypt.EncryptionUtil;
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.commons.lang.xml.XML;
 
 /**
@@ -164,31 +160,26 @@ public class ProxySettings implements IXMLConfigurable, Serializable {
     }
 
     @Override
-    public void loadFromXML(Reader in) throws IOException {
-        XML xml = new XML(in);
+    public void loadFromXML(XML xml) {
         proxyHost = xml.getString("proxyHost", proxyHost);
         proxyPort = xml.getInteger("proxyPort", proxyPort);
         proxyScheme = xml.getString("proxyScheme", proxyScheme);
         proxyUsername = xml.getString("proxyUsername", proxyUsername);
         proxyPassword = xml.getString("proxyPassword", proxyPassword);
-        proxyPasswordKey = EncryptionKey.loadFromXML(
-                xml.getXML("proxyPasswordKey"), proxyPasswordKey);
+        proxyPasswordKey = EncryptionKey.getFromXML(
+                xml, "proxyPasswordKey", proxyPasswordKey);
         proxyRealm = xml.getString("proxyRealm", proxyRealm);
     }
 
     @Override
-    public void saveToXML(Writer out, String tagName) throws IOException {
-        EnhancedXMLStreamWriter writer = new EnhancedXMLStreamWriter(out);
-        writer.writeStartElement(tagName);
-        writer.writeAttribute("class", getClass().getCanonicalName());
-        writer.writeElementString("proxyHost", proxyHost);
-        writer.writeElementInteger("proxyPort", proxyPort);
-        writer.writeElementString("proxyScheme", proxyScheme);
-        writer.writeElementString("proxyUsername", proxyUsername);
-        writer.writeElementString("proxyPassword", proxyPassword);
-        EncryptionKey.saveToXML(writer, "proxyPasswordKey", proxyPasswordKey);
-        writer.writeElementString("proxyRealm", proxyRealm);
-        writer.writeEndElement();
+    public void saveToXML(XML xml) {
+        xml.addElement("proxyHost", proxyHost);
+        xml.addElement("proxyPort", proxyPort);
+        xml.addElement("proxyScheme", proxyScheme);
+        xml.addElement("proxyUsername", proxyUsername);
+        xml.addElement("proxyPassword", proxyPassword);
+        EncryptionKey.addToXML(xml, "proxyPasswordKey", proxyPasswordKey);
+        xml.addElement("proxyRealm", proxyRealm);
     }
 
     @Override

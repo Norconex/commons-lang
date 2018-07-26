@@ -14,67 +14,60 @@
  */
 package com.norconex.commons.lang.xml;
 
-import java.util.AbstractList;
 import java.util.ArrayList;
-import java.util.Objects;
 
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
- * Wrapper around {@link NodeList} so it can be treated as an {@link ArrayList}.
+ * A null-safe wrapper around {@link NodeList} that is also
+ * an {@link ArrayList}.
+ *
  * @author Pascal Essiembre
  * @since 2.0.0
  */
-public class NodeArrayList extends AbstractList<Node> implements NodeList {
+public class NodeArrayList extends ArrayList<Node> implements NodeList {
 
-    private final NodeList nodeList;
-    
+    private static final long serialVersionUID = 1L;
+
     /**
-     * Creates a node ArrayList from the given NodeList. 
+     * Creates a node ArrayList from the given NodeList.
+     * A <code>null</code> NodeList results in an empty NodeArrayList.
      * @param nodeList a node list
      */
     public NodeArrayList(NodeList nodeList) {
         super();
-        this.nodeList = Objects.requireNonNull(
-                nodeList, "NodeList cannot be null.");
+        if (nodeList != null) {
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                add(nodeList.item(i));
+            }
+        }
     }
     /**
-     * Creates a node ArrayList from the given Node children. 
+     * Creates a node ArrayList from the given Node children.
+     * A <code>null</code> node or no children results in an empty
+     * NodeArrayList.
      * @param node node to get the children list
      */
     public NodeArrayList(Node node) {
         super();
-        this.nodeList = Objects.requireNonNull(
-                node, "Node cannot be null.").getChildNodes();
+        if (node != null) {
+            NodeList nodeList = node.getChildNodes();
+            if (nodeList != null) {
+                for (int i = 0; i < nodeList.getLength(); i++) {
+                    add(nodeList.item(i));
+                }
+            }
+        }
     }
-    
+
     @Override
     public Node item(int index) {
-        return nodeList.item(index);
+        return get(index);
     }
 
     @Override
     public int getLength() {
-        return nodeList.getLength();
-    }
-
-    @Override
-    public Node get(int index) {
-        return nodeList.item(index);
-    }
-
-    @Override
-    public int size() {
-        return nodeList.getLength();
-    }
-    
-    @Override
-    public boolean equals(final Object other) {
-        return nodeList.equals(other);
-    }
-    @Override
-    public int hashCode() {
-        return nodeList.hashCode();
+        return size();
     }
 }

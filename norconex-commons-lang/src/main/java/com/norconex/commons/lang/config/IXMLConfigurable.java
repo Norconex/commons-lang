@@ -16,7 +16,14 @@ package com.norconex.commons.lang.config;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.io.Writer;
+
+import org.w3c.dom.Element;
+
+import com.norconex.commons.lang.xml.XML;
+import com.norconex.commons.lang.xml.XMLException;
 
 /**
  * Provides indications that a class is configurable via XML.  Classes
@@ -30,28 +37,54 @@ public interface IXMLConfigurable {
      * Load XML configuration values and initialized this object with them.
      * @param reader XML input stream
      * @throws IOException something went wrong reading the XML
+     * @deprecated Since 2.0.0, use {@link #loadFromXML(XML)}.
      */
-    void loadFromXML(Reader reader) throws IOException;
+    @Deprecated
+    default void loadFromXML(Reader reader) throws IOException {
+        //NOOP
+    }
+
+    /**
+     * Load XML configuration values and initialized this object with them.
+     * @param xml the XML to load into this object
+     */
+    default void loadFromXML(XML xml) {
+        try {
+            loadFromXML(new StringReader(xml.toString()));
+        } catch (IOException e) {
+            throw new XMLException("Could not load from XML.", e);
+        }
+    }
 
     /**
      * Saves this object as XML.
      * @param writer XML writer
      * @throws IOException something went wrong writing the XML
-     * @deprecated Since 2.0.0, use {@link #saveToXML(Writer, String)}.
+     * @deprecated Since 2.0.0, use {@link #saveToXML(XML)}.
      */
     @Deprecated
     default void saveToXML(Writer writer) throws IOException {
         //NOOP
-    };
-    
+    }
+
     /**
      * Saves this object as XML.
-     * @param writer XML writer
-     * @param elementName XML element name
-     * @throws IOException something went wrong writing the XML
+     * @param xml the XML that will representing this object
+     * @since 2.0.0
      */
-    default void saveToXML(Writer writer, String elementName) 
-            throws IOException {
-        saveToXML(writer);
+    default void saveToXML(XML xml) {
+        try {
+            StringWriter w = new StringWriter();
+            saveToXML(w);
+            xml.addXML(w.toString());
+            Element node = (Element) xml.getNode();
+            Element childNode = (Element) node.getFirstChild();
+            if (childNode != null
+                    && childNode.getNodeName().equals(node.getNodeName())) {
+                xml.unwrap();
+            }
+        } catch (IOException e) {
+            throw new XMLException("Could not save to XML.", e);
+        }
     }
 }

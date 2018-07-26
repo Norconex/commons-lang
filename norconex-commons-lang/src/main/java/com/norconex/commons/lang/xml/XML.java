@@ -14,16 +14,22 @@
  */
 package com.norconex.commons.lang.xml;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -47,12 +53,18 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ClassUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.xerces.xni.NamespaceContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.Attributes;
@@ -68,18 +80,30 @@ import org.xml.sax.helpers.XMLReaderFactory;
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XMLValidationError.Severity;
 
-//TODO Add some of the convenience methods found in Collector/Crawler Loader?
 //TODO consider checking for a "disable=false|true" and setting it on
 //a method if this method exists, and/or do not load if set to true.
 
 /**
-* XML DOM wrapper facilitating node querying and automatically creating,
-* validating, and populating classes from XML.
-* Checked exceptions are wrapped into an {@link XMLException}.
-* @author Pascal Essiembre
-* @since 2.0.0
-*/
+ * <p>
+ * XML DOM wrapper facilitating node querying and automatically creating,
+ * validating, and populating classes from/to XML, with support
+ * for {@link IXMLConfigurable}.
+ * </p>
+ * <p>
+ * White spaces in elements should always be preserved.  Empty tags
+ * are interpreted as having an empty strings while non-existing or
+ * self-closing tags have their value interpreted as <code>null</code>.
+ * </p>
+ * <p>
+ * Checked exceptions are wrapped into an {@link XMLException}.
+ * </p>
+ * @author Pascal Essiembre
+ * @since 2.0.0
+ */
 public class XML {
+
+    //TODO add a "getDeprecatedXXX" method that accepts the new name and the
+    //deprecated one, and issues a warning
 
     private static final Logger LOG =
             LoggerFactory.getLogger(XML.class);
@@ -87,97 +111,122 @@ public class XML {
     public static final String W3C_XML_SCHEMA_NS_URI_1_1 =
             "http://www.w3.org/XML/XMLSchema/v1.1";
 
+    private static final Class<?>[] TOSTRINGABLE = new Class[] {
+            String.class,
+            Integer.class,
+            Long.class,
+            Float.class,
+            Double.class,
+            File.class
+    };
+
     private final Node node;
 
     /**
      * <p>Parse an XML stream into an XML document, without consideration
      * for namespaces.</p>
-     * <p><b>Note:</b> Leading and trailing white spaces are not preserved by
-     * default.
-     * To preserve them, add <code>xml:space="preserve"</code>
-     * to your tag, like this:
-     * </p>
-     * <pre>
-     *   &lt;mytag xml:space="preserve"&gt; &lt;/mytag&gt;
-     * </pre>
-     * <p>The above example will preserve the white space in the tag's body.</p>
      * @param reader the XML stream to parse
      */
     public XML(Reader reader) {
-        this(reader, createDefaultFactory());
+        this(reader, (DocumentBuilderFactory) null);
     }
     /**
      * <p>Parse an XML stream into an XML document, using the provided
      * document builder factory.</p>
-     * <p><b>Note:</b> Leading and trailing white spaces are not preserved by
-     * default.
-     * To preserve them, add <code>xml:space="preserve"</code>
-     * to your tag, like this:
-     * </p>
-     * <pre>
-     *   &lt;mytag xml:space="preserve"&gt; &lt;/mytag&gt;
-     * </pre>
-     * <p>The above example will preserve the white space in the tag's body.</p>
      * @param reader the XML stream to parse
      * @param factory the document builder factory
      */
     public XML(Reader reader, DocumentBuilderFactory factory) {
-        try {
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            this.node = builder.parse(
-                    new InputSource(reader)).getDocumentElement();
-        } catch (ParserConfigurationException | SAXException | IOException e) {
-            throw new XMLException("Could not parse XML.", e);
-        }
+        this(readerToString(reader), factory);
     }
-    /**
-     * <p>Parse an XML string into an XML document, without consideration
-     * for namespaces.</p>
-     * <p><b>Note:</b> Leading and trailing white spaces are not preserved by
-     * default.
-     * To preserve them, add <code>xml:space="preserve"</code>
-     * to your tag, like this:
-     * </p>
-     * <pre>
-     *   &lt;mytag xml:space="preserve"&gt; &lt;/mytag&gt;
-     * </pre>
-     * <p>The above example will preserve the white space in the tag's body.</p>
-     * @param xml the XML string to parse
-     */
-    public XML(String xml) {
-        this(new StringReader(xml));
-    }
+
     /**
      * <p>Creates an XML with the given node.</p>
-     * <p><b>Note:</b> Leading and trailing white spaces are not preserved by
-     * default.
-     * To preserve them, add <code>xml:space="preserve"</code>
-     * to your tag, like this:
-     * </p>
-     * <pre>
-     *   &lt;mytag xml:space="preserve"&gt; &lt;/mytag&gt;
-     * </pre>
-     * <p>The above example will preserve the white space in the tag's body.</p>
      * @param node the node representing the XML
      */
     public XML(Node node) {
         this.node = node;
     }
 
+    /**
+     * <p>
+     * Parse an XML string into an XML document, without consideration
+     * for namespaces.
+     * </p>
+     * <p>
+     * The supplied "xml" string can either be a well-formed XML or
+     * a string without angle brackets. When the later is supplied,
+     * it is assumed to be the XML root element name (for a fresh XML).
+     * </p>
+     * @param xml the XML string to parse
+     */
+    public XML(String xml) {
+        this(xml, (DocumentBuilderFactory) null);
+    }
+
+    public XML(String xml, DocumentBuilderFactory factory) {
+        String xmlStr = resolveXML(xml);
+        if (StringUtils.isBlank(xmlStr)) {
+            this.node = null;
+            return;
+        }
+
+        xmlStr = xmlStr.replaceAll(
+                "(<\\s*)([^\\s>]+)([^>]*)(\\s*><\\s*\\/\\s*\\2\\s*>)",
+                "$1$2 xml:space=\"empty\"$3$4");
+        try {
+            DocumentBuilderFactory safeFactory =
+                    factory != null ? factory : createDefaultFactory();
+            DocumentBuilder builder = safeFactory.newDocumentBuilder();
+            this.node = builder.parse(new InputSource(
+                    new StringReader(xmlStr))).getDocumentElement();
+        } catch (ParserConfigurationException | SAXException | IOException e) {
+            throw new XMLException("Could not parse XML.", e);
+        }
+    }
+
+
+    public XML(String rootElement, Object obj) {
+        this.node = new XML("<" + rootElement + "/>").node;
+
+        if (obj == null) {
+            return;
+        }
+        if (obj instanceof Class) {
+            setAttribute("class", ((Class<?>) obj).getCanonicalName());
+        } else if (isToStringable(obj)) {
+            setTextContent(Objects.toString(obj, null));
+        } else {
+            setAttribute("class", obj.getClass().getCanonicalName());
+            if (obj instanceof IXMLConfigurable) {
+                ((IXMLConfigurable) obj).saveToXML(this);
+            }
+        }
+    }
+
+    private static String resolveXML(String xml) {
+        if (xml == null) {
+            return null;
+        }
+        if (xml.contains("<")) {
+            return xml;
+        }
+        return "<" + xml + "/>";
+    }
+
     public Node toNode() {
         return node;
     }
 
-    //TODO  make it a toObject(Reader, Object... args) method for non-empty
-    // constructors?
-
+    //TODO  make it a toObject(Reader, Object... args) method for
+    // creating IXMLConfigurable objects with only non-empty constructors?
 
     /**
      * Creates a new instance of the class represented by the "class" attribute
-     * on the given node.  The class must have an empty constructor.
+     * on this XML root node.  The class must have an empty constructor.
      * If the class is an instance of {@link IXMLConfigurable}, the object
      * created will be automatically populated by invoking the
-     * {@link IXMLConfigurable#loadFromXML(Reader)} method,
+     * {@link IXMLConfigurable#loadFromXML(XML)} method,
      * passing it the node XML.
      * @param <T> the type of the return value
      * @return a new object.
@@ -191,7 +240,7 @@ public class XML {
      * on the given node.  The class must have an empty constructor.
      * If the class is an instance of {@link IXMLConfigurable}, the object
      * created will be automatically populated by invoking the
-     * {@link IXMLConfigurable#loadFromXML(Reader)} method,
+     * {@link IXMLConfigurable#loadFromXML(XML)} method,
      * passing it the node XML.
      * @param defaultObject if returned object is null or undefined,
      *        returns this default object.
@@ -237,7 +286,7 @@ public class XML {
      * The class must have an empty constructor.
      * If the class is an instance of {@link IXMLConfigurable}, the object
      * created will be automatically populated by invoking the
-     * {@link IXMLConfigurable#loadFromXML(Reader)} method,
+     * {@link IXMLConfigurable#loadFromXML(XML)} method,
      * passing it the node XML.</p>
      *
      * <p>This method should throw a
@@ -247,7 +296,6 @@ public class XML {
      * @param xpathExpression xpath expression
      * @param <T> the type of the return value
      * @return a new object.
-     * @throws XMLException if instance cannot be created/populated
      */
     public <T extends Object> T getObject(String xpathExpression) {
         return getObject(xpathExpression, (T) null, true);
@@ -258,7 +306,7 @@ public class XML {
      * The class must have an empty constructor.
      * If the class is an instance of {@link IXMLConfigurable}, the object
      * created will be automatically populated by invoking the
-     * {@link IXMLConfigurable#loadFromXML(Reader)} method,
+     * {@link IXMLConfigurable#loadFromXML(XML)} method,
      * passing it the node XML.</p>
      *
      * <p>This method should not throw exception upon errors, but will return
@@ -298,7 +346,7 @@ public class XML {
      * The classes must have an empty constructor.
      * If a class is an instance of {@link IXMLConfigurable}, the object
      * created will be automatically populated by invoking the
-     * {@link IXMLConfigurable#loadFromXML(Reader)} method,
+     * {@link IXMLConfigurable#loadFromXML(XML)} method,
      * passing it the node XML.</p>
      *
      * <p>This method should not throw exception upon errors, but will return
@@ -332,7 +380,7 @@ public class XML {
      * The classes must have an empty constructor.
      * If a class is an instance of {@link IXMLConfigurable}, the object
      * created will be automatically populated by invoking the
-     * {@link IXMLConfigurable#loadFromXML(Reader)} method,
+     * {@link IXMLConfigurable#loadFromXML(XML)} method,
      * passing it the node XML.</p>
      *
      * <p>This method should throw a
@@ -431,7 +479,7 @@ public class XML {
      */
     @Override
     public String toString() {
-        return toString(false);
+        return toString(0);
     }
     /**
      * Gets a string representation of this XML.
@@ -439,15 +487,32 @@ public class XML {
      * @return XML string
      * @throws XMLException cannot read configuration
      */
-    public String toString(boolean indent) {
+    public String toString(int indent) {
         try {
+            node.normalize();
             StringWriter w = new StringWriter();
             Result outputTarget = new StreamResult(w);
-            Transformer t = TransformerFactory.newInstance().newTransformer();
+
+            TransformerFactory factory = TransformerFactory.newInstance();
+            factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+            factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
+
+            Transformer t = factory.newTransformer();
             t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-            t.setOutputProperty(OutputKeys.INDENT, indent ? "yes" : "no");
+            t.setOutputProperty(OutputKeys.INDENT, indent > 0 ? "yes" : "no");
+            t.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+            if (indent > 0) {
+                t.setOutputProperty(
+                        "{http://xml.apache.org/xslt}indent-amount",
+                        Integer.toString(indent));
+            }
             t.transform(new DOMSource(node), outputTarget);
-            return w.toString();
+
+            String xmlStr = w.toString();
+            // convert self closing tags for empty ones
+            return xmlStr.replaceAll(
+                    "<\\s*([^\\s>]+)([^>]*) xml:space=\"empty\"([^>]*)/\\s*>",
+                    "<$1$2></$1>");
         } catch (TransformerFactoryConfigurationError
                 | TransformerException e) {
             throw new XMLException(
@@ -489,7 +554,7 @@ public class XML {
                 SchemaFactory.newInstance(W3C_XML_SCHEMA_NS_URI_1_1);
         schemaFactory.setResourceResolver(new ClasspathResourceResolver(clazz));
 
-        try (   InputStream xsdStream = clazz.getResourceAsStream(xsdResource);
+        try (InputStream xsdStream = clazz.getResourceAsStream(xsdResource);
                 Reader reader = toReader()) {
             Schema schema = schemaFactory.newSchema(
                     new StreamSource(xsdStream, getXSDResourcePath(clazz)));
@@ -509,7 +574,7 @@ public class XML {
 
     /**
      * Configures the given object by invoking its
-     * {@link IXMLConfigurable#loadFromXML(Reader)} method.
+     * {@link IXMLConfigurable#loadFromXML(XML)} method.
      * @param obj object to have loaded
      * @return list of errors/warnings or empty (never <code>null</code>)
      */
@@ -517,74 +582,11 @@ public class XML {
         if (obj == null || node == null) {
             return new ArrayList<>();
         }
-        try {
-            List<XMLValidationError> errors = validate(obj.getClass());
-            obj.loadFromXML(toReader());
-            return errors;
-        } catch (IOException e) {
-            throw new XMLException(
-                    "Could not load new instance from XML \""
-                    + obj.getClass() + "\".", e);
-        }
+        List<XMLValidationError> errors = validate(obj.getClass());
+        obj.loadFromXML(this);
+        return errors;
     }
 
-//    /**
-//     * Saves an object as XML on the writer.  This effectively check
-//     * if the object implement {@link IXMLConfigurable} and invokes
-//     * {@link IXMLConfigurable#saveToXML(Writer)} if so. Otherwise,
-//     * it simply write the class name with a "class" attribute on
-//     * the given default tag name.
-//     * @param obj the object to write as XML
-//     * @param writer where to write the XML
-//     * @param defTagName default tag name to use when not implementing
-//     *                   {@link IXMLConfigurable}
-//     * @since 2.0.0
-//     */
-//    public static void saveToXML(Object obj, Writer writer, String defTagName) {
-//        if (obj == null) {
-//            return;
-//        }
-//        try {
-//            if (obj instanceof IXMLConfigurable) {
-//                    ((IXMLConfigurable) obj).saveToXML(writer);
-//            } else {
-//                writer.write("<");
-//                writer.write(defTagName);
-//                writer.write(" class=\"");
-//                writer.write(obj.getClass().getName());
-//                writer.write("\"/>");
-//            }
-//            writer.flush();
-//        } catch (IOException e) {
-//            throw new XMLException(
-//                    "Could not save object to XML \""
-//                    + obj.getClass() + "\".", e);
-//        }
-//    }
-//
-//    /**
-//     * This method is the same as
-//     * {@link HierarchicalConfiguration#configurationAt(String)}, except that
-//     * it first checks if the key exists before attempting to retrieve it,
-//     * and returns <code>null</code> on missing keys instead of an
-//     * <code>IllegalArgumentException</code>
-//     * @param node the tree to extract a sub tree from
-//     * @param key the key that selects the sub tree
-//     * @return a XML configuration that contains this sub tree
-//     */
-//    public static XMLConfiguration getXmlAt(
-//            HierarchicalConfiguration<ImmutableNode> node, String key) {
-//        if (node == null) {
-//            return null;
-//        }
-//        HierarchicalConfiguration<ImmutableNode> sub =
-//                safeConfigurationAt(node, key);
-//        if (sub == null) {
-//            return null;
-//        }
-//        return new XMLConfiguration(sub);
-//    }
-//
     /**
      * Convenience class for testing that a {@link IXMLConfigurable} instance
      * can be written, and read into an new instance that is equal as per
@@ -601,7 +603,8 @@ public class XML {
         // Write
         String xmlStr;
         try (StringWriter out = new StringWriter()) {
-            xmlConfigurable.saveToXML(out, elementName);
+            XML xml = new XML(elementName, xmlConfigurable);
+            xml.write(out);
             xmlStr = out.toString();
         } catch (IOException e) {
             throw new XMLException("Could not save XML.", e);
@@ -620,231 +623,7 @@ public class XML {
                     "Saved and loaded XML are not the same.");
         }
     }
-//
-//    /**
-//     * Gets a BigDecimal from XML configuration. Same as
-//     * {@link XMLConfiguration#getBigDecimal(String, BigDecimal)} except that
-//     * the default value will only be returned if the key does not exist.
-//     * If it exists and it is empty, <code>null</code> will be returned instead.
-//     * @param xml xml configuration
-//     * @param key key to the element/attribute containing the value
-//     * @param defaultValue value to be returned if the key does not exists.
-//     * @return the actual value, the default value, or <code>null</code>
-//     * @since 1.14.0
-//     */
-//    public static BigDecimal getNullableBigDecimal(
-//            HierarchicalConfiguration<ImmutableNode> xml,
-//            String key, BigDecimal defaultValue) {
-//        return keyExists(xml, key)
-//                ? xml.getBigDecimal(key, null) : defaultValue;
-//    }
-//    /**
-//     * Gets a BigInteger from XML configuration. Same as
-//     * {@link XMLConfiguration#getBigInteger(String, BigInteger)} except that
-//     * the default value will only be returned if the key does not exist.
-//     * If it exists and it is empty, <code>null</code> will be returned instead.
-//     * @param xml xml configuration
-//     * @param key key to the element/attribute containing the value
-//     * @param defaultValue value to be returned if the key does not exists.
-//     * @return the actual value, the default value, or <code>null</code>
-//     * @since 1.14.0
-//     */
-//    public static BigInteger getNullableBigInteger(
-//            HierarchicalConfiguration<ImmutableNode> xml,
-//            String key, BigInteger defaultValue) {
-//        return keyExists(xml, key)
-//                ? xml.getBigInteger(key, null) : defaultValue;
-//    }
-//    /**
-//     * Gets a Boolean from XML configuration. Same as
-//     * {@link XMLConfiguration#getBoolean(String, Boolean)} except that
-//     * the default value will only be returned if the key does not exist.
-//     * If it exists and it is empty, <code>null</code> will be returned instead.
-//     * @param xml xml configuration
-//     * @param key key to the element/attribute containing the value
-//     * @param defaultValue value to be returned if the key does not exists.
-//     * @return the actual value, the default value, or <code>null</code>
-//     * @since 1.14.0
-//     */
-//    public static Boolean getNullableBoolean(
-//            HierarchicalConfiguration<ImmutableNode> xml,
-//            String key, Boolean defaultValue) {
-//        return keyExists(xml, key) ? xml.getBoolean(key, null) : defaultValue;
-//    }
-//    /**
-//     * Gets a Byte from XML configuration. Same as
-//     * {@link XMLConfiguration#getByte(String, Byte)} except that
-//     * the default value will only be returned if the key does not exist.
-//     * If it exists and it is empty, <code>null</code> will be returned instead.
-//     * @param xml xml configuration
-//     * @param key key to the element/attribute containing the value
-//     * @param defaultValue value to be returned if the key does not exists.
-//     * @return the actual value, the default value, or <code>null</code>
-//     * @since 1.14.0
-//     */
-//    public static Byte getNullableByte(
-//            HierarchicalConfiguration<ImmutableNode> xml,
-//            String key, Byte defaultValue) {
-//        return keyExists(xml, key) ? xml.getByte(key, null) : defaultValue;
-//    }
-//    /**
-//     * Gets a Class from XML configuration.
-//     * The default value will only be returned if the key does not exist.
-//     * If it exists and it is empty, <code>null</code> will be returned instead.
-//     * @param xml xml configuration
-//     * @param key key to the element/attribute containing the value
-//     * @param defaultValue value to be returned if the key does not exists.
-//     * @return the actual value, the default value, or <code>null</code>
-//     * @since 1.14.0
-//     */
-//    public static Class<?> getNullableClass(
-//            HierarchicalConfiguration<ImmutableNode> xml,
-//            String key, Class<?> defaultValue) {
-//        if (!keyExists(xml, key)) {
-//            return defaultValue;
-//        }
-//        String className = xml.getString(key, null);
-//        if (StringUtils.isBlank(className)) {
-//            return null;
-//        }
-//        try {
-//            return Class.forName(className);
-//        } catch (ClassNotFoundException e) {
-//            throw new XMLException(
-//                    "Could not create Class: " + className, e);
-//        }
-//    }
-//    /**
-//     * Gets a Double from XML configuration. Same as
-//     * {@link XMLConfiguration#getDouble(String, Double)} except that
-//     * the default value will only be returned if the key does not exist.
-//     * If it exists and it is empty, <code>null</code> will be returned instead.
-//     * @param xml xml configuration
-//     * @param key key to the element/attribute containing the value
-//     * @param defaultValue value to be returned if the key does not exists.
-//     * @return the actual value, the default value, or <code>null</code>
-//     * @since 1.14.0
-//     */
-//    public static Double getNullableDouble(
-//            HierarchicalConfiguration<ImmutableNode> xml,
-//            String key, Double defaultValue) {
-//        return keyExists(xml, key) ? xml.getDouble(key, null) : defaultValue;
-//    }
-//    /**
-//     * Gets a Float from XML configuration. Same as
-//     * {@link XMLConfiguration#getFloat(String, Float)} except that
-//     * the default value will only be returned if the key does not exist.
-//     * If it exists and it is empty, <code>null</code> will be returned instead.
-//     * @param xml xml configuration
-//     * @param key key to the element/attribute containing the value
-//     * @param defaultValue value to be returned if the key does not exists.
-//     * @return the actual value, the default value, or <code>null</code>
-//     * @since 1.14.0
-//     */
-//    //TODO remove these in favor of versions returning Float? e.g.:
-//    //         xml.getFloat("key", (Float) null);
-//    public static Float getNullableFloat(
-//            HierarchicalConfiguration<ImmutableNode> xml,
-//            String key, Float defaultValue) {
-//        return keyExists(xml, key) ? xml.getFloat(key, null) : defaultValue;
-//    }
-//    /**
-//     * Gets an Integer from XML configuration. Same as
-//     * {@link XMLConfiguration#getInteger(String, Integer)} except that
-//     * the default value will only be returned if the key does not exist.
-//     * If it exists and it is empty, <code>null</code> will be returned instead.
-//     * @param xml xml configuration
-//     * @param key key to the element/attribute containing the value
-//     * @param defaultValue value to be returned if the key does not exists.
-//     * @return the actual value, the default value, or <code>null</code>
-//     * @since 1.14.0
-//     */
-//    public static Integer getNullableInteger(
-//            HierarchicalConfiguration<ImmutableNode> xml,
-//            String key, Integer defaultValue) {
-//        return keyExists(xml, key) ? xml.getInteger(key, null) : defaultValue;
-//    }
-//    /**
-//     * Gets a Long from XML configuration. Same as
-//     * {@link XMLConfiguration#getLong(String, Long)} except that
-//     * the default value will only be returned if the key does not exist.
-//     * If it exists and it is empty, <code>null</code> will be returned instead.
-//     * @param xml xml configuration
-//     * @param key key to the element/attribute containing the value
-//     * @param defaultValue value to be returned if the key does not exists.
-//     * @return the actual value, the default value, or <code>null</code>
-//     * @since 1.14.0
-//     */
-//    public static Long getNullableLong(
-//            HierarchicalConfiguration<ImmutableNode> xml,
-//            String key, Long defaultValue) {
-//        return keyExists(xml, key) ? xml.getLong(key, null) : defaultValue;
-//    }
-//    /**
-//     * Gets a Short from XML configuration. Same as
-//     * {@link XMLConfiguration#getShort(String, Short)} except that
-//     * the default value will only be returned if the key does not exist.
-//     * If it exists and it is empty, <code>null</code> will be returned instead.
-//     * @param xml xml configuration
-//     * @param key key to the element/attribute containing the value
-//     * @param defaultValue value to be returned if the key does not exists.
-//     * @return the actual value, the default value, or <code>null</code>
-//     * @since 1.14.0
-//     */
-//    public static Short getNullableShort(
-//            HierarchicalConfiguration<ImmutableNode> xml,
-//            String key, Short defaultValue) {
-//        return keyExists(xml, key) ? xml.getShort(key, null) : defaultValue;
-//    }
-//    /**
-//     * Gets a String from XML configuration. Same as
-//     * {@link XMLConfiguration#getString(String, String)} except that
-//     * the default value will only be returned if the key does not exist.
-//     * If it exists and it is empty, <code>null</code> will be returned instead.
-//     * @param xml xml configuration
-//     * @param key key to the element/attribute containing the value
-//     * @param defaultValue value to be returned if the key does not exists.
-//     * @return the actual value, the default value, or <code>null</code>
-//     * @since 1.14.0
-//     */
-//    public static String getNullableString(
-//            HierarchicalConfiguration<ImmutableNode> xml,
-//            String key, String defaultValue) {
-//        if (keyExists(xml, key)) {
-//            return StringUtils.trimToNull(xml.getString(key, null));
-//        }
-//        return defaultValue;
-//    }
-//    /**
-//     * Gets a Dimension from XML configuration (e.g., 400x500, or 200).
-//     * The default value will only be returned if the key does not exist.
-//     * If it exists and it is empty, <code>null</code> will be returned instead.
-//     * @param xml xml configuration
-//     * @param key key to the element/attribute containing the value
-//     * @param defaultValue value to be returned if the key does not exists.
-//     * @return the actual value, the default value, or <code>null</code>
-//     * @since 1.14.0
-//     */
-//    public static Dimension getNullableDimension(
-//            HierarchicalConfiguration<ImmutableNode> xml,
-//            String key, Dimension defaultValue) {
-//        if (keyExists(xml, key)) {
-//            String value = xml.getString(key, null);
-//            if (StringUtils.isBlank(value)) {
-//                return null;
-//            }
-//            String[] wh = value.split("[xX]");
-//            if (wh.length == 1) {
-//                int val = Integer.parseInt(wh[0].trim());
-//                return new Dimension(val, val);
-//            }
-//            return new Dimension(
-//                    Integer.parseInt(wh[0].trim()),
-//                    Integer.parseInt(wh[1].trim()));
-//        }
-//        return defaultValue;
-//    }
-//
+
     public static boolean exists(Node node, String xpathExpression) {
         try {
             return newXPathExpression(xpathExpression).evaluate(
@@ -854,30 +633,10 @@ public class XML {
                     "Could not evaluate expression: " + xpathExpression, e) ;
         }
     }
-//
-//    /**
-//     * Gets a duration which can be a numerical value or a textual
-//     * representation of a duration as per {@link DurationParser}.
-//     * If the duration does not exists for the given key or is blank,
-//     * the default value is returned.
-//     * If the key value is found but there are parsing errors, a
-//     * {@link DurationParserException} will be thrown.
-//     * @param xml xml configuration
-//     * @param key key to the element/attribute containing the duration
-//     * @param defaultValue default duration
-//     * @return duration in milliseconds
-//     * @since 1.13.0
-//     */
-//    public static Duration getDuration(
-//            HierarchicalConfiguration<ImmutableNode> xml,
-//            String key, Duration defaultValue) {
-//        String duration = xml.getString(key, null);
-//        if (StringUtils.isBlank(duration)) {
-//            return defaultValue;
-//        }
-//        return new DurationParser().parse(duration);
-//    }
-//
+
+    //TODO implement equivalent getter methods for same types
+    // defined in Properties and/or EnhancedXMLStreamWriter
+
     /**
      * Gets a list of strings after splitting the matching node value(s)
      * on commas (CSV).
@@ -968,63 +727,21 @@ public class XML {
         return Arrays.asList(str.trim().split(delimRegex));
     }
 
+    public String join(String delim, List<?> values) {
+        String sep = Objects.toString(delim, ",");
+        StringBuilder b = new StringBuilder();
+        for (Object obj : values) {
+            String str = Objects.toString(obj, "").trim();
+            if (StringUtils.isNotEmpty(str)) {
+                if (b.length() > 0) {
+                    b.append(sep);
+                }
+                b.append(str);
+            }
+        }
+        return b.toString();
+    }
 
-//
-//    /**
-//     * Gets a comma-separated-value string as an int array, removing any
-//     * blank entries.
-//     * Commas can have any spaces before or after.
-//     * Invalid integers will log an error and assign zero instead.
-//     * @param xml xml configuration
-//     * @param key key to the element/attribute containing the CSV string
-//     * @return int array (or null)
-//     * @since 1.13.0
-//     */
-//    public static int[] getCSVIntArray(
-//            HierarchicalConfiguration<ImmutableNode> xml, String key) {
-//        return getCSVIntArray(xml, key, null);
-//    }
-//    /**
-//     * Gets a comma-separated-value string as an int array, removing any
-//     * blank entries.
-//     * Commas can have any spaces before or after.
-//     * Invalid integers will log an error and assign zero instead.
-//     * @param xml xml configuration
-//     * @param key key to the element/attribute containing the CSV string
-//     * @param defaultValues default values if the split returns null
-//     *        or an empty array
-//     * @return int array (or null)
-//     * @since 1.13.0
-//     */
-//    public static int[] getCSVIntArray(
-//            HierarchicalConfiguration<ImmutableNode> xml,
-//            String key, int[] defaultValues) {
-//        String[] strings = splitCSV(xml.getString(key, null));
-//        if (ArrayUtils.isEmpty(strings)) {
-//            return defaultValues;
-//        }
-//        int[] ints = new int[strings.length];
-//        for (int i = 0; i < strings.length; i++) {
-//            try {
-//                ints[i] = Integer.parseInt(strings[i]);
-//            } catch (NumberFormatException e) {
-//                LOG.error("Invalid integer: " + strings[i], e);
-//            }
-//        }
-//        return ints;
-//    }
-//
-//    // CVS Split: trim + remove blank entries
-//    private static String[] splitCSV(String str) {
-//        if (str == null) {
-//            return null;
-//        }
-//        if (StringUtils.isBlank(str)) {
-//            return ArrayUtils.EMPTY_STRING_ARRAY;
-//        }
-//        return str.trim().split("(\\s*,\\s*)+");
-//    }
-//
     private static String getXSDResourcePath(Class<?> clazz) {
         if (clazz == null) {
             return null;
@@ -1032,23 +749,6 @@ public class XML {
         return "/" + clazz.getCanonicalName().replace('.', '/') + ".xsd";
     }
 
-
-
-
-
-//    // This method is because the regular configurationAt MUST have 1
-//    // entry or will fail, and the containsKey(String) method is not reliable
-//    // since it expects a value (body text) or returns false.
-//    private static HierarchicalConfiguration<ImmutableNode> safeConfigurationAt(
-//            HierarchicalConfiguration<ImmutableNode> node, String key) {
-//        List<HierarchicalConfiguration<ImmutableNode>> subs =
-//                node.configurationsAt(key);
-//        if (subs != null && !subs.isEmpty()) {
-//            return subs.get(0);
-//        }
-//        return null;
-//    }
-//
     private static class LogErrorHandler implements ErrorHandler {
         private final Class<?> clazz;
         private final List<XMLValidationError> errors;
@@ -1112,19 +812,6 @@ public class XML {
         return factory;
     }
 
-//  /**
-//  * This load method will return an Apache XML Configuration from
-//  * a {@link HierarchicalConfiguration}.
-//  * @param c hierarchical configuration
-//  * @return XMLConfiguration
-//  * @since 1.5.0
-//  */
-// //TODO still required given it just returns now???
-// public static XMLConfiguration toDocument(
-//         HierarchicalConfiguration<ImmutableNode> c) {
-//     return new XMLConfiguration(c);
-// }
-
     public static XPath newXPath() {
         //TODO consider caching w/ ThreadLocal if performance becomes a concern
         XPathFactory xpathFactory = XPathFactory.newInstance();
@@ -1140,57 +827,36 @@ public class XML {
     }
 
     public NodeArrayList getNodeList(String xpathExpression) {
-        return getNodeList(newXPathExpression(xpathExpression));
-    }
-    public NodeArrayList getNodeList(XPathExpression expression) {
         try {
-            return new NodeArrayList((NodeList) expression.evaluate(
-                    node, XPathConstants.NODESET));
+            return new NodeArrayList((NodeList) newXPathExpression(
+                    xpathExpression).evaluate(node, XPathConstants.NODESET));
         } catch (XPathExpressionException e) {
             throw new XMLException(
                     "Could not evaluate XPath expression.", e);
         }
     }
-
     public Node getNode(String xpathExpression) {
-        return getNode(newXPathExpression(xpathExpression));
+        return getNode(xpathExpression, node);
     }
-    public Node getNode(XPathExpression expression) {
-        try {
-            return (Node) expression.evaluate(node, XPathConstants.NODE);
-        } catch (XPathExpressionException e) {
-            throw new XMLException(
-                    "Could not evaluate XPath expression.", e);
-        }
+    public Node getNode() {
+        return node;
     }
 
     public String getString(String xpathExpression) {
         return getString(xpathExpression, null);
     }
-    public String getString(XPathExpression expression) {
-        return getString(expression, null);
-    }
-    public String getString(
-            String xpathExpression, String defaultValue) {
-        return getString(
-                newXPathExpression(xpathExpression), defaultValue);
-    }
-    public String getString(
-            XPathExpression expression, String defaultValue) {
-        try {
-            Node n = (Node) expression.evaluate(node, XPathConstants.NODE);
-            if (n == null) {
-                return defaultValue;
-            }
-            if (n.getNodeType() == Node.ATTRIBUTE_NODE) {
-                return n.getNodeValue();
-            }
-            return n.getTextContent();
-        } catch (XPathExpressionException e) {
-            throw new XMLException(
-                    "Could not evaluate XPath expression.", e);
+    public String getString(String xpathExpression, String defaultValue) {
+        Node n = getNode(xpathExpression);
+        if (n == null) {
+            return defaultValue;
         }
+        return getNodeString(n);
     }
+    /**
+     * Gets the matching list of elements/attributes as strings.
+     * @param xpathExpression XPath expression to the node values
+     * @return list of strings, never <code>null</code>
+     */
     public List<String> getStringList(String xpathExpression) {
         List<String> list = getStringList(xpathExpression, null);
         if (CollectionUtils.isEmpty(list)) {
@@ -1198,20 +864,22 @@ public class XML {
         }
         return list;
     }
+    /**
+     * Gets the matching list of elements/attributes as strings.
+     * @param xpathExpression XPath expression to the node values
+     * @param defaultValues default values if the expression returns
+     *        <code>null</code> or an empty list
+     * @return list of strings
+     */
     public List<String> getStringList(
-            String xpathExpression, List<String> defaultValue) {
+            String xpathExpression, List<String> defaultValues) {
         NodeArrayList nodeList = getNodeList(xpathExpression);
         if (nodeList.isEmpty()) {
-            return defaultValue;
+            return defaultValues;
         }
-
         List<String> list = new ArrayList<>();
         for (Node n : nodeList) {
-            if (n.getNodeType() == Node.ATTRIBUTE_NODE) {
-                list.add(n.getNodeValue());
-            } else {
-                list.add(n.getTextContent());
-            }
+            list.add(getNodeString(n));
         }
         return list;
     }
@@ -1232,6 +900,22 @@ public class XML {
         return val == null ? defaultValue : Long.parseLong(val);
     }
 
+    public Float getFloat(String xpathExpression) {
+        return getFloat(xpathExpression, null);
+    }
+    public Float getFloat(String xpathExpression, Float defaultValue) {
+        String val = getString(xpathExpression);
+        return val == null ? defaultValue : Float.parseFloat(val);
+    }
+
+    public Double getDouble(String xpathExpression) {
+        return getDouble(xpathExpression, null);
+    }
+    public Double getDouble(String xpathExpression, Double defaultValue) {
+        String val = getString(xpathExpression);
+        return val == null ? defaultValue : Double.parseDouble(val);
+    }
+
     public Boolean getBoolean(String xpathExpression) {
         return getBoolean(xpathExpression, null);
     }
@@ -1240,18 +924,413 @@ public class XML {
         return val == null ? defaultValue : BooleanUtils.toBooleanObject(val);
     }
 
-    //TODO getClass
-    //TODO getDisabled (which also reads disable, ignore, ignored
+    private Node getNode(String xpathExpression, Node parentNode) {
+        try {
+            return (Node) newXPathExpression(xpathExpression).evaluate(
+                    parentNode, XPathConstants.NODE);
+        } catch (XPathExpressionException e) {
+            throw new XMLException(
+                    "Could not evaluate XPath expression.", e);
+        }
+    }
+
+    public String getName() {
+        return node.getNodeName();
+    }
+
+    //TODO addElementFirst
+    //TODO addElementLast
+
+    /**
+     * Adds an empty child element to this XML root element.
+     * @param tagName element name
+     * @return XML of the added element
+     */
+    public XML addElement(String tagName) {
+        return addElement(tagName, null);
+    }
+    /**
+     * <p>
+     * Adds a child element to this XML root element.
+     * If the element value is blank, and empty element is created.
+     * Otherwise, the value is handled differently based on its type:
+     * </p>
+     * <ul>
+     *   <li>
+     *     Objects implementing {@link IXMLConfigurable} have
+     *     their "saveToXML" method invoked the object root element
+     *     already set, with a "class" attribute.
+     *   </li>
+     *   <li>
+     *     The following are converted to their string representation:
+     *     Integer, Long, Float, Double, File.
+     *   </li>
+     *   <li>String values are added as is.</li>
+     *   <li>Class values are added as a "class" attribute.</li>
+     *   <li>
+     *     Everything else: a "class" attribute is added to the element,
+     *     matching the object canonical class.
+     *   </li>
+     * </ul>
+     * @param tagName element name
+     * @param value element value
+     * @return XML of the added element or <code>null</code> if value is
+     *         <code>null</code>
+     */
+    public XML addElement(String tagName, Object value) {
+        XML xml = new XML(tagName, value);
+        Node newNode = node.getOwnerDocument().importNode(xml.node, true);
+        return new XML(node.appendChild(newNode));
+    }
+
+    public List<XML> addElementList(String tagName, List<?> values) {
+        return addElementList(null, tagName, values);
+    }
+    public List<XML> addElementList(
+            String parentTagName, String tagName, List<?> values) {
+
+        if (CollectionUtils.isEmpty(values)) {
+            return Collections.emptyList();
+        }
+
+        XML parentXML = this;
+        boolean hasParent = StringUtils.isNotBlank(parentTagName);
+        if (hasParent) {
+            parentXML = addElement(parentTagName);
+        }
+        List<XML> xmlList = new ArrayList<>();
+        for (Object value : values) {
+            xmlList.add(parentXML.addElement(tagName, value));
+        }
+        return Collections.unmodifiableList(xmlList);
+    }
+
+    /**
+     * Sets a list of values as a new element after joining them with
+     * a comma (CSV). Values are trimmed and blank entries removed.
+     * Values can be of any types, as they converted to String by
+     * invoking their "toString()" method.
+     * @param name attribute name
+     * @param values attribute values
+     * @return the newly added element
+     */
+    public XML addDelimitedElementList(String name, List<?> values) {
+        return addDelimitedElementList(name, ",", values);
+    }
+    /**
+     * Sets a list of values as a new element after joining them with
+     * the given delimiter. Values are trimmed and blank entries removed.
+     * Values can be of any types, as they converted to String by
+     * invoking their "toString()" method.
+     * @param name attribute name
+     * @param delim delimiter
+     * @param values attribute values
+     * @return the newly added element
+     */
+    public XML addDelimitedElementList(
+            String name, String delim, List<?> values) {
+        if (values.isEmpty()) {
+            return this;
+        }
+        return addElement(name, join(delim, values));
+    }
+
+    private boolean isToStringable(Object obj) {
+        for (Class<?> cls : TOSTRINGABLE) {
+            if (cls.isInstance(obj)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Sets an attribute on this XML element, converting the supplied object
+     * to a string.  A <code>null</code> value is equivalent to not
+     * adding or removing that attribute.
+     * @param name attribute name
+     * @param value attribute value
+     * @return this element
+     */
+    public XML setAttribute(String name, Object value) {
+        //TODO check if not a node, throw exception
+        Element el = (Element) node;
+        if (value == null) {
+            el.removeAttribute(name);
+        } else {
+            el.setAttribute(name, value.toString());
+        }
+        return this;
+    }
+    /**
+     * Sets attributes on this XML element.
+     * @param attribs attributes
+     * @return this element
+     */
+    public XML setAttributes(Map<String, ?> attribs) {
+        //TODO check if not a node, throw exception
+        if (MapUtils.isNotEmpty(attribs)) {
+            for (Entry<String, ?> en : attribs.entrySet()) {
+                setAttribute(en.getKey(), en.getValue());
+            }
+        }
+        return this;
+    }
+    /**
+     * Sets a list of values as an attribute after joining them with
+     * a comma (CSV). Values are trimmed and blank entries removed.
+     * Values can be of any types, as they converted to String by
+     * invoking their "toString()" method.
+     * @param name attribute name
+     * @param values attribute values
+     * @return this element
+     */
+    public XML setDelimitedAttributeList(String name, List<?> values) {
+        return setDelimitedAttributeList(name, ",", values);
+    }
+    /**
+     * Sets a list of values as an attribute after joining them with
+     * the given delimiter. Values are trimmed and blank entries removed.
+     * Values can be of any types, as they converted to String by
+     * invoking their "toString()" method.
+     * @param name attribute name
+     * @param delim delimiter
+     * @param values attribute values
+     * @return this element
+     */
+    public XML setDelimitedAttributeList(
+            String name, String delim, List<?> values) {
+        if (values.isEmpty()) {
+            return this;
+        }
+        setAttribute(name, join(delim, values));
+        return this;
+    }
+
+    /**
+     * Sets the text content of an XML element.
+     * @param textContent text content
+     * @return this element
+     */
+    public XML setTextContent(Object textContent) {
+        String content = Objects.toString(textContent, null);
+
+        Element el = (Element) node;
+        el.removeAttribute("xml:space");
+        if ("".equals(content)) {
+            if (node instanceof Element) {
+                el.setAttribute("xml:space", "empty");
+            }
+        } else if (content != null) {
+            node.setTextContent(content);
+        }
+        return this;
+    }
+
+    // returns the newly added XML
+    public XML addXML(Reader xml) {
+        return addXML(new XML(xml));
+    }
+    // returns the newly added XML
+    public XML addXML(String xml) {
+        return addXML(new XML(xml));
+    }
+    // returns the newly added XML
+    public XML addXML(XML xml) {
+        Node childNode = node.getOwnerDocument().importNode(xml.node, true);
+        node.appendChild(childNode);
+        return new XML(childNode);
+    }
+
+    public Writer getXMLWriter() {
+        return new StringWriter() {
+            @Override
+            public void close() throws IOException {
+                String s = this.toString();
+                if (StringUtils.isNotBlank(s)) {
+                    addXML(s);
+                }
+            }
+        };
+    }
+    public EnhancedXMLStreamWriter getXMLStreamWriter() {
+        return new EnhancedXMLStreamWriter(getXMLWriter());
+    }
+
+    public void write(Writer writer) {
+        write(writer, 0);
+    }
+    public void write(Writer writer, int indent) {
+        try {
+            writer.write(toString(indent));
+        } catch (IOException e) {
+            throw new XMLException("Could not write XML to Writer.", e);
+        }
+    }
+
+    /**
+     * Unwraps this XML by removing the root tag and keeping its child element
+     * (and its nested element).
+     * If there are no child (i.e., nothing to unwrap), invoking
+     * this method has no effect.
+     * If there are more than one child element, this method throws an
+     * {@link XMLException}.
+     * @return this XML, unwrapped
+     */
+    public XML unwrap() {
+        NodeList children = node.getChildNodes();
+
+        // If no child, end here
+        if (children == null || children.getLength() == 0) {
+            return this;
+        }
+
+        // If multiple children, throw exception
+        if (children.getLength() > 1) {
+            //TODO maybe support XML made of lists?
+            throw new XMLException("Cannot unwrap " + getName()
+                    + " element as it contains multiple child elements.");
+        }
+
+        // Proceed with the unwrapping
+        replace(new XML(children.item(0)));
+        return this;
+    }
+
+    /**
+     * Wraps this XML by adding a parent element around it.
+     * @param parentName name of wrapping element
+     * @return this XML, wrapped
+     */
+    public XML wrap(String parentName) {
+        Document doc = node.getOwnerDocument();
+        Node childNode = node.cloneNode(true);
+        clear();
+        doc.renameNode(node, null, parentName);
+        node.appendChild(childNode);
+        return this;
+    }
+
+    /**
+     * Clears this XML by removing all its attributes and elements
+     * (i.e., making it an empty tag).
+     * @return this cleared XML
+     */
+    public XML clear() {
+        // clear child nodes
+        while (node.hasChildNodes()) {
+            node.removeChild(node.getFirstChild());
+        }
+        // clear attributes
+        while (node.getAttributes().getLength() > 0) {
+            Node att = node.getAttributes().item(0);
+            node.getAttributes().removeNamedItem(att.getNodeName());
+        }
+        return this;
+    }
+
+    /**
+     * Replaces the current XML with the provided one.
+     * @param replacement replacing XML
+     * @return this XML, replaced
+     */
+    public XML replace(XML replacement) {
+        clear();
+        Document doc = node.getOwnerDocument();
+
+        // overwrite parent node with child one
+        NamedNodeMap attrs = replacement.node.getAttributes();
+        for (int i=0; i < attrs.getLength(); i++) {
+            node.getAttributes().setNamedItem(
+                    doc.importNode(attrs.item(i), true));
+        }
+        while (replacement.node.hasChildNodes()) {
+            Node childNode = replacement.node.removeChild(
+                    replacement.node.getFirstChild());
+            node.appendChild(doc.importNode(childNode, true));
+        }
+        doc.renameNode(node, null, replacement.node.getNodeName());
+        return this;
+    }
+
+
+    //--- File -----------------------------------------------------------------
+    /**
+     * Gets a file, assuming the node value is a file system path.
+     * @param xpathExpression XPath expression to the node containing the path
+     * @return a File
+     */
+    public final File getFile(String xpathExpression) {
+        String filePath = getString(xpathExpression);
+        if (filePath == null) {
+            return null;
+        }
+        return new File(filePath);
+    }
+    /**
+     * Gets a file, assuming the node value is a file system path.
+     * @param xpathExpression XPath expression to the node containing the path
+     * @param defaultValue default file being returned if no file has been
+     *        defined for the given expression.
+     * @return a File
+     */
+    public final File getFile(String xpathExpression, File defaultValue) {
+        return ObjectUtils.defaultIfNull(
+                getFile(xpathExpression), defaultValue);
+    }
+    /**
+     * Gets values as a list of files.
+     * @param xpathExpression XPath expression
+     * @return the values
+     */
+    public final List<File> getFileList(String xpathExpression) {
+        List<String> values = getStringList(xpathExpression);
+        List<File> list = new ArrayList<>(values.size());
+        for (String value : values) {
+            list.add(new File(value));
+        }
+        return list;
+    }
+
+    private static String readerToString(Reader reader) {
+        try {
+            return IOUtils.toString(reader);
+        } catch (IOException e) {
+            throw new XMLException("Could not read XML.", e);
+        }
+    }
+
+    private String getNodeString(Node n) {
+        if (n.getNodeType() == Node.ATTRIBUTE_NODE) {
+            return n.getNodeValue();
+        }
+        String str = n.getTextContent();
+        if (StringUtils.isEmpty(str)) {
+            Node attr = n.getAttributes().getNamedItem("xml:space");
+            if (attr != null && "empty".equalsIgnoreCase(attr.getNodeValue())) {
+                return "";
+            }
+            return null;
+        }
+        return str;
+    }
+
+    //TODO isDisabled (which also reads disable, ignore, ignored
     // and give warnings when not "disabled" (or rely on validation, changing all ignore to "disabled"
 
-//    public Class<?> getClass(String xpathExpression) {
-//        return getInteger(xpathExpression, null);
-//    }
-//    public Class<?> getClass(String xpathExpression, Class<?> defaultValue) {
-//        return ObjectUtils.defaultIfNull(getClass(key), defaultValue);
-//        String val = getString(xpathExpression);
-//        return val == null ? defaultValue : Integer.parseInt(val);
-//    }
-
-
+    public Class<?> getClass(String xpathExpression) {
+        return getClass(xpathExpression, null);
+    }
+    public Class<?> getClass(String xpathExpression, Class<?> defaultValue) {
+        String val = getString(xpathExpression);
+        if (StringUtils.isBlank(val)) {
+            return defaultValue;
+        }
+        try {
+            return Class.forName(val);
+        } catch (ClassNotFoundException e) {
+            throw new XMLException(
+                    "Could not get Class for xpath: " + xpathExpression, e);
+        }
+    }
 }

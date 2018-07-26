@@ -197,6 +197,24 @@ public class Regex {
     }
 
     /**
+     * Compiles a "dotall" pattern (dots match all, including new lines)
+     * with optional case sensitivity.
+     *
+     * @param regex regular expression
+     * @param caseInsensitive <code>true</code> to ignore character case.
+     * @return compiled pattern
+     */
+    public static Pattern compileDotAll(String regex, boolean caseInsensitive) {
+        // we allow empty regex here, but not null ones
+        if (regex == null) {
+            throw new IllegalArgumentException(
+                    "Supplied regular expression cannot be null");
+        }
+        return new Regex(regex).dotAll().setCaseInsensitive(
+                caseInsensitive).compile();
+    }
+
+    /**
      * Matches the previously set pattern against the given text.
      * @param text the text to match
      * @return matcher
