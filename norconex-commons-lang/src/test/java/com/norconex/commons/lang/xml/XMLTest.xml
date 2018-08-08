@@ -26,4 +26,9 @@
      <item>six</item>
    </testStringList>
 
+   <!-- testGetNullEmptyBlank -->
+   <testBlank>  </testBlank>
+   <testEmpty></testEmpty>
+   <testNull/>
+
 </xmltest>

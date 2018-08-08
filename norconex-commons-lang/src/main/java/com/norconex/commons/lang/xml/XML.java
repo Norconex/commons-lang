@@ -21,10 +21,15 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -54,9 +59,11 @@ import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ClassUtils;
+import org.apache.commons.lang3.LocaleUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.xerces.xni.NamespaceContext;
@@ -78,6 +85,8 @@ import org.xml.sax.helpers.XMLFilterImpl;
 import org.xml.sax.helpers.XMLReaderFactory;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
+import com.norconex.commons.lang.time.DurationParser;
+import com.norconex.commons.lang.time.DurationParserException;
 import com.norconex.commons.lang.xml.XMLValidationError.Severity;
 
 //TODO consider checking for a "disable=false|true" and setting it on
@@ -117,11 +126,21 @@ public class XML {
             Long.class,
             Float.class,
             Double.class,
-            File.class
+            File.class,
+            Path.class,
+            Locale.class
     };
 
     private final Node node;
 
+    /**
+     * <p>Parse an XML file into an XML document, without consideration
+     * for namespaces.</p>
+     * @param file the XML file to parse
+     */
+    public XML(File file) {
+        this(fileToString(file), (DocumentBuilderFactory) null);
+    }
     /**
      * <p>Parse an XML stream into an XML document, without consideration
      * for namespaces.</p>
@@ -188,12 +207,15 @@ public class XML {
 
     public XML(String rootElement, Object obj) {
         this.node = new XML("<" + rootElement + "/>").node;
-
         if (obj == null) {
             return;
         }
-        if (obj instanceof Class) {
+        if (obj instanceof Enum) {
+            setTextContent(((Enum<?>) obj).name().toLowerCase());
+        } else if (obj instanceof Class) {
             setAttribute("class", ((Class<?>) obj).getCanonicalName());
+        } else if (obj instanceof Duration) {
+            setTextContent(((Duration) obj).toMillis());
         } else if (isToStringable(obj)) {
             setTextContent(Objects.toString(obj, null));
         } else {
@@ -405,12 +427,16 @@ public class XML {
      * @return XML
      */
     public XML getXML(String xpathExpression) {
-        return new XML(getNode(xpathExpression));
+        Node xmlNode = getNode(xpathExpression);
+        if (xmlNode == null) {
+            return null;
+        }
+        return new XML(xmlNode);
     }
     /**
      * Gets the XML subsets matching the xpath expression.
      * @param xpathExpression expression to match
-     * @return XML list
+     * @return XML list, never <code>null</code>
      */
     public List<XML> getXMLList(String xpathExpression) {
         List<XML> list = new ArrayList<>();
@@ -522,17 +548,49 @@ public class XML {
     }
 
     /**
-     * For classes implementing {@link IXMLConfigurable}, validates XML against
-     * a class XSD schema and logs any error/warnings.
+     * <p>
+     * Validates this XML against its attached XSD schema and logs any
+     * error/warnings. The root tag has to have a "class" attribute representing
+     * an {@link IXMLConfigurable} implementation.
      * The schema expected to be found at the same classpath location and have
-     * the same name as the class, but with the ".xsd" extension.
+     * the same name as the object class, but with the ".xsd" extension.
+     * </p>
+     * <p>
+     * This method is the same as invoking
+     * <code>validate(getClass("@class"))</code>
+     * </p>
+     * @return list of errors/warnings or empty (never <code>null</code>)
+     */
+    public List<XMLValidationError> validate() {
+        return validate(getClass("@class"));
+    }
+
+    /**
+     * <p>
+     * Validates this XML for objects implementing {@link IXMLConfigurable}
+     * and having an XSD schema attached, and logs any error/warnings.
+     * The schema expected to be found at the same classpath location and have
+     * the same name as the object class, but with the ".xsd" extension.
+     * </p>
+     * <p>
+     * This method is the same as invoking <code>validate(obj.getClass())</code>
+     * </p>
+     * @param obj the object to validate the XML for
+     * @return list of errors/warnings or empty (never <code>null</code>)
+     */
+    public List<XMLValidationError> validate(Object obj) {
+        return validate(obj == null ? null : obj.getClass());
+    }
+
+    /**
+     * Validates this XML for classes implementing {@link IXMLConfigurable}
+     * and having an XSD schema attached, and logs any error/warnings.
+     * The schema expected to be found at the same classpath location and have
+     * the same name as the object class, but with the ".xsd" extension.
      * @param clazz the class to validate the XML for
      * @return list of errors/warnings or empty (never <code>null</code>)
      */
     public List<XMLValidationError> validate(Class<?> clazz) {
-        return doValidate(clazz);
-    }
-    private List<XMLValidationError> doValidate(Class<?> clazz) {
 
         List<XMLValidationError> errors = new ArrayList<>();
 
@@ -567,8 +625,7 @@ public class XML {
             validator.validate(saxSource);
             return errors;
         } catch (SAXException | IOException e) {
-            throw new XMLException(
-                    "Could not validate class: " + clazz, e);
+            throw new XMLException("Could not validate class: " + clazz, e);
         }
     }
 
@@ -580,7 +637,7 @@ public class XML {
      */
     public List<XMLValidationError> configure(IXMLConfigurable obj) {
         if (obj == null || node == null) {
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
         List<XMLValidationError> errors = validate(obj.getClass());
         obj.loadFromXML(this);
@@ -841,6 +898,15 @@ public class XML {
     public Node getNode() {
         return node;
     }
+    private Node getNode(String xpathExpression, Node parentNode) {
+        try {
+            return (Node) newXPathExpression(xpathExpression).evaluate(
+                    parentNode, XPathConstants.NODE);
+        } catch (XPathExpressionException e) {
+            throw new XMLException(
+                    "Could not evaluate XPath expression.", e);
+        }
+    }
 
     public String getString(String xpathExpression) {
         return getString(xpathExpression, null);
@@ -924,14 +990,86 @@ public class XML {
         return val == null ? defaultValue : BooleanUtils.toBooleanObject(val);
     }
 
-    private Node getNode(String xpathExpression, Node parentNode) {
-        try {
-            return (Node) newXPathExpression(xpathExpression).evaluate(
-                    parentNode, XPathConstants.NODE);
-        } catch (XPathExpressionException e) {
-            throw new XMLException(
-                    "Could not evaluate XPath expression.", e);
+    public Locale getLocale(String xpathExpression) {
+        return getLocale(xpathExpression, null);
+    }
+    public Locale getLocale(String xpathExpression, Locale defaultValue) {
+        String val = getString(xpathExpression);
+        return val == null ? defaultValue : LocaleUtils.toLocale(val);
+    }
+
+
+    /**
+     * Gets a duration in milliseconds which can exists as a numerical
+     * value or a textual
+     * representation of a duration as per {@link DurationParser}.
+     * If the duration does not exists for the given key or is blank,
+     * zero is returned.
+     * If the key value is found but there are parsing errors, a
+     * {@link DurationParserException} will be thrown.
+     * @param xpathExpression xpath to the element/attribute containing the
+     *        duration
+     * @return duration in milliseconds
+     */
+    public long getDurationMillis(String xpathExpression) {
+        return getDurationMillis(xpathExpression, 0);
+    }
+    /**
+     * Gets a duration in milliseconds which can exists as a numerical
+     * value or a textual
+     * representation of a duration as per {@link DurationParser}.
+     * If the duration does not exists for the given key or is blank,
+     * the default value is returned.
+     * If the key value is found but there are parsing errors, a
+     * {@link DurationParserException} will be thrown.
+     * @param xpathExpression xpath to the element/attribute containing the
+     *        duration
+     * @param defaultValue default duration
+     * @return duration in milliseconds
+     */
+    public long getDurationMillis(
+            String xpathExpression, long defaultValue) {
+        String duration = getString(xpathExpression);
+        if (StringUtils.isBlank(duration)) {
+            return defaultValue;
         }
+        return new DurationParser().parse(duration).toMillis();
+    }
+    /**
+     * Gets a duration which can exists as a numerical
+     * value or a textual
+     * representation of a duration as per {@link DurationParser}.
+     * If the duration does not exists for the given key or is blank,
+     * <code>null</code> is returned.
+     * If the key value is found but there are parsing errors, a
+     * {@link DurationParserException} will be thrown.
+     * @param xpathExpression xpath to the element/attribute containing the
+     *        duration
+     * @return duration
+     */
+    public Duration getDuration(String xpathExpression) {
+        return getDuration(xpathExpression, null);
+    }
+    /**
+     * Gets a duration which can exists as a numerical
+     * value or a textual
+     * representation of a duration as per {@link DurationParser}.
+     * If the duration does not exists for the given key or is blank,
+     * the default value is returned.
+     * If the key value is found but there are parsing errors, a
+     * {@link DurationParserException} will be thrown.
+     * @param xpathExpression xpath to the element/attribute containing the
+     *        duration
+     * @param defaultValue default duration
+     * @return duration
+     */
+    public Duration getDuration(
+            String xpathExpression, Duration defaultValue) {
+        String duration = getString(xpathExpression);
+        if (StringUtils.isBlank(duration)) {
+            return defaultValue;
+        }
+        return new DurationParser().parse(duration);
     }
 
     public String getName() {
@@ -949,6 +1087,7 @@ public class XML {
     public XML addElement(String tagName) {
         return addElement(tagName, null);
     }
+
     /**
      * <p>
      * Adds a child element to this XML root element.
@@ -956,6 +1095,7 @@ public class XML {
      * Otherwise, the value is handled differently based on its type:
      * </p>
      * <ul>
+     *   <li>String values are added as is.</li>
      *   <li>
      *     Objects implementing {@link IXMLConfigurable} have
      *     their "saveToXML" method invoked the object root element
@@ -963,13 +1103,19 @@ public class XML {
      *   </li>
      *   <li>
      *     The following are converted to their string representation:
-     *     Integer, Long, Float, Double, File.
+     *     Integer, Long, Float, Double, Path, File, Locale.
      *   </li>
-     *   <li>String values are added as is.</li>
+     *   <li>
+     *     Enums are written in lowercase using their {@link Enum#name()}
+     *     method.
+     *   </li>
+     *   <li>
+     *     Duration objects are written as milliseconds.
+     *   </li>
      *   <li>Class values are added as a "class" attribute.</li>
      *   <li>
      *     Everything else: a "class" attribute is added to the element,
-     *     matching the object canonical class.
+     *     matching the object canonical class, and nothing else.
      *   </li>
      * </ul>
      * @param tagName element name
@@ -1046,7 +1192,8 @@ public class XML {
 
     /**
      * Sets an attribute on this XML element, converting the supplied object
-     * to a string.  A <code>null</code> value is equivalent to not
+     * to a string (enums are also converted to lowercase).
+     * A <code>null</code> value is equivalent to not
      * adding or removing that attribute.
      * @param name attribute name
      * @param value attribute value
@@ -1057,6 +1204,10 @@ public class XML {
         Element el = (Element) node;
         if (value == null) {
             el.removeAttribute(name);
+        } else if (value instanceof Enum) {
+            el.setAttribute(name, ((Enum<?>) value).name().toLowerCase());
+        } else if (value instanceof Duration) {
+            el.setAttribute(name, Long.toString(((Duration) value).toMillis()));
         } else {
             el.setAttribute(name, value.toString());
         }
@@ -1168,6 +1319,19 @@ public class XML {
         }
     }
 
+    public void write(File file) {
+        write(file, 0);
+    }
+    public void write(File file, int indent) {
+        try {
+            FileUtils.writeStringToFile(
+                    file, toString(indent), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new XMLException(
+                    "Could not write XML to file: " + file.getAbsolutePath(), e);
+        }
+    }
+
     /**
      * Unwraps this XML by removing the root tag and keeping its child element
      * (and its nested element).
@@ -1253,6 +1417,96 @@ public class XML {
         return this;
     }
 
+    //--- Enum -----------------------------------------------------------------
+    /**
+     * Gets an Enum constant matching one of the constants in the provided
+     * Enum class, ignoring case.
+     * @param enumClass target enum class
+     * @param xpathExpression XPath expression to the enum value.
+     * @return an enum value or <code>null</code> if no values are matching.
+     */
+    public final <E extends Enum<E>> E getEnum(
+            Class<E> enumClass, String xpathExpression) {
+        return getEnum(enumClass, xpathExpression, null);
+    }
+    /**
+     * Gets an Enum constant matching one of the constants in the provided
+     * Enum class, ignoring case.
+     * @param enumClass target enum class
+     * @param xpathExpression XPath expression to the enum value.
+     * @param defaultValue defaultValue
+     * @return an enum value or default value if no values are matching.
+     */
+    public final <E extends Enum<E>> E getEnum(
+            Class<E> enumClass, String xpathExpression, E defaultValue) {
+        Objects.requireNonNull(enumClass, "enumClass must not be null");
+        String value = getString(xpathExpression);
+        if (StringUtils.isBlank(value)) {
+            return defaultValue;
+        }
+        for (E e : enumClass.getEnumConstants()) {
+            if (e.name().equalsIgnoreCase(value)) {
+                return e;
+            }
+        }
+        return defaultValue;
+    }
+
+    //--- Path -----------------------------------------------------------------
+    /**
+     * Gets a path, assuming the node value is a file system path.
+     * @param xpathExpression XPath expression to the node containing the path
+     * @return a path
+     */
+    public final Path getPath(String xpathExpression) {
+        String filePath = getString(xpathExpression);
+        if (filePath == null) {
+            return null;
+        }
+        return Paths.get(filePath);
+    }
+    /**
+     * Gets a path, assuming the node value is a file system path.
+     * @param xpathExpression XPath expression to the node containing the path
+     * @param defaultValue default path being returned if no path has been
+     *        defined for the given expression.
+     * @return a path
+     */
+    public final Path getPath(String xpathExpression, Path defaultValue) {
+        return ObjectUtils.defaultIfNull(
+                getPath(xpathExpression), defaultValue);
+    }
+    /**
+     * Gets values as a list of paths.
+     * @param xpathExpression XPath expression
+     * @return the values
+     */
+    public final List<Path> getPathList(String xpathExpression) {
+        List<Path> list = getPathList(xpathExpression, null);
+        if (CollectionUtils.isEmpty(list)) {
+            return Collections.emptyList();
+        }
+        return list;
+    }
+    /**
+     * Gets values as a list of paths.
+     * @param xpathExpression XPath expression
+     * @param defaultValue default value
+     * @return the values
+     */
+    public final List<Path> getPathList(
+            String xpathExpression, List<Path> defaultValue) {
+        List<String> values = getStringList(xpathExpression);
+        if (values.isEmpty()) {
+            return defaultValue;
+        }
+        List<Path> list = new ArrayList<>(values.size());
+        for (String value : values) {
+            list.add(Paths.get(value));
+        }
+        return list;
+    }
+
 
     //--- File -----------------------------------------------------------------
     /**
@@ -1284,7 +1538,24 @@ public class XML {
      * @return the values
      */
     public final List<File> getFileList(String xpathExpression) {
+        List<File> list = getFileList(xpathExpression, null);
+        if (CollectionUtils.isEmpty(list)) {
+            return Collections.emptyList();
+        }
+        return list;
+    }
+    /**
+     * Gets values as a list of files.
+     * @param xpathExpression XPath expression
+     * @param defaultValue default value
+     * @return the values
+     */
+    public final List<File> getFileList(
+            String xpathExpression, List<File> defaultValue) {
         List<String> values = getStringList(xpathExpression);
+        if (values.isEmpty()) {
+            return defaultValue;
+        }
         List<File> list = new ArrayList<>(values.size());
         for (String value : values) {
             list.add(new File(value));
@@ -1297,6 +1568,14 @@ public class XML {
             return IOUtils.toString(reader);
         } catch (IOException e) {
             throw new XMLException("Could not read XML.", e);
+        }
+    }
+    private static String fileToString(File file) {
+        try {
+            return FileUtils.readFileToString(file, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new XMLException(
+                    "Could not read XML file: " + file.getAbsolutePath(), e);
         }
     }
 
@@ -1321,16 +1600,55 @@ public class XML {
     public Class<?> getClass(String xpathExpression) {
         return getClass(xpathExpression, null);
     }
-    public Class<?> getClass(String xpathExpression, Class<?> defaultValue) {
+    @SuppressWarnings("unchecked")
+    public <T> Class<T> getClass(
+            String xpathExpression, Class<T> defaultValue) {
         String val = getString(xpathExpression);
         if (StringUtils.isBlank(val)) {
             return defaultValue;
         }
         try {
-            return Class.forName(val);
-        } catch (ClassNotFoundException e) {
-            throw new XMLException(
-                    "Could not get Class for xpath: " + xpathExpression, e);
+            return (Class<T>) Class.forName(val);
+        } catch (ClassNotFoundException | ClassCastException e) {
+            throw new XMLException("Could not get Class " + val
+                    + " for xpath: " + xpathExpression, e);
         }
     }
+    /**
+     * Gets values as a list of files.
+     * @param xpathExpression XPath expression
+     * @return the values
+     */
+    public final <T> List<Class<? extends T>> getClassList(String xpathExpression) {
+        List<Class<? extends T>> list = getClassList(xpathExpression, null);
+        if (CollectionUtils.isEmpty(list)) {
+            return Collections.emptyList();
+        }
+        return list;
+    }
+    /**
+     * Gets values as a list of files.
+     * @param xpathExpression XPath expression
+     * @param defaultValue default value
+     * @return the values
+     */
+    @SuppressWarnings("unchecked")
+    public final <T> List<Class<? extends T>> getClassList(
+            String xpathExpression, List<Class<? extends T>> defaultValue) {
+        List<String> values = getStringList(xpathExpression);
+        if (values.isEmpty()) {
+            return defaultValue;
+        }
+        List<Class<? extends T>> list = new ArrayList<>(values.size());
+        for (String value : values) {
+            try {
+                list.add((Class<T>) Class.forName(value));
+            } catch (ClassNotFoundException | ClassCastException e) {
+                throw new XMLException("Could not get Class " + value
+                        + " for xpath: " + xpathExpression, e);
+            }
+        }
+        return list;
+    }
+
 }

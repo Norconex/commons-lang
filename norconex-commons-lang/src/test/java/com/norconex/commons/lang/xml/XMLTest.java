@@ -59,7 +59,30 @@ public class XMLTest {
     }
 
     @Test
-    public void testNullEmptyBlank() {
+    public void testGetNullEmptyBlank() {
+        XML xml = new XML(ResourceLoader.getXmlString(XMLTest.class));
+
+        // As strings
+        Assert.assertNull(xml.getString("testNull"));
+        Assert.assertNull(xml.getString("testNullMissing"));
+        Assert.assertEquals("", xml.getString("testEmpty"));
+        Assert.assertEquals("  ", xml.getString("testBlank"));
+
+        // As Nodes
+        Assert.assertNotNull(xml.getNode("testNull"));
+        Assert.assertNull(xml.getNode("testNullMissing"));
+        Assert.assertNotNull(xml.getNode("testEmpty"));
+        Assert.assertNotNull(xml.getNode("testBlank"));
+
+        // As XMLs
+        Assert.assertNotNull(xml.getXML("testNull"));
+        Assert.assertNull(xml.getXML("testNullMissing"));
+        Assert.assertNotNull(xml.getXML("testEmpty"));
+        Assert.assertNotNull(xml.getXML("testBlank"));
+    }
+
+    @Test
+    public void testAddNullEmptyBlankElements() {
         // Null, empty, and blank strings should all be loaded back as such.
         XML xml1 = new XML("test");
 

@@ -248,10 +248,10 @@ public final class EncryptionKey implements Serializable {
             XML xml, String elementName, EncryptionKey key) {
         if (key != null) {
             XML kxml = new XML(elementName, null);
-            kxml.addElement("value", key.getValue());
-            kxml.addElement("size", key.getSize());
-            if (key.getSource() != null) {
-                kxml.addElement("source", key.getSource().name().toLowerCase());
+            kxml.addElement("value", key.value);
+            kxml.addElement("size", key.size);
+            if (key.source != null) {
+                kxml.addElement("source", key.source.name().toLowerCase());
             }
             xml.addXML(kxml);
         }

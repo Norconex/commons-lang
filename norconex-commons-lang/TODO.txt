@@ -1,7 +1,8 @@
 TODO:
 ==============
 
-- Have IXMLConfigurable save/LoadXML take XML. Add setters to XML.
+- Maybe: See if we can have getElement() use return type of assigned variable
+  to determine how to create the object instead of having getXXX methods?
 
 - Have option to not do validation on loading of dom, in case a consuming
   class wants to modify the DOM before validation.

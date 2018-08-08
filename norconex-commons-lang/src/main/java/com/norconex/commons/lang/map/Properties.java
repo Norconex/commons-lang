@@ -602,7 +602,7 @@ public class Properties extends ObservableMap<String, List<String>>
     public void loadFromXML(Reader reader) throws IOException {
         loadFromXML(reader, null);
     }
-    /**
+
     /**
      * Loads this {@link Map} from an input of a format
      * compatible with {@link java.util.Properties#load(InputStream)}.
@@ -650,8 +650,8 @@ public class Properties extends ObservableMap<String, List<String>>
                                 Objects.toString(entry.getValue(), null), sep));
             }
         }
-    }
-
+    }    
+    
     /**
      * Loads all of the properties from the JSON document input stream
      * (UTF-8) into this instance.
@@ -1630,4 +1630,163 @@ public class Properties extends ObservableMap<String, List<String>>
         }
         return obj.toString();
     }
+
+    //=== DEPRECATED ===========================================================
+    /**
+     * Deprecated.
+     * @param   reader   the input character stream.
+     * @throws IOException i/o problem
+     * @deprecated Since 2.0.0, use <code>loadFromProperties(...)</code>
+     */
+    @Deprecated
+    public void load(Reader reader) throws IOException {
+        load(reader, null);
+    }
+    /**
+     * Deprecated.
+     * @param   reader   the input character stream.
+     * @param delimiter delimiter string to used to parse a multi-value key.
+     * @throws IOException i/o problem
+     * @see Properties#load(Reader)
+     * @deprecated Since 2.0.0, use <code>loadFromProperties(...)</code>
+     */
+    @Deprecated
+    public void load(Reader reader, String delimiter)
+            throws IOException {
+        load(reader, null, delimiter, false);
+    }
+
+    /**
+     * Deprecated.
+     * @param   inStream   the input stream.
+     * @throws IOException i/o problem
+     * @see Properties#load(InputStream)
+     * @deprecated Since 2.0.0, use <code>loadFromProperties(...)</code>
+     */
+    @Deprecated
+    public synchronized void load(InputStream inStream) throws IOException {
+        load(inStream, null);
+    }
+    /**
+     * Deprecated.
+     * @param   inStream   the input stream.
+     * @param encoding delimiter string to used to parse a multi-value key.
+     * @throws IOException i/o problem
+     * @see Properties#load(InputStream)
+     * @deprecated Since 2.0.0, use <code>loadFromProperties(...)</code>
+     */
+    @Deprecated
+    public synchronized void load(InputStream inStream, String encoding)
+            throws IOException {
+        load(inStream, encoding, null);
+    }
+    /**
+     * Deprecated.
+     * @param   inStream   the input stream.
+     * @param encoding delimiter string to used to parse a multi-value key.
+     * @param delimiter delimiter string to used to parse a multi value
+     *        key.
+     * @throws IOException i/o problem
+     * @since 1.14.0
+     * @deprecated Since 2.0.0, use <code>loadFromProperties(...)</code>
+     */
+    @Deprecated
+    public synchronized void load(
+            InputStream inStream, String encoding, String delimiter)
+                    throws IOException {
+        load(inStream, encoding, delimiter, false);
+    }
+    @Deprecated
+    private synchronized void load(
+            Object input, String encoding, String delimiter, boolean isXML)
+                    throws IOException {
+        if (input instanceof Reader) {
+            loadFromProperties((Reader) input);
+        } else {
+            loadFromProperties((InputStream) input);
+        }
+    }
+
+    /**
+     * Deprecated.
+     * @param   writer     an output character stream writer.
+     * @throws IOException i/o problem
+     * @deprecated Since 2.0.0, use <code>storeToProperties(...)</code>
+     */
+    @Deprecated
+    public void store(Writer writer) throws IOException {
+        store(writer, null);
+    }
+    /**
+     * Deprecated.
+     * @param   writer     an output character stream writer.
+     * @param   comments   a description of the property list.
+     * @throws IOException i/o problem
+     * @deprecated Since 2.0.0, use <code>storeToProperties(...)</code>
+     */
+    @Deprecated
+    public void store(Writer writer, String comments) throws IOException {
+        store(writer, comments, null);
+    }
+    /**
+     * Deprecated.
+     * @param   writer     an output character stream writer.
+     * @param   comments   a description of the property list.
+     * @param delimiter string to used as a separator when joining
+     *        multiple values for the same key.
+     * @throws IOException i/o problem
+     * @deprecated Since 2.0.0, use <code>storeToProperties(...)</code>
+     */
+    @Deprecated
+    public void store(Writer writer, String comments, String delimiter)
+            throws IOException {
+        store(writer, comments, null, delimiter, false);
+    }
+    /**
+     * Deprecated.
+     * @param   out      an output stream.
+     * @throws IOException i/o problem
+     * @deprecated Since 2.0.0, use <code>storeToProperties(...)</code>
+     */
+    @Deprecated
+    public void store(OutputStream out) throws IOException {
+        store(out, null);
+    }
+    /**
+     * Deprecated.
+     * @param   out      an output stream.
+     * @param   comments   a description of the property list.
+     * @throws IOException i/o problem
+     * @deprecated Since 2.0.0, use <code>storeToProperties(...)</code>
+     */
+    @Deprecated
+    public void store(OutputStream out, String comments) throws IOException {
+        store(out, comments, null);
+    }
+    /**
+     * Deprecated.
+     * @param   out      an output stream.
+     * @param   comments   a description of the property list.
+     * @param delimiter delimiter string to used as a separator when joining
+     *        multiple values for the same key.
+     * @throws IOException i/o problem
+     * @deprecated Since 2.0.0, use <code>storeToProperties(...)</code>
+     */
+    @Deprecated
+    public void store(OutputStream out, String comments, String delimiter)
+            throws IOException {
+        store(out, comments, null, delimiter, false);
+    }
+    // input is either Writer or OuputStream
+    @Deprecated
+    private synchronized void store(
+            Object output, String comments, String encoding,
+            String delimiter, boolean isXML)  throws IOException {
+        if (output instanceof Writer) {
+            storeToProperties((Writer) output);
+        } else {
+            storeToProperties((OutputStream) output);
+        }
+    }
+
 }

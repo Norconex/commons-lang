@@ -18,8 +18,10 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 import java.util.WeakHashMap;
 
 import org.apache.commons.io.FileUtils;
@@ -27,7 +29,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * 
+ *
  * @author Pascal Essiembre
  */
 public class CachedStreamFactory {
@@ -35,32 +37,32 @@ public class CachedStreamFactory {
     private final int poolMaxMemory;
     private final int instanceMaxMemory;
     private final File cacheDirectory;
-    
-    private final Map<ICachedStream, Void> streams = 
+
+    private final Map<ICachedStream, Void> streams =
             Collections.synchronizedMap(new WeakHashMap<ICachedStream, Void>());
-    
+
     /**
      * Constructor.
-     * @param poolMaxMemory maximum number of bytes used for memory caching by 
+     * @param poolMaxMemory maximum number of bytes used for memory caching by
      *     all instances created by this factory combined
-     * @param instanceMaxMemory maximum number of bytes used for 
-     *     memory by each cached stream instance created 
+     * @param instanceMaxMemory maximum number of bytes used for
+     *     memory by each cached stream instance created
      */
     public CachedStreamFactory(
-            int poolMaxMemory, 
+            int poolMaxMemory,
             int instanceMaxMemory) {
-        this(poolMaxMemory, instanceMaxMemory, null);
+        this(poolMaxMemory, instanceMaxMemory, (File) null);
     }
     /**
      * Constructor.
-     * @param poolMaxMemory maximum number of bytes used for memory caching by 
+     * @param poolMaxMemory maximum number of bytes used for memory caching by
      *     all instances created by this factory combined
-     * @param instanceMaxMemory maximum number of bytes used for 
-     *     memory by each cached stream instance created 
+     * @param instanceMaxMemory maximum number of bytes used for
+     *     memory by each cached stream instance created
      * @param cacheDirectory location where file-based caching takes place
      */
     public CachedStreamFactory(
-            int poolMaxMemory, 
+            int poolMaxMemory,
             int instanceMaxMemory,
             File cacheDirectory) {
         this.poolMaxMemory = poolMaxMemory;
@@ -71,6 +73,22 @@ public class CachedStreamFactory {
             this.cacheDirectory = cacheDirectory;
         }
     }
+    /**
+     * Constructor.
+     * @param poolMaxMemory maximum number of bytes used for memory caching by
+     *     all instances created by this factory combined
+     * @param instanceMaxMemory maximum number of bytes used for
+     *     memory by each cached stream instance created
+     * @param cacheDirectory location where file-based caching takes place
+     * @since 2.0.0
+     */
+    public CachedStreamFactory(
+            int poolMaxMemory,
+            int instanceMaxMemory,
+            Path cacheDirectory) {
+        this(poolMaxMemory, instanceMaxMemory, Objects.requireNonNull(
+                cacheDirectory, "cacheDirectory must not be null").toFile());
+    }
 
     public int getPoolMaxMemory() {
         return poolMaxMemory;
@@ -79,7 +97,7 @@ public class CachedStreamFactory {
     public int getInstanceMaxMemory() {
         return instanceMaxMemory;
     }
-    
+
     /*default*/ int getPoolCurrentMemory() {
         int byteSize = 0;
         synchronized (streams) {
@@ -94,7 +112,7 @@ public class CachedStreamFactory {
     /*default*/ int getPoolRemainingMemory() {
         return Math.max(0, poolMaxMemory - getPoolCurrentMemory());
     }
-    
+
     /*default*/ CachedInputStream newInputStream(byte[] bytes) {
         return registerStream(
                 new CachedInputStream(this, cacheDirectory, bytes));
@@ -109,17 +127,27 @@ public class CachedStreamFactory {
         return newInputStream(StringUtils.EMPTY);
     }
     /**
-     * Creates a new input stream, assuming UTF-8 content. 
+     * Creates a new input stream, assuming UTF-8 content.
      * @param content content to stream
      * @return cached input stream
      */
     public CachedInputStream newInputStream(String content) {
-        return registerStream(new CachedInputStream(this, cacheDirectory, 
+        return registerStream(new CachedInputStream(this, cacheDirectory,
                 IOUtils.toInputStream(content, StandardCharsets.UTF_8)));
     }
     public CachedInputStream newInputStream(File file) {
         return registerStream(
                 new CachedInputStream(this, cacheDirectory, file));
+    }
+    /**
+     * Creates a new cached input stream.
+     * @param path path where to cache large files
+     * @return cached input stream
+     * @since 2.0.0
+     */
+    public CachedInputStream newInputStream(Path path) {
+        Objects.requireNonNull(path, "path must not be null");
+        return newInputStream(path.toFile());
     }
     public CachedInputStream newInputStream(InputStream is) {
         return registerStream(new CachedInputStream(this, cacheDirectory, is));
@@ -132,14 +160,14 @@ public class CachedStreamFactory {
         return registerStream(
                 new CachedOutputStream(this, cacheDirectory, null));
     }
-    
+
     private <T extends ICachedStream> T registerStream(T s) {
         synchronized (streams) {
             streams.put(s, null);
         }
         return s;
     }
-    
+
     public class MemoryTracker {
         private static final int CHECK_CHUNK_SIZE = (int) FileUtils.ONE_KB;
         private int poolRemaining = -1;
@@ -154,7 +182,7 @@ public class CachedStreamFactory {
                 poolRemaining = getPoolRemainingMemory();
             }
             int remainingMemory = Math.min(
-                    poolRemaining, 
+                    poolRemaining,
                     getInstanceMaxMemory() - memOutputStream.size());
             return bytesToAdd <= remainingMemory;
         }

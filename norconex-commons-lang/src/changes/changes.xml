@@ -13,6 +13,9 @@
         New DurationFormatter.
       </action>
       <action dev="essiembre" type="add">
+        New CollectionUtil.
+      </action>
+      <action dev="essiembre" type="add">
         New Event class and IEventListener interface.
       </action>
       <action dev="essiembre" type="add">
@@ -81,15 +84,18 @@
         Some of the load/store methods in Properties have been renamed for 
         consistency.
       </action>
-      <action dev="essiembre" type="update">
-        IXMLConfigurable#saveToXML has been deprecated in favor of a new
-        method accepting element name as argument.
-      </action>
       <action dev="essiembre" type="remove">
         XMLConfigurationUtil now deprecated in favor of XML.
       </action>
       <action dev="essiembre" type="update">
+        IXMLConfigurable methods were deprecated in favor of new ones
+        that take an XML as argument.
+      </action>
+      <action dev="essiembre" type="update">
         DurationUtil now deprecated in favor of DurationFormatter.
+      </action>
+      <action dev="essiembre" type="update">
+        Most method arguments accepting File now accept Path also/instead.
       </action>
       <action dev="essiembre" type="fix">
         Properties#load(Map) now handles primitive array values properly,
