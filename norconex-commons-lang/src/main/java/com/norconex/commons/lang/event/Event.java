@@ -14,11 +14,12 @@
  */
 package com.norconex.commons.lang.event;
 
+import java.util.EventObject;
 import java.util.Objects;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 /**
@@ -28,12 +29,12 @@ import org.apache.commons.lang3.builder.ToStringStyle;
  * @since 2.0.0
  * @see IEventListener
  */
-public class Event<T> {
+public class Event<T> extends EventObject {
 
-    
-    private final String name;
-    private final T source;
-    private final Throwable exception;
+    private static final long serialVersionUID = 1L;
+    private String name;
+//    private final T source;
+    private transient Throwable exception;
 
     /**
      * New event.
@@ -44,7 +45,7 @@ public class Event<T> {
         this(name, source, null);
     }
 
-    
+
     /**
      * New event.
      * @param name event name
@@ -52,18 +53,20 @@ public class Event<T> {
      * @param exception exception
      */
     public Event(String name, T source, Throwable exception) {
-        super();
+        super(source);
         this.name = name;
-        this.source = source;
+//        this.source = source;
         this.exception = exception;
     }
-    
+
     /**
      * Gets the object representing the source of this event.
      * @return the subject
      */
-    public Object getSource() {
-        return source;
+    @SuppressWarnings("unchecked")
+    @Override
+    public T getSource() {
+        return (T) source;
     }
 
     /**
@@ -82,43 +85,59 @@ public class Event<T> {
         return exception;
     }
 
-    public boolean equalsName(Event<?> event) {
+    public boolean nameEquals(Event<?> event) {
         if (event == null) {
             return false;
         }
-        return equalsName(event.getName());
+        return nameEquals(event.getName());
     }
-    public boolean equalsName(String eventName) {
+    public boolean nameEquals(String eventName) {
         return Objects.equals(name, eventName);
     }
-    
+
+
     @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof Event))
-            return false;
-        Event<?> castOther = (Event<?>) other;
-        return new EqualsBuilder()
-                .append(name, castOther.name)
-                .append(source, castOther.source)
-                .append(exception, castOther.exception)
-                .isEquals();
+        return EqualsBuilder.reflectionEquals(this, other);
     }
-
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-                .append(name)
-                .append(source)
-                .append(exception)
-                .toHashCode();
+        return HashCodeBuilder.reflectionHashCode(this);
     }
-
     @Override
     public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .append("name", name)
-                .append("source", source)
-                .append("exception", exception)
-                .toString();
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
+
+//    @Override
+//    public boolean equals(final Object other) {
+//        if (!(other instanceof Event)) {
+//            return false;
+//        }
+//        Event<?> castOther = (Event<?>) other;
+//        return new EqualsBuilder()
+//                .append(name, castOther.name)
+//                .append(source, castOther.source)
+//                .append(exception, castOther.exception)
+//                .isEquals();
+//    }
+//
+//    @Override
+//    public int hashCode() {
+//        return new HashCodeBuilder()
+//                .append(name)
+//                .append(source)
+//                .append(exception)
+//                .toHashCode();
+//    }
+//
+//    @Override
+//    public String toString() {
+//        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+//                .append("name", name)
+//                .append("source", source)
+//                .append("exception", exception)
+//                .toString();
+//    }
 }

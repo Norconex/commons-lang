@@ -10,13 +10,16 @@
     <release version="2.0.0-SNAPSHOT" date="2018-??-??" 
              description="Major release. NOT a drop-in replacement for 1.x.">
       <action dev="essiembre" type="add">
+        New BeanGraphUtil class that simplifies dealing with object-graph.
+      </action>
+      <action dev="essiembre" type="add">
         New DurationFormatter.
       </action>
       <action dev="essiembre" type="add">
         New CollectionUtil.
       </action>
       <action dev="essiembre" type="add">
-        New Event class and IEventListener interface.
+        New Event-related classes (Event, IEventListener, EventManager).
       </action>
       <action dev="essiembre" type="add">
         New Regex and KeyValueExtractor classes.

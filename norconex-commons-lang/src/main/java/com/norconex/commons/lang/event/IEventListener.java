@@ -19,11 +19,13 @@ import java.util.function.Consumer;
 
 /**
  * Version of {@link EventListener} that can be used as a lambda consumer.
- * @author pasca
  * @param <T> the type of events being listened to
  * @author Pascal Essiembre
  * @since 2.0.0
  */
-public interface IEventListener<T> extends Consumer<T>, EventListener {
-
+public interface IEventListener<T extends Event<?>>
+        extends Consumer<T>, EventListener {
 }
+
+
+//TODO create a FilteredEventListener that accepts a function to to filter events on

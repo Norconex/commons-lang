@@ -10,9 +10,6 @@ TODO:
 - EnhancedXMLStreamWriter: eliminate concept of "writeBlanks" and always 
   write them for elements with text only (and attributes?)?
 
-- Maybe add a new IEventListener scanner for automatic registration in an 
-  event manager.
-
 - Is Pipeline really needed with Java 8. Could functional interfaces do it?
 
 - Replace/refactor process execution to use new process features of Java 8.
