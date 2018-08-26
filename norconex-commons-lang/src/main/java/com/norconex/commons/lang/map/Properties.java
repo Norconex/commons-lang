@@ -1,4 +1,4 @@
-/* Copyright 2010-2017 Norconex Inc.
+/* Copyright 2010-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,7 @@ import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.beanutils.PropertyUtilsBean;
 import org.apache.commons.beanutils.SuppressPropertiesBeanIntrospector;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang3.ArrayUtils;
@@ -60,6 +61,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.bean.ExtendedBeanUtilsBean;
+import com.norconex.commons.lang.bean.ExtendedConvertUtilsBean;
+import com.norconex.commons.lang.collection.CollectionUtil;
 
 /**
  * <p>This class is a enhanced version of {@link java.util.Properties}
@@ -69,27 +72,29 @@ import com.norconex.commons.lang.bean.ExtendedBeanUtilsBean;
  * multiple values.  You can also see this class as a
  * string-based multi-value map with helpful methods. While it does not extend
  * {@link java.util.Properties}, it offers similar load and store
- * methods and can be used as a replacement for it in many cases.</p>
+ * methods and can be used as a replacement for it in many cases. It also
+ * adds support for storing/loading as JSON, XML, and Java Bean.</p>
  * <p>This class extends {@link ObservableMap} which means you can listen
  * for property changes.</p>
  *
- * <p>To insert values, there are <i>set</i> methods and <i>add</i> methods.
- * The <i>set</i> methods will replace any value(s) already present under the
- * given key.  It is essentially the same behavior as
+ * <p>To insert values, there are <i>set</i> <i>add</i> methods.
+ * The <i>set</i> methods will first remove any existing value(s) under the
+ * given key before inserting the new one(s).
+ * It is essentially the same behavior as
  * {@link Map#put(Object, Object)}.  The <i>add</i> method will add the
  * new value(s) to the list of already existing ones (if any).
  * </p>
  *
- * <p><b>Since 1.14.0</b>, the storing of entries with multiple values
+ * <p>The storing of entries with multiple values
  * will create one file entry per value. To preserve old behavior and
  * force multiple values to be on the same line, use the store/load
- * method accepting a joining delimiter. That version also
- * introduced storing and loading as JSON.
+ * method accepting a joining delimiter.
  * </p>
  *
  * <p>Upon encountering a problem in parsing a value to
  * its desired type, a {@link PropertiesException} is thrown.</p>
  * @author Pascal Essiembre
+ * @see ExtendedConvertUtilsBean
  */
 public class Properties extends ObservableMap<String, List<String>>
         implements Serializable {
@@ -650,8 +655,8 @@ public class Properties extends ObservableMap<String, List<String>>
                                 Objects.toString(entry.getValue(), null), sep));
             }
         }
-    }    
-    
+    }
+
     /**
      * Loads all of the properties from the JSON document input stream
      * (UTF-8) into this instance.
@@ -707,6 +712,95 @@ public class Properties extends ObservableMap<String, List<String>>
         }
     }
 
+    //--- Get/Add/Set ----------------------------------------------------------
+
+    /**
+     * Gets a single value, converted to the given type.
+     * @param key the key of the value to get
+     * @param type target class of value
+     * @return value
+     * @since 2.0.0
+     */
+    @SuppressWarnings("unchecked")
+    public final <T> T getValue(String key, Class<T> type) {
+        return (T) beanUtilsBean.getConvertUtils().convert(
+                getString(key), type);
+    }
+    /**
+     * Gets a list of values, with its element converted to the given type.
+     * @param key the key of the values to get
+     * @param type target class of values
+     * @return value list
+     * @since 2.0.0
+     */
+    public final <T> List<T> getList(String key, Class<T> type) {
+        return CollectionUtil.fromStringList(getStrings(key), type);
+    }
+
+    /**
+     * Sets one or multiple values as strings replacing existing ones.
+     * Setting a single <code>null</code> value or an empty array is
+     * the same as calling {@link #remove(Object)} with the same key.
+     * When setting multiple values, <code>null</code> values are converted
+     * to empty strings.
+     * @param key the key of the value to set
+     * @param values the values to set
+     * @since 2.0.0
+     */
+    @SafeVarargs
+    public final <T> void set(String key, T... values) {
+        set(key, CollectionUtil.asListOrNull(values));
+    }
+    /**
+     * Adds one or multiple string values.
+     * Adding a single <code>null</code> value has no effect.
+     * When adding multiple values, <code>null</code> values are converted
+     * to blank strings.
+     * @param key the key of the value to set
+     * @param values the values to set
+     * @since 2.0.0
+     */
+    @SafeVarargs
+    public final <T> void add(String key, T... values) {
+        add(key, CollectionUtil.asListOrNull(values));
+    }
+    /**
+     * Sets one or multiple values as strings replacing existing ones.
+     * Setting a single <code>null</code> value or an empty array is
+     * the same as calling {@link #remove(Object)} with the same key.
+     * When setting multiple values, <code>null</code> values are converted
+     * to empty strings.
+     * @param key the key of the value to set
+     * @param values the values to set
+     * @since 2.0.0
+     */
+    public final <T> void set(String key, List<T> values) {
+        if (CollectionUtils.isEmpty(values)) {
+            remove(key);
+        }
+        put(key, CollectionUtil.toStringList(values));
+    }
+    /**
+     * Adds one or multiple values as strings.
+     * Adding a <code>null</code> list has no effect.
+     * When adding multiple values, <code>null</code> values are converted
+     * to empty strings.
+     * @param key the key of the value to set
+     * @param values the values to set
+     * @since 2.0.0
+     */
+    public final <T> void add(String key, List<T> values) {
+        if (CollectionUtils.isEmpty(values)) {
+            return;
+        }
+        List<String> list = get(key);
+        if (list == null) {
+            list = new ArrayList<>(values.size());
+        }
+        list.addAll(CollectionUtil.toStringList(values));
+        put(key, list);
+    }
+
     //--- String ---------------------------------------------------------------
     /**
      * Gets value as string.
@@ -750,12 +844,11 @@ public class Properties extends ObservableMap<String, List<String>>
      * to blank strings.
      * @param key the key of the value to set
      * @param values the values to set
+     * @deprecated Since 2.0.0, use {@link #set(String, Object...)}
      */
+    @Deprecated
     public final void setString(String key, String... values) {
-        if (ArrayUtils.isEmpty(values)) {
-            remove(key);
-        }
-        put(key, new ArrayList<>(Arrays.asList(values)));
+        set(key, values);
     }
     /**
      * Adds one or multiple string values.
@@ -764,18 +857,48 @@ public class Properties extends ObservableMap<String, List<String>>
      * to blank strings.
      * @param key the key of the value to set
      * @param values the values to set
+     * @deprecated Since 2.0.0, use {@link #add(String, Object...)}
      */
+    @Deprecated
     public final void addString(String key, String... values) {
-        if (ArrayUtils.isEmpty(values)) {
-            return;
-        }
-        List<String> list = get(key);
-        if (list == null) {
-            list = new ArrayList<>();
-        }
-        list.addAll(Arrays.asList(values));
-        put(key, list);
+        add(key, values);
     }
+//    /**
+//     * Sets one or multiple string values replacing existing ones.
+//     * Setting a single <code>null</code> value or an empty string array is
+//     * the same as calling {@link #remove(Object)} with the same key.
+//     * When setting multiple values, <code>null</code> values are converted
+//     * to blank strings.
+//     * @param key the key of the value to set
+//     * @param values the values to set
+//     * @since 2.0.0
+//     */
+//    public final void setStrings(String key, List<String> values) {
+//        if (CollectionUtils.isEmpty(values)) {
+//            remove(key);
+//        }
+//        put(key, values);
+//    }
+//    /**
+//     * Adds one or multiple string values.
+//     * Adding a single <code>null</code> value has no effect.
+//     * When adding multiple values, <code>null</code> values are converted
+//     * to blank strings.
+//     * @param key the key of the value to set
+//     * @param values the values to set
+//     * @since 2.0.0
+//     */
+//    public final void addStrings(String key, List<String> values) {
+//        if (CollectionUtils.isEmpty(values)) {
+//            return;
+//        }
+//        List<String> list = get(key);
+//        if (list == null) {
+//            list = new ArrayList<>();
+//        }
+//        list.addAll(values);
+//        put(key, list);
+//    }
 
     //--- Integer --------------------------------------------------------------
     /**
@@ -830,18 +953,40 @@ public class Properties extends ObservableMap<String, List<String>>
      * Sets one or multiple integer values, replacing existing ones.
      * @param key the key of the values to set
      * @param values the values to set
+     * @deprecated Since 2.0.0, use {@link #set(String, Object...)}
      */
+    @Deprecated
     public final void setInt(String key, int... values) {
-        setString(key, toStringArray(ArrayUtils.toObject(values)));
+        set(key, values);
     }
     /**
      * Adds one or multiple integer values values.
      * @param key the key of the values to set
      * @param values the values to set
+     * @deprecated Since 2.0.0, use {@link #add(String, Object...)}
      */
+    @Deprecated
     public final void addInt(String key, int... values) {
-        addString(key, toStringArray(ArrayUtils.toObject(values)));
+        add(key, values);
     }
+//    /**
+//     * Sets one or multiple integer values, replacing existing ones.
+//     * @param key the key of the values to set
+//     * @param values the values to set
+//     * @since 2.0.0
+//     */
+//    public final void setInts(String key, List<Integer> values) {
+//        setStrings(key, CollectionUtil.toStringList(values));
+//    }
+//    /**
+//     * Adds one or multiple integer values values.
+//     * @param key the key of the values to set
+//     * @param values the values to set
+//     * @since 2.0.0
+//     */
+//    public final void addInts(String key, List<Integer> values) {
+//        addStrings(key, CollectionUtil.toStringList(values));
+//    }
 
     //--- Double ---------------------------------------------------------------
     /**
@@ -896,17 +1041,21 @@ public class Properties extends ObservableMap<String, List<String>>
      * Sets one or multiple double values, replacing existing ones.
      * @param key the key of the values to set
      * @param values the values to set
+     * @deprecated Since 2.0.0, use {@link #set(String, Object...)}
      */
+    @Deprecated
     public final void setDouble(String key, double... values) {
-        setString(key, toStringArray(ArrayUtils.toObject(values)));
+        set(key, values);
     }
     /**
      * Adds one or multiple double values.
      * @param key the key of the values to set
      * @param values the values to set
+     * @deprecated Since 2.0.0, use {@link #add(String, Object...)}
      */
+    @Deprecated
     public final void addDouble(String key, double... values) {
-        addString(key, toStringArray(ArrayUtils.toObject(values)));
+        add(key, values);
     }
 
     //--- Long -----------------------------------------------------------------
@@ -962,18 +1111,43 @@ public class Properties extends ObservableMap<String, List<String>>
      * Sets one or multiple long values, replacing existing ones.
      * @param key the key of the values to set
      * @param values the values to set
+     * @deprecated Since 2.0.0, use {@link #set(String, Object...)}
      */
+    @Deprecated
     public final void setLong(String key, long... values) {
-        setString(key, toStringArray(ArrayUtils.toObject(values)));
+        set(key, values);
     }
     /**
      * Add one or multiple long values.
      * @param key the key of the values to set
      * @param values the values to set
+     * @deprecated Since 2.0.0, use {@link #add(String, Object...)}
      */
+    @Deprecated
     public final void addLong(String key, long... values) {
-        addString(key, toStringArray(ArrayUtils.toObject(values)));
+        add(key, values);
     }
+//    /**
+//     * Sets one or multiple long values, replacing existing ones.
+//     * @param key the key of the values to set
+//     * @param values the values to set
+//     * @since 2.0.0
+//     */
+//    public final void setLongs(String key, List<Long> values) {
+//        setStrings(key, CollectionUtil.toStringList(values));
+//    }
+//    /**
+//     * Add one or multiple long values.
+//     * @param key the key of the values to set
+//     * @param values the values to set
+//     * @since 2.0.0
+//     */
+//    public final void addLongs(String key, List<Long> values) {
+//        addStrings(key, CollectionUtil.toStringList(values));
+//    }
+
+
+
 
     //--- Float ----------------------------------------------------------------
     /**
@@ -1028,17 +1202,21 @@ public class Properties extends ObservableMap<String, List<String>>
      * Sets one or multiple float values, replacing existing ones.
      * @param key the key of the values to set
      * @param values the values to set
+     * @deprecated Since 2.0.0, use {@link #set(String, Object...)}
      */
+    @Deprecated
     public final void setFloat(String key, float... values) {
-        setString(key, toStringArray(ArrayUtils.toObject(values)));
+        set(key, values);
     }
     /**
      * Adds one or multiple long values.
      * @param key the key of the values to set
      * @param values the values to set
+     * @deprecated Since 2.0.0, use {@link #add(String, Object...)}
      */
+    @Deprecated
     public final void addFloat(String key, float... values) {
-        addString(key, toStringArray(ArrayUtils.toObject(values)));
+        add(key, values);
     }
 
     //--- BigDecimal -----------------------------------------------------------
@@ -1092,17 +1270,21 @@ public class Properties extends ObservableMap<String, List<String>>
      * Sets one or multiple BigDecimal values, replacing existing ones.
      * @param key the key of the values to set
      * @param values the values to set
+     * @deprecated Since 2.0.0, use {@link #set(String, Object...)}
      */
+    @Deprecated
     public final void setBigDecimal(String key, BigDecimal... values) {
-        setString(key, toStringArray(values));
+        set(key, values);
     }
     /**
      * Add one or multiple BigDecimal values.
      * @param key the key of the values to set
      * @param values the values to set
+     * @deprecated Since 2.0.0, use {@link #add(String, Object...)}
      */
+    @Deprecated
     public final void addBigDecimal(String key, BigDecimal... values) {
-        addString(key, toStringArray(values));
+        add(key, values);
     }
 
     //--- LocalDateTime --------------------------------------------------------
@@ -1159,39 +1341,6 @@ public class Properties extends ObservableMap<String, List<String>>
                     "Could not parse LocalDateTime value.", key, errVal, e);
         }
     }
-    /**
-     * Sets one or multiple local date-time values, replacing existing ones.
-     * @param key the key of the values to set
-     * @param values the values to set
-     * @since 2.0.0
-     */
-    public final void setLocalDateTime(String key, LocalDateTime... values) {
-        setString(key, localDateTimesToStringArray(values));
-    }
-    /**
-     * Add one or multiple local date-time values.
-     * @param key the key of the values to set
-     * @param values the values to set
-     * @since 2.0.0
-     */
-    public final void addLocalDateTime(String key, LocalDateTime... values) {
-        addString(key, localDateTimesToStringArray(values));
-    }
-    private String[] localDateTimesToStringArray(LocalDateTime... values) {
-        if (values == null) {
-            return null;
-        }
-        String[] array = new String[values.length];
-        for (int i = 0; i < array.length; i++) {
-            LocalDateTime value = values[i];
-            if (value == null) {
-                array[i] = null;
-            } else {
-                array[i] = value.toString();
-            }
-        }
-        return array;
-    }
 
     //--- Date -----------------------------------------------------------------
     /**
@@ -1244,32 +1393,21 @@ public class Properties extends ObservableMap<String, List<String>>
      * Sets one or multiple date values, replacing existing ones.
      * @param key the key of the values to set
      * @param values the values to set
+     * @deprecated Since 2.0.0, use {@link #set(String, Object...)}
      */
+    @Deprecated
     public final void setDate(String key, Date... values) {
-        setString(key, datesToStringArray(values));
+        set(key, values);
     }
     /**
      * Add one or multiple date values.
      * @param key the key of the values to set
      * @param values the values to set
+     * @deprecated Since 2.0.0, use {@link #add(String, Object...)}
      */
+    @Deprecated
     public final void addDate(String key, Date... values) {
-        addString(key, datesToStringArray(values));
-    }
-    private String[] datesToStringArray(Date... values) {
-        if (values == null) {
-            return null;
-        }
-        String[] array = new String[values.length];
-        for (int i = 0; i < array.length; i++) {
-            Date value = values[i];
-            if (value == null) {
-                array[i] = null;
-            } else {
-                array[i] = Long.toString(value.getTime());
-            }
-        }
-        return array;
+        add(key, values);
     }
 
     //--- Boolean --------------------------------------------------------------
@@ -1314,17 +1452,21 @@ public class Properties extends ObservableMap<String, List<String>>
      * Sets one or multiple boolean values, replacing existing ones.
      * @param key the key of the values to set
      * @param values the values to set
+     * @deprecated Since 2.0.0, use {@link #set(String, Object...)}
      */
+    @Deprecated
     public final void setBoolean(String key, boolean... values) {
-        setString(key, toStringArray(ArrayUtils.toObject(values)));
+        set(key, values);
     }
     /**
      * Adds one or multiple boolean values.
      * @param key the key of the values to set
      * @param values the values to set
+     * @deprecated Since 2.0.0, use {@link #add(String, Object...)}
      */
+    @Deprecated
     public final void addBoolean(String key, boolean... values) {
-        addString(key, toStringArray(ArrayUtils.toObject(values)));
+        add(key, values);
     }
 
     //--- Locale ---------------------------------------------------------------
@@ -1378,17 +1520,21 @@ public class Properties extends ObservableMap<String, List<String>>
      * Sets one or multiple locale values, replacing existing ones.
      * @param key the key of the values to set
      * @param values the values to set
+     * @deprecated Since 2.0.0, use {@link #set(String, Object...)}
      */
+    @Deprecated
     public final void setLocale(String key, Locale... values) {
-        setString(key, toStringArray(values));
+        set(key, values);
     }
     /**
      * Adds one or multiple locale values.
      * @param key the key of the values to set
      * @param values the values to set
+     * @deprecated Since 2.0.0, use {@link #add(String, Object...)}
      */
+    @Deprecated
     public final void addLocale(String key, Locale... values) {
-        addString(key, toStringArray(values));
+        add(key, values);
     }
 
     //--- File -----------------------------------------------------------------
@@ -1431,27 +1577,21 @@ public class Properties extends ObservableMap<String, List<String>>
      * Sets one or multiple file values, replacing existing ones.
      * @param key the key of the values to set
      * @param values the values to set
+     * @deprecated Since 2.0.0, use {@link #set(String, Object...)}
      */
+    @Deprecated
     public final void setFile(String key, File... values) {
-        setString(key, filesToStringArray(values));
+        set(key, values);
     }
     /**
      * Adds one or multiple file values.
      * @param key the key of the values to set
      * @param values the values to set
+     * @deprecated Since 2.0.0, use {@link #add(String, Object...)}
      */
+    @Deprecated
     public final void addFile(String key, File... values) {
-        addString(key, filesToStringArray(values));
-    }
-    private String[] filesToStringArray(File... values) {
-        if (values == null) {
-            return null;
-        }
-        String[] array = new String[values.length];
-        for (int i = 0; i < array.length; i++) {
-            array[i] = values[i].getPath();
-        }
-        return array;
+        add(key, values);
     }
 
     //--- Class ----------------------------------------------------------------
@@ -1498,27 +1638,21 @@ public class Properties extends ObservableMap<String, List<String>>
      * Sets one or multiple class values, replacing existing ones.
      * @param key the key of the values to set
      * @param values the values to set
+     * @deprecated Since 2.0.0, use {@link #set(String, Object...)}
      */
+    @Deprecated
     public final void setClass(String key, Class<?>... values) {
-        setString(key, classesToStringArray(values));
+        set(key, values);
     }
     /**
      * Adds one or multiple class values.
      * @param key the key of the values to set
      * @param values the values to set
+     * @deprecated Since 2.0.0, use {@link #add(String, Object...)}
      */
+    @Deprecated
     public final void addClass(String key, Class<?>... values) {
-        addString(key, classesToStringArray(values));
-    }
-    private String[] classesToStringArray(Class<?>... values) {
-        if (values == null) {
-            return null;
-        }
-        String[] array = new String[values.length];
-        for (int i = 0; i < array.length; i++) {
-            array[i] = values[i].getName();
-        }
-        return array;
+        add(key, values);
     }
 
     //--- Other ----------------------------------------------------------------
@@ -1600,17 +1734,17 @@ public class Properties extends ObservableMap<String, List<String>>
         LOG.error(message, cause);
         return new PropertiesException(message, cause);
     }
-    private String[] toStringArray(Object[] array) {
-        if (array == null) {
-            return null;
-        }
-        String[] strArray = new String[array.length];
-        for (int i = 0; i < array.length; i++) {
-            strArray[i] = Objects.toString(array[i], StringUtils.EMPTY);
-            //TODO ------------------------------------- REALLY? ^^^^^
-        }
-        return strArray;
-    }
+//    private String[] toStringArray(Object[] array) {
+//        if (array == null) {
+//            return null;
+//        }
+//        String[] strArray = new String[array.length];
+//        for (int i = 0; i < array.length; i++) {
+//            strArray[i] = Objects.toString(array[i], StringUtils.EMPTY);
+//            //TODO ------------------------------------- REALLY? ^^^^^
+//        }
+//        return strArray;
+//    }
     // TODO consider calling this from toStringArray(array) and have
     // Class, Date, etc, setters call that method. But check
     // implications of EMPTY vs null. (why have empty for elements in in array,

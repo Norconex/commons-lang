@@ -20,17 +20,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Locale;
 import java.util.Set;
 
 import org.apache.commons.beanutils.BeanUtilsBean;
-import org.apache.commons.beanutils.ConvertUtilsBean;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.collections4.iterators.ArrayIterator;
 import org.apache.commons.collections4.iterators.SingletonIterator;
@@ -42,9 +38,9 @@ import com.norconex.commons.lang.map.Properties;
 
 /**
  * Extends {@link BeanUtilsBean} to support collections and arrays which
- * can be mapped to both collection or array. Also adds necessary 
+ * can be mapped to both collection or array. Also adds necessary
  * converters to ensure conversion
- * of all data types supported by {@link Properties}. 
+ * of all data types supported by {@link Properties}.
  * @author Pascal Essiembre
  * @since 2.0.0
  * @see Properties#storeToBean(Object)
@@ -53,25 +49,17 @@ public class ExtendedBeanUtilsBean extends BeanUtilsBean {
 
     private static final Logger LOG = LoggerFactory.getLogger(
             ExtendedBeanUtilsBean.class);
-    
+
     public ExtendedBeanUtilsBean() {
-        super(createConvertUtilsBean());
+        super(new ExtendedConvertUtilsBean());
     }
 
-    private static ConvertUtilsBean createConvertUtilsBean() {
-        ConvertUtilsBean cub = new ConvertUtilsBean();
-        cub.register(new LocalDateTimeConverter(), LocalDateTime.class);
-        cub.register(new LocaleConverter(), Locale.class);
-        cub.register(new DateConverter(), Date.class);
-        return cub;
-    }
-    
     @Override
     public void copyProperty(Object bean, String name, Object value)
             throws IllegalAccessException, InvocationTargetException {
         // Because convert(Object, Class) does not have access to the bean,
         // it cannot find the declared generic type of collections.
-        // So we find it here and wrap the supplied bean in a concrete type 
+        // So we find it here and wrap the supplied bean in a concrete type
         // that can be mapped to a sourceIterable converter.
         PropertyDescriptor pd;
         try {
@@ -83,7 +71,7 @@ public class ExtendedBeanUtilsBean extends BeanUtilsBean {
 
         Object enhancedValue = value;
         Class<?> setterType = pd.getPropertyType();
-        
+
         if (Collection.class.isAssignableFrom(setterType)) {
             Method m = pd.getWriteMethod();
             if (m == null) {
@@ -98,7 +86,7 @@ public class ExtendedBeanUtilsBean extends BeanUtilsBean {
         }
         super.copyProperty(bean, name, enhancedValue);
     }
-    
+
     @Override
     protected Object convert(Object value, Class<?> type) {
         if (value instanceof IterableWrapper) {
@@ -106,7 +94,7 @@ public class ExtendedBeanUtilsBean extends BeanUtilsBean {
         }
         return super.convert(value, type);
     }
-    
+
     public static Class<?> getGenericCollectionType(Method m) {
         Type[] genericParamTypes = m.getGenericParameterTypes();
         if (ArrayUtils.isEmpty(genericParamTypes)) {
@@ -123,17 +111,17 @@ public class ExtendedBeanUtilsBean extends BeanUtilsBean {
         }
         return null;
     }
-    
+
     // Make sure source and target are compatible
     private Object convertIterable(IterableWrapper w, Class<?> type) {
-        
+
         Collection<Object> targetCollection = null;
         if (Set.class.isAssignableFrom(type)) {
             targetCollection = new HashSet<>();
         } else {
             // assume Collection/List or Array (converted later)
             targetCollection = new ArrayList<>();
-        }        
+        }
 
         Iterator<?> it = w.getSourceIterator();
         while (it.hasNext()) {
@@ -141,7 +129,7 @@ public class ExtendedBeanUtilsBean extends BeanUtilsBean {
             Object convertedObj = super.convert(obj, w.targetObjectType);
             targetCollection.add(convertedObj);
         }
-        
+
         if (type.isArray()) {
             Object array = Array.newInstance(
                     w.targetObjectType, targetCollection.size());
@@ -154,7 +142,7 @@ public class ExtendedBeanUtilsBean extends BeanUtilsBean {
         }
         return targetCollection;
     }
-    
+
     class IterableWrapper {
         private final Object sourceObject;
         private final Class<?> targetObjectType;

@@ -28,11 +28,13 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.function.Function;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
@@ -424,7 +426,7 @@ public class XML {
     /**
      * Gets the xml subset matching the xpath expression.
      * @param xpathExpression expression to match
-     * @return XML
+     * @return XML or <code>null</code> is xpath has no match
      */
     public XML getXML(String xpathExpression) {
         Node xmlNode = getNode(xpathExpression);
@@ -948,6 +950,46 @@ public class XML {
             list.add(getNodeString(n));
         }
         return list;
+    }
+
+    /**
+     * Gets the matching map of elements/attributes as strings.
+     * @param xpathList XPath expression to the node list representing the map
+     * @param xpathKey XPath expression to a node key
+     * @param xpathValue XPath expression to a node value
+     * @return map of strings, never <code>null</code>
+     */
+    public Map<String, String> getStringMap(
+            String xpathList, String xpathKey, String xpathValue) {
+        Map<String, String> map = getStringMap(
+                xpathList, xpathKey, xpathValue, null);
+        if (MapUtils.isEmpty(map)) {
+            return Collections.emptyMap();
+        }
+        return map;
+    }
+    /**
+     * Gets the matching map of elements/attributes as strings.
+     * @param xpathList XPath expression to the node list representing the map
+     * @param xpathKey XPath expression to a node key
+     * @param xpathValue XPath expression to a node value
+     * @param defaultValues default values if the expressions return
+     *        <code>null</code> or an empty map
+     * @return map of strings, never <code>null</code>
+     */
+    public Map<String, String> getStringMap(String xpathList, String xpathKey,
+            String xpathValue, Map<String, String> defaultValues) {
+        Map<String, String> map = new HashMap<>();
+        List<XML> xmls = getXMLList(xpathList);
+        for (XML xml : xmls) {
+            if (xml != null) {
+                map.put(xml.getString(xpathKey), xml.getString(xpathValue));
+            }
+        }
+        if (map.isEmpty()) {
+            return defaultValues;
+        }
+        return map;
     }
 
     public Integer getInteger(String xpathExpression) {
@@ -1651,4 +1693,73 @@ public class XML {
         return list;
     }
 
+    public <T> T parseXML(
+            String xpathExpression, Function<XML, T> parser) {
+        return parseXML(xpathExpression, parser, null);
+    }
+    public <T> T parseXML(
+            String xpathExpression,
+            Function<XML, T> parser,
+            T defaultValue) {
+        Objects.requireNonNull(parser, "Parser argument cannot be null.");
+        XML xml = getXML(xpathExpression);
+        if (xml == null) {
+            return defaultValue;
+        }
+        return parser.apply(xml);
+    }
+
+    //TODO allow to specify collection implementation?
+    public <T> List<T> parseXMLList(
+            String xpathExpression, Function<XML, T> parser) {
+        return parseXMLList(xpathExpression, parser, null);
+    }
+    public <T> List<T> parseXMLList(
+            String xpathExpression,
+            Function<XML, T> parser,
+            List<T> defaultValue) {
+        Objects.requireNonNull(parser, "Parser argument cannot be null.");
+        List<T> list = new ArrayList<>();
+        List<XML> xmls = getXMLList(xpathExpression);
+        for (XML xml : xmls) {
+            if (xml != null) {
+                T obj = parser.apply(xml);
+                if (obj != null) {
+                    list.add(obj);
+                }
+            }
+        }
+        if (list.isEmpty()) {
+            return defaultValue;
+        }
+        return list;
+    }
+
+
+    //TODO have a formatXMLMap and others
+    //TODO allow to specify map implementation?
+    public <K,V> Map<K,V> parseXMLMap(
+            String xpathExpression, Function<XML, Entry<K, V>> parser) {
+        return parseXMLMap(xpathExpression, parser, null);
+    }
+    public <K,V> Map<K,V> parseXMLMap(
+            String xpathExpression,
+            Function<XML, Entry<K, V>> parser,
+            Map<K,V> defaultValue) {
+        Objects.requireNonNull(parser, "Parser argument cannot be null.");
+        Map<K,V> map = new HashMap<>();
+        List<XML> xmls = getXMLList(xpathExpression);
+        for (XML xml : xmls) {
+            if (xml != null) {
+                Entry<K,V> entry = parser.apply(xml);
+                if (entry != null) {
+                    map.put(entry.getKey(), entry.getValue());
+                }
+            }
+        }
+        if (map.isEmpty()) {
+            return defaultValue;
+        }
+        return map;
+    }
 }

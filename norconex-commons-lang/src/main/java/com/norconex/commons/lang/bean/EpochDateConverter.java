@@ -27,10 +27,10 @@ import org.slf4j.LoggerFactory;
  * @since 2.0.0
  * @see ExtendedBeanUtilsBean
  */
-public class DateConverter extends AbstractConverter {
+public class EpochDateConverter extends AbstractConverter {
 
     private static final Logger LOG = LoggerFactory.getLogger(
-            DateConverter.class);
+            EpochDateConverter.class);
     
     @Override
     protected Class<?> getDefaultType() {

@@ -131,7 +131,7 @@ public class KeyValueExtractor {
             } else if (v == null) {
                 LOG.debug("Null value for key: {}", k);
             } else {
-                dest.addString(k, v);
+                dest.add(k, v);
             }
         }
     }

@@ -149,4 +149,9 @@ public class XMLTest {
         Assert.assertEquals(replacement,
                 new XML(SAMPLE_XML).replace(new XML(replacement)).toString());
     }
+
+//    setRequestHeaders(xml.parseXMLMap("headers/header", x ->
+//    new DefaultMapEntry<>(x.getString("@name"), x.getString(".")),
+//    requestHeaders));
+
 }

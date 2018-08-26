@@ -85,13 +85,13 @@ public class Event<T> extends EventObject {
         return exception;
     }
 
-    public boolean nameEquals(Event<?> event) {
+    public boolean is(Event<?> event) {
         if (event == null) {
             return false;
         }
-        return nameEquals(event.getName());
+        return is(event.getName());
     }
-    public boolean nameEquals(String eventName) {
+    public boolean is(String eventName) {
         return Objects.equals(name, eventName);
     }
 
@@ -109,35 +109,4 @@ public class Event<T> extends EventObject {
         return new ReflectionToStringBuilder(
                 this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
-
-//    @Override
-//    public boolean equals(final Object other) {
-//        if (!(other instanceof Event)) {
-//            return false;
-//        }
-//        Event<?> castOther = (Event<?>) other;
-//        return new EqualsBuilder()
-//                .append(name, castOther.name)
-//                .append(source, castOther.source)
-//                .append(exception, castOther.exception)
-//                .isEquals();
-//    }
-//
-//    @Override
-//    public int hashCode() {
-//        return new HashCodeBuilder()
-//                .append(name)
-//                .append(source)
-//                .append(exception)
-//                .toHashCode();
-//    }
-//
-//    @Override
-//    public String toString() {
-//        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-//                .append("name", name)
-//                .append("source", source)
-//                .append("exception", exception)
-//                .toString();
-//    }
 }

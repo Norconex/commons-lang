@@ -16,6 +16,16 @@ package com.norconex.commons.lang.collection;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import org.apache.commons.beanutils.ConvertUtilsBean;
+import org.apache.commons.lang3.StringUtils;
+
+import com.norconex.commons.lang.bean.ExtendedConvertUtilsBean;
 
 /**
  * Collection-related utility methods.
@@ -23,6 +33,8 @@ import java.util.Collection;
  * @since 2.0.0
  */
 public final class CollectionUtil {
+
+    private static final ConvertUtilsBean CUB = new ExtendedConvertUtilsBean();
 
     private CollectionUtil() {
         super();
@@ -64,4 +76,142 @@ public final class CollectionUtil {
         }
         setAll(target, Arrays.asList(source));
     }
+
+    /**
+     * Sets all values of the source map into the target one.
+     * Same as doing a "clear", followed by "putAll", but it also checks
+     * for <code>null</code> and will not clear/add if the source
+     * map is the same instance as the target one.
+     * If target is <code>null</code>, invoking this method has no effect.
+     * If source is <code>null</code> will clear the target map
+     * @param target target map
+     * @param source source map
+     */
+    public static <K,V> void setAll(Map<K,V> target, Map<K,V> source) {
+        if (target == null || target == source) {
+            return;
+        }
+        target.clear();
+        if (source != null) {
+            target.putAll(source);
+        }
+    }
+
+    /**
+     * Returns a fixed-size list backed by the specified array or
+     * an empty list if the array is <code>null</code>. This is a null-safe
+     * version of {@link Arrays#asList(Object...)}.
+     * @param <T> the class of the objects in the array
+     * @param values the array by which the list will be backed
+     * @return a list view of the specified array
+     * @see #asListOrNull(Object...)
+     */
+    @SafeVarargs
+    public static <T> List<T> asListOrEmpty(T... values) {
+        if (values == null) {
+            return Collections.emptyList();
+        }
+        return Arrays.asList(values);
+    }
+    /**
+     * Returns a fixed-size list backed by the specified array or
+     * <code>null</code> if the array is <code>null</code>. This is a null-safe
+     * version of {@link Arrays#asList(Object...)}.
+     * A list is returned even if the array is empty or contains only
+     * <code>null</code> values.
+     * @param <T> the class of the objects in the array
+     * @param values the array by which the list will be backed
+     * @return a list view of the specified array
+     * @see #asListOrEmpty(Object...)
+     */
+    @SafeVarargs
+    public static <T> List<T> asListOrNull(T... values) {
+        if (values == null) {
+            return null;
+        }
+        return Arrays.asList(values);
+    }
+
+    /**
+     * Converts an array of objects to a list of strings for
+     * each non-null elements.
+     * If the supplied list is <code>null</code>, an empty string list
+     * is returned.
+     * @param values list to convert to a list of strings
+     * @return list of strings
+     */
+    public static List<String> toStringList(Object... values) {
+        return toStringList(asListOrNull(values));
+    }
+    /**
+     * Converts a list of objects to a list of strings by invoking
+     * <code>toString()</code> on each non-null elements.
+     * If the supplied list is <code>null</code>, an empty string list
+     * is returned.
+     * @param values list to convert to a list of strings
+     * @return list of strings
+     */
+    public static List<String> toStringList(List<?> values) {
+        if (values == null) {
+            return Collections.emptyList();
+        }
+
+        return values.stream().map(CUB::convert).collect(Collectors.toList());
+    }
+    /**
+     * Converts a list of strings to a list of objects matching
+     * the return type.
+     * If the supplied list is <code>null</code>, an empty string list
+     * is returned.
+     * @param values list to convert to a list of strings
+     * @param targetClass target class
+     * @return list of strings
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> List<T> fromStringList(
+            List<String> values, Class<T> targetClass) {
+        if (values == null) {
+            return Collections.emptyList();
+        }
+        return values.stream().map(str -> (T) CUB.convert(
+                str, targetClass)).collect(Collectors.toList());
+    }
+
+    /**
+     * Removes <code>null</code> entries in the given collection.  Only
+     * useful for collection implementations allowing <code>null</code> entries.
+     * @param c a collection
+     */
+    public void removeNulls(Collection<?> c) {
+        if (c == null) {
+            return;
+        }
+        c.removeIf(Objects::nonNull);
+    }
+
+    /**
+     * Removes blank strings in the given collection.
+     * @param c a string collection
+     */
+    public void removeBlanks(Collection<String> c) {
+        if (c == null) {
+            return;
+        }
+        c.removeIf(StringUtils::isBlank);
+    }
+
+    /**
+     * Removes empty strings in the given collection.
+     * @param c a string collection
+     */
+    public void removeEmpties(Collection<String> c) {
+        if (c == null) {
+            return;
+        }
+        c.removeIf(StringUtils::isEmpty);
+    }
+
+
+    //TODO have a version that accepts a function that returns a string?
+    //TODO have a removeNulls() method and a removeBlanks() method?
 }

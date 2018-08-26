@@ -29,15 +29,15 @@ import com.norconex.commons.lang.map.Properties;
 
 
 /**
- * Provides utility methods for getting and setting attributes on 
- * a URL query string. 
+ * Provides utility methods for getting and setting attributes on
+ * a URL query string.
  * <br><br>
  * <b>Since 1.4</b>, query string parameters are stored and returned in the
  * order they were provided.
  * @author Pascal Essiembre
  */
 public class QueryString extends Properties {
-    
+
     private static final long serialVersionUID = 1744232652147275170L;
 
     private final String encoding;
@@ -48,9 +48,9 @@ public class QueryString extends Properties {
     public QueryString() {
         this(StringUtils.EMPTY, StandardCharsets.UTF_8.toString());
     }
-    
+
     /**
-     * Default URL character encoding is UTF-8.  
+     * Default URL character encoding is UTF-8.
      * @param urlWithQueryString a URL from which to extract a query string.
      */
     public QueryString(URL urlWithQueryString) {
@@ -65,7 +65,7 @@ public class QueryString extends Properties {
         this(urlWithQueryString.toString(), encoding);
     }
     /**
-     * Constructor.   Default URL character encoding is UTF-8.  
+     * Constructor.   Default URL character encoding is UTF-8.
      * It is possible to only supply a query string as opposed to an
      * entire URL.
      * Key and values making up a query string are assumed to be URL-encoded.
@@ -76,11 +76,11 @@ public class QueryString extends Properties {
         this(urlWithQueryString, null);
     }
     /**
-     * Constructor.  
+     * Constructor.
      * It is possible to only supply a query string as opposed to an
      * entire URL.
      * Key and values making up a query string are assumed to be URL-encoded.
-     * Will throw a {@link URLException} if the supplied encoding is 
+     * Will throw a {@link URLException} if the supplied encoding is
      * unsupported or invalid.
      * @param urlWithQueryString a URL from which to extract a query string.
      * @param encoding character encoding
@@ -113,11 +113,11 @@ public class QueryString extends Properties {
                 value = StringUtils.EMPTY;
             }
             try {
-                addString(URLDecoder.decode(key, this.encoding),
+                add(URLDecoder.decode(key, this.encoding),
                           URLDecoder.decode(value, this.encoding));
             } catch (UnsupportedEncodingException e) {
                 throw new URLException(
-                        "Cannot URL-decode query string (key=" 
+                        "Cannot URL-decode query string (key="
                                 + key + "; value=" + value + ").", e);
             }
         }
@@ -131,9 +131,9 @@ public class QueryString extends Properties {
     public String getEncoding() {
         return encoding;
     }
-    
+
     /**
-     * Convert this <code>QueryString</code> to a URL-encoded string 
+     * Convert this <code>QueryString</code> to a URL-encoded string
      * representation that can be appended as is to a URL with no query string.
      */
     @Override
@@ -153,14 +153,14 @@ public class QueryString extends Properties {
                     b.append(URLEncoder.encode(value, encoding));
                 } catch (UnsupportedEncodingException e) {
                     throw new URLException(
-                            "Cannot URL-encode query string (key=" 
+                            "Cannot URL-encode query string (key="
                                     + key + "; value=" + value + ").", e);
                 }
             }
         }
         return b.toString();
     }
-    
+
     /**
      * Apply this url QueryString on the given URL. If a query string already
      * exists, it is replaced by this one.
