@@ -1,6 +1,12 @@
 TODO:
 ==============
 
+- Add XML.get(String xpath, Class<T> type) and use ExtendedBeanUtils 
+  for conversion.  Remove getXXX Methods.  Do same with Set if not done already.
+  
+- Same as above, but for Properties
+   
+
 - Maybe: See if we can have getElement() use return type of assigned variable
   to determine how to create the object instead of having getXXX methods?
 

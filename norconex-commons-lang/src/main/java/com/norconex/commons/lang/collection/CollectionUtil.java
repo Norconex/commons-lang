@@ -23,6 +23,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.apache.commons.beanutils.ConvertUtilsBean;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.norconex.commons.lang.bean.ExtendedConvertUtilsBean;
@@ -182,7 +183,7 @@ public final class CollectionUtil {
      * useful for collection implementations allowing <code>null</code> entries.
      * @param c a collection
      */
-    public void removeNulls(Collection<?> c) {
+    public static void removeNulls(Collection<?> c) {
         if (c == null) {
             return;
         }
@@ -193,7 +194,7 @@ public final class CollectionUtil {
      * Removes blank strings in the given collection.
      * @param c a string collection
      */
-    public void removeBlanks(Collection<String> c) {
+    public static void removeBlanks(Collection<String> c) {
         if (c == null) {
             return;
         }
@@ -204,7 +205,7 @@ public final class CollectionUtil {
      * Removes empty strings in the given collection.
      * @param c a string collection
      */
-    public void removeEmpties(Collection<String> c) {
+    public static void removeEmpties(Collection<String> c) {
         if (c == null) {
             return;
         }
@@ -212,6 +213,51 @@ public final class CollectionUtil {
     }
 
 
+    /**
+     * Replaces all elements matching the source value with the target
+     * value.
+     * @param c a collection
+     * @param source object to replace
+     * @param target replacement
+     */
+    public static <T> void replaceAll(Collection<T> c, T source, T target) {
+        if (c == null) {
+            return;
+        }
+        CollectionUtils.transform(
+                c, e -> Objects.equals(e, source) ? target : e);
+    }
+
+    /**
+     * Convert <code>null</code> entries to empty strings.
+     * @param c a string collection
+     */
+    public static void nullsToEmpties(Collection<String> c) {
+        if (c == null) {
+            return;
+        }
+        CollectionUtils.transform(c, e -> Objects.equals(e, null) ? "" : e);
+    }
+    /**
+     * Convert empty string entries to <code>null</code>.
+     * @param c a string collection
+     */
+    public static void emptiesToNulls(Collection<String> c) {
+        if (c == null) {
+            return;
+        }
+        CollectionUtils.transform(c, e -> StringUtils.isEmpty(e) ? null : e);
+    }
+    /**
+     * Convert blank string entries to <code>null</code>.
+     * @param c a string collection
+     */
+    public static void blanksToNulls(Collection<String> c) {
+        if (c == null) {
+            return;
+        }
+        CollectionUtils.transform(c, e -> StringUtils.isBlank(e) ? null : e);
+    }
+
     //TODO have a version that accepts a function that returns a string?
-    //TODO have a removeNulls() method and a removeBlanks() method?
 }

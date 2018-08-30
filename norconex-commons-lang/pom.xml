@@ -148,6 +148,12 @@
       <scope>provided</scope>
     </dependency>
 
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>jcl-over-slf4j</artifactId>
+      <version>1.7.25</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>

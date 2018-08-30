@@ -25,6 +25,14 @@ import org.apache.commons.lang3.LocaleUtils;
  * @see ExtendedBeanUtilsBean
  */
 public class LocaleConverter extends AbstractConverter {
+
+    public LocaleConverter() {
+        super();
+    }
+    public LocaleConverter(Object defaultValue) {
+        super(defaultValue);
+    }
+
     @Override
     protected Class<?> getDefaultType() {
         return Locale.class;

@@ -1,19 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE xml>
-<Configuration status="WARN" name="Norconex Commons Lang">
+<Configuration status="warn" name="Norconex Commons Lang">
   <Appenders>
     <Console name="Console" target="SYSTEM_OUT">
       <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
     </Console>
   </Appenders>
   <Loggers>
-    <Logger name="com.norconex.commons.lang" level="INFO" additivity="false">
+  
+    <Logger name="com.norconex.commons.lang" level="info" additivity="false">
       <AppenderRef ref="Console"/>
     </Logger>
-    <Logger name="org.apache" level="WARN" additivity="false">
+    <Logger name="org.apache" level="warn" additivity="false">
       <AppenderRef ref="Console"/>
     </Logger>
-    <Root level="INFO">
+    <!-- 
+    <Logger name="org.apache.commons.beanutils.ConvertUtils" level="trace" additivity="false">
+      <AppenderRef ref="Console"/>
+    </Logger>
+     -->
+    <Root level="info">
       <AppenderRef ref="Console"/>
     </Root>
   </Loggers>

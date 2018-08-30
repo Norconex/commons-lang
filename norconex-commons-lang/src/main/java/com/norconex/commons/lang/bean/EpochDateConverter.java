@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 /**
  * {@link Date} converter.
  * Version of {@link org.apache.commons.beanutils.converters.DateConverter}
- * that uses the EPOCH value for string conversion.  
+ * that uses the EPOCH value for string conversion.
  * @since 2.0.0
  * @see ExtendedBeanUtilsBean
  */
@@ -31,7 +31,14 @@ public class EpochDateConverter extends AbstractConverter {
 
     private static final Logger LOG = LoggerFactory.getLogger(
             EpochDateConverter.class);
-    
+
+    public EpochDateConverter() {
+        super();
+    }
+    public EpochDateConverter(Object defaultValue) {
+        super(defaultValue);
+    }
+
     @Override
     protected Class<?> getDefaultType() {
         return Date.class;

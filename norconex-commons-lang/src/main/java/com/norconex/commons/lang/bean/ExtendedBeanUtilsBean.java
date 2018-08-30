@@ -34,16 +34,14 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.norconex.commons.lang.map.Properties;
-
 /**
- * Extends {@link BeanUtilsBean} to support collections and arrays which
- * can be mapped to both collection or array. Also adds necessary
- * converters to ensure conversion
- * of all data types supported by {@link Properties}.
+ * Extends {@link BeanUtilsBean} to support conversion and mapping of
+ * collections and arrays. Also adds additional converters
+ * thanks to {@link ExtendedConvertUtilsBean}.
  * @author Pascal Essiembre
  * @since 2.0.0
- * @see Properties#storeToBean(Object)
+ * @see ExtendedConvertUtilsBean
+ * @see BeanUtilsBean
  */
 public class ExtendedBeanUtilsBean extends BeanUtilsBean {
 
@@ -92,7 +90,8 @@ public class ExtendedBeanUtilsBean extends BeanUtilsBean {
         if (value instanceof IterableWrapper) {
             return convertIterable((IterableWrapper) value, type);
         }
-        return super.convert(value, type);
+//        return super.convert(value, type);
+        return getConvertUtils().convert(value, type);
     }
 
     public static Class<?> getGenericCollectionType(Method m) {
@@ -126,7 +125,8 @@ public class ExtendedBeanUtilsBean extends BeanUtilsBean {
         Iterator<?> it = w.getSourceIterator();
         while (it.hasNext()) {
             Object obj = it.next();
-            Object convertedObj = super.convert(obj, w.targetObjectType);
+//            Object convertedObj = super.convert(obj, w.targetObjectType);
+            Object convertedObj = convert(obj, w.targetObjectType);
             targetCollection.add(convertedObj);
         }
 

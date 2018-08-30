@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
@@ -86,6 +87,7 @@ import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.XMLFilterImpl;
 import org.xml.sax.helpers.XMLReaderFactory;
 
+import com.norconex.commons.lang.collection.CollectionUtil;
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.time.DurationParser;
 import com.norconex.commons.lang.time.DurationParserException;
@@ -116,8 +118,7 @@ public class XML {
     //TODO add a "getDeprecatedXXX" method that accepts the new name and the
     //deprecated one, and issues a warning
 
-    private static final Logger LOG =
-            LoggerFactory.getLogger(XML.class);
+    private static final Logger LOG = LoggerFactory.getLogger(XML.class);
 
     public static final String W3C_XML_SCHEMA_NS_URI_1_1 =
             "http://www.w3.org/XML/XMLSchema/v1.1";
@@ -683,7 +684,7 @@ public class XML {
         }
     }
 
-    public static boolean exists(Node node, String xpathExpression) {
+    public boolean contains(String xpathExpression) {
         try {
             return newXPathExpression(xpathExpression).evaluate(
                     node, XPathConstants.NODE) != null;
@@ -799,6 +800,86 @@ public class XML {
             }
         }
         return b.toString();
+    }
+
+    /**
+     * Gets a list of the given type after splitting the matching node value(s)
+     * on commas (CSV).
+     * Values are trimmed and blank entries removed before attempting
+     * to convert them to given type.
+     * Commas can have any spaces before or after.
+     * @param xpathExpression XPath expression to the node value(s) to split
+     * @param type target list type
+     * @return list of given type, never <code>null</code>
+     */
+    public <T> List<T> getDelimitedList(String xpathExpression, Class<T> type) {
+        List<String> values =
+                getDelimitedStringList(xpathExpression, (List<String>) null);
+        if (values == null) {
+            return Collections.emptyList();
+        }
+        return CollectionUtil.fromStringList(values, type);
+    }
+    /**
+     * Gets a list of given type after splitting the matching node value(s)
+     * on commas (CSV).
+     * Values are trimmed and blank entries removed before attempting
+     * to convert them to given type.
+     * Commas can have any spaces before or after.
+     * @param xpathExpression XPath expression to the node value(s) to split
+     * @param type target list type
+     * @param defaultValues default values if the split returns
+     *        <code>null</code> or an empty list
+     * @return list of strings
+     */
+    public <T> List<T> getDelimitedList(
+            String xpathExpression, Class<T> type, List<T> defaultValues) {
+        List<String> values =
+                getDelimitedStringList(xpathExpression, (List<String>) null);
+        if (values == null) {
+            return defaultValues;
+        }
+        return CollectionUtil.fromStringList(values, type);
+    }
+    /**
+     * Gets a list of given type after splitting the matching node value(s) with
+     * the given delimiter regular expression.
+     * Values are trimmed and blank entries removed before attempting
+     * to convert them to given type.
+     * @param xpathExpression XPath expression to the node value(s) to split
+     * @param type target list type
+     * @param delimRegex regular expression matching split delimiter
+     * @return list of strings, never <code>null</code>
+     */
+    public <T> List<T> getDelimitedList(
+            String xpathExpression, Class<T> type, String delimRegex) {
+        List<String> values =
+                getDelimitedStringList(xpathExpression, delimRegex, null);
+        if (values == null) {
+            return Collections.emptyList();
+        }
+        return CollectionUtil.fromStringList(values, type);
+    }
+    /**
+     * Gets a list of given type after splitting the matching node value(s) with
+     * the given delimiter regular expression.
+     * Values are trimmed and blank entries removed before attempting
+     * to convert them to given type.
+     * @param xpathExpression XPath expression to the node value(s) to split
+     * @param type target list type
+     * @param delimRegex regular expression matching split delimiter
+     * @param defaultValues default values if the split returns
+     *        <code>null</code> or an empty list
+     * @return list of strings
+     */
+    public <T> List<T> getDelimitedList(String xpathExpression,
+            Class<T> type, String delimRegex, List<T> defaultValues) {
+        List<String> values = getDelimitedStringList(
+                xpathExpression, delimRegex, null);
+        if (values == null) {
+            return defaultValues;
+        }
+        return CollectionUtil.fromStringList(values, type);
     }
 
     private static String getXSDResourcePath(Class<?> clazz) {
@@ -950,6 +1031,39 @@ public class XML {
             list.add(getNodeString(n));
         }
         return list;
+    }
+
+
+    /**
+     * Gets the matching list of elements/attributes, converted from
+     * string to the given type.
+     * @param xpathExpression XPath expression to the node values
+     * @param type target class type of returned list
+     * @return list of given type, never <code>null</code>
+     */
+    public <T> List<T> getList(String xpathExpression, Class<T> type) {
+        List<String> list = getStringList(xpathExpression, null);
+        if (CollectionUtils.isEmpty(list)) {
+            return Collections.emptyList();
+        }
+        return CollectionUtil.fromStringList(list, type);
+    }
+    /**
+     * Gets the matching list of elements/attributes, converted from
+     * string to the given type.
+     * @param xpathExpression XPath expression to the node values
+     * @param type target class type of returned list
+     * @param defaultValues default values if the expression returns
+     *        <code>null</code> or an empty list
+     * @return list of given type
+     */
+    public <T> List<T> getList(
+            String xpathExpression, Class<T> type, List<T> defaultValues) {
+        List<String> list = getStringList(xpathExpression, null);
+        if (CollectionUtils.isEmpty(list)) {
+            return defaultValues;
+        }
+        return CollectionUtil.fromStringList(list, type);
     }
 
     /**
@@ -1463,26 +1577,97 @@ public class XML {
     /**
      * Gets an Enum constant matching one of the constants in the provided
      * Enum class, ignoring case.
-     * @param enumClass target enum class
      * @param xpathExpression XPath expression to the enum value.
+     * @param enumClass target enum class
      * @return an enum value or <code>null</code> if no values are matching.
      */
     public final <E extends Enum<E>> E getEnum(
-            Class<E> enumClass, String xpathExpression) {
-        return getEnum(enumClass, xpathExpression, null);
+            String xpathExpression, Class<E> enumClass) {
+        return getEnum(xpathExpression, enumClass, null);
     }
     /**
      * Gets an Enum constant matching one of the constants in the provided
      * Enum class, ignoring case.
-     * @param enumClass target enum class
      * @param xpathExpression XPath expression to the enum value.
+     * @param enumClass target enum class
      * @param defaultValue defaultValue
      * @return an enum value or default value if no values are matching.
      */
     public final <E extends Enum<E>> E getEnum(
-            Class<E> enumClass, String xpathExpression, E defaultValue) {
+            String xpathExpression, Class<E> enumClass, E defaultValue) {
         Objects.requireNonNull(enumClass, "enumClass must not be null");
-        String value = getString(xpathExpression);
+        return toEnum(getString(xpathExpression), enumClass, defaultValue);
+    }
+
+    /**
+     * Gets a list of enum constants.
+     * Values are trimmed and blank entries removed before attempting
+     * to convert them to the given enum type.
+     * @param xpathExpression XPath expression
+     * @param enumClass target enum class
+     * @param defaultValues default values
+     * @return list of enums
+     */
+    public <E extends Enum<E>> List<E> getEnumList(
+            String xpathExpression, Class<E> enumClass, List<E> defaultValues) {
+        List<String> values =
+                getStringList(xpathExpression, (List<String>) null);
+        if (values == null) {
+            return defaultValues;
+        }
+        return values.stream().map(str ->
+            toEnum(str, enumClass, null)).collect(Collectors.toList());
+    }
+
+    /**
+     * Gets a list of enum constants after splitting the matching node value(s)
+     * on commas (CSV).
+     * Values are trimmed and blank entries removed before attempting
+     * to convert them to the given enum type.
+     * @param xpathExpression XPath expression to the node value(s) to split
+     * @param enumClass target enum class
+     * @param defaultValues default values if the split returns
+     *        <code>null</code> or an empty list
+     * @return list of enums
+     */
+    public <E extends Enum<E>> List<E> getDelimitedEnumList(
+            String xpathExpression, Class<E> enumClass, List<E> defaultValues) {
+        List<String> values =
+                getDelimitedStringList(xpathExpression, (List<String>) null);
+        if (values == null) {
+            return defaultValues;
+        }
+        return values.stream().map(str ->
+            toEnum(str, enumClass, null)).collect(Collectors.toList());
+    }
+
+    /**
+     * Gets a list of enum constants after splitting the matching node
+     * value(s) with the given delimiter regular expression.
+     * Values are trimmed and blank entries removed before attempting
+     * to convert them to given enum type.
+     * @param xpathExpression XPath expression to the node value(s) to split
+     * @param enumClass target enum class
+     * @param delimRegex regular expression matching split delimiter
+     * @param defaultValues default values if the split returns
+     *        <code>null</code> or an empty list
+     * @return list of enums
+     */
+    public <E extends Enum<E>> List<E> getDelimitedEnumList(
+            String xpathExpression, Class<E> enumClass,
+            String delimRegex, List<E> defaultValues) {
+        List<String> values = getDelimitedStringList(
+                xpathExpression, delimRegex, null);
+        if (values == null) {
+            return defaultValues;
+        }
+        return values.stream().map(str ->
+            toEnum(str, enumClass, null)).collect(Collectors.toList());
+    }
+
+    //TODO consider adding enum support to ExtendedConvertUtilsBean
+    private <E extends Enum<E>> E toEnum(
+            String value, Class<E> enumClass, E defaultValue) {
         if (StringUtils.isBlank(value)) {
             return defaultValue;
         }
@@ -1491,6 +1676,7 @@ public class XML {
                 return e;
             }
         }
+        LOG.warn("Invalid enum value for type {}: {}", enumClass, value);
         return defaultValue;
     }
 

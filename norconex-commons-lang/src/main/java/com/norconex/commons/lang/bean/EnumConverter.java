@@ -14,27 +14,26 @@
 */
 package com.norconex.commons.lang.bean;
 
-import java.time.LocalDateTime;
-
 import org.apache.commons.beanutils.converters.AbstractConverter;
 
 /**
- * {@link LocalDateTime} converter.
+ * {@link Enum} converter. Converts enum constants to lowercase strings
+ * and strings can match enum constants without regard to case sensitivity
  * @since 2.0.0
  * @see ExtendedBeanUtilsBean
  */
-public class LocalDateTimeConverter extends AbstractConverter {
+public class EnumConverter extends AbstractConverter {
 
-    public LocalDateTimeConverter() {
+    public EnumConverter() {
         super();
     }
-    public LocalDateTimeConverter(Object defaultValue) {
+    public EnumConverter(Object defaultValue) {
         super(defaultValue);
     }
 
     @Override
     protected Class<?> getDefaultType() {
-        return LocalDateTime.class;
+        return Enum.class;
     }
     @Override
     protected <T> T convertToType(Class<T> type, Object value)
@@ -42,6 +41,14 @@ public class LocalDateTimeConverter extends AbstractConverter {
         if (value == null) {
             return null;
         }
-        return type.cast(LocalDateTime.parse(value.toString()));
+
+        String strValue = value.toString().trim();
+        for (T e : type.getEnumConstants()) {
+            if (((Enum<?>) e).name().equalsIgnoreCase(strValue)) {
+                return type.cast(e);
+            }
+        }
+
+        throw conversionException(type, value);
     }
 }

@@ -768,6 +768,8 @@ public class Properties extends ObservableMap<String, List<String>>
      * Sets one or multiple values as strings replacing existing ones.
      * Setting a single <code>null</code> value or an empty array is
      * the same as calling {@link #remove(Object)} with the same key.
+     * Values are converted to string using converters registered with
+     * {@link ExtendedConvertUtilsBean}.
      * When setting multiple values, <code>null</code> values are converted
      * to empty strings.
      * @param key the key of the value to set
@@ -778,7 +780,11 @@ public class Properties extends ObservableMap<String, List<String>>
         if (CollectionUtils.isEmpty(values)) {
             remove(key);
         }
-        put(key, CollectionUtil.toStringList(values));
+        List<String> list = CollectionUtil.toStringList(values);
+        //TODO benchmark if an issue with long lists to do a separate
+        //iteration for converting nulls
+        CollectionUtil.nullsToEmpties(list);
+        put(key, list);
     }
     /**
      * Adds one or multiple values as strings.
@@ -797,7 +803,11 @@ public class Properties extends ObservableMap<String, List<String>>
         if (list == null) {
             list = new ArrayList<>(values.size());
         }
-        list.addAll(CollectionUtil.toStringList(values));
+        List<String> newList = CollectionUtil.toStringList(values);
+        //TODO benchmark if an issue with long lists to do a separate
+        //iteration for converting nulls
+        CollectionUtil.nullsToEmpties(newList);
+        list.addAll(newList);
         put(key, list);
     }
 
@@ -969,24 +979,6 @@ public class Properties extends ObservableMap<String, List<String>>
     public final void addInt(String key, int... values) {
         add(key, values);
     }
-//    /**
-//     * Sets one or multiple integer values, replacing existing ones.
-//     * @param key the key of the values to set
-//     * @param values the values to set
-//     * @since 2.0.0
-//     */
-//    public final void setInts(String key, List<Integer> values) {
-//        setStrings(key, CollectionUtil.toStringList(values));
-//    }
-//    /**
-//     * Adds one or multiple integer values values.
-//     * @param key the key of the values to set
-//     * @param values the values to set
-//     * @since 2.0.0
-//     */
-//    public final void addInts(String key, List<Integer> values) {
-//        addStrings(key, CollectionUtil.toStringList(values));
-//    }
 
     //--- Double ---------------------------------------------------------------
     /**
