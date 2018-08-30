@@ -22,57 +22,57 @@ import com.norconex.commons.lang.Sleeper;
 
 /**
  * This class is responsible for executing {@link IRetriable}
- * instances.  Upon reaching the maximum number of retries allowed, it 
- * will throw a {@link RetriableException}, wrapping the last exceptions 
- * encountered, if any, to a configurable maximum. 
+ * instances.  Upon reaching the maximum number of retries allowed, it
+ * will throw a {@link RetriableException}, wrapping the last exceptions
+ * encountered, if any, to a configurable maximum.
  * @author Pascal Essiembre
- * @since 1.13.0 (previously "RetriableExecutor" part of 
+ * @since 1.13.0 (previously "RetriableExecutor" part of
  *        <a href="https://www.norconex.com/jef/api/">JEF API</a> 4.0).
  */
 public class Retrier {
 
     private static final Logger LOG = LoggerFactory.getLogger(Retrier.class);
-    
+
     /** Default maximum number of retries. */
     public static final int DEFAULT_MAX_RETRIES = 10;
     /** Default wait time (milliseconds) before making a new attempt. */
     public static final long DEFAULT_RETRY_DELAY = 0;
     /** Default maximum number of exception causes kept. */
     public static final int DEFAULT_MAX_CAUSES_KEPT = 10;
-    
+
     private static final Exception[] EMPTY_EXCEPTIONS = new Exception[] {};
-    
+
     private int maxRetries = DEFAULT_MAX_RETRIES;
     private long retryDelay = DEFAULT_RETRY_DELAY;
     private IExceptionFilter exceptionFilter;
     private int maxCauses = DEFAULT_MAX_CAUSES_KEPT;
 
     /**
-     * Creates a new instance with the default maximum retries and default 
+     * Creates a new instance with the default maximum retries and default
      * retry delay (no delay).
      */
     public Retrier() {
         super();
     }
     /**
-     * Creates a new instance with the default retry delay (no delay). 
+     * Creates a new instance with the default retry delay (no delay).
      * @param maxRetries maximum number of execution retries
      */
     public Retrier(int maxRetries) {
         this.maxRetries = maxRetries;
     }
     /**
-     * Creates a new instance which will retry execution 
+     * Creates a new instance which will retry execution
      * only if the exception thrown by an attempt is accepted by
      * the {@link IExceptionFilter} (up to <code>maxRetries</code>).
      * Uses the default maximum retries and default retry delay.
      * @param exceptionFilter exception filter
-     */    
+     */
     public Retrier(IExceptionFilter exceptionFilter) {
         this.exceptionFilter = exceptionFilter;
     }
     /**
-     * Creates a new instance which will retry execution 
+     * Creates a new instance which will retry execution
      * only if the exception thrown by an attempt is accepted by
      * the {@link IExceptionFilter} (up to <code>maxRetries</code>).
      * @param exceptionFilter exception filter
@@ -85,7 +85,7 @@ public class Retrier {
     }
 
     /**
-     * Gets the maximum number of retries (the initial run does not count as 
+     * Gets the maximum number of retries (the initial run does not count as
      * a retry).
      * @return maximum number of retries
      */
@@ -93,7 +93,7 @@ public class Retrier {
         return maxRetries;
     }
     /**
-     * Sets the maximum number of retries (the initial run does not count as 
+     * Sets the maximum number of retries (the initial run does not count as
      * a retry).
      * @param maxRetries maximum number of retries
      * @return this instance
@@ -162,7 +162,7 @@ public class Retrier {
      */
     public <T> T execute(IRetriable<T> retriable) throws RetriableException {
         int attemptCount = 0;
-        CircularFifoQueue<Exception> exceptions = 
+        CircularFifoQueue<Exception> exceptions =
                 new CircularFifoQueue<>(maxCauses);
         while (attemptCount <= maxRetries) {
             try {
@@ -172,21 +172,21 @@ public class Retrier {
                 if (exceptionFilter != null && !exceptionFilter.retry(e)) {
                     throw new RetriableException(
                             "Encountered an exception preventing "
-                          + "execution retry.", 
+                          + "execution retry.",
                           exceptions.toArray(EMPTY_EXCEPTIONS));
                 }
             }
             attemptCount++;
             if (attemptCount < maxRetries) {
-                LOG.warn("Execution failed, retrying ("
-                        + attemptCount + " of " + maxRetries
-                        + " maximum retries).", 
+                LOG.warn("Execution failed, retrying "
+                        + "({} of {} maximum retries).",
+                        attemptCount, maxRetries,
                         exceptions.get(exceptions.size() -1));
                 Sleeper.sleepMillis(retryDelay);
             }
         }
         throw new RetriableException(
-                "Execution failed, maximum number of retries reached.", 
+                "Execution failed, maximum number of retries reached.",
                 exceptions.toArray(EMPTY_EXCEPTIONS));
     }
 }
