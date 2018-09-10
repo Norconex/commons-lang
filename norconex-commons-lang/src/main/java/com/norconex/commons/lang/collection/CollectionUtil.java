@@ -240,6 +240,7 @@ public final class CollectionUtil {
      * @param c a collection
      * @param source object to replace
      * @param target replacement
+     * @param <T> elements type
      */
     public static <T> void replaceAll(Collection<T> c, T source, T target) {
         if (c == null) {
