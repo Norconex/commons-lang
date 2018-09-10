@@ -1,11 +1,15 @@
 TODO:
 ==============
 
-- Add XML.get(String xpath, Class<T> type) and use ExtendedBeanUtils 
-  for conversion.  Remove getXXX Methods.  Do same with Set if not done already.
+- Add XML.getValue(String xpath, Class<T> type) and use Convert 
+  for conversion.  Remove getXXX Methods?  Do same with Set if not done already.
   
 - Same as above, but for Properties
-   
+
+- Make method naming more consistent between Properties and XML.   
+
+- Make Properties and XML take a IConverter as constructor agreement, but 
+  default to Converter static instance.
 
 - Maybe: See if we can have getElement() use return type of assigned variable
   to determine how to create the object instead of having getXXX methods?

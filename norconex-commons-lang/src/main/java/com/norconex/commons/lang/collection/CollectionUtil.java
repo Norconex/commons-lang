@@ -14,6 +14,7 @@
  */
 package com.norconex.commons.lang.collection;
 
+import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -22,11 +23,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import org.apache.commons.beanutils.ConvertUtilsBean;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import com.norconex.commons.lang.bean.ExtendedConvertUtilsBean;
+import com.norconex.commons.lang.convert.Converter;
 
 /**
  * Collection-related utility methods.
@@ -35,10 +35,21 @@ import com.norconex.commons.lang.bean.ExtendedConvertUtilsBean;
  */
 public final class CollectionUtil {
 
-    private static final ConvertUtilsBean CUB = new ExtendedConvertUtilsBean();
-
     private CollectionUtil() {
         super();
+    }
+
+    public static Object toArray(Collection<?> c, Class<?> arrayType) {
+        if (c == null) {
+            return null;
+        }
+
+        Object array = Array.newInstance(arrayType, c.size());
+        int i = 0;
+        for (Object t : c) {
+            Array.set(array, i++, t);
+        }
+        return array;
     }
 
     /**
@@ -152,29 +163,28 @@ public final class CollectionUtil {
      * @param values list to convert to a list of strings
      * @return list of strings
      */
-    public static List<String> toStringList(List<?> values) {
+    public static List<String> toStringList(Collection<?> values) {
         if (values == null) {
             return Collections.emptyList();
         }
-
-        return values.stream().map(CUB::convert).collect(Collectors.toList());
+        return values.stream().map(
+                Converter::convert).collect(Collectors.toList());
     }
     /**
      * Converts a list of strings to a list of objects matching
      * the return type.
-     * If the supplied list is <code>null</code>, an empty string list
+     * If the supplied list is <code>null</code>, an empty list
      * is returned.
-     * @param values list to convert to a list of strings
+     * @param values list to convert to a list of the given type
      * @param targetClass target class
-     * @return list of strings
+     * @return list
      */
-    @SuppressWarnings("unchecked")
-    public static <T> List<T> fromStringList(
+    public static <T> List<T> toTypeList(
             List<String> values, Class<T> targetClass) {
         if (values == null) {
             return Collections.emptyList();
         }
-        return values.stream().map(str -> (T) CUB.convert(
+        return values.stream().map(str -> Converter.convert(
                 str, targetClass)).collect(Collectors.toList());
     }
 

@@ -97,7 +97,7 @@ public class XMLTest {
         xml1.addElement("elmBlankAttr", " \n ").setAttribute("attr", "exists");
 
         String xmlStr = xml1.toString();
-        LOG.info("XML is: " + xmlStr);
+        LOG.debug("XML is: " + xmlStr);
 
         XML xml2 = new XML(xmlStr);
 

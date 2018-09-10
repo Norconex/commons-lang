@@ -12,36 +12,23 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.norconex.commons.lang.bean;
+package com.norconex.commons.lang.convert;
 
 import java.time.LocalDateTime;
-
-import org.apache.commons.beanutils.converters.AbstractConverter;
 
 /**
  * {@link LocalDateTime} converter.
  * @since 2.0.0
- * @see ExtendedBeanUtilsBean
  */
 public class LocalDateTimeConverter extends AbstractConverter {
 
-    public LocalDateTimeConverter() {
-        super();
-    }
-    public LocalDateTimeConverter(Object defaultValue) {
-        super(defaultValue);
+    @Override
+    protected String nullSafeToString(Object object) {
+        return object.toString();
     }
 
     @Override
-    protected Class<?> getDefaultType() {
-        return LocalDateTime.class;
-    }
-    @Override
-    protected <T> T convertToType(Class<T> type, Object value)
-            throws Throwable {
-        if (value == null) {
-            return null;
-        }
-        return type.cast(LocalDateTime.parse(value.toString()));
+    protected <T> T nullSafeToType(String value, Class<T> type) {
+        return type.cast(LocalDateTime.parse(value.trim()));
     }
 }

@@ -89,6 +89,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
 
 import com.norconex.commons.lang.collection.CollectionUtil;
 import com.norconex.commons.lang.config.IXMLConfigurable;
+import com.norconex.commons.lang.convert.Converter;
 import com.norconex.commons.lang.time.DurationParser;
 import com.norconex.commons.lang.time.DurationParserException;
 import com.norconex.commons.lang.xml.XMLValidationError.Severity;
@@ -122,17 +123,6 @@ public class XML {
 
     public static final String W3C_XML_SCHEMA_NS_URI_1_1 =
             "http://www.w3.org/XML/XMLSchema/v1.1";
-
-    private static final Class<?>[] TOSTRINGABLE = new Class[] {
-            String.class,
-            Integer.class,
-            Long.class,
-            Float.class,
-            Double.class,
-            File.class,
-            Path.class,
-            Locale.class
-    };
 
     private final Node node;
 
@@ -213,20 +203,33 @@ public class XML {
         if (obj == null) {
             return;
         }
-        if (obj instanceof Enum) {
-            setTextContent(((Enum<?>) obj).name().toLowerCase());
-        } else if (obj instanceof Class) {
+
+        if (obj instanceof Class) {
             setAttribute("class", ((Class<?>) obj).getCanonicalName());
-        } else if (obj instanceof Duration) {
-            setTextContent(((Duration) obj).toMillis());
-        } else if (isToStringable(obj)) {
-            setTextContent(Objects.toString(obj, null));
+        } else if (Converter.defaultInstance().isConvertible(obj.getClass())) {
+            setTextContent(Converter.convert(obj));
         } else {
             setAttribute("class", obj.getClass().getCanonicalName());
             if (obj instanceof IXMLConfigurable) {
                 ((IXMLConfigurable) obj).saveToXML(this);
             }
         }
+
+
+//        if (obj instanceof Enum) {
+//            setTextContent(((Enum<?>) obj).name().toLowerCase());
+//        } else if (obj instanceof Class) {
+//            setAttribute("class", ((Class<?>) obj).getCanonicalName());
+//        } else if (obj instanceof Duration) {
+//            setTextContent(((Duration) obj).toMillis());
+//        } else if (isToStringable(obj)) {
+//            setTextContent(Objects.toString(obj, null));
+//        } else {
+//            setAttribute("class", obj.getClass().getCanonicalName());
+//            if (obj instanceof IXMLConfigurable) {
+//                ((IXMLConfigurable) obj).saveToXML(this);
+//            }
+//        }
     }
 
     private static String resolveXML(String xml) {
@@ -694,9 +697,6 @@ public class XML {
         }
     }
 
-    //TODO implement equivalent getter methods for same types
-    // defined in Properties and/or EnhancedXMLStreamWriter
-
     /**
      * Gets a list of strings after splitting the matching node value(s)
      * on commas (CSV).
@@ -818,7 +818,7 @@ public class XML {
         if (values == null) {
             return Collections.emptyList();
         }
-        return CollectionUtil.fromStringList(values, type);
+        return CollectionUtil.toTypeList(values, type);
     }
     /**
      * Gets a list of given type after splitting the matching node value(s)
@@ -839,7 +839,7 @@ public class XML {
         if (values == null) {
             return defaultValues;
         }
-        return CollectionUtil.fromStringList(values, type);
+        return CollectionUtil.toTypeList(values, type);
     }
     /**
      * Gets a list of given type after splitting the matching node value(s) with
@@ -858,7 +858,7 @@ public class XML {
         if (values == null) {
             return Collections.emptyList();
         }
-        return CollectionUtil.fromStringList(values, type);
+        return CollectionUtil.toTypeList(values, type);
     }
     /**
      * Gets a list of given type after splitting the matching node value(s) with
@@ -879,7 +879,7 @@ public class XML {
         if (values == null) {
             return defaultValues;
         }
-        return CollectionUtil.fromStringList(values, type);
+        return CollectionUtil.toTypeList(values, type);
     }
 
     private static String getXSDResourcePath(Class<?> clazz) {
@@ -1046,7 +1046,7 @@ public class XML {
         if (CollectionUtils.isEmpty(list)) {
             return Collections.emptyList();
         }
-        return CollectionUtil.fromStringList(list, type);
+        return CollectionUtil.toTypeList(list, type);
     }
     /**
      * Gets the matching list of elements/attributes, converted from
@@ -1063,7 +1063,7 @@ public class XML {
         if (CollectionUtils.isEmpty(list)) {
             return defaultValues;
         }
-        return CollectionUtil.fromStringList(list, type);
+        return CollectionUtil.toTypeList(list, type);
     }
 
     /**
@@ -1110,6 +1110,7 @@ public class XML {
         return getInteger(xpathExpression, null);
     }
     public Integer getInteger(String xpathExpression, Integer defaultValue) {
+        //return Converter.convert //TODO call get(..) instead
         String val = getString(xpathExpression);
         return val == null ? defaultValue : Integer.parseInt(val);
     }
@@ -1153,7 +1154,6 @@ public class XML {
         String val = getString(xpathExpression);
         return val == null ? defaultValue : LocaleUtils.toLocale(val);
     }
-
 
     /**
      * Gets a duration in milliseconds which can exists as a numerical
@@ -1337,14 +1337,14 @@ public class XML {
         return addElement(name, join(delim, values));
     }
 
-    private boolean isToStringable(Object obj) {
-        for (Class<?> cls : TOSTRINGABLE) {
-            if (cls.isInstance(obj)) {
-                return true;
-            }
-        }
-        return false;
-    }
+//    private boolean isToStringable(Object obj) {
+//        for (Class<?> cls : TOSTRINGABLE) {
+//            if (cls.isInstance(obj)) {
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
 
     /**
      * Sets an attribute on this XML element, converting the supplied object
@@ -1360,10 +1360,9 @@ public class XML {
         Element el = (Element) node;
         if (value == null) {
             el.removeAttribute(name);
-        } else if (value instanceof Enum) {
-            el.setAttribute(name, ((Enum<?>) value).name().toLowerCase());
-        } else if (value instanceof Duration) {
-            el.setAttribute(name, Long.toString(((Duration) value).toMillis()));
+        } else if (Converter.defaultInstance().isConvertible(
+                value.getClass())) {
+            el.setAttribute(name, Converter.convert(value));
         } else {
             el.setAttribute(name, value.toString());
         }
@@ -1665,7 +1664,6 @@ public class XML {
             toEnum(str, enumClass, null)).collect(Collectors.toList());
     }
 
-    //TODO consider adding enum support to ExtendedConvertUtilsBean
     private <E extends Enum<E>> E toEnum(
             String value, Class<E> enumClass, E defaultValue) {
         if (StringUtils.isBlank(value)) {

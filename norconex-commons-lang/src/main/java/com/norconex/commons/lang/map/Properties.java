@@ -26,12 +26,10 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.lang.reflect.Array;
-import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -41,16 +39,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
-import org.apache.commons.beanutils.BeanUtilsBean;
-import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.beanutils.PropertyUtilsBean;
-import org.apache.commons.beanutils.SuppressPropertiesBeanIntrospector;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.set.ListOrderedSet;
 import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.LocaleUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
@@ -60,9 +55,11 @@ import org.json.JSONTokener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.norconex.commons.lang.bean.ExtendedBeanUtilsBean;
-import com.norconex.commons.lang.bean.ExtendedConvertUtilsBean;
+import com.norconex.commons.lang.bean.BeanException;
+import com.norconex.commons.lang.bean.BeanUtil;
 import com.norconex.commons.lang.collection.CollectionUtil;
+import com.norconex.commons.lang.convert.Converter;
+import com.norconex.commons.lang.convert.ConverterException;
 
 /**
  * <p>This class is a enhanced version of {@link java.util.Properties}
@@ -94,7 +91,6 @@ import com.norconex.commons.lang.collection.CollectionUtil;
  * <p>Upon encountering a problem in parsing a value to
  * its desired type, a {@link PropertiesException} is thrown.</p>
  * @author Pascal Essiembre
- * @see ExtendedConvertUtilsBean
  */
 public class Properties extends ObservableMap<String, List<String>>
         implements Serializable {
@@ -118,9 +114,6 @@ public class Properties extends ObservableMap<String, List<String>>
 
     //TODO still support this?
     private final boolean caseInsensitiveKeys;
-
-    private final PropertyUtilsBean propertyUtilsBean;
-    private final BeanUtilsBean beanUtilsBean;
 
     /**
      * Create a new instance with case-sensitive keys.
@@ -167,14 +160,6 @@ public class Properties extends ObservableMap<String, List<String>>
             Map<String, List<String>> map, boolean caseInsensitiveKeys) {
         super(map);
         this.caseInsensitiveKeys = caseInsensitiveKeys;
-
-        //--- PropertyUtilsBean ---
-        // Make sure objects needing more than "toString" are handled in
-        // loadFromMap(Map<?, ?> map) {
-        this.propertyUtilsBean = new PropertyUtilsBean();
-        this.propertyUtilsBean.addBeanIntrospector(
-                SuppressPropertiesBeanIntrospector.SUPPRESS_CLASS);
-        this.beanUtilsBean = new ExtendedBeanUtilsBean();
     }
 
     /**
@@ -414,30 +399,36 @@ public class Properties extends ObservableMap<String, List<String>>
         if (bean == null) {
             return;
         }
-        try {
-            for (Entry<String, List<String>> it : entrySet()) {
-                String property = it.getKey();
-                List<String> values = it.getValue();
-                if (property == null || values.isEmpty()
-                        || !PropertyUtils.isWriteable(bean, property)) {
-                    LOG.debug("Property is not writable (no setter?): {}",
-                            property);
-                    continue;
-                }
-
-                Class<?> type = PropertyUtils.getPropertyType(bean, property);
-                Object value = values;
-
-                if (!type.isArray() && !Iterable.class.isAssignableFrom(type)) {
-                    value = values.get(0);
-                }
-
-                beanUtilsBean.copyProperty(bean, property, value);
+        for (Entry<String, List<String>> it : entrySet()) {
+            String property = it.getKey();
+            List<String> values = it.getValue();
+            if (property == null || values.isEmpty()
+                    || !BeanUtil.isSettable(bean, property)) {
+                LOG.debug("Property is not writable (no setter?): {}",
+                        property);
+                continue;
             }
-        } catch (IllegalAccessException | InvocationTargetException
-                | NoSuchMethodException e) {
-            throw new PropertiesException(
-                    "Could not store Properties into given bean.", e);
+
+            Object arg = null;
+            Class<?> targetType = BeanUtil.getType(bean, property);
+            // Array
+            if (targetType.isArray()) {
+                Class<?> arrayType = targetType.getComponentType();
+                List<?> listType = Converter.convert(values, arrayType);
+                arg = CollectionUtil.toArray(listType, arrayType);
+            } else if (List.class.isAssignableFrom(targetType)) {
+                Class<?> listType =
+                        BeanUtil.getGenericType(bean.getClass(), property);
+                arg = CollectionUtil.toTypeList(values, listType);
+            } else if (Set.class.isAssignableFrom(targetType)) {
+                Class<?> listType =
+                        BeanUtil.getGenericType(bean.getClass(), property);
+                arg = ListOrderedSet.listOrderedSet(
+                        CollectionUtil.toTypeList(values, listType));
+            } else {
+                arg = Converter.convert(values.get(0), targetType);
+            }
+            BeanUtil.setValue(bean, property, arg);
         }
     }
 
@@ -497,10 +488,10 @@ public class Properties extends ObservableMap<String, List<String>>
                     it = (Iterable<?>) valObj;
                 }
                 if (it == null) {
-                    addString(key, toString(valObj));
+                    add(key, toString(valObj));
                 } else {
                     for (Object val : it) {
-                        addString(key, toString(val));
+                        add(key, toString(val));
                     }
                 }
             }
@@ -650,7 +641,7 @@ public class Properties extends ObservableMap<String, List<String>>
 
         for (Entry<Object, Object> entry : p.entrySet()) {
             if (entry.getKey() != null) {
-                addString(entry.getKey().toString(),
+                add(entry.getKey().toString(),
                         StringUtils.splitByWholeSeparator(
                                 Objects.toString(entry.getValue(), null), sep));
             }
@@ -688,7 +679,7 @@ public class Properties extends ObservableMap<String, List<String>>
             JSONArray array = json.getJSONArray(key);
             for (int i = 0; i < array.length(); i++) {
                 String val = array.getString(i);
-                addString(key, val);
+                add(key, val);
             }
         }
     }
@@ -704,9 +695,8 @@ public class Properties extends ObservableMap<String, List<String>>
             return;
         }
         try {
-            loadFromMap(propertyUtilsBean.describe(bean));
-        } catch (IllegalAccessException | InvocationTargetException
-                | NoSuchMethodException e) {
+            loadFromMap(BeanUtil.toMap(bean));
+        } catch (BeanException e) {
             throw new PropertiesException(
                     "Could not load Properties from given bean.", e);
         }
@@ -721,20 +711,38 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return value
      * @since 2.0.0
      */
-    @SuppressWarnings("unchecked")
     public final <T> T getValue(String key, Class<T> type) {
-        return (T) beanUtilsBean.getConvertUtils().convert(
-                getString(key), type);
+        return getValue(key, type, null);
     }
     /**
-     * Gets a list of values, with its element converted to the given type.
+     * Gets a single value, converted to the given type.
+     * @param key the key of the value to get
+     * @param type target class of value
+     * @param defaultValue default value if key has no value.
+     * @return value
+     * @since 2.0.0
+     */
+    public final <T> T getValue(String key, Class<T> type, T defaultValue) {
+        try {
+            String value = getString(key);
+            if (StringUtils.isEmpty(value)) {
+                return defaultValue;
+            }
+            return Converter.convert(value, type, defaultValue);
+        } catch (ConverterException e) {
+            throw new PropertiesException("Could not convert '"
+                    + key + "' value to " + type.getSimpleName(), e);
+        }
+    }
+    /**
+     * Gets a list of values, with its elements converted to the given type.
      * @param key the key of the values to get
      * @param type target class of values
      * @return value list
      * @since 2.0.0
      */
-    public final <T> List<T> getList(String key, Class<T> type) {
-        return CollectionUtil.fromStringList(getStrings(key), type);
+    public final <T> List<T> getValues(String key, Class<T> type) {
+        return CollectionUtil.toTypeList(getStrings(key), type);
     }
 
     /**
@@ -768,8 +776,6 @@ public class Properties extends ObservableMap<String, List<String>>
      * Sets one or multiple values as strings replacing existing ones.
      * Setting a single <code>null</code> value or an empty array is
      * the same as calling {@link #remove(Object)} with the same key.
-     * Values are converted to string using converters registered with
-     * {@link ExtendedConvertUtilsBean}.
      * When setting multiple values, <code>null</code> values are converted
      * to empty strings.
      * @param key the key of the value to set
@@ -873,42 +879,6 @@ public class Properties extends ObservableMap<String, List<String>>
     public final void addString(String key, String... values) {
         add(key, values);
     }
-//    /**
-//     * Sets one or multiple string values replacing existing ones.
-//     * Setting a single <code>null</code> value or an empty string array is
-//     * the same as calling {@link #remove(Object)} with the same key.
-//     * When setting multiple values, <code>null</code> values are converted
-//     * to blank strings.
-//     * @param key the key of the value to set
-//     * @param values the values to set
-//     * @since 2.0.0
-//     */
-//    public final void setStrings(String key, List<String> values) {
-//        if (CollectionUtils.isEmpty(values)) {
-//            remove(key);
-//        }
-//        put(key, values);
-//    }
-//    /**
-//     * Adds one or multiple string values.
-//     * Adding a single <code>null</code> value has no effect.
-//     * When adding multiple values, <code>null</code> values are converted
-//     * to blank strings.
-//     * @param key the key of the value to set
-//     * @param values the values to set
-//     * @since 2.0.0
-//     */
-//    public final void addStrings(String key, List<String> values) {
-//        if (CollectionUtils.isEmpty(values)) {
-//            return;
-//        }
-//        List<String> list = get(key);
-//        if (list == null) {
-//            list = new ArrayList<>();
-//        }
-//        list.addAll(values);
-//        put(key, list);
-//    }
 
     //--- Integer --------------------------------------------------------------
     /**
@@ -916,13 +886,8 @@ public class Properties extends ObservableMap<String, List<String>>
      * @param key property key
      * @return the value
      */
-    public final int getInt(String key) {
-        try {
-            return Integer.parseInt(getString(key));
-        } catch (NumberFormatException e) {
-            throw createTypedException(
-                    "Could not parse integer value.", key, getString(key), e);
-        }
+    public final Integer getInteger(String key) {
+        return getValue(key, Integer.TYPE);
     }
     /**
      * Gets value as an integer.
@@ -930,34 +895,16 @@ public class Properties extends ObservableMap<String, List<String>>
      * @param defaultValue default value to return when original value is null.
      * @return the value
      */
-    public final int getInt(String key, int defaultValue) {
-        String value = getString(key, Integer.toString(defaultValue));
-        try {
-            return Integer.parseInt(value);
-        } catch (NumberFormatException e) {
-            throw createTypedException(
-                    "Could not parse integer value.", key, value, e);
-        }
+    public final Integer getInteger(String key, Integer defaultValue) {
+        return getValue(key, Integer.TYPE, defaultValue);
     }
     /**
      * Gets values as a list of integers.
      * @param key property key
      * @return the values
      */
-    public final List<Integer> getInts(String key) {
-        List<String> values = getStrings(key);
-        String errVal = null;
-        try {
-            List<Integer> ints = new ArrayList<>(values.size());
-            for (String value : values) {
-                errVal = value;
-                ints.add(Integer.parseInt(value));
-            }
-            return ints;
-        } catch (NumberFormatException e) {
-            throw createTypedException(
-                    "Could not parse integer value.", key, errVal, e);
-        }
+    public final List<Integer> getIntegers(String key) {
+        return getValues(key, Integer.class);
     }
     /**
      * Sets one or multiple integer values, replacing existing ones.
@@ -986,13 +933,8 @@ public class Properties extends ObservableMap<String, List<String>>
      * @param key property key
      * @return the value
      */
-    public final double getDouble(String key) {
-        try {
-            return Double.parseDouble(getString(key));
-        } catch (NumberFormatException e) {
-            throw createTypedException(
-                    "Could not parse double value.", key, getString(key), e);
-        }
+    public final Double getDouble(String key) {
+        return getValue(key, Double.class);
     }
     /**
      * Gets value as a double.
@@ -1000,14 +942,8 @@ public class Properties extends ObservableMap<String, List<String>>
      * @param defaultValue default value to return when original value is null.
      * @return the value
      */
-    public final double getDouble(String key, double defaultValue) {
-        String value = getString(key, Double.toString(defaultValue));
-        try {
-            return Double.parseDouble(value);
-        } catch (NumberFormatException e) {
-            throw createTypedException(
-                    "Could not parse double value.", key, value, e);
-        }
+    public final Double getDouble(String key, Double defaultValue) {
+        return getValue(key, Double.class, defaultValue);
     }
     /**
      * Gets values as a list of doubles.
@@ -1015,19 +951,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the values
      */
     public final List<Double> getDoubles(String key) {
-        List<String> values = getStrings(key);
-        String errVal = null;
-        try {
-            List<Double> list = new ArrayList<>(values.size());
-            for (String value : values) {
-                errVal = value;
-                list.add(Double.parseDouble(value));
-            }
-            return list;
-        } catch (NumberFormatException e) {
-            throw createTypedException(
-                    "Could not parse double value.", key, errVal, e);
-        }
+        return getValues(key, Double.class);
     }
     /**
      * Sets one or multiple double values, replacing existing ones.
@@ -1056,13 +980,8 @@ public class Properties extends ObservableMap<String, List<String>>
      * @param key property key
      * @return the value
      */
-    public final long getLong(String key) {
-        try {
-            return Long.parseLong(getString(key));
-        } catch (NumberFormatException e) {
-            throw createTypedException(
-                    "Could not parse long value.", key, getString(key), e);
-        }
+    public final Long getLong(String key) {
+        return getValue(key, Long.class);
     }
     /**
      * Gets value as a long.
@@ -1070,14 +989,8 @@ public class Properties extends ObservableMap<String, List<String>>
      * @param defaultValue default value to return when original value is null.
      * @return the value
      */
-    public final long getLong(String key, long defaultValue) {
-        String value = getString(key, Long.toString(defaultValue));
-        try {
-            return Long.parseLong(value);
-        } catch (NumberFormatException e) {
-            throw createTypedException(
-                    "Could not parse long value.", key, value, e);
-        }
+    public final Long getLong(String key, Long defaultValue) {
+        return getValue(key, Long.class, defaultValue);
     }
     /**
      * Gets values as a list of longs.
@@ -1085,19 +998,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the values
      */
     public final List<Long> getLongs(String key) {
-        List<String> values = getStrings(key);
-        String errVal = null;
-        try {
-            List<Long> list = new ArrayList<>(values.size());
-            for (String value : values) {
-                errVal = value;
-                list.add(Long.parseLong(value));
-            }
-            return list;
-        } catch (NumberFormatException e) {
-            throw createTypedException(
-                    "Could not parse long value.", key, errVal, e);
-        }
+        return getValues(key, Long.class);
     }
     /**
      * Sets one or multiple long values, replacing existing ones.
@@ -1119,26 +1020,6 @@ public class Properties extends ObservableMap<String, List<String>>
     public final void addLong(String key, long... values) {
         add(key, values);
     }
-//    /**
-//     * Sets one or multiple long values, replacing existing ones.
-//     * @param key the key of the values to set
-//     * @param values the values to set
-//     * @since 2.0.0
-//     */
-//    public final void setLongs(String key, List<Long> values) {
-//        setStrings(key, CollectionUtil.toStringList(values));
-//    }
-//    /**
-//     * Add one or multiple long values.
-//     * @param key the key of the values to set
-//     * @param values the values to set
-//     * @since 2.0.0
-//     */
-//    public final void addLongs(String key, List<Long> values) {
-//        addStrings(key, CollectionUtil.toStringList(values));
-//    }
-
-
 
 
     //--- Float ----------------------------------------------------------------
@@ -1147,13 +1028,8 @@ public class Properties extends ObservableMap<String, List<String>>
      * @param key property key
      * @return the value
      */
-    public final float getFloat(String key) {
-        try {
-            return Float.parseFloat(getString(key));
-        } catch (NumberFormatException e) {
-            throw createTypedException(
-                    "Could not parse float value.", key, getString(key), e);
-        }
+    public final Float getFloat(String key) {
+        return getValue(key, Float.class);
     }
     /**
      * Gets value as a float.
@@ -1161,14 +1037,8 @@ public class Properties extends ObservableMap<String, List<String>>
      * @param defaultValue default value to return when original value is null.
      * @return the value
      */
-    public final float getFloat(String key, float defaultValue) {
-        String value = getString(key, Float.toString(defaultValue));
-        try {
-            return Float.parseFloat(value);
-        } catch (NumberFormatException e) {
-            throw createTypedException(
-                    "Could not parse float value.", key, value, e);
-        }
+    public final Float getFloat(String key, Float defaultValue) {
+        return getValue(key, Float.class, defaultValue);
     }
     /**
      * Gets values as a list of floats.
@@ -1176,19 +1046,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the values
      */
     public final List<Float> getFloats(String key) {
-        List<String> values = getStrings(key);
-        String errVal = null;
-        try {
-            List<Float> list = new ArrayList<>(values.size());
-            for (String value : values) {
-                errVal = value;
-                list.add(Float.parseFloat(value));
-            }
-            return list;
-        } catch (NumberFormatException e) {
-            throw createTypedException(
-                    "Could not parse float value.", key, errVal, e);
-        }
+        return getValues(key, Float.class);
     }
     /**
      * Sets one or multiple float values, replacing existing ones.
@@ -1218,16 +1076,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the value
      */
     public final BigDecimal getBigDecimal(String key) {
-        String value = getString(key);
-        if (value == null || value.trim().length() == 0) {
-            return null;
-        }
-        try {
-            return new BigDecimal(value);
-        } catch (NumberFormatException e) {
-            throw createTypedException(
-                    "Could not parse BigDecimal value.", key, value, e);
-        }
+        return getValue(key, BigDecimal.class);
     }
     /**
      * Gets value as a BigDecimal.
@@ -1236,7 +1085,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the value
      */
     public final BigDecimal getBigDecimal(String key, BigDecimal defaultValue) {
-        return ObjectUtils.defaultIfNull(getBigDecimal(key), defaultValue);
+        return getValue(key, BigDecimal.class, defaultValue);
     }
     /**
      * Gets values as a list of BigDecimals.
@@ -1244,19 +1093,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the values
      */
     public final List<BigDecimal> getBigDecimals(String key) {
-        List<String> values = getStrings(key);
-        String errVal = null;
-        try {
-            List<BigDecimal> list = new ArrayList<>(values.size());
-            for (String value : values) {
-                errVal = value;
-                list.add(new BigDecimal(value));
-            }
-            return list;
-        } catch (NumberFormatException e) {
-            throw createTypedException(
-                    "Could not parse BigDecimal value.", key, errVal, e);
-        }
+        return getValues(key, BigDecimal.class);
     }
     /**
      * Sets one or multiple BigDecimal values, replacing existing ones.
@@ -1288,16 +1125,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @since 2.0.0
      */
     public final LocalDateTime getLocalDateTime(String key) {
-        String value = getString(key);
-        if (StringUtils.isBlank(value)) {
-            return null;
-        }
-        try {
-            return LocalDateTime.parse(value);
-        } catch (DateTimeParseException e) {
-            throw createTypedException(
-                    "Could not parse LocalDateTime value.", key, value, e);
-        }
+        return getValue(key, LocalDateTime.class);
     }
     /**
      * Gets value as a local date-time. The date must be a valid date-time
@@ -1309,7 +1137,7 @@ public class Properties extends ObservableMap<String, List<String>>
      */
     public final LocalDateTime getLocalDateTime(
             String key, LocalDateTime defaultValue) {
-        return ObjectUtils.defaultIfNull(getLocalDateTime(key), defaultValue);
+        return getValue(key, LocalDateTime.class, defaultValue);
     }
     /**
      * Gets values as a list of local date-times. Each date must be a valid
@@ -1319,19 +1147,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @since 2.0.0
      */
     public final List<LocalDateTime> getLocalDateTimes(String key) {
-        List<String> values = getStrings(key);
-        String errVal = null;
-        try {
-            List<LocalDateTime> list = new ArrayList<>(values.size());
-            for (String value : values) {
-                errVal = value;
-                list.add(LocalDateTime.parse(value));
-            }
-            return list;
-        } catch (DateTimeParseException e) {
-            throw createTypedException(
-                    "Could not parse LocalDateTime value.", key, errVal, e);
-        }
+        return getValues(key, LocalDateTime.class);
     }
 
     //--- Date -----------------------------------------------------------------
@@ -1341,16 +1157,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the value
      */
     public final Date getDate(String key) {
-        String value = getString(key);
-        if (StringUtils.isBlank(value)) {
-            return null;
-        }
-        try {
-            return new Date(Long.parseLong(value));
-        } catch (NumberFormatException e) {
-            throw createTypedException(
-                    "Could not parse Date value.", key, value, e);
-        }
+        return getValue(key, Date.class);
     }
     /**
      * Gets value as a date.
@@ -1359,7 +1166,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the value
      */
     public final Date getDate(String key, Date defaultValue) {
-        return ObjectUtils.defaultIfNull(getDate(key), defaultValue);
+        return getValue(key, Date.class, defaultValue);
     }
     /**
      * Gets values as a list of dates.
@@ -1367,19 +1174,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the values
      */
     public final List<Date> getDates(String key) {
-        List<String> values = getStrings(key);
-        String errVal = null;
-        try {
-            List<Date> list = new ArrayList<>(values.size());
-            for (String value : values) {
-                errVal = value;
-                list.add(new Date(Long.parseLong(value)));
-            }
-            return list;
-        } catch (NumberFormatException e) {
-            throw createTypedException(
-                    "Could not parse Date value.", key, errVal, e);
-        }
+        return getValues(key, Date.class);
     }
     /**
      * Sets one or multiple date values, replacing existing ones.
@@ -1411,8 +1206,8 @@ public class Properties extends ObservableMap<String, List<String>>
      * @param key property key
      * @return the value
      */
-    public final boolean getBoolean(String key) {
-        return Boolean.parseBoolean(getString(key));
+    public final Boolean getBoolean(String key) {
+        return getValue(key, Boolean.class);
     }
     /**
      * Gets value as a boolean. The underlying string value matching
@@ -1424,8 +1219,8 @@ public class Properties extends ObservableMap<String, List<String>>
      * @param defaultValue default value to return when original value is null.
      * @return the value
      */
-    public final boolean getBoolean(String key, boolean defaultValue) {
-        return Boolean.parseBoolean(getString(key, Boolean.toString(defaultValue)));
+    public final Boolean getBoolean(String key, Boolean defaultValue) {
+        return getValue(key, Boolean.class, defaultValue);
     }
     /**
      * Gets values as a list of booleans.
@@ -1433,12 +1228,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the values
      */
     public final List<Boolean> getBooleans(String key) {
-        List<String> values = getStrings(key);
-        List<Boolean> list = new ArrayList<>(values.size());
-        for (String value : values) {
-            list.add(Boolean.parseBoolean(value));
-        }
-        return list;
+        return getValues(key, Boolean.class);
     }
     /**
      * Sets one or multiple boolean values, replacing existing ones.
@@ -1468,12 +1258,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the value
      */
     public final Locale getLocale(String key) {
-        try {
-            return LocaleUtils.toLocale(getString(key));
-        } catch (IllegalArgumentException e) {
-            throw createTypedException(
-                    "Could not parse Locale value.", key, getString(key), e);
-        }
+        return getValue(key, Locale.class);
     }
     /**
      * Gets value as a locale.
@@ -1482,11 +1267,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the value
      */
     public final Locale getLocale(String key, Locale defaultValue) {
-        try {
-            return LocaleUtils.toLocale(getString(key));
-        } catch (IllegalArgumentException e) {
-            return defaultValue;
-        }
+        return getValue(key, Locale.class, defaultValue);
     }
     /**
      * Gets values as a list of locales.
@@ -1494,19 +1275,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the values
      */
     public final List<Locale> getLocales(String key) {
-        List<String> values = getStrings(key);
-        String errVal = null;
-        try {
-            List<Locale> list = new ArrayList<>(values.size());
-            for (String value : values) {
-                errVal = value;
-                list.add(LocaleUtils.toLocale(value));
-            }
-            return list;
-        } catch (IllegalArgumentException  e) {
-            throw createTypedException(
-                    "Could not parse locale value.", key, errVal, e);
-        }
+        return getValues(key, Locale.class);
     }
     /**
      * Sets one or multiple locale values, replacing existing ones.
@@ -1536,11 +1305,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return a File
      */
     public final File getFile(String key) {
-        String filePath = getString(key);
-        if (filePath == null) {
-            return null;
-        }
-    	return new File(filePath);
+        return getValue(key, File.class);
     }
     /**
      * Gets a file, assuming key value is a file system path.
@@ -1550,7 +1315,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return a File
      */
     public final File getFile(String key, File defaultValue) {
-        return ObjectUtils.defaultIfNull(getFile(key), defaultValue);
+        return getValue(key, File.class, defaultValue);
     }
     /**
      * Gets values as a list of files.
@@ -1558,12 +1323,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the values
      */
     public final List<File> getFiles(String key) {
-        List<String> values = getStrings(key);
-        List<File> list = new ArrayList<>(values.size());
-        for (String value : values) {
-            list.add(new File(value));
-        }
-        return list;
+        return getValues(key, File.class);
     }
     /**
      * Sets one or multiple file values, replacing existing ones.
@@ -1594,13 +1354,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return initialized class
      */
     public final Class<?> getClass(String key) {
-    	String value = getString(key);
-    	try {
-			return Class.forName(value);
-		} catch (ClassNotFoundException e) {
-            throw createTypedException(
-                    "Could not parse class value.", key, value, e);
-		}
+        return getValue(key, Class.class);
     }
     /**
      * Gets a class, assuming key value is a fully qualified class name
@@ -1611,20 +1365,16 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return initialized class
      */
     public final Class<?> getClass(String key, Class<?> defaultValue) {
-        return ObjectUtils.defaultIfNull(getClass(key), defaultValue);
+        return getValue(key, Class.class, defaultValue);
     }
     /**
      * Gets values as a list of initialized classes.
      * @param key property key
      * @return the values
      */
-    public final List<Class<?>> getClasses(String key) {
-        List<String> values = getStrings(key);
-        List<Class<?>> list = new ArrayList<>(values.size());
-        for (String value : values) {
-            list.add(getClass(value));
-        }
-        return list;
+    @SuppressWarnings("rawtypes")
+    public final List<Class> getClasses(String key) {
+        return getValues(key, Class.class);
     }
     /**
      * Sets one or multiple class values, replacing existing ones.
@@ -1720,41 +1470,12 @@ public class Properties extends ObservableMap<String, List<String>>
         return resolvedKey;
     }
 
-    private PropertiesException createTypedException(
-            String msg, String key, String value, Exception cause) {
-        String message = msg + " [key=" + key + "; value=" + value + "].";
-        LOG.error(message, cause);
-        return new PropertiesException(message, cause);
-    }
-//    private String[] toStringArray(Object[] array) {
-//        if (array == null) {
-//            return null;
-//        }
-//        String[] strArray = new String[array.length];
-//        for (int i = 0; i < array.length; i++) {
-//            strArray[i] = Objects.toString(array[i], StringUtils.EMPTY);
-//            //TODO ------------------------------------- REALLY? ^^^^^
-//        }
-//        return strArray;
-//    }
     // TODO consider calling this from toStringArray(array) and have
     // Class, Date, etc, setters call that method. But check
     // implications of EMPTY vs null. (why have empty for elements in in array,
     // and null otherwise?) Should always be null or not kept in array.
     private String toString(Object obj) {
-        if (obj == null) {
-            return null;
-        }
-        if (obj instanceof Class) {
-            return ((Class<?>) obj).getName();
-        }
-        if (obj instanceof Date) {
-            return Long.toString(((Date) obj).getTime());
-        }
-        if (obj instanceof File) {
-            return ((File) obj).getPath();
-        }
-        return obj.toString();
+        return Converter.convert(obj);
     }
 
     //=== DEPRECATED ===========================================================

@@ -11,10 +11,14 @@
              description="Major release. NOT a drop-in replacement for 1.x.">
       <action dev="essiembre" type="add">
         New event-related classes for facilitating the listening and 
-        firing of events.  
+        firing of events.
       </action>
       <action dev="essiembre" type="add">
-        New BeanGraphUtil class that simplifies dealing with object-graph.
+        New Converter class to convert several types from/to strings.
+      </action>
+      <action dev="essiembre" type="add">
+        New BeanUtil class to facilitate basic reflection operations
+        as well as traversing bean graph.
       </action>
       <action dev="essiembre" type="add">
         New DurationFormatter.
@@ -27,11 +31,6 @@
       </action>
       <action dev="essiembre" type="add">
         New Regex and KeyValueExtractor classes.
-      </action>
-      <action dev="essiembre" type="add">
-        New ExtendedBeanUtilsBean that supports copying of either combination
-        of collections or array, as well as new ExtendedConvertUtilsBean
-        providing new converters for (EPOCH) Date, LocaleDateTime, and Locale.
       </action>
       <action dev="essiembre" type="add">
         New Properties#loadFromBean and Properties#storeToBean methods.
@@ -88,7 +87,6 @@
       </action>
       <action dev="essiembre" type="update">
         Dependency updates: Apache Commons Lang 3.7, 
-        Apache Commons BeanUtils 1.9.3,
         Apache Velocity 2.0.
       </action>
       <action dev="essiembre" type="update">
@@ -97,9 +95,6 @@
       </action>
       <action dev="essiembre" type="update">
         Now using Path instead (or in addition) of File in many cases. 
-      </action>
-      <action dev="essiembre" type="update">
-        XMLConfigurationUtil now deprecated in favor of XML.
       </action>
       <action dev="essiembre" type="update">
         IXMLConfigurable methods were deprecated in favor of new ones
@@ -127,6 +122,9 @@
       </action>
       <action dev="essiembre" type="remove">
         Removed Apache Configuration dependency.
+      </action>
+      <action dev="essiembre" type="remove">
+        XMLConfigurationUtil removed in favor of XML.
       </action>
     </release>
 

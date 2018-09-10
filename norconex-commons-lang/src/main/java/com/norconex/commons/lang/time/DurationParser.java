@@ -31,8 +31,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * <p>
- * Parse a textual representation of a duration and converts it into 
- * a <code>long</code> millisecond value.  
+ * Parse a textual representation of a duration and converts it into
+ * a <code>long</code> millisecond value.
  * </p>
  * <p>
  * If the string is made of digits only, it is assumed to be a millisecond
@@ -40,7 +40,7 @@ import org.slf4j.LoggerFactory;
  * </p>
  * <p>
  * The duration unit can be written in single character or full words.
- * Some abbreviations are also accepted (e.g., "mo", "mos", 
+ * Some abbreviations are also accepted (e.g., "mo", "mos",
  * "mth", "mths").
  * </p>
  * <p>
@@ -76,9 +76,9 @@ import org.slf4j.LoggerFactory;
  * One year uses the average of 365.2425 days and a month is 1/12th of that.
  * A numeric
  * value must be followed by a time unit. Other terms or characters
- * are ignored. 
+ * are ignored.
  * </p>
- * 
+ *
  * <h3>Examples:</h3>
  * <p>
  * All of the following will be parsed properly:
@@ -91,26 +91,26 @@ import org.slf4j.LoggerFactory;
  *   <li>2 ans et 3 mois</li>
  * </ul>
  * <p>This class is thread-safe and immutable.</p>
- * 
+ *
  * @author Pascal Essiembre
  * @since 1.13.0
  */
 public class DurationParser {
 
-    private static final Logger LOG = 
+    private static final Logger LOG =
             LoggerFactory.getLogger(DurationParser.class);
-    
-    private static final Locale DEFAULT_LOCALE = Locale.ENGLISH;    
 
-    
-    private static final Pattern PATTERN = 
+    private static final Locale DEFAULT_LOCALE = Locale.ENGLISH;
+
+
+    private static final Pattern PATTERN =
             Pattern.compile("(\\d+([\\.,]\\d+){0,1})(\\D+)");
 
     private Locale locale;
-    
+
     /**
-     * Creates a copy if this parser with the given locale.  Default 
-     * locale is English. 
+     * Creates a copy if this parser with the given locale.  Default
+     * locale is English.
      * @param locale locale
      * @return duration parser copy
      */
@@ -121,7 +121,7 @@ public class DurationParser {
     }
     public Locale getLocale() {
         return locale;
-    }    
+    }
 
     /**
      * Parses a text representation of a duration.
@@ -145,7 +145,7 @@ public class DurationParser {
         long defVal = defaultValue == null ? 0 : defaultValue.toMillis();
         return Duration.ofMillis(parseToMillis(duration, defVal, false));
     }
-    
+
     /**
      * Parses a text representation of a duration.
      * If the value cannot be parsed, a {@link DurationParserException}
@@ -167,15 +167,15 @@ public class DurationParser {
     public long parseToMillis(String duration, long defaultValue) {
         return parseToMillis(duration, defaultValue, false);
     }
-    
+
     private Long parseToMillis(
             String duration, long defaultValue, boolean throwException) {
-        
+
         if (StringUtils.isBlank(duration)) {
             LOG.debug("Blank duration value. Using default: {}.", defaultValue);
             return defaultValue;
         }
-        
+
         // If only digits, consider milliseconds and convert to long
         if (NumberUtils.isDigits(duration.trim())) {
             return NumberUtils.toLong(duration);
@@ -186,10 +186,10 @@ public class DurationParser {
             parseError(throwException, "No number.", duration);
             return defaultValue;
         }
-        
+
         // Else parse the string
         Matcher m = PATTERN.matcher(duration);
-        long ms = 0; 
+        long ms = 0;
         boolean matchesPattern = false;
         while (m.find()) {
             matchesPattern = true;
@@ -198,13 +198,13 @@ public class DurationParser {
 
             String num = numGroup.replace(',', '.');
             if (!NumberUtils.isParsable(num)) {
-                parseError(throwException, 
+                parseError(throwException,
                         "Invalid duration value: \"%s\".", duration, numGroup);
                 return defaultValue;
             }
             float val = NumberUtils.toFloat(num, -1);
             if (val == -1) {
-                parseError(throwException, 
+                parseError(throwException,
                         "Invalid duration value: \"%s\".", duration, numGroup);
                 return defaultValue;
             }
@@ -212,7 +212,7 @@ public class DurationParser {
             String unitStr = unitGroup.replaceFirst("^(\\w+)(.*)", "$1");
             DurationUnit unit = getUnit(unitStr);
             if (unit == null) {
-                parseError(throwException, 
+                parseError(throwException,
                         "Unknown unit: \"%s\".", duration, unitStr);
                 return defaultValue;
             }
@@ -221,51 +221,51 @@ public class DurationParser {
         if (matchesPattern) {
             return ms;
         }
-        parseError(throwException, 
-                "Could not parse duration: \"%s\". Invalid duration value.", 
+        parseError(throwException,
+                "Could not parse duration: \"%s\". Invalid duration value.",
                 duration);
         return defaultValue;
     }
-    
-    private void parseError(boolean throwException, String message, 
+
+    private void parseError(boolean throwException, String message,
             String duration, Object... args) {
-        String msg = "Could not parse duration: \"%s\". "
-            + String.format(message, duration, args);
-        
+        String msg = String.format(
+                "Could not parse duration: \"%s\". ", duration, args);
+
         if (throwException) {
             throw new DurationParserException(msg);
         }
         LOG.error(msg);
     }
-    
-    //TODO if performance is a concern, consider weak-caching most 
+
+    //TODO if performance is a concern, consider weak-caching most
     //frequently used.
     private DurationUnit getUnit(String label) {
         if (StringUtils.isBlank(label)) {
             return null;
         }
         Locale safeLocale = locale == null ? DEFAULT_LOCALE : locale;
-        
+
         ResourceBundle rb = ResourceBundle.getBundle(
                 DurationParser.class.getCanonicalName(), safeLocale);
 
         for (String key : rb.keySet()) {
             String[] variants = rb.getString(key).split(",");
             if ((label.length() == 1 && StringUtils.equalsAny(label, variants))
-                    || (label.length() > 1 
+                    || (label.length() > 1
                         && StringUtils.equalsAnyIgnoreCase(label, variants))) {
                 return DurationUnit.from(key);
             }
         }
         return null;
     }
-    
+
     private DurationParser copy() {
         DurationParser dp = new DurationParser();
         dp.locale = locale;
         return dp;
     }
-    
+
     @Override
     public boolean equals(final Object other) {
         return EqualsBuilder.reflectionEquals(this, other);
@@ -276,7 +276,7 @@ public class DurationParser {
     }
     @Override
     public String toString() {
-        return new ReflectionToStringBuilder(this, 
+        return new ReflectionToStringBuilder(this,
                 ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

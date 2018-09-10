@@ -33,9 +33,9 @@ import org.slf4j.LoggerFactory;
 public final class StringUtil {
 
     private static final Logger LOG = LoggerFactory.getLogger(StringUtil.class);
-    
+
     public static final int TRUNCATE_HASH_LENGTH = 10;
-    
+
     private StringUtil() {
         super();
     }
@@ -44,10 +44,10 @@ public final class StringUtil {
      * Truncate text larger than the given max length and appends a hash
      * value from the truncated text. The hash size has 10 digits.
      * The hash is added to fit within the maximum length supplied.
-     * For this reason, the <code>maxLength</code> argument must be 
+     * For this reason, the <code>maxLength</code> argument must be
      * be minimum 10 for any truncation to occur.
      * The hash is added without a separator.  To insert a separator between
-     * the truncated text and the hash code, use 
+     * the truncated text and the hash code, use
      * {@link #truncateWithHash(String, int, String)}
      * @param text text to truncate
      * @param maxLength maximum length the truncated text must have
@@ -55,14 +55,14 @@ public final class StringUtil {
      */
     public static String truncateWithHash(
             String text, int maxLength) {
-        return truncateWithHash(text, maxLength, null); 
+        return truncateWithHash(text, maxLength, null);
     }
     /**
      * Truncate text larger than the given max length and appends a hash
      * value from the truncated text, with an optional separator in-between.
-     * The hash size has 10 digits. The hash and separator are added to fit 
-     * within the maximum length supplied. 
-     * For this reason, the <code>maxLength</code> argument must be 
+     * The hash size has 10 digits. The hash and separator are added to fit
+     * within the maximum length supplied.
+     * For this reason, the <code>maxLength</code> argument must be
      * be minimum 10 + separator length for any truncation to occur.
      * @param text text to truncate
      * @param maxLength maximum length the truncated text must have
@@ -77,10 +77,10 @@ public final class StringUtil {
         if (text.length() <= maxLength) {
             return text;
         }
-        
+
         int separatorLength = separator == null ? 0 : separator.length();
         int roomLength = TRUNCATE_HASH_LENGTH + separatorLength;
-        
+
         if (maxLength < roomLength) {
             LOG.warn("\"maxLength\" is smaller than hash length ({}) "
                     + "+ separator length ({}). No truncation will occur.",
@@ -100,76 +100,76 @@ public final class StringUtil {
     }
 
     /**
-     * Truncates text with size in bytes larger than the given max byte 
+     * Truncates text with size in bytes larger than the given max byte
      * length and appends a hash
      * value from the truncated text.
      * The hash size is equal to the byte length of 10 digits using the
      * given charset.
-     * The hash and separator are added to fit within the maximum byte length 
-     * supplied. 
-     * For this reason, the <code>maxByteLength</code> argument must be 
+     * The hash and separator are added to fit within the maximum byte length
+     * supplied.
+     * For this reason, the <code>maxByteLength</code> argument must be
      * be large enough for any truncation to occur.
      * @param text text to truncate
      * @param charset character encoding
      * @param maxByteLength maximum byte length the truncated text must have
-     * @return truncated character byte array, or original text if no 
+     * @return truncated character byte array, or original text if no
      *         truncation required
      * @throws CharacterCodingException character coding problem
      */
-    public static String truncateBytesWithHash(String text, 
-            Charset charset, int maxByteLength) 
+    public static String truncateBytesWithHash(String text,
+            Charset charset, int maxByteLength)
                     throws CharacterCodingException {
         if (text == null) {
             return null;
         }
         return new String(truncateBytesWithHash(
-                text.getBytes(charset), charset, maxByteLength, null), 
+                text.getBytes(charset), charset, maxByteLength, null),
                 charset);
     }
     /**
-     * Truncates text with size in bytes larger than the given max byte 
+     * Truncates text with size in bytes larger than the given max byte
      * length and appends a hash
      * value from the truncated text, with an optional separator in-between.
      * The hash size is equal to the byte length of 10 digits using the
      * given charset.
-     * The hash and separator are added to fit within the maximum byte length 
-     * supplied. 
-     * For this reason, the <code>maxByteLength</code> argument must be 
+     * The hash and separator are added to fit within the maximum byte length
+     * supplied.
+     * For this reason, the <code>maxByteLength</code> argument must be
      * be large enough for any truncation to occur.
      * @param text text to truncate
      * @param charset character encoding
      * @param maxByteLength maximum byte length the truncated text must have
      * @param separator string separating truncated text from hash code
-     * @return truncated character byte array, or original text if no 
+     * @return truncated character byte array, or original text if no
      *         truncation required
      * @throws CharacterCodingException character coding problem
      */
-    public static String truncateBytesWithHash(String text, 
-            Charset charset, int maxByteLength, String separator) 
+    public static String truncateBytesWithHash(String text,
+            Charset charset, int maxByteLength, String separator)
                     throws CharacterCodingException {
         if (text == null) {
             return null;
         }
         return new String(truncateBytesWithHash(
-                text.getBytes(charset), charset, maxByteLength, separator), 
+                text.getBytes(charset), charset, maxByteLength, separator),
                 charset);
     }
     /**
-     * Truncates character byte array text larger than the given max byte 
+     * Truncates character byte array text larger than the given max byte
      * length and appends a hash
      * value from the truncated text.
      * The hash size is equal to the byte length of 10 digits using the
      * given charset.
-     * The hash and separator are added to fit within the maximum byte length 
-     * supplied. 
-     * For this reason, the <code>maxByteLength</code> argument must be 
+     * The hash and separator are added to fit within the maximum byte length
+     * supplied.
+     * For this reason, the <code>maxByteLength</code> argument must be
      * be large enough for any truncation to occur.
      * @param bytes byte array of text to truncate
      * @param charset character encoding
      * @param maxByteLength maximum byte length the truncated text must have
-     * @return truncated character byte array, or original text if no 
+     * @return truncated character byte array, or original text if no
      *         truncation required
-     * @throws CharacterCodingException character coding problem 
+     * @throws CharacterCodingException character coding problem
      */
     public static byte[] truncateBytesWithHash(
             byte[] bytes, Charset charset, int maxByteLength)
@@ -178,22 +178,22 @@ public final class StringUtil {
             return bytes;
         }
         return truncateBytesWithHash(bytes, charset, maxByteLength, null);
-    }    
+    }
     /**
-     * Truncates character byte array text larger than the given max byte 
+     * Truncates character byte array text larger than the given max byte
      * length and appends a hash
      * value from the truncated text, with an optional separator in-between.
      * The hash size is equal to the byte length of 10 digits using the
      * given charset.
-     * The hash and separator are added to fit within the maximum byte length 
-     * supplied. 
-     * For this reason, the <code>maxByteLength</code> argument must be 
+     * The hash and separator are added to fit within the maximum byte length
+     * supplied.
+     * For this reason, the <code>maxByteLength</code> argument must be
      * be large enough for any truncation to occur.
      * @param bytes byte array of text to truncate
      * @param charset character encoding
      * @param maxByteLength maximum byte length the truncated text must have
      * @param separator string separating truncated text from hash code
-     * @return truncated character byte array, or original text if no 
+     * @return truncated character byte array, or original text if no
      *         truncation required
      * @throws CharacterCodingException character coding problem
      */
@@ -212,12 +212,12 @@ public final class StringUtil {
             nullSafeCharset = StandardCharsets.UTF_8;
         }
 
-        int separatorLength = separator == null 
+        int separatorLength = separator == null
                 ? 0 : separator.getBytes(nullSafeCharset).length;
         int hashLength = StringUtils.repeat(
                 '0', TRUNCATE_HASH_LENGTH).getBytes(nullSafeCharset).length;
         int roomLength = hashLength + separatorLength;
-        
+
         if (maxByteLength < roomLength) {
             LOG.warn("\"maxLength\" is smaller in bytes than hash length ({}) "
                     + "+ separator length ({}). No truncation will occur.",
@@ -228,9 +228,9 @@ public final class StringUtil {
         final CharsetDecoder decoder = nullSafeCharset.newDecoder();
         decoder.onMalformedInput(CodingErrorAction.IGNORE);
         decoder.reset();
-        
+
         String fullString = new String(bytes, nullSafeCharset);
-        String truncated = 
+        String truncated =
                 decoder.decode(ByteBuffer.wrap(bytes, 0, cutIndex)).toString();
         String remainer = StringUtils.substring(fullString, truncated.length());
         if (separator != null) {
@@ -242,10 +242,10 @@ public final class StringUtil {
         }
         return truncated.getBytes(nullSafeCharset);
     }
-    
+
     static String getHash(String s) {
         return StringUtils.leftPad(StringUtils.stripStart(
-                Integer.toString(s.hashCode()), "-"), 
+                Integer.toString(s.hashCode()), "-"),
                 TRUNCATE_HASH_LENGTH, '0');
     }
 }

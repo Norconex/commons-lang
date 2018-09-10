@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
 
 import com.norconex.commons.lang.SLF4JUtil;
-import com.norconex.commons.lang.bean.BeanGraphUtil;
+import com.norconex.commons.lang.bean.BeanUtil;
 
 /**
  * Manages event listeners and logs events.
@@ -35,21 +35,9 @@ import com.norconex.commons.lang.bean.BeanGraphUtil;
 public class EventManager {
 
     //TODO:
-    //fireEvent(event) // default is trace?
-    //fireEvent(event, loglevel)
-    // have a static getInstance method for "global" use
+    // have a static getInstance method for "global" use?
 
     private final List<IEventListener<Event<?>>> listeners = new ArrayList<>();
-
-//    private static final int ID_PRINT_WIDTH = 25;
-
-//    public EventManager(
-//            ICrawler crawler, List<ICrawlerEventListener> listeners) {
-//        this.crawler = crawler;
-//        if (listeners != null) {
-//            this.listeners.addAll(listeners);
-//        }
-//    }
 
     public void addListener(IEventListener<Event<?>> listener) {
         if (listener != null) {
@@ -95,30 +83,9 @@ public class EventManager {
                 + "." + event.getName());
         Level safeLevel = ObjectUtils.defaultIfNull(level, Level.INFO);
         SLF4JUtil.log(log, safeLevel, Objects.toString(event.getSource(), ""));
-//        if (log.isInfoEnabled()) {
-//            log.info("TODO: " + event.getSource());
-////            log.info(getLogMessage(event, log.isDebugEnabled()));
-//        }
     }
 
     public void addListenersFromScan(Object obj) {
-        BeanGraphUtil.visit(obj, this::addListener, IEventListener.class);
+        BeanUtil.visitAll(obj, this::addListener, IEventListener.class);
     }
-
-//    private String getLogMessage(Event<?> event, boolean includeSubject) {
-//        StringBuilder b = new StringBuilder();
-//        b.append(StringUtils.leftPad(event.getName(), ID_PRINT_WIDTH));
-//        if (event.getSource() != null) {
-//            b.append(": ");
-//            b.append(event.getSource());
-//        }
-//        if (includeSubject) {
-//            b.append(" (");
-//            b.append(Objects.toString(event.getSubject(),
-//                    "No additional information available."));
-//            b.append(")");
-//        }
-//        return b.toString();
-//    }
-
 }

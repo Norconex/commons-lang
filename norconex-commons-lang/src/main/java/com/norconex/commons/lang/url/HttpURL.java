@@ -29,27 +29,27 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
  * This class act as a mutable URL, which could be a replacement
- * or "wrapper" to the {@link URL} class. It can also be used as a safer way 
- * to build a {@link URL} or a {@link URI} instance as it will properly escape 
+ * or "wrapper" to the {@link URL} class. It can also be used as a safer way
+ * to build a {@link URL} or a {@link URI} instance as it will properly escape
  * appropriate characters before creating those.
- * 
+ *
  * @author Pascal Essiembre
  */
 //TODO rename MutableURL (really? what about the static methods?  Maybe "Url"?)
 public class HttpURL implements Serializable {
 
     private static final long serialVersionUID = -8886393027925815099L;
-    
+
     /** Default URL HTTP Port. */
     public static final int DEFAULT_HTTP_PORT = 80;
     /** Default Secure URL HTTP Port. */
     public static final int DEFAULT_HTTPS_PORT = 443;
-    
+
     /** Constant for "http" protocol. */
     public static final String PROTOCOL_HTTP = "http";
     /** Constant for "https" protocol. */
     public static final String PROTOCOL_HTTPS = "https";
-    
+
     private QueryString queryString;
     private String host;
     private int port = -1;
@@ -57,7 +57,7 @@ public class HttpURL implements Serializable {
     private String protocol;
     private final String encoding;
     private String fragment;
-    
+
     /**
      * Creates a blank HttpURL using UTF-8 for URL encoding.
      */
@@ -103,8 +103,8 @@ public class HttpURL implements Serializable {
         } else {
             this.encoding = encoding;
         }
-        
-        String u = StringUtils.trimToEmpty(url); 
+
+        String u = StringUtils.trimToEmpty(url);
         if (u.matches("[a-zA-Z][a-zA-Z0-9\\+\\-\\.]*:.*")) {
             URL urlwrap;
             try {
@@ -131,14 +131,14 @@ public class HttpURL implements Serializable {
                 fragment = u.replaceFirst("^(.*?)(\\#)(.*)", "$3");
             }
         }
-        
+
         // Parameters
         if (StringUtils.contains(u, "?")) {
             queryString = new QueryString(u, encoding);
         }
     }
 
-    
+
     /**
      * Gets the character encoding. Default is UTF-8.
      * @return character encoding
@@ -177,7 +177,7 @@ public class HttpURL implements Serializable {
     public void setQueryString(QueryString queryString) {
         this.queryString = queryString;
     }
-    
+
     /**
      * Gets the host portion of the URL.
      * @return the host portion of the URL
@@ -216,8 +216,8 @@ public class HttpURL implements Serializable {
     }
 
     /**
-     * Gets the URL port. If the protocol is other than 
-     * <code>http</code> or <code>https</code>, the port is -1 when 
+     * Gets the URL port. If the protocol is other than
+     * <code>http</code> or <code>https</code>, the port is -1 when
      * not specified.
      * @return the URL port
      */
@@ -231,7 +231,7 @@ public class HttpURL implements Serializable {
     public void setPort(int port) {
         this.port = port;
     }
-    
+
     /**
      * Gets the URL fragment.
      * @return the fragment
@@ -251,7 +251,7 @@ public class HttpURL implements Serializable {
 
     /**
      * Gets the last URL path segment without the query string.
-     * If there are segment to return, 
+     * If there are segment to return,
      * an empty string will be returned instead.
      * @return the last URL path segment
      */
@@ -264,7 +264,7 @@ public class HttpURL implements Serializable {
         return segment;
     }
     /**
-     * Converts this HttpURL to a regular {@link URL}, making sure 
+     * Converts this HttpURL to a regular {@link URL}, making sure
      * appropriate characters are escaped properly.
      * @return a URL
      * @throws URLException when URL is malformed
@@ -277,9 +277,9 @@ public class HttpURL implements Serializable {
             throw new URLException("Cannot convert to URL: " + url, e);
         }
     }
-    
+
     /**
-     * Gets the root of this HttpUrl. That is the left part of a URL up to 
+     * Gets the root of this HttpUrl. That is the left part of a URL up to
      * and including the host name. A <code>null</code> or empty string returns
      * a <code>null</code> document root.
      * @return left part of a URL up to (and including the host name
@@ -289,9 +289,9 @@ public class HttpURL implements Serializable {
     public String getRoot() {
         return getRoot(toString());
     }
-    
+
     /**
-     * Converts this HttpURL to a {@link URI}, making sure 
+     * Converts this HttpURL to a {@link URI}, making sure
      * appropriate characters are escaped properly.
      * @return a URI
      * @since 1.7.0
@@ -307,7 +307,7 @@ public class HttpURL implements Serializable {
     }
     /**
      * <p>
-     * Converts the supplied URL to a {@link URL}, making sure 
+     * Converts the supplied URL to a {@link URL}, making sure
      * appropriate characters are encoded properly using UTF-8. This method
      * is a short form of:<br>
      * <code>new HttpURL("http://example.com").toURL();</code>
@@ -321,7 +321,7 @@ public class HttpURL implements Serializable {
         return new HttpURL(url).toURL();
     }
     /**
-     * <p>Converts the supplied URL to a {@link URI}, making sure 
+     * <p>Converts the supplied URL to a {@link URI}, making sure
      * appropriate characters are encoded properly using UTF-8. This method
      * is a short form of:<br>
      * <code>new HttpURL("http://example.com").toURI();</code>
@@ -336,7 +336,7 @@ public class HttpURL implements Serializable {
     }
 
     /**
-     * <p>Gets the root of a URL. That is the left part of a URL up to and 
+     * <p>Gets the root of a URL. That is the left part of a URL up to and
      * including the host name. A <code>null</code> or empty string returns
      * a <code>null</code> document root.
      * This method is a short form of:<br>
@@ -352,7 +352,7 @@ public class HttpURL implements Serializable {
         }
         return StringUtils.replacePattern(url, "(.*?://.*?)([/?#].*)", "$1");
     }
-    
+
     /**
      * Returns a string representation of this URL, properly encoded.
      * @return URL as a string
@@ -389,7 +389,7 @@ public class HttpURL implements Serializable {
     }
 
     /**
-     * Whether this URL uses the default port for the protocol.  The default 
+     * Whether this URL uses the default port for the protocol.  The default
      * port is 80 for "http" protocol, and 443 for "https". Other protocols
      * are not supported and this method will always return false
      * for them.
@@ -397,14 +397,14 @@ public class HttpURL implements Serializable {
      * @since 1.8.0
      */
     public boolean isPortDefault() {
-        return PROTOCOL_HTTPS.equalsIgnoreCase(protocol) 
+        return PROTOCOL_HTTPS.equalsIgnoreCase(protocol)
                 && port == DEFAULT_HTTPS_PORT
                 || PROTOCOL_HTTP.equalsIgnoreCase(protocol)
                         && port == DEFAULT_HTTP_PORT;
     }
-    
+
     /**
-     * <p>URL-Encodes the query string portion of a URL. The entire 
+     * <p>URL-Encodes the query string portion of a URL. The entire
      * string supplied is assumed to be a query string.
      * @param queryString URL query string
      * @return encoded path
@@ -416,7 +416,7 @@ public class HttpURL implements Serializable {
         }
         return new QueryString(queryString).toString();
     }
-    
+
     /**
      * <p>URL-Encodes a URL path.  The entire string supplied is assumed
      * to be a URL path. Unsafe characters are percent-encoded using UTF-8
@@ -426,7 +426,7 @@ public class HttpURL implements Serializable {
      * @since 1.7.0
      */
     public static String encodePath(String path) {
-        // Any characters that are not one of the following are 
+        // Any characters that are not one of the following are
         // percent-encoded (including spaces):
         // a-z A-Z 0-9 . - _ ~ ! $ &amp; ' ( ) * + , ; = : @ / %
         if (StringUtils.isBlank(path)) {
@@ -447,10 +447,10 @@ public class HttpURL implements Serializable {
                 bytes = Character.toString(ch).getBytes(StandardCharsets.UTF_8);
                 for (byte b : bytes) {
                     sb.append('%');
-                    int upper = (((int) b) >> 4) & 0xf;
+                    int upper = ((b) >> 4) & 0xf;
                     sb.append(Integer.toHexString(
                             upper).toUpperCase(Locale.US));
-                    int lower = ((int) b) & 0xf;
+                    int lower = (b) & 0xf;
                     sb.append(Integer.toHexString(
                             lower).toUpperCase(Locale.US));
                 }
@@ -502,40 +502,13 @@ public class HttpURL implements Serializable {
         // Not detected as relative, so return as is
         return relURL;
     }
-    
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder()
-                .append(host)
-                .append(path)
-                .append(port)
-                .append(protocol)
-                .append(queryString)
-                .append(fragment)
-                .append(encoding)
-                .toHashCode();
-    }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (!(obj instanceof HttpURL)) {
-            return false;
-        }
-        HttpURL other = (HttpURL) obj;
-        return new EqualsBuilder()
-                .append(host, other.host)
-                .append(path, other.path)
-                .append(port, other.port)
-                .append(protocol, other.protocol)
-                .append(queryString, other.queryString)
-                .append(fragment, other.fragment)
-                .append(encoding, other.encoding)
-                .isEquals();
+    public boolean equals(final Object other) {
+        return EqualsBuilder.reflectionEquals(this, other);
+    }
+    @Override
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this);
     }
 }

@@ -12,37 +12,25 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.norconex.commons.lang.bean;
+package com.norconex.commons.lang.convert;
 
 import java.util.Locale;
 
-import org.apache.commons.beanutils.converters.AbstractConverter;
 import org.apache.commons.lang3.LocaleUtils;
 
 /**
  * {@link Locale} converter.
  * @since 2.0.0
- * @see ExtendedBeanUtilsBean
  */
 public class LocaleConverter extends AbstractConverter {
 
-    public LocaleConverter() {
-        super();
-    }
-    public LocaleConverter(Object defaultValue) {
-        super(defaultValue);
+    @Override
+    protected String nullSafeToString(Object object) {
+        return object.toString();
     }
 
     @Override
-    protected Class<?> getDefaultType() {
-        return Locale.class;
-    }
-    @Override
-    protected <T> T convertToType(Class<T> type, Object value)
-            throws Throwable {
-        if (value == null) {
-            return null;
-        }
-        return type.cast(LocaleUtils.toLocale(value.toString().trim()));
+    protected <T> T nullSafeToType(String value, Class<T> type) {
+        return type.cast(LocaleUtils.toLocale(value.trim()));
     }
 }

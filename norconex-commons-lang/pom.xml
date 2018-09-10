@@ -75,17 +75,6 @@
       <version>2.0</version>
     </dependency>
     <dependency>
-      <groupId>commons-beanutils</groupId>
-      <artifactId>commons-beanutils</artifactId>
-      <version>1.9.3</version>
-      <exclusions>
-        <exclusion>
-          <groupId>commons-collections</groupId>
-          <artifactId>commons-collections</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
       <version>1.7.25</version>
@@ -131,6 +120,12 @@
       <version>1.10.1</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>jcl-over-slf4j</artifactId>
+      <version>1.7.25</version>
+      <scope>test</scope>
+    </dependency>
 
     <!-- For optional Proxy class used only by some implementations. -->
     <dependency>
@@ -141,19 +136,15 @@
     </dependency>
 
     <!-- Kept for optional backward compatibility. Usage now deprecated. -->
+    <!-- 
     <dependency>
       <groupId>commons-configuration</groupId>
       <artifactId>commons-configuration</artifactId>
       <version>1.10</version>
       <scope>provided</scope>
     </dependency>
+     -->
 
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>jcl-over-slf4j</artifactId>
-      <version>1.7.25</version>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
 
   <build>
