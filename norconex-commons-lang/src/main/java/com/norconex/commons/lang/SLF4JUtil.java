@@ -16,8 +16,6 @@ package com.norconex.commons.lang;
 
 import java.util.EnumMap;
 import java.util.Map;
-import java.util.Objects;
-import java.util.function.Supplier;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -45,11 +43,6 @@ public final class SLF4JUtil {
         super();
     }
 
-
-    public static String defer(Supplier<Object> supplier) {
-        return Objects.toString(supplier.get(), null);
-    }
-
     //TODO have log version without the Logger argument.
     /**
      * Logs a message with a dynamically set SLF4J log {@link Level}.  As
@@ -64,6 +57,14 @@ public final class SLF4JUtil {
         log(logger, Level.valueOf(StringUtils.upperCase(level)), format, args);
     }
 
+    /**
+     * Logs a message with a dynamically set SLF4J log {@link Level}.  As
+     * of this writing, SLF4J did not offer such ability.
+     * @param logger the original logger
+     * @param level the log level
+     * @param format formatted log message
+     * @param args log arguments
+     */
     public static void log(
             Logger logger, Level level, String format, Object... args) {
         LL_MAP.get(level).log(logger, format, args);

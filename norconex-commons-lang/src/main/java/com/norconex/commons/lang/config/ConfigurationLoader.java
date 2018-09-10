@@ -14,7 +14,6 @@
  */
 package com.norconex.commons.lang.config;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringWriter;
@@ -161,10 +160,6 @@ public final class ConfigurationLoader {
      * <p>
      * Loads an XML configuration file.
      * </p>
-     * <p>
-     * Version 1.x users can use the (deprecated)
-     * {@link XMLConfigurationUtil#loadXML(File)} method instead.
-     * </p>
      * @param configFile XML configuration file
      * @return Apache XMLConfiguration instance
      * @since 2.0.0
@@ -177,10 +172,6 @@ public final class ConfigurationLoader {
 
     /**
      * Loads an XML configuration file.
-     * <p>
-     * Version 1.x users can use the (deprecated)
-     * {@link XMLConfigurationUtil#loadXML(File)} method instead.
-     * </p>
      * @param configFile XML configuration file
      * @param variables path to .variables or .properties file defining
      *        variables.

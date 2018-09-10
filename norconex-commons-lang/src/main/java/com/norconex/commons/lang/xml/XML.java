@@ -214,22 +214,6 @@ public class XML {
                 ((IXMLConfigurable) obj).saveToXML(this);
             }
         }
-
-
-//        if (obj instanceof Enum) {
-//            setTextContent(((Enum<?>) obj).name().toLowerCase());
-//        } else if (obj instanceof Class) {
-//            setAttribute("class", ((Class<?>) obj).getCanonicalName());
-//        } else if (obj instanceof Duration) {
-//            setTextContent(((Duration) obj).toMillis());
-//        } else if (isToStringable(obj)) {
-//            setTextContent(Objects.toString(obj, null));
-//        } else {
-//            setAttribute("class", obj.getClass().getCanonicalName());
-//            if (obj instanceof IXMLConfigurable) {
-//                ((IXMLConfigurable) obj).saveToXML(this);
-//            }
-//        }
     }
 
     private static String resolveXML(String xml) {
@@ -810,6 +794,7 @@ public class XML {
      * Commas can have any spaces before or after.
      * @param xpathExpression XPath expression to the node value(s) to split
      * @param type target list type
+     * @param <T> returned list type
      * @return list of given type, never <code>null</code>
      */
     public <T> List<T> getDelimitedList(String xpathExpression, Class<T> type) {
@@ -830,6 +815,7 @@ public class XML {
      * @param type target list type
      * @param defaultValues default values if the split returns
      *        <code>null</code> or an empty list
+     * @param <T> returned list type
      * @return list of strings
      */
     public <T> List<T> getDelimitedList(
@@ -849,6 +835,7 @@ public class XML {
      * @param xpathExpression XPath expression to the node value(s) to split
      * @param type target list type
      * @param delimRegex regular expression matching split delimiter
+     * @param <T> returned list type
      * @return list of strings, never <code>null</code>
      */
     public <T> List<T> getDelimitedList(
@@ -870,6 +857,7 @@ public class XML {
      * @param delimRegex regular expression matching split delimiter
      * @param defaultValues default values if the split returns
      *        <code>null</code> or an empty list
+     * @param <T> returned list type
      * @return list of strings
      */
     public <T> List<T> getDelimitedList(String xpathExpression,
@@ -1039,6 +1027,7 @@ public class XML {
      * string to the given type.
      * @param xpathExpression XPath expression to the node values
      * @param type target class type of returned list
+     * @param <T> returned list type
      * @return list of given type, never <code>null</code>
      */
     public <T> List<T> getList(String xpathExpression, Class<T> type) {
@@ -1055,6 +1044,7 @@ public class XML {
      * @param type target class type of returned list
      * @param defaultValues default values if the expression returns
      *        <code>null</code> or an empty list
+     * @param <T> returned list type
      * @return list of given type
      */
     public <T> List<T> getList(
@@ -1337,15 +1327,6 @@ public class XML {
         return addElement(name, join(delim, values));
     }
 
-//    private boolean isToStringable(Object obj) {
-//        for (Class<?> cls : TOSTRINGABLE) {
-//            if (cls.isInstance(obj)) {
-//                return true;
-//            }
-//        }
-//        return false;
-//    }
-
     /**
      * Sets an attribute on this XML element, converting the supplied object
      * to a string (enums are also converted to lowercase).
@@ -1578,6 +1559,7 @@ public class XML {
      * Enum class, ignoring case.
      * @param xpathExpression XPath expression to the enum value.
      * @param enumClass target enum class
+     * @param <E> enum type
      * @return an enum value or <code>null</code> if no values are matching.
      */
     public final <E extends Enum<E>> E getEnum(
@@ -1590,6 +1572,7 @@ public class XML {
      * @param xpathExpression XPath expression to the enum value.
      * @param enumClass target enum class
      * @param defaultValue defaultValue
+     * @param <E> enum type
      * @return an enum value or default value if no values are matching.
      */
     public final <E extends Enum<E>> E getEnum(
@@ -1605,6 +1588,7 @@ public class XML {
      * @param xpathExpression XPath expression
      * @param enumClass target enum class
      * @param defaultValues default values
+     * @param <E> enum type
      * @return list of enums
      */
     public <E extends Enum<E>> List<E> getEnumList(
@@ -1627,6 +1611,7 @@ public class XML {
      * @param enumClass target enum class
      * @param defaultValues default values if the split returns
      *        <code>null</code> or an empty list
+     * @param <E> enum type
      * @return list of enums
      */
     public <E extends Enum<E>> List<E> getDelimitedEnumList(
@@ -1650,6 +1635,7 @@ public class XML {
      * @param delimRegex regular expression matching split delimiter
      * @param defaultValues default values if the split returns
      *        <code>null</code> or an empty list
+     * @param <E> enum type
      * @return list of enums
      */
     public <E extends Enum<E>> List<E> getDelimitedEnumList(
@@ -1843,6 +1829,7 @@ public class XML {
     /**
      * Gets values as a list of files.
      * @param xpathExpression XPath expression
+     * @param <T> returned list type
      * @return the values
      */
     public final <T> List<Class<? extends T>> getClassList(String xpathExpression) {
@@ -1856,6 +1843,7 @@ public class XML {
      * Gets values as a list of files.
      * @param xpathExpression XPath expression
      * @param defaultValue default value
+     * @param <T> returned list type
      * @return the values
      */
     @SuppressWarnings("unchecked")

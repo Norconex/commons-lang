@@ -708,6 +708,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * Gets a single value, converted to the given type.
      * @param key the key of the value to get
      * @param type target class of value
+     * @param <T> returned value type
      * @return value
      * @since 2.0.0
      */
@@ -719,6 +720,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @param key the key of the value to get
      * @param type target class of value
      * @param defaultValue default value if key has no value.
+     * @param <T> returned value type
      * @return value
      * @since 2.0.0
      */
@@ -738,6 +740,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * Gets a list of values, with its elements converted to the given type.
      * @param key the key of the values to get
      * @param type target class of values
+     * @param <T> returned list type
      * @return value list
      * @since 2.0.0
      */
@@ -753,6 +756,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * to empty strings.
      * @param key the key of the value to set
      * @param values the values to set
+     * @param <T> values type
      * @since 2.0.0
      */
     @SafeVarargs
@@ -766,6 +770,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * to blank strings.
      * @param key the key of the value to set
      * @param values the values to set
+     * @param <T> values type
      * @since 2.0.0
      */
     @SafeVarargs
@@ -780,6 +785,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * to empty strings.
      * @param key the key of the value to set
      * @param values the values to set
+     * @param <T> values type
      * @since 2.0.0
      */
     public final <T> void set(String key, List<T> values) {
@@ -799,6 +805,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * to empty strings.
      * @param key the key of the value to set
      * @param values the values to set
+     * @param <T> values type
      * @since 2.0.0
      */
     public final <T> void add(String key, List<T> values) {

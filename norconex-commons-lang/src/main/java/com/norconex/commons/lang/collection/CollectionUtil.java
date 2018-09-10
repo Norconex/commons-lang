@@ -39,6 +39,12 @@ public final class CollectionUtil {
         super();
     }
 
+    /**
+     * Converts a collection to an array using the specified type.
+     * @param c collection to convert
+     * @param arrayType array type
+     * @return the new array
+     */
     public static Object toArray(Collection<?> c, Class<?> arrayType) {
         if (c == null) {
             return null;
@@ -61,6 +67,7 @@ public final class CollectionUtil {
      * If source is <code>null</code> will clear the target collection
      * @param target target collection
      * @param source source collection
+     * @param <T> objects class type
      */
     public static <T> void setAll(Collection<T> target, Collection<T> source) {
         if (target == null || target == source) {
@@ -80,6 +87,7 @@ public final class CollectionUtil {
      * If source is <code>null</code> will clear the target collection
      * @param target target collection
      * @param source source collection
+     * @param <T> objects class type
      */
     @SafeVarargs
     public static <T> void setAll(Collection<T> target, T... source) {
@@ -98,6 +106,8 @@ public final class CollectionUtil {
      * If source is <code>null</code> will clear the target map
      * @param target target map
      * @param source source map
+     * @param <K> key type
+     * @param <V> value type
      */
     public static <K,V> void setAll(Map<K,V> target, Map<K,V> source) {
         if (target == null || target == source) {
@@ -113,8 +123,8 @@ public final class CollectionUtil {
      * Returns a fixed-size list backed by the specified array or
      * an empty list if the array is <code>null</code>. This is a null-safe
      * version of {@link Arrays#asList(Object...)}.
-     * @param <T> the class of the objects in the array
      * @param values the array by which the list will be backed
+     * @param <T> objects class type
      * @return a list view of the specified array
      * @see #asListOrNull(Object...)
      */
@@ -131,7 +141,7 @@ public final class CollectionUtil {
      * version of {@link Arrays#asList(Object...)}.
      * A list is returned even if the array is empty or contains only
      * <code>null</code> values.
-     * @param <T> the class of the objects in the array
+     * @param <T> objects class type
      * @param values the array by which the list will be backed
      * @return a list view of the specified array
      * @see #asListOrEmpty(Object...)
@@ -175,6 +185,7 @@ public final class CollectionUtil {
      * the return type.
      * If the supplied list is <code>null</code>, an empty list
      * is returned.
+     * @param <T> objects class type
      * @param values list to convert to a list of the given type
      * @param targetClass target class
      * @return list
