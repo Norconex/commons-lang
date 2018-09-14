@@ -399,8 +399,8 @@ public final class BeanUtil {
     }
 
     // shallow
-    public static <T> void copyPropertiesOverNulls(T source, T dest) {
-        if (source == null || dest == null) {
+    public static <T> void copyPropertiesOverNulls(T target, T source) {
+        if (source == null || target == null) {
             return;
         }
         BeanUtil.visitProperties(source, (obj, pd) -> {
@@ -408,16 +408,17 @@ public final class BeanUtil {
                 return false;
             }
             String name = pd.getName();
-            if (BeanUtil.getValue(dest, name) == null) {
-                BeanUtil.setValue(dest, name, BeanUtil.getValue(source, name));
+            if (BeanUtil.getValue(target, name) == null) {
+                BeanUtil.setValue(target, name,
+                        BeanUtil.getValue(source, name));
             }
             return true;
         });
     }
 
     // shallow
-    public static <T> void copyProperties(T source, T dest) {
-        if (source == null || dest == null) {
+    public static <T> void copyProperties(T target, T source) {
+        if (source == null || target == null) {
             return;
         }
         BeanUtil.visitProperties(source, (obj, pd) -> {
@@ -425,7 +426,7 @@ public final class BeanUtil {
                 return false;
             }
             String name = pd.getName();
-            BeanUtil.setValue(dest, name, BeanUtil.getValue(source, name));
+            BeanUtil.setValue(target, name, BeanUtil.getValue(source, name));
             return true;
         });
     }
@@ -438,7 +439,7 @@ public final class BeanUtil {
         try {
             @SuppressWarnings("unchecked")
             T newBean = (T) bean.getClass().newInstance();
-            copyProperties(bean, newBean);
+            copyProperties(newBean, bean);
             return newBean;
         } catch (InstantiationException | IllegalAccessException e) {
             throw new BeanException("Cannot clone bean.", e);

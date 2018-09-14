@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -197,6 +198,26 @@ public final class CollectionUtil {
         }
         return values.stream().map(str -> Converter.convert(
                 str, targetClass)).collect(Collectors.toList());
+    }
+
+    /**
+     * Converts a list of strings to a list of objects matching
+     * the return type.
+     * If the supplied list is <code>null</code>, an empty list
+     * is returned.
+     * @param <T> target objects class type
+     * @param values list to convert to a list of the given type
+     * @param converter function converting string to type
+     * @return list
+     */
+    public static <T> List<T> toTypeList(
+            List<String> values, Function<String, T> converter) {
+        if (values == null) {
+            return Collections.emptyList();
+        }
+        //TODO is this method really working without accepting a type?
+        // If so, modify Properties/XML accordingly
+        return values.stream().map(converter).collect(Collectors.toList());
     }
 
     /**

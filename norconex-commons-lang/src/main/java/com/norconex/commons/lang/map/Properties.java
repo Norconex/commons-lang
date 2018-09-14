@@ -712,8 +712,8 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return value
      * @since 2.0.0
      */
-    public final <T> T getValue(String key, Class<T> type) {
-        return getValue(key, type, null);
+    public final <T> T get(String key, Class<T> type) {
+        return get(key, type, null);
     }
     /**
      * Gets a single value, converted to the given type.
@@ -724,7 +724,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return value
      * @since 2.0.0
      */
-    public final <T> T getValue(String key, Class<T> type, T defaultValue) {
+    public final <T> T get(String key, Class<T> type, T defaultValue) {
         try {
             String value = getString(key);
             if (StringUtils.isEmpty(value)) {
@@ -744,8 +744,26 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return value list
      * @since 2.0.0
      */
-    public final <T> List<T> getValues(String key, Class<T> type) {
+    public final <T> List<T> getList(String key, Class<T> type) {
         return CollectionUtil.toTypeList(getStrings(key), type);
+    }
+    /**
+     * Gets a list of values, with its elements converted to the given type.
+     * @param key the key of the values to get
+     * @param type target class of values
+     * @param defaultValues default values if the key returns
+     *        <code>null</code> or an empty list
+     * @param <T> returned list type
+     * @return value list
+     * @since 2.0.0
+     */
+    public final <T> List<T> getList(
+            String key, Class<T> type, List<T> defaultValues) {
+        List<T> list = getList(key, type);
+        if (CollectionUtils.isEmpty(list)) {
+            return defaultValues;
+        }
+        return list;
     }
 
     /**
@@ -894,7 +912,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the value
      */
     public final Integer getInteger(String key) {
-        return getValue(key, Integer.TYPE);
+        return get(key, Integer.TYPE);
     }
     /**
      * Gets value as an integer.
@@ -903,7 +921,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the value
      */
     public final Integer getInteger(String key, Integer defaultValue) {
-        return getValue(key, Integer.TYPE, defaultValue);
+        return get(key, Integer.TYPE, defaultValue);
     }
     /**
      * Gets values as a list of integers.
@@ -911,7 +929,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the values
      */
     public final List<Integer> getIntegers(String key) {
-        return getValues(key, Integer.class);
+        return getList(key, Integer.class);
     }
     /**
      * Sets one or multiple integer values, replacing existing ones.
@@ -941,7 +959,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the value
      */
     public final Double getDouble(String key) {
-        return getValue(key, Double.class);
+        return get(key, Double.class);
     }
     /**
      * Gets value as a double.
@@ -950,7 +968,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the value
      */
     public final Double getDouble(String key, Double defaultValue) {
-        return getValue(key, Double.class, defaultValue);
+        return get(key, Double.class, defaultValue);
     }
     /**
      * Gets values as a list of doubles.
@@ -958,7 +976,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the values
      */
     public final List<Double> getDoubles(String key) {
-        return getValues(key, Double.class);
+        return getList(key, Double.class);
     }
     /**
      * Sets one or multiple double values, replacing existing ones.
@@ -988,7 +1006,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the value
      */
     public final Long getLong(String key) {
-        return getValue(key, Long.class);
+        return get(key, Long.class);
     }
     /**
      * Gets value as a long.
@@ -997,7 +1015,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the value
      */
     public final Long getLong(String key, Long defaultValue) {
-        return getValue(key, Long.class, defaultValue);
+        return get(key, Long.class, defaultValue);
     }
     /**
      * Gets values as a list of longs.
@@ -1005,7 +1023,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the values
      */
     public final List<Long> getLongs(String key) {
-        return getValues(key, Long.class);
+        return getList(key, Long.class);
     }
     /**
      * Sets one or multiple long values, replacing existing ones.
@@ -1036,7 +1054,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the value
      */
     public final Float getFloat(String key) {
-        return getValue(key, Float.class);
+        return get(key, Float.class);
     }
     /**
      * Gets value as a float.
@@ -1045,7 +1063,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the value
      */
     public final Float getFloat(String key, Float defaultValue) {
-        return getValue(key, Float.class, defaultValue);
+        return get(key, Float.class, defaultValue);
     }
     /**
      * Gets values as a list of floats.
@@ -1053,7 +1071,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the values
      */
     public final List<Float> getFloats(String key) {
-        return getValues(key, Float.class);
+        return getList(key, Float.class);
     }
     /**
      * Sets one or multiple float values, replacing existing ones.
@@ -1083,7 +1101,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the value
      */
     public final BigDecimal getBigDecimal(String key) {
-        return getValue(key, BigDecimal.class);
+        return get(key, BigDecimal.class);
     }
     /**
      * Gets value as a BigDecimal.
@@ -1092,7 +1110,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the value
      */
     public final BigDecimal getBigDecimal(String key, BigDecimal defaultValue) {
-        return getValue(key, BigDecimal.class, defaultValue);
+        return get(key, BigDecimal.class, defaultValue);
     }
     /**
      * Gets values as a list of BigDecimals.
@@ -1100,7 +1118,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the values
      */
     public final List<BigDecimal> getBigDecimals(String key) {
-        return getValues(key, BigDecimal.class);
+        return getList(key, BigDecimal.class);
     }
     /**
      * Sets one or multiple BigDecimal values, replacing existing ones.
@@ -1132,7 +1150,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @since 2.0.0
      */
     public final LocalDateTime getLocalDateTime(String key) {
-        return getValue(key, LocalDateTime.class);
+        return get(key, LocalDateTime.class);
     }
     /**
      * Gets value as a local date-time. The date must be a valid date-time
@@ -1144,7 +1162,7 @@ public class Properties extends ObservableMap<String, List<String>>
      */
     public final LocalDateTime getLocalDateTime(
             String key, LocalDateTime defaultValue) {
-        return getValue(key, LocalDateTime.class, defaultValue);
+        return get(key, LocalDateTime.class, defaultValue);
     }
     /**
      * Gets values as a list of local date-times. Each date must be a valid
@@ -1154,7 +1172,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @since 2.0.0
      */
     public final List<LocalDateTime> getLocalDateTimes(String key) {
-        return getValues(key, LocalDateTime.class);
+        return getList(key, LocalDateTime.class);
     }
 
     //--- Date -----------------------------------------------------------------
@@ -1164,7 +1182,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the value
      */
     public final Date getDate(String key) {
-        return getValue(key, Date.class);
+        return get(key, Date.class);
     }
     /**
      * Gets value as a date.
@@ -1173,7 +1191,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the value
      */
     public final Date getDate(String key, Date defaultValue) {
-        return getValue(key, Date.class, defaultValue);
+        return get(key, Date.class, defaultValue);
     }
     /**
      * Gets values as a list of dates.
@@ -1181,7 +1199,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the values
      */
     public final List<Date> getDates(String key) {
-        return getValues(key, Date.class);
+        return getList(key, Date.class);
     }
     /**
      * Sets one or multiple date values, replacing existing ones.
@@ -1214,7 +1232,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the value
      */
     public final Boolean getBoolean(String key) {
-        return getValue(key, Boolean.class);
+        return get(key, Boolean.class);
     }
     /**
      * Gets value as a boolean. The underlying string value matching
@@ -1227,7 +1245,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the value
      */
     public final Boolean getBoolean(String key, Boolean defaultValue) {
-        return getValue(key, Boolean.class, defaultValue);
+        return get(key, Boolean.class, defaultValue);
     }
     /**
      * Gets values as a list of booleans.
@@ -1235,7 +1253,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the values
      */
     public final List<Boolean> getBooleans(String key) {
-        return getValues(key, Boolean.class);
+        return getList(key, Boolean.class);
     }
     /**
      * Sets one or multiple boolean values, replacing existing ones.
@@ -1265,7 +1283,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the value
      */
     public final Locale getLocale(String key) {
-        return getValue(key, Locale.class);
+        return get(key, Locale.class);
     }
     /**
      * Gets value as a locale.
@@ -1274,7 +1292,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the value
      */
     public final Locale getLocale(String key, Locale defaultValue) {
-        return getValue(key, Locale.class, defaultValue);
+        return get(key, Locale.class, defaultValue);
     }
     /**
      * Gets values as a list of locales.
@@ -1282,7 +1300,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the values
      */
     public final List<Locale> getLocales(String key) {
-        return getValues(key, Locale.class);
+        return getList(key, Locale.class);
     }
     /**
      * Sets one or multiple locale values, replacing existing ones.
@@ -1312,7 +1330,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return a File
      */
     public final File getFile(String key) {
-        return getValue(key, File.class);
+        return get(key, File.class);
     }
     /**
      * Gets a file, assuming key value is a file system path.
@@ -1322,7 +1340,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return a File
      */
     public final File getFile(String key, File defaultValue) {
-        return getValue(key, File.class, defaultValue);
+        return get(key, File.class, defaultValue);
     }
     /**
      * Gets values as a list of files.
@@ -1330,7 +1348,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the values
      */
     public final List<File> getFiles(String key) {
-        return getValues(key, File.class);
+        return getList(key, File.class);
     }
     /**
      * Sets one or multiple file values, replacing existing ones.
@@ -1361,7 +1379,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return initialized class
      */
     public final Class<?> getClass(String key) {
-        return getValue(key, Class.class);
+        return get(key, Class.class);
     }
     /**
      * Gets a class, assuming key value is a fully qualified class name
@@ -1372,7 +1390,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return initialized class
      */
     public final Class<?> getClass(String key, Class<?> defaultValue) {
-        return getValue(key, Class.class, defaultValue);
+        return get(key, Class.class, defaultValue);
     }
     /**
      * Gets values as a list of initialized classes.
@@ -1381,7 +1399,7 @@ public class Properties extends ObservableMap<String, List<String>>
      */
     @SuppressWarnings("rawtypes")
     public final List<Class> getClasses(String key) {
-        return getValues(key, Class.class);
+        return getList(key, Class.class);
     }
     /**
      * Sets one or multiple class values, replacing existing ones.

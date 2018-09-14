@@ -41,9 +41,7 @@ public class DimensionConverter extends AbstractConverter {
             Dimension d = (Dimension) object;
             return d.width + "x" + d.height;
         }
-        throw new ConverterException(
-                "Type " + object.getClass().getSimpleName()
-              + " is not supported by this converter.");
+        throw toUnsupportedTypeException(object);
     }
 
     @Override

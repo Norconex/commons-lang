@@ -8,6 +8,8 @@ TODO:
 
 - Make method naming more consistent between Properties and XML.   
 
+- Overload load/store methods to accept a Path 
+
 - Make Properties and XML take a IConverter as constructor agreement, but 
   default to Converter static instance.
 

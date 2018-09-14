@@ -14,6 +14,7 @@
  */
 package com.norconex.commons.lang.xml;
 
+import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -64,9 +65,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ClassUtils;
-import org.apache.commons.lang3.LocaleUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.xerces.xni.NamespaceContext;
@@ -131,6 +130,15 @@ public class XML {
      * for namespaces.</p>
      * @param file the XML file to parse
      */
+    public XML(Path file) {
+        this(fileToString(file.toFile()), (DocumentBuilderFactory) null);
+    }
+    /**
+     * <p>Parse an XML file into an XML document, without consideration
+     * for namespaces.</p>
+     * @param file the XML file to parse
+     */
+    //TODO really keep this one or have path only?
     public XML(File file) {
         this(fileToString(file), (DocumentBuilderFactory) null);
     }
@@ -633,6 +641,7 @@ public class XML {
         obj.loadFromXML(this);
         return errors;
     }
+    //TODO have a static version of configure that also takes a file?
 
     /**
      * Convenience class for testing that a {@link IXMLConfigurable} instance
@@ -1023,6 +1032,35 @@ public class XML {
 
 
     /**
+     * Gets the matching element/attribute, converted from
+     * string to the given type.
+     * @param xpathExpression XPath expression to the node value
+     * @param type target class type of returned value
+     * @param <T> target type
+     * @return object of given type
+     */
+    public <T> T get(String xpathExpression, Class<T> type) {
+        return get(xpathExpression, type, null);
+    }
+    /**
+     * Gets the matching element/attribute, converted from
+     * string to the given type.
+     * @param xpathExpression XPath expression to the node value
+     * @param type target class type of returned value
+     * @param defaultValue default value if the expression returns
+     *        <code>null</code>
+     * @param <T> target type
+     * @return object of given type
+     */
+    public <T> T get(String xpathExpression, Class<T> type, T defaultValue) {
+        String value = getString(xpathExpression);
+        if (value == null) {
+            return defaultValue;
+        }
+        return Converter.convert(value, type, defaultValue);
+    }
+
+    /**
      * Gets the matching list of elements/attributes, converted from
      * string to the given type.
      * @param xpathExpression XPath expression to the node values
@@ -1097,75 +1135,72 @@ public class XML {
     }
 
     public Integer getInteger(String xpathExpression) {
-        return getInteger(xpathExpression, null);
+        return get(xpathExpression, Integer.class);
     }
     public Integer getInteger(String xpathExpression, Integer defaultValue) {
-        //return Converter.convert //TODO call get(..) instead
-        String val = getString(xpathExpression);
-        return val == null ? defaultValue : Integer.parseInt(val);
+        return get(xpathExpression, Integer.class, defaultValue);
     }
 
     public Long getLong(String xpathExpression) {
-        return getLong(xpathExpression, null);
+        return get(xpathExpression, Long.class);
     }
     public Long getLong(String xpathExpression, Long defaultValue) {
-        String val = getString(xpathExpression);
-        return val == null ? defaultValue : Long.parseLong(val);
+        return get(xpathExpression, Long.class, defaultValue);
     }
 
     public Float getFloat(String xpathExpression) {
-        return getFloat(xpathExpression, null);
+        return get(xpathExpression, Float.class);
     }
     public Float getFloat(String xpathExpression, Float defaultValue) {
-        String val = getString(xpathExpression);
-        return val == null ? defaultValue : Float.parseFloat(val);
+        return get(xpathExpression, Float.class, defaultValue);
+    }
+
+    public Dimension getDimension(String xpathExpression) {
+        return get(xpathExpression, Dimension.class);
+    }
+    public Dimension getDimension(
+            String xpathExpression, Dimension defaultValue) {
+        return get(xpathExpression, Dimension.class, defaultValue);
     }
 
     public Double getDouble(String xpathExpression) {
-        return getDouble(xpathExpression, null);
+        return get(xpathExpression, Double.class);
     }
     public Double getDouble(String xpathExpression, Double defaultValue) {
-        String val = getString(xpathExpression);
-        return val == null ? defaultValue : Double.parseDouble(val);
+        return get(xpathExpression, Double.class, defaultValue);
     }
 
     public Boolean getBoolean(String xpathExpression) {
-        return getBoolean(xpathExpression, null);
+        return get(xpathExpression, Boolean.class);
     }
     public Boolean getBoolean(String xpathExpression, Boolean defaultValue) {
-        String val = getString(xpathExpression);
-        return val == null ? defaultValue : BooleanUtils.toBooleanObject(val);
+        return get(xpathExpression, Boolean.class, defaultValue);
     }
 
     public Locale getLocale(String xpathExpression) {
-        return getLocale(xpathExpression, null);
+        return get(xpathExpression, Locale.class);
     }
     public Locale getLocale(String xpathExpression, Locale defaultValue) {
-        String val = getString(xpathExpression);
-        return val == null ? defaultValue : LocaleUtils.toLocale(val);
+        return get(xpathExpression, Locale.class, defaultValue);
     }
 
     /**
      * Gets a duration in milliseconds which can exists as a numerical
      * value or a textual
      * representation of a duration as per {@link DurationParser}.
-     * If the duration does not exists for the given key or is blank,
-     * zero is returned.
      * If the key value is found but there are parsing errors, a
      * {@link DurationParserException} will be thrown.
      * @param xpathExpression xpath to the element/attribute containing the
      *        duration
      * @return duration in milliseconds
      */
-    public long getDurationMillis(String xpathExpression) {
-        return getDurationMillis(xpathExpression, 0);
+    public Long getDurationMillis(String xpathExpression) {
+        return getDurationMillis(xpathExpression, null);
     }
     /**
      * Gets a duration in milliseconds which can exists as a numerical
      * value or a textual
      * representation of a duration as per {@link DurationParser}.
-     * If the duration does not exists for the given key or is blank,
-     * the default value is returned.
      * If the key value is found but there are parsing errors, a
      * {@link DurationParserException} will be thrown.
      * @param xpathExpression xpath to the element/attribute containing the
@@ -1173,13 +1208,9 @@ public class XML {
      * @param defaultValue default duration
      * @return duration in milliseconds
      */
-    public long getDurationMillis(
-            String xpathExpression, long defaultValue) {
-        String duration = getString(xpathExpression);
-        if (StringUtils.isBlank(duration)) {
-            return defaultValue;
-        }
-        return new DurationParser().parse(duration).toMillis();
+    public Long getDurationMillis(String xpathExpression, Long defaultValue) {
+        Duration d = getDuration(xpathExpression);
+        return d == null ? defaultValue : d.toMillis();
     }
     /**
      * Gets a duration which can exists as a numerical
@@ -1194,7 +1225,7 @@ public class XML {
      * @return duration
      */
     public Duration getDuration(String xpathExpression) {
-        return getDuration(xpathExpression, null);
+        return get(xpathExpression, Duration.class);
     }
     /**
      * Gets a duration which can exists as a numerical
@@ -1211,11 +1242,7 @@ public class XML {
      */
     public Duration getDuration(
             String xpathExpression, Duration defaultValue) {
-        String duration = getString(xpathExpression);
-        if (StringUtils.isBlank(duration)) {
-            return defaultValue;
-        }
-        return new DurationParser().parse(duration);
+        return get(xpathExpression, Duration.class, defaultValue);
     }
 
     public String getName() {
@@ -1238,32 +1265,8 @@ public class XML {
      * <p>
      * Adds a child element to this XML root element.
      * If the element value is blank, and empty element is created.
-     * Otherwise, the value is handled differently based on its type:
-     * </p>
-     * <ul>
-     *   <li>String values are added as is.</li>
-     *   <li>
-     *     Objects implementing {@link IXMLConfigurable} have
-     *     their "saveToXML" method invoked the object root element
-     *     already set, with a "class" attribute.
-     *   </li>
-     *   <li>
-     *     The following are converted to their string representation:
-     *     Integer, Long, Float, Double, Path, File, Locale.
-     *   </li>
-     *   <li>
-     *     Enums are written in lowercase using their {@link Enum#name()}
-     *     method.
-     *   </li>
-     *   <li>
-     *     Duration objects are written as milliseconds.
-     *   </li>
-     *   <li>Class values are added as a "class" attribute.</li>
-     *   <li>
-     *     Everything else: a "class" attribute is added to the element,
-     *     matching the object canonical class, and nothing else.
-     *   </li>
-     * </ul>
+     * Otherwise, the value is handled as
+     * {@link #XML(String, Object)}
      * @param tagName element name
      * @param value element value
      * @return XML of the added element or <code>null</code> if value is

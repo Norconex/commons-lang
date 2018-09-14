@@ -15,12 +15,16 @@
 package com.norconex.commons.lang.file;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -32,7 +36,7 @@ import org.slf4j.LoggerFactory;
  * To detect the content type of a file, consider using an open-source library
  * such as <a href="https://tika.apache.org/">Apache Tika</a>.
  * <br><br>
- * To provide your own extension mappings or display names, copy the 
+ * To provide your own extension mappings or display names, copy the
  * appropriate <code>.properties</code> file to your classpath root, with
  * the word "custom" inserted: <code>ContentType-custom-[...]</code>.
  * The actual custom names and classpath location are:
@@ -51,7 +55,7 @@ import org.slf4j.LoggerFactory;
  *     <td>ContentType-custom-name[_locale].propertiess</td>
  *   </tr>
  * </table>
- * 
+ *
  * @author Pascal Essiembre
  * @since 1.4.0
  */
@@ -59,9 +63,9 @@ public final class ContentType implements Serializable {
 
     private static final long serialVersionUID = 6416074869536512030L;
 
-    private static final Logger LOG = 
+    private static final Logger LOG =
             LoggerFactory.getLogger(ContentType.class);
-    
+
     private static final Map<String, ContentType> REGISTRY = new HashMap<>();
 
     private static final ResourceBundle BUNDLE_EXTENSIONS;
@@ -78,18 +82,18 @@ public final class ContentType implements Serializable {
     }
     private static final Map<Locale, ResourceBundle> BUNDLE_DISPLAYNAMES =
             new HashMap<>();
-    
+
     //TODO how many do we want? Do we list them all??
     public static final ContentType TEXT = new ContentType("text/plain");
     public static final ContentType HTML = new ContentType("text/html");
     public static final ContentType PDF = new ContentType("application/pdf");
     public static final ContentType XML = new ContentType("application/xml");
     public static final ContentType CSV = new ContentType("text/csv");
-    public static final ContentType TSV = 
+    public static final ContentType TSV =
             new ContentType("text/tab-separated-values");
     /** @since 1.14.0*/
     public static final ContentType ZIP = new ContentType("application/zip");
-    
+
     // Common images:
     public static final ContentType JPEG = new ContentType("image/jpeg");
     public static final ContentType GIF = new ContentType("image/gif");
@@ -109,7 +113,7 @@ public final class ContentType implements Serializable {
     }
 
     /**
-     * Creates a new content type.  Returns an existing instance if the 
+     * Creates a new content type.  Returns an existing instance if the
      * same content type is requested more than once.
      * @param contentType the official media type name
      * @return content type instance or {@code null} if content type string is
@@ -130,7 +134,7 @@ public final class ContentType implements Serializable {
     /**
      * Creates a null-safe array of content types.  The same number of elements
      * as the supplied strings are returned.  A <code>null</code> value will
-     * return an empty array.  Each content types are individually obtained 
+     * return an empty array.  Each content types are individually obtained
      * by invoking {@link #valueOf(String)}.
      * @param contentTypes the official media type names
      * @return content type array.
@@ -146,11 +150,27 @@ public final class ContentType implements Serializable {
         }
         return new ContentType[] {};
     }
-    
+    /**
+     * Creates a null-safe array of content types.  The same number of elements
+     * as the supplied strings are returned.  A <code>null</code> value will
+     * return an empty array.  Each content types are individually obtained
+     * by invoking {@link #valueOf(String)}.
+     * @param contentTypes the official media type names
+     * @return content type array.
+     * @since 2.0.0
+     */
+    public static List<ContentType> valuesOf(List<String> contentTypes) {
+        if (CollectionUtils.isNotEmpty(contentTypes)) {
+            return contentTypes.stream().map(
+                    ContentType::valueOf).collect(Collectors.toList());
+        }
+        return Collections.emptyList();
+    }
+
     /**
      * Gets a name for the content type suitable for display to a user.
      * The system locale is used to defined the language of the display name.
-     * If no name has been defined for a content type, the raw content type 
+     * If no name has been defined for a content type, the raw content type
      * is returned (equivalent to {@link #toString()}).
      * @return display name
      */
@@ -160,7 +180,7 @@ public final class ContentType implements Serializable {
     /**
      * Gets a name for the content type suitable for display to a user.
      * If the locale is {@code null}, the system locale is used.
-     * If no name has been defined for a content type with the provided locale, 
+     * If no name has been defined for a content type with the provided locale,
      * the name defaults to English.
      * If no name has been defined for any locale, the raw content type
      * is returned (equivalent to {@link #toString()}).
@@ -195,7 +215,7 @@ public final class ContentType implements Serializable {
         BUNDLE_DISPLAYNAMES.put(locale, bundle);
         return bundle;
     }
-    
+
     public ContentFamily getContentFamily() {
         return ContentFamily.forContentType(type);
     }
@@ -214,7 +234,7 @@ public final class ContentType implements Serializable {
         return exts[0];
     }
     /**
-     * Gets the file extensions usually associated with this content type.  
+     * Gets the file extensions usually associated with this content type.
      * Most content types only have one commonly used extension.
      * @return file extension or empty array if no extension is defined
      */
@@ -228,7 +248,7 @@ public final class ContentType implements Serializable {
         }
         return ArrayUtils.EMPTY_STRING_ARRAY;
     }
-    
+
     /**
      * Whether the given string matches this content type.
      * @param contentType the content type
@@ -237,7 +257,7 @@ public final class ContentType implements Serializable {
     public boolean matches(String contentType) {
         return this.type.equals(StringUtils.trim(contentType));
     }
-    
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -288,7 +308,7 @@ public final class ContentType implements Serializable {
     }
     /**
      * Returns a content-type without any parameters
-     * (removes ";" and any values afterwards).  Invoking a content type 
+     * (removes ";" and any values afterwards).  Invoking a content type
      * without parameters will return itself.
      * @return content type without parameters
      * @since 1.14.0
@@ -299,5 +319,5 @@ public final class ContentType implements Serializable {
         }
         return this;
     }
-    
+
 }

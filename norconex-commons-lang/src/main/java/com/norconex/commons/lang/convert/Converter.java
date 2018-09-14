@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import com.norconex.commons.lang.collection.CollectionUtil;
+import com.norconex.commons.lang.file.ContentType;
 
 /**
  * <p>
@@ -50,24 +51,25 @@ import com.norconex.commons.lang.collection.CollectionUtil;
  * Default instance has converters for the following types:
  * </p>
  * <ul>
- *   <li>Byte/byte</li>
- *   <li>Short/short</li>
- *   <li>Integer/int</li>
- *   <li>Float/float</li>
- *   <li>Long/long</li>
- *   <li>Double/double</li>
- *   <li>BigInteger</li>
- *   <li>BigDecimal</li>
- *   <li>Boolean/boolean</li>
- *   <li>Character/char</li>
- *   <li>File</li>
- *   <li>Path</li>
- *   <li>Locale</li>
- *   <li>Date</li>
- *   <li>Enum</li>
- *   <li>LocalDateTime</li>
- *   <li>Dimension</li>
- *   <li>Duration</li>
+ *   <li>{@link Byte}/byte</li>
+ *   <li>{@link Short}/short</li>
+ *   <li>{@link Integer}/int</li>
+ *   <li>{@link Float}/float</li>
+ *   <li>{@link Long}/long</li>
+ *   <li>{@link Double}/double</li>
+ *   <li>{@link BigInteger}</li>
+ *   <li>{@link BigDecimal}</li>
+ *   <li>{@link Boolean}/boolean</li>
+ *   <li>{@link Character}/char</li>
+ *   <li>{@link File}</li>
+ *   <li>{@link Path}</li>
+ *   <li>{@link Locale}</li>
+ *   <li>{@link Date}</li>
+ *   <li>{@link Enum}</li>
+ *   <li>{@link LocalDateTime}</li>
+ *   <li>{@link Dimension}</li>
+ *   <li>{@link Duration}</li>
+ *   <li>{@link ContentType}</li>
  * </ul>
  * <p>
  * By default {@link ConverterException} is thrown when conversion fails.
@@ -137,6 +139,7 @@ public final class Converter implements IConverter {
         cc.put(String.class, new StringConverter());
         cc.put(URL.class, new URLConverter());
         cc.put(Duration.class, new DurationConverter());
+        cc.put(ContentType.class, new ContentTypeConverter());
 
         return cc;
     }

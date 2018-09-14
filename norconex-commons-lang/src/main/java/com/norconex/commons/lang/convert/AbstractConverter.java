@@ -63,6 +63,13 @@ public abstract class AbstractConverter implements IConverter {
     protected abstract String nullSafeToString(
             Object object) throws Exception;
 
+    protected ConverterException toUnsupportedTypeException(Object obj) {
+        return new ConverterException(
+                "Type " + obj.getClass().getSimpleName()
+              + " is not supported by this converter ("
+              + getClass().getSimpleName() + ").");
+    }
+
     protected ConverterException toTypeException(
             String value, Class<?> type) {
         return toTypeException(value, type, null);

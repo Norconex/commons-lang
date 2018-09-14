@@ -71,7 +71,7 @@ public class PropertiesTest {
         Properties properties = new Properties();
         List<String> list = asList("1", "2", "3");
         properties.put("key", list);
-        assertEquals(asList(1, 2, 3), properties.getValues("key", Integer.class));
+        assertEquals(asList(1, 2, 3), properties.getList("key", Integer.class));
     }
 
     @Test
@@ -79,7 +79,7 @@ public class PropertiesTest {
         Properties properties = new Properties();
         List<String> list = asList("1", "2", "3");
         properties.put("key", list);
-        assertEquals((Integer) 1, properties.getValue("key", Integer.class));
+        assertEquals((Integer) 1, properties.get("key", Integer.class));
     }
 
     @Test
