@@ -164,7 +164,6 @@ public final class ConfigurationLoader {
      * @return Apache XMLConfiguration instance
      * @since 2.0.0
      */
-    @SuppressWarnings("javadoc")
     //TODO move these methods to XML class??
     public XML loadXML(Path configFile) {
         return loadXML(configFile, null);
@@ -178,7 +177,6 @@ public final class ConfigurationLoader {
      * @return Apache XMLConfiguration instance
      * @since 2.0.0
      */
-    @SuppressWarnings("javadoc")
     public XML loadXML(Path configFile, Path variables) {
         if (!configFile.toFile().exists()) {
             return null;
@@ -189,8 +187,8 @@ public final class ConfigurationLoader {
             // includes/imports that could break parsing.
             // Keep first <?xml... tag only, and delete all <!DOCTYPE...
             // as they are not necessary to parse configs.
-            xml = Pattern.compile("((?!^)<\\?xml.*?\\?>|<\\!DOCTYPE.*?>)",
-                    Pattern.MULTILINE).matcher(xml).replaceAll("");
+            xml = Pattern.compile("((?!^)<\\?xml.*?\\?>|<\\!DOCTYPE.*?>)")
+                    .matcher(xml).replaceAll("");
             return new XML(xml);
         } catch (Exception e) {
             throw new ConfigurationException(

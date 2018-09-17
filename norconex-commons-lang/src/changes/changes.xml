@@ -60,6 +60,9 @@
         New FileUtil#toURLDir methods.
       </action>
       <action dev="essiembre" type="add">
+        New CachedInputStream#isEmpty method.
+      </action>
+      <action dev="essiembre" type="add">
         New accessors for LocalDateTime on Properties.
       </action>
       <action dev="essiembre" type="update">

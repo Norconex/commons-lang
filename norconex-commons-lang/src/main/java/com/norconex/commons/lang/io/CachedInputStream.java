@@ -28,46 +28,46 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.lang3.ArrayUtils;
-import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.file.FileUtil;
 import com.norconex.commons.lang.io.CachedStreamFactory.MemoryTracker;
 
 /**
- * {@link InputStream} wrapper that can be re-read any number of times.  This 
- * class will cache the wrapped input steam content the first time it is read, 
- * and subsequent read will use the cache.   
+ * {@link InputStream} wrapper that can be re-read any number of times.  This
+ * class will cache the wrapped input steam content the first time it is read,
+ * and subsequent read will use the cache.
  * <br><br>
  * To create new instances of {@link CachedInputStream}, use the
  * {@link CachedStreamFactory} class.   Reusing the same factory
  * will ensure all {@link CachedInputStream} instances created share the same
- * combined maximum memory.  Invoking one of the 
+ * combined maximum memory.  Invoking one of the
  * <code>newInputStream(...)</code> methods on this class have the same effect.
  * <br><br>
  * In order to re-use this InputStream, you must call {@link #rewind()} first
- * on it. Once done reading the stream, you will get the -1 character as 
+ * on it. Once done reading the stream, you will get the -1 character as
  * expected, and it will remain at that until you rewind or dispose.
  * <br><br>
- * Starting reading the stream again will start reading bytes from the 
+ * Starting reading the stream again will start reading bytes from the
  * beginning (re)using its internal cache.
  * <br><br>
  * Calling {@link #close()} has
  * no effect, and the cache data remains available for subsequent read.
  * <br><br>
- * To explicitly dispose of resources allocated to the cache, you can 
- * use the {@link #dispose()} method.  
+ * To explicitly dispose of resources allocated to the cache, you can
+ * use the {@link #dispose()} method.
  * Attempting to read a disposed instance will throw an {@link IOException}.
  * It is recommended you explicitly dispose of <code>CachedInputStream</code>
  * instances to speed up the release of resources. Otherwise, resources are
  * de-allocated automatically when the instance is finalized.
  * <br><br>
- * The internal cache stores read bytes into memory, up to to the 
+ * The internal cache stores read bytes into memory, up to to the
  * specified maximum cache size. If content exceeds
  * the cache limit, the cache transforms itself into a fast file-based cache
  * of unlimited size.  Default memory cache size is 128 KB.
  * <br><br>
- * <b>Starting with 1.6.0</b>, <code>mark(int)</code> is supported. The mark 
+ * <b>Starting with 1.6.0</b>, <code>mark(int)</code> is supported. The mark
  * limit is always unlimited so the method argument is ignored.
  * <br><br>
  * @author Pascal Essiembre
@@ -76,36 +76,36 @@ import com.norconex.commons.lang.io.CachedStreamFactory.MemoryTracker;
  */
 public class CachedInputStream extends InputStream implements ICachedStream {
 
-    private static final Logger LOG = 
+    private static final Logger LOG =
             LoggerFactory.getLogger(CachedInputStream.class);
-    
+
     private static final int UNDEFINED_LENGTH = -42;
 
     private final CachedStreamFactory factory;
     private final MemoryTracker tracker;
-    
+
     private InputStream inputStream;
-    
+
     private byte[] memCache;
     private ByteArrayOutputStream memOutputStream;
-    
+
     private File fileCache;
     private RandomAccessFile randomAccessFile;
-    
+
     private boolean firstRead = true;
     private boolean needNewStream = false;
     private boolean cacheEmpty = true;
     private boolean disposed = false;
-    
+
     private final File cacheDirectory;
-    
+
     private int count;        // total number of bytes read so far
     private int pos = 0;      // byte position we are in
     private int markpos = -1; // position we want to go back to
 
     // undefined until a full read was performed
     private int length = UNDEFINED_LENGTH;
-    
+
     /**
      * Caches the wrapped InputStream.
      * @param factory stream factory
@@ -115,12 +115,12 @@ public class CachedInputStream extends InputStream implements ICachedStream {
     /*default*/ CachedInputStream(
             CachedStreamFactory factory, File cacheDirectory, InputStream is) {
         super();
-        
+
         this.factory = factory;
         this.tracker = factory.new MemoryTracker();
 
         memOutputStream = new ByteArrayOutputStream();
-        
+
         if (is instanceof BufferedInputStream) {
             this.inputStream = is;
         } else {
@@ -165,7 +165,7 @@ public class CachedInputStream extends InputStream implements ICachedStream {
             this.length = (int) cacheFile.length();
         }
     }
-    
+
     // Now called by all constructors to prevent NPE in case this instance
     // is used to obtain the cache temp dir for other usage.
     private static File nullSafeCacheDirectory(File cacheDir) {
@@ -211,7 +211,23 @@ public class CachedInputStream extends InputStream implements ICachedStream {
     public boolean isInMemory() {
         return fileCache == null;
     }
-    
+
+    /**
+     * Returns <code>true</code> if this input stream is empty (zero-lenght
+     * content). Unless the stream has been fully read at least once, this
+     * method is more efficient than checking if {@link #length()}
+     * is zero.
+     * @return <code>true</code> if empty
+     * @throws IOException problem checking if empty
+     * @since 2.0.0
+     */
+    public boolean isEmpty() throws IOException {
+        mark(1);
+        boolean empty = read() == -1;
+        reset();
+        return empty;
+    }
+
     @Override
     public int read() throws IOException {
         if (disposed) {
@@ -242,14 +258,14 @@ public class CachedInputStream extends InputStream implements ICachedStream {
             return val;
         }
 
-        int b = realRead(); 
+        int b = realRead();
         if (b != -1) {
             pos++;
             count++;
         }
         return b;
     }
-        
+
     private int realRead() throws IOException {
         if (needNewStream) {
             createInputStreamFromCache();
@@ -277,13 +293,13 @@ public class CachedInputStream extends InputStream implements ICachedStream {
         cacheEmpty = false;
         return read;
     }
-    
+
     @Override
     public int read(byte[] b, int off, int len) throws IOException {
         if (disposed) {
             throw new IOException("CachedInputStream has been disposed.");
         }
-    
+
         int cursor = pos;
         int read = 0;
         if (cursor < count) {
@@ -299,7 +315,7 @@ public class CachedInputStream extends InputStream implements ICachedStream {
                     } else {
                         System.arraycopy(memCache, cursor, b, off, toRead);
                         read = toRead;
-                    }                    
+                    }
                 }
             } else {
                 randomAccessFile.seek(cursor);
@@ -309,10 +325,10 @@ public class CachedInputStream extends InputStream implements ICachedStream {
                 pos += read;
             }
         }
-        
+
         if (read != -1 && read < len) {
             int maxToRead = len - read;
-            int remainingRead = realRead(b, off + read, maxToRead); 
+            int remainingRead = realRead(b, off + read, maxToRead);
             if (remainingRead != -1) {
                 pos += remainingRead;
                 count += remainingRead;
@@ -321,7 +337,7 @@ public class CachedInputStream extends InputStream implements ICachedStream {
         }
         return read;
     }
-    
+
     private int realRead(byte[] b, int off, int len) throws IOException {
         if (needNewStream) {
             createInputStreamFromCache();
@@ -345,7 +361,7 @@ public class CachedInputStream extends InputStream implements ICachedStream {
         }
         return num;
     }
-    
+
     /**
      * If not already fully cached, forces the inner input stream to be
      * fully cached.
@@ -358,7 +374,7 @@ public class CachedInputStream extends InputStream implements ICachedStream {
             firstRead = false;
         }
     }
-    
+
     /**
      * Rewinds this stream so it can be read again from the beginning.
      * If this input stream was not fully read at least once, it will
@@ -366,7 +382,7 @@ public class CachedInputStream extends InputStream implements ICachedStream {
      */
     public void rewind() {
         if (!cacheEmpty) {
-            // Rewinding a stream that we not fully read will truncate 
+            // Rewinding a stream that we not fully read will truncate
             // it. We finish reading it all to avoid that.
             if (firstRead) {
                 try {
@@ -379,7 +395,7 @@ public class CachedInputStream extends InputStream implements ICachedStream {
             resetStream();
         }
     }
-    
+
     private void resetStream() {
         // Rewind
         IOUtils.closeQuietly(inputStream);
@@ -398,7 +414,7 @@ public class CachedInputStream extends InputStream implements ICachedStream {
         markpos = -1;
         count = 0;
     }
-    
+
     public void dispose() throws IOException {
         if (memCache != null) {
             memCache = null;
@@ -434,7 +450,7 @@ public class CachedInputStream extends InputStream implements ICachedStream {
         }
         return inputStream.available();
     }
-    
+
     /**
      * Gets the cache directory where temporary cache files are created.
      * @return the cache directory
@@ -445,14 +461,14 @@ public class CachedInputStream extends InputStream implements ICachedStream {
     }
 
     /**
-     * Returns <code>true</code> if was nothing to cache (no writing was 
-     * performed) or if the stream was closed. 
+     * Returns <code>true</code> if was nothing to cache (no writing was
+     * performed) or if the stream was closed.
      * @return <code>true</code> if empty
      */
     public boolean isCacheEmpty() {
         return cacheEmpty;
     }
-    
+
     public boolean isDisposed() {
         return disposed;
     }
@@ -467,13 +483,13 @@ public class CachedInputStream extends InputStream implements ICachedStream {
         }
         return 0;
     }
-    
+
     /**
      * <p>Gets the length of the cached input stream. The length represents the
-     * number of bytes that were read from this input stream, 
+     * number of bytes that were read from this input stream,
      * after it was read entirely at least once.</p>
-     * <p><b>Note:</b> Invoking this method when this stream is only partially 
-     * read (on a first read) will force it to read entirely and cache the 
+     * <p><b>Note:</b> Invoking this method when this stream is only partially
+     * read (on a first read) will force it to read entirely and cache the
      * inner input stream it wraps.  To prevent an unnecessary read cycle,
      * it is always best to invoke this method after this stream was fully
      * read through normal use first.
@@ -510,7 +526,7 @@ public class CachedInputStream extends InputStream implements ICachedStream {
         }
         return length;
     }
-    
+
     /**
      * Creates a new {@link CachedInputStream} using the same factory settings
      * that were used to create this instance.
@@ -529,16 +545,16 @@ public class CachedInputStream extends InputStream implements ICachedStream {
     public CachedInputStream newInputStream(InputStream is) {
         return factory.newInputStream(is);
     }
-    
+
     public CachedStreamFactory getStreamFactory() {
         return factory;
     }
-    
+
     private void cacheToFile() throws IOException {
         fileCache = File.createTempFile(
                 "CachedInputStream-", "-temp", cacheDirectory);
         fileCache.deleteOnExit();
-        LOG.debug("Reached max cache size. Swapping to file: " + fileCache);
+        LOG.debug("Reached max cache size. Swapping to file: {}", fileCache);
         randomAccessFile = new RandomAccessFile(fileCache, "rw");
         randomAccessFile.write(memOutputStream.toByteArray());
         memOutputStream = null;
@@ -556,9 +572,9 @@ public class CachedInputStream extends InputStream implements ICachedStream {
         }
         needNewStream = false;
     }
-    
+
     @Override
-    protected void finalize() throws Throwable {        
+    protected void finalize() throws Throwable {
         dispose();
         super.finalize();
     }

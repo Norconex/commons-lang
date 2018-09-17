@@ -19,8 +19,6 @@ import java.util.Objects;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 
 /**
  * A generic event implementation.
@@ -106,7 +104,8 @@ public class Event<T> extends EventObject {
     }
     @Override
     public String toString() {
-        return new ReflectionToStringBuilder(
-                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
+        return Objects.toString(source);
+//        return new ReflectionToStringBuilder(
+//                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

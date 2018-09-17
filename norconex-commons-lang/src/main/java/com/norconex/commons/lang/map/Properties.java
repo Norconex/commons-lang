@@ -48,6 +48,7 @@ import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.text.StringEscapeUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -55,6 +56,7 @@ import org.json.JSONTokener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.norconex.commons.lang.EqualsUtil;
 import com.norconex.commons.lang.bean.BeanException;
 import com.norconex.commons.lang.bean.BeanUtil;
 import com.norconex.commons.lang.collection.CollectionUtil;
@@ -1661,4 +1663,15 @@ public class Properties extends ObservableMap<String, List<String>>
         }
     }
 
+    @Override
+    public boolean equals(final Object other) {
+        if (!(other instanceof Map<?, ?>)) {
+            return false;
+        }
+        return EqualsUtil.equalsMap(this, (Map<?, ?>) other);
+    }
+    @Override
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this);
+    }
 }

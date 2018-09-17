@@ -17,6 +17,7 @@ package com.norconex.commons.lang.bean;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
+import java.beans.Statement;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -40,6 +41,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -120,13 +122,10 @@ public final class BeanUtil {
         Objects.requireNonNull(propertyName, "propertyName must not be null");
 
         try {
-            PropertyDescriptor p =
-                    new PropertyDescriptor(propertyName, bean.getClass());
-            p.getWriteMethod().invoke(bean, value);
-        } catch (IntrospectionException
-                | IllegalAccessException
-                | IllegalArgumentException
-                | InvocationTargetException e) {
+            Statement stmt = new Statement(
+                    bean, "set" + StringUtils.capitalize(propertyName), new Object[]{value});
+            stmt.execute();
+        } catch (Exception e) {
             throw new BeanException("Could not set value \"" + value
                     + "\" for property \"" + propertyName
                     + "\" on bean type \""

@@ -1,6 +1,10 @@
 TODO:
 ==============
 
+- Add feature and tests for when parent element is specified but has no
+  value, which means blanking a list 
+  (e.g. HTTP Collector: StandardSitemapResolverTest).
+
 - Add XML.getValue(String xpath, Class<T> type) and use Convert 
   for conversion.  Remove getXXX Methods?  Do same with Set if not done already.
   

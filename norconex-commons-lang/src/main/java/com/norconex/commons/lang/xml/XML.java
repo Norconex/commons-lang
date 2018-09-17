@@ -102,10 +102,13 @@ import com.norconex.commons.lang.xml.XMLValidationError.Severity;
  * validating, and populating classes from/to XML, with support
  * for {@link IXMLConfigurable}.
  * </p>
+ * <h3>XML syntax and white spaces</h3>
  * <p>
  * White spaces in elements should always be preserved.  Empty tags
- * are interpreted as having an empty strings while non-existing or
+ * are interpreted as having an empty strings while
  * self-closing tags have their value interpreted as <code>null</code>.
+ * Non-existing tags have no effect (when loading over an object, that
+ * object current value should remain unchanged).
  * </p>
  * <p>
  * Checked exceptions are wrapped into an {@link XMLException}.
@@ -675,8 +678,7 @@ public class XML {
         if (!xmlConfigurable.equals(readConfigurable)) {
             LOG.error("BEFORE: {}", xmlConfigurable);
             LOG.error(" AFTER: {}", readConfigurable);
-            throw new XMLException(
-                    "Saved and loaded XML are not the same.");
+            throw new XMLException("Saved and loaded XML are not the same.");
         }
     }
 

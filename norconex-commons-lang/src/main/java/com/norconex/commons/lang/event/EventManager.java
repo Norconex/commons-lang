@@ -82,7 +82,7 @@ public class EventManager {
         Logger log =  LoggerFactory.getLogger(event.getClass().getSimpleName()
                 + "." + event.getName());
         Level safeLevel = ObjectUtils.defaultIfNull(level, Level.INFO);
-        SLF4JUtil.log(log, safeLevel, Objects.toString(event.getSource(), ""));
+        SLF4JUtil.log(log, safeLevel, event.toString(), event.getException());// Objects.toString(event.getSource(), ""));
     }
 
     public void addListenersFromScan(Object obj) {
