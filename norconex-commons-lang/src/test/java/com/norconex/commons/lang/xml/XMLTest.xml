@@ -31,4 +31,30 @@
    <testEmpty></testEmpty>
    <testNull/>
 
+   <!-- testGetNullMissingDefaultElements -->
+   <dimOK>640x480</dimOK>
+   <dimNull />
+   <dimEmpty></dimEmpty>
+
+   <!-- testGetListNullMissingDefaultElements -->
+   <listEmpty></listEmpty>
+   <listBlank>  </listBlank>
+   <listNull/>
+   <listNullEntries>
+     <entry/>
+     <entry/>
+   </listNullEntries>
+   <listOKEntries>
+     <entry>10x20</entry>
+     <entry>30x40</entry>
+   </listOKEntries>
+   <listMixedEntries>
+     <entry>50x60</entry>
+     <entry/>
+   </listMixedEntries>
+   <listNoParent>70x80</listNoParent>
+   <listNoParent>90x100</listNoParent>
+   <listNullNoParent/>
+   <listNullNoParent/>
+   <listNullNoParent/>
 </xmltest>

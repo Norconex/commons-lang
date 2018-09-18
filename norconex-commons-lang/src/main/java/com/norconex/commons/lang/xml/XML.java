@@ -1015,8 +1015,8 @@ public class XML {
     /**
      * Gets the matching list of elements/attributes as strings.
      * @param xpathExpression XPath expression to the node values
-     * @param defaultValues default values if the expression returns
-     *        <code>null</code> or an empty list
+     * @param defaultValues default values if the expression does not match
+     *        anything.
      * @return list of strings
      */
     public List<String> getStringList(
@@ -1027,7 +1027,10 @@ public class XML {
         }
         List<String> list = new ArrayList<>();
         for (Node n : nodeList) {
-            list.add(getNodeString(n));
+            String str = getNodeString(n);
+            if (str != null) {
+                list.add(str);
+            }
         }
         return list;
     }
@@ -1055,8 +1058,11 @@ public class XML {
      * @return object of given type
      */
     public <T> T get(String xpathExpression, Class<T> type, T defaultValue) {
-        String value = getString(xpathExpression);
+        String value = getString(xpathExpression, "\u0000");
         if (value == null) {
+            return null;
+        }
+        if (value.equals("\u0000")) {
             return defaultValue;
         }
         return Converter.convert(value, type, defaultValue);
@@ -1071,11 +1077,12 @@ public class XML {
      * @return list of given type, never <code>null</code>
      */
     public <T> List<T> getList(String xpathExpression, Class<T> type) {
-        List<String> list = getStringList(xpathExpression, null);
-        if (CollectionUtils.isEmpty(list)) {
-            return Collections.emptyList();
-        }
-        return CollectionUtil.toTypeList(list, type);
+        return getList(xpathExpression, type, Collections.emptyList());
+//        List<String> list = getStringList(xpathExpression, null);
+//        if (CollectionUtils.isEmpty(list)) {
+//            return Collections.emptyList();
+//        }
+//        return CollectionUtil.toTypeList(list, type);
     }
     /**
      * Gets the matching list of elements/attributes, converted from
@@ -1090,8 +1097,11 @@ public class XML {
     public <T> List<T> getList(
             String xpathExpression, Class<T> type, List<T> defaultValues) {
         List<String> list = getStringList(xpathExpression, null);
-        if (CollectionUtils.isEmpty(list)) {
+        if (list == null) {
             return defaultValues;
+        }
+        if (list.isEmpty()) {
+            return Collections.emptyList();
         }
         return CollectionUtil.toTypeList(list, type);
     }

@@ -14,7 +14,9 @@
  */
 package com.norconex.commons.lang.xml;
 
+import java.awt.Dimension;
 import java.util.Arrays;
+import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -22,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.ResourceLoader;
+import com.norconex.commons.lang.convert.ConverterException;
 
 /**
  * @author Pascal Essiembre
@@ -150,8 +153,92 @@ public class XMLTest {
                 new XML(SAMPLE_XML).replace(new XML(replacement)).toString());
     }
 
-//    setRequestHeaders(xml.parseXMLMap("headers/header", x ->
-//    new DefaultMapEntry<>(x.getString("@name"), x.getString(".")),
-//    requestHeaders));
+    @Test
+    public void testGetNullMissingDefaultElements() {
+        XML xml = new XML(ResourceLoader.getXmlString(XMLTest.class));
 
+        //--- Strings ---
+
+        // self-closing tag is null
+        Assert.assertNull(xml.getString("testNull", "shouldBeNull"));
+        // empty tag is empty
+        Assert.assertEquals("", xml.getString("testEmpty", "shouldBeEmpty"));
+        // missing tag uses default
+        Assert.assertEquals("pickMe", xml.getString("testMissing", "pickMe"));
+
+        //--- Misc. Objects ---
+
+        // actual value when set
+        Assert.assertEquals(new Dimension(640, 480),
+                xml.getDimension("dimOK", new Dimension(10, 20)));
+        // self-closing tag is null
+        Assert.assertNull(xml.getDimension("dimNull", new Dimension(30, 40)));
+        // missing tag uses default
+        Assert.assertEquals(new Dimension(70, 80),
+                xml.getDimension("dimMissing", new Dimension(70, 80)));
+        // empty tag should fail
+        try {
+            xml.getDimension("dimEmpty", new Dimension(50, 60));
+            Assert.fail("Dimension wrongfully converted from empty string.");
+        } catch (ConverterException e) {
+            // swallow
+        }
+    }
+
+    @Test
+    public void testGetListNullMissingDefaultElements() {
+        XML xml = new XML(ResourceLoader.getXmlString(XMLTest.class));
+        List<Dimension> defaultList = Arrays.asList(
+                new Dimension(1, 2), new Dimension(3, 4));
+
+        // Lists are never null, so what would normally be null is
+        // considered empty list when obtained as a list.
+
+
+        //--- empty lists ---
+
+        // self-closing tag is empty list
+        Assert.assertTrue("List not empty.", xml.getList(
+                "listNull", Dimension.class, defaultList).isEmpty());
+        // empty tag should fail
+        try {
+            xml.getList("listEmpty", Dimension.class, defaultList);
+            Assert.fail(
+                    "Dimension list wrongfully converted from empty string.");
+        } catch (ConverterException e) {
+            // swallow
+        }
+        // blank tag should fail
+        try {
+            xml.getList("listBlank", Dimension.class, defaultList);
+            Assert.fail(
+                    "Dimension list wrongfully converted from blank string.");
+        } catch (ConverterException e) {
+            // swallow
+        }
+        // missing tag uses default
+        Assert.assertEquals(defaultList,
+                xml.getList("missingList", Dimension.class, defaultList));
+        // self-closing entries is empty list
+        Assert.assertTrue("List not empty.", xml.getList(
+                "listNullEntries/entry", Dimension.class,
+                defaultList).isEmpty());
+        // OK entries returns normally
+        Assert.assertEquals(
+                Arrays.asList(new Dimension(10, 20), new Dimension(30, 40)),
+                xml.getList("listOKEntries/entry",
+                        Dimension.class, defaultList));
+        // Mixed entries should return only OK ones
+        Assert.assertEquals(Arrays.asList(new Dimension(50, 60)),
+                xml.getList("listMixedEntries/entry",
+                        Dimension.class, defaultList));
+        // No parent lists returns normally
+        Assert.assertEquals(
+                Arrays.asList(new Dimension(70, 80), new Dimension(90, 100)),
+                xml.getList("listNoParent", Dimension.class, defaultList));
+
+        // Self-closing no parent lists returns empty list
+        Assert.assertTrue("List not empty.", xml.getList("listNullNoParent",
+                Dimension.class, defaultList).isEmpty());
+    }
 }
