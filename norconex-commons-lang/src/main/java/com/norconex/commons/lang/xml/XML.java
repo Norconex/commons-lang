@@ -24,7 +24,6 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,7 +35,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
@@ -66,7 +64,6 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ClassUtils;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.xerces.xni.NamespaceContext;
 import org.slf4j.Logger;
@@ -125,6 +122,12 @@ public class XML {
 
     public static final String W3C_XML_SCHEMA_NS_URI_1_1 =
             "http://www.w3.org/XML/XMLSchema/v1.1";
+
+    private static final String DEFAULT_DELIM_REGEX = "(\\s*,\\s*)+";
+    private static final String NULL_XML_VALUE = "\u0000";
+    private static final List<String> NULL_XML_LIST = new ArrayList<>(0);
+
+
 
     private final Node node;
 
@@ -668,9 +671,7 @@ public class XML {
         } catch (IOException e) {
             throw new XMLException("Could not save XML.", e);
         }
-        if (LOG.isTraceEnabled()) {
-            LOG.trace(xmlStr);
-        }
+        LOG.trace(xmlStr);
 
         // Read
         XML xml = new XML(xmlStr);
@@ -721,7 +722,7 @@ public class XML {
     public List<String> getDelimitedStringList(
             String xpathExpression, List<String> defaultValues) {
         return getDelimitedStringList(
-                xpathExpression, "(\\s*,\\s*)+", defaultValues);
+                xpathExpression, DEFAULT_DELIM_REGEX, defaultValues);
     }
     /**
      * Gets a list of strings after splitting the matching node value(s) with
@@ -757,7 +758,7 @@ public class XML {
         if (CollectionUtils.isEmpty(delimList)) {
             return defaultValues;
         }
-        List<String> splitedList = new ArrayList<>();
+        List<String> splitList = new ArrayList<>();
         for (String str : delimList) {
             List<String> values = split(str, delimRegex);
             if (CollectionUtils.isEmpty(values)) {
@@ -766,12 +767,12 @@ public class XML {
             for (String val : values) {
                 String trimmed = StringUtils.trimToNull(val);
                 if (trimmed != null) {
-                    splitedList.add(trimmed);
+                    splitList.add(trimmed);
                 }
             }
         }
-        if (CollectionUtils.isNotEmpty(splitedList)) {
-            return splitedList;
+        if (CollectionUtils.isNotEmpty(splitList)) {
+            return splitList;
         }
         return defaultValues;
     }
@@ -808,13 +809,18 @@ public class XML {
      * @param <T> returned list type
      * @return list of given type, never <code>null</code>
      */
-    public <T> List<T> getDelimitedList(String xpathExpression, Class<T> type) {
-        List<String> values =
-                getDelimitedStringList(xpathExpression, (List<String>) null);
-        if (values == null) {
-            return Collections.emptyList();
-        }
-        return CollectionUtil.toTypeList(values, type);
+    public <T> List<T> getDelimitedList(
+            String xpathExpression, Class<T> type) {
+
+        return getDelimitedList(xpathExpression, type, Collections.emptyList());
+
+
+//        List<String> values =
+//                getDelimitedStringList(xpathExpression, (List<String>) null);
+//        if (values == null) {
+//            return Collections.emptyList();
+//        }
+//        return (List<T>) CollectionUtil.toTypeList(values, type);
     }
     /**
      * Gets a list of given type after splitting the matching node value(s)
@@ -831,12 +837,16 @@ public class XML {
      */
     public <T> List<T> getDelimitedList(
             String xpathExpression, Class<T> type, List<T> defaultValues) {
-        List<String> values =
-                getDelimitedStringList(xpathExpression, (List<String>) null);
-        if (values == null) {
-            return defaultValues;
-        }
-        return CollectionUtil.toTypeList(values, type);
+
+        return getDelimitedList(
+                xpathExpression, type, DEFAULT_DELIM_REGEX, defaultValues);
+
+//        List<String> values =
+//                getDelimitedStringList(xpathExpression, (List<String>) null);
+//        if (values == null) {
+//            return defaultValues;
+//        }
+//        return CollectionUtil.toTypeList(values, type);
     }
     /**
      * Gets a list of given type after splitting the matching node value(s) with
@@ -851,12 +861,16 @@ public class XML {
      */
     public <T> List<T> getDelimitedList(
             String xpathExpression, Class<T> type, String delimRegex) {
-        List<String> values =
-                getDelimitedStringList(xpathExpression, delimRegex, null);
-        if (values == null) {
-            return Collections.emptyList();
-        }
-        return CollectionUtil.toTypeList(values, type);
+
+        return getDelimitedList(
+                xpathExpression, type, delimRegex, Collections.emptyList());
+
+//        List<String> values =
+//                getDelimitedStringList(xpathExpression, delimRegex, null);
+//        if (values == null) {
+//            return Collections.emptyList();
+//        }
+//        return CollectionUtil.toTypeList(values, type);
     }
     /**
      * Gets a list of given type after splitting the matching node value(s) with
@@ -871,14 +885,28 @@ public class XML {
      * @param <T> returned list type
      * @return list of strings
      */
-    public <T> List<T> getDelimitedList(String xpathExpression,
-            Class<T> type, String delimRegex, List<T> defaultValues) {
+    @SuppressWarnings("unchecked")
+    public <T> List<T> getDelimitedList(String xpathExpression, Class<T> type,
+            String delimRegex, List<? extends T> defaultValues) {
+//        List<String> values = getDelimitedStringList(
+//                xpathExpression, delimRegex, null);
+//        if (values == null) {
+//            return (List<T>) defaultValues;
+//        }
+//        return CollectionUtil.toTypeList(values, type);
+
+
+
         List<String> values = getDelimitedStringList(
-                xpathExpression, delimRegex, null);
+                xpathExpression, delimRegex, NULL_XML_LIST);
         if (values == null) {
-            return defaultValues;
+            return (List<T>) defaultValues;
+        }
+        if (values.isEmpty() || values == NULL_XML_LIST) {
+            return Collections.emptyList();
         }
         return CollectionUtil.toTypeList(values, type);
+
     }
 
     private static String getXSDResourcePath(Class<?> clazz) {
@@ -1033,6 +1061,26 @@ public class XML {
             }
         }
         return list;
+
+
+
+
+
+
+
+
+//        List<String> list = getStringList(xpathExpression, null);
+//        if (list == null) {
+//            return defaultValues;
+//        }
+//        if (list.isEmpty()) {
+//            return Collections.emptyList();
+//        }
+//        return CollectionUtil.toTypeList(list, type);
+
+
+
+
     }
 
 
@@ -1058,11 +1106,11 @@ public class XML {
      * @return object of given type
      */
     public <T> T get(String xpathExpression, Class<T> type, T defaultValue) {
-        String value = getString(xpathExpression, "\u0000");
+        String value = getString(xpathExpression, NULL_XML_VALUE);
         if (value == null) {
             return null;
         }
-        if (value.equals("\u0000")) {
+        if (value.equals(NULL_XML_VALUE)) {
             return defaultValue;
         }
         return Converter.convert(value, type, defaultValue);
@@ -1076,13 +1124,9 @@ public class XML {
      * @param <T> returned list type
      * @return list of given type, never <code>null</code>
      */
-    public <T> List<T> getList(String xpathExpression, Class<T> type) {
+    public <T> List<? extends T> getList(
+            String xpathExpression, Class<T> type) {
         return getList(xpathExpression, type, Collections.emptyList());
-//        List<String> list = getStringList(xpathExpression, null);
-//        if (CollectionUtils.isEmpty(list)) {
-//            return Collections.emptyList();
-//        }
-//        return CollectionUtil.toTypeList(list, type);
     }
     /**
      * Gets the matching list of elements/attributes, converted from
@@ -1094,8 +1138,8 @@ public class XML {
      * @param <T> returned list type
      * @return list of given type
      */
-    public <T> List<T> getList(
-            String xpathExpression, Class<T> type, List<T> defaultValues) {
+    public <T> List<? extends T> getList(String xpathExpression,
+            Class<T> type, List<? extends T> defaultValues) {
         List<String> list = getStringList(xpathExpression, null);
         if (list == null) {
             return defaultValues;
@@ -1579,7 +1623,8 @@ public class XML {
      */
     public final <E extends Enum<E>> E getEnum(
             String xpathExpression, Class<E> enumClass) {
-        return getEnum(xpathExpression, enumClass, null);
+        return get(xpathExpression, enumClass);
+//        return getEnum(xpathExpression, enumClass, null);
     }
     /**
      * Gets an Enum constant matching one of the constants in the provided
@@ -1592,8 +1637,9 @@ public class XML {
      */
     public final <E extends Enum<E>> E getEnum(
             String xpathExpression, Class<E> enumClass, E defaultValue) {
-        Objects.requireNonNull(enumClass, "enumClass must not be null");
-        return toEnum(getString(xpathExpression), enumClass, defaultValue);
+        return get(xpathExpression, enumClass, defaultValue);
+//        Objects.requireNonNull(enumClass, "enumClass must not be null");
+//        return toEnum(getString(xpathExpression), enumClass, defaultValue);
     }
 
     /**
@@ -1608,13 +1654,14 @@ public class XML {
      */
     public <E extends Enum<E>> List<E> getEnumList(
             String xpathExpression, Class<E> enumClass, List<E> defaultValues) {
-        List<String> values =
-                getStringList(xpathExpression, (List<String>) null);
-        if (values == null) {
-            return defaultValues;
-        }
-        return values.stream().map(str ->
-            toEnum(str, enumClass, null)).collect(Collectors.toList());
+        return getDelimitedList(xpathExpression, enumClass);
+//        List<String> values =
+//                getStringList(xpathExpression, (List<String>) null);
+//        if (values == null) {
+//            return defaultValues;
+//        }
+//        return values.stream().map(str ->
+//            toEnum(str, enumClass, null)).collect(Collectors.toList());
     }
 
     /**
@@ -1631,13 +1678,15 @@ public class XML {
      */
     public <E extends Enum<E>> List<E> getDelimitedEnumList(
             String xpathExpression, Class<E> enumClass, List<E> defaultValues) {
-        List<String> values =
-                getDelimitedStringList(xpathExpression, (List<String>) null);
-        if (values == null) {
-            return defaultValues;
-        }
-        return values.stream().map(str ->
-            toEnum(str, enumClass, null)).collect(Collectors.toList());
+        return getDelimitedList(
+                xpathExpression, enumClass, defaultValues);
+//        List<String> values =
+//                getDelimitedStringList(xpathExpression, (List<String>) null);
+//        if (values == null) {
+//            return defaultValues;
+//        }
+//        return values.stream().map(str ->
+//            toEnum(str, enumClass, null)).collect(Collectors.toList());
     }
 
     /**
@@ -1656,28 +1705,34 @@ public class XML {
     public <E extends Enum<E>> List<E> getDelimitedEnumList(
             String xpathExpression, Class<E> enumClass,
             String delimRegex, List<E> defaultValues) {
-        List<String> values = getDelimitedStringList(
-                xpathExpression, delimRegex, null);
-        if (values == null) {
-            return defaultValues;
-        }
-        return values.stream().map(str ->
-            toEnum(str, enumClass, null)).collect(Collectors.toList());
+
+        return getDelimitedList(
+                xpathExpression, enumClass, delimRegex, defaultValues);
+//
+//        getDelimitedList(xpathExpression, type, defaultValues)
+//
+//        List<String> values = getDelimitedStringList(
+//                xpathExpression, delimRegex, null);
+//        if (values == null) {
+//            return defaultValues;
+//        }
+//        return values.stream().map(str ->
+//            toEnum(str, enumClass, null)).collect(Collectors.toList());
     }
 
-    private <E extends Enum<E>> E toEnum(
-            String value, Class<E> enumClass, E defaultValue) {
-        if (StringUtils.isBlank(value)) {
-            return defaultValue;
-        }
-        for (E e : enumClass.getEnumConstants()) {
-            if (e.name().equalsIgnoreCase(value)) {
-                return e;
-            }
-        }
-        LOG.warn("Invalid enum value for type {}: {}", enumClass, value);
-        return defaultValue;
-    }
+//    private <E extends Enum<E>> E toEnum(
+//            String value, Class<E> enumClass, E defaultValue) {
+//        if (StringUtils.isBlank(value)) {
+//            return defaultValue;
+//        }
+//        for (E e : enumClass.getEnumConstants()) {
+//            if (e.name().equalsIgnoreCase(value)) {
+//                return e;
+//            }
+//        }
+//        LOG.warn("Invalid enum value for type {}: {}", enumClass, value);
+//        return defaultValue;
+//    }
 
     //--- Path -----------------------------------------------------------------
     /**
@@ -1686,11 +1741,12 @@ public class XML {
      * @return a path
      */
     public final Path getPath(String xpathExpression) {
-        String filePath = getString(xpathExpression);
-        if (filePath == null) {
-            return null;
-        }
-        return Paths.get(filePath);
+        return get(xpathExpression, Path.class);
+//        String filePath = getString(xpathExpression);
+//        if (filePath == null) {
+//            return null;
+//        }
+//        return Paths.get(filePath);
     }
     /**
      * Gets a path, assuming the node value is a file system path.
@@ -1700,20 +1756,24 @@ public class XML {
      * @return a path
      */
     public final Path getPath(String xpathExpression, Path defaultValue) {
-        return ObjectUtils.defaultIfNull(
-                getPath(xpathExpression), defaultValue);
+        return get(xpathExpression, Path.class, defaultValue);
+//        return ObjectUtils.defaultIfNull(
+//                getPath(xpathExpression), defaultValue);
     }
     /**
      * Gets values as a list of paths.
      * @param xpathExpression XPath expression
      * @return the values
      */
+    @SuppressWarnings("unchecked")
     public final List<Path> getPathList(String xpathExpression) {
-        List<Path> list = getPathList(xpathExpression, null);
-        if (CollectionUtils.isEmpty(list)) {
-            return Collections.emptyList();
-        }
-        return list;
+        return (List<Path>) getList(xpathExpression, Path.class);
+//
+//        List<Path> list = getPathList(xpathExpression, null);
+//        if (CollectionUtils.isEmpty(list)) {
+//            return Collections.emptyList();
+//        }
+//        return list;
     }
     /**
      * Gets values as a list of paths.
@@ -1721,17 +1781,19 @@ public class XML {
      * @param defaultValue default value
      * @return the values
      */
+    @SuppressWarnings("unchecked")
     public final List<Path> getPathList(
             String xpathExpression, List<Path> defaultValue) {
-        List<String> values = getStringList(xpathExpression);
-        if (values.isEmpty()) {
-            return defaultValue;
-        }
-        List<Path> list = new ArrayList<>(values.size());
-        for (String value : values) {
-            list.add(Paths.get(value));
-        }
-        return list;
+        return (List<Path>) getList(xpathExpression, Path.class, defaultValue);
+//        List<String> values = getStringList(xpathExpression);
+//        if (values.isEmpty()) {
+//            return defaultValue;
+//        }
+//        List<Path> list = new ArrayList<>(values.size());
+//        for (String value : values) {
+//            list.add(Paths.get(value));
+//        }
+//        return list;
     }
 
 
@@ -1742,11 +1804,12 @@ public class XML {
      * @return a File
      */
     public final File getFile(String xpathExpression) {
-        String filePath = getString(xpathExpression);
-        if (filePath == null) {
-            return null;
-        }
-        return new File(filePath);
+        return get(xpathExpression, File.class);
+//        String filePath = getString(xpathExpression);
+//        if (filePath == null) {
+//            return null;
+//        }
+//        return new File(filePath);
     }
     /**
      * Gets a file, assuming the node value is a file system path.
@@ -1756,20 +1819,23 @@ public class XML {
      * @return a File
      */
     public final File getFile(String xpathExpression, File defaultValue) {
-        return ObjectUtils.defaultIfNull(
-                getFile(xpathExpression), defaultValue);
+        return get(xpathExpression, File.class, defaultValue);
+//        return ObjectUtils.defaultIfNull(
+//                getFile(xpathExpression), defaultValue);
     }
     /**
      * Gets values as a list of files.
      * @param xpathExpression XPath expression
      * @return the values
      */
+    @SuppressWarnings("unchecked")
     public final List<File> getFileList(String xpathExpression) {
-        List<File> list = getFileList(xpathExpression, null);
-        if (CollectionUtils.isEmpty(list)) {
-            return Collections.emptyList();
-        }
-        return list;
+        return (List<File>) getList(xpathExpression, File.class);
+//        List<File> list = getFileList(xpathExpression, null);
+//        if (CollectionUtils.isEmpty(list)) {
+//            return Collections.emptyList();
+//        }
+//        return list;
     }
     /**
      * Gets values as a list of files.
@@ -1777,17 +1843,19 @@ public class XML {
      * @param defaultValue default value
      * @return the values
      */
+    @SuppressWarnings("unchecked")
     public final List<File> getFileList(
             String xpathExpression, List<File> defaultValue) {
-        List<String> values = getStringList(xpathExpression);
-        if (values.isEmpty()) {
-            return defaultValue;
-        }
-        List<File> list = new ArrayList<>(values.size());
-        for (String value : values) {
-            list.add(new File(value));
-        }
-        return list;
+        return (List<File>) getList(xpathExpression, File.class, defaultValue);
+//        List<String> values = getStringList(xpathExpression);
+//        if (values.isEmpty()) {
+//            return defaultValue;
+//        }
+//        List<File> list = new ArrayList<>(values.size());
+//        for (String value : values) {
+//            list.add(new File(value));
+//        }
+//        return list;
     }
 
     private static String readerToString(Reader reader) {
@@ -1825,21 +1893,12 @@ public class XML {
     // and give warnings when not "disabled" (or rely on validation, changing all ignore to "disabled"
 
     public Class<?> getClass(String xpathExpression) {
-        return getClass(xpathExpression, null);
+        return get(xpathExpression, Class.class);
     }
     @SuppressWarnings("unchecked")
     public <T> Class<T> getClass(
             String xpathExpression, Class<T> defaultValue) {
-        String val = getString(xpathExpression);
-        if (StringUtils.isBlank(val)) {
-            return defaultValue;
-        }
-        try {
-            return (Class<T>) Class.forName(val);
-        } catch (ClassNotFoundException | ClassCastException e) {
-            throw new XMLException("Could not get Class " + val
-                    + " for xpath: " + xpathExpression, e);
-        }
+        return get(xpathExpression, Class.class, defaultValue);
     }
     /**
      * Gets values as a list of files.
@@ -1847,12 +1906,14 @@ public class XML {
      * @param <T> returned list type
      * @return the values
      */
-    public final <T> List<Class<? extends T>> getClassList(String xpathExpression) {
-        List<Class<? extends T>> list = getClassList(xpathExpression, null);
-        if (CollectionUtils.isEmpty(list)) {
-            return Collections.emptyList();
-        }
-        return list;
+    @SuppressWarnings("unchecked")
+    public final <T> List<Class<T>> getClassList(String xpathExpression) {
+        return (List<Class<T>>) getList(xpathExpression, Class.class);
+//        List<Class<? extends T>> list = getClassList(xpathExpression, null);
+//        if (CollectionUtils.isEmpty(list)) {
+//            return Collections.emptyList();
+//        }
+//        return list;
     }
     /**
      * Gets values as a list of files.
@@ -1864,20 +1925,22 @@ public class XML {
     @SuppressWarnings("unchecked")
     public final <T> List<Class<? extends T>> getClassList(
             String xpathExpression, List<Class<? extends T>> defaultValue) {
-        List<String> values = getStringList(xpathExpression);
-        if (values.isEmpty()) {
-            return defaultValue;
-        }
-        List<Class<? extends T>> list = new ArrayList<>(values.size());
-        for (String value : values) {
-            try {
-                list.add((Class<T>) Class.forName(value));
-            } catch (ClassNotFoundException | ClassCastException e) {
-                throw new XMLException("Could not get Class " + value
-                        + " for xpath: " + xpathExpression, e);
-            }
-        }
-        return list;
+        return (List<Class<? extends T>>) getList(
+                xpathExpression, Class.class, defaultValue);
+//        List<String> values = getStringList(xpathExpression);
+//        if (values.isEmpty()) {
+//            return defaultValue;
+//        }
+//        List<Class<? extends T>> list = new ArrayList<>(values.size());
+//        for (String value : values) {
+//            try {
+//                list.add((Class<T>) Class.forName(value));
+//            } catch (ClassNotFoundException | ClassCastException e) {
+//                throw new XMLException("Could not get Class " + value
+//                        + " for xpath: " + xpathExpression, e);
+//            }
+//        }
+//        return list;
     }
 
     public <T> T parseXML(
@@ -1949,4 +2012,5 @@ public class XML {
         }
         return map;
     }
+
 }

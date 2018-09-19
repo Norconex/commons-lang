@@ -85,17 +85,22 @@ public final class CollectionUtil {
      * array to a list. It also checks
      * for <code>null</code>.
      * If target is <code>null</code>, invoking this method has no effect.
-     * If source is <code>null</code> will clear the target collection
+     * If source is <code>null</code> or is an array containing only one
+     * <code>null</code> element, it will clear the target collection
      * @param target target collection
      * @param source source collection
      * @param <T> objects class type
      */
     @SafeVarargs
     public static <T> void setAll(Collection<T> target, T... source) {
-        if (source == null) {
+        if (target == null) {
             return;
         }
-        setAll(target, Arrays.asList(source));
+        if (source == null || (source.length == 1 && source[0] == null)) {
+            target.clear();
+        } else {
+            setAll(target, Arrays.asList(source));
+        }
     }
 
     /**
