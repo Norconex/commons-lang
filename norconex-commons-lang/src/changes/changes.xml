@@ -14,7 +14,7 @@
         firing of events.
       </action>
       <action dev="essiembre" type="add">
-        New Converter class to convert several types from/to strings.
+        New Converter class to convert over 20 types from/to strings.
       </action>
       <action dev="essiembre" type="add">
         New BeanUtil class to facilitate basic reflection operations
@@ -100,8 +100,8 @@
         Now using Path instead (or in addition) of File in many cases. 
       </action>
       <action dev="essiembre" type="update">
-        IXMLConfigurable methods were deprecated in favor of new ones
-        that take an XML as argument.
+        *.lang.config.IXMLConfigurable now deprecated in favor of 
+        *.lang.xml.IXMLConfigurable which deals with XML object instead.
       </action>
       <action dev="essiembre" type="update">
         DurationUtil now deprecated in favor of DurationFormatter.

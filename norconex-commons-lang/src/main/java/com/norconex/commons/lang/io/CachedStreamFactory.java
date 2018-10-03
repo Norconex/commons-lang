@@ -34,68 +34,52 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class CachedStreamFactory {
 
-    private final int poolMaxMemory;
-    private final int instanceMaxMemory;
-    private final File cacheDirectory;
+    private final int maxMemoryPool;
+    private final int maxMemoryInstance;
+    private final Path cacheDirectory;
 
     private final Map<ICachedStream, Void> streams =
             Collections.synchronizedMap(new WeakHashMap<ICachedStream, Void>());
 
     /**
      * Constructor.
-     * @param poolMaxMemory maximum number of bytes used for memory caching by
+     * @param maxMemoryPool maximum number of bytes used for memory caching by
      *     all instances created by this factory combined
-     * @param instanceMaxMemory maximum number of bytes used for
+     * @param maxMemoryInstance maximum number of bytes used for
      *     memory by each cached stream instance created
      */
     public CachedStreamFactory(
-            int poolMaxMemory,
-            int instanceMaxMemory) {
-        this(poolMaxMemory, instanceMaxMemory, (File) null);
+            int maxMemoryPool,
+            int maxMemoryInstance) {
+        this(maxMemoryPool, maxMemoryInstance,
+                FileUtils.getTempDirectory().toPath());
     }
     /**
      * Constructor.
-     * @param poolMaxMemory maximum number of bytes used for memory caching by
+     * @param maxMemoryPool maximum number of bytes used for memory caching by
      *     all instances created by this factory combined
-     * @param instanceMaxMemory maximum number of bytes used for
-     *     memory by each cached stream instance created
-     * @param cacheDirectory location where file-based caching takes place
-     */
-    public CachedStreamFactory(
-            int poolMaxMemory,
-            int instanceMaxMemory,
-            File cacheDirectory) {
-        this.poolMaxMemory = poolMaxMemory;
-        this.instanceMaxMemory = instanceMaxMemory;
-        if (cacheDirectory == null) {
-            this.cacheDirectory = FileUtils.getTempDirectory();
-        } else {
-            this.cacheDirectory = cacheDirectory;
-        }
-    }
-    /**
-     * Constructor.
-     * @param poolMaxMemory maximum number of bytes used for memory caching by
-     *     all instances created by this factory combined
-     * @param instanceMaxMemory maximum number of bytes used for
+     * @param maxMemoryInstance maximum number of bytes used for
      *     memory by each cached stream instance created
      * @param cacheDirectory location where file-based caching takes place
      * @since 2.0.0
      */
     public CachedStreamFactory(
-            int poolMaxMemory,
-            int instanceMaxMemory,
+            int maxMemoryPool,
+            int maxMemoryInstance,
             Path cacheDirectory) {
-        this(poolMaxMemory, instanceMaxMemory, Objects.requireNonNull(
-                cacheDirectory, "cacheDirectory must not be null").toFile());
+        Objects.requireNonNull(
+                cacheDirectory, "'cacheDirectory' must not be null");
+        this.maxMemoryPool = maxMemoryPool;
+        this.maxMemoryInstance = maxMemoryInstance;
+        this.cacheDirectory = cacheDirectory;
     }
 
-    public int getPoolMaxMemory() {
-        return poolMaxMemory;
+    public int getMaxMemoryPool() {
+        return maxMemoryPool;
     }
 
-    public int getInstanceMaxMemory() {
-        return instanceMaxMemory;
+    public int getMaxMemoryInstance() {
+        return maxMemoryInstance;
     }
 
     /*default*/ int getPoolCurrentMemory() {
@@ -110,7 +94,7 @@ public class CachedStreamFactory {
         return byteSize;
     }
     /*default*/ int getPoolRemainingMemory() {
-        return Math.max(0, poolMaxMemory - getPoolCurrentMemory());
+        return Math.max(0, maxMemoryPool - getPoolCurrentMemory());
     }
 
     /*default*/ CachedInputStream newInputStream(byte[] bytes) {
@@ -136,8 +120,8 @@ public class CachedStreamFactory {
                 IOUtils.toInputStream(content, StandardCharsets.UTF_8)));
     }
     public CachedInputStream newInputStream(File file) {
-        return registerStream(
-                new CachedInputStream(this, cacheDirectory, file));
+        Objects.requireNonNull(file, "'file' must not be null");
+        return newInputStream(file.toPath());
     }
     /**
      * Creates a new cached input stream.
@@ -146,8 +130,8 @@ public class CachedStreamFactory {
      * @since 2.0.0
      */
     public CachedInputStream newInputStream(Path path) {
-        Objects.requireNonNull(path, "path must not be null");
-        return newInputStream(path.toFile());
+        return registerStream(
+                new CachedInputStream(this, cacheDirectory, path));
     }
     public CachedInputStream newInputStream(InputStream is) {
         return registerStream(new CachedInputStream(this, cacheDirectory, is));
@@ -183,7 +167,7 @@ public class CachedStreamFactory {
             }
             int remainingMemory = Math.min(
                     poolRemaining,
-                    getInstanceMaxMemory() - memOutputStream.size());
+                    getMaxMemoryInstance() - memOutputStream.size());
             return bytesToAdd <= remainingMemory;
         }
     }

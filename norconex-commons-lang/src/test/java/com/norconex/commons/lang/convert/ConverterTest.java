@@ -20,8 +20,11 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Locale;
@@ -30,6 +33,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.norconex.commons.lang.EqualsUtil;
+import com.norconex.commons.lang.file.ContentType;
 import com.norconex.commons.lang.unit.DataUnit;
 
 
@@ -58,7 +62,6 @@ public class ConverterTest {
         assertConvert("789012", BigInteger.valueOf(789012), BigInteger.class);
         assertConvert("34.6789", BigDecimal.valueOf(34.6789), BigDecimal.class);
     }
-
 
     @Test
     public void testLocaleConverter() {
@@ -136,6 +139,30 @@ public class ConverterTest {
                 new URL("http://example.com/blah.html"), URL.class);
         assertToType(new URL("http://example.com/%22fix%22"),
                 "http://example.com/\"fix\"", URL.class);
+    }
+
+    @Test
+    public void testDurationConverter() {
+        // to duration
+        assertToType(Duration.ofSeconds(3754), "1h2m34s", Duration.class);
+        assertToType(Duration.ofSeconds(7382),
+                "2 hours, 3 minutes, and 2 seconds", Duration.class);
+        // to string
+        assertToString("7382000", Duration.ofSeconds(7382));
+    }
+
+    @Test
+    public void testContentTypeConverter() {
+        assertConvert("text/html", ContentType.HTML, ContentType.class);
+        assertConvert("image/bmp", ContentType.BMP, ContentType.class);
+        assertConvert("fake/one", ContentType.valueOf("fake/one"),
+                ContentType.class);
+    }
+
+    @Test
+    public void testCharsetConverter() {
+        assertConvert("UTF-8", StandardCharsets.UTF_8, Charset.class);
+        assertConvert("ISO-8859-1", StandardCharsets.ISO_8859_1, Charset.class);
     }
 
     private <T> void assertConvert(String strValue, T objValue, Class<T> type) {

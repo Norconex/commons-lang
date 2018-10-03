@@ -412,7 +412,7 @@ public class Properties extends ObservableMap<String, List<String>>
             }
 
             Object arg = null;
-            Class<?> targetType = BeanUtil.getType(bean, property);
+            Class<?> targetType = BeanUtil.getPropertyType(bean, property);
             // Array
             if (targetType.isArray()) {
                 Class<?> arrayType = targetType.getComponentType();
@@ -420,11 +420,11 @@ public class Properties extends ObservableMap<String, List<String>>
                 arg = CollectionUtil.toArray(listType, arrayType);
             } else if (List.class.isAssignableFrom(targetType)) {
                 Class<?> listType =
-                        BeanUtil.getGenericType(bean.getClass(), property);
+                        BeanUtil.getPropertyGenericType(bean.getClass(), property);
                 arg = CollectionUtil.toTypeList(values, listType);
             } else if (Set.class.isAssignableFrom(targetType)) {
                 Class<?> listType =
-                        BeanUtil.getGenericType(bean.getClass(), property);
+                        BeanUtil.getPropertyGenericType(bean.getClass(), property);
                 arg = ListOrderedSet.listOrderedSet(
                         CollectionUtil.toTypeList(values, listType));
             } else {

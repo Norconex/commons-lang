@@ -23,6 +23,8 @@ import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -89,7 +91,7 @@ public class CachedInputStream extends InputStream implements ICachedStream {
     private byte[] memCache;
     private ByteArrayOutputStream memOutputStream;
 
-    private File fileCache;
+    private Path fileCache;
     private RandomAccessFile randomAccessFile;
 
     private boolean firstRead = true;
@@ -97,7 +99,7 @@ public class CachedInputStream extends InputStream implements ICachedStream {
     private boolean cacheEmpty = true;
     private boolean disposed = false;
 
-    private final File cacheDirectory;
+    private final Path cacheDirectory;
 
     private int count;        // total number of bytes read so far
     private int pos = 0;      // byte position we are in
@@ -113,7 +115,7 @@ public class CachedInputStream extends InputStream implements ICachedStream {
      * @param is InputStream to cache
      */
     /*default*/ CachedInputStream(
-            CachedStreamFactory factory, File cacheDirectory, InputStream is) {
+            CachedStreamFactory factory, Path cacheDirectory, InputStream is) {
         super();
 
         this.factory = factory;
@@ -136,7 +138,7 @@ public class CachedInputStream extends InputStream implements ICachedStream {
      * @param byteBuffer the InputStream cache.
      */
     /*default*/ CachedInputStream(
-            CachedStreamFactory factory, File cacheDirectory, byte[] memCache) {
+            CachedStreamFactory factory, Path cacheDirectory, byte[] memCache) {
         this.factory = factory;
         this.tracker = factory.new MemoryTracker();
         this.memCache = ArrayUtils.clone(memCache);
@@ -154,23 +156,24 @@ public class CachedInputStream extends InputStream implements ICachedStream {
      * @param cacheFile the file cache
      */
     /*default*/ CachedInputStream(
-            CachedStreamFactory factory, File cacheDirectory, File cacheFile) {
+            CachedStreamFactory factory, Path cacheDirectory, Path cacheFile) {
         this.factory = factory;
         this.tracker = factory.new MemoryTracker();
         this.fileCache = cacheFile;
         this.cacheDirectory = nullSafeCacheDirectory(cacheDirectory);
         this.firstRead = false;
         this.needNewStream = true;
-        if (cacheFile != null && cacheFile.exists() && cacheFile.isFile()) {
-            this.length = (int) cacheFile.length();
+        File file = cacheFile.toFile();
+        if (file != null && file.exists() && file.isFile()) {
+            this.length = (int) file.length();
         }
     }
 
     // Now called by all constructors to prevent NPE in case this instance
     // is used to obtain the cache temp dir for other usage.
-    private static File nullSafeCacheDirectory(File cacheDir) {
+    private static Path nullSafeCacheDirectory(Path cacheDir) {
         if (cacheDir == null) {
-            return FileUtils.getTempDirectory();
+            return FileUtils.getTempDirectory().toPath();
         } else {
             return cacheDir;
         }
@@ -433,8 +436,8 @@ public class CachedInputStream extends InputStream implements ICachedStream {
             randomAccessFile = null;
         }
         if (fileCache != null) {
-            FileUtil.delete(fileCache);
-            LOG.debug("Deleted cache file: " + fileCache);
+            FileUtil.delete(fileCache.toFile());
+            LOG.debug("Deleted cache file: {}", fileCache);
         }
         disposed = true;
         cacheEmpty = true;
@@ -456,7 +459,7 @@ public class CachedInputStream extends InputStream implements ICachedStream {
      * @return the cache directory
      */
     @Override
-    public final File getCacheDirectory() {
+    public final Path getCacheDirectory() {
         return cacheDirectory;
     }
 
@@ -533,7 +536,7 @@ public class CachedInputStream extends InputStream implements ICachedStream {
      * @param file file to create the input stream from
      * @return cached input stream
      */
-    public CachedInputStream newInputStream(File file) {
+    public CachedInputStream newInputStream(Path file) {
         return factory.newInputStream(file);
     }
     /**
@@ -551,11 +554,11 @@ public class CachedInputStream extends InputStream implements ICachedStream {
     }
 
     private void cacheToFile() throws IOException {
-        fileCache = File.createTempFile(
-                "CachedInputStream-", "-temp", cacheDirectory);
-        fileCache.deleteOnExit();
+        fileCache = Files.createTempFile(
+                cacheDirectory, "CachedInputStream-", "-temp");
+        fileCache.toFile().deleteOnExit();
         LOG.debug("Reached max cache size. Swapping to file: {}", fileCache);
-        randomAccessFile = new RandomAccessFile(fileCache, "rw");
+        randomAccessFile = new RandomAccessFile(fileCache.toFile(), "rw");
         randomAccessFile.write(memOutputStream.toByteArray());
         memOutputStream = null;
     }
@@ -563,7 +566,7 @@ public class CachedInputStream extends InputStream implements ICachedStream {
     private void createInputStreamFromCache() throws FileNotFoundException {
         if (fileCache != null) {
             LOG.debug("Creating new input stream from file cache.");
-            randomAccessFile = new RandomAccessFile(fileCache, "r");
+            randomAccessFile = new RandomAccessFile(fileCache.toFile(), "r");
             FileChannel channel = randomAccessFile.getChannel();
             inputStream = Channels.newInputStream(channel);
         } else {

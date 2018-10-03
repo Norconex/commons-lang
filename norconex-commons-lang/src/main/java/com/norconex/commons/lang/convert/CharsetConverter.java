@@ -14,25 +14,25 @@
 */
 package com.norconex.commons.lang.convert;
 
-import org.apache.commons.lang3.ClassUtils;
+import java.nio.charset.Charset;
 
 /**
- * {@link Class} converter.
+ * {@link Charset} converter.
  * @since 2.0.0
  */
-public class ClassConverter extends AbstractConverter {
+public class CharsetConverter extends AbstractConverter {
 
     @Override
     protected String nullSafeToString(Object object) {
-        return ((Class<?>) object).getName();
+        return object.toString();
     }
 
     @Override
     protected <T> T nullSafeToType(String value, Class<T> type) {
         try {
-            return type.cast(ClassUtils.getClass(value));
-        } catch (ClassNotFoundException e) {
-            throw toTypeException(value, type);
+            return type.cast(Charset.forName(value));
+        } catch (IllegalArgumentException e) {
+            throw toTypeException(value, type, e);
         }
     }
 }

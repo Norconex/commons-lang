@@ -14,7 +14,7 @@
  */
 package com.norconex.commons.lang.io;
 
-import java.io.File;
+import java.nio.file.Path;
 
 /**
  * @author Pascal Essiembre
@@ -22,11 +22,11 @@ import java.io.File;
 public interface ICachedStream {
 
     long getMemCacheSize();
-    
+
     /**
      * Gets the cache directory where temporary cache files are created.
      * @return the cache directory
      * @since 1.14.0
      */
-    File getCacheDirectory();
+    Path getCacheDirectory();
 }

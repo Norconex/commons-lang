@@ -60,7 +60,7 @@ public final class BeanUtil {
         super();
     }
 
-    public static Class<?> getType(Object bean, String propertyName) {
+    public static Class<?> getPropertyType(Object bean, String propertyName) {
         if (bean == null || propertyName == null) {
             return null;
         }
@@ -76,7 +76,7 @@ public final class BeanUtil {
     }
 
     // For collections or others that hold a single parameterized type
-    public static Class<?> getGenericType(
+    public static Class<?> getPropertyGenericType(
             Class<?> beanClass, String propertyName) {
         if (beanClass == null || propertyName == null) {
             return null;

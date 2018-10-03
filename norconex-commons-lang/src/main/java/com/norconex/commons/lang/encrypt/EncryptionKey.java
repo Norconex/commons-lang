@@ -23,7 +23,7 @@ import java.nio.file.Paths;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.norconex.commons.lang.config.IXMLConfigurable;
+import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 
 /**

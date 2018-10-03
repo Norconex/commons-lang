@@ -20,6 +20,8 @@ import java.util.Objects;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
+import com.norconex.commons.lang.EqualsUtil;
+
 /**
  * A generic event implementation.
  * @author Pascal Essiembre
@@ -31,7 +33,6 @@ public class Event<T> extends EventObject {
 
     private static final long serialVersionUID = 1L;
     private String name;
-//    private final T source;
     private transient Throwable exception;
 
     /**
@@ -53,7 +54,6 @@ public class Event<T> extends EventObject {
     public Event(String name, T source, Throwable exception) {
         super(source);
         this.name = name;
-//        this.source = source;
         this.exception = exception;
     }
 
@@ -89,8 +89,8 @@ public class Event<T> extends EventObject {
         }
         return is(event.getName());
     }
-    public boolean is(String eventName) {
-        return Objects.equals(name, eventName);
+    public boolean is(String... eventName) {
+        return EqualsUtil.equalsAny(name, (Object[]) eventName);
     }
 
 
@@ -105,7 +105,5 @@ public class Event<T> extends EventObject {
     @Override
     public String toString() {
         return Objects.toString(source);
-//        return new ReflectionToStringBuilder(
-//                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

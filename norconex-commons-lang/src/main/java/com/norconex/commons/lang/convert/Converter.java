@@ -19,6 +19,7 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -70,6 +71,8 @@ import com.norconex.commons.lang.file.ContentType;
  *   <li>{@link Dimension}</li>
  *   <li>{@link Duration}</li>
  *   <li>{@link ContentType}</li>
+ *   <li>{@link Charset}</li>
+ *   <li>{@link URL}</li>
  * </ul>
  * <p>
  * By default {@link ConverterException} is thrown when conversion fails.
@@ -140,6 +143,7 @@ public final class Converter implements IConverter {
         cc.put(URL.class, new URLConverter());
         cc.put(Duration.class, new DurationConverter());
         cc.put(ContentType.class, new ContentTypeConverter());
+        cc.put(Charset.class, new CharsetConverter());
 
         return cc;
     }
@@ -229,6 +233,8 @@ public final class Converter implements IConverter {
             c = converters.get(Enum.class);
         } else if (Path.class.isAssignableFrom(type)) {
             c = converters.get(Path.class);
+        } else if (Charset.class.isAssignableFrom(type)) {
+            c = converters.get(Charset.class);
         }
         return c;
     }

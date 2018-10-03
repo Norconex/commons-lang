@@ -30,14 +30,16 @@ import com.norconex.commons.lang.xml.XMLException;
  * implementing this should be careful to document XML configuration options
  * properly (e.g. in Javadoc).
  * @author Pascal Essiembre
+ * @deprecated Since 2.0.0, use
+ *             {@link com.norconex.commons.lang.xml.IXMLConfigurable}.
  */
-public interface IXMLConfigurable {
+@Deprecated
+public interface IXMLConfigurable extends com.norconex.commons.lang.xml.IXMLConfigurable {
 
     /**
      * Load XML configuration values and initialized this object with them.
      * @param reader XML input stream
      * @throws IOException something went wrong reading the XML
-     * @deprecated Since 2.0.0, use {@link #loadFromXML(XML)}.
      */
     @Deprecated
     default void loadFromXML(Reader reader) throws IOException {
@@ -48,6 +50,7 @@ public interface IXMLConfigurable {
      * Load XML configuration values and initialized this object with them.
      * @param xml the XML to load into this object
      */
+    @Override
     default void loadFromXML(XML xml) {
         try {
             loadFromXML(new StringReader(xml.toString()));
@@ -60,7 +63,6 @@ public interface IXMLConfigurable {
      * Saves this object as XML.
      * @param writer XML writer
      * @throws IOException something went wrong writing the XML
-     * @deprecated Since 2.0.0, use {@link #saveToXML(XML)}.
      */
     @Deprecated
     default void saveToXML(Writer writer) throws IOException {
@@ -70,8 +72,8 @@ public interface IXMLConfigurable {
     /**
      * Saves this object as XML.
      * @param xml the XML that will representing this object
-     * @since 2.0.0
      */
+    @Override
     default void saveToXML(XML xml) {
         try {
             StringWriter w = new StringWriter();

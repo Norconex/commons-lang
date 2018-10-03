@@ -226,6 +226,18 @@ public final class CollectionUtil {
     }
 
     /**
+     * Returns an unmodifiable view of the specified list. Convinience method
+     * for doing with an array the same as
+     * {@link Collections#unmodifiableList(List)}.
+     * @param values the values to convert to an unmodifiable list
+     * @return unmodifiable list
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> List<T> unmodifiableList(T... values) {
+        return Collections.unmodifiableList(Arrays.asList(values));
+    }
+
+    /**
      * Removes <code>null</code> entries in the given collection.  Only
      * useful for collection implementations allowing <code>null</code> entries.
      * @param c a collection

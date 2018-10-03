@@ -14,12 +14,14 @@
  */
 package com.norconex.commons.lang.event;
 
-import java.util.ArrayList;
+import java.lang.reflect.Method;
 import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
+import org.apache.commons.collections4.set.ListOrderedSet;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.reflect.MethodUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
@@ -32,37 +34,64 @@ import com.norconex.commons.lang.bean.BeanUtil;
  * @author Pascal Essiembre
  * @since 2.0.0
  */
+//TODO: have a static getInstance method for "global" use?
 public class EventManager {
 
-    //TODO:
-    // have a static getInstance method for "global" use?
+    private static final Logger LOG =
+            LoggerFactory.getLogger(EventManager.class);
 
-    private final List<IEventListener<Event<?>>> listeners = new ArrayList<>();
+    private final EventManager parentEventManager;
+
+    public EventManager() {
+        this(null);
+    }
+    /**
+     * Wraps a parent event manager.  Events fired on this event manager
+     * will be fired on this instance listeners first, then its parent
+     * listeners.
+     * Modifying the list of listeners in this instance does not impact
+     * listeners of the parrent event manager.
+     * @param parentEventManager parent event manager
+     */
+    public EventManager(EventManager parentEventManager) {
+        super();
+        this.parentEventManager = parentEventManager;
+    }
+
+    private final Set<IEventListener<Event<?>>> listeners =
+            new ListOrderedSet<>();
 
     public void addListener(IEventListener<Event<?>> listener) {
         if (listener != null) {
-            listeners.add(listener);
+            this.listeners.add(listener);
         }
     }
-    public void addListeners(List<IEventListener<Event<?>>> listeners) {
+    public void addListeners(Set<IEventListener<Event<?>>> listeners) {
         if (listeners != null) {
             this.listeners.addAll(listeners);
         }
     }
-    public List<IEventListener<Event<?>>> getListeners() {
-        return Collections.unmodifiableList(listeners);
-    }
-    public boolean removeListener(IEventListener<Event<?>> listener) {
-        return listeners.remove(listener);
-    }
-    public void clearListeners() {
-        listeners.clear();
-    }
-    public int getListenerCount() {
-        return listeners.size();
+
+    public void addListenersFromScan(Object obj) {
+        BeanUtil.visitAll(obj, this::addListener, IEventListener.class);
     }
 
-    //TODO remove  "Listener" word from methods
+    public Set<IEventListener<Event<?>>> getListeners() {
+        return Collections.unmodifiableSet(this.listeners);
+    }
+    public boolean removeListener(IEventListener<Event<?>> listener) {
+        return this.listeners.remove(listener);
+    }
+    public boolean removeListeners(Set<IEventListener<Event<?>>> listeners) {
+        return this.listeners.removeAll(listeners);
+    }
+    public void clearListeners() {
+        this.listeners.clear();
+    }
+    public int getListenerCount() {
+        return this.listeners.size();
+    }
+
     //TODO scan(String package);
 
 
@@ -73,8 +102,22 @@ public class EventManager {
     public void fire(Event<?> event, Level level) {
         Objects.requireNonNull(event, "Cannot fire a null event.");
         log(event, level);
+        doFire(event);
+    }
+
+    private void doFire(Event<?> event) {
         for (IEventListener<Event<?>> listener : listeners) {
-            listener.accept(event);
+            Method method = MethodUtils.getMatchingAccessibleMethod(
+                    listener.getClass(), "accept", event.getClass());
+            if (method != null) {
+                listener.accept(event);
+            } else {
+                LOG.trace("Listener {} not accepting event \"{}\".",
+                        listener.getClass().getSimpleName(), event.getName());
+            }
+        }
+        if (parentEventManager != null) {
+            parentEventManager.doFire(event);
         }
     }
 
@@ -83,9 +126,5 @@ public class EventManager {
                 + "." + event.getName());
         Level safeLevel = ObjectUtils.defaultIfNull(level, Level.INFO);
         SLF4JUtil.log(log, safeLevel, event.toString(), event.getException());// Objects.toString(event.getSource(), ""));
-    }
-
-    public void addListenersFromScan(Object obj) {
-        BeanUtil.visitAll(obj, this::addListener, IEventListener.class);
     }
 }

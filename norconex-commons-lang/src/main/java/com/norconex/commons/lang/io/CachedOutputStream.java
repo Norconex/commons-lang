@@ -15,17 +15,18 @@
 package com.norconex.commons.lang.io;
 
 import java.io.BufferedOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.file.FileUtil;
 import com.norconex.commons.lang.io.CachedStreamFactory.MemoryTracker;
@@ -35,16 +36,16 @@ import com.norconex.commons.lang.io.CachedStreamFactory.MemoryTracker;
  * once as a {@link CachedInputStream}. Invoking {@link #getInputStream()}
  * effectively {@link #close()} this stream and it can no longer be written
  * to.  Obtaining an input stream before or instead of calling the close
- * method will not delete the cache content, but rather pass the reference 
- * to it to the CachedInputStream. 
- * <br><br> 
+ * method will not delete the cache content, but rather pass the reference
+ * to it to the CachedInputStream.
+ * <br><br>
  * To create new instances of {@link CachedOutputStream}, use the
  * {@link CachedStreamFactory} class.   Reusing the same factory
  * will ensure all {@link CachedOutputStream} instances created share the same
- * combined maximum memory.  Invoking one of the 
+ * combined maximum memory.  Invoking one of the
  * <code>newOutputStream(...)</code> methods on this class have the same effect.
- * <br><br> 
- * The internal cache stores written bytes into memory, up to to the 
+ * <br><br>
+ * The internal cache stores written bytes into memory, up to to the
  * specified maximum cache size. If content exceeds
  * the cache limit, the cache transforms itself into a file-based cache
  * of unlimited size. Default memory cache size is 128 KB.
@@ -56,24 +57,24 @@ import com.norconex.commons.lang.io.CachedStreamFactory.MemoryTracker;
 public class CachedOutputStream extends OutputStream
         implements ICachedStream {
 
-    private static final Logger LOG = 
+    private static final Logger LOG =
             LoggerFactory.getLogger(CachedOutputStream.class);
-    
+
     private final CachedStreamFactory factory;
     private final MemoryTracker tracker;
-    
+
     private OutputStream outputStream;
-    
+
     private byte[] memCache;
     private ByteArrayOutputStream memOutputStream;
-    
-    private File fileCache;
+
+    private Path fileCache;
     private OutputStream fileOutputStream;
-    private boolean doneWriting = false;
+    private final boolean doneWriting = false;
     private boolean closed = false;
     private boolean cacheEmpty = true;
-    private final File cacheDirectory;
-    
+    private final Path cacheDirectory;
+
     //--- Constructors ---------------------------------------------------------
     /**
      * Caches the wrapped OutputStream. The wrapped stream
@@ -83,8 +84,8 @@ public class CachedOutputStream extends OutputStream
      * @param cacheDirectory directory where to store large content
      * @param out OutputStream to cache
      */
-    /*default*/ CachedOutputStream(CachedStreamFactory factory, 
-            File cacheDirectory, OutputStream out) {
+    /*default*/ CachedOutputStream(CachedStreamFactory factory,
+            Path cacheDirectory, OutputStream out) {
         super();
 
         this.factory = factory;
@@ -100,7 +101,7 @@ public class CachedOutputStream extends OutputStream
             }
         }
         if (cacheDirectory == null) {
-            this.cacheDirectory = FileUtils.getTempDirectory();
+            this.cacheDirectory = FileUtils.getTempDirectory().toPath();
         } else {
             this.cacheDirectory = cacheDirectory;
         }
@@ -171,7 +172,7 @@ public class CachedOutputStream extends OutputStream
         close(false);
         return is;
     }
-    
+
     private void close(boolean clearCache) throws IOException {
         if (!closed) {
             closed = true;
@@ -189,8 +190,8 @@ public class CachedOutputStream extends OutputStream
                 fileOutputStream = null;
             }
             if (fileCache != null && clearCache) {
-                FileUtil.delete(fileCache);
-                LOG.debug("Deleted cache file: " + fileCache);
+                FileUtil.delete(fileCache.toFile());
+                LOG.debug("Deleted cache file: {}", fileCache);
                 fileCache = null;
             }
             if (memOutputStream != null && clearCache) {
@@ -201,7 +202,7 @@ public class CachedOutputStream extends OutputStream
             cacheEmpty = true;
         }
     }
-    
+
     @Override
     public void close() throws IOException {
         close(true);
@@ -212,23 +213,23 @@ public class CachedOutputStream extends OutputStream
      * @return the cache directory
      */
     @Override
-    public final File getCacheDirectory() {
+    public final Path getCacheDirectory() {
         return cacheDirectory;
     }
-    
+
     public CachedStreamFactory getStreamFactory() {
         return factory;
     }
-    
+
     /**
-     * Returns <code>true</code> if was nothing to cache (no writing was 
-     * performed) or if the stream was closed. 
+     * Returns <code>true</code> if was nothing to cache (no writing was
+     * performed) or if the stream was closed.
      * @return <code>true</code> if empty
      */
     public boolean isCacheEmpty() {
         return cacheEmpty;
     }
-    
+
 
     public CachedOutputStream newOuputStream(OutputStream os) {
         return factory.newOuputStream(os);
@@ -236,7 +237,7 @@ public class CachedOutputStream extends OutputStream
     public CachedOutputStream newOuputStream() {
         return factory.newOuputStream();
     }
-    
+
     @Override
     public long getMemCacheSize() {
         if (memCache != null) {
@@ -247,17 +248,17 @@ public class CachedOutputStream extends OutputStream
         }
         return 0;
     }
-    
+
     @SuppressWarnings("resource")
     private void cacheToFile() throws IOException {
-        fileCache = File.createTempFile(
-                "CachedOutputStream-", "-temp", cacheDirectory);
-        fileCache.deleteOnExit();
-        LOG.debug("Reached max cache size. Swapping to file: " + fileCache);
-        RandomAccessFile f = new RandomAccessFile(fileCache, "rw");
+        fileCache = Files.createTempFile(
+                cacheDirectory, "CachedOutputStream-", "-temp");
+        fileCache.toFile().deleteOnExit();
+        LOG.debug("Reached max cache size. Swapping to file: {}", fileCache);
+        RandomAccessFile f = new RandomAccessFile(fileCache.toFile(), "rw");
         FileChannel channel = f.getChannel();
         fileOutputStream = Channels.newOutputStream(channel);
-        
+
         IOUtils.write(memOutputStream.toByteArray(), fileOutputStream);
         memOutputStream = null;
     }

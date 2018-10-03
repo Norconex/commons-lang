@@ -15,16 +15,23 @@
 package com.norconex.commons.lang.xml;
 
 import java.awt.Dimension;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.ResourceLoader;
+import com.norconex.commons.lang.collection.CollectionUtil;
 import com.norconex.commons.lang.convert.ConverterException;
+import com.norconex.commons.lang.unit.DataUnit;
 
 /**
  * @author Pascal Essiembre
@@ -240,5 +247,52 @@ public class XMLTest {
         // Self-closing no parent lists returns empty list
         Assert.assertTrue("List not empty.", xml.getList("listNullNoParent",
                 Dimension.class, defaultList).isEmpty());
+    }
+
+
+    @Test
+    public void testOverwriteDefaultWithEmptyListReadWrite() {
+        ClassWithDefaultLists c = new ClassWithDefaultLists();
+
+        // Defaults should be loaded back:
+       // XML.assertWriteRead(c, "test");
+
+        // Defaults should not be loaded back:
+        c.enums.clear();
+        c.strings.clear();
+        XML.assertWriteRead(c, "test");
+    }
+    public static class ClassWithDefaultLists implements IXMLConfigurable {
+
+        private final List<DataUnit> enums =
+                new ArrayList<>(Arrays.asList(DataUnit.KB));
+        private final List<String> strings =
+                new ArrayList<>(Arrays.asList("blah", "halb"));
+
+        @Override
+        public void loadFromXML(XML xml) {
+            CollectionUtil.setAll(enums,
+                    xml.getDelimitedEnumList("enums", DataUnit.class, enums));
+            CollectionUtil.setAll(strings,
+                    xml.getDelimitedStringList("strings", strings));
+        }
+        @Override
+        public void saveToXML(XML xml) {
+            xml.addDelimitedElementList("enums", enums);
+            xml.addDelimitedElementList("strings", strings);
+        }
+        @Override
+        public boolean equals(final Object other) {
+            return EqualsBuilder.reflectionEquals(this, other);
+        }
+        @Override
+        public int hashCode() {
+            return HashCodeBuilder.reflectionHashCode(this);
+        }
+        @Override
+        public String toString() {
+            return new ReflectionToStringBuilder(
+                    this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
+        }
     }
 }

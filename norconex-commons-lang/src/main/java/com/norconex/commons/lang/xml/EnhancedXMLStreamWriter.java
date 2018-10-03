@@ -31,8 +31,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.norconex.commons.lang.config.IXMLConfigurable;
-
 /**
  * <p>
  * A version of {@link XMLStreamWriter} that adds convenience methods

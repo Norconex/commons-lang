@@ -111,7 +111,7 @@ public class BeanUtilTest {
     @Test
     public void testGetGenericType() {
         Assert.assertEquals(Double.class,
-                BeanUtil.getGenericType(Bean.class, "doubles"));
+                BeanUtil.getPropertyGenericType(Bean.class, "doubles"));
     }
 
     @Test
