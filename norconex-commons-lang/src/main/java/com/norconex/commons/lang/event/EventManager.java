@@ -15,6 +15,7 @@
 package com.norconex.commons.lang.event;
 
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
@@ -66,7 +67,7 @@ public class EventManager {
             this.listeners.add(listener);
         }
     }
-    public void addListeners(Set<IEventListener<Event<?>>> listeners) {
+    public void addListeners(Collection<IEventListener<Event<?>>> listeners) {
         if (listeners != null) {
             this.listeners.addAll(listeners);
         }
@@ -82,7 +83,8 @@ public class EventManager {
     public boolean removeListener(IEventListener<Event<?>> listener) {
         return this.listeners.remove(listener);
     }
-    public boolean removeListeners(Set<IEventListener<Event<?>>> listeners) {
+    public boolean removeListeners(
+            Collection<IEventListener<Event<?>>> listeners) {
         return this.listeners.removeAll(listeners);
     }
     public void clearListeners() {
