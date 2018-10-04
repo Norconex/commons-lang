@@ -23,13 +23,16 @@ import java.util.regex.Pattern;
  * height with an "x" (e.g., 640x480).  Converting from strings supports
  * many format, as long as two numeric groups are present (width and height,
  * respectively). If more than two groups of digits, only the first two
- * are kept. Examples of supported formats:
+ * are kept. If only one value is present, it is used for both width and height.
+ * Examples of supported formats:
  * </p>
  * <ul>
  *   <li>640x480</li>
  *   <li>640 480</li>
  *   <li>width:640, height:480</li>
  *   <li>aaa640bbb480ccc100</li>
+ *   <li>1200</li>
+ *   <li>size:1200px</li>
  * </ul>
  * @since 2.0.0
  */
@@ -52,6 +55,8 @@ public class DimensionConverter extends AbstractConverter {
             int width = Integer.parseInt(m.group());
             if (m.find()) {
                 d = new Dimension(width, Integer.parseInt(m.group()));
+            } else {
+                d = new Dimension(width, width);
             }
         }
         if (d == null) {

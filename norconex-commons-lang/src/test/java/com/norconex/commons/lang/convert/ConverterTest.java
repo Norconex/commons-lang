@@ -102,8 +102,15 @@ public class ConverterTest {
         //from string
         Assert.assertEquals(d, Converter.convert("640x480", Dimension.class));
         Assert.assertEquals(d, Converter.convert("640 480", Dimension.class));
-        Assert.assertEquals(d, Converter.convert("width:640, h:480", Dimension.class));
-        Assert.assertEquals(d, Converter.convert("aaa640b480cc10", Dimension.class));
+        Assert.assertEquals(
+                d, Converter.convert("width:640, h:480", Dimension.class));
+        Assert.assertEquals(
+                d, Converter.convert("aaa640b480cc10", Dimension.class));
+
+        d = new Dimension(1200, 1200);
+        Assert.assertEquals(d, Converter.convert("1200", Dimension.class));
+        Assert.assertEquals(
+                d, Converter.convert("size:1200px", Dimension.class));
     }
 
     @Test
