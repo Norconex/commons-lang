@@ -356,7 +356,11 @@ public class XML {
             if (xpathExpression == null && defaultObject == null) {
                 return toObject((T) null);
             }
-            return getXML(xpathExpression).toObject(defaultObject);
+            XML xml = getXML(xpathExpression);
+            if (xml == null) {
+                return defaultObject;
+            }
+            return xml.toObject(defaultObject);
         } catch (Exception e) {
             handleException(
                     node.getNodeName(), xpathExpression, e, canThrowException);

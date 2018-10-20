@@ -1,6 +1,8 @@
 TODO:
 ==============
 
+- Have loadFromXML return validationError list.
+
 - Add feature and tests for when parent element is specified but has no
   value, which means blanking a list 
   (e.g. HTTP Collector: StandardSitemapResolverTest).

@@ -31,11 +31,14 @@ import com.norconex.commons.lang.SLF4JUtil;
 import com.norconex.commons.lang.bean.BeanUtil;
 
 /**
- * Manages event listeners and logs events.
+ * Manages event listeners and logs events.  New event managers can be
+ * constructed with a "parent" event manager. When chained as such,
+ * event on a particular event manager are bubbled up to the parents but
+ * never down to children. Events are logged by the manager that first fires
+ * the event.
  * @author Pascal Essiembre
  * @since 2.0.0
  */
-//TODO: have a static getInstance method for "global" use?
 public class EventManager {
 
     private static final Logger LOG =
@@ -94,9 +97,6 @@ public class EventManager {
         return this.listeners.size();
     }
 
-    //TODO scan(String package);
-
-
     public void fire(Event<?> event) {
         fire(event, null);
     }
@@ -127,6 +127,6 @@ public class EventManager {
         Logger log =  LoggerFactory.getLogger(event.getClass().getSimpleName()
                 + "." + event.getName());
         Level safeLevel = ObjectUtils.defaultIfNull(level, Level.INFO);
-        SLF4JUtil.log(log, safeLevel, event.toString(), event.getException());// Objects.toString(event.getSource(), ""));
+        SLF4JUtil.log(log, safeLevel, event.toString(), event.getException());
     }
 }
