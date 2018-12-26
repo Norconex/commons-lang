@@ -86,7 +86,7 @@ public class MapChangeEvent<K, V> implements Serializable {
         return newValue;
     }
 
-    
+
 
     @Override
     public String toString() {

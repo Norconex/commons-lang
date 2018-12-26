@@ -1,4 +1,4 @@
-/* Copyright 2014-2017 Norconex Inc.
+/* Copyright 2014-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,22 +29,12 @@ import org.junit.Test;
  */
 public class CachedInputStreamTest {
 
-//    @Before
-//    public void before() {
-//        Logger logger = Logger.getRootLogger();
-//        logger.setLevel(Level.DEBUG);
-//        logger.setAdditivity(false);
-//        logger.addAppender(new ConsoleAppender(
-//                new PatternLayout("%-5p [%C{1}] %m%n"), 
-//                ConsoleAppender.SYSTEM_OUT));
-//    }
-    
     @Test
     public void testContentMatchMemCache() throws IOException {
         String content = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
         ByteArrayInputStream is = new ByteArrayInputStream(content.getBytes());
-        
+
         CachedStreamFactory factory = new CachedStreamFactory(200, 100);
         CachedInputStream cache = factory.newInputStream(is);
         try {
@@ -64,12 +54,12 @@ public class CachedInputStreamTest {
         String content = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
         ByteArrayInputStream is = new ByteArrayInputStream(content.getBytes());
-        
+
         CachedStreamFactory factory = new CachedStreamFactory(200, 100);
         CachedInputStream cache = factory.newInputStream(is);
         try {
             String enc = StandardCharsets.US_ASCII.toString();
-            byte[] bytes = null; 
+            byte[] bytes = null;
             bytes = new byte[5];
             cache.read(bytes);
             Assert.assertEquals("01234", new String(bytes, enc));
@@ -85,7 +75,7 @@ public class CachedInputStreamTest {
             cache.dispose();
         }
     }
-    
+
     @Test
     public void testContentMatchPoolMaxFileCache() throws IOException {
         CachedStreamFactory factory = new CachedStreamFactory(
@@ -97,7 +87,7 @@ public class CachedInputStreamTest {
             cache1 = factory.newInputStream(new NullInputStream(
                     140 * 1024));
             readCacheToString(cache1);
-            
+
             // first time loads 6 bytes, totaling 12, forcing file cache
             cache2 = factory.newInputStream(new NullInputStream(
                     140 * 1024));
@@ -246,14 +236,14 @@ public class CachedInputStreamTest {
             cache.dispose();
         }
     }
-    
+
     private CachedInputStream newCachedInputStream(
             String content, int poolMaxMemory, int instanceMaxMemory) {
         ByteArrayInputStream is = new ByteArrayInputStream(content.getBytes());
         CachedStreamFactory factory = new CachedStreamFactory(200, 10);
         return factory.newInputStream(is);
     }
-    
+
     private String readCacheToString(InputStream is) throws IOException {
         long i;
         StringBuilder b = new StringBuilder();

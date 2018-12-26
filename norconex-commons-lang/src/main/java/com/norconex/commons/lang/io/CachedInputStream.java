@@ -1,4 +1,4 @@
-/* Copyright 2014-2017 Norconex Inc.
+/* Copyright 2014-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -335,6 +335,8 @@ public class CachedInputStream extends InputStream implements ICachedStream {
             if (remainingRead != -1) {
                 pos += remainingRead;
                 count += remainingRead;
+            } else if (read > 0) {
+                return read;
             }
             read += remainingRead;
         }
@@ -408,7 +410,7 @@ public class CachedInputStream extends InputStream implements ICachedStream {
         firstRead = false;
         needNewStream = true;
         if (memOutputStream != null) {
-            LOG.debug("Creating memory cache from cached stream.");
+            LOG.trace("Creating memory cache from cached stream.");
             memCache = memOutputStream.toByteArray();
             memOutputStream = null;
         }
@@ -437,7 +439,7 @@ public class CachedInputStream extends InputStream implements ICachedStream {
         }
         if (fileCache != null) {
             FileUtil.delete(fileCache.toFile());
-            LOG.debug("Deleted cache file: {}", fileCache);
+            LOG.trace("Deleted cache file: {}", fileCache);
         }
         disposed = true;
         cacheEmpty = true;
@@ -502,15 +504,13 @@ public class CachedInputStream extends InputStream implements ICachedStream {
      */
     public int length() {
         if (length == UNDEFINED_LENGTH) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Obtaining stream length before a stream "
-                        + "of unknown lenght was fully read. "
-                        + "This forces a full "
-                        + "read just to get the length. To avoid this extra "
-                        + "read cycle, consider calling "
-                        + "the length() method after the stream has been "
-                        + "fully read at least once through regular usage.");
-            }
+            LOG.debug("Obtaining stream length before a stream "
+                    + "of unknown lenght was fully read. "
+                    + "This forces a full "
+                    + "read just to get the length. To avoid this extra "
+                    + "read cycle, consider calling "
+                    + "the length() method after the stream has been "
+                    + "fully read at least once through regular usage.");
 
             // Reset marking
             int savedPos = pos;
@@ -557,7 +557,7 @@ public class CachedInputStream extends InputStream implements ICachedStream {
         fileCache = Files.createTempFile(
                 cacheDirectory, "CachedInputStream-", "-temp");
         fileCache.toFile().deleteOnExit();
-        LOG.debug("Reached max cache size. Swapping to file: {}", fileCache);
+        LOG.trace("Reached max cache size. Swapping to file: {}", fileCache);
         randomAccessFile = new RandomAccessFile(fileCache.toFile(), "rw");
         randomAccessFile.write(memOutputStream.toByteArray());
         memOutputStream = null;
@@ -565,12 +565,12 @@ public class CachedInputStream extends InputStream implements ICachedStream {
 
     private void createInputStreamFromCache() throws FileNotFoundException {
         if (fileCache != null) {
-            LOG.debug("Creating new input stream from file cache.");
+            LOG.trace("Creating new input stream from file cache.");
             randomAccessFile = new RandomAccessFile(fileCache.toFile(), "r");
             FileChannel channel = randomAccessFile.getChannel();
             inputStream = Channels.newInputStream(channel);
         } else {
-            LOG.debug("Creating new input stream from memory cache.");
+            LOG.trace("Creating new input stream from memory cache.");
             inputStream = new ByteArrayInputStream(memCache);
         }
         needNewStream = false;

@@ -1,4 +1,4 @@
-/* Copyright 2015 Norconex Inc.
+/* Copyright 2015-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 package com.norconex.commons.lang.map;
 
 import java.util.Collection;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
@@ -23,18 +24,22 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import com.norconex.commons.lang.xml.XML;
+
 /**
  * <p>Convenient way of checking whether at least one value for a key
- * in a given {@link Properties} matches a regular expression. 
+ * in a given {@link Properties} matches a regular expression.
  * </p>
  * <p>
- * A <code>null</code> or empty regex value will try to match an 
+ * A <code>null</code> or empty regex value will try to match an
  * empty key value.
  * </p>
  * @author Pascal Essiembre
  * @since 1.8.0
  */
-public class PropertyMatcher {
+//TODO create new Predicates which has a list
+// (instead of using Predicate.and() which won't allow us to add/remove)
+public final class PropertyMatcher implements Predicate<Properties> {
     private final String key;
     private final String regex;
     private final Pattern pattern;
@@ -53,9 +58,9 @@ public class PropertyMatcher {
             }
         } else {
             this.pattern = Pattern.compile(".*");
-        }            
+        }
     }
-    
+
     public String getKey() {
         return key;
     }
@@ -67,7 +72,19 @@ public class PropertyMatcher {
     }
 
     /**
-     * Whether this property matcher matches a key value in the given 
+     * For compatibility with {@link Predicate}.  Same as invoking
+     * {@link #matches(Properties)}.
+     * @param properties the properties to look for a match
+     * @return <code>true</code> if at least one value for the key matches
+     * the matcher regular expression
+     */
+    @Override
+    public boolean test(Properties properties) {
+        return matches(properties);
+    }
+
+    /**
+     * Whether this property matcher matches a key value in the given
      * {@link Properties}.
      * @param properties the properties to look for a match
      * @return <code>true</code> if at least one value for the key matches
@@ -89,6 +106,19 @@ public class PropertyMatcher {
         }
         return false;
     }
+
+    public static PropertyMatcher loadFromXML(XML xml) {
+        return new PropertyMatcher(
+                xml.getString("@field"),
+                xml.getString("."),
+                xml.getBoolean("@caseSensitive", false));
+    }
+    public static void saveToXML(PropertyMatcher matcher, XML xml) {
+        xml.setTextContent(matcher.regex);
+        xml.setAttribute("field", matcher.key);
+        xml.setAttribute("caseSensitive", matcher.caseSensitive);
+    }
+
     @Override
     public int hashCode() {
         return new HashCodeBuilder()
@@ -111,7 +141,7 @@ public class PropertyMatcher {
     }
     @Override
     public String toString() {
-        ToStringBuilder builder = 
+        ToStringBuilder builder =
                 new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE);
         builder.append("key", key);
         builder.append("regex", regex);

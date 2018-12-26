@@ -16,7 +16,10 @@ package com.norconex.commons.lang;
 
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.function.Predicate;
 
+import org.apache.commons.collections4.BidiMap;
+import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.event.Level;
@@ -38,12 +41,33 @@ public final class SLF4JUtil {
         LL_MAP.put(Level.ERROR, (l, f, a) -> l.error(f, a));
     }
 
+    private static final Map<Level, Predicate<Logger>> ENABLED_MAP =
+            new EnumMap<>(Level.class);
+    static {
+        ENABLED_MAP.put(Level.TRACE, Logger::isTraceEnabled);
+        ENABLED_MAP.put(Level.DEBUG, Logger::isDebugEnabled);
+        ENABLED_MAP.put(Level.INFO,  Logger::isInfoEnabled);
+        ENABLED_MAP.put(Level.WARN,  Logger::isWarnEnabled);
+        ENABLED_MAP.put(Level.ERROR, Logger::isErrorEnabled);
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private static final BidiMap<java.util.logging.Level, Level>
+            JAVA_LEVEL_MAP = new DualHashBidiMap();
+    static {
+        JAVA_LEVEL_MAP.put(java.util.logging.Level.FINEST,  Level.TRACE);
+        JAVA_LEVEL_MAP.put(java.util.logging.Level.FINER,   Level.DEBUG);
+        JAVA_LEVEL_MAP.put(java.util.logging.Level.FINE,    Level.DEBUG);
+        JAVA_LEVEL_MAP.put(java.util.logging.Level.INFO,    Level.INFO);
+        JAVA_LEVEL_MAP.put(java.util.logging.Level.WARNING, Level.WARN);
+        JAVA_LEVEL_MAP.put(java.util.logging.Level.SEVERE,  Level.ERROR);
+    }
+
 
     private SLF4JUtil() {
         super();
     }
 
-    //TODO have log version without the Logger argument.
     /**
      * Logs a message with a dynamically set SLF4J log {@link Level}.  As
      * of this writing, SLF4J did not offer such ability.
@@ -70,9 +94,50 @@ public final class SLF4JUtil {
         LL_MAP.get(level).log(logger, format, args);
     }
 
+    /**
+     * Gets whether the supplied log level is enabled for the given logger.
+     * @param logger logger
+     * @param level level
+     * @return <code>true</code> if enabled
+     */
+    public static boolean isEnabled(Logger logger, Level level) {
+        return ENABLED_MAP.get(level).test(logger);
+    }
+
+    /**
+     * Gets the finest log level supported by the supplied logger.
+     * @param logger the logger to get the finest level from
+     * @return finest log level
+     */
+    public static Level getLevel(Logger logger) {
+        Level l = null;
+        for (Level level : LL_MAP.keySet()) {
+            if (isEnabled(logger, level)) {
+                l = level;
+            }
+        }
+        return l;
+    }
+
+    /**
+     * Converts a Java {@link java.util.logging.Level} to a SLF4J {@link Level}.
+     * @param javaLevel java level
+     * @return SLF4J Level
+     */
+    public static Level fromJavaLevel(java.util.logging.Level javaLevel) {
+        return JAVA_LEVEL_MAP.get(javaLevel);
+    }
+    /**
+     * Converts a SLF4J {@link Level} to a Java {@link java.util.logging.Level}.
+     * @param level SLF4J Level
+     * @return java level
+     */
+    public static java.util.logging.Level toJavaLevel(Level level) {
+        return JAVA_LEVEL_MAP.getKey(level);
+    }
+
     @FunctionalInterface
     private interface LevelLogger {
         public void log(Logger logger, String format, Object... args);
     }
-
 }

@@ -27,6 +27,15 @@
         New CollectionUtil.
       </action>
       <action dev="essiembre" type="add">
+        New MapUtil.
+      </action>
+      <action dev="essiembre" type="add">
+        New WebFile.
+      </action>
+      <action dev="essiembre" type="add">
+        New OSResource.
+      </action>
+      <action dev="essiembre" type="add">
         New Event-related classes (Event, IEventListener, EventManager).
       </action>
       <action dev="essiembre" type="add">
@@ -64,6 +73,12 @@
       </action>
       <action dev="essiembre" type="add">
         New accessors for LocalDateTime on Properties.
+      </action>
+      <action dev="essiembre" type="add">
+        New PropertyMatchers collection.
+      </action>
+      <action dev="essiembre" type="update">
+        PropertyMatcher now Predicate functional interface.
       </action>
       <action dev="essiembre" type="update">
         New SLF4JUtil class.
@@ -112,6 +127,10 @@
       <action dev="essiembre" type="update">
         Properties setXXX(...) and addXXX(...) methods are not deprecated in favor
         of add(...) and set(...) methods.
+      </action>
+      <action dev="essiembre" type="update">
+        PropertyMatcher now implements Predicate and provide static methods
+        for loading/saving as XML.
       </action>
       <action dev="essiembre" type="fix">
         Properties#load(Map) now handles primitive array values properly,
