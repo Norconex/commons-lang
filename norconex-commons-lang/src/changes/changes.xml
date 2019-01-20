@@ -10,6 +10,9 @@
     <release version="2.0.0-SNAPSHOT" date="2018-??-??" 
              description="Major release. NOT a drop-in replacement for 1.x.">
       <action dev="essiembre" type="add">
+        New MutableImage class facilitating performing basic image operations.
+      </action>
+      <action dev="essiembre" type="add">
         New event-related classes for facilitating the listening and 
         firing of events.
       </action>

@@ -49,8 +49,7 @@ import com.norconex.commons.lang.url.URLStreamer;
  */
 public class WebFile implements Path {
 
-    private static final Logger LOG = LoggerFactory.getLogger(
-            WebFile.class);
+    private static final Logger LOG = LoggerFactory.getLogger(WebFile.class);
 
     private final Path localFile;
     private final URL url;

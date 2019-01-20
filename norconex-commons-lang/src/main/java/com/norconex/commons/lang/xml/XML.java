@@ -1261,8 +1261,7 @@ public class XML {
      * @param defaultValue default duration
      * @return duration
      */
-    public Duration getDuration(
-            String xpathExpression, Duration defaultValue) {
+    public Duration getDuration(String xpathExpression, Duration defaultValue) {
         return get(xpathExpression, Duration.class, defaultValue);
     }
 
