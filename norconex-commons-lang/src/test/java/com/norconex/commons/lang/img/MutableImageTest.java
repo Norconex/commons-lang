@@ -86,16 +86,16 @@ public class MutableImageTest {
         test(img -> img.stretch(75, 20));
     }
     @Test
-    public void testStretchHeightRatio1_5() throws IOException {
-        test(img -> img.stretchHeightRatio(1.5f));
+    public void testStretchHeightFactor1_5() throws IOException {
+        test(img -> img.stretchHeightFactor(1.5f));
     }
     @Test
-    public void testStretchWidthRatio1_5() throws IOException {
-        test(img -> img.stretchWidthRatio(1.5f));
+    public void testStretchWidthFactor1_5() throws IOException {
+        test(img -> img.stretchWidthFactor(1.5f));
     }
     @Test
-    public void testStretchRatio3x0_5() throws IOException {
-        test(img -> img.stretchRatio(3.0f, 0.5f));
+    public void testStretchFactor3x0_5() throws IOException {
+        test(img -> img.stretchFactor(3.0f, 0.5f));
     }
 
     @Test
@@ -103,20 +103,20 @@ public class MutableImageTest {
         test(img -> img.scale(75, 20));
     }
     @Test
-    public void testScaleHeightRatio1_5() throws IOException {
-        test(img -> img.scaleHeightRatio(1.5f));
+    public void testScaleHeightFactor1_5() throws IOException {
+        test(img -> img.scaleHeightFactor(1.5f));
     }
     @Test
-    public void testScaleWidthRatio1_5() throws IOException {
-        test(img -> img.scaleWidthRatio(1.5f));
+    public void testScaleWidthFactor1_5() throws IOException {
+        test(img -> img.scaleWidthFactor(1.5f));
     }
     @Test
     public void testScaleInHalf() throws IOException {
-        test(img -> img.scaleRatio(0.5f));
+        test(img -> img.scaleFactor(0.5f));
     }
     @Test
     public void testScaleDouble() throws IOException {
-        test(img -> img.scaleRatio(2.0f));
+        test(img -> img.scaleFactor(2.0f));
     }
 
     private void test(Consumer<MutableImage> c) throws IOException {

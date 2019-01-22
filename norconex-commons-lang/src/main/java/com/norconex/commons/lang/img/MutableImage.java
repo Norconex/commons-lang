@@ -40,7 +40,7 @@ import org.imgscalr.Scalr;
 import org.imgscalr.Scalr.Mode;
 
 /**
- * Holds an image in memory and offers simple ways to do common operations.
+ * Holds an image in memory and offers simple ways to do common opefactorns.
  * @author Pascal Essiembre
  * @since 2.0.0
  */
@@ -144,20 +144,20 @@ public class MutableImage {
     public MutableImage stretchHeight(int height) {
         return stretch(image.getWidth(), height);
     }
-    public MutableImage stretchWidthRatio(double ratio) {
-        return stretch((int) (image.getWidth() * ratio), image.getHeight());
+    public MutableImage stretchWidthFactor(double factor) {
+        return stretch((int) (image.getWidth() * factor), image.getHeight());
     }
-    public MutableImage stretchHeightRatio(double ratio) {
-        return stretch(image.getWidth(), (int) (image.getHeight() * ratio));
+    public MutableImage stretchHeightFactor(double factor) {
+        return stretch(image.getWidth(), (int) (image.getHeight() * factor));
     }
     public MutableImage stretch(Dimension dimension) {
         Objects.requireNonNull(dimension, "'dimension' must not be null.");
         return stretch((int) dimension.getWidth(), (int) dimension.getHeight());
     }
-    public MutableImage stretchRatio(double ratioWidth, double ratioHeight) {
+    public MutableImage stretchFactor(double factorWidth, double factorHeight) {
         return stretch(
-                (int) (image.getWidth() * ratioWidth),
-                (int) (image.getHeight() * ratioHeight));
+                (int) (image.getWidth() * factorWidth),
+                (int) (image.getHeight() * factorHeight));
     }
     public MutableImage stretch(int size) {
         return stretch(size, size);
@@ -172,16 +172,16 @@ public class MutableImage {
     public MutableImage scaleHeight(int height) {
         return apply(Scalr.resize(image, Mode.FIT_TO_HEIGHT, height));
     }
-    public MutableImage scaleWidthRatio(double ratio) {
-        return scaleWidth((int) (image.getWidth() * ratio));
+    public MutableImage scaleWidthFactor(double factor) {
+        return scaleWidth((int) (image.getWidth() * factor));
     }
-    public MutableImage scaleHeightRatio(double ratio) {
-        return scaleHeight((int) (image.getHeight() * ratio));
+    public MutableImage scaleHeightFactor(double factor) {
+        return scaleHeight((int) (image.getHeight() * factor));
     }
-    public MutableImage scaleRatio(double ratio) {
+    public MutableImage scaleFactor(double factor) {
         return scale(
-                (int) (image.getWidth() * ratio),
-                (int) (image.getHeight() * ratio));
+                (int) (image.getWidth() * factor),
+                (int) (image.getHeight() * factor));
     }
     public MutableImage scale(int size) {
         return scale(size, size);
@@ -195,8 +195,6 @@ public class MutableImage {
     public MutableImage scale(int maxWidth, int maxHeight) {
         return apply(Scalr.resize(image, Mode.AUTOMATIC, maxWidth, maxHeight));
     }
-
-
 
     private MutableImage apply(BufferedImage newImage) {
         image.flush();
