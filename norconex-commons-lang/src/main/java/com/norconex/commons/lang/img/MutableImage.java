@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import javax.imageio.ImageIO;
@@ -37,6 +38,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.imgscalr.Scalr;
+import org.imgscalr.Scalr.Method;
 import org.imgscalr.Scalr.Mode;
 
 /**
@@ -46,7 +48,23 @@ import org.imgscalr.Scalr.Mode;
  */
 public class MutableImage {
 
+    public enum Quality {
+        AUTO(Method.AUTOMATIC),
+        LOW(Method.SPEED),
+        MEDIUM(Method.BALANCED),
+        HIGH(Method.QUALITY),
+        MAX(Method.ULTRA_QUALITY);
+        private Method scaleMethod;
+        private Quality(Method scaleMethod) {
+            this.scaleMethod = scaleMethod;
+        }
+        public Method getScaleMethod() {
+            return scaleMethod;
+        }
+    }
+
     private BufferedImage image;
+    private Quality resizeQuality; // whether scaling or stretching
 
     public MutableImage(Path imageFile) throws IOException {
         Objects.requireNonNull(imageFile, "'imageFile' must not be null.");
@@ -70,6 +88,14 @@ public class MutableImage {
             bGr.dispose();
             this.image = bimage;
         }
+    }
+
+    public Quality getResizeQuality() {
+        return resizeQuality;
+    }
+    public MutableImage setResizeQuality(Quality resizeQuality) {
+        this.resizeQuality = resizeQuality;
+        return this;
     }
 
     public BufferedImage toImage() {
@@ -163,14 +189,17 @@ public class MutableImage {
         return stretch(size, size);
     }
     public MutableImage stretch(int width, int height) {
-        return apply(Scalr.resize(image, Mode.FIT_EXACT, width, height));
+        return apply(Scalr.resize(
+                image, getScaleMethod(), Mode.FIT_EXACT, width, height));
     }
 
     public MutableImage scaleWidth(int width) {
-        return apply(Scalr.resize(image, Mode.FIT_TO_WIDTH, width));
+        return apply(Scalr.resize(
+                image, getScaleMethod(), Mode.FIT_TO_WIDTH, width));
     }
     public MutableImage scaleHeight(int height) {
-        return apply(Scalr.resize(image, Mode.FIT_TO_HEIGHT, height));
+        return apply(Scalr.resize(
+                image, getScaleMethod(), Mode.FIT_TO_HEIGHT, height));
     }
     public MutableImage scaleWidthFactor(double factor) {
         return scaleWidth((int) (image.getWidth() * factor));
@@ -193,7 +222,13 @@ public class MutableImage {
                 (int) maxDimension.getHeight());
     }
     public MutableImage scale(int maxWidth, int maxHeight) {
-        return apply(Scalr.resize(image, Mode.AUTOMATIC, maxWidth, maxHeight));
+        return apply(Scalr.resize(image,
+                getScaleMethod(), Mode.AUTOMATIC, maxWidth, maxHeight));
+    }
+
+    private Method getScaleMethod() {
+        return Optional.ofNullable(
+                resizeQuality).orElse(Quality.AUTO).getScaleMethod();
     }
 
     private MutableImage apply(BufferedImage newImage) {

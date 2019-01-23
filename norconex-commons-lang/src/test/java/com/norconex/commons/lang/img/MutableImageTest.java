@@ -129,6 +129,7 @@ public class MutableImageTest {
         try (InputStream is =
                 MutableImageTest.class.getResourceAsStream(srcImage)) {
             MutableImage img = new MutableImage(is);
+            //img.setResizeQuality(Quality.MAX);
             c.accept(img);
             Assert.assertTrue("Could not find image writer.", ImageIO.write(
                     img.toImage(), ext, new File(targetImage)));
