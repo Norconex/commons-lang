@@ -75,6 +75,10 @@
         New CachedInputStream#isEmpty method.
       </action>
       <action dev="essiembre" type="add">
+        New CachedStreamFactory can now be initialized without arguments,
+        using default initialization values or system properties.
+      </action>
+      <action dev="essiembre" type="add">
         New accessors for LocalDateTime on Properties.
       </action>
       <action dev="essiembre" type="add">
