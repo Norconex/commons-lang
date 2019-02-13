@@ -1,4 +1,4 @@
-/* Copyright 2014-2017 Norconex Inc.
+/* Copyright 2014-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
@@ -27,12 +28,49 @@ import java.util.WeakHashMap;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
+
+import com.norconex.commons.lang.unit.DataUnit;
 
 /**
+ * <p>
+ * Factory for input/output streams caching values for repeat usage.
+ * </p>
+ * <p>
+ * When using a constructor without all arguments, default values are used.
+ * System properties are first checked for such values under these keys:
+ * </p>
+ * <ul>
+ *   <li><code>cachedstream.mem.pool</code>: Pool max memory.</li>
+ *   <li><code>cachedstream.mem.instance</code>: Instances max memory.</li>
+ *   <li><code>cachedstream.dir</code>: Cache directory.</li>
+ * </ul>
+ * <p>
+ * The following are default initialization values when not supplied via
+ * constructor arguments or System properties:
+ * </p>
+ * <ul>
+ *   <li>Pool max memory: <i>1 GB</i></li>
+ *   <li>Instances max memory: : <i>100 MB</i></li>
+ *   <li>Cache directory: <i>Uses the system temporary directory.</i></li>
+ * </ul>
+ * <p>
+ * Initialization values passed in constructor always take precedence.
+ * </p>
  *
  * @author Pascal Essiembre
  */
 public class CachedStreamFactory {
+
+    public static final int DEFAULT_MAX_MEM_INSTANCE =
+            (int) DataUnit.MB.toBytes(100);
+    public static final int DEFAULT_MAX_MEM_POOL =
+            (int) DataUnit.GB.toBytes(1);
+
+    private static final String PROP_MAX_MEM_POOL = "cachedstream.mem.pool";
+    private static final String PROP_MAX_MEM_INSTANCE =
+            "cachedstream.mem.instance";
+    private static final String PROP_DIR = "cachedstream.dir";
 
     private final int maxMemoryPool;
     private final int maxMemoryInstance;
@@ -51,8 +89,7 @@ public class CachedStreamFactory {
     public CachedStreamFactory(
             int maxMemoryPool,
             int maxMemoryInstance) {
-        this(maxMemoryPool, maxMemoryInstance,
-                FileUtils.getTempDirectory().toPath());
+        this(maxMemoryPool, maxMemoryInstance, getDefaultCacheDirectory());
     }
     /**
      * Constructor.
@@ -72,6 +109,42 @@ public class CachedStreamFactory {
         this.maxMemoryPool = maxMemoryPool;
         this.maxMemoryInstance = maxMemoryInstance;
         this.cacheDirectory = cacheDirectory;
+    }
+    /**
+     * Creates a new instance with default memory values
+     * (see class documentation).
+     * @param cacheDirectory location where file-based caching takes place
+     * @since 2.0.0
+     */
+    public CachedStreamFactory(Path cacheDirectory) {
+        Objects.requireNonNull(
+                cacheDirectory, "'cacheDirectory' must not be null");
+        this.maxMemoryPool = getDefaultMaxMemoryPool();
+        this.maxMemoryInstance = getDefaultMaxMemoryInstance();
+        this.cacheDirectory = cacheDirectory;
+    }
+    /**
+     * Creates a new instance with default values (see class documentation)
+     * @since 2.0.0
+     */
+    public CachedStreamFactory() {
+        this(getDefaultCacheDirectory());
+    }
+
+    private static int getDefaultMaxMemoryPool() {
+        return NumberUtils.toInt(System.getProperty(
+                PROP_MAX_MEM_POOL), DEFAULT_MAX_MEM_POOL);
+    }
+    private static int getDefaultMaxMemoryInstance() {
+        return NumberUtils.toInt(System.getProperty(
+                PROP_MAX_MEM_INSTANCE), DEFAULT_MAX_MEM_INSTANCE);
+    }
+    private static Path getDefaultCacheDirectory() {
+        String dir = System.getProperty(PROP_DIR);
+        if (StringUtils.isNotBlank(dir)) {
+            return Paths.get(dir);
+        }
+        return FileUtils.getTempDirectory().toPath();
     }
 
     public int getMaxMemoryPool() {

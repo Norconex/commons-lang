@@ -21,6 +21,7 @@ import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -30,6 +31,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 import javax.imageio.ImageIO;
+import javax.xml.bind.DatatypeConverter;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -42,7 +44,7 @@ import org.imgscalr.Scalr.Method;
 import org.imgscalr.Scalr.Mode;
 
 /**
- * Holds an image in memory and offers simple ways to do common opefactorns.
+ * Holds an image in memory and offers simple ways to do common operations.
  * @author Pascal Essiembre
  * @since 2.0.0
  */
@@ -101,6 +103,13 @@ public class MutableImage {
     public BufferedImage toImage() {
         return image;
     }
+    public String toBase64String(String format) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(image, format, baos);
+        return "data:image/" + format + ";base64,"
+                + DatatypeConverter.printBase64Binary(baos.toByteArray());
+    }
+
     public void write(Path file) throws IOException {
         Objects.requireNonNull(file, "'file' must not be null.");
         write(file, null);
@@ -121,6 +130,12 @@ public class MutableImage {
 
     public Dimension getDimension() {
         return new Dimension(image.getWidth(), image.getHeight());
+    }
+    public int getHeight() {
+        return image.getHeight();
+    }
+    public int getWidth() {
+        return image.getWidth();
     }
 
     public MutableImage rotateLeft() {
@@ -224,6 +239,77 @@ public class MutableImage {
     public MutableImage scale(int maxWidth, int maxHeight) {
         return apply(Scalr.resize(image,
                 getScaleMethod(), Mode.AUTOMATIC, maxWidth, maxHeight));
+    }
+
+    public boolean largerThan(MutableImage img) {
+        if (img == null) {
+            return false;
+        }
+        return largerThan(img.getDimension());
+    }
+    public boolean largerThan(Dimension dim) {
+        if (dim == null) {
+            return false;
+        }
+        return largerThan(dim.width, dim.height);
+    }
+    public boolean largerThan(int width, int height) {
+        return image.getWidth() > width && image.getHeight() > height;
+    }
+    public MutableImage largest(MutableImage img) {
+        if (img == null) {
+            return this;
+        }
+        if (smallerThan(img)) {
+            return img;
+        }
+        return this;
+    }
+    public boolean smallerThan(MutableImage img) {
+        if (img == null) {
+            return false;
+        }
+        return smallerThan(img.getDimension());
+    }
+    public boolean smallerThan(Dimension dim) {
+        if (dim == null) {
+            return false;
+        }
+        return smallerThan((int) dim.getWidth(), (int) dim.getHeight());
+    }
+    public boolean smallerThan(int width, int height) {
+        return image.getWidth() < width && image.getHeight() < height;
+    }
+    public MutableImage smallest(MutableImage img) {
+        if (img == null) {
+            return this;
+        }
+        if (largerThan(img)) {
+            return img;
+        }
+        return this;
+    }
+    public MutableImage tallest(MutableImage img) {
+        if (img == null) {
+            return this;
+        }
+        if (img.getHeight() > image.getHeight()) {
+            return img;
+        }
+        return this;
+    }
+    public MutableImage widest(MutableImage img) {
+        if (img == null) {
+            return this;
+        }
+        if (img.getWidth() > image.getWidth()) {
+            return img;
+        }
+        return this;
+    }
+
+    public long getArea() {
+        return (long) image.getWidth() * (long) image.getHeight();
     }
 
     private Method getScaleMethod() {
