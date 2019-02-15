@@ -16,6 +16,7 @@ package com.norconex.commons.lang.io;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -403,9 +404,9 @@ public class CachedInputStream extends InputStream implements ICachedStream {
 
     private void resetStream() {
         // Rewind
-        try { inputStream.close(); } catch (IOException e) { /*NOOP*/ }
-        try { memOutputStream.close(); } catch (IOException e) { /*NOOP*/ }
-        try { randomAccessFile.close(); } catch (IOException e) { /*NOOP*/ }
+        quietClose(inputStream);
+        quietClose(memOutputStream);
+        quietClose(randomAccessFile);
         randomAccessFile = null;
         firstRead = false;
         needNewStream = true;
@@ -574,6 +575,12 @@ public class CachedInputStream extends InputStream implements ICachedStream {
             inputStream = new ByteArrayInputStream(memCache);
         }
         needNewStream = false;
+    }
+
+    private void quietClose(Closeable closable) {
+        if (closable != null) {
+            try { closable.close(); } catch (IOException e) { /*NOOP*/ }
+        }
     }
 
     @Override
