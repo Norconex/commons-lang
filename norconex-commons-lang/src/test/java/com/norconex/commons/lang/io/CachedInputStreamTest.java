@@ -1,4 +1,4 @@
-/* Copyright 2014-2018 Norconex Inc.
+/* Copyright 2014-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.NullInputStream;
 import org.junit.Assert;
 import org.junit.Test;
@@ -44,7 +43,7 @@ public class CachedInputStreamTest {
             // second time should read from cache
             Assert.assertEquals(content, readCacheToString(cache));
         }  finally {
-            IOUtils.closeQuietly(cache);
+            try { cache.close(); } catch (IOException e) { /*NOOP*/ }
             cache.dispose();
         }
     }
@@ -71,7 +70,7 @@ public class CachedInputStreamTest {
             cache.read(bytes);
             Assert.assertEquals("56789AB", new String(bytes, enc));
         }  finally {
-            IOUtils.closeQuietly(cache);
+            try { cache.close(); } catch (IOException e) { /*NOOP*/ }
             cache.dispose();
         }
     }
@@ -93,8 +92,8 @@ public class CachedInputStreamTest {
                     140 * 1024));
             readCacheToString(cache2);
         }  finally {
-            IOUtils.closeQuietly(cache1);
-            IOUtils.closeQuietly(cache2);
+            try { cache1.close(); } catch (IOException e) { /*NOOP*/ }
+            try { cache2.close(); } catch (IOException e) { /*NOOP*/ }
             cache1.dispose();
             cache2.dispose();
         }
@@ -114,7 +113,7 @@ public class CachedInputStreamTest {
             // second time should read from cache
             Assert.assertEquals(content, readCacheToString(cache));
         }  finally {
-            IOUtils.closeQuietly(cache);
+            try { cache.close(); } catch (IOException e) { /*NOOP*/ }
             cache.dispose();
         }
     }
@@ -130,7 +129,7 @@ public class CachedInputStreamTest {
             cache.rewind();
             Assert.assertEquals(content, readCacheToString(cache));
         }  finally {
-            IOUtils.closeQuietly(cache);
+            try { cache.close(); } catch (IOException e) { /*NOOP*/ }
             cache.dispose();
         }
     }
@@ -151,7 +150,7 @@ public class CachedInputStreamTest {
             // still good length?
             Assert.assertEquals(content.length(), cache.length());
         }  finally {
-            IOUtils.closeQuietly(cache);
+            try { cache.close(); } catch (IOException e) { /*NOOP*/ }
             cache.dispose();
         }
     }
@@ -173,7 +172,7 @@ public class CachedInputStreamTest {
             // still good length?
             Assert.assertEquals(content.length(), cache.length());
         }  finally {
-            IOUtils.closeQuietly(cache);
+            try { cache.close(); } catch (IOException e) { /*NOOP*/ }
             cache.dispose();
         }
     }
@@ -189,7 +188,7 @@ public class CachedInputStreamTest {
             cache.rewind();
             Assert.assertEquals(content, readCacheToString(cache));
         }  finally {
-            IOUtils.closeQuietly(cache);
+            try { cache.close(); } catch (IOException e) { /*NOOP*/ }
             cache.dispose();
         }
     }
@@ -210,7 +209,7 @@ public class CachedInputStreamTest {
             // still good length?
             Assert.assertEquals(content.length(), cache.length());
         }  finally {
-            IOUtils.closeQuietly(cache);
+            try { cache.close(); } catch (IOException e) { /*NOOP*/ }
             cache.dispose();
         }
     }
@@ -232,7 +231,7 @@ public class CachedInputStreamTest {
             // still good length?
             Assert.assertEquals(content.length(), cache.length());
         }  finally {
-            IOUtils.closeQuietly(cache);
+            try { cache.close(); } catch (IOException e) { /*NOOP*/ }
             cache.dispose();
         }
     }

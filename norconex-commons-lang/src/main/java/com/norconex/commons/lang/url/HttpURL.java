@@ -1,4 +1,4 @@
-/* Copyright 2010-2018 Norconex Inc.
+/* Copyright 2010-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
 import org.apache.commons.lang3.CharUtils;
+import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -350,7 +351,7 @@ public class HttpURL implements Serializable {
         if (StringUtils.isBlank(url)) {
             return null;
         }
-        return StringUtils.replacePattern(url, "(.*?://.*?)([/?#].*)", "$1");
+        return RegExUtils.replacePattern(url, "(.*?://.*?)([/?#].*)", "$1");
     }
 
     /**

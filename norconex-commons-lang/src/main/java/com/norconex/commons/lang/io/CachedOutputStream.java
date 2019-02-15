@@ -1,4 +1,4 @@
-/* Copyright 2014-2017 Norconex Inc.
+/* Copyright 2014-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -181,12 +181,12 @@ public class CachedOutputStream extends OutputStream
             }
             if (outputStream != null) {
                 outputStream.flush();
-                IOUtils.closeQuietly(outputStream);
+                try { outputStream.close(); } catch (IOException e) { /*NOOP*/ }
                 outputStream = null;
             }
             if (fileOutputStream != null) {
                 fileOutputStream.flush();
-                IOUtils.closeQuietly(fileOutputStream);
+                try {fileOutputStream.close();} catch (IOException e) {/*NOOP*/}
                 fileOutputStream = null;
             }
             if (fileCache != null && clearCache) {

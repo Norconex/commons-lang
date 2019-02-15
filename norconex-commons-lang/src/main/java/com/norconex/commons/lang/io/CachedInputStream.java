@@ -1,4 +1,4 @@
-/* Copyright 2014-2018 Norconex Inc.
+/* Copyright 2014-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -403,9 +403,9 @@ public class CachedInputStream extends InputStream implements ICachedStream {
 
     private void resetStream() {
         // Rewind
-        IOUtils.closeQuietly(inputStream);
-        IOUtils.closeQuietly(memOutputStream);
-        IOUtils.closeQuietly(randomAccessFile);
+        try { inputStream.close(); } catch (IOException e) { /*NOOP*/ }
+        try { memOutputStream.close(); } catch (IOException e) { /*NOOP*/ }
+        try { randomAccessFile.close(); } catch (IOException e) { /*NOOP*/ }
         randomAccessFile = null;
         firstRead = false;
         needNewStream = true;

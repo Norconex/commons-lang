@@ -1,4 +1,4 @@
-/* Copyright 2015-2016 Norconex Inc.
+/* Copyright 2015-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,34 +24,33 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.ClosedInputStream;
 import org.apache.commons.lang3.ArrayUtils;
 
 /**
  * <p>This class is an alternate version of
- * Java {@link java.io.ByteArrayOutputStream}. This code is derived from the 
+ * Java {@link java.io.ByteArrayOutputStream}. This code is derived from the
  * Apache {@link org.apache.commons.io.output.ByteArrayOutputStream}.
  * Like the Apache version, this class creates new byte arrays as it grows
- * without copying them into a larger one (for better performance).  
- * Each new array is stored in a list.</p> 
- * 
- * <p>In addition to the Apache version, this class offers methods to access 
- * subsets of bytes ranging form zero to the total number of bytes written 
+ * without copying them into a larger one (for better performance).
+ * Each new array is stored in a list.</p>
+ *
+ * <p>In addition to the Apache version, this class offers methods to access
+ * subsets of bytes ranging form zero to the total number of bytes written
  * so far. Also different, each byte array created
- * have the same length, matching the initial capacity provided 
+ * have the same length, matching the initial capacity provided
  * (default is 1024).</p>
- * 
- * <p>The higher the initial capacity, the faster it should be to write 
+ *
+ * <p>The higher the initial capacity, the faster it should be to write
  * large streams, but the more initial memory it will take.</p>
- * 
+ *
  * @author Pascal Essiembre
  * @since 2.1.0
  */
 public class ByteArrayOutputStream extends OutputStream {
 
     public static final int DEFAULT_INITIAL_CAPACITY = 1024;
-    
+
     /** The list of buffers, which grows and never reduces. */
     private final List<byte[]> buffers = new ArrayList<>();
 
@@ -66,18 +65,18 @@ public class ByteArrayOutputStream extends OutputStream {
 
     /** Each new buffer initialization length. */
     private final int bufferCapacity;
-    
+
     /**
-     * Creates a new byte array output stream. The buffer capacity is 
-     * initially 1024 bytes. 
+     * Creates a new byte array output stream. The buffer capacity is
+     * initially 1024 bytes.
      */
     public ByteArrayOutputStream() {
         this(DEFAULT_INITIAL_CAPACITY);
     }
 
     /**
-     * Creates a new byte array output stream, with a buffer capacity of 
-     * the specified size, in bytes. 
+     * Creates a new byte array output stream, with a buffer capacity of
+     * the specified size, in bytes.
      *
      * @param size  the initial size
      * @throws IllegalArgumentException if size is negative
@@ -93,7 +92,7 @@ public class ByteArrayOutputStream extends OutputStream {
         }
 
     }
-    
+
     private void addNewBuffer() {
         currentBuffer = new byte[bufferCapacity];
         buffers.add(currentBuffer);
@@ -101,8 +100,8 @@ public class ByteArrayOutputStream extends OutputStream {
     }
 
     /**
-     * Gets the single byte value found at specified offset.  If the offset is 
-     * larger than the byte array length, <code>-1</code> is 
+     * Gets the single byte value found at specified offset.  If the offset is
+     * larger than the byte array length, <code>-1</code> is
      * returned. If the offset is lower than zero, zero is assumed.
      * @param offset position to read the byte at.
      * @return a decimal byte value
@@ -120,10 +119,10 @@ public class ByteArrayOutputStream extends OutputStream {
     /**
      * Gets a byte array matching the specified offset and target
      * byte array length.
-     * If the offset is larger than the byte array length, 
+     * If the offset is larger than the byte array length,
      * <code>-1</code> will be returned.
      * If the offset is lower than zero, zero is assumed.
-     * If the target byte array length is larger than the byte array, 
+     * If the target byte array length is larger than the byte array,
      * the value returned will be lower than the specified length.
      * @param target target byte array to store bytes into.
      * @param offset position to read the byte at.
@@ -140,9 +139,9 @@ public class ByteArrayOutputStream extends OutputStream {
         if (thisStartOffset >= totalCount) {
             return -1;
         }
-        int thisLengthToRead = 
+        int thisLengthToRead =
                 Math.min(target.length, totalCount - thisStartOffset);
-        
+
         int sourceBytesLeftToRead = thisLengthToRead;
         int sourceOffset = thisStartOffset;
         int targetOffset = 0;
@@ -155,7 +154,7 @@ public class ByteArrayOutputStream extends OutputStream {
             } else {
                 lengthToRead = sourceBytesLeftToRead;
             }
-            System.arraycopy(sliceBuffer, 
+            System.arraycopy(sliceBuffer,
                     sliceOffset, target, targetOffset, lengthToRead);
             sourceBytesLeftToRead -= lengthToRead;
             sourceOffset += lengthToRead;
@@ -163,7 +162,7 @@ public class ByteArrayOutputStream extends OutputStream {
         }
         return thisLengthToRead;
     }
-    
+
     /**
      * Write the bytes to byte array.
      * @param b the bytes to write
@@ -172,10 +171,10 @@ public class ByteArrayOutputStream extends OutputStream {
      */
     @Override
     public void write(byte[] b, int off, int len) {
-        if ((off < 0) 
-                || (off > b.length) 
-                || (len < 0) 
-                || ((off + len) > b.length) 
+        if ((off < 0)
+                || (off > b.length)
+                || (len < 0)
+                || ((off + len) > b.length)
                 || ((off + len) < 0)) {
             throw new IndexOutOfBoundsException();
         } else if (len == 0) {
@@ -187,7 +186,7 @@ public class ByteArrayOutputStream extends OutputStream {
             while (bytesLeftToWrite > 0) {
                 int currentRoomLeft = bufferCapacity - currentBufferIndex;
                 int lengthToWrite = Math.min(bytesLeftToWrite, currentRoomLeft);
-                System.arraycopy(b, lastOff, currentBuffer, 
+                System.arraycopy(b, lastOff, currentBuffer,
                         currentBufferIndex, lengthToWrite);
                 currentBufferIndex += lengthToWrite;
                 lastOff += lengthToWrite;
@@ -270,7 +269,7 @@ public class ByteArrayOutputStream extends OutputStream {
      * specified output stream.
      *
      * @param out  the output stream to write to
-     * @throws IOException if an I/O error occurs, such as if the stream is 
+     * @throws IOException if an I/O error occurs, such as if the stream is
      * closed
      * @see java.io.ByteArrayOutputStream#writeTo(OutputStream)
      */
@@ -287,39 +286,47 @@ public class ByteArrayOutputStream extends OutputStream {
     }
 
     /**
+     * <p>
      * Fetches entire contents of an <code>InputStream</code> and represent
      * same data as result InputStream.
+     * </p>
      * <p>
      * This method is useful where,
+     * </p>
      * <ul>
      * <li>Source InputStream is slow.</li>
      * <li>It has network resources associated, so we cannot keep it open for
      * long time.</li>
      * <li>It has network timeout associated.</li>
      * </ul>
+     * <p>
      * It can be used in favor of {@link #toByteArray()}, since it
      * avoids unnecessary allocation and copy of byte[].<br>
      * This method buffers the input internally, so there is no need to use a
      * <code>BufferedInputStream</code>.
-     * 
+     * </p>
+     * <p>
+     * This method closes the supplied input stream before returning a new one.
+     * </p>
+     *
      * @param input Stream to be fully buffered.
      * @return A fully buffered stream.
      * @throws IOException if an I/O error occurs
      */
-    @SuppressWarnings("resource")
     public static InputStream toBufferedInputStream(InputStream input)
             throws IOException {
-        ByteArrayOutputStream output = new ByteArrayOutputStream();
-        output.write(input);
-        IOUtils.closeQuietly(input);
-        return output.toBufferedInputStream();
+        try (ByteArrayOutputStream output = new ByteArrayOutputStream();
+                InputStream is = input) {
+            output.write(is);
+            return output.toBufferedInputStream();
+        }
     }
 
     /**
      * Gets the current contents of this byte stream as a Input Stream. The
      * returned stream is backed by buffers of <code>this</code> stream,
      * avoiding memory allocation and copy, thus saving space and time.<br>
-     * 
+     *
      * @return the current contents of this output stream.
      * @see java.io.ByteArrayOutputStream#toByteArray()
      * @see #reset()
@@ -351,7 +358,7 @@ public class ByteArrayOutputStream extends OutputStream {
     public synchronized byte[] toByteArray() {
         int remaining = totalCount;
         if (remaining == 0) {
-            return ArrayUtils.EMPTY_BYTE_ARRAY; 
+            return ArrayUtils.EMPTY_BYTE_ARRAY;
         }
         byte[] newbuf = new byte[remaining];
         int pos = 0;

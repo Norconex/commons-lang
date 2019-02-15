@@ -1,4 +1,4 @@
-/* Copyright 2014-2017 Norconex Inc.
+/* Copyright 2014-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package com.norconex.commons.lang.io;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -33,14 +32,14 @@ public class CachedOutputStreamTest {
         CachedStreamFactory factory = new CachedStreamFactory(200, 100);
         CachedOutputStream cache = factory.newOuputStream();
         InputStream is = null;
-        
+
         try {
             cache.write(content.getBytes());
             is = cache.getInputStream();
             Assert.assertEquals(content, readCacheToString(is));
         }  finally {
-            IOUtils.closeQuietly(is);
-            IOUtils.closeQuietly(cache);
+            try { is.close(); } catch (IOException e) { /*NOOP*/ }
+            try { cache.close(); } catch (IOException e) { /*NOOP*/ }
         }
     }
 
@@ -57,11 +56,11 @@ public class CachedOutputStreamTest {
             is = cache.getInputStream();
             Assert.assertEquals(content, readCacheToString(is));
         }  finally {
-            IOUtils.closeQuietly(is);
-            IOUtils.closeQuietly(cache);
+            try { is.close(); } catch (IOException e) { /*NOOP*/ }
+            try { cache.close(); } catch (IOException e) { /*NOOP*/ }
         }
     }
-    
+
     private String readCacheToString(InputStream is) throws IOException {
         long i;
         StringBuilder b = new StringBuilder();
