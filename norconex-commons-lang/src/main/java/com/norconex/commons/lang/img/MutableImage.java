@@ -21,7 +21,7 @@ import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -42,6 +42,8 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.imgscalr.Scalr;
 import org.imgscalr.Scalr.Method;
 import org.imgscalr.Scalr.Mode;
+
+import com.norconex.commons.lang.io.ByteArrayOutputStream;
 
 /**
  * Holds an image in memory and offers simple ways to do common operations.
@@ -108,6 +110,11 @@ public class MutableImage {
         ImageIO.write(image, format, baos);
         return "data:image/" + format + ";base64,"
                 + DatatypeConverter.printBase64Binary(baos.toByteArray());
+    }
+    public InputStream toInputStream(String format) throws IOException {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        ImageIO.write(image, format, os);
+        return new ByteArrayInputStream(os.toByteArray());
     }
 
     public void write(Path file) throws IOException {
