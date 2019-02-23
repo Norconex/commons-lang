@@ -35,6 +35,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import javax.xml.XMLConstants;
@@ -92,6 +93,8 @@ import com.norconex.commons.lang.xml.XMLValidationError.Severity;
 
 //TODO consider checking for a "disable=false|true" and setting it on
 //a method if this method exists, and/or do not load if set to true.
+
+//TODO add "addStringMap"
 
 /**
  * <p>
@@ -235,6 +238,30 @@ public class XML {
             return xml;
         }
         return "<" + xml + "/>";
+    }
+
+    public boolean isDefined() {
+        return node != null;
+    }
+    public boolean isUndefined() {
+        return node == null;
+    }
+    public void ifDefined(Consumer<XML> then) {
+        if (isDefined() && then != null) {
+            then.accept(this);
+        }
+    }
+
+    // "enabled" should by default always be false, so it has to be enabled
+    // explicitely.  Then it must be defined and "true".
+    public boolean isEnabled() {
+        return isDefined() && getBoolean("@enabled", false);
+    }
+
+    // "disabled" should by default always be false, so it has to be set
+    // explicitely.  Then it must be defined and "true".
+    public boolean isDisabled() {
+        return isDefined() && getBoolean("@disabled", false);
     }
 
     public Node toNode() {
