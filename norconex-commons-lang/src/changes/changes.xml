@@ -85,6 +85,9 @@
         New PropertyMatchers collection.
       </action>
       <action dev="essiembre" type="update">
+        Improved Javadoc generation, putting more focus on class documentation.
+      </action>
+      <action dev="essiembre" type="update">
         PropertyMatcher now Predicate functional interface.
       </action>
       <action dev="essiembre" type="update">

@@ -1,23 +1,70 @@
 TODO:
 ==============
 
+- DONE? EnhancedXMLStreamWriter: eliminate concept of "writeBlanks" and always 
+  write them for elements with text only (and attributes?)?
+
+- Replace/refactor process execution to use new process features of Java 8.
+
+- See if we eliminate JEF, have more options in this lib.
+
+- Redo website so it looks closer to collectors
+
+- Redo download page so we no longer need to have a "currentRelease" property
+  in pom.xml
+
+- Modify Jar copier to handle cases where snapshot are timestamped instead and
+  not being considered the latest when they should.  Like:
+  norconex-commons-lang-1.13.0-20170328.184247-17.jar vs 
+  norconex-commons-lang-1.13.0-SNAPSHOT.jar
+  https://github.com/Norconex/collector-http/issues/331#issuecomment-290196986
+
+- Is Pipeline really needed with Java 8. Could functional interfaces do it?
+
+- Deploy javadoc for each version but have latest also accessible as "current"
+
+
+LOWER:
+--------------
+
 - Have loadFromXML return validationError list.
 
-- Add feature and tests for when parent element is specified but has no
+- Do download page so more than one snapshot can be shown for different
+  major versions.
+
+- DONE? Add feature and tests for when parent element is specified but has no
   value, which means blanking a list 
   (e.g. HTTP Collector: StandardSitemapResolverTest).
+
+- Make method naming more consistent between Properties and XML.   
+
+- Overload Properties load/store methods to accept a Path 
+
+- Make Properties and XML take a IConverter as constructor agreement, but 
+  default to Converter static instance.
+
+- Remove all classes that are already part of Apache Commons.
+
+- Consider using Apache Commons Exec to replace SystemCommand if Java 8 features
+  are not enough.
+
+- Allows to specify a velocity-tools.properties or equivalent in classpath
+  root (e.g. classes/ folder) to define custom classes/tools to be used 
+  by Velocity.
+  
+
+MAYBE/IDEAS:
+--------------
+
+- Make deployment part of CID tool. 
+
+- MAYBE modify assembly to use licenses.xml instead of THIRD-PARTY?
+  (the second is easier to read for non-techies)  
 
 - Add XML.getValue(String xpath, Class<T> type) and use Convert 
   for conversion.  Remove getXXX Methods?  Do same with Set if not done already.
   
 - Same as above, but for Properties
-
-- Make method naming more consistent between Properties and XML.   
-
-- Overload load/store methods to accept a Path 
-
-- Make Properties and XML take a IConverter as constructor agreement, but 
-  default to Converter static instance.
 
 - Maybe: See if we can have getElement() use return type of assigned variable
   to determine how to create the object instead of having getXXX methods?
@@ -25,35 +72,7 @@ TODO:
 - Have option to not do validation on loading of dom, in case a consuming
   class wants to modify the DOM before validation.
 
-- EnhancedXMLStreamWriter: eliminate concept of "writeBlanks" and always 
-  write them for elements with text only (and attributes?)?
-
-- Is Pipeline really needed with Java 8. Could functional interfaces do it?
-
-- Replace/refactor process execution to use new process features of Java 8.
-
-- See if we eliminate JEF, have more options in this lib.
-
 - Remove all @since 1.x???
 
-- Remove all classes that are already part of Apache Commons.
-
 - Reduce dependencies wherever possible.
-
-- Redo website so it looks closer to collectors?
-
-- Redo download page so we no longer need to have a "currentRelease" property
-  in pom.xml
-
-- Consider using Apache Commons Exec to replace SystemCommand? -- NO: Java 8
-
-- Allows to specify a velocity-tools.properties or equivalent in classpath
-  root (e.g. classes/ folder) to define custom classes/tools to be used 
-  by Velocity.
-
-- Modify Jar copier to handle cases where snapshot are timestamped instead and
-  not being considered the latest when they should.  Like:
-  norconex-commons-lang-1.13.0-20170328.184247-17.jar vs 
-  norconex-commons-lang-1.13.0-SNAPSHOT.jar
-  https://github.com/Norconex/collector-http/issues/331#issuecomment-290196986
 

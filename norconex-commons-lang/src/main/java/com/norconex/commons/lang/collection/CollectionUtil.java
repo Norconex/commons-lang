@@ -1,4 +1,4 @@
-/* Copyright 2018 Norconex Inc.
+/* Copyright 2018-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -226,9 +226,10 @@ public final class CollectionUtil {
     }
 
     /**
-     * Returns an unmodifiable view of the specified list. Convinience method
+     * Returns an unmodifiable view of the specified list. Convenience method
      * for doing with an array the same as
      * {@link Collections#unmodifiableList(List)}.
+     * @param <T> target objects class type
      * @param values the values to convert to an unmodifiable list
      * @return unmodifiable list
      */
