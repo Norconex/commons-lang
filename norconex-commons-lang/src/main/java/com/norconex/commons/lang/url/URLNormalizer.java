@@ -128,19 +128,15 @@ import com.norconex.commons.lang.EqualsUtil;
  *   <li>{@link #removeEmptyParameters() Remove empty query parameters}</li>
  *   <li>{@link #removeTrailingQuestionMark() Remove trailing question mark (?)}</li>
  *   <li>{@link #removeSessionIds() Remove session IDs}</li>
- *   <b>Since 1.15.1:</b>
- *   <li>{@link #removeQueryString() Remove query string}</li>
- *   <li>{@link #lowerCase() Convert entire URL lower case}</li>
- *   <li>{@link #lowerCasePath() Convert URL path lower case}</li>
+ *   <li>{@link #removeQueryString() Remove query string} (since 1.15.1)</li>
+ *   <li>{@link #lowerCase() Convert entire URL lower case} (since 1.15.1)</li>
+ *   <li>{@link #lowerCasePath() Convert URL path lower case} (since 1.15.1)</li>
  *   <li>{@link #lowerCaseQuery()
- *        Convert URL query string parameter name and values to lower case}</li>
+ *        Convert URL query string parameter name and values to lower case} (since 1.15.1)</li>
  *   <li>{@link #lowerCaseQueryParameterNames()
- *        Convert URL query parameter names to lower case}</li>
+ *        Convert URL query parameter names to lower case} (since 1.15.1)</li>
  *   <li>{@link #lowerCaseQueryParameterValues()
- *        Convert URL query parameter values to lower case}</li>
- * </ul>
- *
- *
+ *        Convert URL query parameter values to lower case} (since 1.15.1)</li>
  * </ul>
  * <p>
  * Refer to each methods below for description and examples (or click on a
@@ -703,7 +699,7 @@ public class URLNormalizer implements Serializable {
      * <p>Removes the URL query string (from the "?" character until the end
      * or the first # character).
      * </p>
-     * <code>http://www.example.com/query?param1=AAA7&param2=BBB#fragment &rarr;
+     * <code>http://www.example.com/query?param1=AAA7&amp;param2=BBB#fragment &rarr;
      *       http://www.example.com/query#fragment</code>
      * @return this instance
      * @since 1.15.1
