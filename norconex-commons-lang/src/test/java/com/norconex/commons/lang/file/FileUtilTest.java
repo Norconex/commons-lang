@@ -1,4 +1,4 @@
-/* Copyright 2010-2017 Norconex Inc.
+/* Copyright 2010-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
  */
 package com.norconex.commons.lang.file;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class FileUtilTest {
 
@@ -23,6 +23,6 @@ public class FileUtilTest {
     public void testSafeFileName() {
         String unsafe = "Voilà, à bientôt! :-)";
         String safe = FileUtil.toSafeFileName(unsafe);
-        Assert.assertEquals(unsafe, FileUtil.fromSafeFileName(safe));
+        Assertions.assertEquals(unsafe, FileUtil.fromSafeFileName(safe));
     }
 }

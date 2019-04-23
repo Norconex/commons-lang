@@ -17,8 +17,8 @@ package com.norconex.commons.lang.io;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Pascal Essiembre
@@ -36,7 +36,7 @@ public class CachedOutputStreamTest {
         try {
             cache.write(content.getBytes());
             is = cache.getInputStream();
-            Assert.assertEquals(content, readCacheToString(is));
+            Assertions.assertEquals(content, readCacheToString(is));
         }  finally {
             try { is.close(); } catch (IOException e) { /*NOOP*/ }
             try { cache.close(); } catch (IOException e) { /*NOOP*/ }
@@ -54,7 +54,7 @@ public class CachedOutputStreamTest {
         try {
             cache.write(content.getBytes());
             is = cache.getInputStream();
-            Assert.assertEquals(content, readCacheToString(is));
+            Assertions.assertEquals(content, readCacheToString(is));
         }  finally {
             try { is.close(); } catch (IOException e) { /*NOOP*/ }
             try { cache.close(); } catch (IOException e) { /*NOOP*/ }

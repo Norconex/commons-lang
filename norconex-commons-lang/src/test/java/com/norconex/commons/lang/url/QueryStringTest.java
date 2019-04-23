@@ -1,4 +1,4 @@
-/* Copyright 2016-2017 Norconex Inc.
+/* Copyright 2016-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
  */
 package com.norconex.commons.lang.url;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class QueryStringTest {
 
@@ -24,15 +24,15 @@ public class QueryStringTest {
     public void testKeepProtocolUpperCase() {
         QueryString qs = new QueryString(
                 "http://site.com/page?NoEquals&WithEquals=EqualsValue");
-        
-        Assert.assertTrue("Argument without equal sign was not found.", 
-                qs.toString().contains("NoEquals"));
+
+        Assertions.assertTrue(qs.toString().contains("NoEquals"),
+                "Argument without equal sign was not found.");
     }
 
     @Test
     public void testEmptyConstructor() {
         QueryString qs = new QueryString();
-        Assert.assertEquals("", qs.toString());
+        Assertions.assertEquals("", qs.toString());
     }
 
 }

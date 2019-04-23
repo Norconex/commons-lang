@@ -1,4 +1,4 @@
-/* Copyright 2017 Norconex Inc.
+/* Copyright 2017-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,27 +18,28 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import com.norconex.commons.lang.io.InputStreamLineListener;
 
 public class SystemCommandTest {
 
-    public static final String IN_FILE_PATH = "/exec/sample-input.txt"; 
-    public static final String EXPECTED_OUT_FILE_PATH = 
-            "/exec/expected-output.txt"; 
-    
-    @Rule 
-    public TemporaryFolder tempFolder = new TemporaryFolder();
-    
+    public static final String IN_FILE_PATH = "/exec/sample-input.txt";
+    public static final String EXPECTED_OUT_FILE_PATH =
+            "/exec/expected-output.txt";
+
+    @TempDir
+    static Path tempFolder;
+
     @Test
     public void testInFileOutFile() throws IOException, SystemCommandException {
         File inFile = inputAsFile();
@@ -49,50 +50,55 @@ public class SystemCommandTest {
         ExternalAppListener l = addEnvAndListener(cmd);
         cmd.execute();
 
-        Assert.assertEquals(expectedOutputAsString(), fileAsString(outFile));
-        Assert.assertTrue("Listener missed some output.", l.capturedThemAll());
-        
+        Assertions.assertEquals(
+                expectedOutputAsString(), fileAsString(outFile));
+        Assertions.assertTrue(
+                l.capturedThemAll(), "Listener missed some output.");
+
     }
 
     @Test
     public void testInFileStdout() throws IOException, SystemCommandException {
         File inFile = inputAsFile();
-        
+
         SystemCommand cmd = ExternalApp.newSystemCommand(
                 ExternalApp.TYPE_INFILE_STDOUT, inFile);
         ExternalAppListener l = addEnvAndListener(cmd);
         cmd.execute();
-        Assert.assertEquals(expectedOutputAsString(), l.getStdoutContent());
-        Assert.assertTrue("Listener missed some output.", l.capturedThemAll());
+        Assertions.assertEquals(expectedOutputAsString(), l.getStdoutContent());
+        Assertions.assertTrue(
+                l.capturedThemAll(), "Listener missed some output.");
     }
-    
+
     @Test
     public void testStdinOutFile() throws IOException, SystemCommandException {
         InputStream input = inputAsStream();
         File outFile = newTempFile();
-        
+
         SystemCommand cmd = ExternalApp.newSystemCommand(
                 ExternalApp.TYPE_STDIN_OUTFILE, outFile);
         ExternalAppListener l = addEnvAndListener(cmd);
         cmd.execute(input);
         input.close();
-        Assert.assertEquals(expectedOutputAsString(), fileAsString(outFile));
-        Assert.assertTrue("Listener missed some output.", l.capturedThemAll());
+        Assertions.assertEquals(expectedOutputAsString(), fileAsString(outFile));
+        Assertions.assertTrue(
+                l.capturedThemAll(), "Listener missed some output.");
     }
 
     @Test
     public void testStdinStdout() throws IOException, SystemCommandException {
         InputStream input = inputAsStream();
-        
+
         SystemCommand cmd = ExternalApp.newSystemCommand(
                 ExternalApp.TYPE_STDIN_STDOUT);
         ExternalAppListener l = addEnvAndListener(cmd);
         cmd.execute(input);
         input.close();
-        Assert.assertEquals(expectedOutputAsString(), l.getStdoutContent());
-        Assert.assertTrue("Listener missed some output.", l.capturedThemAll());
+        Assertions.assertEquals(expectedOutputAsString(), l.getStdoutContent());
+        Assertions.assertTrue(
+                l.capturedThemAll(), "Listener missed some output.");
     }
-    
+
     private File inputAsFile() throws IOException {
         File inFile = newTempFile();
         FileUtils.copyInputStreamToFile(
@@ -110,14 +116,15 @@ public class SystemCommandTest {
                 EXPECTED_OUT_FILE_PATH), StandardCharsets.UTF_8);
     }
     private File newTempFile() throws IOException {
-        File file = tempFolder.newFile();
+        File file = Files.createTempFile(
+                tempFolder, "SystemCommandTest", null).toFile();
         if (!file.exists()) {
             // Just making sure it exists
             FileUtils.touch(file);
         }
         return file;
     }
-    
+
     private ExternalAppListener addEnvAndListener(SystemCommand cmd) {
         Map<String, String> envs = new HashMap<>();
         envs.put(ExternalApp.ENV_STDOUT_BEFORE, ExternalApp.ENV_STDOUT_BEFORE);
@@ -125,20 +132,20 @@ public class SystemCommandTest {
         envs.put(ExternalApp.ENV_STDERR_BEFORE, ExternalApp.ENV_STDERR_BEFORE);
         envs.put(ExternalApp.ENV_STDERR_AFTER, ExternalApp.ENV_STDERR_AFTER);
         cmd.setEnvironmentVariables(envs);
-        
+
         ExternalAppListener l = new ExternalAppListener();
         cmd.addErrorListener(l);
         cmd.addOutputListener(l);
         return l;
     }
-    
+
     class ExternalAppListener extends InputStreamLineListener {
         private boolean stdoutBefore = false;
         private boolean stdoutAfter = false;
         private boolean stderrBefore = false;
         private boolean stderrAfter = false;
         private StringBuilder b = new StringBuilder();
-        
+
         @Override
         public void lineStreamed(String type, String line) {
             if ("STDOUT".equals(type)) {
@@ -167,5 +174,5 @@ public class SystemCommandTest {
             return b.toString();
         }
     }
-    
+
 }

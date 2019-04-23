@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,26 +16,26 @@ package com.norconex.commons.lang.file;
 
 import java.util.Locale;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class ContentFamilyTest {
 
     @Test
     public void testGetDisplayName() {
-        
-        Assert.assertEquals("Word Processor", ContentFamily.valueOf(
+
+        Assertions.assertEquals("Word Processor", ContentFamily.valueOf(
                 "wordprocessor").getDisplayName(Locale.ENGLISH));
-        Assert.assertEquals("Traitement de texte", ContentFamily.valueOf(
+        Assertions.assertEquals("Traitement de texte", ContentFamily.valueOf(
                 "wordprocessor").getDisplayName(Locale.FRENCH));
 
-        Assert.assertEquals("Spreadsheet", ContentFamily.forContentType(
+        Assertions.assertEquals("Spreadsheet", ContentFamily.forContentType(
                 ContentType.TSV).getDisplayName(Locale.ENGLISH));
-        
-        Assert.assertTrue(ContentFamily.forContentType(
+
+        Assertions.assertTrue(ContentFamily.forContentType(
                 ContentType.TSV).contains("text/tab-separated-values"));
-        
-        Assert.assertEquals("other", ContentFamily.forContentType(
+
+        Assertions.assertEquals("other", ContentFamily.forContentType(
                 "application/octet-stream").getId());
 
     }

@@ -1,4 +1,4 @@
-/* Copyright 2018 Norconex Inc.
+/* Copyright 2018-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,9 @@ import java.security.NoSuchAlgorithmException;
 
 import javax.crypto.Cipher;
 
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.Test;
 
 
 public class EncryptionUtilTest {
@@ -31,7 +31,7 @@ public class EncryptionUtilTest {
         String text = "please encrypt this text.";
         String encryptedText = EncryptionUtil.encrypt(text, key);
         String decryptedText = EncryptionUtil.decrypt(encryptedText, key);
-        Assert.assertEquals(text, decryptedText);
+        Assertions.assertEquals(text, decryptedText);
     }
 
     @Test
@@ -40,7 +40,7 @@ public class EncryptionUtilTest {
         String text = "please encrypt this text.";
         String encryptedText1 = EncryptionUtil.encrypt(text, key);
         String encryptedText2 = EncryptionUtil.encrypt(text, key);
-        Assert.assertNotEquals(encryptedText1, encryptedText2);
+        Assertions.assertNotEquals(encryptedText1, encryptedText2);
     }
 
     @Test
@@ -49,7 +49,7 @@ public class EncryptionUtilTest {
         String expectedClearText = "Please encrypt this text";
         String encryptedText = "aeEFKa0uXMUHT4UyeFtuHjm37NQw3vEaxY03EkkD2qM=";
         String actualClearText = EncryptionUtil.decrypt(encryptedText, key);
-        Assert.assertEquals(expectedClearText, actualClearText);
+        Assertions.assertEquals(expectedClearText, actualClearText);
     }
 
     @Test
@@ -57,7 +57,7 @@ public class EncryptionUtilTest {
 
         // NOTE: this test should be true on Java 8 u162+ or on Java 9, or on
         // any Java where JCE Unlimited Strength has been applied
-        Assume.assumeTrue(Cipher.getMaxAllowedKeyLength("AES") >= 256);
+        Assumptions.assumeTrue(Cipher.getMaxAllowedKeyLength("AES") >= 256);
 
         // Create round-trip encryption key
         EncryptionKey key = new EncryptionKey("This as an encryption key", 256);
@@ -65,6 +65,6 @@ public class EncryptionUtilTest {
         String encryptedText = EncryptionUtil.encrypt(text, key);
         String decryptedText = EncryptionUtil.decrypt(encryptedText, key);
 
-        Assert.assertEquals(text, decryptedText);
+        Assertions.assertEquals(text, decryptedText);
     }
 }

@@ -1,4 +1,4 @@
-/* Copyright 2010-2017 Norconex Inc.
+/* Copyright 2010-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,23 +14,23 @@
  */
 package com.norconex.commons.lang.url;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 public class URLNormalizerTest {
 
     private String s;
     private String t;
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         s = null;
         t = null;
@@ -338,11 +338,11 @@ public class URLNormalizerTest {
     }
 
     @Test
-    @Ignore
+    @Disabled("This test may not have proper network condition to execute.")
     public void testReplaceIPWithDomainName() {
         s = "http://208.80.154.224/wiki/Main_Page";
         t = null;
-        Assert.assertTrue(
+        Assertions.assertTrue(
                n(s).replaceIPWithDomainName().toString().contains("wikimedia"));
         s = "http://wikipedia.org/wiki/Main_Page";
         t = "http://wikipedia.org/wiki/Main_Page";

@@ -23,6 +23,8 @@ TODO:
 
 - Deploy javadoc for each version but have latest also accessible as "current"
 
+- Check why URLNormalizer.removeFragment is so expensive compared to
+  other basic operations (as reported by Sylvain Roussy using JProfiler).
 
 LOWER:
 --------------

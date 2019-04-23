@@ -1,4 +1,4 @@
-/* Copyright 2018 Norconex Inc.
+/* Copyright 2018-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
  */
 package com.norconex.commons.lang.config;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.xml.XML;
 
@@ -23,16 +23,16 @@ public class ConfigurationTest {
 
     @Test
     public void testPreserveWhiteSpace() {
-        XML xml = new XML( 
+        XML xml = new XML(
                   "<test>"
                 + "<tagPreserve>   </tagPreserve>"
                 + "<tagNested>"
                 + "  <nested>   </nested>"
                 + "</tagNested>"
                 + "</test>");
-                
-        Assert.assertNull(xml.getString("tagNotPresent"));
-        Assert.assertEquals("   ", xml.getString("tagNested/nested"));
-        Assert.assertEquals("   ", xml.getString("tagPreserve"));
+
+        Assertions.assertNull(xml.getString("tagNotPresent"));
+        Assertions.assertEquals("   ", xml.getString("tagNested/nested"));
+        Assertions.assertEquals("   ", xml.getString("tagPreserve"));
     }
 }

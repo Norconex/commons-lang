@@ -16,4 +16,4 @@
  * Utility classes related to Java regular expressions.
  * @since 2.0.0
  */
-package com.norconex.commons.lang.regex;
+package com.norconex.commons.lang.text;

@@ -1,4 +1,4 @@
-/* Copyright 2015-2018 Norconex Inc.
+/* Copyright 2015-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,30 +14,30 @@
  */
 package com.norconex.commons.lang.url;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 public class HttpURLTest {
 
     private final String absURL = "https://www.example.com/a/b/c.html?blah";
-    
+
     private String s;
     private String t;
-    
-    
+
+
 //    @Before
 //    public void before() {
 //        Logger logger = Logger.getRootLogger();
 //        logger.setLevel(Level.DEBUG);
 //        logger.setAdditivity(false);
 //        logger.addAppender(new ConsoleAppender(
-//                new PatternLayout("%-5p [%C{1}] %m%n"), 
+//                new PatternLayout("%-5p [%C{1}] %m%n"),
 //                ConsoleAppender.SYSTEM_OUT));
 //    }
-    
-    @After
+
+    @AfterEach
     public void tearDown() throws Exception {
         s = null;
         t = null;
@@ -49,7 +49,7 @@ public class HttpURLTest {
         t = "HTTP://www.example.com";
         assertEquals(t, new HttpURL(s).toString());
     }
-    
+
     @Test
     public void testToAbsoluteRelativeToProtocol() {
         s = "//www.relative.com/e/f.html";
@@ -125,7 +125,7 @@ public class HttpURLTest {
         t = "https://www.example.com:444/blah";
         assertEquals(t, new HttpURL(s).toString());
     }
-    
+
     @Test
     public void testNonHttpProtocolNoPort() {
         s = "ftp://ftp.example.com/dir";
@@ -139,14 +139,14 @@ public class HttpURLTest {
         t = "ftp://ftp.example.com:20/dir";
         assertEquals(t, new HttpURL(s).toString());
     }
-    
+
     @Test
     public void testInvalidURL() {
         s = "http://www.example.com/\"path\"";
         t = "http://www.example.com/%22path%22";
         assertEquals(t, new HttpURL(s).toString());
     }
-    
+
     @Test
     public void testURLWithLeadingTrailingSpaces() {
         s = "  http://www.example.com/path  ";
@@ -182,11 +182,11 @@ public class HttpURLTest {
 
     @Test
     public void testFileProtocol() {
-        // Encode non-URI characters 
+        // Encode non-URI characters
         s = "file:///etc/some dir/my file.txt";
         t = "file:///etc/some%20dir/my%20file.txt";
         assertEquals(t, new HttpURL(s).toString());
-            
+
         s = "file://./dir/another-dir/path";
         t = "file://./dir/another-dir/path";
         assertEquals(t, new HttpURL(s).toString());

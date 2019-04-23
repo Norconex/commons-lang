@@ -1,4 +1,4 @@
-/* Copyright 2018 Norconex Inc.
+/* Copyright 2018-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,8 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,16 +54,16 @@ public class XMLTest {
     public void testGetCommonTypes() {
         XML xml = new XML(ResourceLoader.getXmlString(XMLTest.class));
 
-        Assert.assertEquals("a string", xml.getString("testString"));
-        Assert.assertEquals((Integer) 123, xml.getInteger("testNumeric/@int"));
-        Assert.assertEquals((Long) 12345L, xml.getLong("testNumeric/@long"));
-        Assert.assertEquals((Float) 54.01f, xml.getFloat("testNumeric/@float"));
-        Assert.assertEquals(
+        Assertions.assertEquals("a string", xml.getString("testString"));
+        Assertions.assertEquals((Integer) 123, xml.getInteger("testNumeric/@int"));
+        Assertions.assertEquals((Long) 12345L, xml.getLong("testNumeric/@long"));
+        Assertions.assertEquals((Float) 54.01f, xml.getFloat("testNumeric/@float"));
+        Assertions.assertEquals(
                 (Double) 54321.0123, xml.getDouble("testNumeric/@double"));
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 Arrays.asList("one", "two", "three"),
                 xml.getDelimitedStringList("testDelimStringList"));
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 Arrays.asList("four", "five", "six"),
                 xml.getStringList("testStringList/item"));
     }
@@ -73,22 +73,22 @@ public class XMLTest {
         XML xml = new XML(ResourceLoader.getXmlString(XMLTest.class));
 
         // As strings
-        Assert.assertNull(xml.getString("testNull"));
-        Assert.assertNull(xml.getString("testNullMissing"));
-        Assert.assertEquals("", xml.getString("testEmpty"));
-        Assert.assertEquals("  ", xml.getString("testBlank"));
+        Assertions.assertNull(xml.getString("testNull"));
+        Assertions.assertNull(xml.getString("testNullMissing"));
+        Assertions.assertEquals("", xml.getString("testEmpty"));
+        Assertions.assertEquals("  ", xml.getString("testBlank"));
 
         // As Nodes
-        Assert.assertNotNull(xml.getNode("testNull"));
-        Assert.assertNull(xml.getNode("testNullMissing"));
-        Assert.assertNotNull(xml.getNode("testEmpty"));
-        Assert.assertNotNull(xml.getNode("testBlank"));
+        Assertions.assertNotNull(xml.getNode("testNull"));
+        Assertions.assertNull(xml.getNode("testNullMissing"));
+        Assertions.assertNotNull(xml.getNode("testEmpty"));
+        Assertions.assertNotNull(xml.getNode("testBlank"));
 
         // As XMLs
-        Assert.assertNotNull(xml.getXML("testNull"));
-        Assert.assertNull(xml.getXML("testNullMissing"));
-        Assert.assertNotNull(xml.getXML("testEmpty"));
-        Assert.assertNotNull(xml.getXML("testBlank"));
+        Assertions.assertNotNull(xml.getXML("testNull"));
+        Assertions.assertNull(xml.getXML("testNullMissing"));
+        Assertions.assertNotNull(xml.getXML("testEmpty"));
+        Assertions.assertNotNull(xml.getXML("testBlank"));
     }
 
     @Test
@@ -112,13 +112,13 @@ public class XMLTest {
         XML xml2 = new XML(xmlStr);
 
 
-        Assert.assertNull(xml2.getString("elmNull"));
-        Assert.assertEquals("", xml2.getString("elmEmpty"));
-        Assert.assertEquals(" \n ", xml2.getString("elmBlank"));
+        Assertions.assertNull(xml2.getString("elmNull"));
+        Assertions.assertEquals("", xml2.getString("elmEmpty"));
+        Assertions.assertEquals(" \n ", xml2.getString("elmBlank"));
 
-        Assert.assertNull(xml2.getString("elmNullAttr"));
-        Assert.assertEquals("", xml2.getString("elmEmptyAttr"));
-        Assert.assertEquals(" \n ", xml2.getString("elmBlankAttr"));
+        Assertions.assertNull(xml2.getString("elmNullAttr"));
+        Assertions.assertEquals("", xml2.getString("elmEmptyAttr"));
+        Assertions.assertEquals(" \n ", xml2.getString("elmBlankAttr"));
 
         //TODO test attributes the same way?
     }
@@ -129,34 +129,34 @@ public class XMLTest {
                 "<rootTag id=\"banana\" remove=\"me\">"
               + SAMPLE_XML
               + "</rootTag>";
-        Assert.assertEquals(SAMPLE_XML, new XML(wrapped).unwrap().toString());
+        Assertions.assertEquals(SAMPLE_XML, new XML(wrapped).unwrap().toString());
 
         String list = SAMPLE_XML + "<sampleTag>Another child</sampleTag>";
         String wrappedList =
                 "<rootTag id=\"banana\" remove=\"me\">" + list + "</rootTag>";
         try {
             new XML(wrappedList).unwrap();
-            Assert.fail("Should have thrown exception.");
+            Assertions.fail("Should have thrown exception.");
         } catch (XMLException e) { }
     }
 
     @Test
     public void testWrap() {
         String target = "<parentTag>" + SAMPLE_XML + "</parentTag>";
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 target, new XML(SAMPLE_XML).wrap("parentTag").toString());
     }
 
     @Test
     public void testClear() {
-        Assert.assertEquals("<sampleTag/>",
+        Assertions.assertEquals("<sampleTag/>",
                 new XML(SAMPLE_XML).clear().toString());
     }
 
     @Test
     public void testReplace() {
         String replacement = "<replacementTag>I replace!</replacementTag>";
-        Assert.assertEquals(replacement,
+        Assertions.assertEquals(replacement,
                 new XML(SAMPLE_XML).replace(new XML(replacement)).toString());
     }
 
@@ -167,26 +167,26 @@ public class XMLTest {
         //--- Strings ---
 
         // self-closing tag is null
-        Assert.assertNull(xml.getString("testNull", "shouldBeNull"));
+        Assertions.assertNull(xml.getString("testNull", "shouldBeNull"));
         // empty tag is empty
-        Assert.assertEquals("", xml.getString("testEmpty", "shouldBeEmpty"));
+        Assertions.assertEquals("", xml.getString("testEmpty", "shouldBeEmpty"));
         // missing tag uses default
-        Assert.assertEquals("pickMe", xml.getString("testMissing", "pickMe"));
+        Assertions.assertEquals("pickMe", xml.getString("testMissing", "pickMe"));
 
         //--- Misc. Objects ---
 
         // actual value when set
-        Assert.assertEquals(new Dimension(640, 480),
+        Assertions.assertEquals(new Dimension(640, 480),
                 xml.getDimension("dimOK", new Dimension(10, 20)));
         // self-closing tag is null
-        Assert.assertNull(xml.getDimension("dimNull", new Dimension(30, 40)));
+        Assertions.assertNull(xml.getDimension("dimNull", new Dimension(30, 40)));
         // missing tag uses default
-        Assert.assertEquals(new Dimension(70, 80),
+        Assertions.assertEquals(new Dimension(70, 80),
                 xml.getDimension("dimMissing", new Dimension(70, 80)));
         // empty tag should fail
         try {
             xml.getDimension("dimEmpty", new Dimension(50, 60));
-            Assert.fail("Dimension wrongfully converted from empty string.");
+            Assertions.fail("Dimension wrongfully converted from empty string.");
         } catch (ConverterException e) {
             // swallow
         }
@@ -205,12 +205,12 @@ public class XMLTest {
         //--- empty lists ---
 
         // self-closing tag is empty list
-        Assert.assertTrue("List not empty.", xml.getList(
-                "listNull", Dimension.class, defaultList).isEmpty());
+        Assertions.assertTrue(xml.getList("listNull", Dimension.class,
+                defaultList).isEmpty(), "List not empty.");
         // empty tag should fail
         try {
             xml.getList("listEmpty", Dimension.class, defaultList);
-            Assert.fail(
+            Assertions.fail(
                     "Dimension list wrongfully converted from empty string.");
         } catch (ConverterException e) {
             // swallow
@@ -218,35 +218,34 @@ public class XMLTest {
         // blank tag should fail
         try {
             xml.getList("listBlank", Dimension.class, defaultList);
-            Assert.fail(
+            Assertions.fail(
                     "Dimension list wrongfully converted from blank string.");
         } catch (ConverterException e) {
             // swallow
         }
         // missing tag uses default
-        Assert.assertEquals(defaultList,
+        Assertions.assertEquals(defaultList,
                 xml.getList("missingList", Dimension.class, defaultList));
         // self-closing entries is empty list
-        Assert.assertTrue("List not empty.", xml.getList(
-                "listNullEntries/entry", Dimension.class,
-                defaultList).isEmpty());
+        Assertions.assertTrue(xml.getList("listNullEntries/entry",
+                Dimension.class, defaultList).isEmpty(), "List not empty.");
         // OK entries returns normally
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 Arrays.asList(new Dimension(10, 20), new Dimension(30, 40)),
                 xml.getList("listOKEntries/entry",
                         Dimension.class, defaultList));
         // Mixed entries should return only OK ones
-        Assert.assertEquals(Arrays.asList(new Dimension(50, 60)),
+        Assertions.assertEquals(Arrays.asList(new Dimension(50, 60)),
                 xml.getList("listMixedEntries/entry",
                         Dimension.class, defaultList));
         // No parent lists returns normally
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 Arrays.asList(new Dimension(70, 80), new Dimension(90, 100)),
                 xml.getList("listNoParent", Dimension.class, defaultList));
 
         // Self-closing no parent lists returns empty list
-        Assert.assertTrue("List not empty.", xml.getList("listNullNoParent",
-                Dimension.class, defaultList).isEmpty());
+        Assertions.assertTrue(xml.getList("listNullNoParent",
+                Dimension.class, defaultList).isEmpty(), "List not empty.");
     }
 
 

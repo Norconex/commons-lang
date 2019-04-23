@@ -1,4 +1,4 @@
-/* Copyright 2018 Norconex Inc.
+/* Copyright 2018-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  */
 package com.norconex.commons.lang.bean;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -22,8 +22,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.mutable.MutableInt;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.event.Event;
 import com.norconex.commons.lang.event.IEventListener;
@@ -40,33 +40,33 @@ public class BeanUtilTest {
     @Test
     public void testToMap() {
         Map<String, Object> map = BeanUtil.toMap(new Bean());
-        Assert.assertEquals("potato", map.get("string"));
-        Assert.assertEquals(123, map.get("primitiveInt"));
-        Assert.assertEquals(Integer.valueOf(456), map.get("objectInteger"));
-        Assert.assertEquals(new Event<>("testEvent", this), map.get("event"));
-        Assert.assertEquals(Arrays.asList(0.5d, 1.0d), map.get("doubles"));
-        Assert.assertEquals(5, map.size());
+        Assertions.assertEquals("potato", map.get("string"));
+        Assertions.assertEquals(123, map.get("primitiveInt"));
+        Assertions.assertEquals(Integer.valueOf(456), map.get("objectInteger"));
+        Assertions.assertEquals(new Event<>("testEvent", this), map.get("event"));
+        Assertions.assertEquals(Arrays.asList(0.5d, 1.0d), map.get("doubles"));
+        Assertions.assertEquals(5, map.size());
     }
 
     @Test
     public void testToProperties() {
         Properties props = BeanUtil.toProperties(new Bean(), "event");
-        Assert.assertEquals("potato", props.getString("string"));
-        Assert.assertEquals("123", props.getString("primitiveInt"));
-        Assert.assertEquals("456", props.getString("objectInteger"));
-        Assert.assertEquals(
+        Assertions.assertEquals("potato", props.getString("string"));
+        Assertions.assertEquals("123", props.getString("primitiveInt"));
+        Assertions.assertEquals("456", props.getString("objectInteger"));
+        Assertions.assertEquals(
                 Arrays.asList("0.5", "1.0"), props.getStrings("doubles"));
-        Assert.assertEquals(4, props.size());
+        Assertions.assertEquals(4, props.size());
     }
 
     @Test
     public void testGetValue() {
         Bean bean = new Bean();
-        Assert.assertEquals("potato", BeanUtil.getValue(bean, "string"));
-        Assert.assertEquals(123, (int) BeanUtil.getValue(bean, "primitiveInt"));
-        Assert.assertEquals(Integer.valueOf(456),
+        Assertions.assertEquals("potato", BeanUtil.getValue(bean, "string"));
+        Assertions.assertEquals(123, (int) BeanUtil.getValue(bean, "primitiveInt"));
+        Assertions.assertEquals(Integer.valueOf(456),
                 BeanUtil.getValue(bean, "objectInteger"));
-        Assert.assertEquals(new Event<>("testEvent", this),
+        Assertions.assertEquals(new Event<>("testEvent", this),
                 BeanUtil.getValue(bean, "event"));
     }
 
@@ -82,7 +82,7 @@ public class BeanUtilTest {
         // set readonly
         try {
             BeanUtil.setValue(bean, "readOnly", "should fail");
-            Assert.fail("Setting a readonly property should fail.");
+            Assertions.fail("Setting a readonly property should fail.");
         } catch (BeanException e) {
             //NOOP
         }
@@ -102,15 +102,15 @@ public class BeanUtilTest {
         BeanUtil.setValue(bean, "objectInteger", Integer.valueOf(888));
         BeanUtil.setValue(bean, "event", new Event<>("blah", "x"));
 
-        Assert.assertEquals("carrot", bean.getString());
-        Assert.assertEquals(777, bean.getPrimitiveInt());
-        Assert.assertEquals(Integer.valueOf(888), bean.getObjectInteger());
-        Assert.assertEquals(new Event<>("blah", "x"), bean.getEvent());
+        Assertions.assertEquals("carrot", bean.getString());
+        Assertions.assertEquals(777, bean.getPrimitiveInt());
+        Assertions.assertEquals(Integer.valueOf(888), bean.getObjectInteger());
+        Assertions.assertEquals(new Event<>("blah", "x"), bean.getEvent());
     }
 
     @Test
     public void testGetGenericType() {
-        Assert.assertEquals(Double.class,
+        Assertions.assertEquals(Double.class,
                 BeanUtil.getPropertyGenericType(Bean.class, "doubles"));
     }
 
@@ -118,8 +118,8 @@ public class BeanUtilTest {
     public void testVisit() {
         Root root = new Root();
 
-        Assert.assertEquals(3, BeanUtil.getChildren(root).size());
-        Assert.assertEquals(3,
+        Assertions.assertEquals(3, BeanUtil.getChildren(root).size());
+        Assertions.assertEquals(3,
                 BeanUtil.find(root, IEventListener.class).size());
 
 //        for (Object obj : BeanGraphUtil.getChildren(root)) {
@@ -140,7 +140,7 @@ public class BeanUtilTest {
 //                    + " -> " + pd.getName());
             cnt.increment();
         });
-        Assert.assertEquals(5, cnt.intValue());
+        Assertions.assertEquals(5, cnt.intValue());
 
     }
 

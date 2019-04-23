@@ -18,108 +18,112 @@ import java.awt.Rectangle;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.Collection;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import javax.imageio.ImageIO;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 //@Ignore
-@RunWith(value = Parameterized.class)
 public class MutableImageTest {
 
     private static final Logger LOG =
             LoggerFactory.getLogger(MutableImageTest.class);
 
-    private String ext;
+//    private String ext;
 
-    public MutableImageTest(String extension) {
-        super();
-        this.ext = extension;
-    }
-
-    @Parameters(name = "{index}: {0}")
-    public static Collection<String> extensions() {
-        return Arrays.asList("png", "gif", "jpg", "bmp");
+    static Stream<String> extensionProvider() {
+        return Stream.of("png", "gif", "jpg", "bmp");
     }
 
-    @Test
-    public void testRotateLeft() throws IOException {
-        test(MutableImage::rotateLeft);
+//    public MutableImageTest(String extension) {
+//        super();
+//        this.ext = extension;
+//    }
+
+//    @Parameters(name = "{index}: {0}")
+//    public static Collection<String> extensions() {
+//        return Arrays.asList("png", "gif", "jpg", "bmp");
+//    }
+
+    @ExtensionTest
+    public void testRotateLeft(String ext) throws IOException {
+        test(MutableImage::rotateLeft, ext);
     }
 
-    @Test
-    public void testRotate45Left() throws IOException {
-        test(img -> img.rotate(-45));
+    @ExtensionTest
+    public void testRotate45Left(String ext) throws IOException {
+        test(img -> img.rotate(-45), ext);
     }
-    @Test
-    public void testRotateRight() throws IOException {
-        test(MutableImage::rotateRight);
+    @ExtensionTest
+    public void testRotateRight(String ext) throws IOException {
+        test(MutableImage::rotateRight, ext);
     }
-    @Test
-    public void testRotate45Right() throws IOException {
-        test(img -> img.rotate(45));
+    @ExtensionTest
+    public void testRotate45Right(String ext) throws IOException {
+        test(img -> img.rotate(45), ext);
     }
-    @Test
-    public void testFlipHorizontal() throws IOException {
-        test(MutableImage::flipHorizontal);
+    @ExtensionTest
+    public void testFlipHorizontal(String ext) throws IOException {
+        test(MutableImage::flipHorizontal, ext);
     }
-    @Test
-    public void testFilpVertical() throws IOException {
-        test(MutableImage::flipVertical);
+    @ExtensionTest
+    public void testFilpVertical(String ext) throws IOException {
+        test(MutableImage::flipVertical, ext);
     }
-    @Test
-    public void testCrop() throws IOException {
-        test(img -> img.crop(new Rectangle(10, 48, 30, 26)));
-    }
-
-    @Test
-    public void testStretch75x20() throws IOException {
-        test(img -> img.stretch(75, 20));
-    }
-    @Test
-    public void testStretchHeightFactor1_5() throws IOException {
-        test(img -> img.stretchHeightFactor(1.5f));
-    }
-    @Test
-    public void testStretchWidthFactor1_5() throws IOException {
-        test(img -> img.stretchWidthFactor(1.5f));
-    }
-    @Test
-    public void testStretchFactor3x0_5() throws IOException {
-        test(img -> img.stretchFactor(3.0f, 0.5f));
+    @ExtensionTest
+    public void testCrop(String ext) throws IOException {
+        test(img -> img.crop(new Rectangle(10, 48, 30, 26)), ext);
     }
 
-    @Test
-    public void testScale75_20() throws IOException {
-        test(img -> img.scale(75, 20));
+    @ExtensionTest
+    public void testStretch75x20(String ext) throws IOException {
+        test(img -> img.stretch(75, 20), ext);
     }
-    @Test
-    public void testScaleHeightFactor1_5() throws IOException {
-        test(img -> img.scaleHeightFactor(1.5f));
+    @ExtensionTest
+    public void testStretchHeightFactor1_5(String ext) throws IOException {
+        test(img -> img.stretchHeightFactor(1.5f), ext);
     }
-    @Test
-    public void testScaleWidthFactor1_5() throws IOException {
-        test(img -> img.scaleWidthFactor(1.5f));
+    @ExtensionTest
+    public void testStretchWidthFactor1_5(String ext) throws IOException {
+        test(img -> img.stretchWidthFactor(1.5f), ext);
     }
-    @Test
-    public void testScaleInHalf() throws IOException {
-        test(img -> img.scaleFactor(0.5f));
-    }
-    @Test
-    public void testScaleDouble() throws IOException {
-        test(img -> img.scaleFactor(2.0f));
+    @ExtensionTest
+    public void testStretchFactor3x0_5(String ext) throws IOException {
+        test(img -> img.stretchFactor(3.0f, 0.5f), ext);
     }
 
-    private void test(Consumer<MutableImage> c) throws IOException {
+    @ExtensionTest
+    public void testScale75_20(String ext) throws IOException {
+        test(img -> img.scale(75, 20), ext);
+    }
+    @ExtensionTest
+    public void testScaleHeightFactor1_5(String ext) throws IOException {
+        test(img -> img.scaleHeightFactor(1.5f), ext);
+    }
+    @ExtensionTest
+    public void testScaleWidthFactor1_5(String ext) throws IOException {
+        test(img -> img.scaleWidthFactor(1.5f), ext);
+    }
+    @ExtensionTest
+    public void testScaleInHalf(String ext) throws IOException {
+        test(img -> img.scaleFactor(0.5f), ext);
+    }
+    @ExtensionTest
+    public void testScaleDouble(String ext) throws IOException {
+        test(img -> img.scaleFactor(2.0f), ext);
+    }
+
+    private void test(Consumer<MutableImage> c, String ext) throws IOException {
         String srcImage = "/img/triangle." + ext;
         new File("target/img-tests").mkdirs();
         String targetImage = "target/img-tests/" +
@@ -131,8 +135,17 @@ public class MutableImageTest {
             MutableImage img = new MutableImage(is);
             //img.setResizeQuality(Quality.MAX);
             c.accept(img);
-            Assert.assertTrue("Could not find image writer.", ImageIO.write(
-                    img.toImage(), ext, new File(targetImage)));
+            Assertions.assertTrue(ImageIO.write(
+                    img.toImage(), ext, new File(targetImage)),
+                    "Could not find image writer.");
         }
+    }
+
+    @Target(ElementType.METHOD)
+    @Retention(RetentionPolicy.RUNTIME)
+    @ParameterizedTest(name = "extension: {0}")
+//    @ParameterizedTest(name = "{index}: {0}")
+    @MethodSource("extensionProvider")
+    @interface ExtensionTest {
     }
 }

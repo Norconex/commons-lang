@@ -1,4 +1,4 @@
-/* Copyright 2017 Norconex Inc.
+/* Copyright 2017-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@
 package com.norconex.commons.lang.exec;
 
 import org.apache.commons.lang3.mutable.MutableInt;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class RetrierTest {
 
@@ -24,20 +24,17 @@ public class RetrierTest {
     public void testRetrierMaxRetryReached() {
         final MutableInt count = new MutableInt();
         try {
-            new Retrier(20).setMaxCauses(5).execute(new IRetriable<Void>() {
-                @Override
-                public Void execute() throws RetriableException {
-                    count.increment();
-                    throw new RuntimeException(count.toString());
-                }
+            new Retrier(20).setMaxCauses(5).execute(() -> {
+                count.increment();
+                throw new RuntimeException(count.toString());
             });
         } catch (RetriableException e) {
             // initial run + 20 retries == 21
-            Assert.assertEquals(21, count.intValue());
+            Assertions.assertEquals(21, count.intValue());
             // Only keeps 5 causes
-            Assert.assertEquals(5, e.getAllCauses().length);
-            Assert.assertEquals("17", e.getAllCauses()[0].getMessage());
-            Assert.assertEquals("21", e.getCause().getMessage());
+            Assertions.assertEquals(5, e.getAllCauses().length);
+            Assertions.assertEquals("17", e.getAllCauses()[0].getMessage());
+            Assertions.assertEquals("21", e.getCause().getMessage());
         }
     }
 
@@ -45,27 +42,19 @@ public class RetrierTest {
     public void testRetrierExceptionFilter() {
         final MutableInt count = new MutableInt();
         try {
-            new Retrier(new IExceptionFilter() {
-                @Override
-                public boolean retry(Exception e) {
-                    return "retryMe".equals(e.getMessage());
+            new Retrier(e -> "retryMe".equals(e.getMessage()), 20).execute(() -> {
+                count.increment();
+                if (count.intValue() < 7) {
+                    throw new RuntimeException("retryMe");
                 }
-            }, 20).execute(new IRetriable<Void>() {
-                @Override
-                public Void execute() throws RetriableException {
-                    count.increment();
-                    if (count.intValue() < 7) {
-                        throw new RuntimeException("retryMe");
-                    }
-                    throw new RuntimeException("failMe");
-                }
+                throw new RuntimeException("failMe");
             });
         } catch (RetriableException e) {
             // Failed for real after 7 attempts
-            Assert.assertEquals(7, count.intValue());
-            Assert.assertEquals(7, e.getAllCauses().length);
-            Assert.assertEquals("retryMe", e.getAllCauses()[0].getMessage());
-            Assert.assertEquals("failMe", e.getCause().getMessage());
+            Assertions.assertEquals(7, count.intValue());
+            Assertions.assertEquals(7, e.getAllCauses().length);
+            Assertions.assertEquals("retryMe", e.getAllCauses()[0].getMessage());
+            Assertions.assertEquals("failMe", e.getCause().getMessage());
         }
     }
 }

@@ -127,7 +127,9 @@ public class XML {
     private static final String NULL_XML_VALUE = "\u0000";
     private static final List<String> NULL_XML_LIST = new ArrayList<>(0);
 
-
+    //TODO add ability to load/write from pojo without explicit mapping
+    // and maybe a vararg taking attribute names to be made attributes
+    // or maybe use annotations?
 
     private final Node node;
 

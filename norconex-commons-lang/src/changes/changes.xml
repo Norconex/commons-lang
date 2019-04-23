@@ -10,6 +10,10 @@
     <release version="2.0.0-SNAPSHOT" date="2018-??-??" 
              description="Major release. NOT a drop-in replacement for 1.x.">
       <action dev="essiembre" type="add">
+        New configurable MatchReplace class supporting different methods
+        of matching (basic, wildcard, regex).
+      </action>
+      <action dev="essiembre" type="add">
         New MutableImage class facilitating performing basic image operations.
       </action>
       <action dev="essiembre" type="add">
@@ -85,6 +89,9 @@
         New PropertyMatchers collection.
       </action>
       <action dev="essiembre" type="update">
+        Now relies on Norconex Commons Maven Parent. 
+      </action>
+      <action dev="essiembre" type="update">
         Improved Javadoc generation, putting more focus on class documentation.
       </action>
       <action dev="essiembre" type="update">
@@ -115,7 +122,7 @@
       </action>
       <action dev="essiembre" type="update">
         Dependency updates: Apache Commons Lang 3.7, 
-        Apache Velocity 2.0.
+        Apache Velocity 2.0, Junit 5.
       </action>
       <action dev="essiembre" type="update">
         Some of the load/store methods in Properties have been renamed for 

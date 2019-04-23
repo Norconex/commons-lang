@@ -1,4 +1,4 @@
-/* Copyright 2010-2018 Norconex Inc.
+/* Copyright 2010-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@ package com.norconex.commons.lang.time;
 
 import java.util.Locale;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 @Deprecated
 public class DurationUtilTest {
@@ -26,26 +26,26 @@ public class DurationUtilTest {
     private static final long MINUTE = 60 * SECOND;
     private static final long HOUR = 60 * MINUTE;
     private static final long DAY = 24 * HOUR;
-    private static final long TEST_DURATION = 
+    private static final long TEST_DURATION =
             54 * DAY + 18 * HOUR + 1 * MINUTE + 23 * SECOND;
-    
+
     @Test
     public void testShortFormat() {
-        Assert.assertEquals("54d18h1m23s", 
+        Assertions.assertEquals("54d18h1m23s",
                 DurationUtil.formatShort(Locale.CHINA, TEST_DURATION));
-        Assert.assertEquals("54d18h", 
+        Assertions.assertEquals("54d18h",
                 DurationUtil.formatShort(Locale.CHINA, TEST_DURATION, 2));
-        Assert.assertEquals("54j18h1m23s", 
+        Assertions.assertEquals("54j18h1m23s",
                 DurationUtil.formatShort(Locale.CANADA_FRENCH, TEST_DURATION));
     }
 
     @Test
     public void testLongFormat() {
-        Assert.assertEquals("54 days 18 hours 1 minute 23 seconds", 
+        Assertions.assertEquals("54 days 18 hours 1 minute 23 seconds",
                 DurationUtil.formatLong(Locale.CHINA, TEST_DURATION));
-        Assert.assertEquals("54 days 18 hours", 
+        Assertions.assertEquals("54 days 18 hours",
                 DurationUtil.formatLong(Locale.CHINA, TEST_DURATION, 2));
-        Assert.assertEquals("54 jours 18 heures 1 minute 23 secondes", 
+        Assertions.assertEquals("54 jours 18 heures 1 minute 23 secondes",
                 DurationUtil.formatLong(Locale.CANADA_FRENCH, TEST_DURATION));
     }
 }

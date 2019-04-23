@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.norconex.commons.lang.regex;
+package com.norconex.commons.lang.text;
 
 import java.util.Arrays;
 import java.util.List;
@@ -46,13 +46,15 @@ import com.norconex.commons.lang.map.Properties;
  * @author Pascal Essiembre
  * @since 2.0.0 (moved from Norconex Importer RegexFieldExtractor)
  */
-public class KeyValueExtractor {
+public class RegexKeyValueExtractor {
 
     private static final Logger LOG =
-            LoggerFactory.getLogger(KeyValueExtractor.class);
+            LoggerFactory.getLogger(RegexKeyValueExtractor.class);
 
-    public static final KeyValueExtractor[] EMPTY_ARRAY =
-            new KeyValueExtractor[] {};
+    public static final RegexKeyValueExtractor[] EMPTY_ARRAY =
+            new RegexKeyValueExtractor[] {};
+
+    //TODO move extraction capabilities to Regex class.
 
     private String key;
     private String regex;
@@ -60,21 +62,21 @@ public class KeyValueExtractor {
     private int keyGroup = -1;
     private int valueGroup = -1;
 
-    public KeyValueExtractor() {
+    public RegexKeyValueExtractor() {
         super();
     }
-    public KeyValueExtractor(String regex) {
+    public RegexKeyValueExtractor(String regex) {
         this(regex, null);
     }
-    public KeyValueExtractor(String regex, String key) {
+    public RegexKeyValueExtractor(String regex, String key) {
         this(regex, key, -1);
     }
-    public KeyValueExtractor(String regex, String key, int valueGroup) {
+    public RegexKeyValueExtractor(String regex, String key, int valueGroup) {
         this.regex = regex;
         this.key = key;
         this.valueGroup = valueGroup;
     }
-    public KeyValueExtractor(String regex, int keyGroup, int valueGroup) {
+    public RegexKeyValueExtractor(String regex, int keyGroup, int valueGroup) {
         super();
         this.regex = regex;
         this.keyGroup = keyGroup;
@@ -84,35 +86,35 @@ public class KeyValueExtractor {
     public String getRegex() {
         return regex;
     }
-    public KeyValueExtractor setRegex(String regex) {
+    public RegexKeyValueExtractor setRegex(String regex) {
         this.regex = regex;
         return this;
     }
     public boolean isCaseSensitive() {
         return caseSensitive;
     }
-    public KeyValueExtractor setCaseSensitive(boolean caseSensitive) {
+    public RegexKeyValueExtractor setCaseSensitive(boolean caseSensitive) {
         this.caseSensitive = caseSensitive;
         return this;
     }
     public int getKeyGroup() {
         return keyGroup;
     }
-    public KeyValueExtractor setKeyGroup(int keyGroup) {
+    public RegexKeyValueExtractor setKeyGroup(int keyGroup) {
         this.keyGroup = keyGroup;
         return this;
     }
     public int getValueGroup() {
         return valueGroup;
     }
-    public KeyValueExtractor setValueGroup(int valueGroup) {
+    public RegexKeyValueExtractor setValueGroup(int valueGroup) {
         this.valueGroup = valueGroup;
         return this;
     }
     public String getKey() {
         return key;
     }
-    public KeyValueExtractor setKey(String key) {
+    public RegexKeyValueExtractor setKey(String key) {
         this.key = key;
         return this;
     }
@@ -142,24 +144,24 @@ public class KeyValueExtractor {
     }
 
     public static void extractKeyValues(Properties dest,
-            CharSequence text, List<KeyValueExtractor> extractors) {
+            CharSequence text, List<RegexKeyValueExtractor> extractors) {
         if (extractors == null) {
             return;
         }
-        for (KeyValueExtractor extractor : extractors) {
+        for (RegexKeyValueExtractor extractor : extractors) {
             extractor.extractKeyValues(dest, text);
         }
     }
 
     public static Properties extractKeyValues(
-            CharSequence text, List<KeyValueExtractor> extractors) {
+            CharSequence text, List<RegexKeyValueExtractor> extractors) {
         Properties dest = new Properties();
         extractKeyValues(dest, text, extractors);
         return dest;
     }
 
     public static void extractKeyValues(Properties dest,
-            CharSequence text, KeyValueExtractor... extractors) {
+            CharSequence text, RegexKeyValueExtractor... extractors) {
         if (ArrayUtils.isEmpty(extractors)) {
             return;
         }
@@ -167,7 +169,7 @@ public class KeyValueExtractor {
     }
 
     public static Properties extractKeyValues(
-            CharSequence text, KeyValueExtractor... extractors) {
+            CharSequence text, RegexKeyValueExtractor... extractors) {
         Properties dest = new Properties();
         extractKeyValues(dest, text, extractors);
         return dest;

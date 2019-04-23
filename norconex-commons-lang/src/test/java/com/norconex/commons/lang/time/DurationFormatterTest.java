@@ -1,4 +1,4 @@
-/* Copyright 2018 Norconex Inc.
+/* Copyright 2018-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,9 @@ package com.norconex.commons.lang.time;
 import java.text.NumberFormat;
 import java.util.Locale;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class DurationFormatterTest {
 
@@ -39,57 +39,57 @@ public class DurationFormatterTest {
           + DurationUnit.MINUTE.toMilliseconds(1)
           + DurationUnit.SECOND.toMilliseconds(23)
           + DurationUnit.MILLISECOND.toMilliseconds(469);
-            
-    private DurationFormatter full; 
-    private DurationFormatter compact; 
-    private DurationFormatter abbr; 
-    
-    @Before
+
+    private DurationFormatter full;
+    private DurationFormatter compact;
+    private DurationFormatter abbr;
+
+    @BeforeEach
     public void before() {
         full = new DurationFormatter();
         compact = DurationFormatter.COMPACT;
         abbr = new DurationFormatter().withUnitFormatter(
                 RBDurationUnitFormatter.ABBREVIATED);
     }
-    
+
     @Test
     public void testCompactAllUnitsFormat() {
-        Assert.assertEquals("4Y1M3W5D18h1m23s469ms", compact
+        Assertions.assertEquals("4Y1M3W5D18h1m23s469ms", compact
                 .withLocale(Locale.CHINA)
                 .format(TEST_DATETIME_DURATION));
-        Assert.assertEquals("4A1M3S5J18h1m23s469ms", compact
+        Assertions.assertEquals("4A1M3S5J18h1m23s469ms", compact
                 .withLocale(Locale.FRENCH)
                 .format(TEST_DATETIME_DURATION));
 
     }
     @Test
     public void testFullAllUnitsFormat() {
-        Assert.assertEquals("4 years 1 month 3 weeks 5 days "
+        Assertions.assertEquals("4 years 1 month 3 weeks 5 days "
                 + "18 hours 1 minute 23 seconds 469 milliseconds", full
                 .format(TEST_DATETIME_DURATION));
-        Assert.assertEquals("4 ans 1 mois 3 semaines 5 jours "
+        Assertions.assertEquals("4 ans 1 mois 3 semaines 5 jours "
                 + "18 heures 1 minute 23 secondes 469 millisecondes", full
                 .withLocale(Locale.FRENCH)
                 .format(TEST_DATETIME_DURATION));
     }
     @Test
     public void testAbbrAllUnitsFormat() {
-        Assert.assertEquals("4 yrs 1 mo 3 wks 5 days "
+        Assertions.assertEquals("4 yrs 1 mo 3 wks 5 days "
                 + "18 hrs 1 min 23 secs 469 msecs", abbr
                 .format(TEST_DATETIME_DURATION));
-        Assert.assertEquals("4 ans 1 mo 3 sems 5 jrs "
+        Assertions.assertEquals("4 ans 1 mo 3 sems 5 jrs "
                 + "18 hrs 1 min 23 secs 469 msecs", abbr
                 .withLocale(Locale.FRENCH)
                 .format(TEST_DATETIME_DURATION));
     }
     @Test
     public void testCompactDaysToSecondsFormat() {
-        Assert.assertEquals("5D18h1m23s", compact
+        Assertions.assertEquals("5D18h1m23s", compact
                 .withLocale(Locale.CHINA)
                 .withHighestUnit(DurationUnit.DAY)
                 .withLowestUnit(DurationUnit.SECOND)
                 .format(TEST_DAYTIME_DURATION));
-        Assert.assertEquals("5J18h1m23s", compact
+        Assertions.assertEquals("5J18h1m23s", compact
                 .withLocale(Locale.FRENCH)
                 .withHighestUnit(DurationUnit.DAY)
                 .withLowestUnit(DurationUnit.SECOND)
@@ -98,11 +98,11 @@ public class DurationFormatterTest {
     }
     @Test
     public void testFullDaysToSecondsFormat() {
-        Assert.assertEquals("5 days 18 hours 1 minute 23 seconds", full
+        Assertions.assertEquals("5 days 18 hours 1 minute 23 seconds", full
                 .withHighestUnit(DurationUnit.DAY)
                 .withLowestUnit(DurationUnit.SECOND)
                 .format(TEST_DAYTIME_DURATION));
-        Assert.assertEquals("5 jours 18 heures 1 minute 23 secondes", full
+        Assertions.assertEquals("5 jours 18 heures 1 minute 23 secondes", full
                 .withHighestUnit(DurationUnit.DAY)
                 .withLowestUnit(DurationUnit.SECOND)
                 .withLocale(Locale.FRENCH)
@@ -110,11 +110,11 @@ public class DurationFormatterTest {
     }
     @Test
     public void testAbbrDaysToSecondsFormat() {
-        Assert.assertEquals("5 days 18 hrs 1 min 23 secs", abbr
+        Assertions.assertEquals("5 days 18 hrs 1 min 23 secs", abbr
                 .withHighestUnit(DurationUnit.DAY)
                 .withLowestUnit(DurationUnit.SECOND)
                 .format(TEST_DAYTIME_DURATION));
-        Assert.assertEquals("5 jrs 18 hrs 1 min 23 secs", abbr
+        Assertions.assertEquals("5 jrs 18 hrs 1 min 23 secs", abbr
                 .withHighestUnit(DurationUnit.DAY)
                 .withLowestUnit(DurationUnit.SECOND)
                 .withLocale(Locale.FRENCH)
@@ -122,11 +122,11 @@ public class DurationFormatterTest {
     }
     @Test
     public void testHighestUnitsSmaller() {
-        Assert.assertEquals("138 hours 1 minute 23 seconds", full
+        Assertions.assertEquals("138 hours 1 minute 23 seconds", full
                 .withHighestUnit(DurationUnit.HOUR)
                 .withLowestUnit(DurationUnit.SECOND)
                 .format(TEST_DAYTIME_DURATION));
-        Assert.assertEquals("138 heures 1 minute 23 secondes", full
+        Assertions.assertEquals("138 heures 1 minute 23 secondes", full
                 .withHighestUnit(DurationUnit.HOUR)
                 .withLowestUnit(DurationUnit.SECOND)
                 .withLocale(Locale.FRENCH)
@@ -135,39 +135,39 @@ public class DurationFormatterTest {
 
     @Test
     public void testPrecision() {
-        Assert.assertEquals("138 hours", full
+        Assertions.assertEquals("138 hours", full
                 .withHighestUnit(DurationUnit.HOUR)
                 .withLowestUnit(DurationUnit.SECOND)
                 .withUnitPrecision(1)
                 .format(TEST_DAYTIME_DURATION));
-        Assert.assertEquals("138 hours 1 minute", full
+        Assertions.assertEquals("138 hours 1 minute", full
                 .withHighestUnit(DurationUnit.HOUR)
                 .withLowestUnit(DurationUnit.SECOND)
                 .withUnitPrecision(2)
                 .format(TEST_DAYTIME_DURATION));
     }
-    
+
     @Test
     public void testNumberFormat() {
-        Assert.assertEquals("496,883 seconds 469 milliseconds", full
+        Assertions.assertEquals("496,883 seconds 469 milliseconds", full
                 .withHighestUnit(DurationUnit.SECOND)
                 .withNumberFormat(
                         NumberFormat.getNumberInstance(Locale.ENGLISH))
                 .withUnitPrecision(2)
                 .format(TEST_DAYTIME_DURATION));
     }
-    
+
     @Test
     public void testFullFormatter() {
-        DurationFormatter df = 
+        DurationFormatter df =
                 DurationFormatter.FULL.withOuterSeparator(", ");
-        
-        Assert.assertEquals("4 years, 1 month, 3 weeks, 5 days, "
+
+        Assertions.assertEquals("4 years, 1 month, 3 weeks, 5 days, "
                 + "18 hours, 1 minute, 23 seconds and 469 milliseconds", df
                 .withOuterLastSeparator(" and ")
                 .format(TEST_DATETIME_DURATION));
-        
-        Assert.assertEquals("4 ans, 1 mois, 3 semaines, 5 jours, "
+
+        Assertions.assertEquals("4 ans, 1 mois, 3 semaines, 5 jours, "
                 + "18 heures, 1 minute, 23 secondes et 469 millisecondes", df
                 .withOuterLastSeparator(" et ")
                 .withLocale(Locale.FRENCH)

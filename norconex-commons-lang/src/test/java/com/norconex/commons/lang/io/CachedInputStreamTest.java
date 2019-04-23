@@ -20,8 +20,8 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.input.NullInputStream;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Pascal Essiembre
@@ -38,10 +38,10 @@ public class CachedInputStreamTest {
         CachedInputStream cache = factory.newInputStream(is);
         try {
             // first time should cache
-            Assert.assertEquals(content, readCacheToString(cache));
+            Assertions.assertEquals(content, readCacheToString(cache));
             cache.rewind();
             // second time should read from cache
-            Assert.assertEquals(content, readCacheToString(cache));
+            Assertions.assertEquals(content, readCacheToString(cache));
         }  finally {
             try { cache.close(); } catch (IOException e) { /*NOOP*/ }
             cache.dispose();
@@ -61,14 +61,14 @@ public class CachedInputStreamTest {
             byte[] bytes = null;
             bytes = new byte[5];
             cache.read(bytes);
-            Assert.assertEquals("01234", new String(bytes, enc));
+            Assertions.assertEquals("01234", new String(bytes, enc));
             cache.mark(999);
             cache.read(bytes);
-            Assert.assertEquals("56789", new String(bytes, enc));
+            Assertions.assertEquals("56789", new String(bytes, enc));
             cache.reset();
             bytes = new byte[7];
             cache.read(bytes);
-            Assert.assertEquals("56789AB", new String(bytes, enc));
+            Assertions.assertEquals("56789AB", new String(bytes, enc));
         }  finally {
             try { cache.close(); } catch (IOException e) { /*NOOP*/ }
             cache.dispose();
@@ -108,10 +108,10 @@ public class CachedInputStreamTest {
         CachedInputStream cache = factory.newInputStream(is);
         try {
             // first time should cache
-            Assert.assertEquals(content, readCacheToString(cache));
+            Assertions.assertEquals(content, readCacheToString(cache));
             cache.rewind();
             // second time should read from cache
-            Assert.assertEquals(content, readCacheToString(cache));
+            Assertions.assertEquals(content, readCacheToString(cache));
         }  finally {
             try { cache.close(); } catch (IOException e) { /*NOOP*/ }
             cache.dispose();
@@ -124,10 +124,10 @@ public class CachedInputStreamTest {
         CachedInputStream cache = newCachedInputStream(content, 200, 10);
         try {
             // good length?
-            Assert.assertEquals(36, cache.length());
+            Assertions.assertEquals(36, cache.length());
             // can re-read proper?
             cache.rewind();
-            Assert.assertEquals(content, readCacheToString(cache));
+            Assertions.assertEquals(content, readCacheToString(cache));
         }  finally {
             try { cache.close(); } catch (IOException e) { /*NOOP*/ }
             cache.dispose();
@@ -143,12 +143,12 @@ public class CachedInputStreamTest {
             cache.read(bytes);
 
             // good length?
-            Assert.assertEquals(content.length(), cache.length());
+            Assertions.assertEquals(content.length(), cache.length());
             // can resume reading where it was (56789)?
             cache.read(bytes);
-            Assert.assertEquals("56789", new String(bytes));
+            Assertions.assertEquals("56789", new String(bytes));
             // still good length?
-            Assert.assertEquals(content.length(), cache.length());
+            Assertions.assertEquals(content.length(), cache.length());
         }  finally {
             try { cache.close(); } catch (IOException e) { /*NOOP*/ }
             cache.dispose();
@@ -164,13 +164,13 @@ public class CachedInputStreamTest {
             cache.read(bytes);
 
             // good length?
-            Assert.assertEquals(content.length(), cache.length());
+            Assertions.assertEquals(content.length(), cache.length());
             // can resume reading where it was (FGHIJ)?
             bytes = new byte[5];
             cache.read(bytes);
-            Assert.assertEquals("FGHIJ", new String(bytes));
+            Assertions.assertEquals("FGHIJ", new String(bytes));
             // still good length?
-            Assert.assertEquals(content.length(), cache.length());
+            Assertions.assertEquals(content.length(), cache.length());
         }  finally {
             try { cache.close(); } catch (IOException e) { /*NOOP*/ }
             cache.dispose();
@@ -183,10 +183,10 @@ public class CachedInputStreamTest {
         CachedInputStream cache = newCachedInputStream(content, 200, 100);
         try {
             // good length?
-            Assert.assertEquals(36, cache.length());
+            Assertions.assertEquals(36, cache.length());
             // can re-read proper?
             cache.rewind();
-            Assert.assertEquals(content, readCacheToString(cache));
+            Assertions.assertEquals(content, readCacheToString(cache));
         }  finally {
             try { cache.close(); } catch (IOException e) { /*NOOP*/ }
             cache.dispose();
@@ -202,12 +202,12 @@ public class CachedInputStreamTest {
             cache.read(bytes);
 
             // good length?
-            Assert.assertEquals(content.length(), cache.length());
+            Assertions.assertEquals(content.length(), cache.length());
             // can resume reading where it was (56789)?
             cache.read(bytes);
-            Assert.assertEquals("56789", new String(bytes));
+            Assertions.assertEquals("56789", new String(bytes));
             // still good length?
-            Assert.assertEquals(content.length(), cache.length());
+            Assertions.assertEquals(content.length(), cache.length());
         }  finally {
             try { cache.close(); } catch (IOException e) { /*NOOP*/ }
             cache.dispose();
@@ -223,13 +223,13 @@ public class CachedInputStreamTest {
             cache.read(bytes);
 
             // good length?
-            Assert.assertEquals(content.length(), cache.length());
+            Assertions.assertEquals(content.length(), cache.length());
             // can resume reading where it was (FGHIJ)?
             bytes = new byte[5];
             cache.read(bytes);
-            Assert.assertEquals("FGHIJ", new String(bytes));
+            Assertions.assertEquals("FGHIJ", new String(bytes));
             // still good length?
-            Assert.assertEquals(content.length(), cache.length());
+            Assertions.assertEquals(content.length(), cache.length());
         }  finally {
             try { cache.close(); } catch (IOException e) { /*NOOP*/ }
             cache.dispose();

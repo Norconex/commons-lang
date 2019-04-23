@@ -1,4 +1,4 @@
-/* Copyright 2015-2017 Norconex Inc.
+/* Copyright 2015-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,18 +19,18 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Pascal Essiembre
  */
 public class TextReaderTest {
 
-    
+
     @Test
     public void testSentenceBreaks() throws IOException {
-        
+
         TextReader reader = getTextReader("funkyParagraphBreaks.txt", 60);
         @SuppressWarnings("unused")
         String text = null;
@@ -40,14 +40,14 @@ public class TextReaderTest {
 //            System.out.println("CHUNK #" + count + " = " + text);
         }
         reader.close();
-        Assert.assertEquals("Wrong number of sentences", 10, count);
+        Assertions.assertEquals(10, count, "Wrong number of sentences");
     }
 
-    
-    
+
+
     @Test
     public void testParagraphBreaks() throws IOException {
-        
+
         TextReader reader = getTextReader("funkyParagraphBreaks.txt", 100);
         @SuppressWarnings("unused")
         String text = null;
@@ -57,7 +57,8 @@ public class TextReaderTest {
 //            System.out.println("CHUNK #" + count + " = " + text);
         }
         reader.close();
-        Assert.assertEquals("Wrong number of text chunks returned", 5, count);
+        Assertions.assertEquals(
+                5, count, "Wrong number of text chunks returned");
     }
 
     @Test
@@ -65,8 +66,8 @@ public class TextReaderTest {
         TextReader reader = getTextReader("funkyParagraphBreaks.txt", 1000);
         String allContent = reader.readText();
         reader.close();
-        Assert.assertEquals("Wrong number of characters returned.", 
-                400, allContent.length());
+        Assertions.assertEquals(400, allContent.length(),
+                "Wrong number of characters returned.");
     }
 
     @Test
@@ -74,11 +75,11 @@ public class TextReaderTest {
         TextReader reader = getTextReader("funkyParagraphBreaks.txt", -1);
         String allContent = reader.readText();
         reader.close();
-        Assert.assertEquals("Wrong number of characters returned.", 
-                400, allContent.length());
+        Assertions.assertEquals(400, allContent.length(),
+                "Wrong number of characters returned.");
     }
-    
-    private TextReader getTextReader(String file, int readSize) 
+
+    private TextReader getTextReader(String file, int readSize)
             throws UnsupportedEncodingException {
         return new TextReader(new InputStreamReader(
                 getClass().getResourceAsStream(file), StandardCharsets.UTF_8),

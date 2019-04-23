@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,27 +16,27 @@ package com.norconex.commons.lang.file;
 
 import java.util.Locale;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class ContentTypeTest {
 
     @Test
     public void testGetDisplayName() {
-        Assert.assertEquals("Adobe Portable Document Format",
+        Assertions.assertEquals("Adobe Portable Document Format",
                 ContentType.PDF.getDisplayName(Locale.FRENCH));
-        Assert.assertEquals("Adobe Portable Document Format",
+        Assertions.assertEquals("Adobe Portable Document Format",
                 ContentType.PDF.getDisplayName());
-        Assert.assertEquals("Open eBook Publication Structure", 
+        Assertions.assertEquals("Open eBook Publication Structure",
                 ContentType.valueOf(
                         "application/oebps-package+xml").getDisplayName());
     }
     @Test
     public void testGetExtension() {
-        Assert.assertEquals("pdf", ContentType.PDF.getExtension());
-        Assert.assertEquals("wpd", 
+        Assertions.assertEquals("pdf", ContentType.PDF.getExtension());
+        Assertions.assertEquals("wpd",
                 ContentType.valueOf("application/wordperfect").getExtension());
-        Assert.assertArrayEquals(new String[]{ "wpd", "wp", "wp5", "wp6" },
+        Assertions.assertArrayEquals(new String[]{ "wpd", "wp", "wp5", "wp6" },
                 ContentType.valueOf("application/wordperfect").getExtensions());
     }
 }

@@ -1,4 +1,4 @@
-/* Copyright 2015-2017 Norconex Inc.
+/* Copyright 2015-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,23 +17,13 @@ package com.norconex.commons.lang.io;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Pascal Essiembre
  */
 public class ByteArrayOutputStreamTest {
-
-//    @Before
-//    public void before() {
-//        Logger logger = Logger.getRootLogger();
-//        logger.setLevel(Level.DEBUG);
-//        logger.setAdditivity(false);
-//        logger.addAppender(new ConsoleAppender(
-//                new PatternLayout("%-5p [%C{1}] %m%n"), 
-//                ConsoleAppender.SYSTEM_OUT));
-//    }
 
     @Test
     public void testByteArrayOutputStream() throws IOException {
@@ -42,45 +32,48 @@ public class ByteArrayOutputStreamTest {
         byte[] b = null;
         ByteArrayOutputStream out = new ByteArrayOutputStream(5);
         String enc = StandardCharsets.US_ASCII.toString();
-        
+
         // test nothing written
         b = new byte[5];
-        Assert.assertEquals("no-write-yet-getByte", -1, out.getByte(5));
-        Assert.assertEquals("no-write-yet-getBytes", -1, out.getBytes(b, 0));
+        Assertions.assertEquals(-1, out.getByte(5), "no-write-yet-getByte");
+        Assertions.assertEquals(
+                -1, out.getBytes(b, 0), "no-write-yet-getBytes");
 
         // test getByte()
         out.write(val1.getBytes(enc));
-        Assert.assertEquals("getByte-0", '0', (char) out.getByte(0));
-        Assert.assertEquals("getByte-5", '5', (char) out.getByte(5));
-        Assert.assertEquals("getByte-9", '9', (char) out.getByte(9));
-        Assert.assertEquals("getByte-10", -1, out.getByte(10));
-        Assert.assertEquals("val1-count", 10, out.size());
+        Assertions.assertEquals('0', (char) out.getByte(0), "getByte-0");
+        Assertions.assertEquals('5', (char) out.getByte(5), "getByte-5");
+        Assertions.assertEquals('9', (char) out.getByte(9), "getByte-9");
+        Assertions.assertEquals(-1, out.getByte(10), "getByte-10");
+        Assertions.assertEquals(10, out.size(), "val1-count");
 
         // test getBytes()
         b = new byte[6];
         out.getBytes(b, 0);
-        Assert.assertEquals("getBytes-012345", "012345", new String(b, enc));
+        Assertions.assertEquals(
+                "012345", new String(b, enc), "getBytes-012345");
 
         b = new byte[3];
         out.getBytes(b, 6);
-        Assert.assertEquals("getBytes-678", "678", new String(b, enc));
+        Assertions.assertEquals("678", new String(b, enc), "getBytes-678");
 
         b = new byte[3];
         out.getBytes(b, 6);
-        Assert.assertEquals("getBytes-678", "678", new String(b, enc));
+        Assertions.assertEquals("678", new String(b, enc), "getBytes-678");
 
         b = new byte[12];
         int read = out.getBytes(b, 8);
-        Assert.assertEquals("getBytes-89", "89", new String(b, 0, read, enc));
+        Assertions.assertEquals(
+                "89", new String(b, 0, read, enc), "getBytes-89");
         out.write(val2.getBytes(enc));
         out.getBytes(b, 8);
-        Assert.assertEquals("getBytes-89ABCDEFGHIJ", "89ABCDEFGHIJ",
-                new String(b, enc));
+        Assertions.assertEquals(
+                "89ABCDEFGHIJ", new String(b, enc), "getBytes-89ABCDEFGHIJ");
 
         // toByteArray()
-        Assert.assertEquals("toByteArray", val1 + val2,
-                new String(out.toByteArray(), enc));
-        
+        Assertions.assertEquals(val1 + val2,
+                new String(out.toByteArray(), enc), "toByteArray");
+
         out.close();
     }
 

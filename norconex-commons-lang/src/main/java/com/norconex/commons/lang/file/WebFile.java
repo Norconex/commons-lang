@@ -43,7 +43,7 @@ import com.norconex.commons.lang.url.URLStreamer;
  * gets deleted, in which case it will be downloaded again.
  * Use this class for simple scenarios. If more complex ones are required
  * (e.g., authentication, proxy, etc), use a different approach.
- * All this {@link Path} methods are applied the downloaded file.
+ * All this {@link Path} methods are applied on the downloaded file.
  * @author Pascal Essiembre
  * @since 2.0.0
  */

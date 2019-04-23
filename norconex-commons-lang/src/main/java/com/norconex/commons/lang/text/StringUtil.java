@@ -1,4 +1,4 @@
-/* Copyright 2017-2019 Norconex Inc.
+/* Copyright 2017-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.norconex.commons.lang;
+package com.norconex.commons.lang.text;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
@@ -29,9 +29,7 @@ import org.slf4j.LoggerFactory;
  * String-related utility methods not found in popular libraries.
  * @author Pascal Essiembre
  * @since 1.14.0
- * @deprecated Since 2.0.0, use {@link com.norconex.commons.lang.text.StringUtil}
  */
-@Deprecated
 public final class StringUtil {
 
     private static final Logger LOG = LoggerFactory.getLogger(StringUtil.class);
