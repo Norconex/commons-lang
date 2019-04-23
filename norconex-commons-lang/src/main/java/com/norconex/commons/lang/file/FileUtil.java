@@ -1,4 +1,4 @@
-/* Copyright 2010-2018 Norconex Inc.
+/* Copyright 2010-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,9 +38,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.Sleeper;
-import com.norconex.commons.lang.StringUtil;
 import com.norconex.commons.lang.io.IInputStreamFilter;
 import com.norconex.commons.lang.io.ReverseFileInputStream;
+import com.norconex.commons.lang.text.StringUtil;
 
 /**
  * Utility methods when dealing with files and directories.
@@ -49,16 +49,16 @@ import com.norconex.commons.lang.io.ReverseFileInputStream;
 public final class FileUtil {
 
     private static final Logger LOG = LoggerFactory.getLogger(FileUtil.class);
-    
+
     private static final int MAX_FILE_OPERATION_ATTEMPTS = 10;
-    
+
     private FileUtil() {
         super();
     }
 
     /**
-     * Converts any String to a valid file-system file name representation. The 
-     * valid file name is constructed so it can be written to virtually any 
+     * Converts any String to a valid file-system file name representation. The
+     * valid file name is constructed so it can be written to virtually any
      * operating system.  It will escape every characters that are not
      * alphanumeric, hyphen, or dot.
      * Use {@link #fromSafeFileName(String)} to get back the original name.
@@ -83,7 +83,7 @@ public final class FileUtil {
         return b.toString();
     }
     /**
-     * Converts a "safe" file name originally created with 
+     * Converts a "safe" file name originally created with
      * {@link #toSafeFileName(String)} into its original string.
      * @param safeFileName the file name to convert to its original form
      * @return original string
@@ -96,7 +96,7 @@ public final class FileUtil {
         for (int i = 0; i < safeFileName.length(); i++){
             char ch = safeFileName.charAt(i);
             if (ch == '_') {
-                String intVal = StringUtils.substring(safeFileName, i + 1, 
+                String intVal = StringUtils.substring(safeFileName, i + 1,
                         StringUtils.indexOf(safeFileName, '_', i + 1));
                 b.append((char) NumberUtils.toInt(intVal));
                 i += intVal.length() + 1;
@@ -106,8 +106,8 @@ public final class FileUtil {
         }
         return b.toString();
     }
-    
-    
+
+
     /**
      * Moves a file to a directory.   Like {@link #moveFile(File, File)}:
      * <ul>
@@ -128,14 +128,14 @@ public final class FileUtil {
         if (sourceFile == null || !sourceFile.isFile()) {
             throw new IOException("Source file is not valid: " + sourceFile);
         }
-        if (targetDir == null || 
+        if (targetDir == null ||
                 targetDir.exists() && !targetDir.isDirectory()) {
             throw new IOException("Target directory is not valid:" + targetDir);
         }
         if (!targetDir.exists()) {
             FileUtils.forceMkdir(targetDir);
         }
-        
+
         String fileName = sourceFile.getName();
         File targetFile = new File(targetDir, fileName);
         moveFile(sourceFile, targetFile);
@@ -158,7 +158,7 @@ public final class FileUtil {
      */
     public static void moveFile(File sourceFile, File targetFile)
             throws IOException {
-        
+
         if (!isFile(sourceFile)) {
             throw new IOException(
                     "Source file is not a file or is not valid: " + sourceFile);
@@ -180,20 +180,20 @@ public final class FileUtil {
         }
         if (failure >= MAX_FILE_OPERATION_ATTEMPTS) {
             throw new IOException(
-                    "Could not move \"" + sourceFile + "\" to \"" 
+                    "Could not move \"" + sourceFile + "\" to \""
                             + targetFile + "\".", ex);
         }
     }
-    
+
     /**
-     * Deletes a file or a directory recursively in a more robust way. 
+     * Deletes a file or a directory recursively in a more robust way.
      * This method applies the following strategies:
      * <ul>
-     *   <li>If file or directory deletion does not work, it will re-try 10 
-     *       times, waiting 1 second between each try to give a chance to 
+     *   <li>If file or directory deletion does not work, it will re-try 10
+     *       times, waiting 1 second between each try to give a chance to
      *       whatever OS lock on the file to go.</li>
      *   <li>After a first failed attempt, it invokes {@link System#gc()}
-     *       in hope of releasing any handles left on files.  This is in 
+     *       in hope of releasing any handles left on files.  This is in
      *       relation to a known Java bug mostly occurring on Windows
      *   (<a href="http://bugs.java.com/bugdatabase/view_bug.do?bug_id=4715154"
      *   >http://bugs.java.com/bugdatabase/view_bug.do?bug_id=4715154</a>).</li>
@@ -225,10 +225,10 @@ public final class FileUtil {
                     "Could not delete \"" + file + "\".");
         }
     }
-    
+
     /**
      * Deletes all directories that are empty from a given parent directory.
-     * @param parentDir the directory where to start looking for empty 
+     * @param parentDir the directory where to start looking for empty
      *        directories
      * @return the number of deleted directories
      */
@@ -237,10 +237,10 @@ public final class FileUtil {
     }
 
     /**
-     * Deletes all directories that are empty and are <b>older</b> 
-     * than the given date.  If the date is <code>null</code>, all empty 
+     * Deletes all directories that are empty and are <b>older</b>
+     * than the given date.  If the date is <code>null</code>, all empty
      * directories will be deleted, regardless of their date.
-     * @param parentDir the directory where to start looking for empty 
+     * @param parentDir the directory where to start looking for empty
      *        directories
      * @param date the date to compare empty directories against
      * @return the number of deleted directories
@@ -248,20 +248,17 @@ public final class FileUtil {
      */
     public static int deleteEmptyDirs(File parentDir, final Date date) {
         final MutableInt dirCount = new MutableInt(0);
-        visitEmptyDirs(parentDir, new IFileVisitor() {
-            @Override
-            public void visit(File file) {
-                if (date == null || FileUtils.isFileOlder(file, date)) {
-                    String[] children = file.list();
-                    if (file.isDirectory()
-                            && (children == null || children.length == 0)) {
-                        try {
-                            FileUtil.delete(file);
-                            dirCount.increment();
-                        } catch (IOException e) {
-                            LOG.error("Could not be delete directory: "
-                                    + file, e);
-                        }                        
+        visitEmptyDirs(parentDir, file -> {
+            if (date == null || FileUtils.isFileOlder(file, date)) {
+                String[] children = file.list();
+                if (file.isDirectory()
+                        && (children == null || children.length == 0)) {
+                    try {
+                        FileUtil.delete(file);
+                        dirCount.increment();
+                    } catch (IOException e) {
+                        LOG.error("Could not be delete directory: "
+                                + file, e);
                     }
                 }
             }
@@ -269,14 +266,14 @@ public final class FileUtil {
         return dirCount.intValue();
     }
 
-    
+
     /**
-     * Create all parent directories for a file if they do not exists.  
+     * Create all parent directories for a file if they do not exists.
      * If they exist already, this method does nothing.  This method assumes
      * the last segment is a file or will be a file.
      * @param file the file to create parent directories for
      * @return The newly created parent directory
-     * @throws IOException if something went wrong creating the parent 
+     * @throws IOException if something went wrong creating the parent
      * directories
      */
     public static File createDirsForFile(File file) throws IOException {
@@ -287,7 +284,7 @@ public final class FileUtil {
         }
         return new File("/");
     }
-    
+
     /**
      * Visits all files and directories under a directory.
      * @param dir the directory
@@ -300,7 +297,7 @@ public final class FileUtil {
      * Visits all files and directories under a directory.
      * @param dir the directory
      * @param visitor the visitor
-     * @param filter an optional filter to restrict the files being visited 
+     * @param filter an optional filter to restrict the files being visited
      */
     public static void visitAllDirsAndFiles(
             File dir, IFileVisitor visitor, FileFilter filter) {
@@ -316,7 +313,7 @@ public final class FileUtil {
             }
         }
     }
-    
+
     /**
      * Visits only empty directories under a directory.
      * @param dir the directory
@@ -359,7 +356,7 @@ public final class FileUtil {
             }
         }
     }
-    
+
     /**
      * Visits only directories under a directory.
      * @param dir the directory
@@ -399,9 +396,9 @@ public final class FileUtil {
             }
         }
     }
-    
+
     /**
-     * Visits all files (and only files) under a directory, including 
+     * Visits all files (and only files) under a directory, including
      * sub-directories.
      * @param dir the directory
      * @param visitor the visitor
@@ -410,11 +407,11 @@ public final class FileUtil {
         visitAllFiles(dir, visitor, null);
     }
     /**
-     * Visits all files (and only files) under a directory, including 
+     * Visits all files (and only files) under a directory, including
      * sub-directories.
      * @param dir the directory
      * @param visitor the visitor
-     * @param filter an optional filter to restrict the files being visited 
+     * @param filter an optional filter to restrict the files being visited
      */
     public static void visitAllFiles(
             File dir, IFileVisitor visitor, FileFilter filter) {
@@ -443,7 +440,7 @@ public final class FileUtil {
      */
     public static String[] head(File file, int numberOfLinesToRead)
             throws IOException {
-        return head(file, StandardCharsets.UTF_8.toString(), 
+        return head(file, StandardCharsets.UTF_8.toString(),
                 numberOfLinesToRead);
     }
 
@@ -474,7 +471,7 @@ public final class FileUtil {
             int numberOfLinesToRead, boolean stripBlankLines)
             throws IOException {
         return head(file, encoding, numberOfLinesToRead, stripBlankLines, null);
-    }    
+    }
     /**
      * Returns the specified number of lines starting from the beginning
      * of a text file, using the given encoding.
@@ -524,7 +521,7 @@ public final class FileUtil {
      */
     public static String[] tail(File file, int numberOfLinesToRead)
             throws IOException {
-        return tail(file, 
+        return tail(file,
                 StandardCharsets.UTF_8.toString(), numberOfLinesToRead);
     }
 
@@ -557,7 +554,7 @@ public final class FileUtil {
             throws IOException {
         return tail(file, encoding, numberOfLinesToRead, stripBlankLines, null);
     }
-    
+
     /**
      * Returns the specified number of lines starting from the end
      * of a text file.
@@ -579,7 +576,7 @@ public final class FileUtil {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(
                 new ReverseFileInputStream(file), encoding))) {
             int remainingLinesToRead = numberOfLinesToRead;
-    
+
             String line;
             while ((line = reader.readLine()) != null) {
                 if (remainingLinesToRead-- <= 0) {
@@ -603,8 +600,8 @@ public final class FileUtil {
 
     /**
      * Creates (if not already existing) a series of directories reflecting
-     * the current date, up to the day unit, under a given parent directory.  
-     * For example, a date of 2000-12-31 will create the following directory 
+     * the current date, up to the day unit, under a given parent directory.
+     * For example, a date of 2000-12-31 will create the following directory
      * structure:
      * <code>
      *    /&lt;parentDir&gt;/2000/12/31/
@@ -635,8 +632,8 @@ public final class FileUtil {
 
     /**
      * Creates (if not already existing) a series of directories reflecting
-     * the current date and time, up to the seconds, under a given parent 
-     * directory.   For example, a date of 2000-12-31T13:34:12 will create the 
+     * the current date and time, up to the seconds, under a given parent
+     * directory.   For example, a date of 2000-12-31T13:34:12 will create the
      * following directory structure:
      * <code>
      *    /&lt;parentDir&gt;/2000/12/31/13/34/12/
@@ -650,9 +647,9 @@ public final class FileUtil {
     }
     /**
      * Creates (if not already existing) a series of directories reflecting
-     * a date and time, up to the seconds, under a given parent directory.  
+     * a date and time, up to the seconds, under a given parent directory.
      * For example,
-     * a date of 2000-12-31T13:34:12 will create the following directory 
+     * a date of 2000-12-31T13:34:12 will create the following directory
      * structure:
      * <code>
      *    /&lt;parentDir&gt;/2000/12/31/13/34/12/
@@ -667,15 +664,15 @@ public final class FileUtil {
         return createDateFormattedDirs(
                 parentDir, dateTime, "yyyy/MM/dd/HH/mm/ss");
     }
-    
+
     /**
      * Creates (if not already existing) a series of directories reflecting
-     * the specified date format (from {@link SimpleDateFormat}), 
+     * the specified date format (from {@link SimpleDateFormat}),
      * under a given parent directory.
-     * Use forward slash in your date format for creating sub-directories.  
+     * Use forward slash in your date format for creating sub-directories.
      * For example,
-     * a date of 2000-12-31T13:34:12 with a format of 
-     * <code>yyyy/MM/dd/HH-mm-ss</code> will create the following directory 
+     * a date of 2000-12-31T13:34:12 with a format of
+     * <code>yyyy/MM/dd/HH-mm-ss</code> will create the following directory
      * structure:
      * <code>
      *    /&lt;parentDir&gt;/2000/12/31/13-34-12/
@@ -692,22 +689,22 @@ public final class FileUtil {
         Objects.requireNonNull(parentDir, "parentDir");
         Objects.requireNonNull(dateTime, "dateTime");
         if (parentDir.exists() && !parentDir.isDirectory()) {
-            throw new IOException("Parent directory \"" + parentDir 
+            throw new IOException("Parent directory \"" + parentDir
                     + "\" already exists and is not a directory.");
         }
         File dir = toDateFormattedDir(parentDir, dateTime, format);
         FileUtils.forceMkdir(dir);
         return dir;
-    }    
+    }
 
     /**
      * Gets (but does not create) a series of directories reflecting
-     * the specified date format (from {@link SimpleDateFormat}), 
+     * the specified date format (from {@link SimpleDateFormat}),
      * under a given parent directory.
-     * Use forward slash in your date format for creating sub-directories.  
+     * Use forward slash in your date format for creating sub-directories.
      * For example,
-     * a date of 2000-12-31T13:34:12 with a format of 
-     * <code>yyyy/MM/dd/HH-mm-ss</code> will create the following directory 
+     * a date of 2000-12-31T13:34:12 with a format of
+     * <code>yyyy/MM/dd/HH-mm-ss</code> will create the following directory
      * structure:
      * <code>
      *    /&lt;parentDir&gt;/2000/12/31/13-34-12/
@@ -725,7 +722,7 @@ public final class FileUtil {
         return new File(parentDir.getAbsolutePath(),
                 DateFormatUtils.format(dateTime, format));
     }
-    
+
     /**
      * <p>Creates (if not already existing) a series of directories
      * matching URL segments, under a given parent directory.
@@ -737,7 +734,7 @@ public final class FileUtil {
      * <p>
      * <b>Warning:</b> the path created may be too long for some file systems.
      * To avoid issues with file names being too long, consider truncating
-     * the generated path by using 
+     * the generated path by using
      * {@link #createURLDirs(File, URL, boolean)} instead.
      * </p>
      * @param parentDir the parent directory where to create URL directories
@@ -745,7 +742,7 @@ public final class FileUtil {
      * @return the directory representing the full path created, plus file name
      * @throws IOException if the parent directory is not valid
      */
-    public static File createURLDirs(File parentDir, URL url) 
+    public static File createURLDirs(File parentDir, URL url)
             throws IOException {
         return createURLDirs(parentDir, url, false);
     }
@@ -760,7 +757,7 @@ public final class FileUtil {
      * <p>
      * <b>Warning:</b> the path created may be too long for some file systems.
      * To avoid issues with file names being too long, consider truncating
-     * the generated path by using 
+     * the generated path by using
      * {@link #createURLDirs(File, URL, boolean)} instead.
      * </p>
      * @param parentDir the parent directory where to create URL directories
@@ -768,7 +765,7 @@ public final class FileUtil {
      * @return the directory representing the full path created, plus file name
      * @throws IOException if the parent directory is not valid
      */
-    public static File createURLDirs(File parentDir, String url) 
+    public static File createURLDirs(File parentDir, String url)
             throws IOException {
         return createURLDirs(parentDir, url, false);
     }
@@ -781,7 +778,7 @@ public final class FileUtil {
      * characters are escaped to be file-system-friendly.
      * For the same reason,
      * the full path created can be truncated with a hash code if more
-     * than 255 characters.  When truncating, the full path to the parent 
+     * than 255 characters.  When truncating, the full path to the parent
      * directory must be 200 or less characters (to leave some room for the
      * URL path).
      * @param parentDir the parent directory where to create URL directories
@@ -806,7 +803,7 @@ public final class FileUtil {
      * characters are escaped to be file-system-friendly.
      * For the same reason,
      * the full path created can be truncated with a hash code if more
-     * than 255 characters.  When truncating, the full path to the parent 
+     * than 255 characters.  When truncating, the full path to the parent
      * directory must be 200 or less characters (to leave some room for the
      * URL path).
      * @param parentDir the parent directory where to create URL directories
@@ -817,11 +814,11 @@ public final class FileUtil {
      */
     public static File createURLDirs(
             File parentDir, String url, boolean truncate) throws IOException {
-        
+
         Objects.requireNonNull(parentDir, "parentDir");
         Objects.requireNonNull(url, "url");
         if (parentDir.exists() && !parentDir.isDirectory()) {
-            throw new IOException("Parent directory \"" + parentDir 
+            throw new IOException("Parent directory \"" + parentDir
                     + "\" already exists and is not a directory.");
         }
         File dir = toURLDir(parentDir, url, truncate);
@@ -830,7 +827,7 @@ public final class FileUtil {
     }
 
     /**
-     * <p>Gets (but does not create) a directory matching URL segments, 
+     * <p>Gets (but does not create) a directory matching URL segments,
      * under a given parent directory.
      * The returned file contains the full path to the directories,
      * plus the file name. The file name is the last URL
@@ -840,7 +837,7 @@ public final class FileUtil {
      * <p>
      * <b>Warning:</b> the path created may be too long for some file systems.
      * To avoid issues with file names being too long, consider truncating
-     * the generated path by using 
+     * the generated path by using
      * {@link #toURLDir(File, URL, boolean)} instead.
      * </p>
      * @param parentDir the parent directory where to create URL directories
@@ -852,7 +849,7 @@ public final class FileUtil {
         return toURLDir(parentDir, url, false);
     }
     /**
-     * <p>Gets (but does not create) a directory matching URL segments, 
+     * <p>Gets (but does not create) a directory matching URL segments,
      * under a given parent directory.
      * The returned file contains the full path to the directories,
      * plus the file name. The file name is the last URL
@@ -862,7 +859,7 @@ public final class FileUtil {
      * <p>
      * <b>Warning:</b> the path created may be too long for some file systems.
      * To avoid issues with file names being too long, consider truncating
-     * the generated path by using 
+     * the generated path by using
      * {@link #toURLDir(File, URL, boolean)} instead.
      * </p>
      * @param parentDir the parent directory where to create URL directories
@@ -874,7 +871,7 @@ public final class FileUtil {
         return toURLDir(parentDir, url, false);
     }
     /**
-     * Gets (but does not create) a directory matching URL segments, 
+     * Gets (but does not create) a directory matching URL segments,
      * under a given parent directory.
      * The returned file contains the full path to the directories,
      * plus the file name. The file name is the last URL
@@ -882,7 +879,7 @@ public final class FileUtil {
      * characters are escaped to be file-system-friendly.
      * For the same reason,
      * the full path created can be truncated with a hash code if more
-     * than 255 characters.  When truncating, the full path to the parent 
+     * than 255 characters.  When truncating, the full path to the parent
      * directory must be 200 or less characters (to leave some room for the
      * URL path).
      * @param parentDir the parent directory where to create URL directories
@@ -896,9 +893,9 @@ public final class FileUtil {
         Objects.requireNonNull(url, "url");
         return toURLDir(parentDir, url.toString(), truncate);
     }
-    
+
     /**
-     * Gets (but does not create) a directory matching URL segments, 
+     * Gets (but does not create) a directory matching URL segments,
      * under a given parent directory.
      * The returned file contains the full path to the directories,
      * plus the file name. The file name is the last URL
@@ -906,7 +903,7 @@ public final class FileUtil {
      * characters are escaped to be file-system-friendly.
      * For the same reason,
      * the full path created can be truncated with a hash code if more
-     * than 255 characters.  When truncating, the full path to the parent 
+     * than 255 characters.  When truncating, the full path to the parent
      * directory must be 200 or less characters (to leave some room for the
      * URL path).
      * @param parentDir the parent directory where to create URL directories
@@ -920,7 +917,7 @@ public final class FileUtil {
         Objects.requireNonNull(parentDir, "parentDir");
         Objects.requireNonNull(url, "url");
         if (truncate && parentDir.getAbsolutePath().length() > 200) {
-            throw new IllegalArgumentException("Parent directory \"" + parentDir 
+            throw new IllegalArgumentException("Parent directory \"" + parentDir
                     + "\" is too long (must be 200 characters or less).");
         }
         StringBuilder b = new StringBuilder(parentDir.getAbsolutePath());
@@ -933,8 +930,8 @@ public final class FileUtil {
             path = StringUtil.truncateWithHash(path, 255, "_");
         }
         return new File(path);
-    }    
-    
+    }
+
     private static void assertNumOfLinesToRead(int num) {
         if (num <= 0) {
             throw new IllegalArgumentException(
