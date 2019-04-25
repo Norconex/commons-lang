@@ -1,4 +1,4 @@
-/* Copyright 2010-2018 Norconex Inc.
+/* Copyright 2010-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,12 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import javax.xml.XMLConstants;
+import javax.xml.bind.JAXB;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -70,6 +76,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.xerces.xni.NamespaceContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -100,7 +107,7 @@ import com.norconex.commons.lang.xml.XMLValidationError.Severity;
  * <p>
  * XML DOM wrapper facilitating node querying and automatically creating,
  * validating, and populating classes from/to XML, with support
- * for {@link IXMLConfigurable}.
+ * for {@link IXMLConfigurable} and {@link JAXB}.
  * </p>
  * <h3>XML syntax and white spaces</h3>
  * <p>
@@ -126,10 +133,6 @@ public class XML {
     private static final String DEFAULT_DELIM_REGEX = "(\\s*,\\s*)+";
     private static final String NULL_XML_VALUE = "\u0000";
     private static final List<String> NULL_XML_LIST = new ArrayList<>(0);
-
-    //TODO add ability to load/write from pojo without explicit mapping
-    // and maybe a vararg taking attribute names to be made attributes
-    // or maybe use annotations?
 
     private final Node node;
 
@@ -228,7 +231,37 @@ public class XML {
             setAttribute("class", obj.getClass().getCanonicalName());
             if (obj instanceof IXMLConfigurable) {
                 ((IXMLConfigurable) obj).saveToXML(this);
+            } else if (obj.getClass().isAnnotationPresent(
+                    XmlRootElement.class)) {
+                jaxbMarshall(obj);
             }
+        }
+    }
+
+    private void jaxbMarshall(Object obj) {
+        try {
+            String name = node.getNodeName();
+            List<Attr> attributes = new ArrayList<>();
+            NamedNodeMap nattributes = node.getAttributes();
+            for (int i = 0; i < nattributes.getLength(); i++) {
+                attributes.add((Attr) nattributes.item(i));
+            }
+
+            JAXBContext contextObj = JAXBContext.newInstance(obj.getClass());
+            Marshaller marshallerObj = contextObj.createMarshaller();
+            marshallerObj.marshal(obj, node);
+
+            unwrap();
+
+            Element el = ((Element) node);
+            for (Attr at : attributes) {
+                el.setAttributeNS(
+                        at.getNamespaceURI(), at.getName(), at.getValue());
+            }
+            rename(name);
+        } catch (Exception e) {
+            throw new XMLException(
+                    "This object could not be JAXB-marshalled: " + obj, e);
         }
     }
 
@@ -302,33 +335,52 @@ public class XML {
      */
     @SuppressWarnings("unchecked")
     public <T extends Object> T toObject(T defaultObject) {
-        T obj;
-        String clazz;
         if (node == null) {
             return defaultObject;
         }
-        clazz = getString("@class");
-        if (clazz != null) {
-            try {
-                obj = (T) ClassUtils.getClass(clazz).newInstance();
-            } catch (Exception e) {
-                throw new XMLException(
-                        "This class could not be instantiated: \""
-                        + clazz + "\".", e);
-            }
-        } else {
+
+        T obj;
+        Class<T> objClass = (Class<T>) getClass("@class", null);
+        boolean isXMLConfigurable = false;
+        boolean isJaxb = false;
+        if (objClass == null) {
             LOG.debug("A configuration entry was found without class "
-                   + "reference where one could have been provided; "
-                   + "using default value: {}", defaultObject);
-            obj = defaultObject;
+                    + "reference where one could have been provided; "
+                    + "using default value: {}", defaultObject);
+             obj = defaultObject;
+        } else {
+            isXMLConfigurable = IXMLConfigurable.class.isAssignableFrom(objClass);
+            isJaxb = objClass.isAnnotationPresent(XmlRootElement.class);
         }
-        if (obj == null) {
-            return defaultObject;
+
+        try {
+            if (!isJaxb) {
+                obj = objClass.newInstance();
+                if (isXMLConfigurable) {
+                    configure((IXMLConfigurable) obj);
+                }
+            } else {
+                obj = (T) jaxbUnmarshall(objClass);
+            }
+        } catch (Exception e) {
+            throw new XMLException(
+                  "This class could not be instantiated: \""
+                  + objClass + "\".", e);
         }
-        if (obj instanceof IXMLConfigurable) {
-            configure((IXMLConfigurable) obj);
-        }
+
         return obj;
+    }
+    private /*List<XMLValidationError>*/ Object jaxbUnmarshall(Class<?> cls) {
+        try {
+            /*List<XMLValidationError> errors = */ validate(cls);
+            JAXBContext jaxbContext = JAXBContext.newInstance(cls);
+            Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
+            JAXBElement<?> newObj = jaxbUnmarshaller.unmarshal(node, cls);
+            return newObj.getValue();
+        } catch (Exception e) {
+            throw new XMLException(
+                    "This XML could not be JAXB-unmarshalled: " + this, e);
+        }
     }
 
 
@@ -1550,6 +1602,17 @@ public class XML {
     }
 
     /**
+     * Rename this XML (element tag name).
+     * @param newName new name for this XML
+     * @return this XML, renamed
+     */
+    public XML rename(String newName) {
+        Document doc = node.getOwnerDocument();
+        doc.renameNode(node, null, newName);
+        return this;
+    }
+
+    /**
      * Wraps this XML by adding a parent element around it.
      * @param parentName name of wrapping element
      * @return this XML, wrapped
@@ -1617,7 +1680,6 @@ public class XML {
     public final <E extends Enum<E>> E getEnum(
             String xpathExpression, Class<E> enumClass) {
         return get(xpathExpression, enumClass);
-//        return getEnum(xpathExpression, enumClass, null);
     }
     /**
      * Gets an Enum constant matching one of the constants in the provided
@@ -1631,8 +1693,6 @@ public class XML {
     public final <E extends Enum<E>> E getEnum(
             String xpathExpression, Class<E> enumClass, E defaultValue) {
         return get(xpathExpression, enumClass, defaultValue);
-//        Objects.requireNonNull(enumClass, "enumClass must not be null");
-//        return toEnum(getString(xpathExpression), enumClass, defaultValue);
     }
 
     /**
@@ -1648,13 +1708,6 @@ public class XML {
     public <E extends Enum<E>> List<E> getEnumList(
             String xpathExpression, Class<E> enumClass, List<E> defaultValues) {
         return getDelimitedList(xpathExpression, enumClass);
-//        List<String> values =
-//                getStringList(xpathExpression, (List<String>) null);
-//        if (values == null) {
-//            return defaultValues;
-//        }
-//        return values.stream().map(str ->
-//            toEnum(str, enumClass, null)).collect(Collectors.toList());
     }
 
     /**
@@ -1673,13 +1726,6 @@ public class XML {
             String xpathExpression, Class<E> enumClass, List<E> defaultValues) {
         return getDelimitedList(
                 xpathExpression, enumClass, defaultValues);
-//        List<String> values =
-//                getDelimitedStringList(xpathExpression, (List<String>) null);
-//        if (values == null) {
-//            return defaultValues;
-//        }
-//        return values.stream().map(str ->
-//            toEnum(str, enumClass, null)).collect(Collectors.toList());
     }
 
     /**

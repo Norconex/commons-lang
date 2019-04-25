@@ -51,6 +51,30 @@ public class XMLTest {
           + "</sampleTag>";
 
     @Test
+    public void testJaxb() {
+        JaxbPojo pojo = new JaxbPojo();
+
+        pojo.setFirstName("John");
+        pojo.setLastName("Smith");
+        pojo.setLuckyNumber(7);
+
+        XML xml = new XML("test");
+
+        xml.addElement("pojo", pojo);
+
+        //System.out.println(xml.toString(4));
+        Assertions.assertEquals(7, xml.getInteger("pojo/@luckyNumber"));
+        Assertions.assertEquals("John", xml.getString("pojo/firstName"));
+        Assertions.assertEquals("Smith", xml.getString("pojo/lastName"));
+
+        JaxbPojo newPojo = xml.getObject("pojo");
+        Assertions.assertEquals(7, newPojo.getLuckyNumber());
+        Assertions.assertEquals("John", newPojo.getFirstName());
+        Assertions.assertEquals("Smith", newPojo.getLastName());
+    }
+
+
+    @Test
     public void testGetCommonTypes() {
         XML xml = new XML(ResourceLoader.getXmlString(XMLTest.class));
 
