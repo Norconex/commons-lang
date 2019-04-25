@@ -16,6 +16,7 @@ package com.norconex.commons.lang.text;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -30,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import com.norconex.commons.lang.map.Properties;
 
 /**
+ * <p>
  * Simplify extraction of key/value pairs from text using regular expression.
  * Match groups can be used to identify the key and values.
  * Key matching is optional and can be provided instead. If
@@ -42,6 +44,12 @@ import com.norconex.commons.lang.map.Properties;
  * value.
  * If more than one value is extracted for a given key, they will be
  * available as a list.
+ * </p>
+ * <p>
+ * When initialized with a "pattern" only instead of passing or configuring
+ * a {@link Regex} instance, a default one will be created, assuming
+ * case insensitivity and dots matching any character.
+ * </p>
  *
  * @author Pascal Essiembre
  * @since 2.0.0 (moved from Norconex Importer RegexFieldExtractor)
@@ -54,49 +62,64 @@ public class RegexKeyValueExtractor {
     public static final RegexKeyValueExtractor[] EMPTY_ARRAY =
             new RegexKeyValueExtractor[] {};
 
-    //TODO move extraction capabilities to Regex class.
-
+    private Regex regex;
     private String key;
-    private String regex;
-    private boolean caseSensitive;
     private int keyGroup = -1;
     private int valueGroup = -1;
 
     public RegexKeyValueExtractor() {
         super();
+        this.regex = defaultRegex(null);
     }
-    public RegexKeyValueExtractor(String regex) {
+    public RegexKeyValueExtractor(String pattern) {
+        this(defaultRegex(pattern), null);
+    }
+    public RegexKeyValueExtractor(String pattern, String key) {
+        this(defaultRegex(pattern), key, -1);
+    }
+    public RegexKeyValueExtractor(String pattern, String key, int valueGroup) {
+        this(defaultRegex(pattern), key, valueGroup);
+    }
+    public RegexKeyValueExtractor(
+            String pattern, int keyGroup, int valueGroup) {
+        this(defaultRegex(pattern), keyGroup, valueGroup);
+    }
+    public RegexKeyValueExtractor(Regex regex) {
         this(regex, null);
     }
-    public RegexKeyValueExtractor(String regex, String key) {
+    public RegexKeyValueExtractor(Regex regex, String key) {
         this(regex, key, -1);
     }
-    public RegexKeyValueExtractor(String regex, String key, int valueGroup) {
+    public RegexKeyValueExtractor(Regex regex, String key, int valueGroup) {
         this.regex = regex;
         this.key = key;
         this.valueGroup = valueGroup;
     }
-    public RegexKeyValueExtractor(String regex, int keyGroup, int valueGroup) {
+    public RegexKeyValueExtractor(Regex regex, int keyGroup, int valueGroup) {
         super();
         this.regex = regex;
         this.keyGroup = keyGroup;
         this.valueGroup = valueGroup;
     }
 
-    public String getRegex() {
+    public Regex getRegex() {
         return regex;
     }
-    public RegexKeyValueExtractor setRegex(String regex) {
+    public RegexKeyValueExtractor setRegex(Regex regex) {
+        Objects.requireNonNull(regex, "'regex' must not be null.");
         this.regex = regex;
         return this;
     }
-    public boolean isCaseSensitive() {
-        return caseSensitive;
+
+    // get/setPattern for convenience: really have them??
+    public String getPattern() {
+        return regex.getPattern();
     }
-    public RegexKeyValueExtractor setCaseSensitive(boolean caseSensitive) {
-        this.caseSensitive = caseSensitive;
+    public RegexKeyValueExtractor setPattern(String pattern) {
+        this.regex.setPattern(pattern);
         return this;
     }
+
     public int getKeyGroup() {
         return keyGroup;
     }
@@ -175,11 +198,12 @@ public class RegexKeyValueExtractor {
         return dest;
     }
 
+    private static Regex defaultRegex(String pattern) {
+        return new Regex(pattern).dotAll().caseInsensitive();
+    }
+
     private Matcher matcher(CharSequence text) {
-        return new Regex(regex)
-                .dotAll()
-                .setCaseInsensitive(!isCaseSensitive())
-                .matcher(text);
+        return regex.matcher(text);
     }
     private String extractKey(Matcher m) {
         String f = StringUtils.isNotBlank(getKey()) ? getKey() : "";

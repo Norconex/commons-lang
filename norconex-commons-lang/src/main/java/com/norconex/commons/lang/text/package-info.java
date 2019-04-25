@@ -1,4 +1,4 @@
-/* 2018 Norconex Inc.
+/* 2018-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 /**
- * Utility classes related to Java regular expressions.
+ * Utility classes related to text.
  * @since 2.0.0
  */
 package com.norconex.commons.lang.text;

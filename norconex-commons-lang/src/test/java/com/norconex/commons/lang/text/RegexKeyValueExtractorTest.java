@@ -38,15 +38,15 @@ public class RegexKeyValueExtractorTest {
             //Test 1) no match group, returning whole match as value
             new RegexKeyValueExtractor()
                 .setKey("test1")
-                .setRegex("<div class=\"value\">(.*?)</div>"),
+                .setPattern("<div class=\"value\">(.*?)</div>"),
             //Test 2) 1 match group, returning specified match value
             new RegexKeyValueExtractor()
                 .setKey("test2")
-                .setRegex("<div class=\"value\">(.*?)</div>")
+                .setPattern("<div class=\"value\">(.*?)</div>")
                 .setValueGroup(1),
             //Test 3) 2 match groups, returning field name and values
             new RegexKeyValueExtractor()
-                .setRegex("<div class=\"field\">(.*?)</div>.*?"
+                .setPattern("<div class=\"field\">(.*?)</div>.*?"
                         + "<div class=\"value\">(.*?)</div>")
                 .setKeyGroup(1)
                 .setValueGroup(2)
@@ -78,7 +78,7 @@ public class RegexKeyValueExtractorTest {
         fields = null;
         fields = RegexKeyValueExtractor.extractKeyValues(xml,
             new RegexKeyValueExtractor()
-                .setRegex("<div class=\"field\">(.*?)</div>.*?"
+                .setPattern("<div class=\"field\">(.*?)</div>.*?"
                         + "<div class=\"value\">(.*?)</div>")
                 .setKey("test4")
                 .setValueGroup(2)
@@ -93,7 +93,7 @@ public class RegexKeyValueExtractorTest {
             fields = null;
             fields = RegexKeyValueExtractor.extractKeyValues(xml,
                     new RegexKeyValueExtractor()
-                        .setRegex("<div class=\"field\">(.*?)</div>.*?"
+                        .setPattern("<div class=\"field\">(.*?)</div>.*?"
                                 + "<div class=\"value\">(.*?)</div>")
                         .setValueGroup(2));
             Assertions.fail("Should have thrown an exception.");
@@ -105,7 +105,7 @@ public class RegexKeyValueExtractorTest {
         fields = null;
         fields = RegexKeyValueExtractor.extractKeyValues(xml,
             new RegexKeyValueExtractor()
-                .setRegex("<DIV class=\"field\">(.*?)</DIV>.*?"
+                .setPattern("<DIV class=\"field\">(.*?)</DIV>.*?"
                         + "<DIV class=\"value\">(.*?)</DIV>")
                 .setKeyGroup(1)
         );
@@ -120,7 +120,7 @@ public class RegexKeyValueExtractorTest {
             fields = null;
             fields = RegexKeyValueExtractor.extractKeyValues(xml,
                 new RegexKeyValueExtractor()
-                    .setRegex("<div class=\"field\">(.*?)</div>.*?"
+                    .setPattern("<div class=\"field\">(.*?)</div>.*?"
                             + "<div class=\"value\">(.*?)</div>"));
             Assertions.fail("Should have thrown an exception.");
         } catch (IllegalArgumentException e) {
@@ -130,11 +130,10 @@ public class RegexKeyValueExtractorTest {
         //Test 8) No value group specified, with field group, case sensitive
         fields = null;
         fields = RegexKeyValueExtractor.extractKeyValues(xml,
-            new RegexKeyValueExtractor()
-                .setRegex("<DIV class=\"field\">(.*?)</DIV>.*?"
-                        + "<DIV class=\"value\">(.*?)</DIV>")
+            new RegexKeyValueExtractor(new Regex()
+                .setPattern("<DIV class=\"field\">(.*?)</DIV>.*?"
+                        + "<DIV class=\"value\">(.*?)</DIV>"))
                 .setKeyGroup(1)
-                .setCaseSensitive(true)
         );
         Assertions.assertTrue(
                 fields.isEmpty(), "Test8 fields should be empty.");
