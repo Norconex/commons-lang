@@ -120,6 +120,15 @@ public class RegexKeyValueExtractor {
         return this;
     }
 
+    // Keey for convenience
+    public boolean isCaseSensitive() {
+        return !regex.isCaseInsensitive();
+    }
+    public RegexKeyValueExtractor setCaseSensitive(boolean caseSensitive) {
+        regex.setCaseInsensitive(!caseSensitive);
+        return this;
+    }
+    
     public int getKeyGroup() {
         return keyGroup;
     }
