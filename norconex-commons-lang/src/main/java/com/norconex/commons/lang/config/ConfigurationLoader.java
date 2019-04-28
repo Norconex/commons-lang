@@ -21,6 +21,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
@@ -31,10 +33,13 @@ import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.runtime.RuntimeConstants;
 
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.commons.lang.xml.XMLValidationError;
+import com.norconex.commons.lang.xml.XMLValidationException;
 
 /**
- * <p>Class parsing a Velocity template (which can have parse/include
- * directives) and using separate files for defining Velocity variables.
+ * <p>Configuration file parser using Velocity template engine
+ * (which can have parse/include directives) and using separate files for
+ * defining Velocity variables.
  * </p>
  * <h3>Variables</h3>
  * <p>
@@ -59,10 +64,11 @@ import com.norconex.commons.lang.xml.XML;
  * Java API documentation</a> for exact syntax and parsing logic.</p>
  *
  * <p>When both <code>.variables</code> and <code>.properties</code> exist
- * for a template, the <code>.properties</code> file takes precedence.</p>
+ * for a template, the <code>.properties</code> file variables take
+ * precedence.</p>
  *
  * <p>Any <code>.variables</code> or <code>.properties</code> file
- * can also be specified using the {@link #loadXML(Path, Path)} method.
+ * can also be specified using the {@link #setVariablesFile(Path)} method.
  * </p>
  *
  * <h3>Configuration fragments</h3>
@@ -99,8 +105,8 @@ import com.norconex.commons.lang.xml.XML;
  * &lt;/myconfig&gt;</pre>
  * <p><i>Configuration loading:</i></p>
  * <pre>
- * XMLConfiguration xml = ConfigurationLoader.loadXML(
- *         new File("C:\\sample\\myapp\\myconfig.cfg"));</pre>
+ * XML xml = new ConfigurationLoader().loadXML(
+ *         Path.get("/path/to/myconfig.cfg"));</pre>
  * <p><i>Explanation:</i></p>
  * <p>
  * When loading myconfig.cfg, the variables defined in myconfig.properties
@@ -123,66 +129,59 @@ public final class ConfigurationLoader {
 
     private static final String EXTENSION_PROPERTIES = ".properties";
     private static final String EXTENSION_VARIABLES = ".variables";
+
     private final VelocityEngine velocityEngine;
+    private final VelocityContext defaultContext;
+
+    private Path variablesFile;
+    private boolean ignoreErrors;
 
     /**
      * Constructor.
      */
     public ConfigurationLoader() {
         super();
-        velocityEngine = new VelocityEngine();
-        velocityEngine.setProperty(RuntimeConstants.EVENTHANDLER_INCLUDE,
-                RelativeIncludeEventHandler.class.getName());
-        velocityEngine.setProperty(RuntimeConstants.RESOURCE_LOADER, "file");
-        velocityEngine.setProperty(
-                RuntimeConstants.FILE_RESOURCE_LOADER_PATH, "");
-        velocityEngine.setProperty(RuntimeConstants.INPUT_ENCODING,
-                StandardCharsets.UTF_8.toString());
-        velocityEngine.setProperty(RuntimeConstants.ENCODING_DEFAULT,
-                StandardCharsets.UTF_8.toString());
-        velocityEngine.setProperty("runtime.log", "");
+        defaultContext = createDefaultContext();
+        velocityEngine = createVelocityEngine();
     }
 
     /**
-     * Constructor.
-     * @param velocityProperties custom properties for parsing Velocity files
-     */
-    public ConfigurationLoader(Properties velocityProperties) {
-        try {
-            velocityEngine = new VelocityEngine(velocityProperties);
-        } catch (Exception e) {
-            throw new ConfigurationException(
-                    "Could not create parsing Velocity engine.", e);
-        }
-    }
-
-    /**
-     * <p>
-     * Loads an XML configuration file.
-     * </p>
-     * @param configFile XML configuration file
-     * @return Apache XMLConfiguration instance
+     * Sets a variables file. See class documentation for details.
+     * @param variablesFile variables file
+     * @return this instance
      * @since 2.0.0
      */
-    //TODO move these methods to XML class??
+    public ConfigurationLoader setVariablesFile(Path variablesFile) {
+        this.variablesFile = variablesFile;
+        return this;
+    }
+
+    /**
+     * Sets whether to ignore validation errors when applicable.
+     * When loading an XML file,
+     * the default behavior will throw a {@link XMLValidationException}
+     * upon encountering validation errors.
+     * @param ignoreErrors <code>true</code> to ignore validation errors
+     * @return this instance
+     * @since 2.0.0
+     */
+    public ConfigurationLoader setIgnoreValidationErrors(boolean ignoreErrors) {
+        this.ignoreErrors = ignoreErrors;
+        return this;
+    }
+
+    /**
+     * Loads an XML configuration file.
+     * @param configFile XML configuration file
+     * @return XML
+     * @since 2.0.0
+     */
     public XML loadXML(Path configFile) {
-        return loadXML(configFile, null);
-    }
-
-    /**
-     * Loads an XML configuration file.
-     * @param configFile XML configuration file
-     * @param variables path to .variables or .properties file defining
-     *        variables.
-     * @return Apache XMLConfiguration instance
-     * @since 2.0.0
-     */
-    public XML loadXML(Path configFile, Path variables) {
         if (!configFile.toFile().exists()) {
             return null;
         }
         try {
-            String xml = loadString(configFile, variables);
+            String xml = loadString(configFile);
             // clean-up extra duplicate declaration tags due to template
             // includes/imports that could break parsing.
             // Keep first <?xml... tag only, and delete all <!DOCTYPE...
@@ -199,14 +198,66 @@ public final class ConfigurationLoader {
     }
 
     /**
+     * Loads an XML configuration file and populates a new object
+     * represented by the given "class" attribute found on XML root element.
+     * @param configFile XML configuration file
+     * @return new object
+     * @since 2.0.0
+     */
+    public <T> T loadFromXML(Path configFile) {
+        return loadFromXML(configFile, null);
+    }
+
+    /**
+     * Loads an XML configuration file and populates a new object
+     * represented by the given class.
+     * @param configFile XML configuration file
+     * @param objClass type of object to create and populate
+     * @return new object
+     * @since 2.0.0
+     */
+    public <T> T loadFromXML(Path configFile, Class<T> objClass) {
+        XML xml = loadXML(configFile);
+        if (xml == null) {
+            return null;
+        }
+        if (objClass == null) {
+            return xml.toObject(ignoreErrors);
+        }
+        T obj;
+        try {
+            obj = objClass.newInstance();
+        } catch (InstantiationException | IllegalAccessException e) {
+            throw new ConfigurationException(
+                    "This class could not be instantiated: " + objClass, e);
+        }
+        loadFromXML(configFile, obj);
+        return obj;
+    }
+    /**
+     * Loads an XML configuration file and populates a given object.
+     * @param configFile XML configuration file
+     * @param object object to populate
+     * @since 2.0.0
+     */
+    public void loadFromXML(Path configFile, Object object) {
+        Objects.requireNonNull("'object' must not be null.");
+        XML xml = loadXML(configFile);
+        if (xml != null) {
+            List<XMLValidationError> errors = xml.populate(object);
+            if (!ignoreErrors && !errors.isEmpty()) {
+                throw new XMLValidationException(errors);
+            }
+        }
+    }
+
+    /**
      * Loads a configuration file as a string.
      * @param configFile configuration file
-     * @param variables path to .variables or .properties file defining
-     *        variables.
      * @return configuration as string
+     * @since 2.0.0
      */
-    public String loadString(Path configFile, Path variables) {
-
+    public String loadString(Path configFile) {
         if (configFile == null) {
             throw new ConfigurationException(
                     "No configuration file specified.");
@@ -215,10 +266,10 @@ public final class ConfigurationLoader {
             return null;
         }
 
-        VelocityContext context = new VelocityContext();
+        VelocityContext context = new VelocityContext(defaultContext);
 
         // Load from explicitly referenced properties
-        loadVariables(context, variables);
+        loadVariables(context, variablesFile);
 
         // Load from properties matching config file name
         String file = configFile.toAbsolutePath().toString();
@@ -240,6 +291,31 @@ public final class ConfigurationLoader {
         }
         return sw.toString();
     }
+
+    //--- Protected methods ----------------------------------------------------
+
+    // @since 2.0.0
+    protected VelocityContext createDefaultContext() {
+        return null;
+    }
+
+    // @since 2.0.0
+    protected VelocityEngine createVelocityEngine() {
+        VelocityEngine velocityEngine = new VelocityEngine();
+        velocityEngine.setProperty(RuntimeConstants.EVENTHANDLER_INCLUDE,
+                RelativeIncludeEventHandler.class.getName());
+        velocityEngine.setProperty(RuntimeConstants.RESOURCE_LOADER, "file");
+        velocityEngine.setProperty(
+                RuntimeConstants.FILE_RESOURCE_LOADER_PATH, "");
+        velocityEngine.setProperty(RuntimeConstants.INPUT_ENCODING,
+                StandardCharsets.UTF_8.toString());
+        velocityEngine.setProperty(RuntimeConstants.ENCODING_DEFAULT,
+                StandardCharsets.UTF_8.toString());
+        velocityEngine.setProperty("runtime.log", "");
+        return velocityEngine;
+    }
+
+    //--- Private methods ------------------------------------------------------
 
     private Path getVariablesFile(String fullpath, String baseName) {
         Path vars = Paths.get(fullpath + baseName + EXTENSION_PROPERTIES);

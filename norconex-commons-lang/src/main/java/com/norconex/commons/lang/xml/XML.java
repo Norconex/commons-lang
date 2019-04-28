@@ -73,7 +73,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.xerces.xni.NamespaceContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Attr;
@@ -92,6 +91,7 @@ import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.XMLFilterImpl;
 import org.xml.sax.helpers.XMLReaderFactory;
 
+import com.norconex.commons.lang.bean.BeanUtil;
 import com.norconex.commons.lang.collection.CollectionUtil;
 import com.norconex.commons.lang.convert.Converter;
 import com.norconex.commons.lang.time.DurationParser;
@@ -102,6 +102,10 @@ import com.norconex.commons.lang.xml.XMLValidationError.Severity;
 //a method if this method exists, and/or do not load if set to true.
 
 //TODO add "addStringMap"
+
+//TODO have a look at Collections.emptyList() and do similar to have
+// getObject return any type instead of having tons of get methods.
+
 
 /**
  * <p>
@@ -216,7 +220,6 @@ public class XML {
         }
     }
 
-
     public XML(String rootElement, Object obj) {
         this.node = new XML("<" + rootElement + "/>").node;
         if (obj == null) {
@@ -229,10 +232,9 @@ public class XML {
             setTextContent(Converter.convert(obj));
         } else {
             setAttribute("class", obj.getClass().getCanonicalName());
-            if (obj instanceof IXMLConfigurable) {
+            if (isXMLConfigurable(obj)) {
                 ((IXMLConfigurable) obj).saveToXML(this);
-            } else if (obj.getClass().isAnnotationPresent(
-                    XmlRootElement.class)) {
+            } else if (isJAXB(obj)) {
                 jaxbMarshall(obj);
             }
         }
@@ -303,9 +305,6 @@ public class XML {
         return node;
     }
 
-    //TODO  make it a toObject(Reader, Object... args) method for
-    // creating IXMLConfigurable objects with only non-empty constructors?
-
     /**
      * Creates a new instance of the class represented by the "class" attribute
      * on this XML root node.  The class must have an empty constructor.
@@ -313,12 +312,53 @@ public class XML {
      * created will be automatically populated by invoking the
      * {@link IXMLConfigurable#loadFromXML(XML)} method,
      * passing it the node XML.
+     * If the class is annotated with an
+     * {@link XmlRootElement}, it will use JAXB to unmarshall it to an object.
      * @param <T> the type of the return value
      * @return a new object.
-     * @throws XMLException if instance cannot be created/populated
+     * @throws XMLValidationException if the XML has validation errors
+     * @throws XMLException if something prevented object creation
      */
-    public <T extends Object> T toObject() {
-        return toObject(null);
+    public <T> T toObject() {
+        return toObject(null, false);
+    }
+    /**
+     * Creates a new instance of the class represented by the "class" attribute
+     * on this XML root node.  The class must have an empty constructor.
+     * If the class is an instance of {@link IXMLConfigurable}, the object
+     * created will be automatically populated by invoking the
+     * {@link IXMLConfigurable#loadFromXML(XML)} method,
+     * passing it the node XML.
+     * If the class is annotated with an
+     * {@link XmlRootElement}, it will use JAXB to unmarshall it to an object.
+     * @param <T> the type of the return value
+     * @param ignoreErrors whether to ignore validation errors
+     * @return a new object.
+     * @throws XMLValidationException if the XML has validation errors
+     *         and <code>ignoreErrors</code> is false
+     * @throws XMLException if something prevented object creation
+     */
+    public <T> T toObject(boolean ignoreErrors) {
+        return toObject(null, ignoreErrors);
+    }
+    /**
+     * Creates a new instance of the class represented by the "class" attribute
+     * on the given node.  The class must have an empty constructor.
+     * If the class is an instance of {@link IXMLConfigurable}, the object
+     * created will be automatically populated by invoking the
+     * {@link IXMLConfigurable#loadFromXML(XML)} method,
+     * passing it the node XML.
+     * If the class is annotated with an
+     * {@link XmlRootElement}, it will use JAXB to unmarshall it to an object.
+     * @param defaultObject if returned object is null or undefined,
+     *        returns this default object.
+     * @param <T> the type of the return value
+     * @return a new object.
+     * @throws XMLValidationException if the XML has validation errors
+     * @throws XMLException if something prevented object creation
+     */
+    public <T> T toObject(T defaultObject) {
+        return toObject(defaultObject, false);
     }
     /**
      * Creates a new instance of the class represented by the "class" attribute
@@ -330,53 +370,67 @@ public class XML {
      * @param defaultObject if returned object is null or undefined,
      *        returns this default object.
      * @param <T> the type of the return value
+     * @param ignoreErrors whether to ignore validation errors
      * @return a new object.
-     * @throws XMLException if instance cannot be created/populated
+     * @throws XMLValidationException if the XML has validation errors
+     *         and <code>ignoreErrors</code> is false
+     * @throws XMLException if something prevented object creation
      */
     @SuppressWarnings("unchecked")
-    public <T extends Object> T toObject(T defaultObject) {
+    public <T> T toObject(T defaultObject, boolean ignoreErrors) {
         if (node == null) {
             return defaultObject;
         }
 
         T obj;
         Class<T> objClass = (Class<T>) getClass("@class", null);
-        boolean isXMLConfigurable = false;
-        boolean isJaxb = false;
-        if (objClass == null) {
-            LOG.debug("A configuration entry was found without class "
-                    + "reference where one could have been provided; "
-                    + "using default value: {}", defaultObject);
-             obj = defaultObject;
+        if (objClass != null) {
+            try {
+                obj = objClass.newInstance();
+            } catch (Exception e) {
+                throw new XMLException(
+                        "This class could not be instantiated: " + objClass, e);
+            }
         } else {
-            isXMLConfigurable = IXMLConfigurable.class.isAssignableFrom(objClass);
-            isJaxb = objClass.isAnnotationPresent(XmlRootElement.class);
+            LOG.debug("A configuration entry was found without class "
+                   + "reference where one could have been provided; "
+                   + "using default value: {}", defaultObject);
+            obj = defaultObject;
+        }
+        List<XMLValidationError> errors = populate(obj);
+        if (!ignoreErrors && !errors.isEmpty()) {
+            throw new XMLValidationException(errors);
+        }
+        return obj;
+    }
+
+    public List<XMLValidationError> populate(Object targetObject) {
+        List<XMLValidationError> errors = Collections.emptyList();
+        if (node == null) {
+            return errors;
         }
 
         try {
-            if (!isJaxb) {
-                obj = objClass.newInstance();
-                if (isXMLConfigurable) {
-                    configure((IXMLConfigurable) obj);
-                }
-            } else {
-                obj = (T) jaxbUnmarshall(objClass);
+            errors = validate(targetObject.getClass());
+            if (isXMLConfigurable(targetObject)) {
+                ((IXMLConfigurable) targetObject).loadFromXML(this);
+            } else if (isJAXB(targetObject)) {
+                jaxbUnmarshall(targetObject);
             }
         } catch (Exception e) {
             throw new XMLException(
-                  "This class could not be instantiated: \""
-                  + objClass + "\".", e);
+                    "This XML could not be converted to object of type: "
+                            + targetObject.getClass(), e);
         }
-
-        return obj;
+        return errors;
     }
-    private /*List<XMLValidationError>*/ Object jaxbUnmarshall(Class<?> cls) {
+
+    private void jaxbUnmarshall(Object obj) {
         try {
-            /*List<XMLValidationError> errors = */ validate(cls);
-            JAXBContext jaxbContext = JAXBContext.newInstance(cls);
-            Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-            JAXBElement<?> newObj = jaxbUnmarshaller.unmarshal(node, cls);
-            return newObj.getValue();
+            JAXBContext jaxbContext = JAXBContext.newInstance(obj.getClass());
+            Unmarshaller unmarsh = jaxbContext.createUnmarshaller();
+            JAXBElement<?> newObj = unmarsh.unmarshal(node, obj.getClass());
+            BeanUtil.copyProperties(obj, newObj.getValue());
         } catch (Exception e) {
             throw new XMLException(
                     "This XML could not be JAXB-unmarshalled: " + this, e);
@@ -635,9 +689,9 @@ public class XML {
 
     /**
      * <p>
-     * Validates this XML against its attached XSD schema and logs any
-     * error/warnings. The root tag has to have a "class" attribute representing
-     * an {@link IXMLConfigurable} implementation.
+     * Validates this XML against an XSD schema attached to the class
+     * represented in this XML root tag "class" attribute.
+     * In addition to being returned, validation errors/warnings will be logged.
      * The schema expected to be found at the same classpath location and have
      * the same name as the object class, but with the ".xsd" extension.
      * </p>
@@ -653,8 +707,8 @@ public class XML {
 
     /**
      * <p>
-     * Validates this XML for objects implementing {@link IXMLConfigurable}
-     * and having an XSD schema attached, and logs any error/warnings.
+     * Validates this XML for objects having an XSD schema attached,
+     * and logs any error/warnings.
      * The schema expected to be found at the same classpath location and have
      * the same name as the object class, but with the ".xsd" extension.
      * </p>
@@ -669,67 +723,78 @@ public class XML {
     }
 
     /**
-     * Validates this XML for classes implementing {@link IXMLConfigurable}
-     * and having an XSD schema attached, and logs any error/warnings.
+     * Validates this XML for classes having an XSD schema attached,
+     * and logs any error/warnings.
      * The schema expected to be found at the same classpath location and have
      * the same name as the object class, but with the ".xsd" extension.
      * @param clazz the class to validate the XML for
-     * @return list of errors/warnings or empty (never <code>null</code>)
+     * @return unmodifiable list of errors/warnings or empty
+     *         (never <code>null</code>)
      */
     public List<XMLValidationError> validate(Class<?> clazz) {
-
-        List<XMLValidationError> errors = new ArrayList<>();
-
-        // Only validate if IXMLConfigurable
-        if (clazz == null || !IXMLConfigurable.class.isAssignableFrom(clazz)) {
-            return errors;
+        if (clazz == null) {
+            return Collections.emptyList();
         }
 
         // Only validate if .xsd file exist in classpath for class
         String xsdResource = ClassUtils.getSimpleName(clazz) + ".xsd";
         LOG.debug("Class to validate: {}", ClassUtils.getSimpleName(clazz));
         if (clazz.getResource(xsdResource) == null) {
-            LOG.debug("Resource not found for validation: {}", xsdResource);
-            return errors;
+            LOG.debug("XSD schema not found for validation: {}", xsdResource);
+            return Collections.emptyList();
         }
 
-        // Go ahead: validate
-        SchemaFactory schemaFactory =
-                SchemaFactory.newInstance(W3C_XML_SCHEMA_NS_URI_1_1);
-        schemaFactory.setResourceResolver(new ClasspathResourceResolver(clazz));
-
         try (InputStream xsdStream = clazz.getResourceAsStream(xsdResource);
-                Reader reader = toReader()) {
-            Schema schema = schemaFactory.newSchema(
-                    new StreamSource(xsdStream, getXSDResourcePath(clazz)));
-            Validator validator = schema.newValidator();
-            LogErrorHandler seh = new LogErrorHandler(clazz, errors);
-            validator.setErrorHandler(seh);
-            SAXSource saxSource = new SAXSource(new W3XMLNamespaceFilter(
-                    XMLReaderFactory.createXMLReader()),
-                            new InputSource(reader));
-            validator.validate(saxSource);
-            return errors;
+                Reader xmlReader = toReader()) {
+            return validate(clazz, xsdStream, xmlReader);
         } catch (SAXException | IOException e) {
             throw new XMLException("Could not validate class: " + clazz, e);
         }
     }
+    private List<XMLValidationError> validate(
+            Class<?> clazz,
+            InputStream xsdStream,
+            Reader reader) throws SAXException, IOException {
 
-    /**
-     * Configures the given object by invoking its
-     * {@link IXMLConfigurable#loadFromXML(XML)} method.
-     * @param obj object to have loaded
-     * @return list of errors/warnings or empty (never <code>null</code>)
-     */
-    public List<XMLValidationError> configure(IXMLConfigurable obj) {
-        if (obj == null || node == null) {
-            return Collections.emptyList();
+        // See also: https://github.com/OWASP/CheatSheetSeries/blob/master/
+        // cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.md
+
+        List<XMLValidationError> errors = new ArrayList<>();
+
+        SchemaFactory schemaFactory =
+                SchemaFactory.newInstance(W3C_XML_SCHEMA_NS_URI_1_1);
+        schemaFactory.setResourceResolver(new ClasspathResourceResolver(clazz));
+
+        Schema schema = schemaFactory.newSchema(
+                new StreamSource(xsdStream, getXSDResourcePath(clazz)));
+
+        Validator validator = schema.newValidator();
+        try {
+            validator.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+        } catch (SAXException e) {
+            LOG.debug(e.getMessage());
         }
-        List<XMLValidationError> errors = validate(obj.getClass());
-        obj.loadFromXML(this);
-        return errors;
+
+        LogErrorHandler seh = new LogErrorHandler(clazz, errors);
+        validator.setErrorHandler(seh);
+        XMLReader xmlReader = XMLReaderFactory.createXMLReader();
+        try {
+            xmlReader.setFeature("http://apache.org/xml/features/"
+                    + "nonvalidating/load-external-dtd", false);
+            xmlReader.setFeature("http://xml.org/sax/features/"
+                    + "external-general-entities", false);
+            xmlReader.setFeature("http://xml.org/sax/features/"
+                    + "external-parameter-entities", false);
+            xmlReader.setEntityResolver((publicId, systemId) -> null);
+        } catch (SAXException e) {
+            LOG.debug(e.getMessage());
+        }
+
+        SAXSource saxSource = new SAXSource(
+                new W3XMLNamespaceFilter(xmlReader), new InputSource(reader));
+        validator.validate(saxSource);
+        return Collections.unmodifiableList(errors);
     }
-    //TODO have a static version of configure that also takes a file?
 
     /**
      * Convenience class for testing that a {@link IXMLConfigurable} instance
@@ -1004,10 +1069,14 @@ public class XML {
             LOG.error(msg);
         }
         private String msg(SAXParseException e) {
-            return "(XML Validation) "
+            if (clazz == null) {
+                return "[XML Validation] " + e.getMessage();
+            }
+            return "[XML Validation] "
                     + clazz.getSimpleName() + ": " + e.getMessage();
         }
     }
+
 
     // Filter out "xml:" name space so attributes like xml:space="preserve"
     // are validated OK.
@@ -1020,7 +1089,8 @@ public class XML {
                 String uri, String localName, String qName, Attributes atts)
                         throws SAXException {
             for (int i = 0; i < atts.getLength(); i++) {
-                if (NamespaceContext.XML_URI.equals(atts.getURI(i))) {
+                if (XMLConstants.XML_NS_URI.equals(atts.getURI(i))) {
+//                if (NamespaceContext.XML_URI.equals(atts.getURI(i))) {
                     AttributesImpl modifiedAtts = new AttributesImpl(atts);
                     modifiedAtts.removeAttribute(i);
                     super.startElement(uri, localName, qName, modifiedAtts);
@@ -1984,5 +2054,13 @@ public class XML {
             }
             LOG.warn(msg);
         }
+    }
+
+    public static boolean isXMLConfigurable(Object obj) {
+        return obj instanceof IXMLConfigurable;
+    }
+    public static boolean isJAXB(Object obj) {
+        return obj != null && obj.getClass().isAnnotationPresent(
+                XmlRootElement.class);
     }
 }

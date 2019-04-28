@@ -19,40 +19,40 @@ import java.io.InputStream;
 import javax.xml.validation.SchemaFactory;
 
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.ls.LSInput;
 import org.w3c.dom.ls.LSResourceResolver;
 
 /**
  * <p>
- * Resolves XML Schema (XSD) include directives by looking for the 
+ * Resolves XML Schema (XSD) include directives by looking for the
  * specified resource on the Classpath.
  * </p>
  * <p>
  * To use, set this resolver on your {@link SchemaFactory}, like this:
  * </p>
  * <pre>
- * SchemaFactory schemaFactory = 
+ * SchemaFactory schemaFactory =
  *         SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
  * schemaFactory.setResourceResolver(
  *         new ClasspathResourceResolver(MyClass.class));
  * </pre>
- * 
+ *
  * @author Pascal Essiembre
  * @since 1.13.0
  */
 public class ClasspathResourceResolver implements LSResourceResolver {
 
-    private static final Logger LOG = 
+    private static final Logger LOG =
             LoggerFactory.getLogger(ClasspathResourceResolver.class);
-    
+
     private final String rootPath;
 
     public ClasspathResourceResolver() {
         this((String) null);
     }
-    
+
     /**
      * Resolves the resource relative to the given class.
      * @param relativeTo class to use as base for resolution
@@ -79,8 +79,8 @@ public class ClasspathResourceResolver implements LSResourceResolver {
         String r = getResourcePath(path, systemId);
         InputStream resourceAsStream = getClass().getResourceAsStream(r);
         if (resourceAsStream == null) {
-            LOG.error("Resource not found: " + r
-                    + " (baseURI: " + baseURI + "; systemId: " + systemId);
+            LOG.error("Resource not found: {} (baseURI: {}; systemId: {})",
+                    r, baseURI, systemId);
         }
         return new ClasspathInput(publicId, r, resourceAsStream);
     }
@@ -102,7 +102,7 @@ public class ClasspathResourceResolver implements LSResourceResolver {
             return StringUtils.EMPTY;
         }
         return "/" + klass.getPackage().getName().replace('.', '/') + "/";
-        
+
     }
     private String getPackageResourcePathFromBaseURI(String baseURI) {
         if (baseURI == null) {

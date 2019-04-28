@@ -1,4 +1,4 @@
-/* Copyright 2018 Norconex Inc.
+/* Copyright 2018-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ public class EventManager {
     private static final Logger LOG =
             LoggerFactory.getLogger(EventManager.class);
 
-    private final EventManager parentEventManager;
+    private EventManager parentEventManager;
 
     public EventManager() {
         this(null);
@@ -105,6 +105,18 @@ public class EventManager {
         Objects.requireNonNull(event, "Cannot fire a null event.");
         log(event, level);
         doFire(event);
+    }
+
+    public void bindParent(EventManager parentEventManager) {
+        Objects.requireNonNull(
+                parentEventManager, "'parentEventManager' cannot be null.");
+
+        if (this.parentEventManager != null
+                && this.parentEventManager != parentEventManager) {
+            throw new IllegalStateException(
+                    "This event manager is already bound to a parent.");
+        }
+        this.parentEventManager = parentEventManager;
     }
 
     private void doFire(Event<?> event) {

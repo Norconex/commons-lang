@@ -121,8 +121,8 @@
         used as argument.
       </action>
       <action dev="essiembre" type="update">
-        Dependency updates: Apache Commons Lang 3.7, 
-        Apache Velocity 2.0, Junit 5.
+        Many dependency updates, including: Apache Commons Lang 3.7, 
+        Apache Velocity 2.0, Junit 5, Xerces 2.12.0.
       </action>
       <action dev="essiembre" type="update">
         Some of the load/store methods in Properties have been renamed for 

@@ -54,7 +54,7 @@ import com.norconex.commons.lang.xml.XML;
  */
 public class MatchReplace implements IXMLConfigurable {
 
-    //TODO document XML usage + .xsd
+    //TODO document XML usage
 
     public enum Method {
         BASIC(new MethodStrategy() {
@@ -66,6 +66,8 @@ public class MatchReplace implements IXMLConfigurable {
             @Override
             public String replace(MatchReplace sr) {
                 String quotedRepl = Matcher.quoteReplacement(sr.replacement);
+                //TODO move this generic code to a method shared by all
+                // replace Methods.
                 Matcher m = createMatcher(sr);
                 if (sr.matchWhole && m.matches()) {
                     return m.replaceFirst(quotedRepl);
