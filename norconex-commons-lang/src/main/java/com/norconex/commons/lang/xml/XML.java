@@ -417,9 +417,11 @@ public class XML {
             } else if (isJAXB(targetObject)) {
                 jaxbUnmarshall(targetObject);
             }
+        } catch (XMLException e) {
+            throw e;
         } catch (Exception e) {
             throw new XMLException(
-                    "This XML could not be converted to object of type: "
+                    "XML could not be converted to object of type: "
                             + targetObject.getClass(), e);
         }
         return errors;
@@ -433,7 +435,7 @@ public class XML {
             BeanUtil.copyProperties(obj, newObj.getValue());
         } catch (Exception e) {
             throw new XMLException(
-                    "This XML could not be JAXB-unmarshalled: " + this, e);
+                    "XML could not be JAXB-unmarshalled: " + this, e);
         }
     }
 

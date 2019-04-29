@@ -1,4 +1,4 @@
-/* Copyright 2018 Norconex Inc.
+/* Copyright 2018-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package com.norconex.commons.lang.xml;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.norconex.commons.lang.config.ConfigurationException;
+import org.apache.commons.collections4.CollectionUtils;
 
 /**
  * Runtime exception for configuration related issues.
@@ -25,18 +25,12 @@ import com.norconex.commons.lang.config.ConfigurationException;
  * @since 2.0.0
  * @see XML#validate(Class)
  */
-public class XMLValidationException extends ConfigurationException {
+//TODO rename to ValidationException?
+public class XMLValidationException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
-    
+
     private final List<XMLValidationError> errors = new ArrayList<>();
-    
-    /**
-     * Constructor.
-     */
-    public XMLValidationException() {
-        super();
-    }
 
     /**
      * Constructor.
@@ -44,10 +38,15 @@ public class XMLValidationException extends ConfigurationException {
      */
     public XMLValidationException(
             List<XMLValidationError> errors) {
-        super();
-        this.errors.addAll(errors);
+        super(CollectionUtils.isEmpty(errors)
+                ? "Unspecified validation errors."
+                : errors.size() + " validation error(s). First one: "
+                        + errors.get(0).getMessage());
+        if (!CollectionUtils.isEmpty(errors)) {
+            this.errors.addAll(errors);
+        }
     }
-    
+
     public List<XMLValidationError> getErrors() {
         return errors;
     }

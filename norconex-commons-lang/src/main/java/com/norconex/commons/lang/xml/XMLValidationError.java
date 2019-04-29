@@ -24,20 +24,21 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 /**
  * A configuration error resulting from validation.  A configuration error
  * may or may not prevent some parts of a configuration to be loaded.
- * The severity is only used as indicator. 
+ * The severity is only used as indicator.
  * @author Pascal Essiembre
  * @since 2.0.0
  * @see XML#validate(Class)
  */
+//TODO rename to ValidationError and maybe add source + generic as well? (XML)
 public class XMLValidationError implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     public enum Severity { WARNING, ERROR, FATAL };
-    
+
     private final Severity severity;
     private final String message;
-    
+
     public XMLValidationError(Severity severity, String message) {
         super();
         this.severity = severity;
