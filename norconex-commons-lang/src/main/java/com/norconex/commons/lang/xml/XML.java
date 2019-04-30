@@ -399,7 +399,7 @@ public class XML {
         }
         List<XMLValidationError> errors = populate(obj);
         if (!ignoreErrors && !errors.isEmpty()) {
-            throw new XMLValidationException(errors);
+            throw new XMLValidationException(errors, this);
         }
         return obj;
     }
@@ -420,8 +420,8 @@ public class XML {
         } catch (XMLException e) {
             throw e;
         } catch (Exception e) {
-            throw new XMLException(
-                    "XML could not be converted to object of type: "
+            throw new XMLException("XML (tag: <" + getName() + ">) "
+                    + "could not be converted to object of type: "
                             + targetObject.getClass(), e);
         }
         return errors;
@@ -434,11 +434,10 @@ public class XML {
             JAXBElement<?> newObj = unmarsh.unmarshal(node, obj.getClass());
             BeanUtil.copyProperties(obj, newObj.getValue());
         } catch (Exception e) {
-            throw new XMLException(
-                    "XML could not be JAXB-unmarshalled: " + this, e);
+            throw new XMLException("XML (tag: <" + getName() + ">) "
+                    + " could not be JAXB-unmarshalled: " + this, e);
         }
     }
-
 
     /**
      * <p>Creates a new instance of the class represented by the "class"

@@ -246,7 +246,7 @@ public final class ConfigurationLoader {
         if (xml != null) {
             List<XMLValidationError> errors = xml.populate(object);
             if (!ignoreErrors && !errors.isEmpty()) {
-                throw new XMLValidationException(errors);
+                throw new XMLValidationException(errors, xml);
             }
         }
     }

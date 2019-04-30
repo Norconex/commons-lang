@@ -31,13 +31,23 @@ public class XMLValidationException extends RuntimeException {
     private static final long serialVersionUID = 1L;
 
     private final List<XMLValidationError> errors = new ArrayList<>();
+    private final XML xml;
 
     /**
      * Constructor.
      * @param errors configuration errors (e.g. schema validation errors)
      */
+    public XMLValidationException(List<XMLValidationError> errors) {
+        this(errors, null);
+    }
+
+    /**
+     * Constructor.
+     * @param errors configuration errors (e.g. schema validation errors)
+     * @param xml the XML containing validation errors
+     */
     public XMLValidationException(
-            List<XMLValidationError> errors) {
+            List<XMLValidationError> errors, XML xml) {
         super(CollectionUtils.isEmpty(errors)
                 ? "Unspecified validation errors."
                 : errors.size() + " validation error(s). First one: "
@@ -45,9 +55,13 @@ public class XMLValidationException extends RuntimeException {
         if (!CollectionUtils.isEmpty(errors)) {
             this.errors.addAll(errors);
         }
+        this.xml = xml;
     }
 
     public List<XMLValidationError> getErrors() {
         return errors;
+    }
+    public XML getXml() {
+        return xml;
     }
 }
