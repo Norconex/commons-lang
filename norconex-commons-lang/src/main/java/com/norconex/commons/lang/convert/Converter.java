@@ -1,4 +1,4 @@
-/* Copyright 2018 Norconex Inc.
+/* Copyright 2018-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Date;
@@ -64,10 +65,11 @@ import com.norconex.commons.lang.file.ContentType;
  *   <li>{@link Character}/char</li>
  *   <li>{@link File}</li>
  *   <li>{@link Path}</li>
- *   <li>{@link Locale}</li>
  *   <li>{@link Date}</li>
- *   <li>{@link Enum}</li>
  *   <li>{@link LocalDateTime}</li>
+ *   <li>{@link Instant}</li>
+ *   <li>{@link Locale}</li>
+ *   <li>{@link Enum}</li>
  *   <li>{@link Dimension}</li>
  *   <li>{@link Duration}</li>
  *   <li>{@link ContentType}</li>
@@ -128,11 +130,14 @@ public final class Converter implements IConverter {
         cc.put(File.class, c);
         cc.put(Path.class, c);
 
+        // dates
+        cc.put(Date.class, new DateConverter());
+        cc.put(LocalDateTime.class, new LocalDateTimeConverter());
+        cc.put(Instant.class, new InstantConverter());
+
         // others
         cc.put(Locale.class, new LocaleConverter());
-        cc.put(Date.class, new DateConverter());
         cc.put(Enum.class, new EnumConverter());
-        cc.put(LocalDateTime.class, new LocalDateTimeConverter());
         cc.put(Dimension.class, new DimensionConverter());
         cc.put(Boolean.class, new BooleanConverter());
         cc.put(boolean.class, new BooleanConverter());

@@ -35,17 +35,17 @@ import org.slf4j.LoggerFactory;
 /**
  * Utility class for finding names of classes implementing an interface or class
  * in directories or JAR files. In order to find if a class is potential
- * candidate, it is "loaded" first, but into a temporary class loader.  
- * Still, if it is important to you that classes do not get loaded, you can 
- * use other approaches, such as byte-code scanning.   See 
+ * candidate, it is "loaded" first, but into a temporary class loader.
+ * Still, if it is important to you that classes do not get loaded, you can
+ * use other approaches, such as byte-code scanning.   See
  * <a href="http://commons.apache.org/sandbox/classscan/">Apache ClassScan</a>
- * sandbox project for code that does that. 
- * 
+ * sandbox project for code that does that.
+ *
  * @author Pascal Essiembre
  */
 public final class ClassFinder {
 
-    private static final Logger LOG = 
+    private static final Logger LOG =
             LoggerFactory.getLogger(ClassFinder.class);
 
     private ClassFinder() {
@@ -55,7 +55,7 @@ public final class ClassFinder {
     /**
      * Finds the names of all subtypes of the super class,
      * scanning the roots of this class classpath.
-     * This method is null-safe.  If no classes are found, 
+     * This method is null-safe.  If no classes are found,
      * an empty list will be returned.
      * @param superClass the class from which to find subtypes
      * @return list of class names
@@ -81,12 +81,12 @@ public final class ClassFinder {
         }
         return classes;
     }
-    
-    
+
+
     /**
      * Finds the names of all subtypes of the super class in list
      * of {@link File} supplied.
-     * This method is null-safe.  If no classes are found, 
+     * This method is null-safe.  If no classes are found,
      * an empty list will be returned.
      * @param files directories and/or JARs to scan for classes
      * @param superClass the class from which to find subtypes
@@ -104,13 +104,13 @@ public final class ClassFinder {
         }
         return classes;
     }
-    
+
     /**
      * Finds the names of all subtypes of the super class for the
      * supplied {@link File}.
-     * This method is null-safe.  If no classes are found, 
-     * an empty list will be returned.  
-     * If the file is null or does not exists, or if it is not a JAR or 
+     * This method is null-safe.  If no classes are found,
+     * an empty list will be returned.
+     * If the file is null or does not exists, or if it is not a JAR or
      * directory, an empty string list will be returned.
      * @param file directory or JAR to scan for classes
      * @param superClass the class from which to find subtypes
@@ -137,10 +137,10 @@ public final class ClassFinder {
         LOG.warn("File not a JAR and not a directory.");
         return new ArrayList<>();
     }
-    
+
     private static List<String> findSubTypesFromDirectory(
             File dir, Class<?> superClass) {
-        
+
         List<String> classes = new ArrayList<>();
         String dirPath = dir.getAbsolutePath();
 
@@ -150,7 +150,7 @@ public final class ClassFinder {
         if (loader == null) {
             return classes;
         }
-        
+
         for (File classFile : classFiles) {
             String filePath = classFile.getAbsolutePath();
             String className = StringUtils.removeStart(filePath, dirPath);
@@ -163,7 +163,7 @@ public final class ClassFinder {
     }
     private static List<String> findSubTypesFromJar(
             File jarFile, Class<?> superClass) {
-        
+
         List<String> classes = new ArrayList<>();
         ClassLoader loader = getClassLoader(jarFile);
         if (loader == null) {
@@ -171,7 +171,7 @@ public final class ClassFinder {
         }
         JarFile jar = null;
         try {
-            jar = new JarFile(jarFile); 
+            jar = new JarFile(jarFile);
             jar.close();
         } catch (IOException e) {
             LOG.error("Invalid JAR: " + jarFile, e);
@@ -205,7 +205,7 @@ public final class ClassFinder {
             return null;
         }
     }
-    
+
     private static String resolveName(
             ClassLoader loader, String rawName, Class<?> superClass) {
         String className = rawName;
@@ -231,6 +231,6 @@ public final class ClassFinder {
         }
         return null;
     }
-    
+
 
 }

@@ -28,6 +28,7 @@ import java.io.Writer;
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -1175,6 +1176,42 @@ public class Properties extends ObservableMap<String, List<String>>
      */
     public final List<LocalDateTime> getLocalDateTimes(String key) {
         return getList(key, LocalDateTime.class);
+    }
+
+    //--- Instant --------------------------------------------------------------
+    /**
+     * Gets value as a UTC date-time {@link Instant}.
+     * The date must be a valid date-time
+     * as defined by {@link DateTimeFormatter#ISO_INSTANT}.
+     * @param key property key
+     * @return the value
+     * @since 2.0.0
+     */
+    public final Instant getInstant(String key) {
+        return get(key, Instant.class);
+    }
+    /**
+     * Gets value as a UTC date-time {@link Instant}.
+     * The date must be a valid date-time
+     * as defined by {@link DateTimeFormatter#ISO_INSTANT}.
+     * @param key property key
+     * @param defaultValue default value to return when original value is null.
+     * @return the value
+     * @since 2.0.0
+     */
+    public final Instant getInstant(String key, Instant defaultValue) {
+        return get(key, Instant.class, defaultValue);
+    }
+    /**
+     * Gets values as a list of UTC date-time {@link Instant}s.
+     * Each date must be a valid
+     * date-time as defined by {@link DateTimeFormatter#ISO_INSTANT}.
+     * @param key property key
+     * @return the values
+     * @since 2.0.0
+     */
+    public final List<Instant> getInstants(String key) {
+        return getList(key, Instant.class);
     }
 
     //--- Date -----------------------------------------------------------------

@@ -1,4 +1,4 @@
-/* Copyright 2018 Norconex Inc.
+/* Copyright 2018-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
  */
 package com.norconex.commons.lang.time;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -29,7 +30,7 @@ public final class DateUtil {
     private DateUtil() {
         super();
     }
-    
+
     /**
      * Converts a {@link Date} to a {@link LocalDate} using the system
      * default {@link ZoneId}.
@@ -49,7 +50,7 @@ public final class DateUtil {
     public static LocalDate toLocalDate(Date date, ZoneId zoneId) {
         return date.toInstant().atZone(zoneId).toLocalDate();
     }
-    
+
     /**
      * Converts a {@link Date} to a {@link LocalDateTime} using the system
      * default {@link ZoneId}.
@@ -67,7 +68,7 @@ public final class DateUtil {
      * @return converted date
      */
     public static LocalDateTime toLocalDateTime(Date date, ZoneId zoneId) {
-        return date.toInstant().atZone(zoneId).toLocalDateTime();        
+        return date.toInstant().atZone(zoneId).toLocalDateTime();
     }
 
     /**
@@ -108,5 +109,25 @@ public final class DateUtil {
      */
     public static Date toDate(LocalDateTime date, ZoneId zoneId) {
         return Date.from(date.atZone(zoneId).toInstant());
-    }    
+    }
+
+    /**
+     * Converts an {@link Instant} to a {@link Date} using the system
+     * default {@link ZoneId}.
+     * @param date to convert
+     * @return converted date
+     */
+    public static Date toDate(Instant date) {
+        return toDate(date, ZoneId.systemDefault());
+    }
+    /**
+     * Converts an {@link Instant} to a {@link Date} using the specified
+     * {@link ZoneId}.
+     * @param date date to convert
+     * @param zoneId zone id
+     * @return converted date
+     */
+    public static Date toDate(Instant date, ZoneId zoneId) {
+        return Date.from(date.atZone(zoneId).toInstant());
+    }
 }
