@@ -277,26 +277,26 @@ public class XML {
         return "<" + xml + "/>";
     }
 
-    public boolean isDefined() {
+    private boolean isDefined() {
         return node != null;
     }
-    public boolean isUndefined() {
-        return node == null;
-    }
-    public void ifDefined(Consumer<XML> then) {
-        if (isDefined() && then != null) {
-            then.accept(this);
-        }
-    }
+//    private boolean isUndefined() {
+//        return node == null;
+//    }
+//    private void ifDefined(Consumer<XML> then) {
+//        if (isDefined() && then != null) {
+//            then.accept(this);
+//        }
+//    }
 
     // "enabled" should by default always be false, so it has to be enabled
-    // explicitely.  Then it must be defined and "true".
+    // explicitly.  Then it must be defined and "true".
     public boolean isEnabled() {
         return isDefined() && getBoolean("@enabled", false);
     }
 
     // "disabled" should by default always be false, so it has to be set
-    // explicitely.  Then it must be defined and "true".
+    // explicitly.  Then it must be defined and "true".
     public boolean isDisabled() {
         return isDefined() && getBoolean("@disabled", false);
     }
@@ -574,6 +574,14 @@ public class XML {
         }
         return new XML(xmlNode);
     }
+    public void ifXML(String xpathExpression, Consumer<XML> then) {
+        XML xml = getXML(xpathExpression);
+        if (xml != null && xml.isDefined() && then != null) {
+            then.accept(this);
+        }
+    }
+
+
     /**
      * Gets the XML subsets matching the xpath expression.
      * @param xpathExpression expression to match
@@ -1418,6 +1426,9 @@ public class XML {
     }
 
     public String getName() {
+        if (node == null) {
+            return null;
+        }
         return node.getNodeName();
     }
 
