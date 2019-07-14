@@ -66,7 +66,7 @@ import com.norconex.commons.lang.io.CachedStreamFactory.MemoryTracker;
  * de-allocated automatically when the instance is finalized.
  * </p><p>
  * The internal cache stores read bytes into memory, up to to the
- * specified maximum cache size. If content exceeds
+ * configured maximum cache size. If content exceeds
  * the cache limit, the cache transforms itself into a fast file-based cache
  * of unlimited size.  Default memory cache size is 128 KB.
  * </p><p>

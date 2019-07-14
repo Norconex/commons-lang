@@ -135,10 +135,58 @@ public class URLNormalizerTest {
     }
 
     @Test
-    public void testLowerCaseSchemeHost() {
+    public void testLowerCase() {
+
+        // All
+        s = "HTTP://www.Example.com/Path/Query?Param1=AAA&amp;Param2=BBB";
+        t = "http://www.example.com/path/query?param1=aaa&amp;param2=bbb";
+        assertEquals(t, n(s).lowerCase().toString());
+
+        // SchemeHost
         s = "HTTP://www.Example.com/Hello.html";
         t = "http://www.example.com/Hello.html";
         assertEquals(t, n(s).lowerCaseSchemeHost().toString());
+
+        // Path
+        s = "HTTP://www.Example.com/Path/Query?Param1=AAA&amp;Param2=BBB";
+        t = "HTTP://www.Example.com/path/query?Param1=AAA&amp;Param2=BBB";
+        assertEquals(t, n(s).lowerCasePath().toString());
+
+        // Query String
+        s = "HTTP://www.Example.com/Path/Query?Param1=AAA&amp;Param2=BBB";
+        t = "HTTP://www.Example.com/Path/Query?param1=aaa&amp;param2=bbb";
+        assertEquals(t, n(s).lowerCaseQuery().toString());
+        s = "HTTP://www.Example.com/Path/Query?Param1&amp;Param2=BBB#frag";
+        t = "HTTP://www.Example.com/Path/Query?param1&amp;param2=bbb#frag";
+        assertEquals(t, n(s).lowerCaseQuery().toString());
+        s = "HTTP://www.Example.com/Path/Query?Param1=#frag";
+        t = "HTTP://www.Example.com/Path/Query?param1=#frag";
+        assertEquals(t, n(s).lowerCaseQuery().toString());
+        s = "HTTP://www.Example.com/Path/Query/Param1&amp;Param2=BBB#frag";
+        t = "HTTP://www.Example.com/Path/Query/Param1&amp;Param2=BBB#frag";
+        assertEquals(t, n(s).lowerCaseQuery().toString());
+
+        // Query parameter names
+        s = "HTTP://www.Example.com/Path/Query?Param1=AAA&amp;Param2=BBB";
+        t = "HTTP://www.Example.com/Path/Query?param1=AAA&amp;param2=BBB";
+        assertEquals(t, n(s).lowerCaseQueryParameterNames().toString());
+        s = "HTTP://www.Example.com/Path/Query?Param1&amp;Param2=BBB#frag";
+        t = "HTTP://www.Example.com/Path/Query?param1&amp;param2=BBB#frag";
+        assertEquals(t, n(s).lowerCaseQueryParameterNames().toString());
+        s = "HTTP://www.Example.com/Path/Query?Param1=#frag";
+        t = "HTTP://www.Example.com/Path/Query?param1=#frag";
+        assertEquals(t, n(s).lowerCaseQueryParameterNames().toString());
+
+        // Query parameter values
+        s = "HTTP://www.Example.com/Path/Query?Param1=AAA&amp;Param2=BBB";
+        t = "HTTP://www.Example.com/Path/Query?Param1=aaa&amp;Param2=bbb";
+        assertEquals(t, n(s).lowerCaseQueryParameterValues().toString());
+        s = "HTTP://www.Example.com/Path/Query?Param1&amp;Param2=BBB#frag";
+        t = "HTTP://www.Example.com/Path/Query?Param1&amp;Param2=bbb#frag";
+        assertEquals(t, n(s).lowerCaseQueryParameterValues().toString());
+        s = "HTTP://www.Example.com/Path/Query?=AAA#frag";
+        t = "HTTP://www.Example.com/Path/Query?=aaa#frag";
+        assertEquals(t, n(s).lowerCaseQueryParameterValues().toString());
     }
 
     @Test
@@ -335,6 +383,22 @@ public class URLNormalizerTest {
         s = "http://www.example.com/bar.html#";
         t = "http://www.example.com/bar.html";
         assertEquals(t, n(s).removeFragment().toString());
+    }
+
+    @Test
+    public void testRemoveQueryString() {
+        s = "http://www.example.com/q?param1=AAA&param2=BBB";
+        t = "http://www.example.com/q";
+        assertEquals(t, n(s).removeQueryString().toString());
+        s = "http://www.example.com/q?param1=AAA&param2=BBB#frag";
+        t = "http://www.example.com/q#frag";
+        assertEquals(t, n(s).removeQueryString().toString());
+        s = "http://www.example.com/q?";
+        t = "http://www.example.com/q";
+        assertEquals(t, n(s).removeQueryString().toString());
+        s = "http://www.example.com/q?param";
+        t = "http://www.example.com/q";
+        assertEquals(t, n(s).removeQueryString().toString());
     }
 
     @Test
