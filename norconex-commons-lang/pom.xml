@@ -184,26 +184,11 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-remote-resources-plugin</artifactId>
-      </plugin>      
-
-      <plugin>        
+      </plugin>
+      <!-- Until ready: -Dassembly.skipAssembly=true -->
+      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-assembly-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>make-resources-assembly</id>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-            <configuration>
-              <descriptors>
-                <descriptor>src/main/assembly/resources.xml</descriptor>
-              </descriptors>
-              <appendAssemblyId>true</appendAssemblyId>
-            </configuration>
-          </execution>
-        </executions>
       </plugin>
 
       <plugin>
