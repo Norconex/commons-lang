@@ -833,8 +833,12 @@ public class XML {
         XML xml = new XML(xmlStr);
         IXMLConfigurable readConfigurable = xml.toObject();
         if (!xmlConfigurable.equals(readConfigurable)) {
-            LOG.error("BEFORE: {}", xmlConfigurable);
-            LOG.error(" AFTER: {}", readConfigurable);
+            LOG.debug("BEFORE: {}", xmlConfigurable);
+            LOG.debug(" AFTER: {}", readConfigurable);
+            if (LOG.isErrorEnabled()) {
+                LOG.error("DIFF: \n{}\n",
+                        BeanUtil.diff(xmlConfigurable, readConfigurable));
+            }
             throw new XMLException("Saved and loaded XML are not the same.");
         }
     }

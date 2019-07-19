@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+
 /**
  * Here is an example of {@code MapChangeSupport} usage:
  * <pre>
@@ -33,7 +38,7 @@ import java.util.Objects;
  *     public void removeMapChangeListener(IMapChangeListener listener) {
  *         this.mcs.removeMapChangeListener(listener);
  *     }
- * 
+ *
  *     public Object put(Object key, Object value) {
  *         Object oldValue = map.put(key, value);
  *         mcs.fireMapChange(key, oldValue, value);
@@ -43,7 +48,7 @@ import java.util.Objects;
  *     [...]
  * }
  * </pre>
- * 
+ *
  * @author Pascal Essiembre
  * @since 1.4
  *
@@ -53,13 +58,13 @@ import java.util.Objects;
 public class MapChangeSupport<K,V> implements Serializable {
 
     private static final long serialVersionUID = 3044416439660906663L;
-    private final List<IMapChangeListener<K,V>> listeners= new ArrayList<>();
+    private final List<IMapChangeListener<K,V>> listeners = new ArrayList<>();
     private final Map<K, V> source;
-    
+
     public MapChangeSupport(Map<K, V> source) {
         this.source = source;
     }
-    
+
     /**
      * Add a {@link IMapChangeListener} to the listener list.
      * If <code>listener</code> is null, no exception is thrown and no action
@@ -97,14 +102,28 @@ public class MapChangeSupport<K,V> implements Serializable {
         if (Objects.equals(oldValue, newValue)) {
             return;
         }
-        MapChangeEvent<K, V> event = 
+        MapChangeEvent<K, V> event =
                 new MapChangeEvent<>(source, key, oldValue, newValue);
         for (IMapChangeListener<K, V> l : listeners) {
             l.mapChanged(event);
         }
     }
-    
+
     public boolean isEmpty() {
         return listeners.isEmpty();
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        return EqualsBuilder.reflectionEquals(this, other);
+    }
+    @Override
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this);
+    }
+    @Override
+    public String toString() {
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

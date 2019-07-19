@@ -1,4 +1,4 @@
-/* Copyright 2018 Norconex Inc.
+/* Copyright 2018-2019 Norconex Inc.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -13,6 +13,9 @@
 * limitations under the License.
 */
 package com.norconex.commons.lang.bean;
+
+import static org.apache.commons.lang3.StringUtils.substringAfter;
+import static org.apache.commons.lang3.StringUtils.substringBefore;
 
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
@@ -40,6 +43,10 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.apache.commons.collections4.Bag;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.bag.HashBag;
+import org.apache.commons.collections4.bag.TreeBag;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -97,21 +104,31 @@ public final class BeanUtil {
     }
 
 
-    @SuppressWarnings("unchecked")
     public static <T> T getValue(Object bean, String propertyName) {
         if (bean == null || propertyName == null) {
             return null;
         }
         try {
-            PropertyDescriptor p =
-                    new PropertyDescriptor(propertyName, bean.getClass());
-            return (T) p.getReadMethod().invoke(bean);
-        } catch (IntrospectionException
-                | IllegalAccessException
+            return getValue(bean,
+                    new PropertyDescriptor(propertyName, bean.getClass()));
+        } catch (IntrospectionException e) {
+            throw new BeanException("Could not get value for property \""
+                    + propertyName + "\" on bean type \"."
+                    + bean.getClass().getCanonicalName() + "\"", e);
+        }
+    }
+    @SuppressWarnings("unchecked")
+    public static <T> T getValue(Object bean, PropertyDescriptor property) {
+        if (bean == null || property == null) {
+            return null;
+        }
+        try {
+            return (T) property.getReadMethod().invoke(bean);
+        } catch (IllegalAccessException
                 | IllegalArgumentException
                 | InvocationTargetException e) {
             throw new BeanException("Could not get value for property \""
-                    + propertyName + "\" on bean type \"."
+                    + property.getName() + "\" on bean type \"."
                     + bean.getClass().getCanonicalName() + "\"", e);
         }
     }
@@ -299,6 +316,19 @@ public final class BeanUtil {
         return list;
     }
 
+    public static boolean hasChildren(Object bean) {
+        if (bean == null) {
+            return false;
+        }
+        for (PropertyDescriptor desc : getProperties(bean)) {
+            final String name = desc.getName();
+            if (desc.getReadMethod() != null && !"class".equals(name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     // do not have to return anything... same as predicate always returning true
     public static void visitAllProperties(
             Object bean, BiConsumer<Object, PropertyDescriptor> visitor) {
@@ -402,14 +432,13 @@ public final class BeanUtil {
         if (source == null || target == null) {
             return;
         }
-        BeanUtil.visitProperties(source, (obj, pd) -> {
+        visitProperties(source, (obj, pd) -> {
             if (obj != source) {
                 return false;
             }
             String name = pd.getName();
-            if (BeanUtil.getValue(target, name) == null) {
-                BeanUtil.setValue(target, name,
-                        BeanUtil.getValue(source, name));
+            if (getValue(target, name) == null) {
+                setValue(target, name, getValue(source, name));
             }
             return true;
         });
@@ -443,5 +472,64 @@ public final class BeanUtil {
         } catch (InstantiationException | IllegalAccessException e) {
             throw new BeanException("Cannot clone bean.", e);
         }
+    }
+
+    public static <T> String diff(T bean1, T bean2) {
+        //TODO Visit all properties keeping trail, or nesting level
+        Bag<String> b1 = graphLeavesAsBag(bean1);
+        Bag<String> b2 = graphLeavesAsBag(bean2);
+
+        Collection<String> left = CollectionUtils.removeAll(b1, b2);
+        Collection<String> right = CollectionUtils.removeAll(b2, b1);
+
+        Bag<String> allDiffs = new TreeBag<>((s1, s2) -> {
+            // compare keys
+            int comp = substringBefore(s1.substring(1), "=")
+                    .compareTo(substringBefore(s2.substring(1), "="));
+            if (comp == 0) {
+                // compare left or right
+                comp = s1.substring(0, 1).compareTo(s2.substring(0, 1));
+            }
+            if (comp == 0) {
+                // compare value
+                comp = substringAfter(s1, "=")
+                        .compareTo(substringAfter(s2, "="));
+            }
+            return comp;
+        });
+
+        for (String diff : left) {
+            allDiffs.add("< " + diff);
+        }
+        for (String diff : right) {
+            allDiffs.add("> " + diff);
+        }
+        return StringUtils.join(allDiffs, "\n");
+    }
+    private static Bag<String> graphLeavesAsBag(
+            Object bean) {
+        Bag<String> bag = new HashBag<>();
+        visitAllProperties(bean, (o, p) -> {
+            String key = o.getClass().getSimpleName()
+                    + "." + p.getName() + " = ";
+            Object value = getValue(o, p);
+            String line = key;
+            if (!hasChildren(o)) {
+                line += Objects.toString(value);
+            } else if (value == null) {
+                line += "null";
+            } else {
+                if (value.getClass().isArray()) {
+                    line += "Array#";
+                } else if (value instanceof Collection) {
+                    line += "Collection#";
+                } else if (value instanceof Map) {
+                    line += "Map#";
+                }
+                line += "hashCode:" + value.hashCode();
+            }
+            bag.add(line);
+        });
+        return bag;
     }
 }
