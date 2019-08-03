@@ -1,4 +1,4 @@
-/* Copyright 2015-2018 Norconex Inc.
+/* Copyright 2015-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -247,7 +247,7 @@ public final class EncryptionKey implements Serializable {
     public static void addToXML(
             XML xml, String elementName, EncryptionKey key) {
         if (key != null) {
-            XML kxml = new XML(elementName, null);
+            XML kxml = XML.of(elementName).create();
             kxml.addElement("value", key.value);
             kxml.addElement("size", key.size);
             if (key.source != null) {

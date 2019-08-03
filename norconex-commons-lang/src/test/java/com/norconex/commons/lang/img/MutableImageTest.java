@@ -129,7 +129,7 @@ public class MutableImageTest {
         String targetImage = "target/img-tests/" +
                 Thread.currentThread().getStackTrace()[2].getMethodName()
                         + "." + ext;
-        LOG.info("Writing: " + targetImage);
+        LOG.debug("Writing: " + targetImage);
         try (InputStream is =
                 MutableImageTest.class.getResourceAsStream(srcImage)) {
             MutableImage img = new MutableImage(is);

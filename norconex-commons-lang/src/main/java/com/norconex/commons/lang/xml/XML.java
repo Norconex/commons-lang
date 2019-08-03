@@ -35,6 +35,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -45,7 +46,6 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
@@ -89,14 +89,12 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.XMLFilterImpl;
-import org.xml.sax.helpers.XMLReaderFactory;
 
 import com.norconex.commons.lang.bean.BeanUtil;
 import com.norconex.commons.lang.collection.CollectionUtil;
 import com.norconex.commons.lang.convert.Converter;
 import com.norconex.commons.lang.time.DurationParser;
 import com.norconex.commons.lang.time.DurationParserException;
-import com.norconex.commons.lang.xml.XMLValidationError.Severity;
 
 //TODO consider checking for a "disable=false|true" and setting it on
 //a method if this method exists, and/or do not load if set to true.
@@ -131,58 +129,42 @@ public class XML {
 
     private static final Logger LOG = LoggerFactory.getLogger(XML.class);
 
-    public static final String W3C_XML_SCHEMA_NS_URI_1_1 =
-            "http://www.w3.org/XML/XMLSchema/v1.1";
-
     private static final String DEFAULT_DELIM_REGEX = "(\\s*,\\s*)+";
     private static final String NULL_XML_VALUE = "\u0000";
     private static final List<String> NULL_XML_LIST = new ArrayList<>(0);
 
     private final Node node;
+    private final ErrorHandler errorHandler;
+    private final DocumentBuilderFactory documentBuilderFactory;
+
 
     /**
      * <p>Parse an XML file into an XML document, without consideration
      * for namespaces.</p>
      * @param file the XML file to parse
+     * @see #of(Path)
      */
     public XML(Path file) {
-        this(fileToString(file.toFile()), (DocumentBuilderFactory) null);
+        this(XML.of(file).create().node);
     }
     /**
      * <p>Parse an XML file into an XML document, without consideration
      * for namespaces.</p>
      * @param file the XML file to parse
+     * @see #of(File)
      */
-    //TODO really keep this one or have path only?
     public XML(File file) {
-        this(fileToString(file), (DocumentBuilderFactory) null);
+        this(XML.of(file).create().node);
     }
     /**
      * <p>Parse an XML stream into an XML document, without consideration
      * for namespaces.</p>
      * @param reader the XML stream to parse
+     * @see #of(Reader)
      */
     public XML(Reader reader) {
-        this(reader, (DocumentBuilderFactory) null);
+        this(XML.of(reader).create().node);
     }
-    /**
-     * <p>Parse an XML stream into an XML document, using the provided
-     * document builder factory.</p>
-     * @param reader the XML stream to parse
-     * @param factory the document builder factory
-     */
-    public XML(Reader reader, DocumentBuilderFactory factory) {
-        this(readerToString(reader), factory);
-    }
-
-    /**
-     * <p>Creates an XML with the given node.</p>
-     * @param node the node representing the XML
-     */
-    public XML(Node node) {
-        this.node = node;
-    }
-
     /**
      * <p>
      * Parse an XML string into an XML document, without consideration
@@ -194,50 +176,68 @@ public class XML {
      * it is assumed to be the XML root element name (for a fresh XML).
      * </p>
      * @param xml the XML string to parse
+     * @see #of(String)
      */
     public XML(String xml) {
-        this(xml, (DocumentBuilderFactory) null);
-    }
-
-    public XML(String xml, DocumentBuilderFactory factory) {
-        String xmlStr = resolveXML(xml);
-        if (StringUtils.isBlank(xmlStr)) {
-            this.node = null;
-            return;
-        }
-
-        xmlStr = xmlStr.replaceAll(
-                "(<\\s*)([^\\s>]+)([^>]*)(\\s*><\\s*\\/\\s*\\2\\s*>)",
-                "$1$2 xml:space=\"empty\"$3$4");
-        try {
-            DocumentBuilderFactory safeFactory =
-                    factory != null ? factory : createDefaultFactory();
-            DocumentBuilder builder = safeFactory.newDocumentBuilder();
-            this.node = builder.parse(new InputSource(
-                    new StringReader(xmlStr))).getDocumentElement();
-        } catch (ParserConfigurationException | SAXException | IOException e) {
-            throw new XMLException("Could not parse XML.", e);
-        }
+        this(XML.of(xml).create().node);
     }
 
     public XML(String rootElement, Object obj) {
-        this.node = new XML("<" + rootElement + "/>").node;
-        if (obj == null) {
-            return;
-        }
+        this(XML.of(rootElement, obj).create().node);
+    }
 
-        if (obj instanceof Class) {
-            setAttribute("class", ((Class<?>) obj).getCanonicalName());
-        } else if (Converter.defaultInstance().isConvertible(obj.getClass())) {
-            setTextContent(Converter.convert(obj));
-        } else {
-            setAttribute("class", obj.getClass().getCanonicalName());
-            if (isXMLConfigurable(obj)) {
-                ((IXMLConfigurable) obj).saveToXML(this);
-            } else if (isJAXB(obj)) {
-                jaxbMarshall(obj);
+    /**
+     * <p>Creates an XML with the given node.</p>
+     * @param node the node representing the XML
+     */
+    public XML(Node node) {
+        this(node, null, null, null);
+    }
+
+    /**
+     * <p>Creates an XML with the given node.</p>
+     * @param node the node representing the XML
+     */
+    private XML(
+            Node node,
+            Object sourceObject,
+            ErrorHandler errorHandler,
+            DocumentBuilderFactory documentBuilderFactory) {
+        this.node = node;
+        this.errorHandler = defaultIfNull(errorHandler);
+        this.documentBuilderFactory = defaultIfNull(documentBuilderFactory);
+        if (sourceObject != null) {
+            if (sourceObject instanceof Class) {
+                setAttribute(
+                        "class", ((Class<?>) sourceObject).getCanonicalName());
+            } else if (Converter.defaultInstance().isConvertible(
+                    sourceObject.getClass())) {
+                setTextContent(Converter.convert(sourceObject));
+            } else {
+                setAttribute("class",
+                        sourceObject.getClass().getCanonicalName());
+                if (isXMLConfigurable(sourceObject)) {
+                    ((IXMLConfigurable) sourceObject).saveToXML(this);
+                } else if (isJAXB(sourceObject)) {
+                    jaxbMarshall(sourceObject);
+                }
             }
         }
+    }
+
+    private static DocumentBuilderFactory defaultIfNull(
+            DocumentBuilderFactory dbf) {
+        return Optional.ofNullable(dbf).orElseGet(() -> {
+            DocumentBuilderFactory factory =
+                    XMLUtil.createDocumentBuilderFactory();
+            factory.setNamespaceAware(false);
+            factory.setIgnoringElementContentWhitespace(false);
+            return factory;
+        });
+    }
+    private static ErrorHandler defaultIfNull(ErrorHandler eh) {
+        return Optional.ofNullable(eh).orElseGet(
+                    () -> new ErrorHandlerFailer(XML.class));
     }
 
     private void jaxbMarshall(Object obj) {
@@ -267,27 +267,9 @@ public class XML {
         }
     }
 
-    private static String resolveXML(String xml) {
-        if (xml == null) {
-            return null;
-        }
-        if (xml.contains("<")) {
-            return xml;
-        }
-        return "<" + xml + "/>";
-    }
-
     private boolean isDefined() {
         return node != null;
     }
-//    private boolean isUndefined() {
-//        return node == null;
-//    }
-//    private void ifDefined(Consumer<XML> then) {
-//        if (isDefined() && then != null) {
-//            then.accept(this);
-//        }
-//    }
 
     // "enabled" should by default always be false, so it has to be enabled
     // explicitly.  Then it must be defined and "true".
@@ -320,26 +302,7 @@ public class XML {
      * @throws XMLException if something prevented object creation
      */
     public <T> T toObject() {
-        return toObject(null, false);
-    }
-    /**
-     * Creates a new instance of the class represented by the "class" attribute
-     * on this XML root node.  The class must have an empty constructor.
-     * If the class is an instance of {@link IXMLConfigurable}, the object
-     * created will be automatically populated by invoking the
-     * {@link IXMLConfigurable#loadFromXML(XML)} method,
-     * passing it the node XML.
-     * If the class is annotated with an
-     * {@link XmlRootElement}, it will use JAXB to unmarshall it to an object.
-     * @param <T> the type of the return value
-     * @param ignoreErrors whether to ignore validation errors
-     * @return a new object.
-     * @throws XMLValidationException if the XML has validation errors
-     *         and <code>ignoreErrors</code> is false
-     * @throws XMLException if something prevented object creation
-     */
-    public <T> T toObject(boolean ignoreErrors) {
-        return toObject(null, ignoreErrors);
+        return toObject(null);
     }
     /**
      * Creates a new instance of the class represented by the "class" attribute
@@ -354,30 +317,10 @@ public class XML {
      *        returns this default object.
      * @param <T> the type of the return value
      * @return a new object.
-     * @throws XMLValidationException if the XML has validation errors
-     * @throws XMLException if something prevented object creation
-     */
-    public <T> T toObject(T defaultObject) {
-        return toObject(defaultObject, false);
-    }
-    /**
-     * Creates a new instance of the class represented by the "class" attribute
-     * on the given node.  The class must have an empty constructor.
-     * If the class is an instance of {@link IXMLConfigurable}, the object
-     * created will be automatically populated by invoking the
-     * {@link IXMLConfigurable#loadFromXML(XML)} method,
-     * passing it the node XML.
-     * @param defaultObject if returned object is null or undefined,
-     *        returns this default object.
-     * @param <T> the type of the return value
-     * @param ignoreErrors whether to ignore validation errors
-     * @return a new object.
-     * @throws XMLValidationException if the XML has validation errors
-     *         and <code>ignoreErrors</code> is false
      * @throws XMLException if something prevented object creation
      */
     @SuppressWarnings("unchecked")
-    public <T> T toObject(T defaultObject, boolean ignoreErrors) {
+    public <T> T toObject(T defaultObject) {
         if (node == null) {
             return defaultObject;
         }
@@ -397,21 +340,17 @@ public class XML {
                    + "using default value: {}", defaultObject);
             obj = defaultObject;
         }
-        List<XMLValidationError> errors = populate(obj);
-        if (!ignoreErrors && !errors.isEmpty()) {
-            throw new XMLValidationException(errors, this);
-        }
+        populate(obj);
         return obj;
     }
 
-    public List<XMLValidationError> populate(Object targetObject) {
-        List<XMLValidationError> errors = Collections.emptyList();
+    public void populate(Object targetObject) {
         if (node == null) {
-            return errors;
+            return;
         }
 
         try {
-            errors = validate(targetObject.getClass());
+            validate(targetObject.getClass());
             if (isXMLConfigurable(targetObject)) {
                 ((IXMLConfigurable) targetObject).loadFromXML(this);
             } else if (isJAXB(targetObject)) {
@@ -424,7 +363,6 @@ public class XML {
                     + "could not be converted to object of type: "
                             + targetObject.getClass(), e);
         }
-        return errors;
     }
 
     private void jaxbUnmarshall(Object obj) {
@@ -572,7 +510,7 @@ public class XML {
         if (xmlNode == null) {
             return null;
         }
-        return new XML(xmlNode);
+        return createAndInitXML(XML.of(xmlNode));
     }
     public void ifXML(String xpathExpression, Consumer<XML> then) {
         XML xml = getXML(xpathExpression);
@@ -581,6 +519,12 @@ public class XML {
         }
     }
 
+    private XML createAndInitXML(Builder builder) {
+        return builder
+                .setDocumentBuilderFactory(documentBuilderFactory)
+                .setErrorHandler(errorHandler)
+                .create();
+    }
 
     /**
      * Gets the XML subsets matching the xpath expression.
@@ -590,7 +534,7 @@ public class XML {
     public List<XML> getXMLList(String xpathExpression) {
         List<XML> list = new ArrayList<>();
         for (Node n : getNodeList(xpathExpression)) {
-            list.add(new XML(n));
+            list.add(createAndInitXML(XML.of(n)));
         }
         return list;
     }
@@ -684,7 +628,8 @@ public class XML {
             t.transform(new DOMSource(node), outputTarget);
 
             String xmlStr = w.toString();
-            // convert self closing tags for empty ones
+            // convert self-closing tags with "empty" attribute to empty tags
+            // instead
             return xmlStr.replaceAll(
                     "<\\s*([^\\s>]+)([^>]*) xml:space=\"empty\"([^>]*)/\\s*>",
                     "<$1$2></$1>");
@@ -710,6 +655,7 @@ public class XML {
      * </p>
      * @return list of errors/warnings or empty (never <code>null</code>)
      */
+    //TODO rename validateXMLClassFromSchema or equivalent
     public List<XMLValidationError> validate() {
         return validate(getClass("@class"));
     }
@@ -770,34 +716,15 @@ public class XML {
 
         List<XMLValidationError> errors = new ArrayList<>();
 
-        SchemaFactory schemaFactory =
-                SchemaFactory.newInstance(W3C_XML_SCHEMA_NS_URI_1_1);
+        SchemaFactory schemaFactory = XMLUtil.createSchemaFactory();
         schemaFactory.setResourceResolver(new ClasspathResourceResolver(clazz));
 
         Schema schema = schemaFactory.newSchema(
                 new StreamSource(xsdStream, getXSDResourcePath(clazz)));
+        Validator validator = XMLUtil.createSchemaValidator(schema);
 
-        Validator validator = schema.newValidator();
-        try {
-            validator.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-        } catch (SAXException e) {
-            LOG.debug(e.getMessage());
-        }
-
-        LogErrorHandler seh = new LogErrorHandler(clazz, errors);
-        validator.setErrorHandler(seh);
-        XMLReader xmlReader = XMLReaderFactory.createXMLReader();
-        try {
-            xmlReader.setFeature("http://apache.org/xml/features/"
-                    + "nonvalidating/load-external-dtd", false);
-            xmlReader.setFeature("http://xml.org/sax/features/"
-                    + "external-general-entities", false);
-            xmlReader.setFeature("http://xml.org/sax/features/"
-                    + "external-parameter-entities", false);
-            xmlReader.setEntityResolver((publicId, systemId) -> null);
-        } catch (SAXException e) {
-            LOG.debug(e.getMessage());
-        }
+        validator.setErrorHandler(errorHandler);
+        XMLReader xmlReader = XMLUtil.createXMLReader();
 
         SAXSource saxSource = new SAXSource(
                 new W3XMLNamespaceFilter(xmlReader), new InputSource(reader));
@@ -821,7 +748,7 @@ public class XML {
         // Write
         String xmlStr;
         try (StringWriter out = new StringWriter()) {
-            XML xml = new XML(elementName, xmlConfigurable);
+            XML xml = XML.of(elementName, xmlConfigurable).create();
             xml.write(out);
             xmlStr = out.toString();
         } catch (IOException e) {
@@ -830,7 +757,7 @@ public class XML {
         LOG.trace(xmlStr);
 
         // Read
-        XML xml = new XML(xmlStr);
+        XML xml = XML.of(xmlStr).create();
         IXMLConfigurable readConfigurable = xml.toObject();
         if (!xmlConfigurable.equals(readConfigurable)) {
             LOG.debug("BEFORE: {}", xmlConfigurable);
@@ -1054,43 +981,6 @@ public class XML {
         return "/" + clazz.getCanonicalName().replace('.', '/') + ".xsd";
     }
 
-    private static class LogErrorHandler implements ErrorHandler {
-        private final Class<?> clazz;
-        private final List<XMLValidationError> errors;
-        public LogErrorHandler(
-                Class<?> clazz, List<XMLValidationError> errors) {
-            super();
-            this.clazz = clazz;
-            this.errors = errors;
-        }
-        @Override
-        public void warning(SAXParseException e) throws SAXException {
-            String msg = msg(e);
-            errors.add(new XMLValidationError(Severity.WARNING, msg));
-            LOG.warn(msg);
-        }
-        @Override
-        public void error(SAXParseException e) throws SAXException {
-            String msg = msg(e);
-            errors.add(new XMLValidationError(Severity.ERROR, msg));
-            LOG.error(msg);
-        }
-        @Override
-        public void fatalError(SAXParseException e) throws SAXException {
-            String msg = msg(e);
-            errors.add(new XMLValidationError(Severity.FATAL, msg));
-            LOG.error(msg);
-        }
-        private String msg(SAXParseException e) {
-            if (clazz == null) {
-                return "[XML Validation] " + e.getMessage();
-            }
-            return "[XML Validation] "
-                    + clazz.getSimpleName() + ": " + e.getMessage();
-        }
-    }
-
-
     // Filter out "xml:" name space so attributes like xml:space="preserve"
     // are validated OK.
     private static class W3XMLNamespaceFilter extends XMLFilterImpl {
@@ -1103,7 +993,6 @@ public class XML {
                         throws SAXException {
             for (int i = 0; i < atts.getLength(); i++) {
                 if (XMLConstants.XML_NS_URI.equals(atts.getURI(i))) {
-//                if (NamespaceContext.XML_URI.equals(atts.getURI(i))) {
                     AttributesImpl modifiedAtts = new AttributesImpl(atts);
                     modifiedAtts.removeAttribute(i);
                     super.startElement(uri, localName, qName, modifiedAtts);
@@ -1112,14 +1001,6 @@ public class XML {
             }
             super.startElement(uri, localName, qName, atts);
         }
-    }
-
-    private static DocumentBuilderFactory createDefaultFactory() {
-        DocumentBuilderFactory factory =
-                DocumentBuilderFactory.newInstance();
-        factory.setNamespaceAware(false);
-        factory.setIgnoringElementContentWhitespace(false);
-        return factory;
     }
 
     public static XPath newXPath() {
@@ -1453,16 +1334,16 @@ public class XML {
      * Adds a child element to this XML root element.
      * If the element value is blank, and empty element is created.
      * Otherwise, the value is handled as
-     * {@link #XML(String, Object)}
+     * {@link XML#of(String, Object)}
      * @param tagName element name
      * @param value element value
      * @return XML of the added element or <code>null</code> if value is
      *         <code>null</code>
      */
     public XML addElement(String tagName, Object value) {
-        XML xml = new XML(tagName, value);
+        XML xml = createAndInitXML(XML.of(tagName, value));
         Node newNode = node.getOwnerDocument().importNode(xml.node, true);
-        return new XML(node.appendChild(newNode));
+        return createAndInitXML(XML.of(node.appendChild(newNode)));
     }
 
     public List<XML> addElementList(String tagName, List<?> values) {
@@ -1606,17 +1487,17 @@ public class XML {
 
     // returns the newly added XML
     public XML addXML(Reader xml) {
-        return addXML(new XML(xml));
+        return addXML(createAndInitXML(XML.of(xml)));
     }
     // returns the newly added XML
     public XML addXML(String xml) {
-        return addXML(new XML(xml));
+        return addXML(createAndInitXML(XML.of(xml)));
     }
     // returns the newly added XML
     public XML addXML(XML xml) {
         Node childNode = node.getOwnerDocument().importNode(xml.node, true);
         node.appendChild(childNode);
-        return new XML(childNode);
+        return createAndInitXML(XML.of(childNode));
     }
 
     public Writer getXMLWriter() {
@@ -1683,7 +1564,7 @@ public class XML {
         }
 
         // Proceed with the unwrapping
-        replace(new XML(children.item(0)));
+        replace(createAndInitXML(XML.of(children.item(0))));
         return this;
     }
 
@@ -1915,22 +1796,6 @@ public class XML {
         return (List<File>) getList(xpathExpression, File.class, defaultValue);
     }
 
-    private static String readerToString(Reader reader) {
-        try {
-            return IOUtils.toString(reader);
-        } catch (IOException e) {
-            throw new XMLException("Could not read XML.", e);
-        }
-    }
-    private static String fileToString(File file) {
-        try {
-            return FileUtils.readFileToString(file, StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            throw new XMLException(
-                    "Could not read XML file: " + file.getAbsolutePath(), e);
-        }
-    }
-
     private String getNodeString(Node n) {
         if (n.getNodeType() == Node.ATTRIBUTE_NODE) {
             return n.getNodeValue();
@@ -2072,11 +1937,133 @@ public class XML {
         }
     }
 
+    public ErrorHandler getErrorHandler() {
+        return errorHandler;
+    }
+    public DocumentBuilderFactory getDocumentBuilderFactory() {
+        return documentBuilderFactory;
+    }
+
     public static boolean isXMLConfigurable(Object obj) {
         return obj instanceof IXMLConfigurable;
     }
     public static boolean isJAXB(Object obj) {
         return obj != null && obj.getClass().isAnnotationPresent(
                 XmlRootElement.class);
+    }
+
+    public static Builder of(File file) {
+        return new Builder(file);
+    }
+    public static Builder of(Path path) {
+        return new Builder(path);
+    }
+    public static Builder of(Node node) {
+        return new Builder(node);
+    }
+    public static Builder of(Reader reader) {
+        return new Builder(reader);
+    }
+    public static Builder of(String xml) {
+        return new Builder(xml);
+    }
+    public static Builder of(String rootElementName, Object object) {
+        return new Builder(object, rootElementName);
+    }
+
+    public static class Builder {
+        private DocumentBuilderFactory documentBuilderFactory;
+        private ErrorHandler errorHandler;
+
+        private final Object source;
+        // if root element is set, it means it came "fromObject".
+        private final String rootElementName;
+
+        private Builder(Object source) {
+            this(source, null);
+        }
+        private Builder(Object source, String rootElementName) {
+            super();
+            this.source = source;
+            this.rootElementName = rootElementName;
+        }
+        public Builder setDocumentBuilderFactory(
+                DocumentBuilderFactory documentBuilderFactory) {
+            this.documentBuilderFactory = documentBuilderFactory;
+            return this;
+        }
+        public Builder setErrorHandler(ErrorHandler errorHandler) {
+            this.errorHandler = errorHandler;
+            return this;
+        }
+        public XML create() {
+            this.errorHandler = defaultIfNull(errorHandler);
+            this.documentBuilderFactory = defaultIfNull(documentBuilderFactory);
+
+            if (source instanceof Node) {
+                return new XML((Node) source,
+                        null, errorHandler, documentBuilderFactory);
+            }
+
+            String xmlStr = null;
+            if (StringUtils.isNotBlank(rootElementName)) {
+                xmlStr = "<" + rootElementName + "/>";
+            } else if (source instanceof Path) {
+                xmlStr = fileToString(((Path) source).toFile());
+            } else if (source instanceof File) {
+                xmlStr = fileToString((File) source);
+            } else if (source instanceof Reader) {
+                xmlStr = readerToString((Reader) source);
+            } else if (source instanceof String) {
+                xmlStr = (String) source;
+            }
+
+            if (StringUtils.isBlank(xmlStr)) {
+                return new XML((Node) null,
+                        null, errorHandler, documentBuilderFactory);
+            }
+
+            if (!xmlStr.contains("<")) {
+                xmlStr = "<" + xmlStr + "/>";
+            }
+
+            // Add xml:space="empty" to empty tags.
+            xmlStr = xmlStr.replaceAll(
+                    "(<\\s*)([^\\s>]+)([^>]*)(\\s*><\\s*\\/\\s*\\2\\s*>)",
+                    "$1$2 xml:space=\"empty\"$3$4");
+
+            Node node = null;
+            try {
+
+                node = documentBuilderFactory.newDocumentBuilder()
+                        .parse(new InputSource(new StringReader(xmlStr)))
+                            .getDocumentElement();
+            } catch (ParserConfigurationException
+                    | SAXException | IOException e) {
+                throw new XMLException("Could not parse XML.", e);
+            }
+
+            Object sourceObject = null;
+            if (rootElementName != null && source != null) {
+                sourceObject = source;
+            }
+            return new XML(
+                    node, sourceObject, errorHandler, documentBuilderFactory);
+        }
+        private static String readerToString(Reader reader) {
+            try {
+                return IOUtils.toString(reader);
+            } catch (IOException e) {
+                throw new XMLException("Could not read XML.", e);
+            }
+        }
+        private static String fileToString(File file) {
+            try {
+                return FileUtils.readFileToString(file, StandardCharsets.UTF_8);
+            } catch (IOException e) {
+                throw new XMLException("Could not read XML file: "
+                        + file.getAbsolutePath(), e);
+            }
+        }
     }
 }

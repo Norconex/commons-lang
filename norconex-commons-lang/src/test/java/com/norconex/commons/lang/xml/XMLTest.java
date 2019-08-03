@@ -58,7 +58,7 @@ public class XMLTest {
         pojo.setLastName("Smith");
         pojo.setLuckyNumber(7);
 
-        XML xml = new XML("test");
+        XML xml = XML.of("test").create();
 
         xml.addElement("pojo", pojo);
 
@@ -76,12 +76,15 @@ public class XMLTest {
 
     @Test
     public void testGetCommonTypes() {
-        XML xml = new XML(ResourceLoader.getXmlString(XMLTest.class));
+        XML xml = XML.of(ResourceLoader.getXmlString(XMLTest.class)).create();
 
         Assertions.assertEquals("a string", xml.getString("testString"));
-        Assertions.assertEquals((Integer) 123, xml.getInteger("testNumeric/@int"));
-        Assertions.assertEquals((Long) 12345L, xml.getLong("testNumeric/@long"));
-        Assertions.assertEquals((Float) 54.01f, xml.getFloat("testNumeric/@float"));
+        Assertions.assertEquals(
+                (Integer) 123, xml.getInteger("testNumeric/@int"));
+        Assertions.assertEquals(
+                (Long) 12345L, xml.getLong("testNumeric/@long"));
+        Assertions.assertEquals(
+                (Float) 54.01f, xml.getFloat("testNumeric/@float"));
         Assertions.assertEquals(
                 (Double) 54321.0123, xml.getDouble("testNumeric/@double"));
         Assertions.assertEquals(
@@ -94,7 +97,7 @@ public class XMLTest {
 
     @Test
     public void testGetNullEmptyBlank() {
-        XML xml = new XML(ResourceLoader.getXmlString(XMLTest.class));
+        XML xml = XML.of(ResourceLoader.getXmlString(XMLTest.class)).create();
 
         // As strings
         Assertions.assertNull(xml.getString("testNull"));
@@ -118,7 +121,7 @@ public class XMLTest {
     @Test
     public void testAddNullEmptyBlankElements() {
         // Null, empty, and blank strings should all be loaded back as such.
-        XML xml1 = new XML("test");
+        XML xml1 = XML.of("test").create();
 
         // As elements with no attribs
         xml1.addElement("elmNull", null);
@@ -133,8 +136,7 @@ public class XMLTest {
         String xmlStr = xml1.toString();
         LOG.debug("XML is: " + xmlStr);
 
-        XML xml2 = new XML(xmlStr);
-
+        XML xml2 = XML.of(xmlStr).create();
 
         Assertions.assertNull(xml2.getString("elmNull"));
         Assertions.assertEquals("", xml2.getString("elmEmpty"));
@@ -153,13 +155,14 @@ public class XMLTest {
                 "<rootTag id=\"banana\" remove=\"me\">"
               + SAMPLE_XML
               + "</rootTag>";
-        Assertions.assertEquals(SAMPLE_XML, new XML(wrapped).unwrap().toString());
+        Assertions.assertEquals(SAMPLE_XML,
+                XML.of(wrapped).create().unwrap().toString());
 
         String list = SAMPLE_XML + "<sampleTag>Another child</sampleTag>";
         String wrappedList =
                 "<rootTag id=\"banana\" remove=\"me\">" + list + "</rootTag>";
         try {
-            new XML(wrappedList).unwrap();
+            XML.of(wrappedList).create().unwrap();
             Assertions.fail("Should have thrown exception.");
         } catch (XMLException e) { }
     }
@@ -167,26 +170,27 @@ public class XMLTest {
     @Test
     public void testWrap() {
         String target = "<parentTag>" + SAMPLE_XML + "</parentTag>";
-        Assertions.assertEquals(
-                target, new XML(SAMPLE_XML).wrap("parentTag").toString());
+        Assertions.assertEquals(target, XML.of(
+                SAMPLE_XML).create().wrap("parentTag").toString());
     }
 
     @Test
     public void testClear() {
         Assertions.assertEquals("<sampleTag/>",
-                new XML(SAMPLE_XML).clear().toString());
+                XML.of(SAMPLE_XML).create().clear().toString());
     }
 
     @Test
     public void testReplace() {
         String replacement = "<replacementTag>I replace!</replacementTag>";
-        Assertions.assertEquals(replacement,
-                new XML(SAMPLE_XML).replace(new XML(replacement)).toString());
+        Assertions.assertEquals(replacement, XML.of(
+                SAMPLE_XML).create().replace(XML.of(
+                        replacement).create()).toString());
     }
 
     @Test
     public void testGetNullMissingDefaultElements() {
-        XML xml = new XML(ResourceLoader.getXmlString(XMLTest.class));
+        XML xml = XML.of(ResourceLoader.getXmlString(XMLTest.class)).create();
 
         //--- Strings ---
 
@@ -203,14 +207,16 @@ public class XMLTest {
         Assertions.assertEquals(new Dimension(640, 480),
                 xml.getDimension("dimOK", new Dimension(10, 20)));
         // self-closing tag is null
-        Assertions.assertNull(xml.getDimension("dimNull", new Dimension(30, 40)));
+        Assertions.assertNull(
+                xml.getDimension("dimNull", new Dimension(30, 40)));
         // missing tag uses default
         Assertions.assertEquals(new Dimension(70, 80),
                 xml.getDimension("dimMissing", new Dimension(70, 80)));
         // empty tag should fail
         try {
             xml.getDimension("dimEmpty", new Dimension(50, 60));
-            Assertions.fail("Dimension wrongfully converted from empty string.");
+            Assertions.fail(
+                    "Dimension wrongfully converted from empty string.");
         } catch (ConverterException e) {
             // swallow
         }
@@ -218,7 +224,7 @@ public class XMLTest {
 
     @Test
     public void testGetListNullMissingDefaultElements() {
-        XML xml = new XML(ResourceLoader.getXmlString(XMLTest.class));
+        XML xml = XML.of(ResourceLoader.getXmlString(XMLTest.class)).create();
         List<Dimension> defaultList = Arrays.asList(
                 new Dimension(1, 2), new Dimension(3, 4));
 

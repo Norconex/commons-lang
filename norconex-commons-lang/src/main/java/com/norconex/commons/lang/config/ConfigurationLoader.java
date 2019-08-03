@@ -21,7 +21,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.regex.Pattern;
@@ -31,10 +30,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.runtime.RuntimeConstants;
+import org.xml.sax.ErrorHandler;
 
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.commons.lang.xml.XMLValidationError;
-import com.norconex.commons.lang.xml.XMLValidationException;
 
 /**
  * <p>Configuration file parser using Velocity template engine
@@ -127,6 +125,9 @@ import com.norconex.commons.lang.xml.XMLValidationException;
  */
 public final class ConfigurationLoader {
 
+    //TODO really needed for XML since the XML class could do it, mixed
+    // with calling loadString?
+
     private static final String EXTENSION_PROPERTIES = ".properties";
     private static final String EXTENSION_VARIABLES = ".variables";
 
@@ -134,7 +135,6 @@ public final class ConfigurationLoader {
     private final VelocityContext defaultContext;
 
     private Path variablesFile;
-    private boolean ignoreErrors;
 
     /**
      * Constructor.
@@ -157,26 +157,22 @@ public final class ConfigurationLoader {
     }
 
     /**
-     * Sets whether to ignore validation errors when applicable.
-     * When loading an XML file,
-     * the default behavior will throw a {@link XMLValidationException}
-     * upon encountering validation errors.
-     * @param ignoreErrors <code>true</code> to ignore validation errors
-     * @return this instance
-     * @since 2.0.0
-     */
-    public ConfigurationLoader setIgnoreValidationErrors(boolean ignoreErrors) {
-        this.ignoreErrors = ignoreErrors;
-        return this;
-    }
-
-    /**
      * Loads an XML configuration file.
      * @param configFile XML configuration file
      * @return XML
      * @since 2.0.0
      */
     public XML loadXML(Path configFile) {
+        return loadXML(configFile, null);
+    }
+    /**
+     * Loads an XML configuration file.
+     * @param configFile XML configuration file
+     * @param errorHandler XML error handler
+     * @return XML
+     * @since 2.0.0
+     */
+    public XML loadXML(Path configFile, ErrorHandler errorHandler) {
         if (!configFile.toFile().exists()) {
             return null;
         }
@@ -188,7 +184,7 @@ public final class ConfigurationLoader {
             // as they are not necessary to parse configs.
             xml = Pattern.compile("((?!^)<\\?xml.*?\\?>|<\\!DOCTYPE.*?>)")
                     .matcher(xml).replaceAll("");
-            return new XML(xml);
+            return XML.of(xml).setErrorHandler(errorHandler).create();
         } catch (Exception e) {
             throw new ConfigurationException(
                     "Cannot load configuration file: \"" + configFile + "\". "
@@ -205,9 +201,19 @@ public final class ConfigurationLoader {
      * @since 2.0.0
      */
     public <T> T loadFromXML(Path configFile) {
-        return loadFromXML(configFile, null);
+        return loadFromXML(configFile, null, null);
     }
-
+    /**
+     * Loads an XML configuration file and populates a new object
+     * represented by the given "class" attribute found on XML root element.
+     * @param configFile XML configuration file
+     * @param errorHandler XML error handler
+     * @return new object
+     * @since 2.0.0
+     */
+    public <T> T loadFromXML(Path configFile, ErrorHandler errorHandler) {
+        return loadFromXML(configFile, null, errorHandler);
+    }
     /**
      * Loads an XML configuration file and populates a new object
      * represented by the given class.
@@ -217,12 +223,25 @@ public final class ConfigurationLoader {
      * @since 2.0.0
      */
     public <T> T loadFromXML(Path configFile, Class<T> objClass) {
-        XML xml = loadXML(configFile);
+        return loadFromXML(configFile, objClass, null);
+    }
+    /**
+     * Loads an XML configuration file and populates a new object
+     * represented by the given class.
+     * @param configFile XML configuration file
+     * @param objClass type of object to create and populate
+     * @param errorHandler XML error handler
+     * @return new object
+     * @since 2.0.0
+     */
+    public <T> T loadFromXML(
+            Path configFile, Class<T> objClass, ErrorHandler errorHandler) {
+        XML xml = loadXML(configFile, errorHandler);
         if (xml == null) {
             return null;
         }
         if (objClass == null) {
-            return xml.toObject(ignoreErrors);
+            return xml.toObject();
         }
         T obj;
         try {
@@ -231,7 +250,7 @@ public final class ConfigurationLoader {
             throw new ConfigurationException(
                     "This class could not be instantiated: " + objClass, e);
         }
-        loadFromXML(configFile, obj);
+        loadFromXML(configFile, obj, errorHandler);
         return obj;
     }
     /**
@@ -241,13 +260,21 @@ public final class ConfigurationLoader {
      * @since 2.0.0
      */
     public void loadFromXML(Path configFile, Object object) {
+        loadFromXML(configFile, object, null);
+    }
+    /**
+     * Loads an XML configuration file and populates a given object.
+     * @param configFile XML configuration file
+     * @param object object to populate
+     * @param errorHandler XML error handler
+     * @since 2.0.0
+     */
+    public void loadFromXML(
+            Path configFile, Object object, ErrorHandler errorHandler) {
         Objects.requireNonNull("'object' must not be null.");
-        XML xml = loadXML(configFile);
+        XML xml = loadXML(configFile, errorHandler);
         if (xml != null) {
-            List<XMLValidationError> errors = xml.populate(object);
-            if (!ignoreErrors && !errors.isEmpty()) {
-                throw new XMLValidationException(errors, xml);
-            }
+            xml.populate(object);
         }
     }
 

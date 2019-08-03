@@ -23,13 +23,13 @@ public class ConfigurationTest {
 
     @Test
     public void testPreserveWhiteSpace() {
-        XML xml = new XML(
+        XML xml = XML.of(
                   "<test>"
                 + "<tagPreserve>   </tagPreserve>"
                 + "<tagNested>"
                 + "  <nested>   </nested>"
                 + "</tagNested>"
-                + "</test>");
+                + "</test>").create();
 
         Assertions.assertNull(xml.getString("tagNotPresent"));
         Assertions.assertEquals("   ", xml.getString("tagNested/nested"));

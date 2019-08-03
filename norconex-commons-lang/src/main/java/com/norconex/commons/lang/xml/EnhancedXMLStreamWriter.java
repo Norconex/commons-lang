@@ -715,7 +715,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
         if (value instanceof IXMLConfigurable) {
             flush();
             try {
-                XML xml = new XML(localName, value);
+                XML xml = XML.of(localName, value).create();
                 if (disabled) {
                     xml.setAttribute("disabled", disabled);
                 }

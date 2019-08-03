@@ -1,4 +1,4 @@
-/* Copyright 2018 Norconex Inc.
+/* Copyright 2018-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,22 +44,22 @@ public final class EncryptionXMLUtil {
     }
 
     /**
-     * Convenience method for loading an encryption key from an XML reader. 
+     * Convenience method for loading an encryption key from an XML reader.
      * @param in an XML reader
-     * @param tagPrefix prefix of the XML tag names being loaded. 
+     * @param tagPrefix prefix of the XML tag names being loaded.
      * @param defaultKey default encryption key
      * @return encryption key
      * @see IXMLConfigurable
      */
     public static EncryptionKey loadFromXML(
             Reader in, String tagPrefix, EncryptionKey defaultKey) {
-        XML xml = new XML(in);
+        XML xml = XML.of(in).create();
         return loadFromXML(xml, tagPrefix, defaultKey);
     }
     /**
-     * Convenience method for loading an encryption key from an {@link XML}. 
+     * Convenience method for loading an encryption key from an {@link XML}.
      * @param xml xml configuration
-     * @param tagPrefix prefix of the XML tag names being loaded. 
+     * @param tagPrefix prefix of the XML tag names being loaded.
      * @param defaultKey default encryption key
      * @return encryption key
      * @see IXMLConfigurable
@@ -70,7 +70,7 @@ public final class EncryptionXMLUtil {
         tagKey = tagKey.length() > 0 ? tagKey + "Key" : "key";
         String tagSource = tagKey + "Source";
         String tagSize = tagKey + "Size";
-        
+
         String xmlKey = xml.getString(tagKey, null);
         if (StringUtils.isNotBlank(xmlKey)) {
             String xmlSource = xml.getString(tagSource, null);
@@ -86,33 +86,33 @@ public final class EncryptionXMLUtil {
     }
 
     /**
-     * Convenience method for saving an encryption key to an XML writer. 
+     * Convenience method for saving an encryption key to an XML writer.
      * @param writer a writer
-     * @param tagPrefix Prefix of the XML tag names being saved. If 
+     * @param tagPrefix Prefix of the XML tag names being saved. If
      *        <code>null</code>, no prefix is used (not recommended unless
-     *        wrapped in a parent tag). 
+     *        wrapped in a parent tag).
      * @param encryptionKey the encryption key to save
      * @throws IOException problem saving to XML
      * @see IXMLConfigurable
      */
     public static void saveToXML(
-            Writer writer, String tagPrefix, EncryptionKey encryptionKey) 
+            Writer writer, String tagPrefix, EncryptionKey encryptionKey)
                     throws IOException {
-        saveToXML(new EnhancedXMLStreamWriter(writer), 
+        saveToXML(new EnhancedXMLStreamWriter(writer),
                 tagPrefix, encryptionKey);
     }
     /**
-     * Convenience method for saving an encryption key to an 
-     * {@link XMLStreamWriter}. 
+     * Convenience method for saving an encryption key to an
+     * {@link XMLStreamWriter}.
      * @param writer an XML writer
-     * @param tagPrefix Prefix of the XML tag names being saved. If 
+     * @param tagPrefix Prefix of the XML tag names being saved. If
      *        <code>null</code>, no prefix is used (not recommended unless
-     *        wrapped in a parent tag). 
+     *        wrapped in a parent tag).
      * @param encryptionKey the encryption key to save
      * @throws IOException problem saving to XML
      * @see IXMLConfigurable
      */
-    public static void saveToXML(EnhancedXMLStreamWriter writer, 
+    public static void saveToXML(EnhancedXMLStreamWriter writer,
             String tagPrefix, EncryptionKey encryptionKey) throws IOException {
 
         String tagKey = StringUtils.trimToEmpty(tagPrefix);

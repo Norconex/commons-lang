@@ -65,6 +65,15 @@
         XML validation methods.
       </action>
       <action dev="essiembre" type="add">
+        New XML ErrorHandler classes: ErrorHandlerCapturer, ErrorHandlerFailer,
+        and ErrorHandlerLogger.
+      </action>
+      <action dev="essiembre" type="add">
+        New XMLUtil class helping with the creation of XML-related objects
+        with XML Schema 1.1 support and taking care of security vulnerabilities
+        (XXE).
+      </action>
+      <action dev="essiembre" type="add">
         New DateUtil class for converting between java.util.Date to/from
         local date/time.
       </action>
@@ -87,6 +96,9 @@
       </action>
       <action dev="essiembre" type="add">
         New PropertyMatchers collection.
+      </action>
+      <action dev="essiembre" type="add">
+        New VersionUtil class.
       </action>
       <action dev="essiembre" type="update">
         Now relies on Norconex Commons Maven Parent. 
