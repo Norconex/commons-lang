@@ -1928,13 +1928,26 @@ public class XML {
             String deprecatedXPath, String validXPath, boolean throwException) {
         if (contains(deprecatedXPath)) {
             String msg = "\"" + deprecatedXPath
-                    + "\" has been deprecated in favor of \"" + validXPath
+                    + "\" has been deprecated"
+                    + (StringUtils.isNoneBlank(validXPath)
+                        ? " in favor of \"" + validXPath : "")
                     + "\".  Please update your XML configuration accordingly.";
             if (throwException) {
                 throw new XMLException(msg);
             }
             LOG.warn(msg);
         }
+    }
+    /**
+     * Checks whether a deprecated configuration entry (without replacement)
+     * was specified and log a warning or throw an {@link XMLException}.
+     * @param deprecatedXPath xpath to the invalid entry
+     * @param throwException <code>true</code> to throw exception, else log
+     *        a warning
+     */
+    public void checkDeprecated(
+            String deprecatedXPath, boolean throwException) {
+        checkDeprecated(deprecatedXPath, null, throwException);
     }
 
     public ErrorHandler getErrorHandler() {
