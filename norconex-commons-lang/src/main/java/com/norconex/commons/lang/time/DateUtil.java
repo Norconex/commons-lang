@@ -52,6 +52,26 @@ public final class DateUtil {
     }
 
     /**
+     * Converts a millisecond EPOCH date to a {@link LocalDate} using the
+     * system default {@link ZoneId}.
+     * @param date to convert
+     * @return converted date
+     */
+    public static LocalDate toLocalDate(long date) {
+        return toLocalDate(date, ZoneId.systemDefault());
+    }
+    /**
+     * Converts a millisecond EPOCH date to a {@link LocalDate} using the
+     * specified {@link ZoneId}.
+     * @param date to convert
+     * @param zoneId zone id
+     * @return converted date
+     */
+    public static LocalDate toLocalDate(long date, ZoneId zoneId) {
+        return toLocalDateTime(date, zoneId).toLocalDate();
+    }
+
+    /**
      * Converts a {@link Date} to a {@link LocalDateTime} using the system
      * default {@link ZoneId}.
      * @param date to convert
@@ -69,6 +89,26 @@ public final class DateUtil {
      */
     public static LocalDateTime toLocalDateTime(Date date, ZoneId zoneId) {
         return date.toInstant().atZone(zoneId).toLocalDateTime();
+    }
+
+    /**
+     * Converts a millisecond EPOCH date to a {@link LocalDateTime} using the
+     * system default {@link ZoneId}.
+     * @param date to convert
+     * @return converted date
+     */
+    public static LocalDateTime toLocalDateTime(long date) {
+        return toLocalDateTime(date, ZoneId.systemDefault());
+    }
+    /**
+     * Converts a millisecond EPOCH date to a {@link LocalDateTime} using the
+     * specified {@link ZoneId}.
+     * @param date to convert
+     * @param zoneId zone id
+     * @return converted date
+     */
+    public static LocalDateTime toLocalDateTime(long date, ZoneId zoneId) {
+        return LocalDateTime.ofInstant(Instant.ofEpochMilli(date), zoneId);
     }
 
     /**
