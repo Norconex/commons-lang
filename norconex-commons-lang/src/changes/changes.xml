@@ -58,7 +58,7 @@
       <action dev="essiembre" type="add">
         New XML class replacing XMLConfigurationUtil. Now relying on 
         Java XML/XPath instead of Apache Configuration and white spaces are now
-        always preserved. 
+        always preserved. Also supports JAXB mappings.
       </action>
       <action dev="essiembre" type="add">
         New XMLValidationError class now returned by 
@@ -80,6 +80,10 @@
       <action dev="essiembre" type="add">
         New FileUtil#createDateFormattedDirs and FileUtil#toDateFormattedDir
         methods.
+      </action>
+      <action dev="essiembre" type="add">
+        New ClassFinder methods accepting a Predicate to filter returned 
+        classes.
       </action>
       <action dev="essiembre" type="add">
         New FileUtil#toURLDir methods.

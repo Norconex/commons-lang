@@ -32,7 +32,7 @@ public class ClassConverter extends AbstractConverter {
         try {
             return type.cast(ClassUtils.getClass(value));
         } catch (ClassNotFoundException e) {
-            throw toTypeException(value, type);
+            throw toTypeException(value, type, e);
         }
     }
 }

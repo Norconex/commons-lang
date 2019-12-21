@@ -90,9 +90,11 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.XMLFilterImpl;
 
+import com.norconex.commons.lang.ClassFinder;
 import com.norconex.commons.lang.bean.BeanUtil;
 import com.norconex.commons.lang.collection.CollectionUtil;
 import com.norconex.commons.lang.convert.Converter;
+import com.norconex.commons.lang.convert.ConverterException;
 import com.norconex.commons.lang.time.DurationParser;
 import com.norconex.commons.lang.time.DurationParserException;
 
@@ -103,6 +105,9 @@ import com.norconex.commons.lang.time.DurationParserException;
 
 //TODO have a look at Collections.emptyList() and do similar to have
 // getObject return any type instead of having tons of get methods.
+
+//TODO getElement(s) and getAttribute(s) which are direct references to
+// elements attributes (not xpath)
 
 
 /**
@@ -321,12 +326,22 @@ public class XML {
      */
     @SuppressWarnings("unchecked")
     public <T> T toObject(T defaultObject) {
+        return toObject((Class<T>) getClass("@class", null), defaultObject);
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> T toObject(String className, T defaultObject) {
+        if (node == null || StringUtils.isBlank(className)) {
+            return defaultObject;
+        }
+        return toObject((Class<T>) Converter.convert(
+                className, Class.class, null), defaultObject);
+    }
+    private <T> T toObject(Class<T> objClass, T defaultObject) {
         if (node == null) {
             return defaultObject;
         }
-
         T obj;
-        Class<T> objClass = (Class<T>) getClass("@class", null);
         if (objClass != null) {
             try {
                 obj = objClass.newInstance();
@@ -335,12 +350,105 @@ public class XML {
                         "This class could not be instantiated: " + objClass, e);
             }
         } else {
-            LOG.debug("A configuration entry was found without class "
-                   + "reference where one could have been provided; "
+            LOG.debug("A configuration entry was found without a class "
+                   + "attribute where one could have been provided; "
                    + "using default value: {}", defaultObject);
             obj = defaultObject;
         }
         populate(obj);
+        return obj;
+    }
+
+    /**
+     * <p>
+     * Creates a new instance of the class represented by the "class" attribute
+     * on this XML root node.  The class must have an empty constructor.
+     * If the class is an instance of {@link IXMLConfigurable}, the object
+     * created will be automatically populated by invoking the
+     * {@link IXMLConfigurable#loadFromXML(XML)} method,
+     * passing it the node XML.
+     * If the class is annotated with an
+     * {@link XmlRootElement}, it will use JAXB to unmarshall it to an object.
+     * </p>
+     * <p>
+     * Other than making sure the class is a subtype of the specified
+     * super class, the main difference between method this and
+     * {@link #toObject()} is the support for partial class names.
+     * That is, this method will scan the current class loader for a class
+     * with its name ending with the value of the "class" attribute.  If
+     * more than one is found, an {@link XMLException} will be thrown.
+     * If you are expecting fully qualified class names, use the
+     * {@link #toObject()} method, which is faster.
+     * </p>
+     * @param type the expected class (sub)type to return
+     * @param <T> the type of the return value
+     * @return a new object.
+     * @throws XMLValidationException if the XML has validation errors
+     * @throws XMLException if something prevented object creation
+     */
+    public <T> T toObjectImpl(Class<?> type) {
+        return toObjectImpl(type, null);
+    }
+    /**
+     * <p>
+     * Creates a new instance of the class represented by the "class" attribute
+     * on the given node.  The class must have an empty constructor.
+     * If the class is an instance of {@link IXMLConfigurable}, the object
+     * created will be automatically populated by invoking the
+     * {@link IXMLConfigurable#loadFromXML(XML)} method,
+     * passing it the node XML.
+     * If the class is annotated with an
+     * {@link XmlRootElement}, it will use JAXB to unmarshall it to an object.
+     * </p>
+     * <p>
+     * Other than making sure the class is a subtype of the specified
+     * super class, the main difference between method this and
+     * {@link #toObject(Object)} is the support for partial class names.
+     * That is, this method will scan the current class loader for a class
+     * with its name ending with the value of the "class" attribute.  If
+     * more than one is found, an {@link XMLException} will be thrown.
+     * If you are expecting fully qualified class names, use the
+     * {@link #toObject(Object)} method, which is faster.
+     * </p>
+     * @param type the expected class (sub)type to return
+     * @param defaultObject if returned object is null or undefined,
+     *        returns this default object.
+     * @param <T> the type of the return value
+     * @return a new object.
+     * @throws XMLException if something prevented object creation
+     */
+    public <T> T toObjectImpl(Class<?> type, T defaultObject) {
+        if (node == null || type == null) {
+            return defaultObject;
+        }
+
+        T obj;
+        try {
+            obj = toObject(defaultObject);
+        } catch (ConverterException e) {
+            if (e.getCause() instanceof ClassNotFoundException) {
+                String partialName = getString("@class");
+                List<String> results = ClassFinder.findSubTypes(
+                        type, s -> s.endsWith(partialName));
+                if (results.size() > 1) {
+                    throw new XMLException(results.size()
+                            + " classes implementing " + type
+                            + " and ending with " + partialName
+                            + " where found when only 1 was expected. "
+                            + "Consider using fully qualified class name.");
+                }
+                if (results.isEmpty()) {
+                    return null;
+                }
+                obj = toObject(results.get(0), defaultObject);
+            } else {
+                throw e;
+            }
+        }
+        if (obj != null && !type.isInstance(obj)) {
+            throw new XMLException(
+                    obj.getClass() + " is not an instance of " + type);
+        }
         return obj;
     }
 
@@ -497,8 +605,171 @@ public class XML {
         return getObjectList(xpathExpression, Collections.emptyList());
     }
 
-    //TODO getElement(s) and getAttribute(s) which are direct references to
-    // elements attributes (not xpath)
+    /**
+     * <p>Creates a new instance of the class represented by the "class"
+     * attribute on the node matching the expression.
+     * The class must have an empty constructor.
+     * If the class is an instance of {@link IXMLConfigurable}, the object
+     * created will be automatically populated by invoking the
+     * {@link IXMLConfigurable#loadFromXML(XML)} method,
+     * passing it the node XML.</p>
+     *
+     * <p>This method should throw a
+     * {@link XMLException} upon error. Use a method
+     * with a default value argument to avoid throwing exceptions.</p>
+     * <p>
+     * Other than making sure the class is a subtype of the specified
+     * super class, the main difference between method this and
+     * {@link #getObject(String)} is the support for partial class names.
+     * That is, this method will scan the current class loader for a class
+     * with its name ending with the value of the "class" attribute.  If
+     * more than one is found, an {@link XMLException} will be thrown.
+     * If you are expecting fully qualified class names, use the
+     * {@link #getObject(String)} method, which is faster.
+     * </p>
+     * @param type the expected class (sub)type to return
+     * @param xpathExpression xpath expression
+     * @param <T> the type of the return value
+     * @return a new object.
+     */
+    public <T extends Object> T getObjectImpl(
+            Class<?> type, String xpathExpression) {
+        return getObjectImpl(type, xpathExpression, (T) null, true);
+    }
+    /**
+     * <p>Creates a new instance of the class represented by the "class"
+     * attribute on the node matching the expression.
+     * The class must have an empty constructor.
+     * If the class is an instance of {@link IXMLConfigurable}, the object
+     * created will be automatically populated by invoking the
+     * {@link IXMLConfigurable#loadFromXML(XML)} method,
+     * passing it the node XML.</p>
+     *
+     * <p>This method should not throw exception upon errors, but will return
+     * the default value instead (even if null). Use a method without
+     * a default value argument to get exceptions on errors.</p>
+     * <p>
+     * Other than making sure the class is a subtype of the specified
+     * super class, the main difference between method this and
+     * {@link #getObject(String, Object)} is the support for partial class names.
+     * That is, this method will scan the current class loader for a class
+     * with its name ending with the value of the "class" attribute.  If
+     * more than one is found, an {@link XMLException} will be thrown.
+     * If you are expecting fully qualified class names, use the
+     * {@link #getObject(String, Object)} method, which is faster.
+     * </p>
+     *
+     * @param type the expected class (sub)type to return
+     * @param defaultObject if returned object is null or undefined,
+     *        returns this default object.
+     * @param xpathExpression xpath expression
+     * @param <T> the type of the return value
+     * @return a new object.
+     */
+    public <T> T getObjectImpl(
+            Class<?> type, String xpathExpression, T defaultObject) {
+        return getObjectImpl(type, xpathExpression, defaultObject, false);
+    }
+    private <T> T getObjectImpl(Class<?> type, String xpathExpression,
+            T defaultObject, boolean canThrowException) {
+        if (node == null || type == null) {
+            return defaultObject;
+        }
+
+        try {
+            if (xpathExpression == null && defaultObject == null) {
+                return toObjectImpl(type, (T) null);
+            }
+            XML xml = getXML(xpathExpression);
+            if (xml == null) {
+                return defaultObject;
+            }
+            return xml.toObjectImpl(type, defaultObject);
+        } catch (Exception e) {
+            handleException(
+                    node.getNodeName(), xpathExpression, e, canThrowException);
+            return defaultObject;
+        }
+    }
+    /**
+     * <p>Creates an instance list from classes represented by the "class"
+     * attribute on the nodes matching the expression.
+     * The classes must have an empty constructor.
+     * If a class is an instance of {@link IXMLConfigurable}, the object
+     * created will be automatically populated by invoking the
+     * {@link IXMLConfigurable#loadFromXML(XML)} method,
+     * passing it the node XML.</p>
+     *
+     * <p>This method should not throw exception upon errors, but will return
+     * the default value instead (even if null). Use a method without
+     * a default value argument to get exceptions on errors.</p>
+     * <p>
+     * Other than making sure the class is a subtype of the specified
+     * super class, the main difference between method this and
+     * {@link #getObjectList(String, List)} is the support for partial class names.
+     * That is, this method will scan the current class loader for a class
+     * with its name ending with the value of the "class" attribute.  If
+     * more than one is found, an {@link XMLException} will be thrown.
+     * If you are expecting fully qualified class names, use the
+     * {@link #getObjectList(String, List)} method, which is faster.
+     * </p>
+     *
+     * @param type the expected class (sub)type to return
+     * @param xpathExpression xpath expression
+     * @param defaultObjects if returned list is empty,
+     *        returns this default list.
+     * @param <T> the type of the return value
+     * @return a new object.
+     * @throws XMLException if instance cannot be created/populated
+     */
+    public <T> List<T> getObjectListImpl(
+            Class<?> type, String xpathExpression, List<T> defaultObjects) {
+        List<T> list = new ArrayList<>();
+        List<XML> xmls = getXMLList(xpathExpression);
+        for (XML xml : xmls) {
+            if (xml != null) {
+                list.add(xml.toObjectImpl(type));
+            }
+        }
+        if (list.isEmpty()) {
+            return defaultObjects;
+        }
+        return list;
+    }
+    /**
+     * <p>Creates an instance list from classes represented by the "class"
+     * attribute on the nodes matching the expression.
+     * The classes must have an empty constructor.
+     * If a class is an instance of {@link IXMLConfigurable}, the object
+     * created will be automatically populated by invoking the
+     * {@link IXMLConfigurable#loadFromXML(XML)} method,
+     * passing it the node XML.</p>
+     *
+     * <p>This method should throw a
+     * {@link XMLException} upon error. Use a method
+     * with a default value argument to avoid throwing exceptions.</p>
+     * <p>
+     * Other than making sure the class is a subtype of the specified
+     * super class, the main difference between method this and
+     * {@link #getObjectList(String)} is the support for partial class names.
+     * That is, this method will scan the current class loader for a class
+     * with its name ending with the value of the "class" attribute.  If
+     * more than one is found, an {@link XMLException} will be thrown.
+     * If you are expecting fully qualified class names, use the
+     * {@link #getObjectList(String)} method, which is faster.
+     * </p>
+     *
+     * @param type the expected class (sub)type to return
+     * @param xpathExpression xpath expression
+     * @param <T> the type of the return value
+     * @return a new object.
+     * @throws XMLException if instance cannot be created/populated
+     */
+    public <T> List<T> getObjectListImpl(
+            Class<?> type, String xpathExpression) {
+        return getObjectListImpl(
+                type, xpathExpression, Collections.emptyList());
+    }
 
     /**
      * Gets the xml subset matching the xpath expression.
@@ -1820,6 +2091,7 @@ public class XML {
     @SuppressWarnings("unchecked")
     public <T> Class<T> getClass(
             String xpathExpression, Class<T> defaultValue) {
+//xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx do it here?
         return get(xpathExpression, Class.class, defaultValue);
     }
     /**

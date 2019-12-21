@@ -31,6 +31,10 @@ import org.slf4j.LoggerFactory;
 import com.norconex.commons.lang.ResourceLoader;
 import com.norconex.commons.lang.collection.CollectionUtil;
 import com.norconex.commons.lang.convert.ConverterException;
+import com.norconex.commons.lang.convert.DateConverter;
+import com.norconex.commons.lang.convert.DurationConverter;
+import com.norconex.commons.lang.convert.EnumConverter;
+import com.norconex.commons.lang.convert.IConverter;
 import com.norconex.commons.lang.unit.DataUnit;
 
 /**
@@ -186,6 +190,34 @@ public class XMLTest {
         Assertions.assertEquals(replacement, XML.of(
                 SAMPLE_XML).create().replace(XML.of(
                         replacement).create()).toString());
+    }
+
+    @Test
+    public void testToObjectImpl() {
+        XML xml = XML.of("<test class=\"DurationConverter\"></test>").create();
+        DurationConverter c = xml.toObjectImpl(IConverter.class);
+        Assertions.assertNotNull(c);
+    }
+
+    @Test
+    public void testGetObjectListImpl() {
+        XML xml = XML.of(
+                "<test>"
+              + "<converters>"
+              + "<converter class=\"DurationConverter\"></converter>"
+              + "<converter class=\"com.norconex.commons.lang.convert"
+              + ".EnumConverter\"></converter>"
+              + "<converter class=\"convert.DateConverter\"></converter>"
+              + "</converters>"
+              + "</test>"
+
+        ).create();
+        List<IConverter> converters = xml.getObjectListImpl(
+                IConverter.class, "converters/converter");
+        Assertions.assertEquals(3, converters.size());
+        Assertions.assertTrue(converters.contains(new DurationConverter()));
+        Assertions.assertTrue(converters.contains(new EnumConverter()));
+        Assertions.assertTrue(converters.contains(new DateConverter()));
     }
 
     @Test

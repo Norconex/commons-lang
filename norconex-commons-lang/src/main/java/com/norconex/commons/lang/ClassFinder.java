@@ -1,4 +1,4 @@
-/* Copyright 2010-2018 Norconex Inc.
+/* Copyright 2010-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -45,6 +46,9 @@ import org.slf4j.LoggerFactory;
  */
 public final class ClassFinder {
 
+    //TODO cache top X mappings for performance
+
+
     private static final Logger LOG =
             LoggerFactory.getLogger(ClassFinder.class);
 
@@ -62,6 +66,20 @@ public final class ClassFinder {
      * @since 1.4.0
      */
     public static List<String> findSubTypes(Class<?> superClass) {
+        return findSubTypes(superClass, null);
+    }
+    /**
+     * Finds the names of all subtypes of the super class,
+     * scanning the roots of this class classpath.
+     * This method is null-safe.  If no classes are found,
+     * an empty list will be returned.
+     * @param superClass the class from which to find subtypes
+     * @param accept filter to keep classes testing <code>true</code>
+     * @return list of class names
+     * @since 2.0.0
+     */
+    public static List<String> findSubTypes(
+            Class<?> superClass, Predicate<String> accept) {
         List<String> classes = new ArrayList<>();
         if (superClass == null) {
             return classes;
@@ -77,11 +95,10 @@ public final class ClassFinder {
         while (roots.hasMoreElements()) {
             URL url = roots.nextElement();
             File root = new File(url.getPath());
-            classes.addAll(findSubTypes(root, superClass));
+            classes.addAll(findSubTypes(root, superClass, accept));
         }
         return classes;
     }
-
 
     /**
      * Finds the names of all subtypes of the super class in list
@@ -95,12 +112,27 @@ public final class ClassFinder {
      */
     public static List<String> findSubTypes(
             List<File> files, Class<?> superClass) {
+        return findSubTypes(files, superClass, null);
+    }
+    /**
+     * Finds the names of all subtypes of the super class in list
+     * of {@link File} supplied.
+     * This method is null-safe.  If no classes are found,
+     * an empty list will be returned.
+     * @param files directories and/or JARs to scan for classes
+     * @param superClass the class from which to find subtypes
+     * @param accept filter to keep classes testing <code>true</code>
+     * @return list of class names
+     * @since 2.0.0
+     */
+    public static List<String> findSubTypes(
+            List<File> files, Class<?> superClass, Predicate<String> accept) {
         List<String> classes = new ArrayList<>();
         if (superClass == null || files == null) {
             return classes;
         }
         for (File file : files) {
-            classes.addAll(findSubTypes(file, superClass));
+            classes.addAll(findSubTypes(file, superClass, accept));
         }
         return classes;
     }
@@ -117,8 +149,24 @@ public final class ClassFinder {
      * @return list of class names
      * @since 1.4.0
      */
+    public static List<String> findSubTypes(File file, Class<?> superClass) {
+        return findSubTypes(file, superClass, null);
+    }
+    /**
+     * Finds the names of all subtypes of the super class for the
+     * supplied {@link File}.
+     * This method is null-safe.  If no classes are found,
+     * an empty list will be returned.
+     * If the file is null or does not exists, or if it is not a JAR or
+     * directory, an empty string list will be returned.
+     * @param file directory or JAR to scan for classes
+     * @param superClass the class from which to find subtypes
+     * @param accept filter to keep classes testing <code>true</code>
+     * @return list of class names
+     * @since 2.0.0
+     */
     public static List<String> findSubTypes(
-            File file, Class<?> superClass) {
+            File file, Class<?> superClass, Predicate<String> accept) {
         if (superClass == null) {
             return new ArrayList<>();
         }
@@ -128,19 +176,20 @@ public final class ClassFinder {
             return new ArrayList<>();
         }
         if (file.isDirectory()) {
-            return findSubTypesFromDirectory(new File(
-                    file.getAbsolutePath() + File.separatorChar), superClass);
+            return findSubTypesFromDirectory(
+                    new File(file.getAbsolutePath() + File.separatorChar),
+                    superClass, accept);
         }
         if (file.getName().endsWith(".jar")) {
-            return findSubTypesFromJar(file, superClass);
+            return findSubTypesFromJar(file, superClass, accept);
         }
         LOG.warn("File not a JAR and not a directory.");
         return new ArrayList<>();
     }
 
+    // predicate is null-safe
     private static List<String> findSubTypesFromDirectory(
-            File dir, Class<?> superClass) {
-
+            File dir, Class<?> superClass, Predicate<String> predicate) {
         List<String> classes = new ArrayList<>();
         String dirPath = dir.getAbsolutePath();
 
@@ -154,15 +203,16 @@ public final class ClassFinder {
         for (File classFile : classFiles) {
             String filePath = classFile.getAbsolutePath();
             String className = StringUtils.removeStart(filePath, dirPath);
-            className = resolveName(loader, className, superClass);
+            className = resolveName(loader, className, superClass, predicate);
             if (className != null) {
                 classes.add(className);
             }
         }
         return classes;
     }
+    // predicate is null-safe
     private static List<String> findSubTypesFromJar(
-            File jarFile, Class<?> superClass) {
+            File jarFile, Class<?> superClass, Predicate<String> predicate) {
 
         List<String> classes = new ArrayList<>();
         ClassLoader loader = getClassLoader(jarFile);
@@ -181,7 +231,7 @@ public final class ClassFinder {
         while (entries.hasMoreElements()) {
             JarEntry entry = entries.nextElement();
             String className = entry.getName();
-            className = resolveName(loader, className, superClass);
+            className = resolveName(loader, className, superClass, predicate);
             if (className != null) {
                 classes.add(className);
             }
@@ -206,15 +256,24 @@ public final class ClassFinder {
         }
     }
 
+    // predicate is null-safe
     private static String resolveName(
-            ClassLoader loader, String rawName, Class<?> superClass) {
-        String className = rawName;
-        if (!rawName.endsWith(".class") || className.contains("$")) {
+            ClassLoader loader, String rawName,
+            Class<?> superClass, Predicate<String> predicate) {
+        if (!rawName.endsWith(".class")
+                || rawName.contains("$")
+                || rawName.substring(1).equals("module-info.class")) {
             return null;
         }
+
+        String className = rawName;
         className = className.replaceAll("[\\\\/]", ".");
         className = StringUtils.removeStart(className, ".");
         className = StringUtils.removeEnd(className, ".class");
+
+        if (predicate != null && !predicate.test(className)) {
+            return null;
+        }
 
         try {
             Class<?> clazz = loader.loadClass(className);
@@ -224,13 +283,11 @@ public final class ClassFinder {
                     && superClass.isAssignableFrom(clazz)) {
                 return clazz.getName();
             }
-        } catch (ClassNotFoundException e) {
-            LOG.error("Invalid class: " + className, e);
+        } catch (UnsupportedClassVersionError | ClassNotFoundException e) {
+            LOG.error("Invalid class: \"{}\"", className, e);
         } catch (NoClassDefFoundError e) {
-            LOG.debug("Invalid class: " + className, e);
+            LOG.debug("Invalid class: \"{}\"", className, e);
         }
         return null;
     }
-
-
 }

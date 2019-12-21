@@ -16,6 +16,11 @@ package com.norconex.commons.lang.convert;
 
 import java.util.Objects;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+
 /**
  * <p>
  * Adds default behaviors common to most converters, including
@@ -87,5 +92,19 @@ public abstract class AbstractConverter implements IConverter {
         return new ConverterException(String.format(
                 "Cannot convert object of type \"%s\" to String.",
                 object.getClass().getName()), e);
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        return EqualsBuilder.reflectionEquals(this, other);
+    }
+    @Override
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this);
+    }
+    @Override
+    public String toString() {
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }
