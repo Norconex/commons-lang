@@ -7,7 +7,7 @@
   </properties>
   <body>
 
-    <release version="1.15.1-SNAPSHOT" date="2019-??-??" description="Maintenance release">
+    <release version="1.15.1" date="2019-12-21" description="Maintenance release">
       <action dev="essiembre" type="add">
         Added new normalization rules to URLNormalizer: removeQueryString,
         lowerCase, lowerCasePath, lowerCaseQuery, lowerCaseQueryParameterNames,
