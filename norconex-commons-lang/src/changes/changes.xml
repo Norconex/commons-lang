@@ -158,7 +158,7 @@
         Most method arguments accepting File now accept Path also/instead.
       </action>
       <action dev="essiembre" type="update">
-        Properties setXXX(...) and addXXX(...) methods are not deprecated in favor
+        Properties setXXX(...) and addXXX(...) methods are now deprecated in favor
         of add(...) and set(...) methods.
       </action>
       <action dev="essiembre" type="update">
