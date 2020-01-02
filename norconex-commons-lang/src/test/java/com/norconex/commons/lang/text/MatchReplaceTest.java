@@ -63,7 +63,7 @@ public class MatchReplaceTest {
         testMatch(regexAssert, Method.REGEX, sr);
     }
     private void testMatch(boolean expected, Method method, MatchReplace sr) {
-        MatchReplace s = sr.clone();
+        MatchReplace s = new MatchReplace(sr);
         s.setMethod(method);
 
         Assertions.assertAll(method.toString(),

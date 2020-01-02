@@ -197,6 +197,7 @@ public final class ConfigurationLoader {
      * Loads an XML configuration file and populates a new object
      * represented by the given "class" attribute found on XML root element.
      * @param configFile XML configuration file
+     * @param <T> type of returned object
      * @return new object
      * @since 2.0.0
      */
@@ -208,6 +209,7 @@ public final class ConfigurationLoader {
      * represented by the given "class" attribute found on XML root element.
      * @param configFile XML configuration file
      * @param errorHandler XML error handler
+     * @param <T> type of returned object
      * @return new object
      * @since 2.0.0
      */
@@ -219,6 +221,7 @@ public final class ConfigurationLoader {
      * represented by the given class.
      * @param configFile XML configuration file
      * @param objClass type of object to create and populate
+     * @param <T> type of returned object
      * @return new object
      * @since 2.0.0
      */
@@ -231,6 +234,7 @@ public final class ConfigurationLoader {
      * @param configFile XML configuration file
      * @param objClass type of object to create and populate
      * @param errorHandler XML error handler
+     * @param <T> type of returned object
      * @return new object
      * @since 2.0.0
      */

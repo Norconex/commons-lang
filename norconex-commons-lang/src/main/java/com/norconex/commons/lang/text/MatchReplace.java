@@ -186,6 +186,18 @@ public class MatchReplace implements IXMLConfigurable {
         super();
         this.method = method;
     }
+    // Copy constructor
+    public MatchReplace(MatchReplace matchReplace) {
+        super();
+        this.method = matchReplace.method;
+        this.pattern = matchReplace.pattern;
+        this.text = matchReplace.text;
+        this.replacement = matchReplace.replacement;
+        this.ignoreCase = matchReplace.ignoreCase;
+        this.ignoreAccents = matchReplace.ignoreAccents;
+        this.replaceAll = matchReplace.replaceAll;
+        this.matchWhole = matchReplace.matchWhole;
+    }
 
     public Method getMethod() {
         return method;
@@ -195,7 +207,7 @@ public class MatchReplace implements IXMLConfigurable {
         return this;
     }
     public MatchReplace withMethod(Method method) {
-        return clone().setMethod(method);
+        return copy().setMethod(method);
     }
 
     public boolean isMatchWhole() {
@@ -206,7 +218,7 @@ public class MatchReplace implements IXMLConfigurable {
         return this;
     }
     public MatchReplace withMatchWhole(boolean matchWhole) {
-        return clone().setMatchWhole(matchWhole);
+        return copy().setMatchWhole(matchWhole);
     }
 
     public String getPattern() {
@@ -217,7 +229,7 @@ public class MatchReplace implements IXMLConfigurable {
         return this;
     }
     public MatchReplace withPattern(String pattern) {
-        return clone().setPattern(pattern);
+        return copy().setPattern(pattern);
     }
 
     public String getText() {
@@ -228,7 +240,7 @@ public class MatchReplace implements IXMLConfigurable {
         return this;
     }
     public MatchReplace withText(String text) {
-        return clone().setText(text);
+        return copy().setText(text);
     }
 
     public String getReplacement() {
@@ -239,7 +251,7 @@ public class MatchReplace implements IXMLConfigurable {
         return this;
     }
     public MatchReplace withReplacement(String replacement) {
-        return clone().setReplacement(replacement);
+        return copy().setReplacement(replacement);
     }
 
     public boolean isIgnoreCase() {
@@ -250,7 +262,7 @@ public class MatchReplace implements IXMLConfigurable {
         return this;
     }
     public MatchReplace withIgnoreCase(boolean ignoreCase) {
-        return clone().setIgnoreCase(ignoreCase);
+        return copy().setIgnoreCase(ignoreCase);
     }
 
     public boolean isIgnoreAccents() {
@@ -261,7 +273,7 @@ public class MatchReplace implements IXMLConfigurable {
         return this;
     }
     public MatchReplace withIgnoreAccents(boolean ignoreAccents) {
-        return clone().setIgnoreAccents(ignoreAccents);
+        return copy().setIgnoreAccents(ignoreAccents);
     }
 
     public boolean isReplaceAll() {
@@ -272,7 +284,7 @@ public class MatchReplace implements IXMLConfigurable {
         return this;
     }
     public MatchReplace withReplaceAll(boolean replaceAll) {
-        return clone().setReplaceAll(replaceAll);
+        return copy().setReplaceAll(replaceAll);
     }
 
     public void copyTo(MatchReplace sr) {
@@ -281,18 +293,9 @@ public class MatchReplace implements IXMLConfigurable {
     public void copyFrom(MatchReplace sr) {
         BeanUtil.copyProperties(this, sr);
     }
-    @Override
-    public MatchReplace clone() {
-        MatchReplace sr = new MatchReplace();
-        sr.method = method;
-        sr.pattern = pattern;
-        sr.text = text;
-        sr.replacement = replacement;
-        sr.ignoreCase = ignoreCase;
-        sr.ignoreAccents = ignoreAccents;
-        sr.replaceAll = replaceAll;
-        sr.matchWhole = matchWhole;
-        return sr;
+
+    private MatchReplace copy() {
+        return new MatchReplace(this);
     }
 
     //--- Match/replace methods ------------------------------------------------

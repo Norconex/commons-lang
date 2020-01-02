@@ -1,4 +1,4 @@
-/* Copyright 2014-2017 Norconex Inc.
+/* Copyright 2014-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,16 +18,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Represent a very simple pipeline container for a list of executable tasks 
+ * Represent a very simple pipeline container for a list of executable tasks
  * called "pipeline stages" (defined using
  * {@link IPipelineStage}).
- * This pipeline class can also be used a pipeline stage to create 
+ * This pipeline class can also be used a pipeline stage to create
  * pipe hierarchies.
- * For more sophisticated work flow needs, consider using a more advanced 
+ * For more sophisticated work flow needs, consider using a more advanced
  * framework such as Norconex JEF.
  * @author Pascal Essiembre
  * @param <T> pipeline context type
@@ -37,9 +37,9 @@ import org.slf4j.Logger;
 public class Pipeline<T> implements IPipelineStage<T> {
 
     private static final Logger LOG = LoggerFactory.getLogger(Pipeline.class);
-    
+
     private final List<IPipelineStage<T>> stages = new ArrayList<>();
-    
+
     /**
      * Constructor.
      */
@@ -84,13 +84,13 @@ public class Pipeline<T> implements IPipelineStage<T> {
     public void clearStages() {
         stages.clear();
     }
-    
+
     @Override
     public boolean execute(T context) {
         for (IPipelineStage<T> stage : stages) {
             if (!stage.execute(context)) {
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("Pipeline execution stopped at stage: " + stage);
+                    LOG.debug("Pipeline execution stopped at stage: {}", stage);
                 }
                 return false;
             }
