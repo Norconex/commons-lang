@@ -39,6 +39,7 @@ import com.norconex.commons.lang.xml.XML;
  */
 //TODO create new Predicates which has a list
 // (instead of using Predicate.and() which won't allow us to add/remove)
+// Use MatchReplace instead of passing arguments?
 public final class PropertyMatcher implements Predicate<Properties> {
     private final String key;
     private final String regex;

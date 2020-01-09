@@ -1,4 +1,4 @@
-/* Copyright 2010-2018 Norconex Inc.
+/* Copyright 2010-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.set.ListOrderedSet;
 import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.commons.io.output.WriterOutputStream;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -782,7 +781,7 @@ public class Properties extends ObservableMap<String, List<String>>
      */
     @SafeVarargs
     public final <T> void set(String key, T... values) {
-        set(key, CollectionUtil.asListOrNull(values));
+        setList(key, CollectionUtil.asListOrNull(values));
     }
     /**
      * Adds one or multiple string values.
@@ -796,7 +795,7 @@ public class Properties extends ObservableMap<String, List<String>>
      */
     @SafeVarargs
     public final <T> void add(String key, T... values) {
-        add(key, CollectionUtil.asListOrNull(values));
+        addList(key, CollectionUtil.asListOrNull(values));
     }
     /**
      * Sets one or multiple values as strings replacing existing ones.
@@ -809,7 +808,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @param <T> values type
      * @since 2.0.0
      */
-    public final <T> void set(String key, List<T> values) {
+    public final <T> void setList(String key, List<T> values) {
         if (CollectionUtils.isEmpty(values)) {
             remove(key);
         }
@@ -829,7 +828,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @param <T> values type
      * @since 2.0.0
      */
-    public final <T> void add(String key, List<T> values) {
+    public final <T> void addList(String key, List<T> values) {
         if (CollectionUtils.isEmpty(values)) {
             return;
         }
@@ -1512,7 +1511,7 @@ public class Properties extends ObservableMap<String, List<String>>
             String key = entry.getKey();
             List<String> values = entry.getValue();
             if (values != null) {
-                addString(key, values.toArray(ArrayUtils.EMPTY_STRING_ARRAY));
+                addList(key, values);
             }
         }
     }

@@ -1,4 +1,4 @@
-/* Copyright 2017-2018 Norconex Inc.
+/* Copyright 2017-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@ package com.norconex.commons.lang.text;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.regex.Matcher;
 
@@ -29,12 +30,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.map.Properties;
+import com.norconex.commons.lang.map.PropertySetter;
 
 /**
  * <p>
  * Simplify extraction of key/value pairs from text using regular expression.
  * Match groups can be used to identify the key and values.
- * Key matching is optional and can be provided instead. If
+ * Key matching is optional and can be set explicitly instead. If
  * both a key and a key group are provided, the key act as a default
  * when no keys could be obtained from matching.
  * At least one of "key" or "keyGroup" must be specified. If keyGroup
@@ -66,6 +68,7 @@ public class RegexKeyValueExtractor {
     private String key;
     private int keyGroup = -1;
     private int valueGroup = -1;
+    private PropertySetter onSet;
 
     public RegexKeyValueExtractor() {
         super();
@@ -128,7 +131,7 @@ public class RegexKeyValueExtractor {
         regex.setCaseInsensitive(!caseSensitive);
         return this;
     }
-    
+
     public int getKeyGroup() {
         return keyGroup;
     }
@@ -151,11 +154,32 @@ public class RegexKeyValueExtractor {
         return this;
     }
 
+    /**
+     * Gets the property setter to use when a value is set.
+     * @return property setter
+     * @since 3.0.0
+     */
+    public PropertySetter getOnSet() {
+        return onSet;
+    }
+    /**
+     * Sets the property setter to use when a value is set.
+     * @param onSet property setter
+     * @return this instance
+     * @since 3.0.0
+     */
+    public RegexKeyValueExtractor setOnSet(PropertySetter onSet) {
+        this.onSet = onSet;
+        return this;
+    }
+
     public void extractKeyValues(Properties dest, CharSequence text) {
         if (StringUtils.isBlank(key) && !hasKeyGroup()) {
             throw new IllegalArgumentException(
                     "At least one of 'key' or 'keyGroup' expected.");
         }
+
+        Properties extractedKeyValues = new Properties();
         Matcher m = matcher(text);
         while (m.find()) {
             String k = extractKey(m);
@@ -165,8 +189,12 @@ public class RegexKeyValueExtractor {
             } else if (v == null) {
                 LOG.debug("Null value for key: {}", k);
             } else {
-                dest.add(k, v);
+                extractedKeyValues.add(k, v);
             }
+        }
+        for (Entry<String,List<String>> en : extractedKeyValues.entrySet()) {
+            PropertySetter.orDefault(onSet).apply(
+                    dest, en.getKey(), en.getValue());
         }
     }
     public Properties extractKeyValues(CharSequence text) {

@@ -2192,22 +2192,34 @@ public class XML {
      * Checks whether a deprecated configuration entry was specified
      * and log a warning or throw an {@link XMLException}.
      * @param deprecatedXPath xpath to the invalid entry
-     * @param validXPath xpath to the valid entry
+     * @param replacement new xpath or instructions to replace
      * @param throwException <code>true</code> to throw exception, else log
      *        a warning
      */
     public void checkDeprecated(
-            String deprecatedXPath, String validXPath, boolean throwException) {
+            String deprecatedXPath, String replacement, boolean throwException) {
         if (contains(deprecatedXPath)) {
-            String msg = "\"" + deprecatedXPath
-                    + "\" has been deprecated"
-                    + (StringUtils.isNoneBlank(validXPath)
-                        ? " in favor of \"" + validXPath : "")
-                    + "\".  Please update your XML configuration accordingly.";
-            if (throwException) {
-                throw new XMLException(msg);
+            StringBuilder b = new StringBuilder();
+            b.append('"');
+            b.append(deprecatedXPath);
+            b.append('"');
+            if (deprecatedXPath.contains("@")) {
+                b.append(" attribute ");
+            } else {
+                b.append(" element ");
             }
-            LOG.warn(msg);
+            b.append("has been deprecated");
+            if (StringUtils.isNotBlank(replacement)) {
+                b.append(" in favor of: ");
+                b.append(replacement);
+            }
+            b.append(". Update your XML configuration accordingly.");
+            if (throwException) {
+                throw new XMLException(b.toString());
+            }
+            if (LOG.isWarnEnabled()) {
+                LOG.warn(b.toString());
+            }
         }
     }
     /**
