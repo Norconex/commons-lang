@@ -1,4 +1,4 @@
-/* Copyright 2019 Norconex Inc.
+/* Copyright 2019-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,11 +43,46 @@ import com.norconex.commons.lang.xml.XML;
  *      Matching/replacing is done using Java-style regular expressions.</li>
  * </ul>
  * <p>
- * A search/replace methods are case-sensitive by default.
+ * Match/replace methods are case-sensitive by default.
  * </p>
  * <p>
  * This class is not thread-safe.
  * </p>
+ *
+ * <h3>XML configuration usage:</h3>
+ *
+ * <p>
+ * Often consuming classes will use their own tag name and class name
+ * may support a subset of attributes/elements only.
+ * Use the following as a general reference and refer to consuming class
+ * documentation when applicable.
+ * </p>
+ *
+ * <pre>{@code
+ * <matchReplace class="com.norconex.commons.lang.text.MatchReplace"
+ *         method="[basic|wildcard|regex]"
+ *         ignoreCase="[false|true]"
+ *         ignoreAccents="[false|true]"
+ *         replaceAll="[false|true]"
+ *         matchWhole="[false|true]">
+ *     <pattern>(text or expression used to match/replace)</pattern>
+ *     <text>(text on which match/replace is attempted)</text>
+ *     <replacement>(replcement value or expression)</replacement>
+ * </matchReplace>
+ * }</pre>
+ * <h4>Usage example:</h4>
+ * <p>
+ * The following will convert the given text into "It seems they are friends.".
+ * </p>
+ *
+ * <pre>{@code
+ * <matchReplace class="com.norconex.commons.lang.text.MatchReplace"
+ *         method="wildcard" ignoreCase="true">
+ *     <pattern>paul*mar?</pattern>
+ *     <text>It seems Paul and Marc are friends.</text>
+ *     <replacement>they</replacement>
+ * </matchReplace>
+ * }</pre>
  *
  * @author Pascal Essiembre
  * @since 2.0.0
@@ -114,7 +149,7 @@ public class MatchReplace implements IXMLConfigurable {
             private Matcher createMatcher(MatchReplace sr) {
                 Pattern p = Pattern.compile("[^*?]+|(\\*)|(\\?)");
                 Matcher m = p.matcher(sr.pattern);
-                StringBuffer b = new StringBuffer();
+                StringBuilder b = new StringBuilder();
                 while (m.find()) {
                     if(m.group(1) != null) {
                         b.append(".*");

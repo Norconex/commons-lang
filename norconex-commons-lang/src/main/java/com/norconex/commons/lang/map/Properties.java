@@ -101,9 +101,6 @@ public class Properties extends ObservableMap<String, List<String>>
 
     //TODO rename plural methods to getXxxList()?
 
-    //TODO have getXXXRegex() methods to return all keys or values matching
-    // a regular expression
-
     //TODO remove support for case sensitivity and provide a utility
     //class that does it instead on any string-key maps?
     // OR, store it in a case sensitive way instead of keeping
