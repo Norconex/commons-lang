@@ -21,6 +21,7 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
@@ -45,7 +46,8 @@ public final class XMLUtil {
 
     public static final String W3C_XML_SCHEMA_NS_URI_1_1 =
             "http://www.w3.org/XML/XMLSchema/v1.1";
-
+    private static final String WRAP_START = "<__wrapper__>";
+    private static final String WRAP_END = "</__wrapper__>";
 
     private XMLUtil() {
         super();
@@ -92,5 +94,34 @@ public final class XMLUtil {
             LOG.debug(e.getMessage());
         }
         return factory;
+    }
+
+    /**
+     * Formats an XML string using 4 spaces indents. XML can have multiple
+     * roots (e.g., to format XML fragments).
+     * @param xml XML string
+     * @return formatted XML
+     */
+    public static String format(String xml) {
+        return format(xml, 4);
+    }
+    /**
+     * Formats an XML string using 4 spaces indents. XML can have multiple
+     * roots (e.g., to format XML fragments).
+     * @param xml XML string
+     * @param indent number of spaces for each indent
+     * @return formatted XML
+     */
+    public static String format(String xml, int indent) {
+        String wrapper = WRAP_START + xml + WRAP_END;
+        String x = new XML(wrapper).toString(indent).trim();
+        x = StringUtils.removeStart(x, WRAP_START);
+        x = StringUtils.removeEnd(x, WRAP_END);
+        x = x.trim();
+        x = x.replaceAll("[\n\r]+", "\n");
+        if (indent > 0) {
+            x = x.replaceAll("(?m)^ {" + indent + "}", "");
+        }
+        return x;
     }
 }

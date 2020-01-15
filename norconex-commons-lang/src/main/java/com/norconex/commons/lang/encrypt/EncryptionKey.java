@@ -1,4 +1,4 @@
-/* Copyright 2015-2019 Norconex Inc.
+/* Copyright 2015-2012 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,34 +39,30 @@ import com.norconex.commons.lang.xml.XML;
  * The usage example below is for when used embedded in a parent configuration.
  * </p>
  *
- * <h3>XML configuration usage:</h3>
- *
+ * {@nx.xml.usage
+ * <value>(The actual key or reference to it.)</value>
+ * <source>(One of: key, file, environment, property.)</source>
+ * <size>(Size in bits of encryption key. Default is 128.)</size>
+ * }
  * <p>
- * The tag name "passwordKey" may be named differently by consuming classes.
+ * These XML configurable options can be nested in a parent tag of any name.
+ * The expected parent tag name is defined by the consuming classes.
  * </p>
  *
- * <pre>
- *  &lt;passwordKey"&gt;
- *      &lt;value&gt;(The actual key or reference to it.)&lt;/value&gt;
- *      &lt;source&gt;(One of: key, file, environment, property.)&lt;/source&gt;
- *      &lt;size&gt;(Size in bits of encryption key. Default is 128.)&lt;/size&gt;
- *  &lt;/passwordKey&gt;
- * </pre>
- * <h4>Usage example:</h4>
+ * {@nx.xml.example
+ * <sampleConfig>
+ *   <username>goldorak</username>
+ *   <password>3ncryp73d</password>
+ *   <passwordKey>
+ *     <value>/path/to/my.key</value>
+ *     <source>file</source>
+ *   </passwordKey>
+ * </sampleConfig>
+ * }
  * <p>
- * This example uses a key store in a file to decrypt a password for
- * user credentials:
- * </p>
- * <pre>
- *  ...
- *  &lt;username&gt;goldorak&lt;/username&gt;
- *  &lt;password&gt;3ncryp73d&lt;/password&gt;
- *  &lt;passwordKey&gt;
- *      &lt;value&gt;/path/to/my.key&lt;/value&gt;
- *      &lt;source&gt;file&lt;/source&gt;
- *  &lt;/passwordKey&gt;
- *  ...
- * </pre>
+ * The above example has the encryption key configuration is nested in a
+ * <code>&lt;passwordKey&gt;</code> tag. It uses a key store in a file to
+ * decrypt a password for user credentials. </p>
  *
  * @author Pascal Essiembre
  * @since 1.9.0

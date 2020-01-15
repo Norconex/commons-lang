@@ -19,7 +19,7 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 
-import com.norconex.commons.lang.xml.XML;
+import com.norconex.commons.lang.xml.XMLUtil;
 import com.sun.javadoc.Tag;
 import com.sun.tools.doclets.Taglet;
 
@@ -78,9 +78,10 @@ public class XMLTaglet extends AbstractInlineTaglet {
         if (StringUtils.isNotBlank(id)) {
             b.append("id=\"nx-xml-" + id + "\" ");
         }
-        b.append("class=\"language-xml\">\n ");
+        b.append("class=\"language-xml\">\n");
         b.append(StringEscapeUtils.escapeXml11(
-                new XML(resolveIncludes(text)).toString(2)
+                XMLUtil.format(resolveIncludes(text), 2)
+//                new XML(resolveIncludes(text)).toString(2)
         ));
         b.append("</code></pre>");
         return b.toString();
