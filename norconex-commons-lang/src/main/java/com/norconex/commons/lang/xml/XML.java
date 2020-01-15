@@ -880,6 +880,27 @@ public class XML {
     public String toString(int indent) {
         try {
             node.normalize();
+
+            if (indent > 0) {
+                // For some reason, the following works as a workaround
+                // to indentation not working properly. Taken from:
+                // https://myshittycode.com/2014/02/10/
+                //         java-properly-indenting-xml-string/
+                XPath xPath = XPathFactory.newInstance().newXPath();
+                NodeList nodeList;
+                try {
+                    nodeList = (NodeList) xPath.evaluate(
+                            "//text()[normalize-space()='']",
+                            node, XPathConstants.NODESET);
+                    for (int i = 0; i < nodeList.getLength(); ++i) {
+                        Node node = nodeList.item(i);
+                        node.getParentNode().removeChild(node);
+                    }
+                } catch (XPathExpressionException e) {
+                    LOG.error("Could not indent XML.", e);
+                }
+            }
+
             StringWriter w = new StringWriter();
             Result outputTarget = new StreamResult(w);
 

@@ -30,7 +30,7 @@
         <include>install.*</include>
         <include>scripts/**</include>
       </includes>
-      <outputDirectory>/</outputDirectory>
+      <outputDirectory>./</outputDirectory>
     </fileSet>
     <fileSet>
       <directory>${project.build.directory}/site/apidocs</directory>
@@ -38,7 +38,7 @@
     </fileSet>
     <fileSet>
       <directory>${project.build.directory}/generated-resources</directory>
-      <outputDirectory>third-party</outputDirectory>
+      <outputDirectory>./third-party</outputDirectory>
     </fileSet>
     <fileSet>
       <directory>${project.build.directory}/generated-sources/license</directory>
@@ -50,11 +50,7 @@
   </fileSets>
   <dependencySets>
     <dependencySet>
-      <excludes>
-        <exclude>junit*</exclude>
-        <exclude>hamcrest-core*</exclude>
-      </excludes>
-      <outputDirectory>lib</outputDirectory>
+      <outputDirectory>./lib</outputDirectory>
       <outputFileNameMapping>${artifact.artifactId}-${artifact.baseVersion}.${artifact.extension}</outputFileNameMapping>      
     </dependencySet>
   </dependencySets>

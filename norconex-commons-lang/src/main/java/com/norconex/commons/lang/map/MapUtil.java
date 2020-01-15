@@ -1,4 +1,4 @@
-/* Copyright 2018-2019 Norconex Inc.
+/* Copyright 2018-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,8 +31,8 @@ public final class MapUtil {
 
     /**
      * Converts a array of values to a map, alternating between key and values.
-     * @param <K> may key type
-     * @param <V> may value type
+     * @param <K> map key type
+     * @param <V> map value type
      * @param values to convert
      * @return the new map
      */
@@ -44,8 +44,8 @@ public final class MapUtil {
     /**
      * Populates an existing map with the array of values,
      * alternating between key and values.
-     * @param <K> may key type
-     * @param <V> may value type
+     * @param <K> map key type
+     * @param <V> map value type
      * @param map the map to fill with values
      * @param values to convert
      */

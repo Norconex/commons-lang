@@ -116,6 +116,13 @@
         <scope>provided</scope>
     </dependency>
 
+    <!-- For Javadoc Custom Taglets -->
+    <dependency>
+      <groupId>com.github.olivergondza</groupId>
+      <artifactId>maven-jdk-tools-wrapper</artifactId>
+      <version>0.1</version>
+    </dependency>
+
   </dependencies>
 
   <build>
