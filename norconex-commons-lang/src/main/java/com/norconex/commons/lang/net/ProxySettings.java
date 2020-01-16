@@ -1,4 +1,4 @@
-/* Copyright 2018 Norconex Inc.
+/* Copyright 2018-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,11 +34,28 @@ import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 
 /**
+ * <p>
  * Convenience class for implementation requiring proxy settings.
+ * </p>
+ *
+ * {@nx.xml.usage
+ * <proxyHost>...</proxyHost>
+ * <proxyPort>...</proxyPort>
+ * <proxyScheme>(Default is "http")</proxyScheme>
+ * <proxyUsername>...</proxyUsername>
+ * <proxyPassword>...</proxyPassword>
+ * <proxyPasswordKey>
+ *   {@nx.include EncryptionKey@nx.xml.usage}
+ * </proxyPasswordKey>
+ * <proxyRealm>(Authentication realm. Default is any.)</proxyRealm>
+ * }
+ * <p>The above can be found under any parent tag. See consuming class
+ * documentation for exact usage.</p>
  *
  * @author Pascal Essiembre
  * @since 1.14.0
  */
+@SuppressWarnings("javadoc")
 public class ProxySettings implements IXMLConfigurable, Serializable {
 
     private static final long serialVersionUID = 1L;

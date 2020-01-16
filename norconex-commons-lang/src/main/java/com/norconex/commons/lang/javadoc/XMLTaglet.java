@@ -80,8 +80,7 @@ public class XMLTaglet extends AbstractInlineTaglet {
         }
         b.append("class=\"language-xml\">\n");
         b.append(StringEscapeUtils.escapeXml11(
-                XMLUtil.format(resolveIncludes(text), 2)
-//                new XML(resolveIncludes(text)).toString(2)
+                XMLUtil.format(resolveIncludes(tag, text), 2)
         ));
         b.append("</code></pre>");
         return b.toString();

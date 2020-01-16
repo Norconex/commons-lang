@@ -27,6 +27,17 @@ import com.norconex.commons.lang.xml.XML;
  * <p>Convenient way of handling the different ways a value (or values) can
  * be set on a {@link Properties} instance.
  * </p>
+ *
+ * <h3>XML Configuration</h3>
+ * <P>
+ * The following is the recommended attribute for consuming classes to use
+ * for XML configuration:
+ * </p>
+ *
+ * {@nx.xml
+ * onSet="[append|prepend|replace|optional]"
+ * }
+ *
  * @author Pascal Essiembre
  * @since 2.0.0
  */

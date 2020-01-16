@@ -1,4 +1,4 @@
-/* Copyright 2015-2012 Norconex Inc.
+/* Copyright 2015-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 
@@ -41,7 +39,7 @@ import com.norconex.commons.lang.xml.XML;
  *
  * {@nx.xml.usage
  * <value>(The actual key or reference to it.)</value>
- * <source>(One of: key, file, environment, property.)</source>
+ * <source>[key|file|environment|property]</source>
  * <size>(Size in bits of encryption key. Default is 128.)</size>
  * }
  * <p>
@@ -221,11 +219,11 @@ public final class EncryptionKey implements Serializable {
         }
 
         String value = kxml.getString("value");
-        if (StringUtils.isNotBlank(value)) {
+        if (value != null && value.trim().length() > 0) {
             String source = kxml.getString("source");
             Integer size = kxml.getInteger("size", DEFAULT_KEY_SIZE);
             EncryptionKey.Source enumSource = null;
-            if (StringUtils.isNotBlank(source)) {
+            if (source != null && source.trim().length() > 0) {
                 enumSource = EncryptionKey.Source.valueOf(source.toUpperCase());
             }
             return new EncryptionKey(value, enumSource, size);

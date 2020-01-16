@@ -64,6 +64,7 @@ public class IncludeTaglet extends AbstractInlineTaglet {
 
     public static final String NAME = "nx.include";
 
+    private static final String JAVA_FILE_EXT = ".java";
     private static final Path SOURCE_DIR;
     static {
         Path dir = null;
@@ -74,7 +75,18 @@ public class IncludeTaglet extends AbstractInlineTaglet {
                 dir = baseDir.resolve("src/main/java");
             }
         }
+        // If not set via system properties, check for a "src" folder assuming
+        // we are in the project root folder.
         if (dir == null) {
+            dir = Paths.get("").toAbsolutePath().resolve(
+                    "./src/main/java").normalize();
+        }
+
+        // If still null, we recurse a few times as we may be in the "site"
+        // folder not set via system properties, check for a "src" folder
+        // assuming
+        // we are in the project root folder.
+        if (dir == null || !dir.toFile().isDirectory()) {
             dir = Paths.get("").toAbsolutePath().resolve(
                     "../../../src/main/java").normalize();
         }
@@ -100,10 +112,10 @@ public class IncludeTaglet extends AbstractInlineTaglet {
 
     @Override
     public String toString(Tag tag) {
-        return include(tag.text());
+        return include(tag, tag.text());
     }
 
-    public static String include(String includeRef) {
+    public static String include(Tag tag, String includeRef) {
         String ref = includeRef.trim();
         String className = ref.replaceFirst("^(.*?)[\\@\\#].*$", "$1");
         String id = ref.replaceFirst("^.*?([\\@\\#].*)$", "$1");
@@ -115,17 +127,50 @@ public class IncludeTaglet extends AbstractInlineTaglet {
             return null;
         }
 
-        String source = getJavaSource(className);
+        String fullClassName = getFullClassName(tag, className);
+        String source = getJavaSource(fullClassName);
         String block = findInSource(source, id);
         if (StringUtils.isBlank(block)) {
-            System.err.println(
-                    "ID '" + id + "' not found in source for: " + className);
+            System.err.println("ID '" + id
+                    + "' not found in source for: " + fullClassName);
             System.exit(-1);
         }
         return block;
     }
 
+    private static String getFullClassName(Tag tag, String className) {
+        // If it has a doc, assume package is supplied so we are good.
+        if (className.contains(".")) {
+            return className;
+        }
 
+        File sourceFile = tag.holder().position().file();
+        if (sourceFile != null) {
+            // Otherwise, check if the class is in current package
+            File f = new File(
+                    sourceFile.getParentFile(), className + JAVA_FILE_EXT);
+            if (f.exists()) {
+                String c = f.getAbsolutePath();
+                c = c.replaceAll("[\\\\\\/]", ".");
+                c = StringUtils.substringAfterLast(c, ".src.main.java.");
+                c = StringUtils.removeEnd(c, JAVA_FILE_EXT);
+                return c;
+            }
+
+            // Finally, see if package is defined in imports for the class.
+            try {
+                Matcher m = Pattern.compile(
+                        "(?m)^\\s*import (.*\\." + className  + ");$").matcher(
+                                FileUtils.readFileToString(sourceFile, UTF_8));
+                if (m.find()) {
+                    return m.group(1);
+                }
+            } catch (IOException e) {
+                //NOOP
+            }
+        }
+        return className;
+    }
 
     private static String findInSource(String source, String id) {
         Matcher m = Pattern.compile(
@@ -175,7 +220,7 @@ public class IncludeTaglet extends AbstractInlineTaglet {
     }
 
     private static String readSourceFromFile(String className) {
-        String relativePath = className.replace('.', '/') + ".java";
+        String relativePath = className.replace('.', '/') + JAVA_FILE_EXT;
         if (SOURCE_DIR != null) {
             File resourceFile = SOURCE_DIR.resolve(relativePath).toFile();
             if (resourceFile.exists()) {
@@ -190,7 +235,7 @@ public class IncludeTaglet extends AbstractInlineTaglet {
     }
     private static String readSourceFromClasspath(String className) {
         String fullPath = StringUtils.prependIfMissing(
-                className, "/").replace('.', '/') + ".java";
+                className, "/").replace('.', '/') + JAVA_FILE_EXT;
         try (InputStream is =
                 IncludeTaglet.class.getResourceAsStream(fullPath)) {
             if (is != null) {

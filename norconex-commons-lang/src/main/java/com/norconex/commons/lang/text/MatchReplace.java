@@ -49,16 +49,7 @@ import com.norconex.commons.lang.xml.XML;
  * This class is not thread-safe.
  * </p>
  *
- * <h3>XML configuration usage:</h3>
- *
- * <p>
- * Often consuming classes will use their own tag name and class name
- * may support a subset of attributes/elements only.
- * Use the following as a general reference and refer to consuming class
- * documentation when applicable.
- * </p>
- *
- * <pre>{@code
+ * {@nx.xml.usage
  * <matchReplace class="com.norconex.commons.lang.text.MatchReplace"
  *         method="[basic|wildcard|regex]"
  *         ignoreCase="[false|true]"
@@ -69,20 +60,26 @@ import com.norconex.commons.lang.xml.XML;
  *     <text>(text on which match/replace is attempted)</text>
  *     <replacement>(replcement value or expression)</replacement>
  * </matchReplace>
- * }</pre>
- * <h4>Usage example:</h4>
+ * }
+ *
  * <p>
- * The following will convert the given text into "It seems they are friends.".
+ * Consuming classes may use their own tag name and only
+ * support a subset of attributes/elements.
+ * Use the above as a general reference and refer to consuming class
+ * documentation when applicable.
  * </p>
  *
- * <pre>{@code
+ * {@nx.xml.example
  * <matchReplace class="com.norconex.commons.lang.text.MatchReplace"
  *         method="wildcard" ignoreCase="true">
  *     <pattern>paul*mar?</pattern>
  *     <text>It seems Paul and Marc are friends.</text>
  *     <replacement>they</replacement>
  * </matchReplace>
- * }</pre>
+ * }
+ * <p>
+ * The above will convert the given text into "It seems they are friends.".
+ * </p>
  *
  * @author Pascal Essiembre
  * @since 2.0.0

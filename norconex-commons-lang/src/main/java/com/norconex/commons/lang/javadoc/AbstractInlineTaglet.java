@@ -107,13 +107,13 @@ public abstract class AbstractInlineTaglet implements Taglet {
         return null;
     };
 
-    protected String resolveIncludes(String text) {
+    protected String resolveIncludes(Tag tag, String text) {
         Matcher m = Pattern.compile(
                 "\\{\\@nx\\.include(.*?)\\}", Pattern.DOTALL).matcher(text);
         StringBuffer sb = new StringBuffer();
         while (m.find()) {
             String ref = m.group(1);
-            m.appendReplacement(sb, IncludeTaglet.include(ref));
+            m.appendReplacement(sb, IncludeTaglet.include(tag, ref));
         }
         m.appendTail(sb);
         return sb.toString();

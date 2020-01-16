@@ -108,6 +108,10 @@
       <action dev="essiembre" type="add">
         New VersionUtil class.
       </action>
+      <action dev="essiembre" type="add">
+        New javadoc package containing useful taglets for formatting
+        XML and perform dynamic includes from other files.
+      </action>
       <action dev="essiembre" type="update">
         Now relies on Norconex Commons Maven Parent. 
       </action>

@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 public class XMLUtilTest {
 
     @Test
-    public void testFormat() {
+    public void testNoRootFormat() {
         String xml = "<noroot1><child>I am a child</child></noroot1>"
                 + "<noroot2>I am a sibling</noroot2>";
         String expected =
@@ -34,5 +34,12 @@ public class XMLUtilTest {
 
         String actual = XMLUtil.format(xml);
         Assertions.assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testNoTagFormat() {
+        String xml = "onSet=\"[append|prepend|replace|optional]\"";
+        String actual = XMLUtil.format(xml);
+        Assertions.assertEquals(xml, actual);
     }
 }
