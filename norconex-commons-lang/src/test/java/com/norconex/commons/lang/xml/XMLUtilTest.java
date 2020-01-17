@@ -42,4 +42,48 @@ public class XMLUtilTest {
         String actual = XMLUtil.format(xml);
         Assertions.assertEquals(xml, actual);
     }
+
+    @Test
+    public void testLongLinesFormat() {
+        String xml =
+                "<xml>"
+              + "<matchReplace "
+              + "class=\"com.norconex.commons.lang.text.MatchReplace\" "
+              + "ignoreAccents=\"[false|true]\" ignoreCase=\"[false|true]\" "
+              + "matchWhole=\"[false|true]\" "
+              + "method=\"[basic|wildcard|regex]\" "
+              + "replaceAll=\"[false|true]\">"
+              + "<pattern attr1=\"a short one\" attr2=\"another short\">\n"
+              + "    Content quite long in the body we do not want to "
+              + "break since it could mess up with content format and space "
+              + "preservation.\n"
+              + "</pattern>"
+              + "<text>Another content quite long in the body we do not want "
+              + "to break since it could mess up with content format and space "
+              + "preservation.</text>"
+              + "</matchReplace>"
+              + "</xml>";
+
+        String expected =
+                "<xml>\n"
+              + "  <matchReplace\n"
+              + "      class=\"com.norconex.commons.lang.text.MatchReplace\"\n"
+              + "      ignoreAccents=\"[false|true]\"\n"
+              + "      ignoreCase=\"[false|true]\"\n"
+              + "      matchWhole=\"[false|true]\"\n"
+              + "      method=\"[basic|wildcard|regex]\"\n"
+              + "      replaceAll=\"[false|true]\">\n"
+              + "    <pattern attr1=\"a short one\" attr2=\"another short\">\n"
+              + "  Content quite long in the body we do not want to break "
+              + "since it could mess up with content format and space "
+              + "preservation.\n"
+              + "</pattern>\n"
+              + "    <text>Another content quite long in the body we do not "
+              + "want to break since it could mess up with content format "
+              + "and space preservation.</text>\n"
+              + "  </matchReplace>\n"
+              + "</xml>";
+        Assertions.assertEquals(expected, XMLUtil.format(xml, 2, 80));
+    }
+
 }

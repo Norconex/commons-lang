@@ -893,8 +893,8 @@ public class XML {
                             "//text()[normalize-space()='']",
                             node, XPathConstants.NODESET);
                     for (int i = 0; i < nodeList.getLength(); ++i) {
-                        Node node = nodeList.item(i);
-                        node.getParentNode().removeChild(node);
+                        Node n = nodeList.item(i);
+                        n.getParentNode().removeChild(n);
                     }
                 } catch (XPathExpressionException e) {
                     LOG.error("Could not indent XML.", e);
