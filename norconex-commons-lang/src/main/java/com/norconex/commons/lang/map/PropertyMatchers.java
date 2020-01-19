@@ -1,4 +1,4 @@
-/* Copyright 2018 Norconex Inc.
+/* Copyright 2018-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.norconex.commons.lang.map;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.function.Predicate;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -25,8 +26,8 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 /**
- * Holds a collection of {@link PropertyMatcher}.  When evaluated, only
- * one of them needs to match.
+ * Holds a collection of {@link PropertyMatcher} to perform tests/replace on
+ * all of them at once.
  * @author Pascal Essiembre
  * @since 2.0.0
  */
@@ -41,20 +42,6 @@ public class PropertyMatchers extends ArrayList<PropertyMatcher>
     }
 
     /**
-     * Creates and adds a {@link PropertyMatcher} for each regular expression
-     * supplied.
-     * @param property the property (e.g., key, field, ...) to match.
-     * @param caseSensitive whether regular expression should be case sensitive
-     * @param regexes one or more regular expressions for the given field
-     */
-    public void add(
-            String property, boolean caseSensitive, String... regexes) {
-        for (String regex : regexes) {
-          add(new PropertyMatcher(property, regex, false));
-        }
-    }
-
-    /**
      * Adds one or more property matchers.
      * @param matchers property matchers
      */
@@ -63,7 +50,7 @@ public class PropertyMatchers extends ArrayList<PropertyMatcher>
     }
 
     /**
-     * Removes all matchers on a given field.
+     * Removes all matchers for a given field.
      * @param field the field to remove matchers on
      * @return how many matchers were removed
      */
@@ -72,8 +59,9 @@ public class PropertyMatchers extends ArrayList<PropertyMatcher>
         int count = 0;
         while (it.hasNext()) {
             PropertyMatcher r = it.next();
-            if (r.isCaseSensitive() && r.getKey().equals(field)
-                    || !r.isCaseSensitive()
+            if (!r.getTextMatcher().isIgnoreCase()
+                    && r.getKey().equals(field)
+                    || r.getTextMatcher().isIgnoreCase()
                             && r.getKey().equalsIgnoreCase(field)) {
                 it.remove();
                 count++;
@@ -82,6 +70,21 @@ public class PropertyMatchers extends ArrayList<PropertyMatcher>
         return count;
     }
 
+    /**
+     * Returns <code>true</code> if any of the properties key and values
+     * match any of the property matchers.
+     * @param properties the properties to look for a match
+     * @return <code>true</code> if at least one value for the key matches
+     * the list of matcher regular expressions
+     */
+    public boolean matches(Properties properties) {
+        for (PropertyMatcher matcher : this) {
+            if (matcher.test(properties)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     /**
      * For compatibility with {@link Predicate}.  Same as invoking
@@ -94,20 +97,44 @@ public class PropertyMatchers extends ArrayList<PropertyMatcher>
     public boolean test(Properties properties) {
         return matches(properties);
     }
+
     /**
-     * Returns <code>true</code> if any of the properties key and values
-     * match any of the property matchers.
+     * Returns a new instance that is a subset of the given properties,
+     * containing only keys and matching values.
      * @param properties the properties to look for a match
-     * @return <code>true</code> if at least one value for the key matches
-     * the list of matcher regular expressions
+     * @return a list of matching values, or an empty list
+     * @see #test(Properties)
      */
-    public boolean matches(Properties properties) {
+    public Properties match(Properties properties) {
+        Properties props = new Properties();
+        if (properties == null) {
+            return props;
+        }
         for (PropertyMatcher matcher : this) {
-            if (matcher.matches(properties)) {
-                return true;
+            List<String> matches = matcher.match(properties);
+            if (!matches.isEmpty()) {
+                props.addList(matcher.getKey(), matches);
             }
         }
-        return false;
+        return props;
+    }
+    /**
+     * Returns properties that were replaced (or empty).
+     * @param properties the properties to look for a match and replace
+     * @return properties that were replaced
+     */
+    public Properties replace(Properties properties) {
+        Properties props = new Properties();
+        if (properties == null) {
+            return props;
+        }
+        for (PropertyMatcher matcher : this) {
+            List<String> replaced = matcher.replace(properties);
+            if (!replaced.isEmpty()) {
+                props.addList(matcher.getKey(), replaced);
+            }
+        }
+        return props;
     }
 
     @Override

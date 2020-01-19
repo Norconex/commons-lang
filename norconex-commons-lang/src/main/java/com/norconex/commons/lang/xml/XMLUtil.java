@@ -139,12 +139,14 @@ public final class XMLUtil {
         x = StringUtils.removeStart(x, WRAP_START);
         x = StringUtils.removeEnd(x, WRAP_END);
         x = x.trim();
-        x = x.replaceAll("[\n\r]+", "\n");
+        x = x.replaceAll("(\n\r|\r\n)", "\n");
+        x = x.replaceAll("\r", "\n");
         if (indent > 0) {
+            //Remove indent created by adding wrapper tag
             x = x.replaceAll("(?m)^ {" + indent + "}", "");
         }
 
-        // wrap
+        // attribute line wrap
         if (wrapAttrAt > 0) {
             String[] lines = x.split("\n");
             for (int i = 0; i < lines.length; i++) {

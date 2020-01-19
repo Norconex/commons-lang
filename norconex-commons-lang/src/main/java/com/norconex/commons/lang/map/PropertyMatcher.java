@@ -1,4 +1,4 @@
-/* Copyright 2015-2018 Norconex Inc.
+/* Copyright 2015-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,62 +14,120 @@
  */
 package com.norconex.commons.lang.map;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 import java.util.function.Predicate;
-import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import com.norconex.commons.lang.text.TextMatcher;
+import com.norconex.commons.lang.text.TextMatcher.Method;
 import com.norconex.commons.lang.xml.XML;
 
 /**
- * <p>Convenient way of checking whether at least one value for a key
- * in a given {@link Properties} matches a regular expression.
+ * <p>Convenient way of matching values for a key
+ * in a given {@link Properties}.
  * </p>
  * <p>
- * A <code>null</code> or empty regex value will try to match an
+ * A <code>null</code> or empty expression will try to match an
  * empty key value.
  * </p>
  * @author Pascal Essiembre
  * @since 1.8.0
  */
-//TODO create new Predicates which has a list
-// (instead of using Predicate.and() which won't allow us to add/remove)
-// Use MatchReplace instead of passing arguments?
 public final class PropertyMatcher implements Predicate<Properties> {
+    private final TextMatcher matcher;
     private final String key;
-    private final String regex;
-    private final Pattern pattern;
-    private final boolean caseSensitive;
+    /**
+     * Constructor.
+     * @param key properties key
+     * @param regex regular expression
+     * @param caseSensitive <code>true</code> if case sensitive
+     * @deprecated Since 2.0.0 use
+     *             {@link #PropertyMatcher(String, TextMatcher)}.
+     */
+    @Deprecated
     public PropertyMatcher(
             String key, String regex, boolean caseSensitive) {
+        this(key, new TextMatcher(Method.REGEX).setIgnoreCase(!caseSensitive));
+    }
+
+    /**
+     * A property matcher matching empty or <code>null</code> elements.
+     * @param key properties key
+     */
+    public PropertyMatcher(String key) {
+        this(key, null);
+    }
+    /**
+     * Constructor.
+     * @param key properties key
+     * @param matcher match instructions
+     * @since 2.0.0
+     */
+    public PropertyMatcher(String key, TextMatcher matcher) {
         super();
+        this.matcher = new TextMatcher(matcher);
         this.key = key;
-        this.regex = regex;
-        this.caseSensitive = caseSensitive;
-        if (regex != null) {
-            if (caseSensitive) {
-                this.pattern = Pattern.compile(regex);
-            } else {
-                this.pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
-            }
-        } else {
-            this.pattern = Pattern.compile(".*");
-        }
     }
 
     public String getKey() {
         return key;
     }
-    public String getRegex() {
-        return regex;
+    public TextMatcher getTextMatcher() {
+        return matcher;
     }
+
+    /**
+     * Gets the expression.
+     * @return the expression.
+     * @deprecated Since 2.0.0 use {@link #getTextMatcher()}.
+     */
+    @Deprecated
+    public String getRegex() {
+        return matcher.getPattern();
+    }
+    /**
+     * Gets whether this matcher is case sensitive.
+     * @return the expression.
+     * @deprecated Since 2.0.0 use {@link #getTextMatcher()}.
+     */
+    @Deprecated
     public boolean isCaseSensitive() {
-        return caseSensitive;
+        return !matcher.isIgnoreCase();
+    }
+
+    /**
+     * Tests whether this property matcher matches at least one value for
+     * the key in the given {@link Properties}. To get all matches instead,
+     * use {@link #match(Properties)} instead.
+     * @param properties the properties to look for a match
+     * @return <code>true</code> if at least one value for the key matches
+     * the matcher's expression
+     * @see #match(Properties)
+     */
+    public boolean matches(Properties properties) {
+        if (properties == null) {
+            return false;
+        }
+        TextMatcher m = new TextMatcher(matcher);
+        Collection<String> values =  properties.getStrings(key);
+        for (String value : values) {
+            if (!matcher.hasPattern() && StringUtils.isBlank(value)) {
+                return true;
+            }
+            m.setText(StringUtils.trimToEmpty(value));
+            if (matcher.matches()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -77,7 +135,7 @@ public final class PropertyMatcher implements Predicate<Properties> {
      * {@link #matches(Properties)}.
      * @param properties the properties to look for a match
      * @return <code>true</code> if at least one value for the key matches
-     * the matcher regular expression
+     * the list of matcher regular expressions
      */
     @Override
     public boolean test(Properties properties) {
@@ -85,68 +143,88 @@ public final class PropertyMatcher implements Predicate<Properties> {
     }
 
     /**
-     * Whether this property matcher matches a key value in the given
-     * {@link Properties}.
+     * Returns a list of matching values for the key in the given
+     * {@link Properties}. To simply get whether there is a match instead,
+     * use the predicate {@link #test(Properties)} method instead.
      * @param properties the properties to look for a match
-     * @return <code>true</code> if at least one value for the key matches
-     * the matcher regular expression
+     * @return a list of matching values, or an empty list
+     * @see #test(Properties)
+     * @since 2.0.0
      */
-    public boolean matches(Properties properties) {
+    public List<String> match(Properties properties) {
+        List<String> matches = new ArrayList<>();
         if (properties == null) {
-            return false;
+            return matches;
         }
+        TextMatcher m = new TextMatcher(matcher);
         Collection<String> values =  properties.getStrings(key);
         for (String value : values) {
-            if (StringUtils.isBlank(regex) && StringUtils.isBlank(value)) {
-                return true;
+            if (!matcher.hasPattern() && StringUtils.isBlank(value)) {
+                matches.add(value);
             }
-            String safeVal = StringUtils.trimToEmpty(value);
-            if (pattern.matcher(safeVal).matches()) {
-                return true;
+            m.setText(StringUtils.trimToEmpty(value));
+            if (matcher.matches()) {
+                matches.add(value);
             }
         }
-        return false;
+        return matches;
+    }
+
+    /**
+     * Replaces all matching values for the key in the given
+     * {@link Properties} with the given replacement.
+     * @param properties the properties to look for a match and replace
+     * @return a list of original values that were replaced (or empty).
+     * @since 2.0.0
+     */
+    public List<String> replace(Properties properties) {
+        List<String> replacedValues = new ArrayList<>();
+        if (properties == null) {
+            return replacedValues;
+        }
+        TextMatcher m = new TextMatcher(matcher);
+        Collection<String> values =  properties.getStrings(key);
+        List<String> newValues = new ArrayList<>();
+        for (String value : values) {
+            m.setText(StringUtils.trimToEmpty(value));
+            if (!matcher.hasPattern() && StringUtils.isBlank(m.getText())
+                    || matcher.matches()) {
+                String newValue = matcher.replace();
+                if (!Objects.equals(value, newValue)) {
+                    replacedValues.add(value);
+                }
+                newValues.add(newValue);
+            } else {
+                newValues.add(value);
+            }
+        }
+        if (!replacedValues.isEmpty()) {
+            properties.setList(key, newValues);
+        }
+        return replacedValues;
     }
 
     public static PropertyMatcher loadFromXML(XML xml) {
-        return new PropertyMatcher(
-                xml.getString("@field"),
-                xml.getString("."),
-                xml.getBoolean("@caseSensitive", false));
+        TextMatcher m = new TextMatcher();
+        m.loadFromXML(xml);
+        return new PropertyMatcher(xml.getString("@field"), m);
     }
-    public static void saveToXML(PropertyMatcher matcher, XML xml) {
-        xml.setTextContent(matcher.regex);
+    public static void saveToXML(XML xml, PropertyMatcher matcher) {
         xml.setAttribute("field", matcher.key);
-        xml.setAttribute("caseSensitive", matcher.caseSensitive);
+        matcher.getTextMatcher().saveToXML(xml);
     }
 
     @Override
-    public int hashCode() {
-        return new HashCodeBuilder()
-                .append(key)
-                .append(regex)
-                .append(caseSensitive)
-                .toHashCode();
+    public boolean equals(final Object other) {
+        return EqualsBuilder.reflectionEquals(this, other);
     }
     @Override
-    public boolean equals(final Object other) {
-        if (!(other instanceof PropertyMatcher)) {
-            return false;
-        }
-        PropertyMatcher castOther = (PropertyMatcher) other;
-        return new EqualsBuilder()
-                .append(key, castOther.key)
-                .append(regex, castOther.regex)
-                .append(caseSensitive, castOther.caseSensitive)
-                .isEquals();
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this);
     }
     @Override
     public String toString() {
-        ToStringBuilder builder =
-                new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE);
-        builder.append("key", key);
-        builder.append("regex", regex);
-        builder.append("caseSensitive", caseSensitive);
-        return builder.toString();
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

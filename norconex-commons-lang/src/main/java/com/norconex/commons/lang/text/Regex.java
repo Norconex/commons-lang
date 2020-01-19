@@ -1,4 +1,4 @@
-/* Copyright 2019 Norconex Inc.
+/* Copyright 2019-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -82,13 +82,13 @@ public class Regex {
         return flags.contains(Pattern.DOTALL);
     }
 
-    public Regex caseInsensitive() {
-        return setCaseInsensitive(true);
+    public Regex ignoreCase() {
+        return setIgnoreCase(true);
     }
-    public Regex setCaseInsensitive(boolean caseInsensitive) {
-        return setFlag(UNICODE_CASE_INSENSTIVE_FLAG, caseInsensitive);
+    public Regex setIgnoreCase(boolean ignoreCase) {
+        return setFlag(UNICODE_CASE_INSENSTIVE_FLAG, ignoreCase);
     }
-    public boolean isCaseInsensitive() {
+    public boolean isIgnoreCase() {
         return flags.contains(UNICODE_CASE_INSENSTIVE_FLAG);
     }
 
@@ -157,13 +157,13 @@ public class Regex {
      * (e.g. accents).
      * @return this instance
      */
-    public Regex markInsensitive() {
-        return setMarkInsensitive(true);
+    public Regex ignoreDiacritic() {
+        return setIgnoreDiacritic(true);
     }
-    public Regex setMarkInsensitive(boolean markInsensitive) {
-        return setFlag(UNICODE_MARK_INSENSTIVE_FLAG, markInsensitive);
+    public Regex setIgnoreDiacritic(boolean ignoreDiacritic) {
+        return setFlag(UNICODE_MARK_INSENSTIVE_FLAG, ignoreDiacritic);
     }
-    public boolean isMarkInsensitive() {
+    public boolean isIgnoreDiacritic() {
         return flags.contains(UNICODE_MARK_INSENSTIVE_FLAG);
     }
 
@@ -245,7 +245,7 @@ public class Regex {
             throw new IllegalArgumentException(
                     "Supplied regular expression cannot be null");
         }
-        return new Regex(regex).dotAll().setCaseInsensitive(
+        return new Regex(regex).dotAll().setIgnoreCase(
                 caseInsensitive).compile();
     }
 

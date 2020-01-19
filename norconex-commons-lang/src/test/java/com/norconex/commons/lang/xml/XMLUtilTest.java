@@ -47,8 +47,8 @@ public class XMLUtilTest {
     public void testLongLinesFormat() {
         String xml =
                 "<xml>"
-              + "<matchReplace "
-              + "class=\"com.norconex.commons.lang.text.MatchReplace\" "
+              + "<textMatcher "
+              + "class=\"com.norconex.commons.lang.text.TextMatcher\" "
               + "ignoreAccents=\"[false|true]\" ignoreCase=\"[false|true]\" "
               + "matchWhole=\"[false|true]\" "
               + "method=\"[basic|wildcard|regex]\" "
@@ -61,13 +61,13 @@ public class XMLUtilTest {
               + "<text>Another content quite long in the body we do not want "
               + "to break since it could mess up with content format and space "
               + "preservation.</text>"
-              + "</matchReplace>"
+              + "</textMatcher>"
               + "</xml>";
 
         String expected =
                 "<xml>\n"
-              + "  <matchReplace\n"
-              + "      class=\"com.norconex.commons.lang.text.MatchReplace\"\n"
+              + "  <textMatcher\n"
+              + "      class=\"com.norconex.commons.lang.text.TextMatcher\"\n"
               + "      ignoreAccents=\"[false|true]\"\n"
               + "      ignoreCase=\"[false|true]\"\n"
               + "      matchWhole=\"[false|true]\"\n"
@@ -81,9 +81,8 @@ public class XMLUtilTest {
               + "    <text>Another content quite long in the body we do not "
               + "want to break since it could mess up with content format "
               + "and space preservation.</text>\n"
-              + "  </matchReplace>\n"
+              + "  </textMatcher>\n"
               + "</xml>";
         Assertions.assertEquals(expected, XMLUtil.format(xml, 2, 80));
     }
-
 }

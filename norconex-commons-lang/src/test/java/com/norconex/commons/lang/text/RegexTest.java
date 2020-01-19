@@ -37,7 +37,7 @@ public class RegexTest {
                 "ëgal"
         };
 
-        Regex regex = new Regex(pattern).markInsensitive();
+        Regex regex = new Regex(pattern).ignoreDiacritic();
         for (String test : tests) {
             Assertions.assertTrue(regex.matcher(test).find(),
                     pattern + " pattern did not match " + test);
@@ -56,7 +56,7 @@ public class RegexTest {
         String p = "one.*(two).?three(?twò)*oNé";
         p = Regex.escape(p);
 
-        Regex regex = new Regex(p).markInsensitive().caseInsensitive();
+        Regex regex = new Regex(p).ignoreDiacritic().ignoreCase();
         Assertions.assertTrue(regex.matcher(t).matches());
         ////\\p{InCombiningDiacriticalMarks}+
     }

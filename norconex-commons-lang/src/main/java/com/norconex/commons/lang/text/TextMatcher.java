@@ -18,6 +18,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
@@ -50,16 +51,16 @@ import com.norconex.commons.lang.xml.XML;
  * </p>
  *
  * {@nx.xml.usage
- * <matchReplace class="com.norconex.commons.lang.text.MatchReplace"
+ * <textMatcher class="com.norconex.commons.lang.text.TextMatcher"
  *         method="[basic|wildcard|regex]"
  *         ignoreCase="[false|true]"
- *         ignoreAccents="[false|true]"
+ *         ignoreDiacritic="[false|true]"
  *         replaceAll="[false|true]"
  *         matchWhole="[false|true]">
  *     <pattern>(text or expression used to match/replace)</pattern>
  *     <text>(text on which match/replace is attempted)</text>
  *     <replacement>(replcement value or expression)</replacement>
- * </matchReplace>
+ * </textMatcher>
  * }
  *
  * <p>
@@ -70,12 +71,12 @@ import com.norconex.commons.lang.xml.XML;
  * </p>
  *
  * {@nx.xml.example
- * <matchReplace class="com.norconex.commons.lang.text.MatchReplace"
+ * <textMatcher class="com.norconex.commons.lang.text.TextMatcher"
  *         method="wildcard" ignoreCase="true">
  *     <pattern>paul*mar?</pattern>
  *     <text>It seems Paul and Marc are friends.</text>
  *     <replacement>they</replacement>
- * </matchReplace>
+ * </textMatcher>
  * }
  * <p>
  * The above will convert the given text into "It seems they are friends.".
@@ -84,19 +85,19 @@ import com.norconex.commons.lang.xml.XML;
  * @author Pascal Essiembre
  * @since 2.0.0
  */
-public class MatchReplace implements IXMLConfigurable {
+public class TextMatcher implements IXMLConfigurable {
 
-    //TODO document XML usage
+    //TODO rename just Matcher?  or StringMatcher or TextMatcher to avoid conflict?
 
     public enum Method {
         BASIC(new MethodStrategy() {
             @Override
-            public boolean matches(MatchReplace sr) {
+            public boolean matches(TextMatcher sr) {
                 Matcher m = createMatcher(sr);
                 return sr.matchWhole ? m.matches() : m.find();
             }
             @Override
-            public String replace(MatchReplace sr) {
+            public String replace(TextMatcher sr) {
                 String quotedRepl = Matcher.quoteReplacement(sr.replacement);
                 //TODO move this generic code to a method shared by all
                 // replace Methods.
@@ -113,22 +114,22 @@ public class MatchReplace implements IXMLConfigurable {
                 }
                 return sr.text;
             }
-            private Matcher createMatcher(MatchReplace sr) {
+            private Matcher createMatcher(TextMatcher sr) {
                 return new Regex(Regex.escape(sr.pattern)) //Pattern.quote(p))
                         .dotAll()
-                        .setCaseInsensitive(sr.ignoreCase)
-                        .setMarkInsensitive(sr.ignoreAccents)
+                        .setIgnoreCase(sr.ignoreCase)
+                        .setIgnoreDiacritic(sr.ignoreDiacritic)
                         .matcher(sr.text);
             }
         }),
         WILDCARD(new MethodStrategy() {
             @Override
-            public boolean matches(MatchReplace sr) {
+            public boolean matches(TextMatcher sr) {
                 Matcher m = createMatcher(sr);
                 return sr.matchWhole ? m.matches() : m.find();
             }
             @Override
-            public String replace(MatchReplace sr) {
+            public String replace(TextMatcher sr) {
                 String quotedRepl = Matcher.quoteReplacement(sr.replacement);
                 Matcher m = createMatcher(sr);
                 if (sr.matchWhole && m.matches()) {
@@ -143,7 +144,7 @@ public class MatchReplace implements IXMLConfigurable {
                 }
                 return sr.text;
             }
-            private Matcher createMatcher(MatchReplace sr) {
+            private Matcher createMatcher(TextMatcher sr) {
                 Pattern p = Pattern.compile("[^*?]+|(\\*)|(\\?)");
                 Matcher m = p.matcher(sr.pattern);
                 StringBuilder b = new StringBuilder();
@@ -158,19 +159,19 @@ public class MatchReplace implements IXMLConfigurable {
                 }
                 return new Regex(b.toString())
                         .dotAll()
-                        .setCaseInsensitive(sr.ignoreCase)
-                        .setMarkInsensitive(sr.ignoreAccents)
+                        .setIgnoreCase(sr.ignoreCase)
+                        .setIgnoreDiacritic(sr.ignoreDiacritic)
                         .matcher(sr.text);
             }
         }),
         REGEX(new MethodStrategy() {
             @Override
-            public boolean matches(MatchReplace sr) {
+            public boolean matches(TextMatcher sr) {
                 Matcher m = createMatcher(sr);
                 return sr.matchWhole ? m.matches() : m.find();
             }
             @Override
-            public String replace(MatchReplace sr) {
+            public String replace(TextMatcher sr) {
                 Matcher m = createMatcher(sr);
                 if (sr.matchWhole && m.matches()) {
                     return m.replaceFirst(sr.replacement);
@@ -184,11 +185,11 @@ public class MatchReplace implements IXMLConfigurable {
                 }
                 return sr.text;
             }
-            private Matcher createMatcher(MatchReplace sr) {
+            private Matcher createMatcher(TextMatcher sr) {
                 return new Regex(sr.pattern)
                         .dotAll()
-                        .setCaseInsensitive(sr.ignoreCase)
-                        .setMarkInsensitive(sr.ignoreAccents)
+                        .setIgnoreCase(sr.ignoreCase)
+                        .setIgnoreDiacritic(sr.ignoreDiacritic)
                         .matcher(sr.text);
             }
         });
@@ -207,127 +208,145 @@ public class MatchReplace implements IXMLConfigurable {
     private String replacement;
 
     private boolean ignoreCase;
-    private boolean ignoreAccents;
+    private boolean ignoreDiacritic;
     private boolean replaceAll;
     private boolean matchWhole;
 
-    public MatchReplace() {
+    public TextMatcher() {
         super();
     }
-    public MatchReplace(Method method) {
+    public TextMatcher(Method method) {
         super();
         this.method = method;
     }
-    // Copy constructor
-    public MatchReplace(MatchReplace matchReplace) {
+    /**
+     * Copy constructor. Supplying <code>null</code> is the same
+     * as evoking the empty constructor.
+     * @param textMatcher instance to copy
+     */
+    public TextMatcher(TextMatcher textMatcher) {
         super();
-        this.method = matchReplace.method;
-        this.pattern = matchReplace.pattern;
-        this.text = matchReplace.text;
-        this.replacement = matchReplace.replacement;
-        this.ignoreCase = matchReplace.ignoreCase;
-        this.ignoreAccents = matchReplace.ignoreAccents;
-        this.replaceAll = matchReplace.replaceAll;
-        this.matchWhole = matchReplace.matchWhole;
+        if (textMatcher != null) {
+            this.method = textMatcher.method;
+            this.pattern = textMatcher.pattern;
+            this.text = textMatcher.text;
+            this.replacement = textMatcher.replacement;
+            this.ignoreCase = textMatcher.ignoreCase;
+            this.ignoreDiacritic = textMatcher.ignoreDiacritic;
+            this.replaceAll = textMatcher.replaceAll;
+            this.matchWhole = textMatcher.matchWhole;
+        }
     }
 
     public Method getMethod() {
         return method;
     }
-    public MatchReplace setMethod(Method method) {
+    public TextMatcher setMethod(Method method) {
         this.method = method;
         return this;
     }
-    public MatchReplace withMethod(Method method) {
+    public TextMatcher withMethod(Method method) {
         return copy().setMethod(method);
     }
 
     public boolean isMatchWhole() {
         return matchWhole;
     }
-    public MatchReplace setMatchWhole(boolean matchWhole) {
+    public TextMatcher setMatchWhole(boolean matchWhole) {
         this.matchWhole = matchWhole;
         return this;
     }
-    public MatchReplace withMatchWhole(boolean matchWhole) {
+    public TextMatcher withMatchWhole(boolean matchWhole) {
         return copy().setMatchWhole(matchWhole);
     }
 
     public String getPattern() {
         return pattern;
     }
-    public MatchReplace setPattern(String pattern) {
+    public TextMatcher setPattern(String pattern) {
         this.pattern = pattern;
         return this;
     }
-    public MatchReplace withPattern(String pattern) {
+    public TextMatcher withPattern(String pattern) {
         return copy().setPattern(pattern);
     }
 
     public String getText() {
         return text;
     }
-    public MatchReplace setText(String text) {
+    public TextMatcher setText(String text) {
         this.text = text;
         return this;
     }
-    public MatchReplace withText(String text) {
+    public TextMatcher withText(String text) {
         return copy().setText(text);
     }
 
     public String getReplacement() {
         return replacement;
     }
-    public MatchReplace setReplacement(String replacement) {
+    public TextMatcher setReplacement(String replacement) {
         this.replacement = replacement;
         return this;
     }
-    public MatchReplace withReplacement(String replacement) {
+    public TextMatcher withReplacement(String replacement) {
         return copy().setReplacement(replacement);
     }
 
     public boolean isIgnoreCase() {
         return ignoreCase;
     }
-    public MatchReplace setIgnoreCase(boolean ignoreCase) {
+    public TextMatcher setIgnoreCase(boolean ignoreCase) {
         this.ignoreCase = ignoreCase;
         return this;
     }
-    public MatchReplace withIgnoreCase(boolean ignoreCase) {
+    public TextMatcher withIgnoreCase(boolean ignoreCase) {
         return copy().setIgnoreCase(ignoreCase);
     }
 
-    public boolean isIgnoreAccents() {
-        return ignoreAccents;
+    public boolean isIgnoreDiacritic() {
+        return ignoreDiacritic;
     }
-    public MatchReplace setIgnoreAccents(boolean ignoreAccents) {
-        this.ignoreAccents = ignoreAccents;
+    public TextMatcher setIgnoreDiacritic(boolean ignoreDiacritic) {
+        this.ignoreDiacritic = ignoreDiacritic;
         return this;
     }
-    public MatchReplace withIgnoreAccents(boolean ignoreAccents) {
-        return copy().setIgnoreAccents(ignoreAccents);
+    public TextMatcher withIgnoreDiacritic(boolean ignoreDiacritic) {
+        return copy().setIgnoreDiacritic(ignoreDiacritic);
     }
 
     public boolean isReplaceAll() {
         return replaceAll;
     }
-    public MatchReplace setReplaceAll(boolean replaceAll) {
+    public TextMatcher setReplaceAll(boolean replaceAll) {
         this.replaceAll = replaceAll;
         return this;
     }
-    public MatchReplace withReplaceAll(boolean replaceAll) {
+    public TextMatcher withReplaceAll(boolean replaceAll) {
         return copy().setReplaceAll(replaceAll);
     }
 
-    public void copyTo(MatchReplace sr) {
+    public boolean hasText() {
+        return StringUtils.isNotBlank(text);
+    }
+    public boolean hasPattern() {
+        return StringUtils.isNotBlank(pattern);
+    }
+    public boolean hasReplacement() {
+        return StringUtils.isNotBlank(replacement);
+    }
+
+
+    //TODO Really have this since we have copy constructor?
+    public void copyTo(TextMatcher sr) {
         BeanUtil.copyProperties(sr, this);
     }
-    public void copyFrom(MatchReplace sr) {
+    public void copyFrom(TextMatcher sr) {
         BeanUtil.copyProperties(this, sr);
     }
 
-    private MatchReplace copy() {
-        return new MatchReplace(this);
+    private TextMatcher copy() {
+        return new TextMatcher(this);
     }
 
     //--- Match/replace methods ------------------------------------------------
@@ -351,15 +370,15 @@ public class MatchReplace implements IXMLConfigurable {
     }
 
     interface MethodStrategy {
-        boolean matches(MatchReplace sr);
-        String replace(MatchReplace sr);
+        boolean matches(TextMatcher sr);
+        String replace(TextMatcher sr);
     }
 
     @Override
     public void loadFromXML(XML xml) {
         setMethod(xml.getEnum("@method", Method.class, method));
         setIgnoreCase(xml.getBoolean("@ignoreCase", ignoreCase));
-        setIgnoreAccents(xml.getBoolean("@ignoreAccents", ignoreAccents));
+        setIgnoreDiacritic(xml.getBoolean("@ignoreDiacritic", ignoreDiacritic));
         setReplaceAll(xml.getBoolean("@replaceAll", replaceAll));
         setMatchWhole(xml.getBoolean("@matchWhole", matchWhole));
         setPattern(xml.getString("pattern", pattern));
@@ -370,7 +389,7 @@ public class MatchReplace implements IXMLConfigurable {
     public void saveToXML(XML xml) {
         xml.setAttribute("method", method);
         xml.setAttribute("ignoreCase", ignoreCase);
-        xml.setAttribute("ignoreAccents", ignoreAccents);
+        xml.setAttribute("ignoreDiacritic", ignoreDiacritic);
         xml.setAttribute("replaceAll", replaceAll);
         xml.setAttribute("matchWhole", matchWhole);
         xml.addElement("pattern", pattern);

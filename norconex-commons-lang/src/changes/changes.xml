@@ -10,8 +10,8 @@
     <release version="2.0.0-SNAPSHOT" date="2020-??-??" 
              description="Major release. NOT a drop-in replacement for 1.x.">
       <action dev="essiembre" type="add">
-        New configurable MatchReplace class supporting different methods
-        of matching (basic, wildcard, regex).
+        New configurable TextMatcher class supporting different methods
+        of matching/replacing (basic, wildcard, regex).
       </action>
       <action dev="essiembre" type="add">
         New MutableImage class facilitating performing basic image operations.
@@ -102,6 +102,11 @@
         New PropertyMatchers collection.
       </action>
       <action dev="essiembre" type="add">
+        New PropertyMatcher methods to retreive matching values,
+        replace them, or match them more effectively using different methods
+        (basic, regex, wildcard).
+      </action>
+      <action dev="essiembre" type="add">
         New PropertySetter for encapsulating different ways to add value(s) to
         a Properties.
       </action>
@@ -164,6 +169,11 @@
       </action>
       <action dev="essiembre" type="update">
         Most method arguments accepting File now accept Path also/instead.
+      </action>
+      <action dev="essiembre" type="update">
+        Most places where regular expressions could be used now also 
+        support "basic" matching and "wildcard" as well as being able to 
+        ignore diacritical marks (e.g., accents).
       </action>
       <action dev="essiembre" type="update">
         Properties setXXX(...) and addXXX(...) methods are now deprecated in favor

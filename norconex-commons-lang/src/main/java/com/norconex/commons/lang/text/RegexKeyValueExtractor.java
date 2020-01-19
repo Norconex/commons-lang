@@ -114,24 +114,6 @@ public class RegexKeyValueExtractor {
         return this;
     }
 
-    // get/setPattern for convenience: really have them??
-    public String getPattern() {
-        return regex.getPattern();
-    }
-    public RegexKeyValueExtractor setPattern(String pattern) {
-        this.regex.setPattern(pattern);
-        return this;
-    }
-
-    // Keey for convenience
-    public boolean isCaseSensitive() {
-        return !regex.isCaseInsensitive();
-    }
-    public RegexKeyValueExtractor setCaseSensitive(boolean caseSensitive) {
-        regex.setCaseInsensitive(!caseSensitive);
-        return this;
-    }
-
     public int getKeyGroup() {
         return keyGroup;
     }
@@ -236,7 +218,7 @@ public class RegexKeyValueExtractor {
     }
 
     private static Regex defaultRegex(String pattern) {
-        return new Regex(pattern).dotAll().caseInsensitive();
+        return new Regex(pattern).dotAll().ignoreCase();
     }
 
     private Matcher matcher(CharSequence text) {

@@ -22,31 +22,31 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
 
-import com.norconex.commons.lang.text.MatchReplace.Method;
+import com.norconex.commons.lang.text.TextMatcher.Method;
 import com.norconex.commons.lang.xml.XML;
 
 /**
  * @author Pascal Essiembre
  * @since 2.0.0
  */
-public class MatchReplaceTest {
+public class TextMatcherTest {
 
     @Test
     public void testWriteRead() throws IOException {
-        MatchReplace sr = new MatchReplace()
+        TextMatcher sr = new TextMatcher()
                 .setText("mytext")
                 .setPattern("mypattern")
                 .setReplacement("myreplacement")
                 .setMatchWhole(true)
-                .setIgnoreAccents(true)
+                .setIgnoreDiacritic(true)
                 .setIgnoreCase(true)
                 .setReplaceAll(true)
                 .setMethod(Method.WILDCARD);
-        XML.assertWriteRead(sr, "matchReplace");
+        XML.assertWriteRead(sr, "textMatcher");
     }
 
     @ParameterizedTest()
-    @CsvFileSource(numLinesToSkip = 1, resources = "MatchReplaceMatchTest.csv")
+    @CsvFileSource(numLinesToSkip = 1, resources = "TextMatcherTest.csv")
     public void testMatch(
             String text,
             String pattern,
@@ -54,7 +54,7 @@ public class MatchReplaceTest {
             boolean basicAssert,
             boolean wildAssert,
             boolean regexAssert) throws IOException {
-        MatchReplace sr = new MatchReplace()
+        TextMatcher sr = new TextMatcher()
                 .setText(text)
                 .setPattern(pattern)
                 .setMatchWhole(matchWhole);
@@ -62,13 +62,13 @@ public class MatchReplaceTest {
         testMatch(wildAssert, Method.WILDCARD, sr);
         testMatch(regexAssert, Method.REGEX, sr);
     }
-    private void testMatch(boolean expected, Method method, MatchReplace sr) {
-        MatchReplace s = new MatchReplace(sr);
+    private void testMatch(boolean expected, Method method, TextMatcher sr) {
+        TextMatcher s = new TextMatcher(sr);
         s.setMethod(method);
 
         Assertions.assertAll(method.toString(),
             () -> {
-                s.setIgnoreAccents(true).setIgnoreCase(true);
+                s.setIgnoreDiacritic(true).setIgnoreCase(true);
                 try {
                     Assertions.assertEquals(expected,
                             s.matches(), () -> s.toString());
