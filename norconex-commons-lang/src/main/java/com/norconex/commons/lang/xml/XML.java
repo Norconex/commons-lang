@@ -1691,6 +1691,16 @@ public class XML {
     }
 
     /**
+     * Removes an element from this XML.
+     * @param tagName element name
+     * @return XML of the removed element
+     */
+    public XML removeElement(String tagName) {
+        Element el = (Element) node;
+        return new XML(el.removeChild(getNode(tagName)));
+    }
+
+    /**
      * Sets an attribute on this XML element, converting the supplied object
      * to a string (enums are also converted to lowercase).
      * A <code>null</code> value is equivalent to not
@@ -1754,6 +1764,17 @@ public class XML {
             return this;
         }
         setAttribute(name, join(delim, values));
+        return this;
+    }
+
+    /**
+     * Removes an attribute on this XML element.
+     * @param name attribute name
+     * @return this element
+     */
+    public XML removeAttribute(String name) {
+        Element el = (Element) node;
+        el.removeAttribute(name);
         return this;
     }
 

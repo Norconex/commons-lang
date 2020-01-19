@@ -138,9 +138,11 @@ public final class XMLUtil {
         String x = new XML(wrapper).toString(indent).trim();
         x = StringUtils.removeStart(x, WRAP_START);
         x = StringUtils.removeEnd(x, WRAP_END);
-        x = x.trim();
         x = x.replaceAll("(\n\r|\r\n)", "\n");
         x = x.replaceAll("\r", "\n");
+        // Remove just one new line char from begining and end
+        x = x.replaceAll("(^ *\n| *\n$)", "");
+
         if (indent > 0) {
             //Remove indent created by adding wrapper tag
             x = x.replaceAll("(?m)^ {" + indent + "}", "");
