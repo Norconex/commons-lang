@@ -119,11 +119,11 @@ public final class PropertyMatcher implements Predicate<Properties> {
         TextMatcher m = new TextMatcher(matcher);
         Collection<String> values =  properties.getStrings(key);
         for (String value : values) {
-            if (!matcher.hasPattern() && StringUtils.isBlank(value)) {
+            if (!m.hasPattern() && StringUtils.isBlank(value)) {
                 return true;
             }
             m.setText(StringUtils.trimToEmpty(value));
-            if (matcher.matches()) {
+            if (m.matches()) {
                 return true;
             }
         }
@@ -159,11 +159,11 @@ public final class PropertyMatcher implements Predicate<Properties> {
         TextMatcher m = new TextMatcher(matcher);
         Collection<String> values =  properties.getStrings(key);
         for (String value : values) {
-            if (!matcher.hasPattern() && StringUtils.isBlank(value)) {
+            if (!m.hasPattern() && StringUtils.isBlank(value)) {
                 matches.add(value);
             }
             m.setText(StringUtils.trimToEmpty(value));
-            if (matcher.matches()) {
+            if (m.matches()) {
                 matches.add(value);
             }
         }
@@ -187,9 +187,9 @@ public final class PropertyMatcher implements Predicate<Properties> {
         List<String> newValues = new ArrayList<>();
         for (String value : values) {
             m.setText(StringUtils.trimToEmpty(value));
-            if (!matcher.hasPattern() && StringUtils.isBlank(m.getText())
-                    || matcher.matches()) {
-                String newValue = matcher.replace();
+            if (!m.hasPattern() && StringUtils.isBlank(m.getText())
+                    || m.matches()) {
+                String newValue = m.replace();
                 if (!Objects.equals(value, newValue)) {
                     replacedValues.add(value);
                 }

@@ -258,6 +258,9 @@ public class Regex {
      * @return escaped pattern
      */
     public static String escape(String pattern) {
+        if (pattern == null) {
+            return pattern;
+        }
         return ESCAPE_PATTERN.matcher(pattern).replaceAll("\\\\$0");
     }
 
