@@ -82,6 +82,23 @@ import com.norconex.commons.lang.xml.XML;
  * The above will convert the given text into "It seems they are friends.".
  * </p>
  *
+ * <h3>Match only</h3>
+ * <p>
+ * When focusing on matching only, consuming classes can use
+ * these tag attributes only, and supply the expression as the tag content:
+ * </p>
+ * {@nx.xml #attributes
+ *     method="[basic|wildcard|regex]"
+ *     ignoreCase="[false|true]"
+ *     ignoreDiacritic="[false|true]"
+ *     matchWhole="[false|true]"
+ * }
+ * <p>
+ * Convenience {@link #loadMatchFromXML(XML)} and
+ * {@link #saveMatchToXML(XML)} methods are provided to facilitate
+ * this approach.
+ * </p>
+ *
  * @author Pascal Essiembre
  * @since 2.0.0
  */
@@ -395,6 +412,21 @@ public class TextMatcher implements IXMLConfigurable {
         xml.addElement("pattern", pattern);
         xml.addElement("text", text);
         xml.addElement("replacement", replacement);
+    }
+
+    public void loadMatchFromXML(XML xml) {
+        setMethod(xml.getEnum("@method", Method.class, method));
+        setIgnoreCase(xml.getBoolean("@ignoreCase", ignoreCase));
+        setIgnoreDiacritic(xml.getBoolean("@ignoreDiacritic", ignoreDiacritic));
+        setMatchWhole(xml.getBoolean("@matchWhole", matchWhole));
+        setPattern(xml.getString("."));
+    }
+    public void saveMatchToXML(XML xml) {
+        xml.setAttribute("method", method);
+        xml.setAttribute("ignoreCase", ignoreCase);
+        xml.setAttribute("ignoreDiacritic", ignoreDiacritic);
+        xml.setAttribute("matchWhole", matchWhole);
+        xml.setTextContent(pattern);
     }
 
     @Override

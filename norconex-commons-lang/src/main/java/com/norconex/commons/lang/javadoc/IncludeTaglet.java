@@ -19,6 +19,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
@@ -236,14 +238,49 @@ public class IncludeTaglet extends AbstractInlineTaglet {
     private static String readSourceFromClasspath(String className) {
         String fullPath = StringUtils.prependIfMissing(
                 className, "/").replace('.', '/') + JAVA_FILE_EXT;
-        try (InputStream is =
-                IncludeTaglet.class.getResourceAsStream(fullPath)) {
+
+        URL url = IncludeTaglet.class.getResource(fullPath);
+        if (url == null) {
+            return null;
+        }
+
+        String source = null;
+        try {
+            source = readSourceFromURL(url);
+        } catch (IOException e) {
+            //NOOP
+        }
+        if (source == null) {
+            // For some reason even if sources.jar is included, sometimes
+            // it tries to grab the resource from the non-sources version.
+            // Here we try to force it to look at the source.
+            try {
+                source = readSourceFromURL(toSourceURL(url));
+            } catch (IOException e) {
+                e.printStackTrace(System.err);
+            }
+        }
+        return source;
+    }
+
+    private static String readSourceFromURL(URL url) throws IOException {
+        if (url == null) {
+            return null;
+        }
+        try (InputStream is = url.openStream()) {
             if (is != null) {
                 return IOUtils.toString(is, UTF_8);
             }
-        } catch (IOException e) {
-            e.printStackTrace(System.err);
         }
         return null;
+    }
+
+    private static URL toSourceURL(URL url) throws MalformedURLException {
+        String origPath = url.toExternalForm();
+        String sourcePath = origPath.replace(".jar!", "-sources.jar!");
+        if (origPath.equals(sourcePath)) {
+            return null;
+        }
+        return new URL(sourcePath);
     }
 }
