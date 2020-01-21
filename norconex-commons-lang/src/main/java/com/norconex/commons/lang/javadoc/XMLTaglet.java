@@ -26,6 +26,11 @@ import com.sun.tools.doclets.Taglet;
 /**
  * <p>{&#64;nx.xml} XML beautifier with enhanced functionality.</p>
  *
+ * <p>
+ *   Refer to taglet source code to find out how the following XML
+ *   samples were generated.
+ * </p>
+ *
  * {@nx.xml
  * <test>
  *   <sub attr="xml-taglet-test">This is an XML example.</sub>

@@ -158,7 +158,7 @@ public final class XMLUtil {
                 }
                 // check if a tag only and not cdata
                 Matcher m = Pattern.compile(
-                        "^(\\s*)<[^!/>]+?>$").matcher(line);
+                        "^(\\s*)<[^!/>][^!>]*?>$").matcher(line);
                 if (m.matches()) {
                     String wrapIndent = m.group(1) + repeat(' ', indent * 2);
                     line = ATTR_PATTERN.matcher(line).replaceAll(

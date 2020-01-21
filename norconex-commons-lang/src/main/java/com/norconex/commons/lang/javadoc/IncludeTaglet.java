@@ -35,8 +35,8 @@ import com.sun.javadoc.Tag;
 import com.sun.tools.doclets.Taglet;
 
 /**
- * <p>{&#64;nx.include} Include another taglet raw content from another
- * taglet.</p>
+ * <p>{&#64;nx.include} Include raw content from another
+ * taglet in a different source file.</p>
  * <p>Example that includes the {@link XMLUsageTaglet} usage example:</p>
  * <pre>
  * &lt;xml&gt;
@@ -54,6 +54,8 @@ import com.sun.tools.doclets.Taglet;
  * }
  *
  * <p>Can be nested in nx.xml.* taglets.</p>
+ *
+ * <p>Can also use # if the target defines such as id.</p>
  *
  * @author Pascal Essiembre
  * @since 2.0.0
@@ -135,7 +137,8 @@ public class IncludeTaglet extends AbstractInlineTaglet {
         if (StringUtils.isBlank(block)) {
             System.err.println("ID '" + id
                     + "' not found in source for: " + fullClassName);
-            System.exit(-1);
+            return "!! DOCUMENTATION ERROR !! Refer to " + fullClassName
+                    + " class documentation for additional information.";
         }
         return block;
     }
@@ -216,7 +219,8 @@ public class IncludeTaglet extends AbstractInlineTaglet {
         }
         if (source == null) {
             System.err.println("Source not found for: " + className);
-            System.exit(-1);
+            return "!! DOCUMENTATION ERROR !! Refer to " + className
+                    + " class documentation for additional information.";
         }
         return source;
     }
@@ -237,26 +241,26 @@ public class IncludeTaglet extends AbstractInlineTaglet {
     }
     private static String readSourceFromClasspath(String className) {
         String fullPath = StringUtils.prependIfMissing(
-                className, "/").replace('.', '/') + JAVA_FILE_EXT;
-
-        URL url = IncludeTaglet.class.getResource(fullPath);
-        if (url == null) {
-            return null;
-        }
+                className, "/").replace('.', '/')  + JAVA_FILE_EXT;
 
         String source = null;
-        try {
-            source = readSourceFromURL(url);
-        } catch (IOException e) {
-            //NOOP
+        URL url = IncludeTaglet.class.getResource(fullPath);
+
+        if (url != null) {
+            try {
+                source = readSourceFromURL(url);
+            } catch (IOException e) {
+                e.printStackTrace(System.err);
+            }
         }
+
         if (source == null) {
-            // For some reason even if sources.jar is included, sometimes
-            // it tries to grab the resource from the non-sources version.
+            // For some reason even if sources.jar is included as a dependency,
+            // it may not be found by the class loader.
             // Here we try to force it to look at the source.
             try {
-                source = readSourceFromURL(toSourceURL(url));
-            } catch (IOException e) {
+                source = readSourceFromURL(toSourceURL(className));
+            } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace(System.err);
             }
         }
@@ -275,9 +279,16 @@ public class IncludeTaglet extends AbstractInlineTaglet {
         return null;
     }
 
-    private static URL toSourceURL(URL url) throws MalformedURLException {
-        String origPath = url.toExternalForm();
+    private static URL toSourceURL(String className)
+            throws MalformedURLException, ClassNotFoundException {
+        Class<?> cls = Class.forName(className);
+        URL classURL = cls.getResource(cls.getSimpleName() + ".class");
+        if (classURL == null) {
+            return null;
+        }
+        String origPath = classURL.toExternalForm();
         String sourcePath = origPath.replace(".jar!", "-sources.jar!");
+        sourcePath = sourcePath.replaceFirst("\\.class$", ".java");
         if (origPath.equals(sourcePath)) {
             return null;
         }
