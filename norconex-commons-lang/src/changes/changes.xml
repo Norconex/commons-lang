@@ -7,6 +7,13 @@
   </properties>
   <body>
 
+    <release version="1.15.2" date="2020-??-??" description="Maintenance release">
+      <action dev="essiembre" type="update">
+        Added conditional checks before log4j-specific method calls not covered
+        by "log4j-over-slf4j".
+      </action>
+    </release>
+
     <release version="1.15.1" date="2019-12-21" description="Maintenance release">
       <action dev="essiembre" type="add">
         Added new normalization rules to URLNormalizer: removeQueryString,

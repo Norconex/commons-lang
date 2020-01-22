@@ -1,4 +1,4 @@
-/* Copyright 2017 Norconex Inc.
+/* Copyright 2017-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import org.apache.log4j.PatternLayout;
 import org.apache.log4j.spi.LoggingEvent;
 
 /**
- * A console appender that keeps track of how many events of each matching level 
+ * A console appender that keeps track of how many events of each matching level
  * were logged.
  * Contrary to {@link ConsoleAppender}, invoking the empty constructor
  * on this class will set a default layout ({@link #DEFAULT_LAYOUT}).
@@ -41,22 +41,26 @@ public class CountingConsoleAppender extends ConsoleAppender {
     public static final Layout DEFAULT_LAYOUT = new PatternLayout("%-5p %m%n");
     private final Map<Level, AtomicInteger> counters = new HashMap<>();
     private final Map<Class<?>, Logger> loggers = new HashMap<>();
-    
+
     public CountingConsoleAppender() {
         this(DEFAULT_LAYOUT);
     }
 
     public CountingConsoleAppender(Layout layout, String target) {
-        super(layout, target);
+        setLayout(layout);
+        if (Log4jCheck.present()) {
+            setTarget(target);
+        }
     }
 
     public CountingConsoleAppender(Layout layout) {
-        super(layout);
+        setLayout(layout);
     }
-    @Override
     public void append(LoggingEvent event) {
-        super.append(event);
-        getCounter(event.getLevel()).incrementAndGet();
+        if (Log4jCheck.present()) {
+            super.append(event);
+            getCounter(event.getLevel()).incrementAndGet();
+        }
     }
 
     /**
@@ -66,7 +70,7 @@ public class CountingConsoleAppender extends ConsoleAppender {
     public boolean isEmpty() {
         return counters.isEmpty();
     }
-    
+
     /**
      * Gets the number of events logged for the given log level.
      * @param level log level
@@ -91,9 +95,10 @@ public class CountingConsoleAppender extends ConsoleAppender {
     /**
      * Resets all counts to zero.
      */
-    @Override
     public synchronized void reset() {
-        super.reset();
+        if (Log4jCheck.present()) {
+            super.reset();
+        }
         if (counters != null) {
             counters.clear();
         }
@@ -101,7 +106,7 @@ public class CountingConsoleAppender extends ConsoleAppender {
 
     /**
      * Starts counting log events for a class by creating a logger for that
-     * class and appending itself to it.  If a logger was already created 
+     * class and appending itself to it.  If a logger was already created
      * for the class, it will be reused (but the passed log level will be set
      * on it).
      * @param clazz class to count log events for
@@ -114,25 +119,29 @@ public class CountingConsoleAppender extends ConsoleAppender {
             logger = LogManager.getLogger(clazz);
             loggers.put(clazz, logger);
         }
-        if (!logger.isAttached(this)) {
-            logger.addAppender(this);
+        if (Log4jCheck.present()) {
+            if (!logger.isAttached(this)) {
+                logger.addAppender(this);
+            }
         }
         logger.setLevel(logLevel);
     }
     /**
      * Stops counting log events for a class by removing this appender
      * from the logger previously created for the supplied class.
-     * This method has no effect if {@link #startCountingFor(Class, Level)} 
+     * This method has no effect if {@link #startCountingFor(Class, Level)}
      * was not previously invoked with the same class.
      * @param clazz class to stop counting log events for
      */
     public synchronized void stopCountingFor(Class<?> clazz) {
         Logger logger = loggers.get(clazz);
         if (logger != null) {
-            logger.removeAppender(this);
+            if (Log4jCheck.present()) {
+                logger.removeAppender(this);
+            }
         }
     }
-    
+
     private synchronized AtomicInteger getCounter(Level level) {
         AtomicInteger i = counters.get(level);
         if (i == null) {
@@ -141,7 +150,7 @@ public class CountingConsoleAppender extends ConsoleAppender {
         }
         return i;
     }
-    
+
     @Override
     public String toString() {
         return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)

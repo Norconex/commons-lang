@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.norconex.commons.lang.log.Log4jCheck;
+
 /**
  * @author Pascal Essiembre
  */
@@ -34,12 +36,14 @@ public class CachedOutputStreamTest {
     @Before
     public void before() {
         Logger logger = LogManager.getRootLogger();
-        logger.addAppender(new ConsoleAppender(
-                new PatternLayout("%-5p [%C{1}] %m%n"), 
-                ConsoleAppender.SYSTEM_OUT));
+        if (Log4jCheck.present()) {
+            logger.addAppender(new ConsoleAppender(
+                    new PatternLayout("%-5p [%C{1}] %m%n"),
+                    ConsoleAppender.SYSTEM_OUT));
+        }
         logger.setAdditivity(false);
     }
-    
+
     @Test
     public void testContentMatchMemCache() throws IOException {
         String content = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -47,7 +51,7 @@ public class CachedOutputStreamTest {
         CachedStreamFactory factory = new CachedStreamFactory(200, 100);
         CachedOutputStream cache = factory.newOuputStream();
         InputStream is = null;
-        
+
         try {
             cache.write(content.getBytes());
             is = cache.getInputStream();
@@ -75,7 +79,7 @@ public class CachedOutputStreamTest {
             IOUtils.closeQuietly(cache);
         }
     }
-    
+
     private String readCacheToString(InputStream is) throws IOException {
         long i;
         StringBuilder b = new StringBuilder();
