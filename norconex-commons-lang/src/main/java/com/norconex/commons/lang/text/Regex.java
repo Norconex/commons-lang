@@ -29,15 +29,49 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import com.norconex.commons.lang.xml.IXMLConfigurable;
+import com.norconex.commons.lang.xml.XML;
+
 /**
- * <P>
+ * <p>
  * Builder and utility methods making it easier to construct and use
  * regular expressions.
  * </p>
+ *
+ * {@nx.xml.usage #attributes
+ *     ignoreCase="[false|true]"
+ *     ignoreDiacritic="[false|true]"
+ *     dotAll="[false|true]"
+ *     unixLines="[false|true]"
+ *     literal="[false|true]"
+ *     comments="[false|true]"
+ *     multiline="[false|true]"
+ *     canonEq="[false|true]"
+ *     unicodeCase="[false|true]"
+ *     unicodeCharacterClass="[false|true]"
+ * }
+ * <p>
+ * The above are configurable attributes consuming classes can expect.
+ * The actual regular expression is expected to be the tag content.
+ * Many of the available attributes on XML configuration represent the
+ * regular expression flags as defined in {@link Pattern}.
+ * </p>
+ *
+ * {@nx.xml.example
+ * <sampleConfig ignoreCase="true" dotAll="true">
+ *   ^start.*end$
+ * </sampleConfig>
+ * }
+ * <p>
+ * The above will match any text that starts with "start" and ends with "ends",
+ * regardless if there are new line characters in between.
+ * </p>
+ *
  * @author Pascal Essiembre
  * @since 2.0.0
+ * @see Pattern
  */
-public class Regex {
+public class Regex implements IXMLConfigurable {
 
     /**
      * Flag that ignores diacritical marks when matching or replacing
@@ -142,13 +176,23 @@ public class Regex {
         return flags.contains(Pattern.CANON_EQ);
     }
 
-    public Regex unicode() {
-        return setUnicode(true);
+    public Regex unicodeCase() {
+        return setUnicodeCase(true);
     }
-    public Regex setUnicode(boolean unicode) {
+    public Regex setUnicodeCase(boolean unicode) {
+        return setFlag(Pattern.UNICODE_CASE, unicode);
+    }
+    public boolean isUnicodeCase() {
+        return flags.contains(Pattern.UNICODE_CASE);
+    }
+
+    public Regex unicodeCharacterClass() {
+        return setUnicodeCharacterClass(true);
+    }
+    public Regex setUnicodeCharacterClass(boolean unicode) {
         return setFlag(Pattern.UNICODE_CHARACTER_CLASS, unicode);
     }
-    public boolean isUnicode() {
+    public boolean isUnicodeCharacterClass() {
         return flags.contains(Pattern.UNICODE_CHARACTER_CLASS);
     }
 
@@ -312,6 +356,37 @@ public class Regex {
             flags.remove(flag);
         }
         return this;
+    }
+
+    @Override
+    public void loadFromXML(XML xml) {
+        setDotAll(xml.getBoolean("@dotAll", isDotAll()));
+        setIgnoreCase(xml.getBoolean("@ignoreCase", isIgnoreCase()));
+        setIgnoreDiacritic(
+                xml.getBoolean("@ignoreDiacritic", isIgnoreDiacritic()));
+        setUnixLines(xml.getBoolean("@unixLines", isUnixLines()));
+        setLiteral(xml.getBoolean("@literal", isLiteral()));
+        setComments(xml.getBoolean("@comments", isComments()));
+        setMultiline(xml.getBoolean("@multiline", isMultiline()));
+        setCanonEq(xml.getBoolean("@canonEq", isCanonEq()));
+        setUnicodeCase(xml.getBoolean("@unicodeCase", isUnicodeCase()));
+        setUnicodeCharacterClass(xml.getBoolean(
+                "@unicodeCharacterClass", isUnicodeCharacterClass()));
+        setPattern(xml.getString(".", getPattern()));
+    }
+    @Override
+    public void saveToXML(XML xml) {
+        xml.setAttribute("dotAll", isDotAll());
+        xml.setAttribute("ignoreCase", isIgnoreCase());
+        xml.setAttribute("ignoreDiacritic", isIgnoreDiacritic());
+        xml.setAttribute("unixLines", isUnixLines());
+        xml.setAttribute("literal", isLiteral());
+        xml.setAttribute("comments", isComments());
+        xml.setAttribute("multiline", isMultiline());
+        xml.setAttribute("canonEq", isCanonEq());
+        xml.setAttribute("unicodeCase", isUnicodeCase());
+        xml.setAttribute("unicodeCharacterClass", isUnicodeCharacterClass());
+        xml.setTextContent(getPattern());
     }
 
     @Override

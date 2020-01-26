@@ -1052,10 +1052,10 @@ public class XML {
         XML xml = XML.of(xmlStr).create();
         IXMLConfigurable readConfigurable = xml.toObject();
         if (!xmlConfigurable.equals(readConfigurable)) {
-            LOG.debug("BEFORE: {}", xmlConfigurable);
-            LOG.debug(" AFTER: {}", readConfigurable);
             if (LOG.isErrorEnabled()) {
-                LOG.error("DIFF: \n{}\n",
+                LOG.error(" SAVED: {}", xmlConfigurable);
+                LOG.error("LOADED: {}", readConfigurable);
+                    LOG.error("  DIFF: \n{}\n",
                         BeanUtil.diff(xmlConfigurable, readConfigurable));
             }
             throw new XMLException("Saved and loaded XML are not the same.");

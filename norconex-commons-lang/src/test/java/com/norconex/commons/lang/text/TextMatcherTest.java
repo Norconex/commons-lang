@@ -1,4 +1,4 @@
-/* Copyright 2019 Norconex Inc.
+/* Copyright 2019-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,9 +34,7 @@ public class TextMatcherTest {
     @Test
     public void testWriteRead() throws IOException {
         TextMatcher sr = new TextMatcher()
-                .setText("mytext")
                 .setPattern("mypattern")
-                .setReplacement("myreplacement")
                 .setMatchWhole(true)
                 .setIgnoreDiacritic(true)
                 .setIgnoreCase(true)
@@ -55,14 +53,14 @@ public class TextMatcherTest {
             boolean wildAssert,
             boolean regexAssert) throws IOException {
         TextMatcher sr = new TextMatcher()
-                .setText(text)
                 .setPattern(pattern)
                 .setMatchWhole(matchWhole);
-        testMatch(basicAssert, Method.BASIC, sr);
-        testMatch(wildAssert, Method.WILDCARD, sr);
-        testMatch(regexAssert, Method.REGEX, sr);
+        testMatch(basicAssert, Method.BASIC, sr, text);
+        testMatch(wildAssert, Method.WILDCARD, sr, text);
+        testMatch(regexAssert, Method.REGEX, sr, text);
     }
-    private void testMatch(boolean expected, Method method, TextMatcher sr) {
+    private void testMatch(
+            boolean expected, Method method, TextMatcher sr, String text) {
         TextMatcher s = new TextMatcher(sr);
         s.setMethod(method);
 
@@ -71,7 +69,7 @@ public class TextMatcherTest {
                 s.setIgnoreDiacritic(true).setIgnoreCase(true);
                 try {
                     Assertions.assertEquals(expected,
-                            s.matches(), () -> s.toString());
+                            s.matches(text), () -> s.toString());
                 } catch (PatternSyntaxException e) {
                     Assertions.assertFalse(expected);
                 }

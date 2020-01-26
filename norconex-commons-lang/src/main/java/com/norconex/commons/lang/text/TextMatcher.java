@@ -50,53 +50,27 @@ import com.norconex.commons.lang.xml.XML;
  * This class is not thread-safe.
  * </p>
  *
- * {@nx.xml.usage
- * <textMatcher class="com.norconex.commons.lang.text.TextMatcher"
- *         method="[basic|wildcard|regex]"
- *         ignoreCase="[false|true]"
- *         ignoreDiacritic="[false|true]"
- *         replaceAll="[false|true]"
- *         matchWhole="[false|true]">
- *     <pattern>(text or expression used to match/replace)</pattern>
- *     <text>(text on which match/replace is attempted)</text>
- *     <replacement>(replcement value or expression)</replacement>
- * </textMatcher>
- * }
- *
- * <p>
- * Consuming classes may use their own tag name and only
- * support a subset of attributes/elements.
- * Use the above as a general reference and refer to consuming class
- * documentation when applicable.
- * </p>
- *
- * {@nx.xml.example
- * <textMatcher class="com.norconex.commons.lang.text.TextMatcher"
- *         method="wildcard" ignoreCase="true">
- *     <pattern>paul*mar?</pattern>
- *     <text>It seems Paul and Marc are friends.</text>
- *     <replacement>they</replacement>
- * </textMatcher>
- * }
- * <p>
- * The above will convert the given text into "It seems they are friends.".
- * </p>
- *
- * <h3>Match only</h3>
- * <p>
- * When focusing on matching only, consuming classes can use
- * these tag attributes only, and supply the expression as the tag content:
- * </p>
- * {@nx.xml #attributes
+ * {@nx.xml.usage #attributes
  *     method="[basic|wildcard|regex]"
  *     ignoreCase="[false|true]"
  *     ignoreDiacritic="[false|true]"
+ *     replaceAll="[false|true]"
  *     matchWhole="[false|true]"
  * }
+ *
  * <p>
- * Convenience {@link #loadMatchFromXML(XML)} and
- * {@link #saveMatchToXML(XML)} methods are provided to facilitate
- * this approach.
+ * The above are configurable attributes consuming classes can expect.
+ * The actual regular expression is expected to be the tag content.
+ * </p>
+ *
+ * {@nx.xml.example
+ * <sampleConfig method="wildcard" ignoreCase="true">
+ *     paul*mar?
+ * </sampleConfig>
+ * }
+ * <p>
+ * Given a text of "It seems Paul and Marc are friends" and a replacement of
+ * "they", the above will result in "It seems they are friends.".
  * </p>
  *
  * @author Pascal Essiembre
@@ -104,21 +78,26 @@ import com.norconex.commons.lang.xml.XML;
  */
 public class TextMatcher implements IXMLConfigurable {
 
+
+
+    //TODO rename TextPattern? (more neutral since it is form match AND replace.
+
     //TODO rename just Matcher?  or StringMatcher or TextMatcher to avoid conflict?
 
     public enum Method {
         BASIC(new MethodStrategy() {
             @Override
-            public boolean matches(TextMatcher sr) {
-                Matcher m = createMatcher(sr);
+            public boolean matches(TextMatcher sr, String text) {
+                Matcher m = createMatcher(sr, text);
                 return sr.matchWhole ? m.matches() : m.find();
             }
             @Override
-            public String replace(TextMatcher sr) {
-                String quotedRepl = Matcher.quoteReplacement(sr.replacement);
+            public String replace(
+                    TextMatcher sr, String text, String replacement) {
+                String quotedRepl = Matcher.quoteReplacement(replacement);
                 //TODO move this generic code to a method shared by all
                 // replace Methods.
-                Matcher m = createMatcher(sr);
+                Matcher m = createMatcher(sr, text);
                 if (sr.matchWhole && m.matches()) {
                     return m.replaceFirst(quotedRepl);
                 }
@@ -129,26 +108,27 @@ public class TextMatcher implements IXMLConfigurable {
                         return m.replaceFirst(quotedRepl);
                     }
                 }
-                return sr.text;
+                return text;
             }
-            private Matcher createMatcher(TextMatcher sr) {
-                return new Regex(Regex.escape(sr.pattern)) //Pattern.quote(p))
+            private Matcher createMatcher(TextMatcher sr, String text) {
+                return new Regex(Regex.escape(sr.pattern))
                         .dotAll()
                         .setIgnoreCase(sr.ignoreCase)
                         .setIgnoreDiacritic(sr.ignoreDiacritic)
-                        .matcher(sr.text);
+                        .matcher(text);
             }
         }),
         WILDCARD(new MethodStrategy() {
             @Override
-            public boolean matches(TextMatcher sr) {
-                Matcher m = createMatcher(sr);
+            public boolean matches(TextMatcher sr, String text) {
+                Matcher m = createMatcher(sr, text);
                 return sr.matchWhole ? m.matches() : m.find();
             }
             @Override
-            public String replace(TextMatcher sr) {
-                String quotedRepl = Matcher.quoteReplacement(sr.replacement);
-                Matcher m = createMatcher(sr);
+            public String replace(
+                    TextMatcher sr, String text, String replacement) {
+                String quotedRepl = Matcher.quoteReplacement(replacement);
+                Matcher m = createMatcher(sr, text);
                 if (sr.matchWhole && m.matches()) {
                     return m.replaceFirst(quotedRepl);
                 }
@@ -159,9 +139,9 @@ public class TextMatcher implements IXMLConfigurable {
                         return m.replaceFirst(quotedRepl);
                     }
                 }
-                return sr.text;
+                return text;
             }
-            private Matcher createMatcher(TextMatcher sr) {
+            private Matcher createMatcher(TextMatcher sr, String text) {
                 Pattern p = Pattern.compile("[^*?]+|(\\*)|(\\?)");
                 Matcher m = p.matcher(sr.pattern);
                 StringBuilder b = new StringBuilder();
@@ -178,36 +158,37 @@ public class TextMatcher implements IXMLConfigurable {
                         .dotAll()
                         .setIgnoreCase(sr.ignoreCase)
                         .setIgnoreDiacritic(sr.ignoreDiacritic)
-                        .matcher(sr.text);
+                        .matcher(text);
             }
         }),
         REGEX(new MethodStrategy() {
             @Override
-            public boolean matches(TextMatcher sr) {
-                Matcher m = createMatcher(sr);
+            public boolean matches(TextMatcher sr, String text) {
+                Matcher m = createMatcher(sr, text);
                 return sr.matchWhole ? m.matches() : m.find();
             }
             @Override
-            public String replace(TextMatcher sr) {
-                Matcher m = createMatcher(sr);
+            public String replace(
+                    TextMatcher sr, String text, String replacement) {
+                Matcher m = createMatcher(sr, text);
                 if (sr.matchWhole && m.matches()) {
-                    return m.replaceFirst(sr.replacement);
+                    return m.replaceFirst(replacement);
                 }
                 if (!sr.matchWhole) {
                     if (sr.replaceAll) {
-                        return m.replaceAll(sr.replacement);
+                        return m.replaceAll(replacement);
                     } else {
-                        return m.replaceFirst(sr.replacement);
+                        return m.replaceFirst(replacement);
                     }
                 }
-                return sr.text;
+                return text;
             }
-            private Matcher createMatcher(TextMatcher sr) {
+            private Matcher createMatcher(TextMatcher sr, String text) {
                 return new Regex(sr.pattern)
                         .dotAll()
                         .setIgnoreCase(sr.ignoreCase)
                         .setIgnoreDiacritic(sr.ignoreDiacritic)
-                        .matcher(sr.text);
+                        .matcher(text);
             }
         });
 
@@ -218,12 +199,14 @@ public class TextMatcher implements IXMLConfigurable {
         }
     }
 
+    interface MethodStrategy {
+        boolean matches(TextMatcher sr, String text);
+        String replace(TextMatcher sr, String text, String replacement);
+    }
+
     private Method method = Method.BASIC;
 
     private String pattern;
-    private String text;
-    private String replacement;
-
     private boolean ignoreCase;
     private boolean ignoreDiacritic;
     private boolean replaceAll;
@@ -246,8 +229,6 @@ public class TextMatcher implements IXMLConfigurable {
         if (textMatcher != null) {
             this.method = textMatcher.method;
             this.pattern = textMatcher.pattern;
-            this.text = textMatcher.text;
-            this.replacement = textMatcher.replacement;
             this.ignoreCase = textMatcher.ignoreCase;
             this.ignoreDiacritic = textMatcher.ignoreDiacritic;
             this.replaceAll = textMatcher.replaceAll;
@@ -288,28 +269,6 @@ public class TextMatcher implements IXMLConfigurable {
         return copy().setPattern(pattern);
     }
 
-    public String getText() {
-        return text;
-    }
-    public TextMatcher setText(String text) {
-        this.text = text;
-        return this;
-    }
-    public TextMatcher withText(String text) {
-        return copy().setText(text);
-    }
-
-    public String getReplacement() {
-        return replacement;
-    }
-    public TextMatcher setReplacement(String replacement) {
-        this.replacement = replacement;
-        return this;
-    }
-    public TextMatcher withReplacement(String replacement) {
-        return copy().setReplacement(replacement);
-    }
-
     public boolean isIgnoreCase() {
         return ignoreCase;
     }
@@ -343,16 +302,9 @@ public class TextMatcher implements IXMLConfigurable {
         return copy().setReplaceAll(replaceAll);
     }
 
-    public boolean hasText() {
-        return StringUtils.isNotBlank(text);
-    }
     public boolean hasPattern() {
         return StringUtils.isNotBlank(pattern);
     }
-    public boolean hasReplacement() {
-        return StringUtils.isNotBlank(replacement);
-    }
-
 
     //TODO Really have this since we have copy constructor?
     public void copyTo(TextMatcher sr) {
@@ -369,26 +321,24 @@ public class TextMatcher implements IXMLConfigurable {
     //--- Match/replace methods ------------------------------------------------
     /**
      * Matches this class pattern against its text.
+     * @param text text to match
      * @return <code>true</code> if matching
      */
-    public boolean matches() {
-        return safeMethod().ms.matches(this);
+    public boolean matches(String text) {
+        return safeMethod().ms.matches(this, text);
     }
     /**
      * Replaces this class matching text with replacement value.
+     * @param text text to match
+     * @param replacement text replacement
      * @return replaced text
      */
-    public String replace() {
-        return safeMethod().ms.replace(this);
+    public String replace(String text, String replacement) {
+        return safeMethod().ms.replace(this, text, replacement);
     }
 
     private Method safeMethod() {
         return ObjectUtils.defaultIfNull(method, Method.BASIC);
-    }
-
-    interface MethodStrategy {
-        boolean matches(TextMatcher sr);
-        String replace(TextMatcher sr);
     }
 
     @Override
@@ -398,9 +348,7 @@ public class TextMatcher implements IXMLConfigurable {
         setIgnoreDiacritic(xml.getBoolean("@ignoreDiacritic", ignoreDiacritic));
         setReplaceAll(xml.getBoolean("@replaceAll", replaceAll));
         setMatchWhole(xml.getBoolean("@matchWhole", matchWhole));
-        setPattern(xml.getString("pattern", pattern));
-        setText(xml.getString("text", text));
-        setReplacement(xml.getString("replacement", replacement));
+        setPattern(xml.getString("."));
     }
     @Override
     public void saveToXML(XML xml) {
@@ -408,23 +356,6 @@ public class TextMatcher implements IXMLConfigurable {
         xml.setAttribute("ignoreCase", ignoreCase);
         xml.setAttribute("ignoreDiacritic", ignoreDiacritic);
         xml.setAttribute("replaceAll", replaceAll);
-        xml.setAttribute("matchWhole", matchWhole);
-        xml.addElement("pattern", pattern);
-        xml.addElement("text", text);
-        xml.addElement("replacement", replacement);
-    }
-
-    public void loadMatchFromXML(XML xml) {
-        setMethod(xml.getEnum("@method", Method.class, method));
-        setIgnoreCase(xml.getBoolean("@ignoreCase", ignoreCase));
-        setIgnoreDiacritic(xml.getBoolean("@ignoreDiacritic", ignoreDiacritic));
-        setMatchWhole(xml.getBoolean("@matchWhole", matchWhole));
-        setPattern(xml.getString("."));
-    }
-    public void saveMatchToXML(XML xml) {
-        xml.setAttribute("method", method);
-        xml.setAttribute("ignoreCase", ignoreCase);
-        xml.setAttribute("ignoreDiacritic", ignoreDiacritic);
         xml.setAttribute("matchWhole", matchWhole);
         xml.setTextContent(pattern);
     }

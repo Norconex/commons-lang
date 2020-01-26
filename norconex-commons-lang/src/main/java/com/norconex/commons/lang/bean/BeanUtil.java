@@ -1,4 +1,4 @@
-/* Copyright 2018-2019 Norconex Inc.
+/* Copyright 2018-2020 Norconex Inc.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -41,7 +40,6 @@ import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.Bag;
 import org.apache.commons.collections4.CollectionUtils;
@@ -109,8 +107,8 @@ public final class BeanUtil {
             return null;
         }
         try {
-            return getValue(bean,
-                    new PropertyDescriptor(propertyName, bean.getClass()));
+            return getValue(bean, new FluentPropertyDescriptor(
+                    propertyName, bean.getClass()));
         } catch (IntrospectionException e) {
             throw new BeanException("Could not get value for property \""
                     + propertyName + "\" on bean type \"."
@@ -140,7 +138,8 @@ public final class BeanUtil {
 
         try {
             Statement stmt = new Statement(
-                    bean, "set" + StringUtils.capitalize(propertyName), new Object[]{value});
+                    bean, "set" + StringUtils.capitalize(propertyName),
+                    new Object[]{value});
             stmt.execute();
         } catch (Exception e) {
             throw new BeanException("Could not set value \"" + value
@@ -307,7 +306,7 @@ public final class BeanUtil {
             return Collections.emptyList();
         }
         List<Object> list = new ArrayList<>();
-        for (PropertyDescriptor desc : getProperties(bean)) {
+        for (PropertyDescriptor desc : getPropertyDescriptors(bean)) {
             final String name = desc.getName();
             if (desc.getReadMethod() != null && !"class".equals(name)) {
                 list.add(getValue(bean, name));
@@ -320,7 +319,7 @@ public final class BeanUtil {
         if (bean == null) {
             return false;
         }
-        for (PropertyDescriptor desc : getProperties(bean)) {
+        for (PropertyDescriptor desc : getPropertyDescriptors(bean)) {
             final String name = desc.getName();
             if (desc.getReadMethod() != null && !"class".equals(name)) {
                 return true;
@@ -364,7 +363,7 @@ public final class BeanUtil {
         cache.add(bean);
 
         if (type == null || type.isInstance(bean)) {
-            for (PropertyDescriptor desc : getProperties(bean)) {
+            for (PropertyDescriptor desc : getPropertyDescriptors(bean)) {
                 if (!visitor.test(bean, desc)) {
                     return false;
                 }
@@ -400,26 +399,25 @@ public final class BeanUtil {
         return true;
     }
 
-    public static List<PropertyDescriptor> getProperties(Object bean) {
-        return getProperties(bean, false);
+    public static List<PropertyDescriptor> getPropertyDescriptors(Object bean) {
+        return getPropertyDescriptors(bean, false);
     }
     // lenient means to include properties that have just a setter
     // or getter.  This can easily cause trouble in other code.
     // Make public if there is really a need for it, else remove arg.
-    private static List<PropertyDescriptor> getProperties(
+    private static List<PropertyDescriptor> getPropertyDescriptors(
             Object bean, boolean lenient) {
         try {
-            List<PropertyDescriptor> descs = Arrays.asList(
-                    Introspector.getBeanInfo(
-                            bean.getClass()).getPropertyDescriptors());
-            if (!lenient) {
-                return descs.stream().filter(pd ->
-                    pd.getReadMethod() != null && pd.getWriteMethod() != null
-                ).collect(Collectors.toList());
-            } else {
-                return descs;
+            List<PropertyDescriptor> pdList = new ArrayList<>();
+            for (PropertyDescriptor pd : Introspector.getBeanInfo(
+                    bean.getClass()).getPropertyDescriptors()) {
+                FluentPropertyDescriptor fpd = new FluentPropertyDescriptor(pd);
+                if (fpd.getReadMethod() != null
+                        && fpd.getWriteMethod() != null) {
+                    pdList.add(fpd);
+                }
             }
-
+            return pdList;
         } catch (IntrospectionException e) {
             LOG.error("Cannot get properties of {} instance.",
                     bean.getClass().getName(), e);
@@ -506,8 +504,7 @@ public final class BeanUtil {
         }
         return StringUtils.join(allDiffs, "\n");
     }
-    private static Bag<String> graphLeavesAsBag(
-            Object bean) {
+    private static Bag<String> graphLeavesAsBag(Object bean) {
         Bag<String> bag = new HashBag<>();
         visitAllProperties(bean, (o, p) -> {
             String key = o.getClass().getSimpleName()
@@ -517,19 +514,42 @@ public final class BeanUtil {
             if (!hasChildren(o)) {
                 line += Objects.toString(value);
             } else if (value == null) {
-                line += "null";
+                line += "<null>";
             } else {
                 if (value.getClass().isArray()) {
-                    line += "Array#";
+                    line += "<Array";
                 } else if (value instanceof Collection) {
-                    line += "Collection#";
+                    line += "<Collection";
                 } else if (value instanceof Map) {
-                    line += "Map#";
+                    line += "<Map";
+                } else {
+                    line += "<Object";
                 }
-                line += "hashCode:" + value.hashCode();
+                line += "#hashCode:" + value.hashCode() + ">";
             }
             bag.add(line);
         });
         return bag;
+    }
+
+    /**
+     * Gets a bean write method, with supports for fluent API (returning self).
+     * @param bean object
+     * @param propertyName property name
+     * @return method, or <code>null</code> in no writable method is found
+     */
+    public static Method getWriteMethod(Object bean, String propertyName) {
+        if (bean == null || propertyName == null) {
+            return null;
+        }
+        try {
+            FluentPropertyDescriptor pd =
+                    new FluentPropertyDescriptor(propertyName, bean.getClass());
+            return pd.getWriteMethod();
+        } catch (IntrospectionException e) {
+            LOG.error("Cannot get write method from {}.",
+                    bean.getClass().getName(), e);
+        }
+        return null;
     }
 }

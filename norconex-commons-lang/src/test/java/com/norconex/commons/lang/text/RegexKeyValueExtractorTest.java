@@ -1,4 +1,4 @@
-/* Copyright 2017-2019 Norconex Inc.
+/* Copyright 2017-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,14 @@
 package com.norconex.commons.lang.text;
 
 import java.io.IOException;
+import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.ResourceLoader;
 import com.norconex.commons.lang.map.Properties;
+import com.norconex.commons.lang.xml.XML;
 
 /**
  * @author Pascal Essiembre
@@ -131,5 +133,15 @@ public class RegexKeyValueExtractorTest {
         );
         Assertions.assertTrue(
                 fields.isEmpty(), "Test8 fields should be empty.");
+    }
+
+    @Test
+    public void testWriteRead() throws IOException {
+        RegexKeyValueExtractor r = new RegexKeyValueExtractor();
+        r.setRegex(new Regex(".*something.*", Pattern.UNICODE_CASE));
+        r.setKey("mykey");
+        r.setKeyGroup(4);
+        r.setValueGroup(2);
+        XML.assertWriteRead(r, "regexKeyValueExtractor");
     }
 }

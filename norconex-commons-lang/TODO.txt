@@ -2,6 +2,8 @@
 TODO:
 ==============
 
+- XSD: Always have a type and an element extending it to improve reuse.
+
 - DONE? EnhancedXMLStreamWriter: eliminate concept of "writeBlanks" and always 
   write them for elements with text only (and attributes?)?
 

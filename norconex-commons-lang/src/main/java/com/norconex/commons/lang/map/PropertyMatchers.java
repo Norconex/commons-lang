@@ -31,7 +31,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
  * @author Pascal Essiembre
  * @since 2.0.0
  */
-//TODO check if nulls are inserted and do not add if null
+//TODO check if nulls are inserted and do not add if null?
 public class PropertyMatchers extends ArrayList<PropertyMatcher>
         implements Predicate<Properties> {
 
@@ -121,15 +121,16 @@ public class PropertyMatchers extends ArrayList<PropertyMatcher>
     /**
      * Returns properties that were replaced (or empty).
      * @param properties the properties to look for a match and replace
+     * @param replacement text replacement
      * @return properties that were replaced
      */
-    public Properties replace(Properties properties) {
+    public Properties replace(Properties properties, String replacement) {
         Properties props = new Properties();
         if (properties == null) {
             return props;
         }
         for (PropertyMatcher matcher : this) {
-            List<String> replaced = matcher.replace(properties);
+            List<String> replaced = matcher.replace(properties, replacement);
             if (!replaced.isEmpty()) {
                 props.addList(matcher.getKey(), replaced);
             }

@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -31,6 +32,8 @@ import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertySetter;
+import com.norconex.commons.lang.xml.IXMLConfigurable;
+import com.norconex.commons.lang.xml.XML;
 
 /**
  * <p>
@@ -53,10 +56,35 @@ import com.norconex.commons.lang.map.PropertySetter;
  * case insensitivity and dots matching any character.
  * </p>
  *
+ * {@nx.xml.usage #attributes
+ *     key="(key name)"
+ *     keyGroup="(key name match group index)"
+ *     valueGroup="(value match group index)"
+ *     {@nx.include com.norconex.commons.lang.text.Regex#attributes}
+ * }
+ *
+ * <p>
+ * The above are configurable attributes consuming classes can expect.
+ * The actual regular expression is expected to be the tag content.
+ * Many of the available attributes on XML configuration represent the
+ * regular expression flags as defined in {@link Pattern}.
+ * </p>
+ *
+ * {@nx.xml.example
+ * <sampleConfig keyGroup="1" valueGroup="2">
+ *   (DocNo):(\d+)
+ * </sampleConfig>
+ * }
+ * <p>
+ * The above is configured to extract "DocNo" as the key, and whatever number
+ * that follows.
+ * </p>
+ *
  * @author Pascal Essiembre
- * @since 2.0.0 (moved from Norconex Importer RegexFieldExtractor)
+ * @since 2.0.0 (moved from Norconex Importer RegexKeyValueExtractor)
  */
-public class RegexKeyValueExtractor {
+@SuppressWarnings("javadoc")
+public class RegexKeyValueExtractor implements IXMLConfigurable {
 
     private static final Logger LOG =
             LoggerFactory.getLogger(RegexKeyValueExtractor.class);
@@ -261,6 +289,28 @@ public class RegexKeyValueExtractor {
     }
     private boolean hasValueGroup() {
         return getValueGroup() > -1;
+    }
+
+    @Override
+    public void loadFromXML(XML xml) {
+        setKey(xml.getString("@key", getKey()));
+        setKeyGroup(xml.getInteger("@keyGroup", getKeyGroup()));
+        setValueGroup(xml.getInteger("@valueGroup", getValueGroup()));
+        if (regex == null) {
+            regex = new Regex();
+        }
+        regex.loadFromXML(xml);
+        setOnSet(PropertySetter.fromXML(xml, getOnSet()));
+    }
+    @Override
+    public void saveToXML(XML xml) {
+        xml.setAttribute("key", getKey());
+        xml.setAttribute("keyGroup", getKeyGroup());
+        xml.setAttribute("valueGroup", getValueGroup());
+        if (regex != null) {
+            regex.saveToXML(xml);
+        }
+        PropertySetter.toXML(xml, onSet);
     }
 
     @Override

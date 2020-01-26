@@ -1,4 +1,4 @@
-/* Copyright 2019 Norconex Inc.
+/* Copyright 2019-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,14 @@
  */
 package com.norconex.commons.lang.text;
 
+import java.io.IOException;
 import java.text.Collator;
 import java.util.Locale;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import com.norconex.commons.lang.xml.XML;
 
 /**
  * @author Pascal Essiembre
@@ -59,5 +62,13 @@ public class RegexTest {
         Regex regex = new Regex(p).ignoreDiacritic().ignoreCase();
         Assertions.assertTrue(regex.matcher(t).matches());
         ////\\p{InCombiningDiacriticalMarks}+
+    }
+
+    @Test
+    public void testWriteRead() throws IOException {
+        Regex r = new Regex("mypattern")
+                .setCanonEq(true)
+                .setMultiline(true);
+        XML.assertWriteRead(r, "regex");
     }
 }

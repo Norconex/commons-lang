@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
-   Copyright 2019-2020 Norconex Inc.
+   Copyright 2020 Norconex Inc.
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,28 +16,22 @@
 -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
-  <xs:element name="textMatcher" type="TextMatcherType"/>
+  <xs:element name="regex" type="RegexType"/>
   
-  <xs:complexType name="TextMatcherType">
+  <xs:complexType name="RegexType">
     <xs:simpleContent>
       <xs:extension base="xs:string">
         <xs:attribute name="class" type="xs:string"></xs:attribute>
-        <xs:attribute name="method">
-          <xs:simpleType>
-            <xs:restriction base="xs:string">
-              <xs:enumeration value="BASIC"/>
-              <xs:enumeration value="basic"/>
-              <xs:enumeration value="WILDCARD"/>
-              <xs:enumeration value="wildcard"/>
-              <xs:enumeration value="REGEX"/>
-              <xs:enumeration value="regex"/>
-            </xs:restriction>
-          </xs:simpleType>
-        </xs:attribute>
         <xs:attribute name="ignoreCase" type="xs:boolean"></xs:attribute>
         <xs:attribute name="ignoreDiacritic" type="xs:boolean"></xs:attribute>
-        <xs:attribute name="matchWhole" type="xs:boolean"></xs:attribute>
-        <xs:attribute name="replaceAll" type="xs:boolean"></xs:attribute>
+        <xs:attribute name="dotAll" type="xs:boolean"></xs:attribute>
+        <xs:attribute name="unixLines" type="xs:boolean"></xs:attribute>
+        <xs:attribute name="literal" type="xs:boolean"></xs:attribute>
+        <xs:attribute name="comments" type="xs:boolean"></xs:attribute>
+        <xs:attribute name="multiline" type="xs:boolean"></xs:attribute>
+        <xs:attribute name="canonEq" type="xs:boolean"></xs:attribute>
+        <xs:attribute name="unicodeCase" type="xs:boolean"></xs:attribute>
+        <xs:attribute name="unicodeCharacterClass" type="xs:boolean"></xs:attribute>
       </xs:extension>
     </xs:simpleContent>
   </xs:complexType>

@@ -40,6 +40,7 @@ import com.norconex.commons.lang.xml.XML;
  * </p>
  * @author Pascal Essiembre
  * @since 1.8.0
+ * @see TextMatcher
  */
 public final class PropertyMatcher implements Predicate<Properties> {
     private final TextMatcher matcher;
@@ -122,8 +123,7 @@ public final class PropertyMatcher implements Predicate<Properties> {
             if (!m.hasPattern() && StringUtils.isBlank(value)) {
                 return true;
             }
-            m.setText(StringUtils.trimToEmpty(value));
-            if (m.matches()) {
+            if (m.matches(StringUtils.trimToEmpty(value))) {
                 return true;
             }
         }
@@ -162,8 +162,7 @@ public final class PropertyMatcher implements Predicate<Properties> {
             if (!m.hasPattern() && StringUtils.isBlank(value)) {
                 matches.add(value);
             }
-            m.setText(StringUtils.trimToEmpty(value));
-            if (m.matches()) {
+            if (m.matches(StringUtils.trimToEmpty(value))) {
                 matches.add(value);
             }
         }
@@ -174,10 +173,11 @@ public final class PropertyMatcher implements Predicate<Properties> {
      * Replaces all matching values for the key in the given
      * {@link Properties} with the given replacement.
      * @param properties the properties to look for a match and replace
+     * @param replacement text replacement
      * @return a list of original values that were replaced (or empty).
      * @since 2.0.0
      */
-    public List<String> replace(Properties properties) {
+    public List<String> replace(Properties properties, String replacement) {
         List<String> replacedValues = new ArrayList<>();
         if (properties == null) {
             return replacedValues;
@@ -186,10 +186,9 @@ public final class PropertyMatcher implements Predicate<Properties> {
         Collection<String> values =  properties.getStrings(key);
         List<String> newValues = new ArrayList<>();
         for (String value : values) {
-            m.setText(StringUtils.trimToEmpty(value));
-            if (!m.hasPattern() && StringUtils.isBlank(m.getText())
-                    || m.matches()) {
-                String newValue = m.replace();
+            if (!m.hasPattern() && StringUtils.isBlank(value)
+                    || m.matches(value)) {
+                String newValue = m.replace(value, replacement);
                 if (!Objects.equals(value, newValue)) {
                     replacedValues.add(value);
                 }
