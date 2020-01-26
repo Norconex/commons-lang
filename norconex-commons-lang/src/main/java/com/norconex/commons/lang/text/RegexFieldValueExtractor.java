@@ -37,17 +37,18 @@ import com.norconex.commons.lang.xml.XML;
 
 /**
  * <p>
- * Simplify extraction of key/value pairs from text using regular expression.
- * Match groups can be used to identify the key and values.
- * Key matching is optional and can be set explicitly instead. If
- * both a key and a key group are provided, the key act as a default
- * when no keys could be obtained from matching.
- * At least one of "key" or "keyGroup" must be specified. If keyGroup
- * is specified without a "key" and finds no matches, the matching
+ * Simplify extraction of field/value pairs (or "field/value") from text using
+ * regular expression.
+ * Match groups can be used to identify the fields and values.
+ * Field matching is optional and can be set explicitly instead. If
+ * both a field and a field group are provided, the field act as a
+ * default when no fields could be obtained from matching.
+ * At least one of "field" or "fieldGroup" must be specified. If fieldGroup
+ * is specified without a "field" and finds no matches, the matching
  * of the value is ignored.
  * If no value group is provided, it assumes the entire regex match is the
  * value.
- * If more than one value is extracted for a given key, they will be
+ * If more than one value is extracted for a given field, they will be
  * available as a list.
  * </p>
  * <p>
@@ -57,8 +58,8 @@ import com.norconex.commons.lang.xml.XML;
  * </p>
  *
  * {@nx.xml.usage #attributes
- *     key="(key name)"
- *     keyGroup="(key name match group index)"
+ *     field="(field name)"
+ *     fieldGroup="(field name match group index)"
  *     valueGroup="(value match group index)"
  *     {@nx.include com.norconex.commons.lang.text.Regex#attributes}
  * }
@@ -71,96 +72,98 @@ import com.norconex.commons.lang.xml.XML;
  * </p>
  *
  * {@nx.xml.example
- * <sampleConfig keyGroup="1" valueGroup="2">
+ * <sampleConfig fieldGroup="1" valueGroup="2">
  *   (DocNo):(\d+)
  * </sampleConfig>
  * }
  * <p>
- * The above is configured to extract "DocNo" as the key, and whatever number
- * that follows.
+ * The above is configured to extract "DocNo" as the field, and the following
+ * numeric characters will make up the value.
  * </p>
  *
  * @author Pascal Essiembre
  * @since 2.0.0 (moved from Norconex Importer RegexKeyValueExtractor)
  */
 @SuppressWarnings("javadoc")
-public class RegexKeyValueExtractor implements IXMLConfigurable {
+public class RegexFieldValueExtractor implements IXMLConfigurable {
 
     private static final Logger LOG =
-            LoggerFactory.getLogger(RegexKeyValueExtractor.class);
+            LoggerFactory.getLogger(RegexFieldValueExtractor.class);
 
-    public static final RegexKeyValueExtractor[] EMPTY_ARRAY =
-            new RegexKeyValueExtractor[] {};
+    public static final RegexFieldValueExtractor[] EMPTY_ARRAY =
+            new RegexFieldValueExtractor[] {};
 
     private Regex regex;
-    private String key;
-    private int keyGroup = -1;
+    private String field;
+    private int fieldGroup = -1;
     private int valueGroup = -1;
     private PropertySetter onSet;
 
-    public RegexKeyValueExtractor() {
+    public RegexFieldValueExtractor() {
         super();
         this.regex = defaultRegex(null);
     }
-    public RegexKeyValueExtractor(String pattern) {
+    public RegexFieldValueExtractor(String pattern) {
         this(defaultRegex(pattern), null);
     }
-    public RegexKeyValueExtractor(String pattern, String key) {
-        this(defaultRegex(pattern), key, -1);
+    public RegexFieldValueExtractor(String pattern, String field) {
+        this(defaultRegex(pattern), field, -1);
     }
-    public RegexKeyValueExtractor(String pattern, String key, int valueGroup) {
-        this(defaultRegex(pattern), key, valueGroup);
+    public RegexFieldValueExtractor(
+            String pattern, String field, int valueGroup) {
+        this(defaultRegex(pattern), field, valueGroup);
     }
-    public RegexKeyValueExtractor(
-            String pattern, int keyGroup, int valueGroup) {
-        this(defaultRegex(pattern), keyGroup, valueGroup);
+    public RegexFieldValueExtractor(
+            String pattern, int fieldGroup, int valueGroup) {
+        this(defaultRegex(pattern), fieldGroup, valueGroup);
     }
-    public RegexKeyValueExtractor(Regex regex) {
+    public RegexFieldValueExtractor(Regex regex) {
         this(regex, null);
     }
-    public RegexKeyValueExtractor(Regex regex, String key) {
-        this(regex, key, -1);
+    public RegexFieldValueExtractor(Regex regex, String field) {
+        this(regex, field, -1);
     }
-    public RegexKeyValueExtractor(Regex regex, String key, int valueGroup) {
+    public RegexFieldValueExtractor(Regex regex, String field, int valueGroup) {
         this.regex = regex;
-        this.key = key;
+        this.field = field;
         this.valueGroup = valueGroup;
     }
-    public RegexKeyValueExtractor(Regex regex, int keyGroup, int valueGroup) {
+    public RegexFieldValueExtractor(
+            Regex regex, int fieldGroup, int valueGroup) {
         super();
         this.regex = regex;
-        this.keyGroup = keyGroup;
+        this.fieldGroup = fieldGroup;
         this.valueGroup = valueGroup;
     }
 
     public Regex getRegex() {
         return regex;
     }
-    public RegexKeyValueExtractor setRegex(Regex regex) {
+    public RegexFieldValueExtractor setRegex(Regex regex) {
         Objects.requireNonNull(regex, "'regex' must not be null.");
         this.regex = regex;
         return this;
     }
 
-    public int getKeyGroup() {
-        return keyGroup;
+    public int getFieldGroup() {
+        return fieldGroup;
     }
-    public RegexKeyValueExtractor setKeyGroup(int keyGroup) {
-        this.keyGroup = keyGroup;
+    public RegexFieldValueExtractor setFieldGroup(int fieldGroup) {
+        this.fieldGroup = fieldGroup;
         return this;
     }
     public int getValueGroup() {
         return valueGroup;
     }
-    public RegexKeyValueExtractor setValueGroup(int valueGroup) {
+    public RegexFieldValueExtractor setValueGroup(int valueGroup) {
         this.valueGroup = valueGroup;
         return this;
     }
-    public String getKey() {
-        return key;
+    public String getField() {
+        return field;
     }
-    public RegexKeyValueExtractor setKey(String key) {
-        this.key = key;
+    public RegexFieldValueExtractor setField(String field) {
+        this.field = field;
         return this;
     }
 
@@ -178,70 +181,70 @@ public class RegexKeyValueExtractor implements IXMLConfigurable {
      * @return this instance
      * @since 3.0.0
      */
-    public RegexKeyValueExtractor setOnSet(PropertySetter onSet) {
+    public RegexFieldValueExtractor setOnSet(PropertySetter onSet) {
         this.onSet = onSet;
         return this;
     }
 
-    public void extractKeyValues(Properties dest, CharSequence text) {
-        if (StringUtils.isBlank(key) && !hasKeyGroup()) {
+    public void extractFieldValues(Properties dest, CharSequence text) {
+        if (StringUtils.isBlank(field) && !hasFieldGroup()) {
             throw new IllegalArgumentException(
-                    "At least one of 'key' or 'keyGroup' expected.");
+                    "At least one of 'field' or 'fieldGroup' expected.");
         }
 
-        Properties extractedKeyValues = new Properties();
+        Properties extractedFieldValues = new Properties();
         Matcher m = matcher(text);
         while (m.find()) {
-            String k = extractKey(m);
+            String k = extractField(m);
             String v = extractValue(m);
             if (StringUtils.isBlank(k)) {
-                LOG.debug("No key for value: {}", v);
+                LOG.debug("No field for value: {}", v);
             } else if (v == null) {
-                LOG.debug("Null value for key: {}", k);
+                LOG.debug("Null value for field: {}", k);
             } else {
-                extractedKeyValues.add(k, v);
+                extractedFieldValues.add(k, v);
             }
         }
-        for (Entry<String,List<String>> en : extractedKeyValues.entrySet()) {
+        for (Entry<String,List<String>> en : extractedFieldValues.entrySet()) {
             PropertySetter.orDefault(onSet).apply(
                     dest, en.getKey(), en.getValue());
         }
     }
-    public Properties extractKeyValues(CharSequence text) {
+    public Properties extractFieldValues(CharSequence text) {
         Properties dest = new Properties();
-        extractKeyValues(dest, text);
+        extractFieldValues(dest, text);
         return dest;
     }
 
-    public static void extractKeyValues(Properties dest,
-            CharSequence text, List<RegexKeyValueExtractor> extractors) {
+    public static void extractFieldValues(Properties dest,
+            CharSequence text, List<RegexFieldValueExtractor> extractors) {
         if (extractors == null) {
             return;
         }
-        for (RegexKeyValueExtractor extractor : extractors) {
-            extractor.extractKeyValues(dest, text);
+        for (RegexFieldValueExtractor extractor : extractors) {
+            extractor.extractFieldValues(dest, text);
         }
     }
 
-    public static Properties extractKeyValues(
-            CharSequence text, List<RegexKeyValueExtractor> extractors) {
+    public static Properties extractFieldValues(
+            CharSequence text, List<RegexFieldValueExtractor> extractors) {
         Properties dest = new Properties();
-        extractKeyValues(dest, text, extractors);
+        extractFieldValues(dest, text, extractors);
         return dest;
     }
 
-    public static void extractKeyValues(Properties dest,
-            CharSequence text, RegexKeyValueExtractor... extractors) {
+    public static void extractFieldValues(Properties dest,
+            CharSequence text, RegexFieldValueExtractor... extractors) {
         if (ArrayUtils.isEmpty(extractors)) {
             return;
         }
-        extractKeyValues(dest, text, Arrays.asList(extractors));
+        extractFieldValues(dest, text, Arrays.asList(extractors));
     }
 
-    public static Properties extractKeyValues(
-            CharSequence text, RegexKeyValueExtractor... extractors) {
+    public static Properties extractFieldValues(
+            CharSequence text, RegexFieldValueExtractor... extractors) {
         Properties dest = new Properties();
-        extractKeyValues(dest, text, extractors);
+        extractFieldValues(dest, text, extractors);
         return dest;
     }
 
@@ -252,18 +255,18 @@ public class RegexKeyValueExtractor implements IXMLConfigurable {
     private Matcher matcher(CharSequence text) {
         return regex.matcher(text);
     }
-    private String extractKey(Matcher m) {
-        String f = StringUtils.isNotBlank(getKey()) ? getKey() : "";
-        if (hasKeyGroup()) {
-            if (m.groupCount() < getKeyGroup()) {
+    private String extractField(Matcher m) {
+        String f = StringUtils.isNotBlank(getField()) ? getField() : "";
+        if (hasFieldGroup()) {
+            if (m.groupCount() < getFieldGroup()) {
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("No match group {} for key in regex \"{}\""
-                            + "for match value \"{}\". Defaulting to key: "
+                    LOG.debug("No match group {} for field in regex \"{}\""
+                            + "for match value \"{}\". Defaulting to field: "
                             + "\"{}\".",
-                            getKeyGroup(), getRegex(), m.group(), key);
+                            getFieldGroup(), getRegex(), m.group(), field);
                 }
             } else {
-                f = m.group(getKeyGroup());
+                f = m.group(getFieldGroup());
             }
         }
         return f;
@@ -284,8 +287,8 @@ public class RegexKeyValueExtractor implements IXMLConfigurable {
         }
         return m.group();
     }
-    private boolean hasKeyGroup() {
-        return getKeyGroup() > -1;
+    private boolean hasFieldGroup() {
+        return getFieldGroup() > -1;
     }
     private boolean hasValueGroup() {
         return getValueGroup() > -1;
@@ -293,8 +296,8 @@ public class RegexKeyValueExtractor implements IXMLConfigurable {
 
     @Override
     public void loadFromXML(XML xml) {
-        setKey(xml.getString("@key", getKey()));
-        setKeyGroup(xml.getInteger("@keyGroup", getKeyGroup()));
+        setField(xml.getString("@field", getField()));
+        setFieldGroup(xml.getInteger("@fieldGroup", getFieldGroup()));
         setValueGroup(xml.getInteger("@valueGroup", getValueGroup()));
         if (regex == null) {
             regex = new Regex();
@@ -304,8 +307,8 @@ public class RegexKeyValueExtractor implements IXMLConfigurable {
     }
     @Override
     public void saveToXML(XML xml) {
-        xml.setAttribute("key", getKey());
-        xml.setAttribute("keyGroup", getKeyGroup());
+        xml.setAttribute("field", getField());
+        xml.setAttribute("fieldGroup", getFieldGroup());
         xml.setAttribute("valueGroup", getValueGroup());
         if (regex != null) {
             regex.saveToXML(xml);

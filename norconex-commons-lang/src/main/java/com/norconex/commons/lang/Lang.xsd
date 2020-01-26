@@ -16,23 +16,29 @@
 -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
-  <!-- Reusable elements/types reusable defined in the Lang module. -->
-
-  <xs:include schemaLocation="/com/norconex/commons/lang/text/TextMatcher.xsd"></xs:include>
-
-  <!-- This one also includes Regex.xsd -->
-  <xs:include schemaLocation="/com/norconex/commons/lang/text/RegexKeyValueExtractor.xsd"></xs:include>
+  <!-- 
+     - Reusable elements/types reusable defined in the Lang module and
+     - some convenient ones. 
+     -->
 
   <xs:simpleType name="PropertySetterMethodType">
     <xs:restriction base="xs:string">
-      <xs:enumeration value="BASIC"/>
-      <xs:enumeration value="basic"/>
-      <xs:enumeration value="WILDCARD"/>
-      <xs:enumeration value="wildcard"/>
-      <xs:enumeration value="REGEX"/>
-      <xs:enumeration value="regex"/>
+      <xs:enumeration value="APPEND"/>
+      <xs:enumeration value="append"/>
+      <xs:enumeration value="PREPEND"/>
+      <xs:enumeration value="prepend"/>
+      <xs:enumeration value="REPLACE"/>
+      <xs:enumeration value="replace"/>
+      <xs:enumeration value="OPTIONAL"/>
+      <xs:enumeration value="optional"/>
     </xs:restriction>
   </xs:simpleType>
+  
+  <xs:simpleType name="nonEmptyString">
+    <xs:restriction base="xs:string">
+      <xs:minLength value="1"/>
+    </xs:restriction>
+  </xs:simpleType>  
   
 </xs:schema>
 

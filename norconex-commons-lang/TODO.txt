@@ -32,6 +32,9 @@ TODO:
 LOWER:
 --------------
 
+- Use nill/nillable for null handling, as desribed here:
+  https://kiranscope.blogspot.com/2009/03/blank-space-or-null-string-validation.html
+
 - Have loadFromXML return validationError list.
 
 - Do download page so more than one snapshot can be shown for different

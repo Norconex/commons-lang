@@ -16,6 +16,7 @@
 -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
+  <xs:include schemaLocation="../Lang.xsd"></xs:include>
   <xs:include schemaLocation="Regex.xsd"></xs:include>
 
   <xs:element name="regexKeyValueExtractor" type="RegexKeyValueExtractorType"/>
@@ -23,9 +24,10 @@
   <xs:complexType name="RegexKeyValueExtractorType">
     <xs:simpleContent>
       <xs:extension base="RegexType">
-        <xs:attribute name="key" type="xs:string"></xs:attribute>
-        <xs:attribute name="keyGroup" type="xs:int"></xs:attribute>
+        <xs:attribute name="field" type="xs:string"></xs:attribute>
+        <xs:attribute name="fieldGroup" type="xs:int"></xs:attribute>
         <xs:attribute name="valueGroup" type="xs:int"></xs:attribute>
+        <xs:attribute name="onSet" type="PropertySetterMethodType"></xs:attribute>
       </xs:extension>
     </xs:simpleContent>
   </xs:complexType>

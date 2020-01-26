@@ -334,19 +334,19 @@ public class Regex implements IXMLConfigurable {
         return compile(pattern).matcher(t);
     }
 
-    public RegexKeyValueExtractor createKeyValueExtractor() {
-        return new RegexKeyValueExtractor(this);
+    public RegexFieldValueExtractor createKeyValueExtractor() {
+        return new RegexFieldValueExtractor(this);
     }
-    public RegexKeyValueExtractor createKeyValueExtractor(String key) {
-        return new RegexKeyValueExtractor(this, key);
+    public RegexFieldValueExtractor createKeyValueExtractor(String key) {
+        return new RegexFieldValueExtractor(this, key);
     }
-    public RegexKeyValueExtractor createKeyValueExtractor(
+    public RegexFieldValueExtractor createKeyValueExtractor(
             String key, int valueGroup) {
-        return new RegexKeyValueExtractor(this, key, valueGroup);
+        return new RegexFieldValueExtractor(this, key, valueGroup);
     }
-    public RegexKeyValueExtractor createKeyValueExtractor(
+    public RegexFieldValueExtractor createKeyValueExtractor(
             int keyGroup, int valueGroup) {
-        return new RegexKeyValueExtractor(this, keyGroup, valueGroup);
+        return new RegexFieldValueExtractor(this, keyGroup, valueGroup);
     }
 
     private Regex setFlag(int flag, boolean bool) {

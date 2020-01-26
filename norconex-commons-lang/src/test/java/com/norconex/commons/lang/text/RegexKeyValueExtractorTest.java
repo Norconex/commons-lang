@@ -36,18 +36,18 @@ public class RegexKeyValueExtractorTest {
         String xml = ResourceLoader.getXmlString(RegexKeyValueExtractorTest.class);
         Properties fields = null;
 
-        fields = RegexKeyValueExtractor.extractKeyValues(xml,
+        fields = RegexFieldValueExtractor.extractFieldValues(xml,
             //Test 1) no match group, returning whole match as value
-            new RegexKeyValueExtractor("<div class=\"value\">(.*?)</div>")
-                .setKey("test1"),
+            new RegexFieldValueExtractor("<div class=\"value\">(.*?)</div>")
+                .setField("test1"),
             //Test 2) 1 match group, returning specified match value
-            new RegexKeyValueExtractor("<div class=\"value\">(.*?)</div>")
-                .setKey("test2")
+            new RegexFieldValueExtractor("<div class=\"value\">(.*?)</div>")
+                .setField("test2")
                 .setValueGroup(1),
             //Test 3) 2 match groups, returning field name and values
-            new RegexKeyValueExtractor("<div class=\"field\">(.*?)</div>.*?"
+            new RegexFieldValueExtractor("<div class=\"field\">(.*?)</div>.*?"
                     + "<div class=\"value\">(.*?)</div>")
-                .setKeyGroup(1)
+                .setFieldGroup(1)
                 .setValueGroup(2)
         );
 
@@ -75,10 +75,10 @@ public class RegexKeyValueExtractorTest {
 
         //Test 4) No field group specified, using default field name
         fields = null;
-        fields = RegexKeyValueExtractor.extractKeyValues(xml,
-            new RegexKeyValueExtractor("<div class=\"field\">(.*?)</div>.*?"
+        fields = RegexFieldValueExtractor.extractFieldValues(xml,
+            new RegexFieldValueExtractor("<div class=\"field\">(.*?)</div>.*?"
                         + "<div class=\"value\">(.*?)</div>")
-                .setKey("test4")
+                .setField("test4")
                 .setValueGroup(2)
         );
         Assertions.assertEquals(4,
@@ -89,8 +89,8 @@ public class RegexKeyValueExtractorTest {
         //Test 5) No field group specified, no default field name
         try {
             fields = null;
-            fields = RegexKeyValueExtractor.extractKeyValues(xml,
-                    new RegexKeyValueExtractor(
+            fields = RegexFieldValueExtractor.extractFieldValues(xml,
+                    new RegexFieldValueExtractor(
                             "<div class=\"field\">(.*?)</div>.*?"
                                     + "<div class=\"value\">(.*?)</div>")
                         .setValueGroup(2));
@@ -101,10 +101,10 @@ public class RegexKeyValueExtractorTest {
 
         //Test 6) No value group specified, with field group
         fields = null;
-        fields = RegexKeyValueExtractor.extractKeyValues(xml,
-            new RegexKeyValueExtractor("<DIV class=\"field\">(.*?)</DIV>.*?"
+        fields = RegexFieldValueExtractor.extractFieldValues(xml,
+            new RegexFieldValueExtractor("<DIV class=\"field\">(.*?)</DIV>.*?"
                         + "<DIV class=\"value\">(.*?)</DIV>")
-                .setKeyGroup(1)
+                .setFieldGroup(1)
         );
         Assertions.assertEquals(3, fields.size(), "Wrong test6 fields size.");
         Assertions.assertEquals(
@@ -115,8 +115,8 @@ public class RegexKeyValueExtractorTest {
         //Test 7) No value or field group
         try {
             fields = null;
-            fields = RegexKeyValueExtractor.extractKeyValues(xml,
-                new RegexKeyValueExtractor("<div class=\"field\">(.*?)</div>.*?"
+            fields = RegexFieldValueExtractor.extractFieldValues(xml,
+                new RegexFieldValueExtractor("<div class=\"field\">(.*?)</div>.*?"
                             + "<div class=\"value\">(.*?)</div>"));
             Assertions.fail("Should have thrown an exception.");
         } catch (IllegalArgumentException e) {
@@ -125,11 +125,11 @@ public class RegexKeyValueExtractorTest {
 
         //Test 8) No value group specified, with field group, case sensitive
         fields = null;
-        fields = RegexKeyValueExtractor.extractKeyValues(xml,
-            new RegexKeyValueExtractor(new Regex()
+        fields = RegexFieldValueExtractor.extractFieldValues(xml,
+            new RegexFieldValueExtractor(new Regex()
                 .setPattern("<DIV class=\"field\">(.*?)</DIV>.*?"
                         + "<DIV class=\"value\">(.*?)</DIV>"))
-                .setKeyGroup(1)
+                .setFieldGroup(1)
         );
         Assertions.assertTrue(
                 fields.isEmpty(), "Test8 fields should be empty.");
@@ -137,10 +137,10 @@ public class RegexKeyValueExtractorTest {
 
     @Test
     public void testWriteRead() throws IOException {
-        RegexKeyValueExtractor r = new RegexKeyValueExtractor();
+        RegexFieldValueExtractor r = new RegexFieldValueExtractor();
         r.setRegex(new Regex(".*something.*", Pattern.UNICODE_CASE));
-        r.setKey("mykey");
-        r.setKeyGroup(4);
+        r.setField("mykey");
+        r.setFieldGroup(4);
         r.setValueGroup(2);
         XML.assertWriteRead(r, "regexKeyValueExtractor");
     }
