@@ -116,10 +116,10 @@ public class IncludeTaglet extends AbstractInlineTaglet {
 
     @Override
     public String toString(Tag tag) {
-        return include(tag, tag.text());
+        return include(tag.text());
     }
 
-    public static String include(Tag tag, String includeRef) {
+    public static String include(String includeRef) {
         String ref = includeRef.trim();
         String className = ref.replaceFirst("^(.*?)[\\@\\#].*$", "$1");
         String id = ref.replaceFirst("^.*?([\\@\\#].*)$", "$1");
@@ -131,50 +131,15 @@ public class IncludeTaglet extends AbstractInlineTaglet {
             return null;
         }
 
-        String fullClassName = getFullClassName(tag, className);
-        String source = getJavaSource(fullClassName);
+        String source = getJavaSource(className);
         String block = findInSource(source, id);
         if (StringUtils.isBlank(block)) {
             System.err.println("ID '" + id
-                    + "' not found in source for: " + fullClassName);
-            return "!! DOCUMENTATION ERROR !! Refer to " + fullClassName
+                    + "' not found in source for: " + className);
+            return "!! DOCUMENTATION ERROR !! Refer to " + className
                     + " class documentation for additional information.";
         }
         return block;
-    }
-
-    private static String getFullClassName(Tag tag, String className) {
-        // If it has a doc, assume package is supplied so we are good.
-        if (className.contains(".")) {
-            return className;
-        }
-
-        File sourceFile = tag.holder().position().file();
-        if (sourceFile != null) {
-            // Otherwise, check if the class is in current package
-            File f = new File(
-                    sourceFile.getParentFile(), className + JAVA_FILE_EXT);
-            if (f.exists()) {
-                String c = f.getAbsolutePath();
-                c = c.replaceAll("[\\\\\\/]", ".");
-                c = StringUtils.substringAfterLast(c, ".src.main.java.");
-                c = StringUtils.removeEnd(c, JAVA_FILE_EXT);
-                return c;
-            }
-
-            // Finally, see if package is defined in imports for the class.
-            try {
-                Matcher m = Pattern.compile(
-                        "(?m)^\\s*import (.*\\." + className  + ");$").matcher(
-                                FileUtils.readFileToString(sourceFile, UTF_8));
-                if (m.find()) {
-                    return m.group(1);
-                }
-            } catch (IOException e) {
-                //NOOP
-            }
-        }
-        return className;
     }
 
     private static String findInSource(String source, String id) {
@@ -201,7 +166,7 @@ public class IncludeTaglet extends AbstractInlineTaglet {
         } else {
             regex = "@nx\\..*?\\" + regex;
         }
-        regex = "(?s)^.*?\\{\\" + regex + "\\b(.*?)\\}.*$";
+        regex = "(?s)^\\{\\" + regex + "\\b(.*)\\}$";
         Matcher m = BRACES_PATTERN.matcher(comment);
         while (m.find()) {
             String snippet = m.group();

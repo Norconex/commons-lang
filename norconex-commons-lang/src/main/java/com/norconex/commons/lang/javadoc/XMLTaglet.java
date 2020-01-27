@@ -79,15 +79,17 @@ public class XMLTaglet extends AbstractInlineTaglet {
         if (StringUtils.isNotBlank(heading)) {
             b.append(heading);
         }
+
         b.append("<pre><code ");
         if (StringUtils.isNotBlank(id)) {
             b.append("id=\"nx-xml-" + id + "\" ");
         }
         b.append("class=\"language-xml\">\n");
         b.append(StringEscapeUtils.escapeXml11(
-                XMLUtil.format(resolveIncludes(tag, text), 2, 80)
+                XMLUtil.format(resolveIncludes(/*tag,*/ text), 2, 80)
         ));
         b.append("</code></pre>");
+
         return b.toString();
     }
 }
