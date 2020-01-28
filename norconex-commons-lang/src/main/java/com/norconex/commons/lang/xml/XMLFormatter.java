@@ -209,10 +209,12 @@ public class XMLFormatter {
                     line = line.replaceFirst("(?s)^\\s+(.*)", "$1");
 
                     if (line.length() < textMaxChars) {
-                        m.appendReplacement(b, lineIndent + line);
+                        m.appendReplacement(b,
+                                Matcher.quoteReplacement(lineIndent + line));
                     } else {
-                        m.appendReplacement(b, breakLongLines(
-                                line, lineIndent, textMaxChars));
+                        m.appendReplacement(b,
+                                Matcher.quoteReplacement(breakLongLines(
+                                        line, lineIndent, textMaxChars)));
                     }
                 }
                 String newText = b.toString();

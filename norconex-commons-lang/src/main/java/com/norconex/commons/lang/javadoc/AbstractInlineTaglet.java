@@ -117,7 +117,8 @@ public abstract class AbstractInlineTaglet implements Taglet {
         StringBuffer sb = new StringBuffer();
         while (m.find()) {
             String ref = m.group(1);
-            m.appendReplacement(sb, IncludeTaglet.include(/*tag,*/ ref));
+            m.appendReplacement(sb, Matcher.quoteReplacement(
+                    IncludeTaglet.include(ref)));
         }
         m.appendTail(sb);
         return resolveIncludes(sb.toString());
