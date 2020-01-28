@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Test;
 /**
  * @author Pascal Essiembre
  */
-public class XMLUtilTest {
+public class XMLFormatterTest {
 
     @Test
     public void testNoRootFormat() {
@@ -30,17 +30,25 @@ public class XMLUtilTest {
                 "<noroot1>\n"
               + "    <child>I am a child</child>\n"
               + "</noroot1>\n"
-              + "<noroot2>I am a sibling</noroot2>";
+              + "<noroot2>I am a sibling</noroot2>\n";
 
-        String actual = XMLUtil.format(xml);
-        Assertions.assertEquals(expected, actual);
+        Assertions.assertEquals(expected,
+                new XMLFormatter()
+                    .setIndentSize(4)
+                    .setWrapAttributesAt(1)
+                    .setWrapContentAt(80)
+                    .format(xml));
     }
 
     @Test
     public void testNoTagFormat() {
         String xml = "onSet=\"[append|prepend|replace|optional]\"";
-        String actual = XMLUtil.format(xml);
-        Assertions.assertEquals(xml, actual);
+        Assertions.assertEquals(xml,
+                new XMLFormatter()
+                    .setIndentSize(4)
+                    .setWrapAttributesAt(1)
+                    .setWrapContentAt(80)
+                    .format(xml));
     }
 
     @Test
@@ -54,13 +62,14 @@ public class XMLUtilTest {
               + "method=\"[basic|wildcard|regex]\" "
               + "replaceAll=\"[false|true]\">"
               + "<pattern attr1=\"a short one\" attr2=\"another short\">\n"
-              + "    Content quite long in the body we do not want to "
-              + "break since it could mess up with content format and space "
-              + "preservation.\n"
+              + "    Content quite long in the body we want to "
+              + "break even if it could mess up with content format and space "
+              + "preservation.\n\n     \n  "
               + "</pattern>"
-              + "<text>Another content quite long in the body we do not want "
-              + "to break since it could mess up with content format and space "
-              + "preservation.</text>"
+              + "<!-- this is a comment -->"
+              + "<text>Another content quite\n long in the body we want "
+              + "to break even if it could mess up with content format and "
+              + "space preservation.</text>"
               + "</textMatcher>"
               + "</xml>";
 
@@ -73,16 +82,26 @@ public class XMLUtilTest {
               + "      matchWhole=\"[false|true]\"\n"
               + "      method=\"[basic|wildcard|regex]\"\n"
               + "      replaceAll=\"[false|true]\">\n"
-              + "    <pattern attr1=\"a short one\" attr2=\"another short\">\n"
-              + "  Content quite long in the body we do not want to break "
-              + "since it could mess up with content format and space "
-              + "preservation.\n"
-              + "</pattern>\n"
-              + "    <text>Another content quite long in the body we do not "
-              + "want to break since it could mess up with content format "
-              + "and space preservation.</text>\n"
+              + "    <pattern\n"
+              + "        attr1=\"a short one\"\n"
+              + "        attr2=\"another short\">\n"
+              + "      Content quite long in the body we want to break even "
+              + "if it could\n"
+              + "      mess up with content format and space preservation.\n"
+              + "    </pattern>\n"
+              + "    <text>\n"
+              + "      Another content quite\n"
+              + "      long in the body we want to break even if it could "
+              + "mess up with\n"
+              + "      content format and space preservation.\n"
+              + "    </text>\n"
               + "  </textMatcher>\n"
-              + "</xml>";
-        Assertions.assertEquals(expected, XMLUtil.format(xml, 2, 80));
+              + "</xml>\n";
+        XMLFormatter f = new XMLFormatter();
+        f.setIndentSize(2);
+        f.setWrapAttributesAt(1);
+        f.setWrapContentAt(70);
+//System.out.println(f.format(xml));
+        Assertions.assertEquals(expected, f.format(xml));
     }
 }

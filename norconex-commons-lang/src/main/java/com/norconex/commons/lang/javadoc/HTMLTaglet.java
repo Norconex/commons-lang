@@ -24,42 +24,23 @@ import com.sun.javadoc.Tag;
 import com.sun.tools.doclets.Taglet;
 
 /**
- * <p>{&#64;nx.xml} XML beautifier with enhanced functionality.</p>
- *
- * <p>
- *   Refer to taglet source code to find out how the following XML
- *   samples were generated.
- * </p>
- *
- * {@nx.xml
- * <test>
- *   <sub attr="xml-taglet-test">This is an XML example.</sub>
- * </test>
- * }
- *
- * {@nx.xml #usage
- * <test>
- *   <sub attr="xml-taglet-test">This is annoter XML example.</sub>
- * </test>
- * }
+ * <p>{&#64;nx.html} HTML beautifier with enhanced functionality.
+ * HTML has to follow basic XML syntax.</p>
  *
  * @author Pascal Essiembre
  * @since 2.0.0
+ * @see XMLTaglet
  */
-public class XMLTaglet extends AbstractInlineTaglet {
+public class HTMLTaglet extends AbstractInlineTaglet {
 
-    public static final String NAME = "nx.xml";
-
-    //TODO resolve classes in XML to create links to JavaDoc
+    public static final String NAME = "nx.html";
 
     /**
      * Register an instance of this taglet.
-     *
-     * @param tagletMap
-     *            registry of taglets
+     * @param tagletMap registry of taglets
      */
     public static void register(Map<String, Taglet> tagletMap) {
-        tagletMap.put(NAME, new XMLTaglet());
+        tagletMap.put(NAME, new HTMLTaglet());
     }
 
     @Override
@@ -82,17 +63,16 @@ public class XMLTaglet extends AbstractInlineTaglet {
 
         b.append("<pre><code ");
         if (StringUtils.isNotBlank(id)) {
-            b.append("id=\"nx-xml-" + id + "\" ");
+            b.append("id=\"nx-html-" + id + "\" ");
         }
-        b.append("class=\"language-xml\">\n");
+        b.append("class=\"language-html\">\n");
         b.append(StringEscapeUtils.escapeXml11(
                 new XMLFormatter()
-                .setIndentSize(2)
-                .setWrapAttributesAt(1)
-                .setWrapContentAt(80).format(resolveIncludes(text))
+                        .setIndentSize(2)
+                        .setWrapAttributesAt(1)
+                        .setWrapContentAt(80).format(resolveIncludes(text))
         ));
         b.append("</code></pre>");
-
         return b.toString();
     }
 }

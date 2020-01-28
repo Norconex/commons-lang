@@ -1,4 +1,4 @@
-/* Copyright 2019 Norconex Inc.
+/* Copyright 2019-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,22 +14,19 @@
  */
 package com.norconex.commons.lang.xml;
 
-import static org.apache.commons.lang3.StringUtils.repeat;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParserFactory;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
 
@@ -51,10 +48,6 @@ public final class XMLUtil {
 
     public static final String W3C_XML_SCHEMA_NS_URI_1_1 =
             "http://www.w3.org/XML/XMLSchema/v1.1";
-    private static final String WRAP_START = "<__wrapper__>";
-    private static final String WRAP_END = "</__wrapper__>";
-    private static final Pattern ATTR_PATTERN = Pattern.compile(
-            "\\s+([A-Za-z_][A-Za-z_\\.:]*?\\s*=\\s*([\"']).*?\\2)");
 
     private XMLUtil() {
         super();
@@ -103,73 +96,14 @@ public final class XMLUtil {
         return factory;
     }
 
-    /**
-     * Formats an XML string using 4 spaces indents. XML can have multiple
-     * roots (e.g., to format XML fragments).
-     * @param xml XML string
-     * @return formatted XML
-     */
-    public static String format(String xml) {
-        return format(xml, 4);
-    }
-    /**
-     * Formats an XML string using 4 spaces indents. XML can have multiple
-     * roots (e.g., to format XML fragments).
-     * @param xml XML string
-     * @param indent number of spaces for each indent
-     * @return formatted XML
-     */
-    public static String format(String xml, int indent) {
-        return format(xml, indent, 0);
-    }
-    /**
-     * Formats an XML string using the specified number of spaces to indent
-     * and optionally wrap long lines of attributes after the number
-     * of specified characters. XML can have multiple
-     * roots (e.g., to format XML fragments).
-     * @param xml XML string
-     * @param indent number of spaces for each indent
-     * @param wrapAttrAt number of characters after which to wrap long
-     *        lines of attributes
-     * @return formatted XML
-     */
-    public static String format(String xml, int indent, int wrapAttrAt) {
-        String wrapper = WRAP_START + xml + WRAP_END;
-        String x = new XML(wrapper).toString(indent).trim();
-        x = StringUtils.removeStart(x, WRAP_START);
-        x = StringUtils.removeEnd(x, WRAP_END);
-        x = x.replaceAll("(\n\r|\r\n)", "\n");
-        x = x.replaceAll("\r", "\n");
-        // Remove just one new line char from begining and end
-        x = x.replaceAll("(^ *\n| *\n$)", "");
-
-        if (indent > 0) {
-            //Remove indent created by adding wrapper tag
-            x = x.replaceAll("(?m)^ {" + indent + "}", "");
+    public static SAXParserFactory createSaxParserFactory() {
+        SAXParserFactory factory = SAXParserFactory.newInstance();
+        try {
+            factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+        } catch (SAXNotRecognizedException | SAXNotSupportedException
+                | ParserConfigurationException e) {
+            LOG.debug(e.getMessage());
         }
-
-        // attribute line wrap
-        if (wrapAttrAt > 0) {
-            String[] lines = x.split("\n");
-            for (int i = 0; i < lines.length; i++) {
-                String line = lines[i];
-                if (line.length() < wrapAttrAt) {
-                    continue;
-                }
-                // check if a tag only and not cdata
-                Matcher m = Pattern.compile(
-                        "^(\\s*)<[^!/>][^!>]*?>$").matcher(line);
-                if (m.matches()) {
-                    String wrapIndent = m.group(1) + repeat(' ', indent * 2);
-                    line = ATTR_PATTERN.matcher(line).replaceAll(
-                            "\n" + wrapIndent + "$1");
-                    lines[i] = line;
-                }
-            }
-            x = StringUtils.join(lines, "\n");
-        }
-
-        return x;
+        return factory;
     }
-
 }

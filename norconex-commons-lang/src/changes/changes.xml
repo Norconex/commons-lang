@@ -74,6 +74,9 @@
         (XXE).
       </action>
       <action dev="essiembre" type="add">
+        New XMLFormatter.
+      </action>
+      <action dev="essiembre" type="add">
         New DateUtil class for converting between java.util.Date to/from
         local date/time.
       </action>
@@ -114,8 +117,8 @@
         New VersionUtil class.
       </action>
       <action dev="essiembre" type="add">
-        New javadoc package containing useful taglets for formatting
-        XML and perform dynamic includes from other files.
+        New "javadoc" package containing useful Taglets for formatting
+        code blocks and perform dynamic includes from other files.
       </action>
       <action dev="essiembre" type="add">
         New FluentPropertyDescriptor class.
