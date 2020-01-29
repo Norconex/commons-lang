@@ -1,4 +1,4 @@
-/* Copyright 2010-2017 Norconex Inc.
+/* Copyright 2010-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import org.apache.commons.io.input.NullInputStream;
+import org.apache.commons.io.input.NullReader;
 
 /**
  * I/O related utility methods.
@@ -60,8 +63,8 @@ public final class IOUtil {
         }
         byte[] head = IOUtil.borrowBytes(is, bytes.length);
         return Arrays.equals(bytes, head);
-    }    
-    
+    }
+
     /**
      * Gets and resets the specified number of bytes from the input stream.
      * @param is input stream
@@ -83,7 +86,7 @@ public final class IOUtil {
         is.reset();
         return bytes;
     }
-    
+
     /**
      * Wraps the reader in a {@link BufferedReader} if not a subclass already.
      * @param reader the reader to wrap if needed
@@ -99,7 +102,7 @@ public final class IOUtil {
         }
         return new BufferedReader(reader);
     }
-    
+
     /**
      * Wraps the input stream in a {@link BufferedInputStream} if not a subclass
      * already.
@@ -116,19 +119,19 @@ public final class IOUtil {
         }
         return new BufferedInputStream(in);
     }
-    
+
     /**
-     * Gets the last lines from an input stream, using UTF-8.  
+     * Gets the last lines from an input stream, using UTF-8.
      * This method is null-safe.
      * If the input stream is null or empty, an empty string array will
-     * be returned.  
+     * be returned.
      * <br><br>
      * Use of this method can often be a bad idea (especially on large streams)
-     * since it needs to read the entire stream to return the last lines. 
-     * If you are dealing with files, use 
+     * since it needs to read the entire stream to return the last lines.
+     * If you are dealing with files, use
      * {@link com.norconex.commons.lang.file.FileUtil#tail(
      * java.io.File, int)} instead, which can read
-     * a file starting from the end. 
+     * a file starting from the end.
      * @param is input stream
      * @param lineQty maximum number of lines to return
      * @return lines as a string array
@@ -139,17 +142,17 @@ public final class IOUtil {
         return tail(is, StandardCharsets.UTF_8, lineQty);
     }
     /**
-     * Gets the last lines from an input stream, using the specified encoding.  
+     * Gets the last lines from an input stream, using the specified encoding.
      * This method is null-safe.
      * If the input stream is null or empty, an empty string array will
-     * be returned.  
+     * be returned.
      * <br><br>
      * Use of this method can often be a bad idea (especially on large streams)
-     * since it needs to read the entire stream to return the last lines. 
-     * If you are dealing with files, use 
+     * since it needs to read the entire stream to return the last lines.
+     * If you are dealing with files, use
      * {@link com.norconex.commons.lang.file.FileUtil#tail(
      * File, String, int)} instead, which can read
-     * a file starting from the end. 
+     * a file starting from the end.
      * @param is input stream
      * @param encoding character encoding
      * @param lineQty maximum number of lines to return
@@ -163,17 +166,17 @@ public final class IOUtil {
         return tail(is, Charset.forName(encoding), lineQty);
     }
     /**
-     * Gets the last lines from an input stream, using the specified encoding.  
+     * Gets the last lines from an input stream, using the specified encoding.
      * This method is null-safe.
      * If the input stream is null or empty, an empty string array will
-     * be returned.  
+     * be returned.
      * <br><br>
      * Use of this method can often be a bad idea (especially on large streams)
-     * since it needs to read the entire stream to return the last lines. 
-     * If you are dealing with files, use 
+     * since it needs to read the entire stream to return the last lines.
+     * If you are dealing with files, use
      * {@link com.norconex.commons.lang.file.FileUtil#tail(
      * File, String, int)} instead, which can read
-     * a file starting from the end. 
+     * a file starting from the end.
      * @param is input stream
      * @param encoding character encoding
      * @param lineQty maximum number of lines to return
@@ -204,10 +207,10 @@ public final class IOUtil {
         br.close();
         Collections.reverse(lines);
         return lines.toArray(EMPTY_STRINGS);
-    }    
+    }
 
     /**
-     * Gets the first lines from an input stream, using UTF-8.  
+     * Gets the first lines from an input stream, using UTF-8.
      * This method is null-safe.
      * If the input stream is null or empty, an empty string array will
      * be returned.
@@ -221,9 +224,9 @@ public final class IOUtil {
             throws IOException {
         return head(is, StandardCharsets.UTF_8, lineQty);
     }
-    
+
     /**
-     * Gets the first lines from an input stream, using the specified encoding.  
+     * Gets the first lines from an input stream, using the specified encoding.
      * This method is null-safe.
      * If the input stream is null or empty, an empty string array will
      * be returned.
@@ -239,7 +242,7 @@ public final class IOUtil {
         return head(is, Charset.forName(encoding), lineQty);
     }
     /**
-     * Gets the first lines from an input stream, using the specified encoding.  
+     * Gets the first lines from an input stream, using the specified encoding.
      * This method is null-safe.
      * If the input stream is null or empty, an empty string array will
      * be returned.
@@ -272,5 +275,28 @@ public final class IOUtil {
         }
         br.close();
         return lines.toArray(EMPTY_STRINGS);
+    }
+
+    /**
+     * Gets an "empty" reader (zero size) when the supplied reader
+     * is <code>null</code>.
+     * Else, return the supplied reader.
+     * @param reader original reader
+     * @return the supplied reader, or an empty reader
+     * @since 2.0.0
+     */
+    public static Reader toNonNullReader(Reader reader) {
+        return reader != null ? reader : new NullReader(0);
+    }
+    /**
+     * Gets an "empty" input stream (zero size) when the supplied input
+     * stream is <code>null</code>.
+     * Else, return the supplied input stream.
+     * @param is original input stream
+     * @return the supplied input stream, or an empty input stream
+     * @since 2.0.0
+     */
+    public static InputStream toNonNullInputStream(InputStream is) {
+        return is != null ? is : new NullInputStream(0);
     }
 }

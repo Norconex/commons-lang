@@ -123,6 +123,10 @@
       <action dev="essiembre" type="add">
         New FluentPropertyDescriptor class.
       </action>
+      <action dev="essiembre" type="add">
+        New IOUtil#toNonNullReader(Reader) and 
+        IOUtil#toNonNullInputStream(InputStream) methods.
+      </action>
       <action dev="essiembre" type="update">
         Now relies on Norconex Commons Maven Parent. 
       </action>
