@@ -37,7 +37,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
-import org.xml.sax.helpers.DefaultHandler;
+import org.xml.sax.ext.DefaultHandler2;
 
 /**
  * Simple XML Formatter. This formatter may not fully respect all XML
@@ -110,21 +110,31 @@ public class XMLFormatter {
         String wrappedXML = WRAP_START + xml + WRAP_END;
         try {
             StringWriter out = new StringWriter();
+            XmlHandler handler = new XmlHandler(out);
             SAXParserFactory factory = XMLUtil.createSaxParserFactory();
             SAXParser parser = factory.newSAXParser();
-            parser.parse(new InputSource(
-                    new StringReader(wrappedXML)), new XmlHandler(out));
+            parser.setProperty(
+                    "http://xml.org/sax/properties/lexical-handler", handler);
+            parser.parse(
+                    new InputSource(new StringReader(wrappedXML)), handler);
             out.flush();
-            String formattedXML = out.toString().trim();
-            formattedXML = StringUtils.removeStart(formattedXML, WRAP_START);
-            formattedXML = StringUtils.removeEnd(formattedXML, WRAP_END);
-            return formattedXML;
+            return postFormatCleanups(out.toString().trim());
         } catch (ParserConfigurationException | SAXException | IOException e) {
             throw newXMLException(e);
         }
     }
+    private String postFormatCleanups(String text) {
+        String xml = text;
+        xml = StringUtils.removeStart(xml, WRAP_START);
+        xml = StringUtils.removeEnd(xml, WRAP_END);
 
-    class XmlHandler extends DefaultHandler {
+        // Remove blan lines between tags.
+        xml = xml.replaceAll("(>)\n+( *<)", "$1\n$2");
+
+        return xml;
+    }
+
+    class XmlHandler extends DefaultHandler2 {
 
         private final Writer out;
         private int depth = -1;
@@ -133,6 +143,7 @@ public class XMLFormatter {
         private int lastTagLength = 0;
 
         private final StringBuilder body = new StringBuilder();
+        private final StringBuilder lastComment = new StringBuilder();
 
         public XmlHandler(Writer out) {
             super();
@@ -142,6 +153,9 @@ public class XMLFormatter {
         @Override
         public void startElement(String uri, String localName, String qName,
                 Attributes attributes) throws SAXException {
+
+            writeComment(true);
+
             StringBuilder b = new StringBuilder();
             if (depth > 0 && lastTagLineLength > 0) {
                 write("\n");
@@ -176,8 +190,16 @@ public class XMLFormatter {
         }
 
         @Override
+        public void comment(char[] ch, int start, int length)
+                throws SAXException {
+            lastComment.append(ch, start, length);
+        }
+
+        @Override
         public void endElement(String uri, String localName, String qName)
                 throws SAXException {
+
+            writeComment(false);
 
             depth--;
 
@@ -198,28 +220,7 @@ public class XMLFormatter {
             }
 
             if (isWrapContent(text)) {
-                String lineIndent =
-                        StringUtils.repeat(' ', indentSize * (depth + 1));
-                int textMaxChars =
-                        Math.max(wrapContentAt - lineIndent.length(), 1);
-                StringBuffer b = new StringBuffer();
-                Matcher m = Pattern.compile(".*?([\n\r]+|$)").matcher(text);
-                while (m.find()) {
-                    String line = m.group();
-                    line = line.replaceFirst("(?s)^\\s+(.*)", "$1");
-
-                    if (line.length() < textMaxChars) {
-                        m.appendReplacement(b,
-                                Matcher.quoteReplacement(lineIndent + line));
-                    } else {
-                        m.appendReplacement(b,
-                                Matcher.quoteReplacement(breakLongLines(
-                                        line, lineIndent, textMaxChars)));
-                    }
-                }
-                String newText = b.toString();
-                newText = newText.replaceFirst("(.*)\\s+$", "$1");
-                write("\n" + newText + "\n");
+                write(wrapBodyText(text, 1));
                 write(indent() + closingTag);
             } else {
                 write(text);
@@ -227,6 +228,48 @@ public class XMLFormatter {
             }
             lastTagLineLength = 0;
             lastTagLength = 0;
+        }
+
+
+        private String wrapBodyText(String text, int extraIndent) {
+            String lineIndent =
+                    StringUtils.repeat(' ', indentSize * (depth + extraIndent));
+            int textMaxChars =
+                    Math.max(wrapContentAt - lineIndent.length(), 1);
+            StringBuffer b = new StringBuffer();
+            Matcher m = Pattern.compile(".*?([\n\r]+|$)").matcher(text);
+            while (m.find()) {
+                String line = m.group();
+                line = line.replaceFirst("(?s)^\\s+(.*)", "$1");
+
+                if (line.length() < textMaxChars) {
+                    m.appendReplacement(b,
+                            Matcher.quoteReplacement(lineIndent + line));
+                } else {
+                    m.appendReplacement(b,
+                            Matcher.quoteReplacement(breakLongLines(
+                                    line, lineIndent, textMaxChars)));
+                }
+            }
+            String newText = b.toString();
+            newText = newText.replaceFirst("(.*)\\s+$", "$1");
+            return "\n" + newText + "\n";
+        }
+
+        private void writeComment(boolean beforeStartElement) {
+            // if no comment, do nothing
+            if (lastComment.length() == 0) {
+                return;
+            }
+
+            String comment = "<!--" + lastComment.toString() + "-->\n";
+            lastComment.setLength(0);
+
+            if (isWrapContent(comment)) {
+                write(wrapBodyText(comment, 0));
+            } else {
+                write(indent() + comment);
+            }
         }
 
         private String breakLongLines(
