@@ -62,6 +62,16 @@ import com.norconex.commons.lang.xml.XML;
  * The above are configurable attributes consuming classes can expect.
  * The actual regular expression is expected to be the tag content.
  * </p>
+ * <p>
+ * When simply matching (no replacements) the attributes are the same,
+ * minus the "replaceAll" (which is simply ignored):
+ * </p>
+ * {@nx.xml #matchAttributes
+ *     method="[basic|wildcard|regex]"
+ *     ignoreCase="[false|true]"
+ *     ignoreDiacritic="[false|true]"
+ *     matchWhole="[false|true]"
+ * }
  *
  * {@nx.xml.example
  * <sampleConfig method="wildcard" ignoreCase="true">
