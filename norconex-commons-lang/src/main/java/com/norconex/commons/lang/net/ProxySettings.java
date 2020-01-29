@@ -45,7 +45,7 @@ import com.norconex.commons.lang.xml.XML;
  * <proxyUsername>...</proxyUsername>
  * <proxyPassword>...</proxyPassword>
  * <proxyPasswordKey>
- *   {@nx.include EncryptionKey@nx.xml.usage}
+ *   {@nx.include com.norconex.commons.lang.encrypt.EncryptionKey@nx.xml.usage}
  * </proxyPasswordKey>
  * <proxyRealm>(Authentication realm. Default is any.)</proxyRealm>
  * }
