@@ -14,9 +14,8 @@
  */
 package com.norconex.commons.lang.map;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.function.Predicate;
 
@@ -31,20 +30,20 @@ import com.norconex.commons.lang.text.TextMatcher.Method;
 import com.norconex.commons.lang.xml.XML;
 
 /**
- * <p>Convenient way of matching values for a key
+ * <p>Convenient way of matching values for matching fields (key)
  * in a given {@link Properties}.
  * </p>
  * <p>
  * A <code>null</code> or empty expression will try to match an
- * empty key value.
+ * empty field value.
  * </p>
  * @author Pascal Essiembre
  * @since 1.8.0
  * @see TextMatcher
  */
 public final class PropertyMatcher implements Predicate<Properties> {
-    private final TextMatcher matcher;
-    private final String key;
+    private final TextMatcher valueMatcher = new TextMatcher();
+    private final TextMatcher fieldMatcher = new TextMatcher();
     /**
      * Constructor.
      * @param key properties key
@@ -61,70 +60,113 @@ public final class PropertyMatcher implements Predicate<Properties> {
 
     /**
      * A property matcher matching empty or <code>null</code> elements.
-     * @param key properties key
+     * @param field properties field name to match as-is
      */
-    public PropertyMatcher(String key) {
-        this(key, null);
+    public PropertyMatcher(String field) {
+        this(field, null);
     }
     /**
      * Constructor.
-     * @param key properties key
-     * @param matcher match instructions
+     * @param field properties field name to match as-is
+     * @param valueMatcher value match instructions
      * @since 2.0.0
      */
-    public PropertyMatcher(String key, TextMatcher matcher) {
-        super();
-        this.matcher = new TextMatcher(matcher);
-        this.key = key;
+    public PropertyMatcher(String field, TextMatcher valueMatcher) {
+        this(TextMatcher.basic(field), valueMatcher);
     }
 
-    public String getKey() {
-        return key;
+    /**
+     * A property valueMatcher matching empty or <code>null</code> elements.
+     * @param fieldMatcher field match instructions
+     * @since 2.0.0
+     */
+    public PropertyMatcher(TextMatcher fieldMatcher) {
+        this(fieldMatcher, null);
     }
-    public TextMatcher getTextMatcher() {
-        return matcher;
+    /**
+     * Constructor.
+     * @param fieldMatcher field match instructions
+     * @param valueMatcher value match instructions
+     * @since 2.0.0
+     */
+    public PropertyMatcher(TextMatcher fieldMatcher, TextMatcher valueMatcher) {
+        super();
+        this.fieldMatcher.copyFrom(fieldMatcher);
+        this.valueMatcher.copyFrom(valueMatcher);
+    }
+
+    /**
+     * Gets the value matcher (copy).
+     * @return value matcher
+     * @since 2.0.0
+     */
+    public TextMatcher getValueMatcher() {
+        return new TextMatcher(valueMatcher);
+    }
+    /**
+     * Gets the field matcher (copy).
+     * @return field matcher
+     * @since 2.0.0
+     */
+    public TextMatcher getFieldMatcher() {
+        return new TextMatcher(fieldMatcher);
     }
 
     /**
      * Gets the expression.
      * @return the expression.
-     * @deprecated Since 2.0.0 use {@link #getTextMatcher()}.
+     * @deprecated Since 2.0.0 use {@link #getValueMatcher()}.
      */
     @Deprecated
     public String getRegex() {
-        return matcher.getPattern();
+        return valueMatcher.getPattern();
     }
     /**
-     * Gets whether this matcher is case sensitive.
+     * Gets whether this valueMatcher is case sensitive.
      * @return the expression.
-     * @deprecated Since 2.0.0 use {@link #getTextMatcher()}.
+     * @deprecated Since 2.0.0 use {@link #getValueMatcher()}.
      */
     @Deprecated
     public boolean isCaseSensitive() {
-        return !matcher.isIgnoreCase();
+        return !valueMatcher.isIgnoreCase();
+    }
+    /**
+     * Gets the field name being matched.
+     * @return the field name
+     * @deprecated Since 2.0.0 use {@link #getFieldMatcher()}.
+     */
+    @Deprecated
+    public String getKey() {
+        return fieldMatcher.getPattern();
     }
 
     /**
-     * Tests whether this property matcher matches at least one value for
+     * Tests whether this property valueMatcher matches at least one value for
      * the key in the given {@link Properties}. To get all matches instead,
      * use {@link #match(Properties)} instead.
      * @param properties the properties to look for a match
      * @return <code>true</code> if at least one value for the key matches
-     * the matcher's expression
+     * the valueMatcher's expression
      * @see #match(Properties)
      */
     public boolean matches(Properties properties) {
-        if (properties == null) {
+        if (properties == null || !fieldMatcher.hasPattern()) {
             return false;
         }
-        TextMatcher m = new TextMatcher(matcher);
-        Collection<String> values =  properties.getStrings(key);
-        for (String value : values) {
-            if (!m.hasPattern() && StringUtils.isBlank(value)) {
-                return true;
+        for (Entry<String, List<String>> en : properties.entrySet()) {
+            String field = en.getKey();
+
+            // field does not match
+            if (!fieldMatcher.matches(field)) {
+                continue;
             }
-            if (m.matches(StringUtils.trimToEmpty(value))) {
-                return true;
+
+            // field matches
+            List<String> values = en.getValue();
+            for (String value : values) {
+                if (valueMatches(valueMatcher, value)) {
+                    return true;
+                }
             }
         }
         return false;
@@ -135,7 +177,7 @@ public final class PropertyMatcher implements Predicate<Properties> {
      * {@link #matches(Properties)}.
      * @param properties the properties to look for a match
      * @return <code>true</code> if at least one value for the key matches
-     * the list of matcher regular expressions
+     * the list of valueMatcher regular expressions
      */
     @Override
     public boolean test(Properties properties) {
@@ -143,7 +185,7 @@ public final class PropertyMatcher implements Predicate<Properties> {
     }
 
     /**
-     * Returns a list of matching values for the key in the given
+     * Returns matching field/values in the given
      * {@link Properties}. To simply get whether there is a match instead,
      * use the predicate {@link #test(Properties)} method instead.
      * @param properties the properties to look for a match
@@ -151,19 +193,26 @@ public final class PropertyMatcher implements Predicate<Properties> {
      * @see #test(Properties)
      * @since 2.0.0
      */
-    public List<String> match(Properties properties) {
-        List<String> matches = new ArrayList<>();
-        if (properties == null) {
+    public Properties match(Properties properties) {
+        Properties matches = new Properties();
+        if (properties == null || !fieldMatcher.hasPattern()) {
             return matches;
         }
-        TextMatcher m = new TextMatcher(matcher);
-        Collection<String> values =  properties.getStrings(key);
-        for (String value : values) {
-            if (!m.hasPattern() && StringUtils.isBlank(value)) {
-                matches.add(value);
+
+        for (Entry<String, List<String>> en : properties.entrySet()) {
+            String field = en.getKey();
+
+            // field does not match
+            if (!fieldMatcher.matches(field)) {
+                continue;
             }
-            if (m.matches(StringUtils.trimToEmpty(value))) {
-                matches.add(value);
+
+            // field matches
+            List<String> values = en.getValue();
+            for (String value : values) {
+                if (valueMatches(valueMatcher, value)) {
+                    matches.add(field, value);
+                }
             }
         }
         return matches;
@@ -174,43 +223,62 @@ public final class PropertyMatcher implements Predicate<Properties> {
      * {@link Properties} with the given replacement.
      * @param properties the properties to look for a match and replace
      * @param replacement text replacement
-     * @return a list of original values that were replaced (or empty).
+     * @return original fields/values that were replaced (or empty).
      * @since 2.0.0
      */
-    public List<String> replace(Properties properties, String replacement) {
-        List<String> replacedValues = new ArrayList<>();
-        if (properties == null) {
+    public Properties replace(Properties properties, String replacement) {
+        Properties replacedValues = new Properties();
+        if (properties == null || !fieldMatcher.hasPattern()) {
             return replacedValues;
         }
-        TextMatcher m = new TextMatcher(matcher);
-        Collection<String> values =  properties.getStrings(key);
-        List<String> newValues = new ArrayList<>();
-        for (String value : values) {
-            if (!m.hasPattern() && StringUtils.isBlank(value)
-                    || m.matches(value)) {
-                String newValue = m.replace(value, replacement);
-                if (!Objects.equals(value, newValue)) {
-                    replacedValues.add(value);
+
+        Properties newValues = new Properties();
+        for (Entry<String, List<String>> en : properties.entrySet()) {
+            String field = en.getKey();
+
+            // field does not match
+            if (!fieldMatcher.matches(field)) {
+                continue;
+            }
+
+            // field matches
+            List<String> values = en.getValue();
+            for (String value : values) {
+                if (valueMatches(valueMatcher, value)) {
+                    String newValue = valueMatcher.replace(value, replacement);
+                    if (!Objects.equals(value, newValue)) {
+                        replacedValues.add(field, value);
+                    }
+                    newValues.add(field, newValue);
+                } else {
+                    newValues.add(field, value);
                 }
-                newValues.add(newValue);
-            } else {
-                newValues.add(value);
+
             }
         }
         if (!replacedValues.isEmpty()) {
-            properties.setList(key, newValues);
+            for (Entry<String, List<String>> en : properties.entrySet()) {
+                properties.setList(en.getKey(), en.getValue());
+            }
         }
         return replacedValues;
     }
 
+    private boolean valueMatches(TextMatcher valueMatcher, String value) {
+        return (!valueMatcher.hasPattern() && StringUtils.isBlank(value))
+                || (valueMatcher.hasPattern() && valueMatcher.matches(value));
+    }
+
     public static PropertyMatcher loadFromXML(XML xml) {
-        TextMatcher m = new TextMatcher();
-        m.loadFromXML(xml);
-        return new PropertyMatcher(xml.getString("@field"), m);
+        TextMatcher fieldMatcher = new TextMatcher();
+        fieldMatcher.loadFromXML(xml.getXML("fieldMatcher"));
+        TextMatcher valueMatcher = new TextMatcher();
+        valueMatcher.loadFromXML(xml.getXML("valueMatcher"));
+        return new PropertyMatcher(fieldMatcher, valueMatcher);
     }
     public static void saveToXML(XML xml, PropertyMatcher matcher) {
-        xml.setAttribute("field", matcher.key);
-        matcher.getTextMatcher().saveToXML(xml);
+        matcher.getFieldMatcher().saveToXML(xml.addElement("fieldMatcher"));
+        matcher.getValueMatcher().saveToXML(xml.addElement("valueMatcher"));
     }
 
     @Override

@@ -318,6 +318,37 @@ public class TextMatcher implements IXMLConfigurable {
         return new TextMatcher(this);
     }
 
+    /**
+     * <p>Creates a new text matcher initialized with basic matching.
+     * Same as invoking
+     * <code>new TextMatcher(Method.BASIC).setPattern(pattern)</code>.</p>
+     * @param pattern expression to match against values
+     * @return basic text matcher
+     */
+    public static TextMatcher basic(String pattern) {
+        return new TextMatcher(Method.BASIC).setPattern(pattern);
+    }
+    /**
+     * <p>Creates a new text matcher initialized with wildcard matching.
+     * Same as invoking
+     * <code>new TextMatcher(Method.WILDCARD).setPattern(pattern)</code>.</p>
+     * @param pattern expression to match against values
+     * @return wildcard text matcher
+     */
+    public static TextMatcher wildcard(String pattern) {
+        return new TextMatcher(Method.WILDCARD).setPattern(pattern);
+    }
+    /**
+     * <p>Creates a new text matcher initialized with regular expression
+     * matching. Same as invoking
+     * <code>new TextMatcher(Method.REGEX).setPattern(pattern)</code>.</p>
+     * @param pattern expression to match against values
+     * @return regex text matcher
+     */
+    public static TextMatcher regex(String pattern) {
+        return new TextMatcher(Method.REGEX).setPattern(pattern);
+    }
+
     //--- Match/replace methods ------------------------------------------------
     /**
      * Matches this class pattern against its text.

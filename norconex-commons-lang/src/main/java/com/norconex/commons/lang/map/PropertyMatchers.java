@@ -17,7 +17,6 @@ package com.norconex.commons.lang.map;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
 import java.util.function.Predicate;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -58,11 +57,8 @@ public class PropertyMatchers extends ArrayList<PropertyMatcher>
         Iterator<PropertyMatcher> it = iterator();
         int count = 0;
         while (it.hasNext()) {
-            PropertyMatcher r = it.next();
-            if (!r.getTextMatcher().isIgnoreCase()
-                    && r.getKey().equals(field)
-                    || r.getTextMatcher().isIgnoreCase()
-                            && r.getKey().equalsIgnoreCase(field)) {
+            PropertyMatcher m = it.next();
+            if (m.getFieldMatcher().matches(field)) {
                 it.remove();
                 count++;
             }
@@ -111,9 +107,9 @@ public class PropertyMatchers extends ArrayList<PropertyMatcher>
             return props;
         }
         for (PropertyMatcher matcher : this) {
-            List<String> matches = matcher.match(properties);
+            Properties matches = matcher.match(properties);
             if (!matches.isEmpty()) {
-                props.addList(matcher.getKey(), matches);
+                props.putAll(matches);
             }
         }
         return props;
@@ -130,9 +126,9 @@ public class PropertyMatchers extends ArrayList<PropertyMatcher>
             return props;
         }
         for (PropertyMatcher matcher : this) {
-            List<String> replaced = matcher.replace(properties, replacement);
+            Properties replaced = matcher.replace(properties, replacement);
             if (!replaced.isEmpty()) {
-                props.addList(matcher.getKey(), replaced);
+                props.putAll(replaced);
             }
         }
         return props;
