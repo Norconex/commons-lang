@@ -63,6 +63,7 @@ public class XMLFormatterTest {
               + "replaceAll=\"[false|true]\">"
               + "    <!-- this is a super long comment that should idealy be "
               + "wrapped on more than ones line. -->"
+              + "<!-- a second comment, adjacent to first one -->"
               + "<pattern attr1=\"a short one\" attr2=\"another short\">\n"
               + "    Content quite long in the body we want to "
               + "break even if it could mess up with content format and space "
@@ -83,17 +84,20 @@ public class XMLFormatterTest {
               + "      ignoreCase=\"[false|true]\"\n"
               + "      matchWhole=\"[false|true]\"\n"
               + "      method=\"[basic|wildcard|regex]\"\n"
-              + "      replaceAll=\"[false|true]\">\n"
-              + "    <!-- this is a super long comment that should idealy be "
+              + "      replaceAll=\"[false|true]\">\n\n"
+              + "    <!--\n"
+              + "      this is a super long comment that should idealy be "
               + "wrapped on\n"
-              + "    more than ones line. -->\n"
+              + "      more than ones line.\n"
+              + "      -->\n\n"
+              + "    <!-- a second comment, adjacent to first one -->\n"
               + "    <pattern\n"
               + "        attr1=\"a short one\"\n"
               + "        attr2=\"another short\">\n"
               + "      Content quite long in the body we want to break even "
               + "if it could\n"
               + "      mess up with content format and space preservation.\n"
-              + "    </pattern>\n"
+              + "    </pattern>\n\n"
               + "    <!-- this is a comment -->\n"
               + "    <text>\n"
               + "      Another content quite\n"
@@ -107,6 +111,7 @@ public class XMLFormatterTest {
         f.setIndentSize(2);
         f.setWrapAttributesAt(1);
         f.setWrapContentAt(70);
+        f.setBlankLineBeforeComment(true);
 //System.out.println(f.format(xml));
         Assertions.assertEquals(expected, f.format(xml));
     }

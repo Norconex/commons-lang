@@ -70,7 +70,9 @@ public class HTMLTaglet extends AbstractInlineTaglet {
                 new XMLFormatter()
                         .setIndentSize(2)
                         .setWrapAttributesAt(1)
-                        .setWrapContentAt(80).format(resolveIncludes(text))
+                        .setWrapContentAt(80)
+                        .setBlankLineBeforeComment(true)
+                        .format(resolveIncludes(text))
         ));
         b.append("</code></pre>");
         return b.toString();

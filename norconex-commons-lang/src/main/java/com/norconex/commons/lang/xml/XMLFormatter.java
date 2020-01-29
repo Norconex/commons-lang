@@ -61,6 +61,7 @@ public class XMLFormatter {
     private int indentSize;
     private int wrapAttributesAt;
     private int wrapContentAt;
+    private boolean blankLineBeforeComment;
 
     // boolean useCDATA after X reserved characters
 
@@ -83,6 +84,14 @@ public class XMLFormatter {
     }
     public XMLFormatter setWrapContentAt(int wrapContentAt) {
         this.wrapContentAt = wrapContentAt;
+        return this;
+    }
+    public boolean isBlankLineBeforeComment() {
+        return blankLineBeforeComment;
+    }
+    public XMLFormatter setBlankLineBeforeComment(
+            boolean blankLineBeforeComment) {
+        this.blankLineBeforeComment = blankLineBeforeComment;
         return this;
     }
 
@@ -131,6 +140,10 @@ public class XMLFormatter {
         // Remove blan lines between tags.
         xml = xml.replaceAll("(>)\n+( *<)", "$1\n$2");
 
+        if (blankLineBeforeComment) {
+            xml = xml.replaceAll("(?m)^( *<!--)", "\n$1");
+        }
+
         return xml;
     }
 
@@ -143,7 +156,6 @@ public class XMLFormatter {
         private int lastTagLength = 0;
 
         private final StringBuilder body = new StringBuilder();
-        private final StringBuilder lastComment = new StringBuilder();
 
         public XmlHandler(Writer out) {
             super();
@@ -153,8 +165,6 @@ public class XMLFormatter {
         @Override
         public void startElement(String uri, String localName, String qName,
                 Attributes attributes) throws SAXException {
-
-            writeComment(true);
 
             StringBuilder b = new StringBuilder();
             if (depth > 0 && lastTagLineLength > 0) {
@@ -192,15 +202,27 @@ public class XMLFormatter {
         @Override
         public void comment(char[] ch, int start, int length)
                 throws SAXException {
-            lastComment.append(ch, start, length);
+
+            // if no comment, do nothing
+            String comment = new String(ch, start, length);
+            if (comment.length() == 0) {
+                return;
+            }
+            if (isWrapComment(comment)) {
+                comment = wrapBodyText(comment, indentSize * depth + 2);
+                comment = comment.replaceFirst("^\n+", "");
+                comment = comment.replaceFirst("\\s+$", "");
+                comment = "\n" + indent() + "<!--\n" + comment;
+                comment += "\n" + indent() + "  -->\n";
+                write(comment);
+            } else {
+                write(indent() + "<!--" + comment + "-->\n");
+            }
         }
 
         @Override
         public void endElement(String uri, String localName, String qName)
                 throws SAXException {
-
-            writeComment(false);
-
             depth--;
 
             String text = body.toString().trim();
@@ -220,7 +242,7 @@ public class XMLFormatter {
             }
 
             if (isWrapContent(text)) {
-                write(wrapBodyText(text, 1));
+                write(wrapBodyText(text, indentSize * (depth + 1)));
                 write(indent() + closingTag);
             } else {
                 write(text);
@@ -230,10 +252,8 @@ public class XMLFormatter {
             lastTagLength = 0;
         }
 
-
-        private String wrapBodyText(String text, int extraIndent) {
-            String lineIndent =
-                    StringUtils.repeat(' ', indentSize * (depth + extraIndent));
+        private String wrapBodyText(String text, int leftPadding) {
+            String lineIndent = StringUtils.repeat(' ', leftPadding);
             int textMaxChars =
                     Math.max(wrapContentAt - lineIndent.length(), 1);
             StringBuffer b = new StringBuffer();
@@ -256,28 +276,11 @@ public class XMLFormatter {
             return "\n" + newText + "\n";
         }
 
-        private void writeComment(boolean beforeStartElement) {
-            // if no comment, do nothing
-            if (lastComment.length() == 0) {
-                return;
-            }
-
-            String comment = "<!--" + lastComment.toString() + "-->\n";
-            lastComment.setLength(0);
-
-            if (isWrapContent(comment)) {
-                write(wrapBodyText(comment, 0));
-            } else {
-                write(indent() + comment);
-            }
-        }
-
         private String breakLongLines(
                 String text, String lineIndent, int textMaxChars) {
             return text.replaceAll(
                     "(.{1," + textMaxChars + "})( |$)", lineIndent + "$1\n");
         }
-
 
         @Override
         public void warning(SAXParseException e) throws SAXException {
@@ -319,6 +322,13 @@ public class XMLFormatter {
             return StringUtils.containsAny(text, '\n', '\r')
                     || lastTagLineLength + text.length()
                     + lastTagLength + 3 > wrapContentAt;
+        }
+        private boolean isWrapComment(String text) {
+            if (wrapContentAt < 1) {
+                return false;
+            }
+            return StringUtils.containsAny(text, '\n', '\r')
+                    || (indentSize * depth) + 2 + text.length() > wrapContentAt;
         }
         private void write(String txt) {
             try {
