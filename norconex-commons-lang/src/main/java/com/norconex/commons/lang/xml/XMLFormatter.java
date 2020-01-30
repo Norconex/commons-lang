@@ -137,7 +137,7 @@ public class XMLFormatter {
         xml = StringUtils.removeStart(xml, WRAP_START);
         xml = StringUtils.removeEnd(xml, WRAP_END);
 
-        // Remove blan lines between tags.
+        // Remove blank lines between tags.
         xml = xml.replaceAll("(>)\n+( *<)", "$1\n$2");
 
         if (blankLineBeforeComment) {
@@ -216,7 +216,7 @@ public class XMLFormatter {
                 comment += "\n" + indent() + "  -->\n";
                 write(comment);
             } else {
-                write(indent() + "<!--" + comment + "-->\n");
+                write("\n" + indent() + "<!--" + comment + "-->\n");
             }
         }
 
