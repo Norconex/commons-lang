@@ -72,6 +72,7 @@ public class HTMLTaglet extends AbstractInlineTaglet {
                         .setWrapAttributesAt(1)
                         .setWrapContentAt(80)
                         .setBlankLineBeforeComment(true)
+                        .setSelfCloseEmptyTags(true)
                         .format(resolveIncludes(text))
         ));
         b.append("</code></pre>");

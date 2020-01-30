@@ -52,6 +52,38 @@ public class XMLFormatterTest {
     }
 
     @Test
+    public void testSelfClosing() {
+        String xml =
+                "<xml>"
+              + "<selfclose></selfclose>"
+              + "<alsoSelfclose>  </alsoSelfclose>"
+              + "<alsoclose\n  attr1=\"1\" attr2=\"22\">\n \n  \n </alsoclose>"
+              + "<noClose>blah</noClose>"
+              + "<commentNotSelfClose><!-- something --></commentNotSelfClose>"
+              + "</xml>";
+
+        String expected =
+                "<xml>\n"
+              + "  <selfclose/>\n"
+              + "  <alsoSelfclose/>\n"
+              + "  <alsoclose attr1=\"1\" attr2=\"22\"/>\n"
+              + "  <noClose>blah</noClose>\n"
+              + "  <commentNotSelfClose>\n"
+              + "    <!-- something -->\n"
+              + "  </commentNotSelfClose>\n"
+              + "</xml>\n";
+
+        XMLFormatter f = new XMLFormatter()
+                .setIndentSize(2)
+                .setWrapAttributesAt(0)
+                .setWrapContentAt(80)
+                .setBlankLineBeforeComment(false)
+                .setSelfCloseEmptyTags(true);
+//System.out.println(f.format(xml));
+        Assertions.assertEquals(expected, f.format(xml));
+    }
+
+    @Test
     public void testLongLinesFormat() {
         String xml =
                 "<xml>"

@@ -62,6 +62,7 @@ public class XMLFormatter {
     private int wrapAttributesAt;
     private int wrapContentAt;
     private boolean blankLineBeforeComment;
+    private boolean selfCloseEmptyTags;
 
     // boolean useCDATA after X reserved characters
 
@@ -92,6 +93,13 @@ public class XMLFormatter {
     public XMLFormatter setBlankLineBeforeComment(
             boolean blankLineBeforeComment) {
         this.blankLineBeforeComment = blankLineBeforeComment;
+        return this;
+    }
+    public boolean isSelfCloseEmptyTags() {
+        return selfCloseEmptyTags;
+    }
+    public XMLFormatter setSelfCloseEmptyTags(boolean selfCloseEmptyTags) {
+        this.selfCloseEmptyTags = selfCloseEmptyTags;
         return this;
     }
 
@@ -144,6 +152,11 @@ public class XMLFormatter {
             xml = xml.replaceAll("(?m)( *<!--)", "\n$1");
         }
 
+        // Convert empty bodies to self-closing tags
+        if (selfCloseEmptyTags) {
+            xml = xml.replaceAll("<(\\w+)([^>]*?)>\\s*</\\1>", "<$1$2/>");
+        }
+
         return xml;
     }
 
@@ -154,6 +167,7 @@ public class XMLFormatter {
 
         private int lastTagLineLength = 0;
         private int lastTagLength = 0;
+        private boolean bodyHasComment;
 
         private final StringBuilder body = new StringBuilder();
 
@@ -191,6 +205,7 @@ public class XMLFormatter {
             depth++;
             lastTagLength = qName.length();
             lastTagLineLength = b.length();
+            bodyHasComment = false;
         }
 
         @Override
@@ -208,6 +223,7 @@ public class XMLFormatter {
             if (comment.length() == 0) {
                 return;
             }
+            bodyHasComment = true;
             if (isWrapComment(comment)) {
                 comment = wrapCommentText(comment, indentSize * depth + 2);
                 comment = comment.replaceFirst("^\n+", "");
@@ -216,7 +232,8 @@ public class XMLFormatter {
                 comment += "\n" + indent() + "  -->\n";
                 write(comment);
             } else {
-                write("\n" + indent() + "<!--" + comment + "-->\n");
+                write("\n");
+                write(indent() + "<!--" + comment + "-->\n");
             }
         }
 
@@ -234,10 +251,12 @@ public class XMLFormatter {
             if (text.length() == 0) {
                 // if last tag length is zero, it means we are starting
                 // or body was just printed, so we indent
-                if (lastTagLength == 0) {
+                // same if the body had a comment.
+                if (lastTagLength == 0 || bodyHasComment) {
                     write(indent());
                 }
                 write(closingTag);
+                bodyHasComment = false;
                 return;
             }
 
@@ -250,6 +269,7 @@ public class XMLFormatter {
             }
             lastTagLineLength = 0;
             lastTagLength = 0;
+            bodyHasComment = false;
         }
 
         private String wrapCommentText(String text, int leftPadding) {
