@@ -141,7 +141,7 @@ public class XMLFormatter {
         xml = xml.replaceAll("(>)\n+( *<)", "$1\n$2");
 
         if (blankLineBeforeComment) {
-            xml = xml.replaceAll("(?m)^( *<!--)", "\n$1");
+            xml = xml.replaceAll("(?m)( *<!--)", "\n$1");
         }
 
         return xml;
