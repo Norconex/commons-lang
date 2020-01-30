@@ -209,7 +209,7 @@ public class XMLFormatter {
                 return;
             }
             if (isWrapComment(comment)) {
-                comment = wrapBodyText(comment, indentSize * depth + 2);
+                comment = wrapCommentText(comment, indentSize * depth + 2);
                 comment = comment.replaceFirst("^\n+", "");
                 comment = comment.replaceFirst("\\s+$", "");
                 comment = "\n" + indent() + "<!--\n" + comment;
@@ -252,6 +252,30 @@ public class XMLFormatter {
             lastTagLength = 0;
         }
 
+        private String wrapCommentText(String text, int leftPadding) {
+            StringBuffer b = new StringBuffer();
+            Matcher m = Pattern.compile(".*?([\n\r]+|$)").matcher(text);
+            while (m.find()) {
+                String group = m.group();
+                String lineIndent = group.replaceFirst("(?s)^(\\s*).*", "$1");
+                lineIndent = StringUtils.leftPad(lineIndent, leftPadding);
+                String line = group.replaceFirst("(?s)^\\s+(.*)", "$1");
+                int textMaxChars =
+                        Math.max(wrapContentAt - lineIndent.length(), 1);
+                if (line.length() < textMaxChars) {
+                    m.appendReplacement(b,
+                            Matcher.quoteReplacement(lineIndent + line));
+                } else {
+                    m.appendReplacement(b,
+                            Matcher.quoteReplacement(breakLongLines(
+                                    lineIndent, line, textMaxChars)));
+                }
+            }
+            String newText = b.toString();
+            newText = newText.replaceFirst("(.*)\\s+$", "$1");
+            return "\n" + newText + "\n";
+        }
+
         private String wrapBodyText(String text, int leftPadding) {
             String lineIndent = StringUtils.repeat(' ', leftPadding);
             int textMaxChars =
@@ -268,7 +292,7 @@ public class XMLFormatter {
                 } else {
                     m.appendReplacement(b,
                             Matcher.quoteReplacement(breakLongLines(
-                                    line, lineIndent, textMaxChars)));
+                                    lineIndent, line, textMaxChars)));
                 }
             }
             String newText = b.toString();
@@ -277,9 +301,10 @@ public class XMLFormatter {
         }
 
         private String breakLongLines(
-                String text, String lineIndent, int textMaxChars) {
+                String lineIndent, String text, int textMaxChars) {
             return text.replaceAll(
-                    "(.{1," + textMaxChars + "})( |$)", lineIndent + "$1\n");
+                    "(.{1," + textMaxChars + "})( |$)",
+                    lineIndent + "$1\n");
         }
 
         @Override
