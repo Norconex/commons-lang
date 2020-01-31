@@ -35,7 +35,7 @@ public class TextMatcherTest {
     public void testWriteRead() throws IOException {
         TextMatcher sr = new TextMatcher()
                 .setPattern("mypattern")
-                .setMatchWhole(true)
+                .setPartial(true)
                 .setIgnoreDiacritic(true)
                 .setIgnoreCase(true)
                 .setReplaceAll(true)
@@ -54,7 +54,7 @@ public class TextMatcherTest {
             boolean regexAssert) throws IOException {
         TextMatcher sr = new TextMatcher()
                 .setPattern(pattern)
-                .setMatchWhole(matchWhole);
+                .setPartial(!matchWhole);
         testMatch(basicAssert, Method.BASIC, sr, text);
         testMatch(wildAssert, Method.WILDCARD, sr, text);
         testMatch(regexAssert, Method.REGEX, sr, text);
