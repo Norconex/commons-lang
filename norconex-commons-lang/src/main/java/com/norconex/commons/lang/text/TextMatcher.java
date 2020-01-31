@@ -88,12 +88,6 @@ import com.norconex.commons.lang.xml.XML;
  */
 public class TextMatcher implements IXMLConfigurable {
 
-
-
-    //TODO rename TextPattern? (more neutral since it is form match AND replace.
-
-    //TODO rename just Matcher?  or StringMatcher or TextMatcher to avoid conflict?
-
     public enum Method {
         BASIC(new MethodStrategy() {
             @Override

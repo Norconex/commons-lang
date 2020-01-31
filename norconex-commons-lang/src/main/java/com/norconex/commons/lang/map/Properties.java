@@ -33,6 +33,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -62,6 +63,7 @@ import com.norconex.commons.lang.bean.BeanUtil;
 import com.norconex.commons.lang.collection.CollectionUtil;
 import com.norconex.commons.lang.convert.Converter;
 import com.norconex.commons.lang.convert.ConverterException;
+import com.norconex.commons.lang.text.TextMatcher;
 
 /**
  * <p>This class is a enhanced version of {@link java.util.Properties}
@@ -169,6 +171,57 @@ public class Properties extends ObservableMap<String, List<String>>
     public boolean isCaseInsensitiveKeys() {
         return caseInsensitiveKeys;
     }
+
+    //--- Subset ---------------------------------------------------------------
+    /**
+     * Gets a properties subset for keys matched by the key matcher.
+     * @param keyMatcher keys to match
+     * @return properties subset or empty properties (never <code>null</code>)
+     * @since 2.0.0
+     */
+    public Properties matchKeys(TextMatcher keyMatcher) {
+        Properties props = new Properties(isCaseInsensitiveKeys());
+        if (keyMatcher == null) {
+            return props;
+        }
+        for (Entry<String, List<String>> en : entrySet()) {
+            if (keyMatcher.matches(en.getKey())) {
+                props.put(en.getKey(), en.getValue());
+            }
+        }
+        return props;
+    }
+    /**
+     * Gets a properties subset for values matched by the value matcher.
+     * @param valueMatcher values to match
+     * @return properties subset or empty properties (never <code>null</code>)
+     * @since 2.0.0
+     */
+    public Properties matchValues(TextMatcher valueMatcher) {
+        Properties props = new Properties(isCaseInsensitiveKeys());
+        if (valueMatcher == null) {
+            return props;
+        }
+        for (Entry<String, List<String>> en : entrySet()) {
+            for (String value : en.getValue()) {
+                if (valueMatcher.matches(value)) {
+                    props.add(en.getKey(), value);
+                }
+            }
+        }
+        return props;
+    }
+    /**
+     * Gets a properties subset for key and values matched by the property
+     * matcher.
+     * @param propertyMatcher property matcher
+     * @return properties subset or empty properties (never <code>null</code>)
+     * @since 2.0.0
+     */
+    public Properties match(PropertyMatcher propertyMatcher) {
+        return propertyMatcher.match(this);
+    }
+
 
     //--- Store ----------------------------------------------------------------
     /**
@@ -1511,6 +1564,20 @@ public class Properties extends ObservableMap<String, List<String>>
                 addList(key, values);
             }
         }
+    }
+
+    /**
+     * Returns all property values merged into a single list. Duplicate values
+     * are kept.
+     * @return value list (never <code>null</code>)
+     * @since 2.0.0
+     */
+    public List<String> valueList() {
+        List<String> list = new ArrayList<>();
+        for (Collection<String> values: values()) {
+            list.addAll(values);
+        }
+        return list;
     }
 
     //--- Privates -------------------------------------------------------------

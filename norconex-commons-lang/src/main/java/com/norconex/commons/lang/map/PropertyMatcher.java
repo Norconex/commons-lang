@@ -61,7 +61,10 @@ public final class PropertyMatcher implements Predicate<Properties> {
     /**
      * A property matcher matching empty or <code>null</code> elements.
      * @param field properties field name to match as-is
+     * @deprecated Since 2.0.0 use
+     *             {@link #PropertyMatcher(String, TextMatcher)}.
      */
+    @Deprecated
     public PropertyMatcher(String field) {
         this(field, null);
     }
@@ -76,7 +79,7 @@ public final class PropertyMatcher implements Predicate<Properties> {
     }
 
     /**
-     * A property valueMatcher matching empty or <code>null</code> elements.
+     * A property matcher matching empty or <code>null</code> elements.
      * @param fieldMatcher field match instructions
      * @since 2.0.0
      */
