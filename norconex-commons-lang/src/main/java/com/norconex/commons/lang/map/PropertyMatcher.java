@@ -46,36 +46,27 @@ public final class PropertyMatcher implements Predicate<Properties> {
     private final TextMatcher fieldMatcher = new TextMatcher();
     /**
      * Constructor.
-     * @param key properties key
+     * @param field properties key
      * @param regex regular expression
      * @param caseSensitive <code>true</code> if case sensitive
      * @deprecated Since 2.0.0 use
-     *             {@link #PropertyMatcher(String, TextMatcher)}.
+     *             {@link #PropertyMatcher(TextMatcher, TextMatcher)}.
      */
     @Deprecated
     public PropertyMatcher(
-            String key, String regex, boolean caseSensitive) {
-        this(key, new TextMatcher(Method.REGEX).setIgnoreCase(!caseSensitive));
+            String field, String regex, boolean caseSensitive) {
+        this(TextMatcher.basic(field), new TextMatcher(Method.REGEX).setIgnoreCase(!caseSensitive));
     }
 
     /**
      * A property matcher matching empty or <code>null</code> elements.
      * @param field properties field name to match as-is
      * @deprecated Since 2.0.0 use
-     *             {@link #PropertyMatcher(String, TextMatcher)}.
+     *             {@link #PropertyMatcher(TextMatcher, TextMatcher)}.
      */
     @Deprecated
     public PropertyMatcher(String field) {
-        this(field, null);
-    }
-    /**
-     * Constructor.
-     * @param field properties field name to match as-is
-     * @param valueMatcher value match instructions
-     * @since 2.0.0
-     */
-    public PropertyMatcher(String field, TextMatcher valueMatcher) {
-        this(TextMatcher.basic(field), valueMatcher);
+        this(TextMatcher.basic(field), null);
     }
 
     /**
