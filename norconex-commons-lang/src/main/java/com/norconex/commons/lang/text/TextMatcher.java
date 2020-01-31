@@ -258,6 +258,9 @@ public class TextMatcher implements IXMLConfigurable {
         this.matchWhole = matchWhole;
         return this;
     }
+    public TextMatcher matchWhole() {
+        return setMatchWhole(true);
+    }
     public TextMatcher withMatchWhole(boolean matchWhole) {
         return copy().setMatchWhole(matchWhole);
     }
@@ -280,6 +283,9 @@ public class TextMatcher implements IXMLConfigurable {
         this.ignoreCase = ignoreCase;
         return this;
     }
+    public TextMatcher ignoreCase() {
+        return setIgnoreCase(true);
+    }
     public TextMatcher withIgnoreCase(boolean ignoreCase) {
         return copy().setIgnoreCase(ignoreCase);
     }
@@ -291,6 +297,9 @@ public class TextMatcher implements IXMLConfigurable {
         this.ignoreDiacritic = ignoreDiacritic;
         return this;
     }
+    public TextMatcher ignoreDiacritic() {
+        return setIgnoreDiacritic(true);
+    }
     public TextMatcher withIgnoreDiacritic(boolean ignoreDiacritic) {
         return copy().setIgnoreDiacritic(ignoreDiacritic);
     }
@@ -301,6 +310,9 @@ public class TextMatcher implements IXMLConfigurable {
     public TextMatcher setReplaceAll(boolean replaceAll) {
         this.replaceAll = replaceAll;
         return this;
+    }
+    public TextMatcher replaceAll() {
+        return setReplaceAll(true);
     }
     public TextMatcher withReplaceAll(boolean replaceAll) {
         return copy().setReplaceAll(replaceAll);
