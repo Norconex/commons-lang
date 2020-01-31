@@ -129,8 +129,12 @@
         New FluentPropertyDescriptor class.
       </action>
       <action dev="essiembre" type="add">
-        New IOUtil#toNonNullReader(Reader) and 
-        IOUtil#toNonNullInputStream(InputStream) methods.
+        New IOUtil methods: #isEmpty(Reader), #isEmpty(InputStream), 
+        #toNonNullReader(Reader), #toNonNullInputStream(InputStream),
+        and #burrowCharacters(Reader, int)
+      </action>
+      <action dev="essiembre" type="add">
+        New methods.
       </action>
       <action dev="essiembre" type="update">
         Now relies on Norconex Commons Maven Parent. 

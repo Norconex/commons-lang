@@ -67,6 +67,7 @@ public final class IOUtil {
 
     /**
      * Gets and resets the specified number of bytes from the input stream.
+     * Must support marks.
      * @param is input stream
      * @param qty number of bytes to read
      * @return byte array of length matching the quantity requested
@@ -85,6 +86,67 @@ public final class IOUtil {
         is.read(bytes);
         is.reset();
         return bytes;
+    }
+    /**
+     * Gets and resets the specified number of characters from the reader.
+     * Must support marks.
+     * @param reader reader
+     * @param qty number of characters to read
+     * @return char array of length matching the quantity requested
+     * @throws IOException if {@link Reader#markSupported()} returns false
+     */
+    public static char[] borrowCharacters(
+            Reader reader, int qty) throws IOException {
+        if (reader == null) {
+            throw new IllegalArgumentException("Reader stream cannot be null.");
+        } else if (!reader.markSupported()) {
+            throw new IllegalArgumentException(
+                    "Reader stream must support mark.");
+        }
+        reader.mark(qty);
+        char[] chars = new char[qty];
+        reader.read(chars);
+        reader.reset();
+        return chars;
+    }
+
+    /**
+     * Gets whether the given input stream is <code>null</code> or empty.
+     * Must support marks.
+     * @param is input stream
+     * @return <code>true</code> if <code>null</code> or empty
+     * @throws IOException if {@link InputStream#markSupported()} returns false
+     */
+    public static boolean isEmpty(InputStream is) throws IOException {
+        if (is == null) {
+            return true;
+        } else if (!is.markSupported()) {
+            throw new IllegalArgumentException(
+                    "Input stream must support mark.");
+        }
+        is.mark(1);
+        int numRead = is.read();
+        is.reset();
+        return numRead == -1;
+    }
+    /**
+     * Gets whether the given Reader is <code>null</code> or empty.
+     * Must support marks.
+     * @param reader reader
+     * @return <code>true</code> if <code>null</code> or empty
+     * @throws IOException if {@link Reader#markSupported()} returns false
+     */
+    public static boolean isEmpty(Reader reader) throws IOException {
+        if (reader == null) {
+            return true;
+        } else if (!reader.markSupported()) {
+            throw new IllegalArgumentException(
+                    "Reader stream must support mark.");
+        }
+        reader.mark(1);
+        int numRead = reader.read();
+        reader.reset();
+        return numRead == -1;
     }
 
     /**
