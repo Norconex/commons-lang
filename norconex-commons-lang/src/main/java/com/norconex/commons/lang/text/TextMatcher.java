@@ -18,7 +18,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
@@ -44,7 +43,8 @@ import com.norconex.commons.lang.xml.XML;
  *      Matching/replacing is done using Java-style regular expressions.</li>
  * </ul>
  * <p>
- * Match/replace methods are case-sensitive by default.
+ * Match/replace methods are case-sensitive by default. A <code>null</code>
+ * pattern will matched with a <code>null</code> text.
  * </p>
  * <p>
  * This class is not thread-safe.
@@ -344,9 +344,9 @@ public class TextMatcher implements IXMLConfigurable {
         return copy().setReplaceAll(replaceAll);
     }
 
-    public boolean hasPattern() {
-        return StringUtils.isNotBlank(pattern);
-    }
+//    public boolean hasPattern() {
+//        return StringUtils.isNotBlank(pattern);
+//    }
 
     public void copyTo(TextMatcher sr) {
         BeanUtil.copyProperties(sr, this);

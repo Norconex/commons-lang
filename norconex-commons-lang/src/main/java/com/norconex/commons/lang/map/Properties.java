@@ -212,8 +212,8 @@ public class Properties extends ObservableMap<String, List<String>>
         return props;
     }
     /**
-     * Gets a properties subset for key and values matched by the property
-     * matcher.
+     * Gets a properties subset for keys and values matched by the property
+     * matcher. Same as invoking {@link #match(TextMatcher, TextMatcher)}.
      * @param propertyMatcher property matcher
      * @return properties subset or empty properties (never <code>null</code>)
      * @since 2.0.0
@@ -221,7 +221,18 @@ public class Properties extends ObservableMap<String, List<String>>
     public Properties match(PropertyMatcher propertyMatcher) {
         return propertyMatcher.match(this);
     }
-
+    /**
+     * Gets a properties subset for matching keys and values. Same as
+     * invoking {@link #match(PropertyMatcher)}.
+     * @param fieldMatcher property matcher
+     * @param valueMatcher property value
+     * @return properties subset or empty properties (never <code>null</code>)
+     * @since 2.0.0
+     */
+    public Properties match(
+            TextMatcher fieldMatcher, TextMatcher valueMatcher) {
+        return match(new PropertyMatcher(fieldMatcher, valueMatcher));
+    }
 
     //--- Store ----------------------------------------------------------------
     /**

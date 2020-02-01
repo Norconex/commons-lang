@@ -19,7 +19,6 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.function.Predicate;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
@@ -30,12 +29,15 @@ import com.norconex.commons.lang.text.TextMatcher.Method;
 import com.norconex.commons.lang.xml.XML;
 
 /**
- * <p>Convenient way of matching values for matching fields (key)
+ * <p>Convenient way of matching values and/or fields (key)
  * in a given {@link Properties}.
  * </p>
+ * <h3>Null handling:</h3>
  * <p>
- * A <code>null</code> or empty expression will try to match an
- * empty field value.
+ * Since {@link Properties} does not store <code>null</code> values,
+ * a <code>null</code> pattern for the field or value matcher will
+ * instead match anything.  If {@link Properties} itself is <code>null</code>,
+ * it is considered non-matching.
  * </p>
  * @author Pascal Essiembre
  * @since 1.8.0
@@ -55,7 +57,8 @@ public final class PropertyMatcher implements Predicate<Properties> {
     @Deprecated
     public PropertyMatcher(
             String field, String regex, boolean caseSensitive) {
-        this(TextMatcher.basic(field), new TextMatcher(Method.REGEX).setIgnoreCase(!caseSensitive));
+        this(TextMatcher.basic(field),
+                new TextMatcher(Method.REGEX).setIgnoreCase(!caseSensitive));
     }
 
     /**
@@ -144,21 +147,26 @@ public final class PropertyMatcher implements Predicate<Properties> {
      * @see #match(Properties)
      */
     public boolean matches(Properties properties) {
-        if (properties == null || !fieldMatcher.hasPattern()) {
+        if (properties == null) {
             return false;
         }
+
         for (Entry<String, List<String>> en : properties.entrySet()) {
             String field = en.getKey();
 
-            // field does not match
-            if (!fieldMatcher.matches(field)) {
+            // reject if field pattern is NOT null and does not match
+            if (fieldMatcher.getPattern() != null
+                    && !fieldMatcher.matches(field)) {
                 continue;
             }
 
-            // field matches
+            // matches if value pattern is null or matches
+            if (valueMatcher.getPattern() == null) {
+                return true;
+            }
             List<String> values = en.getValue();
             for (String value : values) {
-                if (valueMatches(valueMatcher, value)) {
+                if (valueMatcher.matches(value)) {
                     return true;
                 }
             }
@@ -189,22 +197,24 @@ public final class PropertyMatcher implements Predicate<Properties> {
      */
     public Properties match(Properties properties) {
         Properties matches = new Properties();
-        if (properties == null || !fieldMatcher.hasPattern()) {
+        if (properties == null) {
             return matches;
         }
 
         for (Entry<String, List<String>> en : properties.entrySet()) {
             String field = en.getKey();
 
-            // field does not match
-            if (!fieldMatcher.matches(field)) {
+            // reject if field pattern is NOT null and does not match
+            if (fieldMatcher.getPattern() != null
+                    && !fieldMatcher.matches(field)) {
                 continue;
             }
 
-            // field matches
+            // matches if value pattern is null or matches
             List<String> values = en.getValue();
             for (String value : values) {
-                if (valueMatches(valueMatcher, value)) {
+                if (valueMatcher.getPattern() == null
+                        || valueMatcher.matches(value)) {
                     matches.add(field, value);
                 }
             }
@@ -222,7 +232,7 @@ public final class PropertyMatcher implements Predicate<Properties> {
      */
     public Properties replace(Properties properties, String replacement) {
         Properties replacedValues = new Properties();
-        if (properties == null || !fieldMatcher.hasPattern()) {
+        if (properties == null) {
             return replacedValues;
         }
 
@@ -230,15 +240,17 @@ public final class PropertyMatcher implements Predicate<Properties> {
         for (Entry<String, List<String>> en : properties.entrySet()) {
             String field = en.getKey();
 
-            // field does not match
-            if (!fieldMatcher.matches(field)) {
+            // skip if field pattern is NOT null and does not match
+            if (fieldMatcher.getPattern() != null
+                    && !fieldMatcher.matches(field)) {
                 continue;
             }
 
-            // field matches
+            // matches if value pattern is null or matches
             List<String> values = en.getValue();
             for (String value : values) {
-                if (valueMatches(valueMatcher, value)) {
+                if (valueMatcher.getPattern() == null
+                        || valueMatcher.matches(value)) {
                     String newValue = valueMatcher.replace(value, replacement);
                     if (!Objects.equals(value, newValue)) {
                         replacedValues.add(field, value);
@@ -247,7 +259,6 @@ public final class PropertyMatcher implements Predicate<Properties> {
                 } else {
                     newValues.add(field, value);
                 }
-
             }
         }
         if (!replacedValues.isEmpty()) {
@@ -256,11 +267,6 @@ public final class PropertyMatcher implements Predicate<Properties> {
             }
         }
         return replacedValues;
-    }
-
-    private boolean valueMatches(TextMatcher valueMatcher, String value) {
-        return (!valueMatcher.hasPattern() && StringUtils.isBlank(value))
-                || (valueMatcher.hasPattern() && valueMatcher.matches(value));
     }
 
     public static PropertyMatcher loadFromXML(XML xml) {
