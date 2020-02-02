@@ -14,6 +14,7 @@
  */
 package com.norconex.commons.lang.text;
 
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -43,8 +44,7 @@ import com.norconex.commons.lang.xml.XML;
  *      Matching/replacing is done using Java-style regular expressions.</li>
  * </ul>
  * <p>
- * Match/replace methods are case-sensitive by default. A <code>null</code>
- * pattern will matched with a <code>null</code> text.
+ * Match/replace methods are case-sensitive by default.
  * </p>
  * <p>
  * This class is not thread-safe.
@@ -60,7 +60,15 @@ import com.norconex.commons.lang.xml.XML;
  *
  * <p>
  * The above are configurable attributes consuming classes can expect.
- * The actual regular expression is expected to be the tag content.
+ * The actual expression is expected to be the tag content.
+ * </p>
+ *
+ * <h3>Null handling</h3>
+ * <p>
+ * Unless otherwise stated by consuming classes,
+ * a <code>null</code> expressions will match everything, but replace nothing.
+ * when invoking {@link #matches(String)} or
+ * {@link #replace(String, String)}.
  * </p>
  * <p>
  * When simply matching (no replacements) the attributes are the same,
@@ -92,12 +100,18 @@ public class TextMatcher implements IXMLConfigurable {
         BASIC(new MethodStrategy() {
             @Override
             public boolean matches(TextMatcher sr, String text) {
+                if (sr.getPattern() == null) {
+                    return true;
+                }
                 Matcher m = createMatcher(sr, text);
                 return sr.partial ? m.find() : m.matches();
             }
             @Override
             public String replace(
                     TextMatcher sr, String text, String replacement) {
+                if (sr.getPattern() == null || replacement == null) {
+                    return text;
+                }
                 String quotedRepl = Matcher.quoteReplacement(replacement);
                 //TODO move this generic code to a method shared by all
                 // replace Methods.
@@ -115,7 +129,7 @@ public class TextMatcher implements IXMLConfigurable {
                 return text;
             }
             private Matcher createMatcher(TextMatcher sr, String text) {
-                return new Regex(Regex.escape(sr.pattern))
+                return new Regex(Regex.escape(Objects.toString(sr.pattern, "")))
                         .dotAll()
                         .setIgnoreCase(sr.ignoreCase)
                         .setIgnoreDiacritic(sr.ignoreDiacritic)
@@ -125,12 +139,18 @@ public class TextMatcher implements IXMLConfigurable {
         WILDCARD(new MethodStrategy() {
             @Override
             public boolean matches(TextMatcher sr, String text) {
+                if (sr.getPattern() == null) {
+                    return true;
+                }
                 Matcher m = createMatcher(sr, text);
                 return sr.partial ? m.find() : m.matches();
             }
             @Override
             public String replace(
                     TextMatcher sr, String text, String replacement) {
+                if (sr.getPattern() == null || replacement == null) {
+                    return text;
+                }
                 String quotedRepl = Matcher.quoteReplacement(replacement);
                 Matcher m = createMatcher(sr, text);
                 if (!sr.partial && m.matches()) {
@@ -147,7 +167,7 @@ public class TextMatcher implements IXMLConfigurable {
             }
             private Matcher createMatcher(TextMatcher sr, String text) {
                 Pattern p = Pattern.compile("[^*?]+|(\\*)|(\\?)");
-                Matcher m = p.matcher(sr.pattern);
+                Matcher m = p.matcher(Objects.toString(sr.pattern, ""));
                 StringBuilder b = new StringBuilder();
                 while (m.find()) {
                     if(m.group(1) != null) {
@@ -168,12 +188,18 @@ public class TextMatcher implements IXMLConfigurable {
         REGEX(new MethodStrategy() {
             @Override
             public boolean matches(TextMatcher sr, String text) {
+                if (sr.getPattern() == null) {
+                    return true;
+                }
                 Matcher m = createMatcher(sr, text);
                 return sr.partial ? m.find() : m.matches();
             }
             @Override
             public String replace(
                     TextMatcher sr, String text, String replacement) {
+                if (sr.getPattern() == null || replacement == null) {
+                    return text;
+                }
                 Matcher m = createMatcher(sr, text);
                 if (!sr.partial && m.matches()) {
                     return m.replaceFirst(replacement);
@@ -188,7 +214,7 @@ public class TextMatcher implements IXMLConfigurable {
                 return text;
             }
             private Matcher createMatcher(TextMatcher sr, String text) {
-                return new Regex(sr.pattern)
+                return new Regex(Objects.toString(sr.pattern, ""))
                         .dotAll()
                         .setIgnoreCase(sr.ignoreCase)
                         .setIgnoreDiacritic(sr.ignoreDiacritic)
@@ -343,10 +369,6 @@ public class TextMatcher implements IXMLConfigurable {
     public TextMatcher withReplaceAll(boolean replaceAll) {
         return copy().setReplaceAll(replaceAll);
     }
-
-//    public boolean hasPattern() {
-//        return StringUtils.isNotBlank(pattern);
-//    }
 
     public void copyTo(TextMatcher sr) {
         BeanUtil.copyProperties(sr, this);
