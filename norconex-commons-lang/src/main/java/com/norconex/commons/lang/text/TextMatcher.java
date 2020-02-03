@@ -128,7 +128,8 @@ public class TextMatcher implements IXMLConfigurable {
                 }
                 return text;
             }
-            private Matcher createMatcher(TextMatcher sr, String text) {
+            @Override
+            public Matcher createMatcher(TextMatcher sr, String text) {
                 return new Regex(Regex.escape(Objects.toString(sr.pattern, "")))
                         .dotAll()
                         .setIgnoreCase(sr.ignoreCase)
@@ -165,7 +166,8 @@ public class TextMatcher implements IXMLConfigurable {
                 }
                 return text;
             }
-            private Matcher createMatcher(TextMatcher sr, String text) {
+            @Override
+            public Matcher createMatcher(TextMatcher sr, String text) {
                 Pattern p = Pattern.compile("[^*?]+|(\\*)|(\\?)");
                 Matcher m = p.matcher(Objects.toString(sr.pattern, ""));
                 StringBuilder b = new StringBuilder();
@@ -213,7 +215,8 @@ public class TextMatcher implements IXMLConfigurable {
                 }
                 return text;
             }
-            private Matcher createMatcher(TextMatcher sr, String text) {
+            @Override
+            public Matcher createMatcher(TextMatcher sr, String text) {
                 return new Regex(Objects.toString(sr.pattern, ""))
                         .dotAll()
                         .setIgnoreCase(sr.ignoreCase)
@@ -229,9 +232,10 @@ public class TextMatcher implements IXMLConfigurable {
         }
     }
 
-    interface MethodStrategy {
+    private interface MethodStrategy {
         boolean matches(TextMatcher sr, String text);
         String replace(TextMatcher sr, String text, String replacement);
+        Matcher createMatcher(TextMatcher sr, String text);
     }
 
     private Method method = Method.BASIC;
@@ -429,6 +433,15 @@ public class TextMatcher implements IXMLConfigurable {
      */
     public String replace(String text, String replacement) {
         return safeMethod().ms.replace(this, text, replacement);
+    }
+
+    /**
+     * Converts this text matcher to a pattern {@link Matcher}.
+     * @param text text to match using this text matcher method
+     * @return matcher
+     */
+    public Matcher toMatcher(String text) {
+        return safeMethod().ms.createMatcher(this, text);
     }
 
     private Method safeMethod() {
