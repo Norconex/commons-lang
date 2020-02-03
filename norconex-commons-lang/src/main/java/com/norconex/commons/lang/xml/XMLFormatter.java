@@ -388,6 +388,6 @@ public class XMLFormatter {
     }
 
     private static XMLException newXMLException(Exception e) {
-        return new XMLException("Could not format XML.", e);
+        return new XMLException("Could not format XML: " + e.getMessage(), e);
     }
 }
