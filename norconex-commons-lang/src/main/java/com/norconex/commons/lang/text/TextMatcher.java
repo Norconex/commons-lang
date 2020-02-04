@@ -99,77 +99,54 @@ public class TextMatcher implements IXMLConfigurable {
     public enum Method {
         BASIC(new MethodStrategy() {
             @Override
-            public boolean matches(TextMatcher sr, String text) {
-                if (sr.getPattern() == null) {
+            public boolean matches(TextMatcher tm, String text) {
+                if (tm.getPattern() == null) {
                     return true;
                 }
-                Matcher m = createMatcher(sr, text);
-                return sr.partial ? m.find() : m.matches();
+                Matcher m = createMatcher(tm, text);
+                return tm.partial ? m.find() : m.matches();
             }
             @Override
             public String replace(
-                    TextMatcher sr, String text, String replacement) {
-                if (sr.getPattern() == null || replacement == null) {
+                    TextMatcher tm, String text, String replacement) {
+                if (tm.getPattern() == null || replacement == null) {
                     return text;
                 }
                 String quotedRepl = Matcher.quoteReplacement(replacement);
                 //TODO move this generic code to a method shared by all
                 // replace Methods.
-                Matcher m = createMatcher(sr, text);
-                if (!sr.partial && m.matches()) {
-                    return m.replaceFirst(quotedRepl);
-                }
-                if (sr.partial) {
-                    if (sr.replaceAll) {
-                        return m.replaceAll(quotedRepl);
-                    } else {
-                        return m.replaceFirst(quotedRepl);
-                    }
-                }
-                return text;
+                Matcher m = createMatcher(tm, text);
+                return doReplace(tm, m, text, quotedRepl);
             }
             @Override
-            public Matcher createMatcher(TextMatcher sr, String text) {
-                return new Regex(Regex.escape(Objects.toString(sr.pattern, "")))
-                        .dotAll()
-                        .setIgnoreCase(sr.ignoreCase)
-                        .setIgnoreDiacritic(sr.ignoreDiacritic)
-                        .matcher(text);
+            public Matcher createMatcher(TextMatcher tm, String text) {
+                return doCreateMatcher(tm, Regex.escape(
+                        Objects.toString(tm.pattern, "")), text);
             }
         }),
         WILDCARD(new MethodStrategy() {
             @Override
-            public boolean matches(TextMatcher sr, String text) {
-                if (sr.getPattern() == null) {
+            public boolean matches(TextMatcher tm, String text) {
+                if (tm.getPattern() == null) {
                     return true;
                 }
-                Matcher m = createMatcher(sr, text);
-                return sr.partial ? m.find() : m.matches();
+                Matcher m = createMatcher(tm, text);
+                return tm.partial ? m.find() : m.matches();
             }
             @Override
             public String replace(
-                    TextMatcher sr, String text, String replacement) {
-                if (sr.getPattern() == null || replacement == null) {
+                    TextMatcher tm, String text, String replacement) {
+                if (tm.getPattern() == null || replacement == null) {
                     return text;
                 }
                 String quotedRepl = Matcher.quoteReplacement(replacement);
-                Matcher m = createMatcher(sr, text);
-                if (!sr.partial && m.matches()) {
-                    return m.replaceFirst(quotedRepl);
-                }
-                if (sr.partial) {
-                    if (sr.replaceAll) {
-                        return m.replaceAll(quotedRepl);
-                    } else {
-                        return m.replaceFirst(quotedRepl);
-                    }
-                }
-                return text;
+                Matcher m = createMatcher(tm, text);
+                return doReplace(tm, m, text, quotedRepl);
             }
             @Override
-            public Matcher createMatcher(TextMatcher sr, String text) {
+            public Matcher createMatcher(TextMatcher tm, String text) {
                 Pattern p = Pattern.compile("[^*?]+|(\\*)|(\\?)");
-                Matcher m = p.matcher(Objects.toString(sr.pattern, ""));
+                Matcher m = p.matcher(Objects.toString(tm.pattern, ""));
                 StringBuilder b = new StringBuilder();
                 while (m.find()) {
                     if(m.group(1) != null) {
@@ -180,48 +157,32 @@ public class TextMatcher implements IXMLConfigurable {
                         b.append(Regex.escape(m.group()));
                     }
                 }
-                return new Regex(b.toString())
-                        .dotAll()
-                        .setIgnoreCase(sr.ignoreCase)
-                        .setIgnoreDiacritic(sr.ignoreDiacritic)
-                        .matcher(text);
+                return doCreateMatcher(tm, b.toString(), text);
             }
         }),
         REGEX(new MethodStrategy() {
             @Override
-            public boolean matches(TextMatcher sr, String text) {
-                if (sr.getPattern() == null) {
+            public boolean matches(TextMatcher tm, String text) {
+                if (tm.getPattern() == null) {
                     return true;
                 }
-                Matcher m = createMatcher(sr, text);
-                return sr.partial ? m.find() : m.matches();
+                Matcher m = createMatcher(tm, text);
+                return tm.partial ? m.find() : m.matches();
             }
             @Override
             public String replace(
-                    TextMatcher sr, String text, String replacement) {
-                if (sr.getPattern() == null || replacement == null) {
+                    TextMatcher tm, String text, String replacement) {
+                if (tm.getPattern() == null || replacement == null) {
                     return text;
                 }
-                Matcher m = createMatcher(sr, text);
-                if (!sr.partial && m.matches()) {
-                    return m.replaceFirst(replacement);
-                }
-                if (sr.partial) {
-                    if (sr.replaceAll) {
-                        return m.replaceAll(replacement);
-                    } else {
-                        return m.replaceFirst(replacement);
-                    }
-                }
-                return text;
+                Matcher m = createMatcher(tm, text);
+                return doReplace(tm, m, text, replacement);
             }
             @Override
-            public Matcher createMatcher(TextMatcher sr, String text) {
-                return new Regex(Objects.toString(sr.pattern, ""))
-                        .dotAll()
-                        .setIgnoreCase(sr.ignoreCase)
-                        .setIgnoreDiacritic(sr.ignoreDiacritic)
-                        .matcher(text);
+            public Matcher createMatcher(TextMatcher tm, String text) {
+                return doCreateMatcher(
+                        tm, Objects.toString(tm.pattern, ""), text);
+
             }
         });
 
@@ -230,12 +191,36 @@ public class TextMatcher implements IXMLConfigurable {
         private Method(MethodStrategy ms) {
             this.ms = ms;
         }
+
+        private static Matcher doCreateMatcher(
+                TextMatcher tm, String pattern, String text) {
+            return new Regex(pattern)
+                    .dotAll()
+                    .setIgnoreCase(tm.ignoreCase)
+                    .setIgnoreDiacritic(tm.ignoreDiacritic)
+                    .matcher(text);
+        }
+
+        private static String doReplace(
+                TextMatcher tm, Matcher m, String text, String replacement) {
+            if (!tm.partial && m.matches()) {
+                return m.replaceFirst(replacement);
+            }
+            if (tm.partial) {
+                if (tm.replaceAll) {
+                    return m.replaceAll(replacement);
+                } else {
+                    return m.replaceFirst(replacement);
+                }
+            }
+            return text;
+        }
     }
 
     private interface MethodStrategy {
-        boolean matches(TextMatcher sr, String text);
-        String replace(TextMatcher sr, String text, String replacement);
-        Matcher createMatcher(TextMatcher sr, String text);
+        boolean matches(TextMatcher tm, String text);
+        String replace(TextMatcher tm, String text, String replacement);
+        Matcher createMatcher(TextMatcher tm, String text);
     }
 
     private Method method = Method.BASIC;
@@ -374,11 +359,11 @@ public class TextMatcher implements IXMLConfigurable {
         return copy().setReplaceAll(replaceAll);
     }
 
-    public void copyTo(TextMatcher sr) {
-        BeanUtil.copyProperties(sr, this);
+    public void copyTo(TextMatcher tm) {
+        BeanUtil.copyProperties(tm, this);
     }
-    public void copyFrom(TextMatcher sr) {
-        BeanUtil.copyProperties(this, sr);
+    public void copyFrom(TextMatcher tm) {
+        BeanUtil.copyProperties(this, tm);
     }
 
     private TextMatcher copy() {
