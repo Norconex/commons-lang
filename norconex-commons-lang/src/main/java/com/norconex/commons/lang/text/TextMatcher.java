@@ -67,7 +67,7 @@ import com.norconex.commons.lang.xml.XML;
  * <p>
  * Unless otherwise stated by consuming classes,
  * a <code>null</code> expressions will match everything, but replace nothing.
- * when invoking {@link #matches(String)} or
+ * when invoking {@link #matches(CharSequence)} or
  * {@link #replace(String, String)}.
  * </p>
  * <p>
@@ -99,11 +99,11 @@ public class TextMatcher implements IXMLConfigurable {
     public enum Method {
         BASIC(new MethodStrategy() {
             @Override
-            public boolean matches(TextMatcher tm, String text) {
+            public boolean matches(TextMatcher tm, CharSequence text) {
                 if (tm.getPattern() == null) {
                     return true;
                 }
-                Matcher m = createMatcher(tm, text);
+                Matcher m = regexMatcher(tm, text);
                 return tm.partial ? m.find() : m.matches();
             }
             @Override
@@ -113,16 +113,16 @@ public class TextMatcher implements IXMLConfigurable {
                     return text;
                 }
                 String quotedRepl = Matcher.quoteReplacement(replacement);
-                Matcher m = createMatcher(tm, text);
+                Matcher m = regexMatcher(tm, text);
                 return doReplace(tm, m, text, quotedRepl);
             }
             @Override
-            public Pattern toPattern(TextMatcher tm) {
-                return doToPattern(tm, strPattern(tm));
+            public Pattern regexPattern(TextMatcher tm) {
+                return doRegexPattern(tm, strPattern(tm));
             }
             @Override
-            public Matcher createMatcher(TextMatcher tm, String text) {
-                return doCreateMatcher(tm, strPattern(tm), text);
+            public Matcher regexMatcher(TextMatcher tm, CharSequence text) {
+                return doRegexMatcher(tm, strPattern(tm), text);
             }
             private String strPattern(TextMatcher tm) {
                 return Regex.escape(Objects.toString(tm.pattern, ""));
@@ -130,11 +130,11 @@ public class TextMatcher implements IXMLConfigurable {
         }),
         WILDCARD(new MethodStrategy() {
             @Override
-            public boolean matches(TextMatcher tm, String text) {
+            public boolean matches(TextMatcher tm, CharSequence text) {
                 if (tm.getPattern() == null) {
                     return true;
                 }
-                Matcher m = createMatcher(tm, text);
+                Matcher m = regexMatcher(tm, text);
                 return tm.partial ? m.find() : m.matches();
             }
             @Override
@@ -144,16 +144,16 @@ public class TextMatcher implements IXMLConfigurable {
                     return text;
                 }
                 String quotedRepl = Matcher.quoteReplacement(replacement);
-                Matcher m = createMatcher(tm, text);
+                Matcher m = regexMatcher(tm, text);
                 return doReplace(tm, m, text, quotedRepl);
             }
             @Override
-            public Pattern toPattern(TextMatcher tm) {
-                return doToPattern(tm, strPattern(tm));
+            public Pattern regexPattern(TextMatcher tm) {
+                return doRegexPattern(tm, strPattern(tm));
             }
             @Override
-            public Matcher createMatcher(TextMatcher tm, String text) {
-                return doCreateMatcher(tm, strPattern(tm), text);
+            public Matcher regexMatcher(TextMatcher tm, CharSequence text) {
+                return doRegexMatcher(tm, strPattern(tm), text);
             }
             private String strPattern(TextMatcher tm) {
                 Pattern p = Pattern.compile("[^*?]+|(\\*)|(\\?)");
@@ -173,11 +173,11 @@ public class TextMatcher implements IXMLConfigurable {
         }),
         REGEX(new MethodStrategy() {
             @Override
-            public boolean matches(TextMatcher tm, String text) {
+            public boolean matches(TextMatcher tm, CharSequence text) {
                 if (tm.getPattern() == null) {
                     return true;
                 }
-                Matcher m = createMatcher(tm, text);
+                Matcher m = regexMatcher(tm, text);
                 return tm.partial ? m.find() : m.matches();
             }
             @Override
@@ -186,16 +186,17 @@ public class TextMatcher implements IXMLConfigurable {
                 if (tm.getPattern() == null || replacement == null) {
                     return text;
                 }
-                Matcher m = createMatcher(tm, text);
+                Matcher m = regexMatcher(tm, text);
                 return doReplace(tm, m, text, replacement);
             }
             @Override
-            public Pattern toPattern(TextMatcher tm) {
-                return doToPattern(tm, strPattern(tm));
+            public Pattern regexPattern(TextMatcher tm) {
+                return doRegexPattern(tm, strPattern(tm));
             }
             @Override
-            public Matcher createMatcher(TextMatcher tm, String text) {
-                return doCreateMatcher(tm, strPattern(tm), text);
+            public Matcher regexMatcher(
+                    TextMatcher tm, CharSequence text) {
+                return doRegexMatcher(tm, strPattern(tm), text);
 
             }
             private String strPattern(TextMatcher tm) {
@@ -209,15 +210,15 @@ public class TextMatcher implements IXMLConfigurable {
             this.ms = ms;
         }
 
-        private static Pattern doToPattern(TextMatcher tm, String pattern) {
+        private static Pattern doRegexPattern(TextMatcher tm, String pattern) {
             return new Regex(pattern)
                     .dotAll()
                     .setIgnoreCase(tm.ignoreCase)
                     .setIgnoreDiacritic(tm.ignoreDiacritic)
                     .compile();
         }
-        private static Matcher doCreateMatcher(
-                TextMatcher tm, String pattern, String text) {
+        private static Matcher doRegexMatcher(
+                TextMatcher tm, String pattern, CharSequence text) {
             return new Regex(pattern)
                     .dotAll()
                     .setIgnoreCase(tm.ignoreCase)
@@ -242,10 +243,10 @@ public class TextMatcher implements IXMLConfigurable {
     }
 
     private interface MethodStrategy {
-        boolean matches(TextMatcher tm, String text);
+        boolean matches(TextMatcher tm, CharSequence text);
         String replace(TextMatcher tm, String text, String replacement);
-        Pattern toPattern(TextMatcher tm);
-        Matcher createMatcher(TextMatcher tm, String text);
+        Pattern regexPattern(TextMatcher tm);
+        Matcher regexMatcher(TextMatcher tm, CharSequence text);
     }
 
     private Method method = Method.BASIC;
@@ -432,7 +433,7 @@ public class TextMatcher implements IXMLConfigurable {
      * @param text text to match
      * @return <code>true</code> if matching
      */
-    public boolean matches(String text) {
+    public boolean matches(CharSequence text) {
         return safeMethod().ms.matches(this, text);
     }
     /**
@@ -450,8 +451,8 @@ public class TextMatcher implements IXMLConfigurable {
      * @param text text to match using this text matcher method
      * @return matcher
      */
-    public Matcher toRegexMatcher(String text) {
-        return safeMethod().ms.createMatcher(this, text);
+    public Matcher toRegexMatcher(CharSequence text) {
+        return safeMethod().ms.regexMatcher(this, text);
     }
     /**
      * Compiles this text matcher to create a regular expression
@@ -459,7 +460,7 @@ public class TextMatcher implements IXMLConfigurable {
      * @return pattern
      */
     public Pattern toRegexPattern() {
-        return safeMethod().ms.toPattern(this);
+        return safeMethod().ms.regexPattern(this);
     }
 
     private Method safeMethod() {
