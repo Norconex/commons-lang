@@ -113,15 +113,19 @@ public class TextMatcher implements IXMLConfigurable {
                     return text;
                 }
                 String quotedRepl = Matcher.quoteReplacement(replacement);
-                //TODO move this generic code to a method shared by all
-                // replace Methods.
                 Matcher m = createMatcher(tm, text);
                 return doReplace(tm, m, text, quotedRepl);
             }
             @Override
+            public Pattern toPattern(TextMatcher tm) {
+                return doToPattern(tm, strPattern(tm));
+            }
+            @Override
             public Matcher createMatcher(TextMatcher tm, String text) {
-                return doCreateMatcher(tm, Regex.escape(
-                        Objects.toString(tm.pattern, "")), text);
+                return doCreateMatcher(tm, strPattern(tm), text);
+            }
+            private String strPattern(TextMatcher tm) {
+                return Regex.escape(Objects.toString(tm.pattern, ""));
             }
         }),
         WILDCARD(new MethodStrategy() {
@@ -144,7 +148,14 @@ public class TextMatcher implements IXMLConfigurable {
                 return doReplace(tm, m, text, quotedRepl);
             }
             @Override
+            public Pattern toPattern(TextMatcher tm) {
+                return doToPattern(tm, strPattern(tm));
+            }
+            @Override
             public Matcher createMatcher(TextMatcher tm, String text) {
+                return doCreateMatcher(tm, strPattern(tm), text);
+            }
+            private String strPattern(TextMatcher tm) {
                 Pattern p = Pattern.compile("[^*?]+|(\\*)|(\\?)");
                 Matcher m = p.matcher(Objects.toString(tm.pattern, ""));
                 StringBuilder b = new StringBuilder();
@@ -157,7 +168,7 @@ public class TextMatcher implements IXMLConfigurable {
                         b.append(Regex.escape(m.group()));
                     }
                 }
-                return doCreateMatcher(tm, b.toString(), text);
+                return b.toString();
             }
         }),
         REGEX(new MethodStrategy() {
@@ -179,10 +190,16 @@ public class TextMatcher implements IXMLConfigurable {
                 return doReplace(tm, m, text, replacement);
             }
             @Override
+            public Pattern toPattern(TextMatcher tm) {
+                return doToPattern(tm, strPattern(tm));
+            }
+            @Override
             public Matcher createMatcher(TextMatcher tm, String text) {
-                return doCreateMatcher(
-                        tm, Objects.toString(tm.pattern, ""), text);
+                return doCreateMatcher(tm, strPattern(tm), text);
 
+            }
+            private String strPattern(TextMatcher tm) {
+                return Objects.toString(tm.pattern, "");
             }
         });
 
@@ -192,6 +209,13 @@ public class TextMatcher implements IXMLConfigurable {
             this.ms = ms;
         }
 
+        private static Pattern doToPattern(TextMatcher tm, String pattern) {
+            return new Regex(pattern)
+                    .dotAll()
+                    .setIgnoreCase(tm.ignoreCase)
+                    .setIgnoreDiacritic(tm.ignoreDiacritic)
+                    .compile();
+        }
         private static Matcher doCreateMatcher(
                 TextMatcher tm, String pattern, String text) {
             return new Regex(pattern)
@@ -220,6 +244,7 @@ public class TextMatcher implements IXMLConfigurable {
     private interface MethodStrategy {
         boolean matches(TextMatcher tm, String text);
         String replace(TextMatcher tm, String text, String replacement);
+        Pattern toPattern(TextMatcher tm);
         Matcher createMatcher(TextMatcher tm, String text);
     }
 
@@ -425,8 +450,16 @@ public class TextMatcher implements IXMLConfigurable {
      * @param text text to match using this text matcher method
      * @return matcher
      */
-    public Matcher toMatcher(String text) {
+    public Matcher toRegexMatcher(String text) {
         return safeMethod().ms.createMatcher(this, text);
+    }
+    /**
+     * Compiles this text matcher to create a regular expression
+     * {@link Pattern}.
+     * @return pattern
+     */
+    public Pattern toRegexPattern() {
+        return safeMethod().ms.toPattern(this);
     }
 
     private Method safeMethod() {
