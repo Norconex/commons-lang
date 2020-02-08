@@ -24,7 +24,7 @@
   <xs:complexType name="RegexKeyValueExtractorType">
     <xs:simpleContent>
       <xs:extension base="RegexType">
-        <xs:attribute name="field" type="xs:string"></xs:attribute>
+        <xs:attribute name="toField" type="xs:string"></xs:attribute>
         <xs:attribute name="fieldGroup" type="xs:int"></xs:attribute>
         <xs:attribute name="valueGroup" type="xs:int"></xs:attribute>
         <xs:attribute name="onSet" type="PropertySetterMethodType"></xs:attribute>

@@ -37,18 +37,18 @@ import com.norconex.commons.lang.xml.XML;
 
 /**
  * <p>
- * Simplify extraction of field/value pairs (or "field/value") from text using
+ * Simplify extraction of field/value pairs (or "key/value") from text using
  * regular expression.
  * Match groups can be used to identify the fields and values.
  * Field matching is optional and can be set explicitly instead. If
- * both a field and a field group are provided, the field act as a
+ * both a "toField" and a "fieldGroup" are provided, the toField act as a
  * default when no fields could be obtained from matching.
- * At least one of "field" or "fieldGroup" must be specified. If fieldGroup
- * is specified without a "field" and finds no matches, the matching
+ * At least one of "toField" or "fieldGroup" must be specified. If fieldGroup
+ * is specified without a "toField" and finds no matches, the matching
  * of the value is ignored.
  * If no value group is provided, it assumes the entire regex match is the
  * value.
- * If more than one value is extracted for a given field, they will be
+ * If more than one value is extracted for a given toField, they will be
  * available as a list.
  * </p>
  * <p>
@@ -58,9 +58,10 @@ import com.norconex.commons.lang.xml.XML;
  * </p>
  *
  * {@nx.xml.usage #attributes
- *     field="(field name)"
- *     fieldGroup="(field name match group index)"
+ *     toField="(toField name)"
+ *     fieldGroup="(toField name match group index)"
  *     valueGroup="(value match group index)"
+ *     {@nx.include com.norconex.commons.lang.map.PropertySetter#attributes}
  *     {@nx.include com.norconex.commons.lang.text.Regex#attributes}
  * }
  *
@@ -77,7 +78,7 @@ import com.norconex.commons.lang.xml.XML;
  * </sampleConfig>
  * }
  * <p>
- * The above is configured to extract "DocNo" as the field, and the following
+ * The above is configured to extract "DocNo" as the toField, and the following
  * numeric characters will make up the value.
  * </p>
  *
@@ -94,7 +95,7 @@ public class RegexFieldValueExtractor implements IXMLConfigurable {
             new RegexFieldValueExtractor[] {};
 
     private Regex regex;
-    private String field;
+    private String toField;
     private int fieldGroup = -1;
     private int valueGroup = -1;
     private PropertySetter onSet;
@@ -125,7 +126,7 @@ public class RegexFieldValueExtractor implements IXMLConfigurable {
     }
     public RegexFieldValueExtractor(Regex regex, String field, int valueGroup) {
         this.regex = regex;
-        this.field = field;
+        this.toField = field;
         this.valueGroup = valueGroup;
     }
     public RegexFieldValueExtractor(
@@ -159,11 +160,11 @@ public class RegexFieldValueExtractor implements IXMLConfigurable {
         this.valueGroup = valueGroup;
         return this;
     }
-    public String getField() {
-        return field;
+    public String getToField() {
+        return toField;
     }
-    public RegexFieldValueExtractor setField(String field) {
-        this.field = field;
+    public RegexFieldValueExtractor setToField(String field) {
+        this.toField = field;
         return this;
     }
 
@@ -187,9 +188,9 @@ public class RegexFieldValueExtractor implements IXMLConfigurable {
     }
 
     public void extractFieldValues(Properties dest, CharSequence text) {
-        if (StringUtils.isBlank(field) && !hasFieldGroup()) {
+        if (StringUtils.isBlank(toField) && !hasFieldGroup()) {
             throw new IllegalArgumentException(
-                    "At least one of 'field' or 'fieldGroup' expected.");
+                    "At least one of 'toField' or 'fieldGroup' expected.");
         }
 
         Properties extractedFieldValues = new Properties();
@@ -198,9 +199,9 @@ public class RegexFieldValueExtractor implements IXMLConfigurable {
             String k = extractField(m);
             String v = extractValue(m);
             if (StringUtils.isBlank(k)) {
-                LOG.debug("No field for value: {}", v);
+                LOG.debug("No toField for value: {}", v);
             } else if (v == null) {
-                LOG.debug("Null value for field: {}", k);
+                LOG.debug("Null value for toField: {}", k);
             } else {
                 extractedFieldValues.add(k, v);
             }
@@ -256,14 +257,14 @@ public class RegexFieldValueExtractor implements IXMLConfigurable {
         return regex.matcher(text);
     }
     private String extractField(Matcher m) {
-        String f = StringUtils.isNotBlank(getField()) ? getField() : "";
+        String f = StringUtils.isNotBlank(getToField()) ? getToField() : "";
         if (hasFieldGroup()) {
             if (m.groupCount() < getFieldGroup()) {
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("No match group {} for field in regex \"{}\""
-                            + "for match value \"{}\". Defaulting to field: "
+                    LOG.debug("No match group {} for toField in regex \"{}\""
+                            + "for match value \"{}\". Defaulting to toField: "
                             + "\"{}\".",
-                            getFieldGroup(), getRegex(), m.group(), field);
+                            getFieldGroup(), getRegex(), m.group(), toField);
                 }
             } else {
                 f = m.group(getFieldGroup());
@@ -296,7 +297,7 @@ public class RegexFieldValueExtractor implements IXMLConfigurable {
 
     @Override
     public void loadFromXML(XML xml) {
-        setField(xml.getString("@field", getField()));
+        setToField(xml.getString("@toField", getToField()));
         setFieldGroup(xml.getInteger("@fieldGroup", getFieldGroup()));
         setValueGroup(xml.getInteger("@valueGroup", getValueGroup()));
         if (regex == null) {
@@ -307,7 +308,7 @@ public class RegexFieldValueExtractor implements IXMLConfigurable {
     }
     @Override
     public void saveToXML(XML xml) {
-        xml.setAttribute("field", getField());
+        xml.setAttribute("toField", getToField());
         xml.setAttribute("fieldGroup", getFieldGroup());
         xml.setAttribute("valueGroup", getValueGroup());
         if (regex != null) {

@@ -39,10 +39,10 @@ public class RegexKeyValueExtractorTest {
         fields = RegexFieldValueExtractor.extractFieldValues(xml,
             //Test 1) no match group, returning whole match as value
             new RegexFieldValueExtractor("<div class=\"value\">(.*?)</div>")
-                .setField("test1"),
+                .setToField("test1"),
             //Test 2) 1 match group, returning specified match value
             new RegexFieldValueExtractor("<div class=\"value\">(.*?)</div>")
-                .setField("test2")
+                .setToField("test2")
                 .setValueGroup(1),
             //Test 3) 2 match groups, returning field name and values
             new RegexFieldValueExtractor("<div class=\"field\">(.*?)</div>.*?"
@@ -78,7 +78,7 @@ public class RegexKeyValueExtractorTest {
         fields = RegexFieldValueExtractor.extractFieldValues(xml,
             new RegexFieldValueExtractor("<div class=\"field\">(.*?)</div>.*?"
                         + "<div class=\"value\">(.*?)</div>")
-                .setField("test4")
+                .setToField("test4")
                 .setValueGroup(2)
         );
         Assertions.assertEquals(4,
@@ -139,7 +139,7 @@ public class RegexKeyValueExtractorTest {
     public void testWriteRead() throws IOException {
         RegexFieldValueExtractor r = new RegexFieldValueExtractor();
         r.setRegex(new Regex(".*something.*", Pattern.UNICODE_CASE));
-        r.setField("mykey");
+        r.setToField("mykey");
         r.setFieldGroup(4);
         r.setValueGroup(2);
         XML.assertWriteRead(r, "regexKeyValueExtractor");
