@@ -511,7 +511,7 @@ public final class BeanUtil {
                     + "." + p.getName() + " = ";
             Object value = getValue(o, p);
             String line = key;
-            if (!hasChildren(o)) {
+            if (!hasChildren(value)) {
                 line += Objects.toString(value);
             } else if (value == null) {
                 line += "<null>";
