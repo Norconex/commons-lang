@@ -43,6 +43,12 @@
         New OSResource.
       </action>
       <action dev="essiembre" type="add">
+        New CertificateUtil.
+      </action>
+      <action dev="essiembre" type="add">
+        New KeyStoreBuilder.
+      </action>
+      <action dev="essiembre" type="add">
         New Event-related classes (Event, IEventListener, EventManager).
       </action>
       <action dev="essiembre" type="add">
