@@ -48,23 +48,20 @@ import com.norconex.commons.lang.xml.XML;
  * </p>
  *
  * {@nx.xml.example
- * <sampleConfig>
- *   <username>goldorak</username>
- *   <password>3ncryp73d</password>
- *   <passwordKey>
- *     <value>/path/to/my.key</value>
- *     <source>file</source>
- *   </passwordKey>
- * </sampleConfig>
+ * <sampleKey>
+ *   <value>/path/to/my.key</value>
+ *   <source>file</source>
+ * </sampleKey>
  * }
  * <p>
  * The above example has the encryption key configuration is nested in a
- * <code>&lt;passwordKey&gt;</code> tag. It uses a key store in a file to
+ * <code>&lt;passwordKey&gt;</code> tag. It uses a key stored in a file to
  * decrypt a password for user credentials. </p>
  *
  * @author Pascal Essiembre
  * @since 1.9.0
  * @see EncryptionUtil
+ * @see Credentials
  */
 public final class EncryptionKey implements Serializable {
 
@@ -296,7 +293,7 @@ public final class EncryptionKey implements Serializable {
 
     @Override
     public String toString() {
-        return "EncryptionKey [value=" + value
+        return "EncryptionKey [value=" + "********"
                 + ", source=" + source + ", size=" + size + "]";
     }
 }
