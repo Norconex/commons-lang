@@ -1,4 +1,4 @@
-/* Copyright 2010-2017 Norconex Inc.
+/* Copyright 2010-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,10 @@ import javax.xml.bind.DatatypeConverter;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.AutoCloseInputStream;
 import org.apache.commons.lang3.time.StopWatch;
-import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.norconex.commons.lang.security.Credentials;
 
 /**
  * Provides a quick and easy way to stream a URL.
@@ -37,7 +39,7 @@ import org.slf4j.Logger;
 public final class URLStreamer {
 
     private static final Logger LOG = LoggerFactory.getLogger(URLStreamer.class);
-    
+
     private URLStreamer() {
         super();
     }
@@ -94,7 +96,7 @@ public final class URLStreamer {
     public static InputStream stream(HttpURL url, Credentials creds) {
         return stream(url.toString(), creds, null);
     }
-    
+
     /**
      * Streams URL content.
      * @param url the URL to stream
@@ -138,7 +140,7 @@ public final class URLStreamer {
      * @return a URL content InputStream
      */
     public static InputStream stream(
-            String url, Credentials creds, HttpHost proxy, 
+            String url, Credentials creds, HttpHost proxy,
             Credentials proxyCreds) {
         try {
             URLConnection conn;
@@ -153,8 +155,8 @@ public final class URLStreamer {
                 conn = new URL(url).openConnection(p);
                 if (proxyCreds != null) {
                     LOG.debug("Streaming with proxy credentials.");
-                    conn.setRequestProperty("Proxy-Authorization", 
-                            base64BasicAuth(proxyCreds.getUsername(), 
+                    conn.setRequestProperty("Proxy-Authorization",
+                            base64BasicAuth(proxyCreds.getUsername(),
                                     proxyCreds.getPassword()));
                 }
             } else {
@@ -172,7 +174,7 @@ public final class URLStreamer {
             throw new URLException("Could not stream URL: " + url, e);
         }
     }
-    
+
 
     /**
      * Streams URL content.
@@ -183,7 +185,7 @@ public final class URLStreamer {
      * @return a URL content InputStream
      */
     public static InputStream stream(
-            URL url, Credentials creds, HttpHost proxy, 
+            URL url, Credentials creds, HttpHost proxy,
             Credentials proxyCreds) {
         return stream(url.toString(), creds, proxy, proxyCreds);
     }
@@ -196,7 +198,7 @@ public final class URLStreamer {
      * @return a URL content InputStream
      */
     public static InputStream stream(
-            HttpURL url, Credentials creds, HttpHost proxy, 
+            HttpURL url, Credentials creds, HttpHost proxy,
             Credentials proxyCreds) {
         return stream(url.toString(), creds, proxy, proxyCreds);
     }
@@ -213,7 +215,7 @@ public final class URLStreamer {
         return streamToString(
                 url, creds, proxy, StandardCharsets.UTF_8.toString());
     }
-    
+
     /**
      * Streams URL content to a String.
      * @param url the URL to stream
@@ -223,7 +225,7 @@ public final class URLStreamer {
      * @return a URL content as a String
      */
     public static String streamToString(
-            String url, Credentials creds, HttpHost proxy, 
+            String url, Credentials creds, HttpHost proxy,
             String charEncoding) {
         StopWatch watch = null;
         if (LOG.isDebugEnabled()) {
@@ -275,12 +277,12 @@ public final class URLStreamer {
      * @return a URL content as a String
      */
     public static String streamToString(
-            String url, Credentials creds, HttpHost proxy, 
+            String url, Credentials creds, HttpHost proxy,
             Credentials proxyCreds) {
-        return streamToString(url, creds, proxy, proxyCreds, 
+        return streamToString(url, creds, proxy, proxyCreds,
                 StandardCharsets.UTF_8.toString());
     }
-    
+
     /**
      * Streams URL content to a String.
      * @param url the URL to stream
@@ -291,7 +293,7 @@ public final class URLStreamer {
      * @return a URL content as a String
      */
     public static String streamToString(
-            String url, Credentials creds, HttpHost proxy, 
+            String url, Credentials creds, HttpHost proxy,
             Credentials proxyCreds, String charEncoding) {
         StopWatch watch = null;
         if (LOG.isDebugEnabled()) {
@@ -321,7 +323,7 @@ public final class URLStreamer {
      * @return a URL content as a String
      */
     public static String streamToString(
-            URL url, Credentials creds, HttpHost proxy, 
+            URL url, Credentials creds, HttpHost proxy,
             Credentials proxyCreds) {
         return streamToString(url.toString(), creds, proxy, proxyCreds);
     }
@@ -334,11 +336,11 @@ public final class URLStreamer {
      * @return a URL content as a String
      */
     public static String streamToString(
-            HttpURL url, Credentials creds, HttpHost proxy, 
+            HttpURL url, Credentials creds, HttpHost proxy,
             Credentials proxyCreds) {
         return streamToString(url.toString(), creds, proxy, proxyCreds);
     }
-    
+
     /**
      * Streams URL content to a String.
      * @param url the URL to stream
@@ -366,7 +368,7 @@ public final class URLStreamer {
     public static String streamToString(HttpURL url, Credentials creds) {
         return streamToString(url.toString(), creds, null);
     }
-    
+
     /**
      * Streams URL content to a String.
      * @param url the URL to stream
@@ -384,7 +386,7 @@ public final class URLStreamer {
      */
     public static String streamToString(URL url) {
         return streamToString(url, null);
-    }    
+    }
     /**
      * Streams URL content to a String.
      * @param url the URL to stream
@@ -394,7 +396,7 @@ public final class URLStreamer {
     public static String streamToString(HttpURL url) {
         return streamToString(url.toString(), null);
     }
-    
+
     private static InputStream responseInputStream(
             URLConnection conn) throws IOException {
         conn.connect();
@@ -402,29 +404,10 @@ public final class URLStreamer {
     }
     private static String base64BasicAuth(String username, String password) {
         String userpass = username + ':' + password;
-        return "Basic " 
+        return "Basic "
                 + DatatypeConverter.printBase64Binary(userpass.getBytes());
     }
 
-    
-    
-    public static class Credentials {
-        private final String username;
-        private final String password;
-        public Credentials(String username, String password) {
-            super();
-            this.username = username;
-            this.password = password;
-        }
-        public String getUsername() {
-            return username;
-        }
-        public String getPassword() {
-            return password;
-        }
-    }
-
-    
     public static class HttpHost {
         private final String hostName;
         private final int port;

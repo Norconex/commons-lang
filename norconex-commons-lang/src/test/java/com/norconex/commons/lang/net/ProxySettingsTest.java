@@ -1,4 +1,4 @@
-/* Copyright 2017-2019 Norconex Inc.
+/* Copyright 2017-202 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,14 +27,14 @@ public class ProxySettingsTest {
     @Test
     public void testWriteRead() throws IOException {
         ProxySettings ps = new ProxySettings();
-        ps.setProxyHost("myhost");
-        ps.setProxyPassword("mypassword");
-        ps.setProxyPasswordKey(new EncryptionKey("keyvalue", Source.KEY, 256));
-        ps.setProxyPort(99);
-        ps.setProxyRealm("realm");
-        ps.setProxyScheme("sheme");
-        ps.setProxyUsername("username");
+        ps.setHost(new Host("myhost", 99));
+        ps.getCredentials().setUsername("myusername");
+        ps.getCredentials().setPassword("mypassword");
+        ps.getCredentials().setPasswordKey(
+                new EncryptionKey("keyvalue", Source.KEY, 256));
+        ps.setRealm("realm");
+        ps.setScheme("scheme");
 
-        XML.assertWriteRead(ps, "proxy");
+        XML.assertWriteRead(ps, "proxySettings");
     }
 }

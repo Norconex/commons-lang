@@ -16,29 +16,25 @@
 -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
-  <!-- 
-     - Reusable elements/types reusable defined in the Lang module and
-     - some convenient ones. 
-     -->
-
-  <xs:simpleType name="PropertySetterMethodType">
+  <xs:complexType name="EncryptionKeyType">
+    <xs:all>
+      <xs:element name="value" type="xs:string" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="source" type="EncryptionKeySourceType" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="size" type="xs:int" minOccurs="0" maxOccurs="1"/>
+    </xs:all>
+  </xs:complexType>
+  
+  <xs:simpleType name="EncryptionKeySourceType">
     <xs:restriction base="xs:string">
-      <xs:enumeration value="APPEND"/>
-      <xs:enumeration value="append"/>
-      <xs:enumeration value="PREPEND"/>
-      <xs:enumeration value="prepend"/>
-      <xs:enumeration value="REPLACE"/>
-      <xs:enumeration value="replace"/>
-      <xs:enumeration value="OPTIONAL"/>
-      <xs:enumeration value="optional"/>
+      <xs:enumeration value="KEY"/>
+      <xs:enumeration value="key"/>
+      <xs:enumeration value="FILE"/>
+      <xs:enumeration value="file"/>
+      <xs:enumeration value="ENVIRONMENT"/>
+      <xs:enumeration value="environment"/>
+      <xs:enumeration value="PROPERTY"/>
+      <xs:enumeration value="property"/>
     </xs:restriction>
   </xs:simpleType>
-
-  <xs:simpleType name="nonEmptyString">
-    <xs:restriction base="xs:string">
-      <xs:minLength value="1"/>
-    </xs:restriction>
-  </xs:simpleType>  
   
 </xs:schema>
-

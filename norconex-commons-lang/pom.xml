@@ -109,12 +109,14 @@
 
     <!-- For optional ProxySettings class features used only by some 
          implementations. -->
+    <!-- 
     <dependency>
         <groupId>org.apache.httpcomponents</groupId>
         <artifactId>httpclient</artifactId>
         <version>4.5.3</version>
         <scope>provided</scope>
     </dependency>
+     -->
 
     <!-- For Javadoc Custom Taglets -->
     <dependency>

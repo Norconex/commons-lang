@@ -21,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import com.norconex.commons.lang.security.Credentials;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 
@@ -32,8 +33,8 @@ import com.norconex.commons.lang.xml.XML;
  * <p>
  * Because this class is immutable, it does not implement
  * {@link IXMLConfigurable} directly, but static methods
- * {@link #addToXML(XML, String, EncryptionKey)} and
- * {@link #getFromXML(XML, String, EncryptionKey)} can be used instead.
+ * {@link #saveToXML(XML, EncryptionKey)} and
+ * {@link #loadFromXML(XML, EncryptionKey)} can be used instead.
  * The usage example below is for when used embedded in a parent configuration.
  * </p>
  *
@@ -203,22 +204,19 @@ public final class EncryptionKey implements Serializable {
     /**
      * Gets an encryption key from an existing XML.
      * @param xml the XML to get the key from
-     * @param elementName the key element name
      * @param defaultKey default encryption key if it does not exist in XML
      * @return encryption key
      * @since 2.0.0
      */
-    public static EncryptionKey getFromXML(
-            XML xml, String elementName, EncryptionKey defaultKey) {
-        XML kxml = xml.getXML(elementName);
-        if (kxml == null) {
+    public static EncryptionKey loadFromXML(XML xml, EncryptionKey defaultKey) {
+        if (xml == null) {
             return defaultKey;
         }
 
-        String value = kxml.getString("value");
+        String value = xml.getString("value");
         if (value != null && value.trim().length() > 0) {
-            String source = kxml.getString("source");
-            Integer size = kxml.getInteger("size", DEFAULT_KEY_SIZE);
+            String source = xml.getString("source");
+            Integer size = xml.getInteger("size", DEFAULT_KEY_SIZE);
             EncryptionKey.Source enumSource = null;
             if (source != null && source.trim().length() > 0) {
                 enumSource = EncryptionKey.Source.valueOf(source.toUpperCase());
@@ -231,20 +229,16 @@ public final class EncryptionKey implements Serializable {
     /**
      * Adds an encryption key to an existing XML.
      * @param xml the XML to add the key to
-     * @param elementName the key element name
      * @param key encryption key
      * @since 2.0.0
      */
-    public static void addToXML(
-            XML xml, String elementName, EncryptionKey key) {
+    public static void saveToXML(XML xml, EncryptionKey key) {
         if (key != null) {
-            XML kxml = XML.of(elementName).create();
-            kxml.addElement("value", key.value);
-            kxml.addElement("size", key.size);
+            xml.addElement("value", key.value);
+            xml.addElement("size", key.size);
             if (key.source != null) {
-                kxml.addElement("source", key.source.name().toLowerCase());
+                xml.addElement("source", key.source.name().toLowerCase());
             }
-            xml.addXML(kxml);
         }
     }
 

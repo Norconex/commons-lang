@@ -52,6 +52,9 @@
         New Credentials.
       </action>
       <action dev="essiembre" type="add">
+        New Host.
+      </action>
+      <action dev="essiembre" type="add">
         New Event-related classes (Event, IEventListener, EventManager).
       </action>
       <action dev="essiembre" type="add">

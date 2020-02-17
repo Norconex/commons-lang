@@ -59,8 +59,8 @@ public final class CertificateUtil {
      * Fetches certificates associated with the URL host.
      * @param url url from which to fetch certificates
      * @return certificates
-     * @throws GeneralSecurityException
-     * @throws IOException
+     * @throws GeneralSecurityException certificate exception
+     * @throws IOException I/O exception
      */
     public static List<X509Certificate> fetchCertificates(String url)
             throws GeneralSecurityException, IOException {
@@ -72,8 +72,8 @@ public final class CertificateUtil {
      * @param host from which to fetch certificates
      * @param port host port
      * @return certificates
-     * @throws GeneralSecurityException
-     * @throws IOException
+     * @throws GeneralSecurityException certificate exception
+     * @throws IOException I/O exception
      */
     public static List<X509Certificate> fetchCertificates(String host, int port)
             throws GeneralSecurityException, IOException {
@@ -88,8 +88,8 @@ public final class CertificateUtil {
      * @param port host port
      * @param keyStore key store used to establish trust
      * @return <code>true</code> if trusted
-     * @throws GeneralSecurityException
-     * @throws IOException
+     * @throws GeneralSecurityException certificate exception
+     * @throws IOException I/O exception
      */
     public static boolean isTrusted(String host, int port, KeyStore keyStore)
             throws GeneralSecurityException, IOException {
@@ -104,8 +104,8 @@ public final class CertificateUtil {
      *                 new certificates
      * @return the number of new certificates added to the key store
      *         (0 if already trusted)
-     * @throws GeneralSecurityException
-     * @throws IOException
+     * @throws GeneralSecurityException certificate exception
+     * @throws IOException I/O exception
      */
     public static int trustHost(String url, KeyStore keyStore)
             throws GeneralSecurityException, IOException {
@@ -122,8 +122,8 @@ public final class CertificateUtil {
      *                 new certificates
      * @return the number of new certificates added to the key store
      *         (0 if already trusted)
-     * @throws GeneralSecurityException
-     * @throws IOException
+     * @throws GeneralSecurityException certificate exception
+     * @throws IOException I/O exception
      */
     public static int trustHost(String host, int port, KeyStore keyStore)
             throws GeneralSecurityException, IOException {
@@ -148,7 +148,7 @@ public final class CertificateUtil {
      * Returns a friendly string display of certificates.
      * @param certificates certificates to convert to string
      * @return string display of certificates
-     * @throws GeneralSecurityException
+     * @throws GeneralSecurityException certificate exception
      */
     public static String toString(List<X509Certificate> certificates)
             throws GeneralSecurityException {

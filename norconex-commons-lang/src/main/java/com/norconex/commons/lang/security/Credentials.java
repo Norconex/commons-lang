@@ -12,13 +12,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.norconex.commons.lang.encrypt;
+package com.norconex.commons.lang.security;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import com.norconex.commons.lang.bean.BeanUtil;
+import com.norconex.commons.lang.encrypt.EncryptionKey;
+import com.norconex.commons.lang.encrypt.EncryptionUtil;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 
@@ -28,6 +32,43 @@ import com.norconex.commons.lang.xml.XML;
  * there needs to be an encryption key.  Without one, the password
  * is assumed not to be encrypted despite this class name.
  * </p>
+ *
+ * {@nx.block #doc
+ * <h3>Password encryption in XML configuration:</h3>
+ * <p>
+ * The <code>&lt;password&gt;</code> tag can take a password that has been
+ * encrypted using <code>EncryptionUtil</code>.
+ * In order for the password to be decrypted properly, you need
+ * to specify the encryption key used to encrypt it. The key can obtained
+ * from a different few supported locations. The combination of the password key
+ * <code>&lt;value&gt;</code> and <code>&lt;source&gt;</code> is used
+ * to properly locate the key. The supported sources and their values
+ * are:
+ * </p>
+ * <table border="1" summary="">
+ *   <tr>
+ *     <th><code>source</code></th>
+ *     <th><code>value</code></th>
+ *   </tr>
+ *   <tr>
+ *     <td><code>key</code></td>
+ *     <td>The actual encryption key.</td>
+ *   </tr>
+ *   <tr>
+ *     <td><code>file</code></td>
+ *     <td>Path to a file containing the encryption key.</td>
+ *   </tr>
+ *   <tr>
+ *     <td><code>environment</code></td>
+ *     <td>Name of an environment variable containing the key.</td>
+ *   </tr>
+ *   <tr>
+ *     <td><code>property</code></td>
+ *     <td>Name of a JVM system property containing the key.</td>
+ *   </tr>
+ * </table>
+ * }
+ *
  * {@nx.xml.usage
  * <username>(the username)</username>
  * <password>(the optionally encrypted password)</password>
@@ -64,47 +105,65 @@ import com.norconex.commons.lang.xml.XML;
 public class Credentials implements IXMLConfigurable {
 
     private String username;
-    private char[] password;
+    private String password;
     private EncryptionKey passwordKey;
 
-    public String getPassword() {
-        if (password != null) {
-            return new String(password);
-        }
-        return null;
+    public Credentials() {
+        super();
     }
-    public void setPassword(String password) {
-        if (password != null) {
-            this.password = password.toCharArray();
-        } else {
-            this.password = null;
-        }
+    public Credentials(Credentials copy) {
+        super();
+        copyFrom(copy);
+    }
+
+    public boolean isSet() {
+        return !isEmpty();
+    }
+    public boolean isEmpty() {
+        return StringUtils.isAllBlank(username, password);
+    }
+
+    public String getPassword() {
+        return password;
+    }
+    public Credentials setPassword(String password) {
+        this.password = password;
+        return this;
     }
     public EncryptionKey getPasswordKey() {
         return passwordKey;
     }
-    public void setPasswordKey(EncryptionKey passwordKey) {
+    public Credentials setPasswordKey(EncryptionKey passwordKey) {
         this.passwordKey = passwordKey;
+        return this;
     }
     public String getUsername() {
         return username;
     }
-    public void setUsername(String username) {
+    public Credentials setUsername(String username) {
         this.username = username;
+        return this;
+    }
+
+    public void copyTo(Credentials creds) {
+        BeanUtil.copyProperties(creds, this);
+    }
+    public void copyFrom(Credentials creds) {
+        BeanUtil.copyProperties(this, creds);
     }
 
     @Override
     public void loadFromXML(XML xml) {
         setUsername(xml.getString("username", getUsername()));
         setPassword(xml.getString("password", getPassword()));
-        setPasswordKey(
-                EncryptionKey.getFromXML(xml, "passwordKey", passwordKey));
+        setPasswordKey(EncryptionKey.loadFromXML(
+                xml.getXML("passwordKey"), passwordKey));
     }
     @Override
     public void saveToXML(XML xml) {
         xml.addElement("username", getUsername());
         xml.addElement("password", getPassword());
-        EncryptionKey.addToXML(xml, "passwordKey", passwordKey);
+        EncryptionKey.saveToXML(xml.addElement("passwordKey"), passwordKey);
     }
     @Override
     public boolean equals(final Object other) {

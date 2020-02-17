@@ -101,11 +101,11 @@ public final class KeyStoreBuilder {
     /**
      * Creates the key store.
      * @return key store
-     * @throws NoSuchAlgorithmException
-     * @throws CertificateException
-     * @throws IOException
-     * @throws KeyStoreException
-     * @throws NoSuchProviderException
+     * @throws NoSuchAlgorithmException problem creating key store
+     * @throws CertificateException problem creating key store
+     * @throws IOException problem creating key store
+     * @throws KeyStoreException problem creating key store
+     * @throws NoSuchProviderException problem creating key store
      */
     public KeyStore create() throws IOException, KeyStoreException,
             NoSuchAlgorithmException, CertificateException,

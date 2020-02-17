@@ -33,16 +33,17 @@ import javax.crypto.spec.SecretKeySpec;
 import javax.xml.bind.DatatypeConverter;
 
 import com.norconex.commons.lang.encrypt.EncryptionKey.Source;
+import com.norconex.commons.lang.security.Credentials;
 
 /**
  * <p>Simplified encryption and decryption methods using the
  * <a href="https://en.wikipedia.org/wiki/Advanced_Encryption_Standard">
- * Advanced Encryption Standard (AES)</a> (since 1.15.0) with a supplied 
+ * Advanced Encryption Standard (AES)</a> (since 1.15.0) with a supplied
  * encryption key (which you can also think of as a passphrase, or password).
  * </p>
  * <p>
  * The "salt" and iteration count used by this class are hard-coded. To use
- * a different encryption or have more control over its creation, 
+ * a different encryption or have more control over its creation,
  * you should rely on another implementation or create your own.
  * </p>
  * <p>
@@ -163,11 +164,11 @@ public class EncryptionUtil {
             // Create the key
             KeySpec keySpec = new PBEKeySpec(
                     key.trim().toCharArray(), salt, iterationCount, keySize);
-            SecretKeyFactory factory = 
+            SecretKeyFactory factory =
                     SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
 
             SecretKey secretKeyTemp = factory.generateSecret(keySpec);
-            SecretKey secretKey = 
+            SecretKey secretKey =
                     new SecretKeySpec(secretKeyTemp.getEncoded(), "AES");
 
             ecipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
@@ -187,6 +188,18 @@ public class EncryptionUtil {
         } catch (Exception e) {
             throw new EncryptionException("Encryption failed.", e);
         }
+    }
+
+    /**
+     * <p>Decrypts the given credentials password.</p>
+     * @param credentials credentials from which to decrypt the password
+     * @return decrypted password.
+     */
+    public static String decryptPassword(Credentials credentials) {
+        if (credentials == null) {
+            return null;
+        }
+        return decrypt(credentials.getPassword(), credentials.getPasswordKey());
     }
 
     /**
@@ -222,9 +235,9 @@ public class EncryptionUtil {
         Cipher dcipher;
 
         try {
-            // Separate the encrypted data into the salt and the 
+            // Separate the encrypted data into the salt and the
             // encrypted message
-            byte[] cryptMessage = 
+            byte[] cryptMessage =
                     DatatypeConverter.parseBase64Binary(encryptedText.trim());
             byte[] iv = Arrays.copyOf(cryptMessage, 16);
             byte[] cryptBytes = Arrays.copyOfRange(
@@ -233,10 +246,10 @@ public class EncryptionUtil {
             // Create the key
             KeySpec keySpec = new PBEKeySpec(
                     key.trim().toCharArray(), salt, iterationCount, keySize);
-            SecretKeyFactory factory = 
+            SecretKeyFactory factory =
                     SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
             SecretKey secretKeyTemp = factory.generateSecret(keySpec);
-            SecretKey secretKey = 
+            SecretKey secretKey =
                     new SecretKeySpec(secretKeyTemp.getEncoded(), "AES");
 
             IvParameterSpec ivParamSpec = new IvParameterSpec(iv);
@@ -256,7 +269,7 @@ public class EncryptionUtil {
         }
     }
 
-    private static String decryptLegacy(String encryptedText, String key) 
+    private static String decryptLegacy(String encryptedText, String key)
             throws GeneralSecurityException {
         // 8-byte Salt
         byte[] salt = {
