@@ -312,22 +312,26 @@ public class ProxySettings implements IXMLConfigurable, Serializable {
 
     @Override
     public void loadFromXML(XML xml) {
-        xml.checkDeprecated("proxyHost", "host", true);
-        xml.checkDeprecated("proxyPort", "port", true);
-        xml.checkDeprecated("proxyScheme", "scheme", true);
-        xml.checkDeprecated("proxyRealm", "realm", true);
-        host = Host.loadFromXML(xml.getXML("host"), host);
-        scheme = xml.getString("scheme", scheme);
-        realm = xml.getString("realm", realm);
-        credentials.loadFromXML(xml.getXML("credentials"));
+        if (xml != null) {
+            xml.checkDeprecated("proxyHost", "host", true);
+            xml.checkDeprecated("proxyPort", "port", true);
+            xml.checkDeprecated("proxyScheme", "scheme", true);
+            xml.checkDeprecated("proxyRealm", "realm", true);
+            host = Host.loadFromXML(xml.getXML("host"), host);
+            scheme = xml.getString("scheme", scheme);
+            realm = xml.getString("realm", realm);
+            credentials.loadFromXML(xml.getXML("credentials"));
+        }
     }
 
     @Override
     public void saveToXML(XML xml) {
-        Host.saveToXML(xml.addElement("host"), host);
-        xml.addElement("scheme", scheme);
-        xml.addElement("realm", realm);
-        credentials.saveToXML(xml.addElement("credentials"));
+        if (xml != null) {
+            Host.saveToXML(xml.addElement("host"), host);
+            xml.addElement("scheme", scheme);
+            xml.addElement("realm", realm);
+            credentials.saveToXML(xml.addElement("credentials"));
+        }
     }
 
     @Override

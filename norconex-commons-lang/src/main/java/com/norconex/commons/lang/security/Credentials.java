@@ -45,6 +45,7 @@ import com.norconex.commons.lang.xml.XML;
  * to properly locate the key. The supported sources and their values
  * are:
  * </p>
+ * <p>
  * <table border="1" summary="">
  *   <tr>
  *     <th><code>source</code></th>
@@ -67,6 +68,7 @@ import com.norconex.commons.lang.xml.XML;
  *     <td>Name of a JVM system property containing the key.</td>
  *   </tr>
  * </table>
+ * </p>
  * }
  *
  * {@nx.xml.usage
@@ -154,16 +156,20 @@ public class Credentials implements IXMLConfigurable {
 
     @Override
     public void loadFromXML(XML xml) {
-        setUsername(xml.getString("username", getUsername()));
-        setPassword(xml.getString("password", getPassword()));
-        setPasswordKey(EncryptionKey.loadFromXML(
-                xml.getXML("passwordKey"), passwordKey));
+        if (xml != null) {
+            setUsername(xml.getString("username", getUsername()));
+            setPassword(xml.getString("password", getPassword()));
+            setPasswordKey(EncryptionKey.loadFromXML(
+                    xml.getXML("passwordKey"), passwordKey));
+        }
     }
     @Override
     public void saveToXML(XML xml) {
-        xml.addElement("username", getUsername());
-        xml.addElement("password", getPassword());
-        EncryptionKey.saveToXML(xml.addElement("passwordKey"), passwordKey);
+        if (xml != null) {
+            xml.addElement("username", getUsername());
+            xml.addElement("password", getPassword());
+            EncryptionKey.saveToXML(xml.addElement("passwordKey"), passwordKey);
+        }
     }
     @Override
     public boolean equals(final Object other) {
