@@ -37,6 +37,9 @@
         New MapUtil.
       </action>
       <action dev="essiembre" type="add">
+        New ClassUtil.
+      </action>
+      <action dev="essiembre" type="add">
         New WebFile.
       </action>
       <action dev="essiembre" type="add">
