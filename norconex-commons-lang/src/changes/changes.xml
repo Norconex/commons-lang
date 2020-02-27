@@ -149,7 +149,10 @@
         and #burrowCharacters(Reader, int)
       </action>
       <action dev="essiembre" type="add">
-        New methods.
+        New CachedInputStream#cache(...) methods.
+      </action>
+      <action dev="essiembre" type="add">
+        New methods on several other classes.
       </action>
       <action dev="essiembre" type="update">
         Now relies on Norconex Commons Maven Parent. 

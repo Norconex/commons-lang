@@ -26,6 +26,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -178,6 +179,39 @@ public class CachedInputStream extends InputStream implements ICachedStream {
         } else {
             return cacheDir;
         }
+    }
+
+    /**
+     * Casts to <code>CachedInputSteam</code> if argument is already of that
+     * type, else create a new <code>CachedInputStream</code> from the input
+     * stream argument using the given stream factory
+     * (or defaults if <code>null</code>).
+     * @param is input stream
+     * @param streamFactory a stream factory
+     * @return a cached input stream
+     * @since 2.0.0
+     */
+    public static CachedInputStream cache(
+            InputStream is, CachedStreamFactory streamFactory) {
+        if (is == null) {
+            return null;
+        }
+        if (is instanceof CachedInputStream) {
+            return (CachedInputStream) is;
+        }
+        return Optional.ofNullable(streamFactory)
+                .orElseGet(CachedStreamFactory::new).newInputStream(is);
+    }
+    /**
+     * Casts to <code>CachedInputSteam</code> if argument is already of that
+     * type, else create a new <code>CachedInputStream</code> from the input
+     * stream argument using default {@link CachedStreamFactory} settings.
+     * @param is input stream
+     * @return a cached input stream
+     * @since 2.0.0
+     */
+    public static CachedInputStream cache(InputStream is) {
+        return cache(is, null);
     }
 
     /**
