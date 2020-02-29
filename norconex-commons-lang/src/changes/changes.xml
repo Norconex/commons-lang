@@ -146,7 +146,8 @@
       <action dev="essiembre" type="add">
         New IOUtil methods: #isEmpty(Reader), #isEmpty(InputStream), 
         #toNonNullReader(Reader), #toNonNullInputStream(InputStream),
-        and #burrowCharacters(Reader, int)
+        #burrowCharacters(Reader, int), #consume(InputStream),
+        #consume(Reader), and #closeQuietly(Closeable)  
       </action>
       <action dev="essiembre" type="add">
         New CachedInputStream#cache(...) methods.

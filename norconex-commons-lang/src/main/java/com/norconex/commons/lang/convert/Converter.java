@@ -24,6 +24,7 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -67,6 +68,7 @@ import com.norconex.commons.lang.file.ContentType;
  *   <li>{@link Path}</li>
  *   <li>{@link Date}</li>
  *   <li>{@link LocalDateTime}</li>
+ *   <li>{@link ZonedDateTime}</li>
  *   <li>{@link Instant}</li>
  *   <li>{@link Locale}</li>
  *   <li>{@link Enum}</li>
@@ -133,6 +135,7 @@ public final class Converter implements IConverter {
         // dates
         cc.put(Date.class, new DateConverter());
         cc.put(LocalDateTime.class, new LocalDateTimeConverter());
+        cc.put(ZonedDateTime.class, new ZonedDateTimeConverter());
         cc.put(Instant.class, new InstantConverter());
 
         // others

@@ -16,6 +16,7 @@ package com.norconex.commons.lang.io;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,6 +31,7 @@ import java.util.List;
 
 import org.apache.commons.io.input.NullInputStream;
 import org.apache.commons.io.input.NullReader;
+import org.apache.commons.lang3.ArrayUtils;
 
 /**
  * I/O related utility methods.
@@ -72,6 +74,7 @@ public final class IOUtil {
      * @param qty number of bytes to read
      * @return byte array of length matching the quantity requested
      * @throws IOException if {@link InputStream#markSupported()} returns false
+     * @since 2.0.0
      */
     public static byte[] borrowBytes(
             InputStream is, int qty) throws IOException {
@@ -94,6 +97,7 @@ public final class IOUtil {
      * @param qty number of characters to read
      * @return char array of length matching the quantity requested
      * @throws IOException if {@link Reader#markSupported()} returns false
+     * @since 2.0.0
      */
     public static char[] borrowCharacters(
             Reader reader, int qty) throws IOException {
@@ -116,6 +120,7 @@ public final class IOUtil {
      * @param is input stream
      * @return <code>true</code> if <code>null</code> or empty
      * @throws IOException if {@link InputStream#markSupported()} returns false
+     * @since 2.0.0
      */
     public static boolean isEmpty(InputStream is) throws IOException {
         if (is == null) {
@@ -135,6 +140,7 @@ public final class IOUtil {
      * @param reader reader
      * @return <code>true</code> if <code>null</code> or empty
      * @throws IOException if {@link Reader#markSupported()} returns false
+     * @since 2.0.0
      */
     public static boolean isEmpty(Reader reader) throws IOException {
         if (reader == null) {
@@ -360,5 +366,62 @@ public final class IOUtil {
      */
     public static InputStream toNonNullInputStream(InputStream is) {
         return is != null ? is : new NullInputStream(0);
+    }
+
+    /**
+     * Fully consumes an input stream.
+     * @param is input stream
+     * @return number of bytes consumed
+     * @throws IOException could not consume stream
+     * @since 2.0.0
+     */
+    public static int consume(InputStream is) throws IOException {
+        if (is == null) {
+            return 0;
+        }
+        int cnt = 0;
+        int read = is.read();
+        while(read != -1) {
+            read = is.read();
+            cnt++;
+        }
+        return cnt;
+    }
+    /**
+     * Fully consumes an input stream.
+     * @param reader reader
+     * @return number of characters consumed
+     * @throws IOException could not consume reader
+     * @since 2.0.0
+     */
+    public static int consume(Reader reader) throws IOException {
+        if (reader == null) {
+            return 0;
+        }
+        int cnt = 0;
+        int read = reader.read();
+        while(read != -1) {
+            read = reader.read();
+            cnt++;
+        }
+        return cnt;
+    }
+
+    /**
+     * Given Apache has deprecated its
+     * <code>IOUtils#closeQuietly(java.io.Closeable)</code> method,
+     * this one offers an alternate.
+     * @param closeable one or more input streams to close quitely
+     * @since 2.0.0
+     */
+    public static void closeQuietly(Closeable... closeable) {
+        if (ArrayUtils.isEmpty(closeable)) {
+            return;
+        }
+        for (Closeable cl : closeable) {
+            if (cl != null) {
+                try { cl.close(); } catch (IOException e) { /*NOOP*/ }
+            }
+        }
     }
 }
