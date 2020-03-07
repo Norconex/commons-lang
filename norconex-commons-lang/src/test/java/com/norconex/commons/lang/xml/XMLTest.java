@@ -35,6 +35,7 @@ import com.norconex.commons.lang.convert.DateConverter;
 import com.norconex.commons.lang.convert.DurationConverter;
 import com.norconex.commons.lang.convert.EnumConverter;
 import com.norconex.commons.lang.convert.IConverter;
+import com.norconex.commons.lang.encrypt.EncryptionKey.Source;
 import com.norconex.commons.lang.unit.DataUnit;
 
 /**
@@ -120,6 +121,14 @@ public class XMLTest {
         Assertions.assertNull(xml.getXML("testNullMissing"));
         Assertions.assertNotNull(xml.getXML("testEmpty"));
         Assertions.assertNotNull(xml.getXML("testBlank"));
+
+        // As Enum
+        Assertions.assertNull(xml.getEnum("testNull", Source.class));
+        Assertions.assertNull(xml.getEnum("testNullMissing", Source.class));
+        Assertions.assertThrows(ConverterException.class,
+                () -> xml.getEnum("testEmpty", Source.class));
+        Assertions.assertThrows(ConverterException.class,
+                () -> xml.getEnum("testBlank", Source.class));
     }
 
     @Test

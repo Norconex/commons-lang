@@ -14,7 +14,6 @@
  */
 package com.norconex.commons.lang.text;
 
-import java.io.IOException;
 import java.text.Collator;
 import java.util.Locale;
 
@@ -65,7 +64,7 @@ public class RegexTest {
     }
 
     @Test
-    public void testWriteRead() throws IOException {
+    public void testWriteRead() {
         Regex r = new Regex("mypattern")
                 .setCanonEq(true)
                 .setMultiline(true);

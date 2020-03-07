@@ -1,4 +1,4 @@
-/* Copyright 2015-2019 Norconex Inc.
+/* Copyright 2015-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@ package com.norconex.commons.lang.io;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Assertions;
@@ -37,7 +36,6 @@ public class TextReaderTest {
         int count = 0;
         while ((text = reader.readText()) != null) {
             count++;
-//            System.out.println("CHUNK #" + count + " = " + text);
         }
         reader.close();
         Assertions.assertEquals(10, count, "Wrong number of sentences");
@@ -54,7 +52,6 @@ public class TextReaderTest {
         int count = 0;
         while ((text = reader.readText()) != null) {
             count++;
-//            System.out.println("CHUNK #" + count + " = " + text);
         }
         reader.close();
         Assertions.assertEquals(
@@ -79,8 +76,7 @@ public class TextReaderTest {
                 "Wrong number of characters returned.");
     }
 
-    private TextReader getTextReader(String file, int readSize)
-            throws UnsupportedEncodingException {
+    private TextReader getTextReader(String file, int readSize) {
         return new TextReader(new InputStreamReader(
                 getClass().getResourceAsStream(file), StandardCharsets.UTF_8),
                 readSize);

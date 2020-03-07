@@ -1,4 +1,4 @@
-/* Copyright 2010-2016 Norconex Inc.
+/* Copyright 2010-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import java.util.TimerTask;
 /**
  * Class monitoring a {@link File} for changes and notifying all registered
  * {@link IFileChangeListener}.
- * 
+ *
  * @author Pascal Essiembre
  * @since 1.3.0
  */
@@ -47,7 +47,7 @@ public final class FileMonitor {
 
     /**
      * Gets the file monitor instance.
-     * 
+     *
      * @return file monitor instance
      */
     public static FileMonitor getInstance() {
@@ -56,7 +56,7 @@ public final class FileMonitor {
 
     /**
      * Adds a monitored file with a {@link IFileChangeListener}.
-     * 
+     *
      * @param listener listener to notify when the file changed.
      * @param fileName name of the file to monitor.
      * @param period   polling period in milliseconds.
@@ -69,7 +69,7 @@ public final class FileMonitor {
 
     /**
      * Adds a monitored file with a FileChangeListener.
-     * 
+     *
      * @param listener listener to notify when the file changed.
      * @param file     the file to monitor.
      * @param period   polling period in milliseconds.
@@ -85,7 +85,7 @@ public final class FileMonitor {
 
     /**
      * Remove the listener from the notification list.
-     * 
+     *
      * @param listener the listener to be removed.
      * @param fileName name of the file for which to remove the listener
      */
@@ -96,7 +96,7 @@ public final class FileMonitor {
 
     /**
      * Remove the listener from the notification list.
-     * 
+     *
      * @param listener the listener to be removed.
      * @param file     the file for which to remove the listener
      */
@@ -111,7 +111,7 @@ public final class FileMonitor {
 
     /**
      * Fires notification that a file changed.
-     * 
+     *
      * @param listener
      *            file change listener
      * @param file
@@ -148,6 +148,7 @@ public final class FileMonitor {
             this.lastModified = monitoredFile.lastModified();
         }
 
+        @Override
         public void run() {
             long fileLastModified = monitoredFile.lastModified();
             if (fileLastModified != this.lastModified) {

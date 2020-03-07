@@ -1,4 +1,4 @@
-/* Copyright 2017-2019 Norconex Inc.
+/* Copyright 2017-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -105,7 +105,7 @@ public class SystemCommandTest {
                 getClass().getResourceAsStream(IN_FILE_PATH), inFile);
         return inFile;
     }
-    private InputStream inputAsStream() throws IOException {
+    private InputStream inputAsStream() {
         return getClass().getResourceAsStream(IN_FILE_PATH);
     }
     private String fileAsString(File file) throws IOException {

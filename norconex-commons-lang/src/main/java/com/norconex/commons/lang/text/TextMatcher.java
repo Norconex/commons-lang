@@ -234,9 +234,8 @@ public class TextMatcher implements IXMLConfigurable {
             if (tm.partial) {
                 if (tm.replaceAll) {
                     return m.replaceAll(replacement);
-                } else {
-                    return m.replaceFirst(replacement);
                 }
+                return m.replaceFirst(replacement);
             }
             return text;
         }

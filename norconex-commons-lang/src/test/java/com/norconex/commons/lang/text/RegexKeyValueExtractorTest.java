@@ -14,7 +14,6 @@
  */
 package com.norconex.commons.lang.text;
 
-import java.io.IOException;
 import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.Assertions;
@@ -30,8 +29,7 @@ import com.norconex.commons.lang.xml.XML;
 public class RegexKeyValueExtractorTest {
 
     @Test
-    public void testExtractFields()
-            throws IOException {
+    public void testExtractFields() {
 
         String xml = ResourceLoader.getXmlString(RegexKeyValueExtractorTest.class);
         Properties fields = null;
@@ -136,7 +134,7 @@ public class RegexKeyValueExtractorTest {
     }
 
     @Test
-    public void testWriteRead() throws IOException {
+    public void testWriteRead() {
         RegexFieldValueExtractor r = new RegexFieldValueExtractor();
         r.setRegex(new Regex(".*something.*", Pattern.UNICODE_CASE));
         r.setToField("mykey");

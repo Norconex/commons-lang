@@ -24,14 +24,14 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 
 /**
  * <p>
- * Use localized properties files ({@link ResourceBundle}) to get the 
- * string representation of duration unit. Each properties file  
+ * Use localized properties files ({@link ResourceBundle}) to get the
+ * string representation of duration unit. Each properties file
  * is expected to have the following keys, their plural versions being
- * optional (if a plural unit is spelled the same as singular). 
+ * optional (if a plural unit is spelled the same as singular).
  * </p>
  * <p>
- * If a key is not found, the <code>toString()</code> version of the unit 
- * will be returned. 
+ * If a key is not found, the <code>toString()</code> version of the unit
+ * will be returned.
  * If locale is <code>null</code>, the default locale will be use.
  * If the unit is <code>null</code>, <code>null</code> will be returned.
  * </p>
@@ -57,7 +57,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
  * @since 2.0.0
  */
 public class RBDurationUnitFormatter implements IDurationUnitFormatter {
-    
+
     public static final IDurationUnitFormatter FULL =
             new RBDurationUnitFormatter(RBDurationUnitFormatter
                     .class.getCanonicalName() + "-full");
@@ -67,20 +67,21 @@ public class RBDurationUnitFormatter implements IDurationUnitFormatter {
     public static final IDurationUnitFormatter ABBREVIATED =
             new RBDurationUnitFormatter(RBDurationUnitFormatter
                     .class.getCanonicalName() + "-abbr");
-    
+
     private final String baseName;
     private final ClassLoader classLoader;
-    
+
     public RBDurationUnitFormatter(String baseName) {
         this(baseName, null);
     }
     public RBDurationUnitFormatter(String baseName, ClassLoader classLoader) {
         super();
         this.baseName = baseName;
-        this.classLoader = classLoader == null 
+        this.classLoader = classLoader == null
                 ? getClass().getClassLoader() : classLoader;
     }
 
+    @Override
     public String format(DurationUnit unit, Locale locale, boolean plural) {
         if (unit == null) {
             return null;
@@ -105,12 +106,12 @@ public class RBDurationUnitFormatter implements IDurationUnitFormatter {
     public String getBaseName() {
         return baseName;
     }
-    
+
     protected ResourceBundle getResourceBundle(Locale locale) {
         return ResourceBundle.getBundle(
                 getBaseName(), locale, getClassLoader());
     }
-    
+
     @Override
     public boolean equals(final Object other) {
         return EqualsBuilder.reflectionEquals(this, other);
@@ -121,7 +122,7 @@ public class RBDurationUnitFormatter implements IDurationUnitFormatter {
     }
     @Override
     public String toString() {
-        return new ReflectionToStringBuilder(this, 
+        return new ReflectionToStringBuilder(this,
                 ToStringStyle.SHORT_PREFIX_STYLE).toString();
-    }    
+    }
 }

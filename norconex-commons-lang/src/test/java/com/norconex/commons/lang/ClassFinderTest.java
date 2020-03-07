@@ -1,4 +1,4 @@
-/* Copyright 2019 Norconex Inc.
+/* Copyright 2019-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  */
 package com.norconex.commons.lang;
 
-import java.io.IOException;
 import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
@@ -29,7 +28,7 @@ import com.norconex.commons.lang.convert.IConverter;
 public class ClassFinderTest {
 
     @Test
-    public void findClassTest() throws IOException {
+    public void findClassTest() {
 
         String toFind = ".DurationConverter";
 

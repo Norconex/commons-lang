@@ -1,4 +1,4 @@
-/* Copyright 2017-202 Norconex Inc.
+/* Copyright 2017-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
  */
 package com.norconex.commons.lang.net;
 
-import java.io.IOException;
-
 import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.encrypt.EncryptionKey;
@@ -25,7 +23,7 @@ import com.norconex.commons.lang.xml.XML;
 public class ProxySettingsTest {
 
     @Test
-    public void testWriteRead() throws IOException {
+    public void testWriteRead() {
         ProxySettings ps = new ProxySettings();
         ps.setHost(new Host("myhost", 99));
         ps.getCredentials().setUsername("myusername");

@@ -14,7 +14,6 @@
  */
 package com.norconex.commons.lang.text;
 
-import java.io.IOException;
 import java.util.regex.PatternSyntaxException;
 
 import org.junit.jupiter.api.Assertions;
@@ -32,7 +31,7 @@ import com.norconex.commons.lang.xml.XML;
 public class TextMatcherTest {
 
     @Test
-    public void testWriteRead() throws IOException {
+    public void testWriteRead() {
         TextMatcher sr = new TextMatcher()
                 .setPattern("mypattern")
                 .setPartial(true)
@@ -51,7 +50,7 @@ public class TextMatcherTest {
             boolean matchWhole,
             boolean basicAssert,
             boolean wildAssert,
-            boolean regexAssert) throws IOException {
+            boolean regexAssert) {
         TextMatcher sr = new TextMatcher()
                 .setPattern(pattern)
                 .setPartial(!matchWhole);

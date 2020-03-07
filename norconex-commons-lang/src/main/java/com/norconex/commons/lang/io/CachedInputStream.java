@@ -137,7 +137,7 @@ public class CachedInputStream extends InputStream implements ICachedStream {
      * Creates an input stream with an existing memory cache.
      * @param factory stream factory
      * @param cacheDirectory directory where to store large content
-     * @param byteBuffer the InputStream cache.
+     * @param memCache memory byte cache.
      */
     /*default*/ CachedInputStream(
             CachedStreamFactory factory, Path cacheDirectory, byte[] memCache) {
@@ -176,9 +176,8 @@ public class CachedInputStream extends InputStream implements ICachedStream {
     private static Path nullSafeCacheDirectory(Path cacheDir) {
         if (cacheDir == null) {
             return FileUtils.getTempDirectory().toPath();
-        } else {
-            return cacheDir;
         }
+        return cacheDir;
     }
 
     /**

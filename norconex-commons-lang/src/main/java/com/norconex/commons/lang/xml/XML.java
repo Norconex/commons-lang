@@ -1,4 +1,4 @@
-/* Copyright 2010-2019 Norconex Inc.
+/* Copyright 2010-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -818,11 +818,10 @@ public class XML {
         if (canThrowException) {
             if (e instanceof XMLException) {
                 throw (XMLException) e;
-            } else {
-                throw new XMLException(
-                        "Could not instantiate object from configuration "
-                      + "for \"" + rootNode + " -> " + key + "\".", e);
             }
+            throw new XMLException(
+                    "Could not instantiate object from configuration "
+                  + "for \"" + rootNode + " -> " + key + "\".", e);
         }
 
         // Log exception
@@ -2133,7 +2132,6 @@ public class XML {
     @SuppressWarnings("unchecked")
     public <T> Class<T> getClass(
             String xpathExpression, Class<T> defaultValue) {
-//xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx do it here?
         return get(xpathExpression, Class.class, defaultValue);
     }
     /**
@@ -2362,17 +2360,22 @@ public class XML {
                         null, errorHandler, documentBuilderFactory);
             }
 
+            xmlStr = xmlStr.trim();
+
             if (!xmlStr.contains("<")) {
                 xmlStr = "<" + xmlStr + "/>";
             }
 
+            //--- Ensure proper reading of null and empty values ---
+
             // Add xml:space="empty" to empty tags.
             xmlStr = xmlStr.replaceAll(
                     "(<\\s*)([^\\s>]+)([^>]*)(\\s*><\\s*\\/\\s*\\2\\s*>)",
-                    "$1$2 xml:space=\"empty\"$3$4");
-
-            Node node = null;
+                    "$1$2 xml:space=\"empty\" $3$4");
+            Element node = null;
             try {
+
+                documentBuilderFactory.setNamespaceAware(true);
 
                 node = documentBuilderFactory.newDocumentBuilder()
                         .parse(new InputSource(new StringReader(xmlStr)))
