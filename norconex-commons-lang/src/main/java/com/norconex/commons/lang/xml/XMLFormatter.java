@@ -137,6 +137,7 @@ public class XMLFormatter {
             out.flush();
             return postFormatCleanups(out.toString().trim());
         } catch (ParserConfigurationException | SAXException | IOException e) {
+            System.err.println("XML with formatting failure: \n" + wrappedXML);
             throw newXMLException(e);
         }
     }
@@ -388,6 +389,7 @@ public class XMLFormatter {
     }
 
     private static XMLException newXMLException(Exception e) {
+        e.printStackTrace(System.err);
         return new XMLException("Could not format XML: " + e.getMessage(), e);
     }
 }

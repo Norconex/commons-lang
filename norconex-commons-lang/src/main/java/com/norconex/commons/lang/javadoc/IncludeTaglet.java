@@ -135,7 +135,7 @@ public class IncludeTaglet extends AbstractInlineTaglet {
         String block = findInSource(source, id);
         if (StringUtils.isBlank(block)) {
             System.err.println("ID '" + id
-                    + "' not found in source for: " + className);
+                    + "' not found in source: " + className);
             return "!! DOCUMENTATION ERROR !! Refer to " + className
                     + " class documentation for additional information.";
         }
@@ -183,7 +183,7 @@ public class IncludeTaglet extends AbstractInlineTaglet {
             source = readSourceFromClasspath(className);
         }
         if (source == null) {
-            System.err.println("Source not found for: " + className);
+            System.err.println("Source not found: " + className);
             return "!! DOCUMENTATION ERROR !! Refer to " + className
                     + " class documentation for additional information.";
         }

@@ -2,6 +2,9 @@
 TODO:
 ==============
 
+- Allow specifying a base package from which to scan for classes when using
+  ClassFinder.
+
 - XSD: Always have a type and an element extending it to improve reuse.
 
 - DONE? EnhancedXMLStreamWriter: eliminate concept of "writeBlanks" and always 

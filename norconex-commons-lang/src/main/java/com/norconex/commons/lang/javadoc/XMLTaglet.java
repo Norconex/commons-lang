@@ -39,7 +39,7 @@ import com.sun.tools.doclets.Taglet;
  *
  * {@nx.xml #usage
  * <test>
- *   <sub attr="xml-taglet-test">This is annoter XML example.</sub>
+ *   <sub attr="xml-taglet-test">This is another XML example.</sub>
  * </test>
  * }
  *
