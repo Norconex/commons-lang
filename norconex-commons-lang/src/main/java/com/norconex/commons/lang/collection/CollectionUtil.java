@@ -1,4 +1,4 @@
-/* Copyright 2018-2019 Norconex Inc.
+/* Copyright 2018-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,15 @@
 package com.norconex.commons.lang.collection;
 
 import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -38,6 +41,50 @@ public final class CollectionUtil {
 
     private CollectionUtil() {
         super();
+    }
+
+    /**
+     * Adapts any object to a new non-null mutable List, regardless of the
+     * nature of the object. If the object is a Collection or array,
+     * it will be iterated over to populate the new list. If it is any other
+     * object, it will become the first and only item in the newly created list.
+     * If the object is <code>null</code> or a blank string,
+     * an empty list is returned.
+     * The supplied object must be a value or values of the expected type.
+     * @param <T> the expected return type of the list
+     * @param object object to adapt
+     * @return adapted list
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> List<T> adaptedList(Object object) {
+        ArrayList<T> list = new ArrayList<>();
+        if (object == null || (object instanceof String
+                && StringUtils.isBlank((String) object))) {
+            return list;
+        }
+        if (object instanceof Collection) {
+            list.addAll((Collection<T>) object);
+        } else if (object.getClass().isArray()) {
+            list.addAll(Arrays.asList((T[]) object));
+        } else {
+            list.add((T) object);
+        }
+        return list;
+    }
+    /**
+     * Adapts any object to a new non-null mutable Set, regardless of the
+     * nature of the object. If the object is a Collection or array,
+     * it will be iterated over to populate the new set. If it is any other
+     * object, it will become the first and only item in the newly created set.
+     * If the object is <code>null</code> or a blank string,
+     * an empty set is returned.
+     * The supplied object must be a value or values of the expected type.
+     * @param <T> the expected return type of the set
+     * @param object object to adapt
+     * @return adapted set
+     */
+    public static <T> Set<T> adaptedSet(Object object) {
+        return new HashSet<>(adaptedList(object));
     }
 
     /**

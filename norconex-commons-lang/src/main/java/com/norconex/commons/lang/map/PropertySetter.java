@@ -21,6 +21,7 @@ import java.util.Optional;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import com.norconex.commons.lang.collection.CollectionUtil;
 import com.norconex.commons.lang.xml.XML;
 
 /**
@@ -40,37 +41,17 @@ import com.norconex.commons.lang.xml.XML;
  * @since 2.0.0
  */
 public enum PropertySetter {
-    APPEND((p, k, v) -> {
-        if (v instanceof List) {
-            p.addList(k, (List<?>) v);
-        } else {
-            p.add(k, v);
-        }
-    }),
+    APPEND((p, k, v) -> p.addList(k, v)),
     PREPEND((p, k, v) -> {
-        List<Object> list = new ArrayList<>(p.getStrings(k));
-        if (v instanceof List) {
-            list.addAll(0, (List<?>) v);
-        } else {
-            list.add(0, v);
-        }
-        p.setList(k, list);
+        List<Object> fullList = new ArrayList<>(p.getStrings(k));
+        fullList.addAll(0, v);
+        p.setList(k, fullList);
     }),
-    REPLACE((p, k, v) -> {
-        if (v instanceof List) {
-            p.setList(k, (List<?>) v);
-        } else {
-            p.set(k, v);
-        }
-    }),
+    REPLACE((p, k, v) -> p.setList(k, v)),
     // only if not set
     OPTIONAL((p, k, v) -> {
         if (CollectionUtils.isEmpty(p.get(k))) {
-            if (v instanceof List) {
-                p.setList(k, (List<?>) v);
-            } else {
-                p.set(k, v);
-            }
+            p.setList(k, v);
         }
     });
 
@@ -79,7 +60,7 @@ public enum PropertySetter {
         this.s = s;
     }
     public void apply(Properties properties, String key, Object value) {
-        this.s.apply(properties, key, value);
+        this.s.apply(properties, key, CollectionUtil.adaptedList(value));
     }
 
     public static PropertySetter from(
@@ -97,14 +78,32 @@ public enum PropertySetter {
         }
         return null;
     }
-    // if null, returns default value of APPEND
-    //TODO change to orAppend(...) ?
-    public static PropertySetter orDefault(PropertySetter setter) {
+    // if null, returns desired appender.
+    public static PropertySetter orAppend(PropertySetter setter) {
         if (setter == null) {
             return APPEND;
         }
         return setter;
     }
+    public static PropertySetter orOptional(PropertySetter setter) {
+        if (setter == null) {
+            return OPTIONAL;
+        }
+        return setter;
+    }
+    public static PropertySetter orPrepend(PropertySetter setter) {
+        if (setter == null) {
+            return PREPEND;
+        }
+        return setter;
+    }
+    public static PropertySetter orReplace(PropertySetter setter) {
+        if (setter == null) {
+            return REPLACE;
+        }
+        return setter;
+    }
+
     // Gets from XML, returns default value if not defined
     public static PropertySetter fromXML(XML xml, PropertySetter defaultValue) {
         return xml.getEnum("@onSet", PropertySetter.class, defaultValue);
@@ -115,6 +114,6 @@ public enum PropertySetter {
 
     @FunctionalInterface
     interface Strategy {
-        void apply(Properties properties, String key, Object value);
+        void apply(Properties properties, String key, List<Object> value);
     }
 }

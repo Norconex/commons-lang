@@ -280,17 +280,16 @@ public class Regex implements IXMLConfigurable {
      * with optional case sensitivity.
      *
      * @param regex regular expression
-     * @param caseInsensitive <code>true</code> to ignore character case.
+     * @param ignoreCase <code>true</code> to ignore character case.
      * @return compiled pattern
      */
-    public static Pattern compileDotAll(String regex, boolean caseInsensitive) {
+    public static Pattern compileDotAll(String regex, boolean ignoreCase) {
         // we allow empty regex here, but not null ones
         if (regex == null) {
             throw new IllegalArgumentException(
                     "Supplied regular expression cannot be null");
         }
-        return new Regex(regex).dotAll().setIgnoreCase(
-                caseInsensitive).compile();
+        return new Regex(regex).dotAll().setIgnoreCase(ignoreCase).compile();
     }
 
     /**

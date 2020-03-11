@@ -468,6 +468,9 @@ public class TextMatcher implements IXMLConfigurable {
 
     @Override
     public void loadFromXML(XML xml) {
+        if (xml == null) {
+            return;
+        }
         setMethod(xml.getEnum("@method", Method.class, method));
         setIgnoreCase(xml.getBoolean("@ignoreCase", ignoreCase));
         setIgnoreDiacritic(xml.getBoolean("@ignoreDiacritic", ignoreDiacritic));
@@ -477,6 +480,9 @@ public class TextMatcher implements IXMLConfigurable {
     }
     @Override
     public void saveToXML(XML xml) {
+        if (xml == null) {
+            return;
+        }
         xml.setAttribute("method", method);
         xml.setAttribute("ignoreCase", ignoreCase);
         xml.setAttribute("ignoreDiacritic", ignoreDiacritic);

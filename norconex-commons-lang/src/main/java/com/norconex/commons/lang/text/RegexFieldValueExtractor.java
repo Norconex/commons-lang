@@ -207,7 +207,7 @@ public class RegexFieldValueExtractor implements IXMLConfigurable {
             }
         }
         for (Entry<String,List<String>> en : extractedFieldValues.entrySet()) {
-            PropertySetter.orDefault(onSet).apply(
+            PropertySetter.orAppend(onSet).apply(
                     dest, en.getKey(), en.getValue());
         }
     }
