@@ -45,6 +45,7 @@ import java.util.Set;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.set.ListOrderedSet;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang3.ObjectUtils;
@@ -378,6 +379,7 @@ public class Properties extends ObservableMap<String, List<String>>
 
     private synchronized void storeToJavaUtilProperties(
             Object output, String delimiter, boolean isXML) throws IOException {
+        // Convert to Java Properties
         java.util.Properties p = new java.util.Properties();
         String sep = StringUtils.defaultIfEmpty(
                 delimiter, DEFAULT_JAVA_PROPERTIES_DELIMITER);
@@ -386,18 +388,26 @@ public class Properties extends ObservableMap<String, List<String>>
                     entry.getKey(),
                     StringUtils.join(entry.getValue(), sep));
         }
-        if (output instanceof Writer) {
-            if (isXML) {
+
+        // Store it
+        if (isXML) {
+            if (output instanceof Writer) {
                 p.storeToXML(new WriterOutputStream((Writer) output,
-                        StandardCharsets.UTF_8), "");
+                        StandardCharsets.UTF_8), null);
             } else {
-                p.store((Writer) output, "");
+                p.storeToXML((OutputStream) output, null);
             }
         } else {
-            if (isXML) {
-                p.storeToXML((OutputStream) output, "");
+            // Remove silly date comment
+            StringWriter w = new StringWriter();
+            p.store(w, null);
+            String clean = w.toString().replaceFirst("^#.*?[\n\r]+", "");
+
+            if (output instanceof Writer) {
+                IOUtils.write(clean, (Writer) output);
             } else {
-                p.store((OutputStream) output, "");
+                IOUtils.write(clean, (OutputStream) output,
+                        StandardCharsets.UTF_8);
             }
         }
     }
@@ -502,12 +512,14 @@ public class Properties extends ObservableMap<String, List<String>>
      * string.  Otherwise, the same considerations as
      * {@link #loadFromProperties(InputStream)} apply.
      * @param str the string to load
-     * @throws IOException problem loading string
      */
-    public void fromString(String str) throws IOException {
-        Reader r = new StringReader(str);
-        loadFromProperties(r);
-        r.close();
+    public void fromString(String str) {
+        try (Reader r = new StringReader(str)) {
+            loadFromProperties(r);
+        } catch (IOException e) {
+            // Should not happen with a string.
+            throw new RuntimeException("Could not parse string.", e);
+        }
     }
 
     /**
