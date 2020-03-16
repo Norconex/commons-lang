@@ -140,7 +140,7 @@ public final class VersionUtil {
      * </p>
      * <p>
      * The manifest is often created when the code is packaged for distribution.
-     * For instance, if you use Maven, you can ask it to automaticall store
+     * For instance, if you use Maven, you can ask it to automatically store
      * implementation details with the manifest file when creating a jar file
      * by setting <code>addDefaultImplementationEntries</code> set
      * to <code>true</code>
@@ -181,7 +181,8 @@ public final class VersionUtil {
     }
 
     // When unpacked, if Maven structure is respected, the pom.xml location
-    // should be found at [...]/target/classes/
+    // should be found at: ../../pom.xml
+    // (from current directory: [...]/target/classes/).
     private static DetailedVersion fromUnpackedMavenPomXml(Class<?> cls) {
         try {
             CodeSource source = cls.getProtectionDomain().getCodeSource();
