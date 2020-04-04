@@ -2,8 +2,12 @@
 TODO:
 ==============
 
+
 - Allow specifying a base package from which to scan for classes when using
   ClassFinder.
+
+- Maybe: have CachedStreamFactory set itself on current thread (but not 
+  overwriting it on parent thread).
 
 - XSD: Always have a type and an element extending it to improve reuse.
 

@@ -1054,7 +1054,7 @@ public class XML {
             if (LOG.isErrorEnabled()) {
                 LOG.error(" SAVED: {}", xmlConfigurable);
                 LOG.error("LOADED: {}", readConfigurable);
-                    LOG.error("  DIFF: \n{}\n",
+                LOG.error("  DIFF: \n{}\n",
                         BeanUtil.diff(xmlConfigurable, readConfigurable));
             }
             throw new XMLException("Saved and loaded XML are not the same.");

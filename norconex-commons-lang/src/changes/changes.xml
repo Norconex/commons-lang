@@ -153,6 +153,9 @@
         New CachedInputStream#cache(...) methods.
       </action>
       <action dev="essiembre" type="add">
+        New CountingIteragor class.
+      </action>
+      <action dev="essiembre" type="add">
         New methods on several other classes.
       </action>
       <action dev="essiembre" type="update">
