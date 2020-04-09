@@ -158,9 +158,10 @@ public final class BeanUtil {
                     new PropertyDescriptor(propertyName, bean.getClass());
             return p.getWriteMethod() != null;
         } catch (IntrospectionException | IllegalArgumentException e) {
-            throw new BeanException("Could not get information for property \""
-                    + propertyName + "\" on bean type \""
-                    + bean.getClass().getCanonicalName() + "\".", e);
+            LOG.trace("Could not get information for property \"{}\" on "
+                    + "bean type \"{}\".",
+                    propertyName, bean.getClass().getCanonicalName(), e);
+            return false;
         }
     }
     public static boolean isGettable(Object bean, String propertyName) {
@@ -172,9 +173,10 @@ public final class BeanUtil {
                     new PropertyDescriptor(propertyName, bean.getClass());
             return p.getReadMethod() != null;
         } catch (IntrospectionException | IllegalArgumentException e) {
-            throw new BeanException("Could not get information for property \""
-                    + propertyName + "\" on bean type \""
-                    + bean.getClass().getCanonicalName() + "\".", e);
+            LOG.trace("Could not get information for property \"{}\" on "
+                    + "bean type \"{}\".",
+                    propertyName, bean.getClass().getCanonicalName(), e);
+            return false;
         }
     }
 
