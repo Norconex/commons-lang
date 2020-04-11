@@ -844,9 +844,12 @@ public class XML {
                     LOG.error("XML parsing error for \"{} -> "
                             + "{}\".", rootNode, key, e);
                 }
+            } else {
+                LOG.info("Could not instantiate object from configuration "
+                        + "for \"{} -> \".", rootNode, key, e);
             }
         } else{
-            LOG.debug("Could not instantiate object from configuration "
+            LOG.info("Could not instantiate object from configuration "
                     + "for \"{} -> \".", rootNode, key, e);
         }
     }
