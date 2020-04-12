@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.commons.lang.xml.XMLException;
 
 /**
  * Version-related convenience methods.
@@ -199,7 +200,7 @@ public final class VersionUtil {
                         xml.getString("name"),
                         xml.getString("organization/name"));
             }
-        } catch (URISyntaxException | SecurityException e) {
+        } catch (XMLException | URISyntaxException | SecurityException e) {
             LOG.debug("Could not obtain pom.xml from source.", e);
         }
         return null;
