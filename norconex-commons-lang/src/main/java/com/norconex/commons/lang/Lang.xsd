@@ -40,5 +40,31 @@
     </xs:restriction>
   </xs:simpleType>  
   
+  <xs:simpleType name="NullableInteger">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base='xs:string'>
+          <xs:length value="0"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base='xs:integer' />
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+
+  <xs:simpleType name="NullableBoolean">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base='xs:string'>
+          <xs:length value="0"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base='xs:boolean' />
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+  
 </xs:schema>
 
