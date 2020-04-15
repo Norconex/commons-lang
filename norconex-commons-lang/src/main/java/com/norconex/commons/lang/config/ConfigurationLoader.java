@@ -335,7 +335,10 @@ public final class ConfigurationLoader {
         VelocityEngine velocityEngine = new VelocityEngine();
         velocityEngine.setProperty(RuntimeConstants.EVENTHANDLER_INCLUDE,
                 RelativeIncludeEventHandler.class.getName());
-        velocityEngine.setProperty(RuntimeConstants.RESOURCE_LOADER, "file");
+        velocityEngine.setProperty(
+                RuntimeConstants.EVENTHANDLER_INVALIDREFERENCES,
+                InvalidReferenceExternalFallback.class.getName());
+        velocityEngine.setProperty(RuntimeConstants.RESOURCE_LOADERS, "file");
         velocityEngine.setProperty(
                 RuntimeConstants.FILE_RESOURCE_LOADER_PATH, "");
         velocityEngine.setProperty(RuntimeConstants.INPUT_ENCODING,

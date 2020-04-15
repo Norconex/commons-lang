@@ -34,6 +34,9 @@
         New CollectionUtil.
       </action>
       <action dev="essiembre" type="add">
+        New SystemUtil.
+      </action>
+      <action dev="essiembre" type="add">
         New MapUtil.
       </action>
       <action dev="essiembre" type="add">
@@ -162,6 +165,10 @@
         Now relies on Norconex Commons Maven Parent. 
       </action>
       <action dev="essiembre" type="update">
+        Configuration loader now tries to resolve undefined variables to system 
+        property or environment variable (in that order). 
+      </action>
+      <action dev="essiembre" type="update">
         Improved Javadoc generation, putting more focus on class documentation.
       </action>
       <action dev="essiembre" type="update">
@@ -192,7 +199,7 @@
       </action>
       <action dev="essiembre" type="update">
         Many dependency updates, including: Apache Commons Lang 3.7, 
-        Apache Velocity 2.0, Junit 5, Xerces 2.12.0.
+        Apache Velocity 2, Junit 5, Xerces 2.12.0.
       </action>
       <action dev="essiembre" type="update">
         Some of the load/store methods in Properties have been renamed for 
