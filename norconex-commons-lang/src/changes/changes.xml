@@ -11,7 +11,7 @@
              description="Major release. NOT a drop-in replacement for 1.x.">
       <action dev="essiembre" type="add">
         New configurable TextMatcher class supporting different methods
-        of matching/replacing (basic, wildcard, regex).
+        of matching/replacing (basic, csv, wildcard, regex).
       </action>
       <action dev="essiembre" type="add">
         New MutableImage class facilitating performing basic image operations.

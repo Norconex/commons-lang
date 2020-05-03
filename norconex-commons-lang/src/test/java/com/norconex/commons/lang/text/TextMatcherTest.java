@@ -50,13 +50,15 @@ public class TextMatcherTest {
             boolean matchWhole,
             boolean basicAssert,
             boolean wildAssert,
-            boolean regexAssert) {
+            boolean regexAssert,
+            boolean csvAssert) {
         TextMatcher sr = new TextMatcher()
                 .setPattern(pattern)
                 .setPartial(!matchWhole);
         testMatch(basicAssert, Method.BASIC, sr, text);
         testMatch(wildAssert, Method.WILDCARD, sr, text);
         testMatch(regexAssert, Method.REGEX, sr, text);
+        testMatch(csvAssert, Method.CSV, sr, text);
     }
     private void testMatch(
             boolean expected, Method method, TextMatcher sr, String text) {

@@ -14,9 +14,11 @@
  */
 package com.norconex.commons.lang.text;
 
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -36,6 +38,8 @@ import com.norconex.commons.lang.xml.XML;
  * <ul>
  *  <li><b>BASIC:</b>
  *      Default. Text is matched as specified.</li>
+ *  <li><b>CSV:</b>
+ *      Same has having multiple BASIC, separated with commas.</li>
  *  <li><b>WILDCARD:</b>
  *      An asterisk (*) matches a series made of any characters.
  *      A question mark (?) matches any single character.
@@ -51,7 +55,7 @@ import com.norconex.commons.lang.xml.XML;
  * </p>
  *
  * {@nx.xml.usage #attributes
- *     method="[basic|wildcard|regex]"
+ *     method="[basic|csv|wildcard|regex]"
  *     ignoreCase="[false|true]"
  *     ignoreDiacritic="[false|true]"
  *     replaceAll="[false|true]"
@@ -75,7 +79,7 @@ import com.norconex.commons.lang.xml.XML;
  * minus the "replaceAll" (which is simply ignored):
  * </p>
  * {@nx.xml #matchAttributes
- *     method="[basic|wildcard|regex]"
+ *     method="[basic|csv|wildcard|regex]"
  *     ignoreCase="[false|true]"
  *     ignoreDiacritic="[false|true]"
  *     partial="[false|true]"
@@ -99,63 +103,33 @@ public class TextMatcher implements IXMLConfigurable {
     public enum Method {
         BASIC(new MethodStrategy() {
             @Override
-            public boolean matches(TextMatcher tm, CharSequence text) {
-                if (tm.getPattern() == null) {
-                    return true;
-                }
-                Matcher m = regexMatcher(tm, text);
-                return tm.partial ? m.find() : m.matches();
+            public String toQuotedReplacement(String replacement) {
+                return Matcher.quoteReplacement(replacement);
             }
             @Override
-            public String replace(
-                    TextMatcher tm, String text, String replacement) {
-                if (tm.getPattern() == null || replacement == null) {
-                    return text;
-                }
-                String quotedRepl = Matcher.quoteReplacement(replacement);
-                Matcher m = regexMatcher(tm, text);
-                return doReplace(tm, m, text, quotedRepl);
-            }
-            @Override
-            public Pattern regexPattern(TextMatcher tm) {
-                return doRegexPattern(tm, strPattern(tm));
-            }
-            @Override
-            public Matcher regexMatcher(TextMatcher tm, CharSequence text) {
-                return doRegexMatcher(tm, strPattern(tm), text);
-            }
-            private String strPattern(TextMatcher tm) {
+            public String toMatchExpression(TextMatcher tm) {
                 return Regex.escape(Objects.toString(tm.pattern, ""));
+            }
+        }),
+        CSV(new MethodStrategy() {
+            @Override
+            public String toQuotedReplacement(String replacement) {
+                return Matcher.quoteReplacement(replacement);
+            }
+            @Override
+            public String toMatchExpression(TextMatcher tm) {
+                return Arrays.stream(Objects.toString(tm.pattern, "")
+                        .split("\\s*,\\s*")).map(Regex::escape)
+                                .collect(Collectors.joining("|"));
             }
         }),
         WILDCARD(new MethodStrategy() {
             @Override
-            public boolean matches(TextMatcher tm, CharSequence text) {
-                if (tm.getPattern() == null) {
-                    return true;
-                }
-                Matcher m = regexMatcher(tm, text);
-                return tm.partial ? m.find() : m.matches();
+            public String toQuotedReplacement(String replacement) {
+                return Matcher.quoteReplacement(replacement);
             }
             @Override
-            public String replace(
-                    TextMatcher tm, String text, String replacement) {
-                if (tm.getPattern() == null || replacement == null) {
-                    return text;
-                }
-                String quotedRepl = Matcher.quoteReplacement(replacement);
-                Matcher m = regexMatcher(tm, text);
-                return doReplace(tm, m, text, quotedRepl);
-            }
-            @Override
-            public Pattern regexPattern(TextMatcher tm) {
-                return doRegexPattern(tm, strPattern(tm));
-            }
-            @Override
-            public Matcher regexMatcher(TextMatcher tm, CharSequence text) {
-                return doRegexMatcher(tm, strPattern(tm), text);
-            }
-            private String strPattern(TextMatcher tm) {
+            public String toMatchExpression(TextMatcher tm) {
                 Pattern p = Pattern.compile("[^*?]+|(\\*)|(\\?)");
                 Matcher m = p.matcher(Objects.toString(tm.pattern, ""));
                 StringBuilder b = new StringBuilder();
@@ -173,33 +147,12 @@ public class TextMatcher implements IXMLConfigurable {
         }),
         REGEX(new MethodStrategy() {
             @Override
-            public boolean matches(TextMatcher tm, CharSequence text) {
-                if (tm.getPattern() == null) {
-                    return true;
-                }
-                Matcher m = regexMatcher(tm, text);
-                return tm.partial ? m.find() : m.matches();
+            public String toQuotedReplacement(String replacement) {
+                // do not quote for regex
+                return replacement;
             }
             @Override
-            public String replace(
-                    TextMatcher tm, String text, String replacement) {
-                if (tm.getPattern() == null || replacement == null) {
-                    return text;
-                }
-                Matcher m = regexMatcher(tm, text);
-                return doReplace(tm, m, text, replacement);
-            }
-            @Override
-            public Pattern regexPattern(TextMatcher tm) {
-                return doRegexPattern(tm, strPattern(tm));
-            }
-            @Override
-            public Matcher regexMatcher(
-                    TextMatcher tm, CharSequence text) {
-                return doRegexMatcher(tm, strPattern(tm), text);
-
-            }
-            private String strPattern(TextMatcher tm) {
+            public String toMatchExpression(TextMatcher tm) {
                 return Objects.toString(tm.pattern, "");
             }
         });
@@ -209,43 +162,11 @@ public class TextMatcher implements IXMLConfigurable {
         private Method(MethodStrategy ms) {
             this.ms = ms;
         }
-
-        private static Pattern doRegexPattern(TextMatcher tm, String pattern) {
-            return new Regex(pattern)
-                    .dotAll()
-                    .setIgnoreCase(tm.ignoreCase)
-                    .setIgnoreDiacritic(tm.ignoreDiacritic)
-                    .compile();
-        }
-        private static Matcher doRegexMatcher(
-                TextMatcher tm, String pattern, CharSequence text) {
-            return new Regex(pattern)
-                    .dotAll()
-                    .setIgnoreCase(tm.ignoreCase)
-                    .setIgnoreDiacritic(tm.ignoreDiacritic)
-                    .matcher(text);
-        }
-
-        private static String doReplace(
-                TextMatcher tm, Matcher m, String text, String replacement) {
-            if (!tm.partial && m.matches()) {
-                return m.replaceFirst(replacement);
-            }
-            if (tm.partial) {
-                if (tm.replaceAll) {
-                    return m.replaceAll(replacement);
-                }
-                return m.replaceFirst(replacement);
-            }
-            return text;
-        }
     }
 
     private interface MethodStrategy {
-        boolean matches(TextMatcher tm, CharSequence text);
-        String replace(TextMatcher tm, String text, String replacement);
-        Pattern regexPattern(TextMatcher tm);
-        Matcher regexMatcher(TextMatcher tm, CharSequence text);
+        String toMatchExpression(TextMatcher tm);
+        String toQuotedReplacement(String text);
     }
 
     private Method method = Method.BASIC;
@@ -406,6 +327,16 @@ public class TextMatcher implements IXMLConfigurable {
         return new TextMatcher(Method.BASIC).setPattern(pattern);
     }
     /**
+     * <p>Creates a new text matcher initialized with comma-separated-value
+     * matching. Same as invoking
+     * <code>new TextMatcher(Method.CSV).setPattern(pattern)</code>.</p>
+     * @param pattern expression to match against values
+     * @return csv text matcher
+     */
+    public static TextMatcher csv(String pattern) {
+        return new TextMatcher(Method.CSV).setPattern(pattern);
+    }
+    /**
      * <p>Creates a new text matcher initialized with wildcard matching.
      * Same as invoking
      * <code>new TextMatcher(Method.WILDCARD).setPattern(pattern)</code>.</p>
@@ -433,7 +364,11 @@ public class TextMatcher implements IXMLConfigurable {
      * @return <code>true</code> if matching
      */
     public boolean matches(CharSequence text) {
-        return safeMethod().ms.matches(this, text);
+        if (getPattern() == null) {
+            return true;
+        }
+        Matcher m = toRegexMatcher(text);
+        return partial ? m.find() : m.matches();
     }
     /**
      * Replaces this class matching text with replacement value.
@@ -442,7 +377,21 @@ public class TextMatcher implements IXMLConfigurable {
      * @return replaced text
      */
     public String replace(String text, String replacement) {
-        return safeMethod().ms.replace(this, text, replacement);
+        if (pattern == null || replacement == null) {
+            return text;
+        }
+        String quotedRepl = safeMethod().ms.toQuotedReplacement(replacement);
+        Matcher m = toRegexMatcher(text);
+        if (!partial && m.matches()) {
+            return m.replaceFirst(quotedRepl);
+        }
+        if (partial) {
+            if (replaceAll) {
+                return m.replaceAll(quotedRepl);
+            }
+            return m.replaceFirst(quotedRepl);
+        }
+        return text;
     }
 
     /**
@@ -451,7 +400,11 @@ public class TextMatcher implements IXMLConfigurable {
      * @return matcher
      */
     public Matcher toRegexMatcher(CharSequence text) {
-        return safeMethod().ms.regexMatcher(this, text);
+            return new Regex(safeMethod().ms.toMatchExpression(this))
+                    .dotAll()
+                    .setIgnoreCase(ignoreCase)
+                    .setIgnoreDiacritic(ignoreDiacritic)
+                    .matcher(text);
     }
     /**
      * Compiles this text matcher to create a regular expression
@@ -459,8 +412,13 @@ public class TextMatcher implements IXMLConfigurable {
      * @return pattern
      */
     public Pattern toRegexPattern() {
-        return safeMethod().ms.regexPattern(this);
+        return new Regex(safeMethod().ms.toMatchExpression(this))
+                .dotAll()
+                .setIgnoreCase(ignoreCase)
+                .setIgnoreDiacritic(ignoreDiacritic)
+                .compile();
     }
+
 
     private Method safeMethod() {
         return ObjectUtils.defaultIfNull(method, Method.BASIC);
