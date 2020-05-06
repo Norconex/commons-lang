@@ -120,7 +120,7 @@ public class TextMatcher implements IXMLConfigurable {
             public String toMatchExpression(TextMatcher tm) {
                 return Arrays.stream(Objects.toString(tm.pattern, "")
                         .split("\\s*,\\s*")).map(Regex::escape)
-                                .collect(Collectors.joining("|"));
+                                .collect(Collectors.joining("|")).trim();
             }
         }),
         WILDCARD(new MethodStrategy() {
@@ -176,6 +176,8 @@ public class TextMatcher implements IXMLConfigurable {
     private boolean ignoreDiacritic;
     private boolean replaceAll;
     private boolean partial;
+
+    //TODO add "negate"
 
     /**
      * Creates a basic matcher.

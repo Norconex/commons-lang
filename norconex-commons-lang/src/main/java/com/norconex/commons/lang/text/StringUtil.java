@@ -238,7 +238,7 @@ public final class StringUtil {
         }
         truncated += getHash(remainer);
         if (LOG.isTraceEnabled()) {
-            LOG.trace("Truncated text: " + truncated);
+            LOG.trace("Truncated text: {}", truncated);
         }
         return truncated.getBytes(nullSafeCharset);
     }
