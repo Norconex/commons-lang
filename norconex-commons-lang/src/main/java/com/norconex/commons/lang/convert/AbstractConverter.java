@@ -80,7 +80,7 @@ public abstract class AbstractConverter implements IConverter {
         return toTypeException(value, type, null);
     }
     protected ConverterException toTypeException(
-            String value, Class<?> type, Exception e) {
+            String value, Class<?> type, Throwable e) {
         return new ConverterException(String.format(
                 "Cannot convert string \"%s\" to type \"%s\".",
                 value, type), e);
@@ -88,7 +88,7 @@ public abstract class AbstractConverter implements IConverter {
     protected ConverterException toStringException(Object object) {
         return toStringException(object, null);
     }
-    protected ConverterException toStringException(Object object, Exception e) {
+    protected ConverterException toStringException(Object object, Throwable e) {
         return new ConverterException(String.format(
                 "Cannot convert object of type \"%s\" to String.",
                 object.getClass().getName()), e);

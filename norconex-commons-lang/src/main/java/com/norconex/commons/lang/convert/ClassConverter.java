@@ -31,7 +31,7 @@ public class ClassConverter extends AbstractConverter {
     protected <T> T nullSafeToType(String value, Class<T> type) {
         try {
             return type.cast(ClassUtils.getClass(value));
-        } catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException | NoClassDefFoundError e) {
             throw toTypeException(value, type, e);
         }
     }

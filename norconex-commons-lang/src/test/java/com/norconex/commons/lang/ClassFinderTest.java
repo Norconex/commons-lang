@@ -32,10 +32,10 @@ public class ClassFinderTest {
 
         String toFind = ".DurationConverter";
 
-        List<String> types = ClassFinder.findSubTypes(
+        List<Class<? extends IConverter>> types = ClassFinder.findSubTypes(
                 IConverter.class, s -> s.endsWith(toFind));
-        Assertions.assertTrue(types.contains(
-                "com.norconex.commons.lang.convert.DurationConverter"));
         Assertions.assertEquals(1, types.size());
+        Assertions.assertTrue(types.get(0).getName().equals(
+                "com.norconex.commons.lang.convert.DurationConverter"));
     }
 }

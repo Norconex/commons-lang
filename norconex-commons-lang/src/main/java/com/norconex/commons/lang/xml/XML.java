@@ -329,14 +329,6 @@ public class XML {
         return toObject((Class<T>) getClass("@class", null), defaultObject);
     }
 
-    @SuppressWarnings("unchecked")
-    private <T> T toObject(String className, T defaultObject) {
-        if (node == null || StringUtils.isBlank(className)) {
-            return defaultObject;
-        }
-        return toObject((Class<T>) Converter.convert(
-                className, Class.class, null), defaultObject);
-    }
     private <T> T toObject(Class<T> objClass, T defaultObject) {
         if (node == null) {
             return defaultObject;
@@ -417,6 +409,7 @@ public class XML {
      * @return a new object.
      * @throws XMLException if something prevented object creation
      */
+    @SuppressWarnings("unchecked")
     public <T> T toObjectImpl(Class<?> type, T defaultObject) {
         if (node == null || type == null) {
             return defaultObject;
@@ -428,19 +421,26 @@ public class XML {
         } catch (ConverterException e) {
             if (e.getCause() instanceof ClassNotFoundException) {
                 String partialName = getString("@class");
-                List<String> results = ClassFinder.findSubTypes(
+                List<?> results = ClassFinder.findSubTypes(
                         type, s -> s.endsWith(partialName));
                 if (results.size() > 1) {
                     throw new XMLException(results.size()
-                            + " classes implementing " + type
-                            + " and ending with " + partialName
-                            + " where found when only 1 was expected. "
+                            + " classes implementing \""
+                            + type.getName() + "\" "
+                            + "and ending with \"" + partialName + "\" "
+                            + "where found when only 1 was expected. "
                             + "Consider using fully qualified class name.");
                 }
+
                 if (results.isEmpty()) {
-                    return null;
+                    throw new XMLException(
+                              "No class implementing \""
+                            + type.getName() + "\" "
+                            + "and ending with \"" + partialName + "\" "
+                            + "could be found. Check your classpath or "
+                            + "consider using fully qualified class name.");
                 }
-                obj = toObject(results.get(0), defaultObject);
+                obj = toObject((Class<T>) results.get(0), defaultObject);
             } else {
                 throw e;
             }
@@ -2127,7 +2127,8 @@ public class XML {
     }
 
     //TODO isDisabled (which also reads disable, ignore, ignored
-    // and give warnings when not "disabled" (or rely on validation, changing all ignore to "disabled"
+    // and give warnings when not "disabled" (or rely on validation,
+    // changing all ignore to "disabled"
 
     public Class<?> getClass(String xpathExpression) {
         return get(xpathExpression, Class.class);
@@ -2239,8 +2240,8 @@ public class XML {
      * @param throwException <code>true</code> to throw exception, else log
      *        a warning
      */
-    public void checkDeprecated(
-            String deprecatedXPath, String replacement, boolean throwException) {
+    public void checkDeprecated(String deprecatedXPath,
+            String replacement, boolean throwException) {
         if (contains(deprecatedXPath)) {
             StringBuilder b = new StringBuilder();
             b.append('"');
