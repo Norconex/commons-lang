@@ -1,4 +1,4 @@
-/* Copyright 2010-2019 Norconex Inc.
+/* Copyright 2010-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
  */
 package com.norconex.commons.lang.unit;
 
+import java.math.RoundingMode;
 import java.util.Locale;
 
 import org.junit.jupiter.api.Assertions;
@@ -23,16 +24,48 @@ public class DataUnitFormatterTest {
 
     @Test
     public void testFormat() {
+        DataUnitFormatter decFmt = new DataUnitFormatter();
+        DataUnitFormatter binFmt =
+                new DataUnitFormatter().setBinaryNotation(true);
+
         // non-breaking space: \u00A0
-        Assertions.assertEquals("3\u00A0GB",
-                new DataUnitFormatter().format(3, DataUnit.GB));
-        Assertions.assertEquals("2\u00A0MB",
-                new DataUnitFormatter().format(3000, DataUnit.KB));
-        Assertions.assertEquals("2.9\u00A0MB",
-                new DataUnitFormatter(1).format(3000, DataUnit.KB));
-        Assertions.assertEquals("2,99\u00A0KB", new DataUnitFormatter(
-                Locale.CANADA_FRENCH, 2).format(3071, DataUnit.B));
-        Assertions.assertEquals("10\u00A0000\u00A0KB", new DataUnitFormatter(
-                Locale.CANADA_FRENCH, 2, true).format(10000, DataUnit.KB));
+
+        Assertions.assertEquals("3\u00A0GB", decFmt.format(3, DataUnit.GB));
+        Assertions.assertEquals("3\u00A0GiB", binFmt.format(3, DataUnit.GIB));
+
+        Assertions.assertEquals("3\u00A0MB", decFmt.format(3000, DataUnit.KB));
+        Assertions.assertEquals("3\u00A0MiB",
+                binFmt.format(3000, DataUnit.KIB));
+
+        Assertions.assertEquals("3\u00A0MB",
+                decFmt.withDecimalPrecision(1).format(3000, DataUnit.KB));
+        Assertions.assertEquals("2.9\u00A0MiB",
+                binFmt.withDecimalPrecision(1).format(3000, DataUnit.KIB));
+
+        Assertions.assertEquals("3,07\u00A0kB", decFmt
+                .withLocale(Locale.CANADA_FRENCH)
+                .setDecimalPrecision(2)
+                .setRoundingMode(RoundingMode.DOWN)
+                .format(3071, DataUnit.B));
+        Assertions.assertEquals("2,99\u00A0KiB", binFmt
+                .withLocale(Locale.CANADA_FRENCH)
+                .setDecimalPrecision(2)
+                .setRoundingMode(RoundingMode.DOWN)
+                .format(3071, DataUnit.B));
+
+        Assertions.assertEquals("10\u00A0000\u00A0kB", decFmt
+                .withLocale(Locale.CANADA_FRENCH)
+                .setDecimalPrecision(2)
+                .setFixedUnit(true)
+                .format(10000, DataUnit.KB));
+        Assertions.assertEquals("10\u00A0000\u00A0KiB", binFmt
+                .withLocale(Locale.CANADA_FRENCH)
+                .setDecimalPrecision(2)
+                .setFixedUnit(true)
+                .format(10000, DataUnit.KIB));
+
+        // Format binary to decimal
+        Assertions.assertEquals("2.048\u00A0kB",
+                decFmt.withDecimalPrecision(3).format(2, DataUnit.KIB));
     }
 }

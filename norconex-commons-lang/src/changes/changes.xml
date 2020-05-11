@@ -159,7 +159,15 @@
         New CountingIteragor class.
       </action>
       <action dev="essiembre" type="add">
+        DataUnitFormatter is now mutable, and has new settings added:
+        "binaryNotation", and "roundingMode".
+      </action>
+      <action dev="essiembre" type="add">
         New methods on several other classes.
+      </action>
+      <action dev="essiembre" type="update">
+        DataUnit now aligns with the international standard
+        system of units by treating decimal and binary notations distinctively. 
       </action>
       <action dev="essiembre" type="update">
         Now relies on Norconex Commons Maven Parent. 

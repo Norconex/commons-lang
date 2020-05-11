@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -283,6 +284,20 @@ public final class CollectionUtil {
     @SuppressWarnings("unchecked")
     public static <T> List<T> unmodifiableList(T... values) {
         return Collections.unmodifiableList(Arrays.asList(values));
+    }
+    /**
+     * Returns an unmodifiable view of the specified set. Convenience method
+     * for doing with an array the same as
+     * {@link Collections#unmodifiableSet(Set)}.
+     * This method uses a {@link LinkedHashSet} to maintain order.
+     * @param <T> target objects class type
+     * @param values the values to convert to an unmodifiable list
+     * @return unmodifiable list
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> Set<T> unmodifiableSet(T... values) {
+        return Collections.unmodifiableSet(
+                new LinkedHashSet<>(Arrays.asList(values)));
     }
 
     /**

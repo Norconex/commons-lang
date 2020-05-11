@@ -90,7 +90,7 @@ public class XMLTaglet extends AbstractInlineTaglet {
                 .setIndentSize(2)
                 .setWrapAttributesAt(1)
                 .setWrapContentAt(80)
-                .setBlankLineBeforeComment(true)
+                .setBlankLineBeforeComment(false)
                 .setSelfCloseEmptyTags(true)
                 .format(resolveIncludes(text))
         ));

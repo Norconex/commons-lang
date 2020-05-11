@@ -1,4 +1,4 @@
-/* Copyright 2010-2019 Norconex Inc.
+/* Copyright 2010-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,13 @@ public class DataUnitTest {
 
     @Test
     public void testConversions() {
-        Assertions.assertEquals(0, DataUnit.B.toKilobytes(5));
-        Assertions.assertEquals(2048, DataUnit.KB.toBytes(2));
-        Assertions.assertEquals(3, DataUnit.MB.toGigabytes(3072));
+        Assertions.assertEquals(0, DataUnit.B.to(5, DataUnit.KB).intValue());
+        Assertions.assertEquals(2000, DataUnit.KB.toBytes(2).intValue());
+        Assertions.assertEquals(
+                3, DataUnit.MIB.from(3072, DataUnit.KIB).intValue());
+
+
+        // Test bytes vs bits
+        Assertions.assertEquals(1024*8, DataUnit.KIB.toBits(1).intValue());
     }
 }

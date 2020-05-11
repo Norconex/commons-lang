@@ -63,9 +63,9 @@ import com.norconex.commons.lang.unit.DataUnit;
 public class CachedStreamFactory {
 
     public static final int DEFAULT_MAX_MEM_INSTANCE =
-            (int) DataUnit.MB.toBytes(100);
+            DataUnit.MB.toBytes(100).intValue();
     public static final int DEFAULT_MAX_MEM_POOL =
-            (int) DataUnit.GB.toBytes(1);
+            DataUnit.GB.toBytes(1).intValue();
 
     private static final String PROP_MAX_MEM_POOL = "cachedstream.mem.pool";
     private static final String PROP_MAX_MEM_INSTANCE =
