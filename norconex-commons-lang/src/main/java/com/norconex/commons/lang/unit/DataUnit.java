@@ -21,6 +21,8 @@ import java.math.BigInteger;
 import java.util.List;
 import java.util.Objects;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * <p>
  * A <tt>DataUnit</tt> offers representation and conversion of various
@@ -264,6 +266,37 @@ public enum DataUnit {
                 "'sourceUnit' must not be null.");
         return sourceUnit.bits.multiply(sourceAmount).divide(bits);
     }
+
+    /**
+     * Gets the unit value representing the given text. Both symbols or
+     * full names are supported (English or French,
+     * case-insensitive, ignoring accents).
+     * @param dataUnit the textual representation of the unit.
+     * @return DataUnit instance or <code>null</code> if no match.
+     */
+    public static DataUnit from(String dataUnit) {
+        String txt = StringUtils.trimToNull(dataUnit);
+        if (txt == null) {
+            return null;
+        }
+
+        // normalize (remove accents, plural, and translate)
+        txt = StringUtils.stripEnd(txt, "s");
+        txt = StringUtils.stripAccents(txt);
+        txt = StringUtils.replaceIgnoreCase(txt, "octet", "byte");
+
+        // compare
+        for (DataUnit unit : values()) {
+            if (unit.getSymbol().equalsIgnoreCase(txt)) {
+                return unit;
+            }
+            if (unit.getName().equalsIgnoreCase(txt)) {
+                return unit;
+            }
+        }
+        return null;
+    }
+
     /**
      * Converts a given source data amount and type to this type.
      * @param sourceAmount source data amount
