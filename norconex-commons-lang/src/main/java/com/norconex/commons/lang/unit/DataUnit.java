@@ -38,6 +38,7 @@ import org.apache.commons.lang3.StringUtils;
  * notations</a> distinctively. Each are represented as:
  * </p>
  * <table>
+ *   <caption class="d-none">Data unit notations</caption>
  *   <tr><th colspan="3">Decimal</th><th colspan="3">Binary</th></tr>
  *   <tr><th>k</th><td>kilo</td><td>10<sup>3</sup></td>
  *       <th>Ki</th><td>kibi</td><td>2<sup>10</sup></td></tr>
@@ -63,6 +64,7 @@ import org.apache.commons.lang3.StringUtils;
  * represented as:
  * </p>
  * <table>
+ *   <caption class="d-none">Bytes and bits notations</caption>
  *   <tr><th>B</th><td>bytes (8-bit)</td></tr>
  *   <tr><th>bit</th><td>bits</td></tr>
  * </table>

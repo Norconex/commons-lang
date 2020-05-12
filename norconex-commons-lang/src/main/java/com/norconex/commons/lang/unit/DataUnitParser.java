@@ -70,7 +70,7 @@ import org.slf4j.LoggerFactory;
  * French uses the same symbols. Accents aside, the names are also the same,
  * except for replacing "byte" with "octet"
  * (e.g., "gigabyte" becomes "gigaoctet").
- * <p>
+ * </p>
  * <p>
  * French typically write the following prefixes with an "&eacute;":
  * m&eacute;ga, m&eacute;bi, t&eacute;ra, t&eacute;bi p&eacute;ta, p&eacute;bi.
