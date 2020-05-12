@@ -332,21 +332,19 @@ public final class ConfigurationLoader {
 
     // @since 2.0.0
     protected VelocityEngine createVelocityEngine() {
-        VelocityEngine velocityEngine = new VelocityEngine();
-        velocityEngine.setProperty(RuntimeConstants.EVENTHANDLER_INCLUDE,
+        VelocityEngine engine = new VelocityEngine();
+        engine.setProperty(RuntimeConstants.EVENTHANDLER_INCLUDE,
                 RelativeIncludeEventHandler.class.getName());
-        velocityEngine.setProperty(
-                RuntimeConstants.EVENTHANDLER_INVALIDREFERENCES,
-                InvalidReferenceExternalFallback.class.getName());
-        velocityEngine.setProperty(RuntimeConstants.RESOURCE_LOADERS, "file");
-        velocityEngine.setProperty(
-                RuntimeConstants.FILE_RESOURCE_LOADER_PATH, "");
-        velocityEngine.setProperty(RuntimeConstants.INPUT_ENCODING,
+        engine.setProperty(RuntimeConstants.EVENTHANDLER_REFERENCEINSERTION,
+                ExtendedReferenceInsertionEventHandler.class.getName());
+        engine.setProperty(RuntimeConstants.RESOURCE_LOADERS, "file");
+        engine.setProperty(RuntimeConstants.FILE_RESOURCE_LOADER_PATH, "");
+        engine.setProperty(RuntimeConstants.INPUT_ENCODING,
                 StandardCharsets.UTF_8.toString());
-        velocityEngine.setProperty(RuntimeConstants.ENCODING_DEFAULT,
+        engine.setProperty(RuntimeConstants.ENCODING_DEFAULT,
                 StandardCharsets.UTF_8.toString());
-        velocityEngine.setProperty("runtime.log", "");
-        return velocityEngine;
+        engine.setProperty("runtime.log", "");
+        return engine;
     }
 
     //--- Private methods ------------------------------------------------------
