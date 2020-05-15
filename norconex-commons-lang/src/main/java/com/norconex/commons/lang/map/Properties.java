@@ -52,6 +52,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.text.StringEscapeUtils;
+import org.apache.commons.text.translate.UnicodeEscaper;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -401,8 +402,12 @@ public class Properties extends ObservableMap<String, List<String>>
             // Remove silly date comment
             StringWriter w = new StringWriter();
             p.store(w, null);
-            String clean = w.toString().replaceFirst("^#.*?[\n\r]+", "");
 
+            // Java Properties stores
+            // We unicode-escape anything above ISO-8859-1 (latin-1) to
+            // ensure there are no problems when read back.
+            String clean = w.toString().replaceFirst("^#.*?[\n\r]+", "");
+            clean = UnicodeEscaper.above(127).translate(clean);
             if (output instanceof Writer) {
                 IOUtils.write(clean, (Writer) output);
             } else {
@@ -710,6 +715,8 @@ public class Properties extends ObservableMap<String, List<String>>
             if (isXML) {
                 p.loadFromXML((InputStream) input);
             } else {
+//System.err.println("PROPERTY 1:");
+//System.err.println(IOu);
                 p.load((InputStream) input);
             }
         }
