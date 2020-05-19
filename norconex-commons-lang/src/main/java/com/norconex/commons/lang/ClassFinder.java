@@ -205,7 +205,7 @@ public final class ClassFinder {
             } catch (UnsupportedClassVersionError | ClassNotFoundException e) {
                 LOG.error("Invalid class: \"{}\"", className, e);
             } catch (NoClassDefFoundError e) {
-                LOG.debug("Invalid class: \"{}\"", className, e);
+                LOG.trace("Invalid class: \"{}\"", className, e);
             }
         }
         return subTypes;
