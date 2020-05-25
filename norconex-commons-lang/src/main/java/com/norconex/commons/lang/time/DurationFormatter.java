@@ -43,11 +43,11 @@ public final class DurationFormatter {
 
     /** Example: 5 days 18 hours 1 minute 23 seconds */
     public static final DurationFormatter FULL = new DurationFormatter();
-    
+
     private static final Locale DEFAULT_LOCALE = Locale.ENGLISH;
-    private static final IDurationUnitFormatter DEFAULT_UNIT_FORMATTER = 
+    private static final IDurationUnitFormatter DEFAULT_UNIT_FORMATTER =
             RBDurationUnitFormatter.FULL;
-    
+
     private Locale locale;
     private int unitPrecision;
     private DurationUnit highestUnit;
@@ -57,18 +57,18 @@ public final class DurationFormatter {
     private String innerSeparator = " ";
     private String outerSeparator = " ";
     private String outerLastSeparator;
-    
+
     /**
      * Creates a duration with the default locale and full words for
-     * duration units. 
+     * duration units.
      */
     public DurationFormatter() {
         super();
     }
-    
+
     /**
-     * Creates a copy if this formatter with the given locale.  Default 
-     * locale is English. 
+     * Creates a copy if this formatter with the given locale.  Default
+     * locale is English.
      * @param locale locale
      * @return duration formatter copy
      */
@@ -82,7 +82,7 @@ public final class DurationFormatter {
     }
 
     /**
-     * Creates a copy if this formatter with the given unit precision. 
+     * Creates a copy if this formatter with the given unit precision.
      * @param unitPrecision unit precision
      * @return duration formatter copy
      */
@@ -96,7 +96,7 @@ public final class DurationFormatter {
     }
 
     /**
-     * Creates a copy if this formatter with the given number format. 
+     * Creates a copy if this formatter with the given number format.
      * Default number format is {@link RBDurationUnitFormatter#FULL}.
      * @param numberFormat number format
      * @return duration formatter copy
@@ -109,9 +109,9 @@ public final class DurationFormatter {
     public NumberFormat getNumberFormat() {
         return numberFormat;
     }
-    
+
     /**
-     * Creates a copy if this formatter with the given highest unit. 
+     * Creates a copy if this formatter with the given highest unit.
      * @param highestUnit highest unit
      * @return duration formatter copy
      */
@@ -125,7 +125,7 @@ public final class DurationFormatter {
     }
 
     /**
-     * Creates a copy if this formatter with the given lowest unit. 
+     * Creates a copy if this formatter with the given lowest unit.
      * @param lowestUnit lowest unit
      * @return duration formatter copy
      */
@@ -137,9 +137,9 @@ public final class DurationFormatter {
     public DurationUnit getLowestUnit() {
         return lowestUnit;
     }
-    
+
     /**
-     * Creates a copy if this formatter with the given unit formatter. 
+     * Creates a copy if this formatter with the given unit formatter.
      * @param unitFormatter unit formatter
      * @return duration formatter copy
      */
@@ -173,9 +173,9 @@ public final class DurationFormatter {
 
     /**
      * Creates a copy if this formatter with the specified separator text
-     * to be inserted between each formatter units (number and text pairs). 
+     * to be inserted between each formatter units (number and text pairs).
      * For instance, specifying ", " for two minutes and ten seconds duration
-     * would result in: <code>2 minutes, 10 seconds</code>.  
+     * would result in: <code>2 minutes, 10 seconds</code>.
      * Default is a single space character.
      * @param outerSeparator outer separator
      * @return duration formatter copy
@@ -192,11 +192,11 @@ public final class DurationFormatter {
 
     /**
      * Creates a copy if this formatter with the specified separator text
-     * to be inserted between the second to last and last formatter units 
-     * (number and text pairs). For instance, specifying " and " for 
+     * to be inserted between the second to last and last formatter units
+     * (number and text pairs). For instance, specifying " and " for
      * 1 hour, two minutes and ten seconds duration
-     * would result in: <code>1 hour 2 minutes and 10 seconds</code>.  
-     * Default is <code>null</code> (fallsback to 
+     * would result in: <code>1 hour 2 minutes and 10 seconds</code>.
+     * Default is <code>null</code> (fallsback to
      * using {@link #getOuterSeparator()}).
      * @param outerLastSeparator last outer separator
      * @return duration formatter copy
@@ -210,11 +210,11 @@ public final class DurationFormatter {
     public String getOuterLastSeparator() {
         return outerLastSeparator;
     }
-    
+
     /**
      * Formats the given duration to a string.
      * @param duration the duration to format
-     * @return formatted duration 
+     * @return formatted duration
      */
     public String format(Duration duration) {
         if (duration == null) {
@@ -222,16 +222,16 @@ public final class DurationFormatter {
         }
         return format(duration.toMillis());
     }
-    
+
     /**
-     * Formats the given duration to a string.
+     * Formats the given duration (in milliseconds) to a string.
      * @param duration the duration to format
-     * @return formatted duration 
+     * @return formatted duration
      */
     public String format(long duration) {
-        DurationUnit highest = 
+        DurationUnit highest =
                 highestUnit == null ? DurationUnit.YEAR : highestUnit;
-        DurationUnit lowest = 
+        DurationUnit lowest =
                 lowestUnit == null ? DurationUnit.MILLISECOND : lowestUnit;
         if (lowest.ordinal() > highest.ordinal()) {
             DurationUnit h = highest;
@@ -243,7 +243,7 @@ public final class DurationFormatter {
         if (duration == 0) {
             return format(0, lowest).trim();
         }
-        
+
         // If precision is greater than highest minus lowest, it
         // is reduced to match that difference.
         int precision = unitPrecision;
@@ -257,14 +257,14 @@ public final class DurationFormatter {
         long remainder = duration;
         int unitCount = 0;
         List<String> formattedParts = new ArrayList<>();
-        
-        for (DurationUnit u : ArrayUtils.subarray(DurationUnit.reverseValues(), 
+
+        for (DurationUnit u : ArrayUtils.subarray(DurationUnit.reverseValues(),
                 highest.reverseOrdinal(), lowest.reverseOrdinal() + 1)) {
             // break if we have reached max desired number of units (precision)
             if (unitCount == precision) {
                 break;
             }
-            
+
             long factor = remainder / u.toMilliseconds();
             if (factor > 0) {
                 formattedParts.add(format(factor, u));
@@ -274,7 +274,7 @@ public final class DurationFormatter {
                 unitCount++;
             }
         }
-        
+
         if (unitCount == 0) {
             return format(0, lowest).trim();
         }
@@ -292,35 +292,35 @@ public final class DurationFormatter {
         }
         return b.toString().trim();
     }
-    
+
     private String resolveOuterSeparator(int index, int lastIndex) {
         if (index == lastIndex && outerLastSeparator != null) {
             return outerLastSeparator;
         }
         return StringUtils.defaultString(outerSeparator);
     }
-    
+
     private String format(long factor, DurationUnit unit) {
         StringBuilder b = new StringBuilder();
-        
+
         // Numeric value
         if (numberFormat != null) {
             b.append(numberFormat.format(factor));
         } else {
             b.append(factor);
         }
-        
+
         // Inner separator
         b.append(StringUtils.defaultString(innerSeparator));
-        
+
         // Textual value
-        IDurationUnitFormatter duf = 
+        IDurationUnitFormatter duf =
                 unitFormatter == null ? DEFAULT_UNIT_FORMATTER : unitFormatter;
         Locale safeLocale = locale == null ? DEFAULT_LOCALE : locale;
         b.append(duf.format(unit, safeLocale, factor > 1));
         return b.toString();
     }
-    
+
     private DurationFormatter copy() {
         DurationFormatter df = new DurationFormatter();
         df.locale = locale;
@@ -334,7 +334,7 @@ public final class DurationFormatter {
         df.outerLastSeparator = outerLastSeparator;
         return df;
     }
-    
+
     @Override
     public boolean equals(final Object other) {
         return EqualsBuilder.reflectionEquals(this, other);
@@ -345,7 +345,7 @@ public final class DurationFormatter {
     }
     @Override
     public String toString() {
-        return new ReflectionToStringBuilder(this, 
+        return new ReflectionToStringBuilder(this,
                 ToStringStyle.SHORT_PREFIX_STYLE).toString();
-    }    
+    }
 }

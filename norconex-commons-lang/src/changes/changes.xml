@@ -159,6 +159,9 @@
         New CountingIteragor class.
       </action>
       <action dev="essiembre" type="add">
+        New FifoMap class. 
+      </action>
+      <action dev="essiembre" type="add">
         New DataUnitParser.
       </action>
       <action dev="essiembre" type="add">
