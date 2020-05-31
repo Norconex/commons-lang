@@ -46,6 +46,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.bag.HashBag;
 import org.apache.commons.collections4.bag.TreeBag;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -465,6 +466,12 @@ public final class BeanUtil {
             return bean;
         }
         try {
+            // If a primitive or String (immutable), return as is.
+            if (bean instanceof String
+                    || ClassUtils.isPrimitiveOrWrapper(bean.getClass())) {
+                return bean;
+            }
+
             @SuppressWarnings("unchecked")
             T newBean = (T) bean.getClass().newInstance();
             copyProperties(newBean, bean);
