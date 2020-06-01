@@ -1586,9 +1586,9 @@ public class XML {
      */
     public Long getDataSize(
             String xpathExpression, DataUnit targetUnit, Long defaultValue) {
-        BigDecimal sz = DataUnitParser.parse(
-                getString(xpathExpression, null), targetUnit, null);
-        if (sz == null) {
+        BigDecimal sz = DataUnitParser.parse(getString(
+                xpathExpression, null), targetUnit, BigDecimal.valueOf(-1));
+        if (sz.longValue() == -1) {
             return defaultValue;
         }
         return sz.longValue();
