@@ -22,6 +22,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -97,6 +98,8 @@ import com.norconex.commons.lang.convert.Converter;
 import com.norconex.commons.lang.convert.ConverterException;
 import com.norconex.commons.lang.time.DurationParser;
 import com.norconex.commons.lang.time.DurationParserException;
+import com.norconex.commons.lang.unit.DataUnit;
+import com.norconex.commons.lang.unit.DataUnitParser;
 
 //TODO consider checking for a "disable=false|true" and setting it on
 //a method if this method exists, and/or do not load if set to true.
@@ -968,7 +971,10 @@ public class XML {
      * @return list of errors/warnings or empty (never <code>null</code>)
      */
     public List<XMLValidationError> validate(Object obj) {
-        return validate(obj == null ? null : obj.getClass());
+        if (obj == null) {
+            return validate(null);
+        }
+        return validate(obj.getClass());
     }
 
     /**
@@ -1545,6 +1551,50 @@ public class XML {
     }
 
     /**
+     * Gets the size of a data expression, in bytes (e.g., 2KB, 1GiB,
+     * 3 megabytes, etc).  Without a unit specified, the value is assumed
+     * to represent bytes.
+     * @param xpathExpression xpath to the element/attribute with the size
+     * @return size in bytes
+     * @since 2.0.0
+     */
+    public Long getDataSize(String xpathExpression) {
+        return getDataSize(xpathExpression, null, null);
+    }
+    /**
+     * Gets the size of a data expression, in bytes (e.g., 2KB, 1GiB,
+     * 3 megabytes, etc).  Without a unit specified, the value is assumed
+     * to represent bytes.
+     * @param xpathExpression xpath to the element/attribute with the size
+     * @param defaultValue default value
+     * @return size in bytes or default value if size is <code>null</code>
+     * @since 2.0.0
+     */
+    public Long getDataSize(
+            String xpathExpression, Long defaultValue) {
+        return getDataSize(xpathExpression, null, defaultValue);
+    }
+    /**
+     * Gets the size of a data expression, in the specified target unit
+     * (e.g., 2KB, 1GiB, 3 megabytes, etc).  Without a unit specified
+     * in the value, the value is assumed to represent bytes.
+     * @param xpathExpression xpath to the element/attribute with the size
+     * @param targetUnit the unit to convert the value into
+     * @param defaultValue default value
+     * @return size in bytes or default value if size is <code>null</code>
+     * @since 2.0.0
+     */
+    public Long getDataSize(
+            String xpathExpression, DataUnit targetUnit, Long defaultValue) {
+        BigDecimal sz = DataUnitParser.parse(
+                getString(xpathExpression, null), targetUnit, null);
+        if (sz == null) {
+            return defaultValue;
+        }
+        return sz.longValue();
+    }
+
+    /**
      * Gets a duration in milliseconds which can exists as a numerical
      * value or a textual
      * representation of a duration as per {@link DurationParser}.
@@ -1570,7 +1620,10 @@ public class XML {
      */
     public Long getDurationMillis(String xpathExpression, Long defaultValue) {
         Duration d = getDuration(xpathExpression);
-        return d == null ? defaultValue : d.toMillis();
+        if (d == null) {
+            return defaultValue;
+        }
+        return d.toMillis();
     }
     /**
      * Gets a duration which can exists as a numerical
