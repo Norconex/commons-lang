@@ -151,6 +151,7 @@ public final class PropertyMatcher implements Predicate<Properties> {
             return false;
         }
 
+        boolean keyFound = false;
         for (Entry<String, List<String>> en : properties.entrySet()) {
             String field = en.getKey();
 
@@ -160,17 +161,25 @@ public final class PropertyMatcher implements Predicate<Properties> {
                 continue;
             }
 
-            // matches if value pattern is null or matches
-            if (valueMatcher.getPattern() == null) {
-                return true;
-            }
-            List<String> values = en.getValue();
-            for (String value : values) {
-                if (valueMatcher.matches(value)) {
-                    return true;
+            keyFound = true;
+
+            // matches value pattern if not null
+            if (valueMatcher.getPattern() != null) {
+                List<String> values = en.getValue();
+                for (String value : values) {
+                    if (valueMatcher.matches(value)) {
+                        return true;
+                    }
                 }
             }
         }
+
+        // if no key was found, we treat as equivalent to having
+        // been there with a null value.
+        if (!keyFound && valueMatcher.getPattern() == null) {
+            return true;
+        }
+
         return false;
     }
 
