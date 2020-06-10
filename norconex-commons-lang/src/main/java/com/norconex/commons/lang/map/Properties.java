@@ -891,6 +891,7 @@ public class Properties extends ObservableMap<String, List<String>>
     public final <T> void setList(String key, List<T> values) {
         if (CollectionUtils.isEmpty(values)) {
             remove(key);
+            return;
         }
         List<String> list = CollectionUtil.toStringList(values);
         //TODO benchmark if an issue with long lists to do a separate
