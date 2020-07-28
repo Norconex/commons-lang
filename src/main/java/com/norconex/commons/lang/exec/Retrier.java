@@ -27,7 +27,7 @@ import com.norconex.commons.lang.Sleeper;
  * encountered, if any, to a configurable maximum.
  * @author Pascal Essiembre
  * @since 1.13.0 (previously "RetriableExecutor" part of
- *        <a href="https://www.norconex.com/jef/api/">JEF API</a> 4.0).
+ *        <a href="https://opensource.norconex.com/jef/api/">JEF API</a> 4.0).
  */
 public class Retrier {
 

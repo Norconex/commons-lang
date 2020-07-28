@@ -28,7 +28,7 @@ import com.norconex.commons.lang.io.InputStreamConsumer;
  * are wrapped in a runtime {@link ExecException}.
  * @author Pascal Essiembre
  * @since 1.13.0 (previously part of 
- *        <a href="https://www.norconex.com/jef/api/">JEF API</a> 4.0).
+ *        <a href="https://opensource.norconex.com/jef/api/">JEF API</a> 4.0).
  */
 public final class ExecUtil {
 

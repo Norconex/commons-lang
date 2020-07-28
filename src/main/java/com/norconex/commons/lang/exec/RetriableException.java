@@ -25,7 +25,7 @@ import org.apache.commons.lang3.ArrayUtils;
  * @author Pascal Essiembre
  * @see Retrier
  * @since 1.13.0 (previously part of 
- *        <a href="https://www.norconex.com/jef/api/">JEF API</a> 4.0).
+ *        <a href="https://opensource.norconex.com/jef/api/">JEF API</a> 4.0).
  */
 public class RetriableException extends Exception {
 

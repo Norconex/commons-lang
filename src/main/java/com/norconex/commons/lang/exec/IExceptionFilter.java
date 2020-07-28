@@ -19,7 +19,7 @@ package com.norconex.commons.lang.exec;
  * @author Pascal Essiembre
  * @see Retrier
  * @since 1.13.0 (previously part of 
- *        <a href="https://www.norconex.com/jef/api/">JEF API</a> 4.0).
+ *        <a href="https://opensource.norconex.com/jef/api/">JEF API</a> 4.0).
  */
 public interface IExceptionFilter {
 
