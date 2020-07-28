@@ -28,7 +28,7 @@
         <include>install.*</include>
         <include>scripts/**</include>
       </includes>
-      <outputDirectory>/</outputDirectory>
+      <outputDirectory>./</outputDirectory>
     </fileSet>  
   </fileSets>
 </assembly>

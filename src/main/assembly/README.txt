@@ -8,7 +8,7 @@ For any inquiries about Norconex Commons Lang, please contact
 Norconex Inc. at info@norconex.com.
 
 This product website and documentation is located at:
-https://www.norconex.com/product/commons-lang/
+https://opensource.norconex.com/commons/lang/
 
 Norconex licenses:
 ==================

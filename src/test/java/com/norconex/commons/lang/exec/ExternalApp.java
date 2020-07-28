@@ -51,7 +51,7 @@ public class ExternalApp {
     public static final String ENV_STDOUT_AFTER = "stdout_after";
     public static final String ENV_STDERR_BEFORE = "stderr_before";
     public static final String ENV_STDERR_AFTER = "stderr_after";
-    
+
     // reverse the word order in each lines
     public static void main(String[] args) throws IOException {
         if (args.length < 1) {
@@ -81,7 +81,7 @@ public class ExternalApp {
         printEnvToStderr(ENV_STDERR_BEFORE);
         OutputStream output = getOutputStream(outFile);
         try (InputStream input = getInputStream(inFile)) {
-            List<String> lines = 
+            List<String> lines =
                    IOUtils.readLines(input, StandardCharsets.UTF_8);
             for (String line : lines) {
                 String[] words =  line.split(" ");
@@ -98,8 +98,8 @@ public class ExternalApp {
             output.close();
         }
     }
-    
-    
+
+
     private static void printEnvToStdout(String varName) {
         String var = System.getenv(varName);
         if (StringUtils.isNotBlank(var)) {
@@ -112,15 +112,15 @@ public class ExternalApp {
             System.err.println(var);
         }
     }
-    
-    private static InputStream getInputStream(File inFile) 
+
+    private static InputStream getInputStream(File inFile)
             throws FileNotFoundException {
         if (inFile != null) {
             return new FileInputStream(inFile);
         }
         return System.in;
     }
-    private static OutputStream getOutputStream(File outFile) 
+    private static OutputStream getOutputStream(File outFile)
             throws FileNotFoundException {
         if (outFile != null) {
             return new FileOutputStream(outFile);
@@ -154,7 +154,7 @@ public class ExternalApp {
 
             String[] cmdArray = javaTask.getCommandLine().getCommandline();
             cmdArray = SystemCommand.escape(cmdArray);
-            
+
             String cmd = StringUtils.join(cmdArray, " ");
             cmd = fixCommand(cmd);
             return cmd;
@@ -162,7 +162,7 @@ public class ExternalApp {
             throw e;
         }
     }
-    
+
     // Fix the command as necessary.
     // Shorten the command by eliminating items we do not need
     // from classpath and using shorter command aliases.  This is necessary
@@ -171,7 +171,7 @@ public class ExternalApp {
     private static String fixCommand(String command) {
         String cmd = command;
         cmd = cmd.replaceFirst(" -classpath ", " -cp ");
-        
+
         String cp = cmd.replaceFirst(".*\\s+-cp\\s+(.*)\\s+"
                 + ExternalApp.class.getName() + ".*", "$1");
         boolean isQuoted = false;
@@ -197,8 +197,10 @@ public class ExternalApp {
                 + ExternalApp.class.getName() + ".*)", "$1" + cp + "$3");
         return cmd;
     }
-    
+
     private static final String[] KEEPERS = new String[] {
+            "test-classes",
+            "classes",
             "norconex-importer",
             "norconex-commons-lang",
             "junit",
@@ -218,5 +220,5 @@ public class ExternalApp {
         }
         return false;
     }
-    
+
 }

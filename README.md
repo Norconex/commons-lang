@@ -1,6 +1,6 @@
-Norconex commons-lang
+Norconex Commons Lang
 =======
 
 Generic library shared between several projects.
 
-https://www.norconex.com/product/commons-lang/
+https://opensource.norconex.com/commons/lang/

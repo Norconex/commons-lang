@@ -26,9 +26,18 @@
     <fileSet>
       <directory>${basedir}/src/main/assembly/</directory>
       <includes>
-        <include>*.txt</include>
+        <include>${basedir}/LICENSE</include>
+        <include>README.txt</include>
         <include>install.*</include>
         <include>scripts/**</include>
+      </includes>
+      <outputDirectory>./</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>${basedir}</directory>
+      <includes>
+        <include>LICENSE</include>
+        <include>CHANGES.xml</include>
       </includes>
       <outputDirectory>./</outputDirectory>
     </fileSet>
