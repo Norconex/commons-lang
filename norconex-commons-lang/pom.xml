@@ -384,7 +384,7 @@
   <distributionManagement>
     <site>
       <id>norconex-site-deployment</id>
-      <url>${site.baseurl}/product/commons-lang</url>
+      <url>${site.baseurl}/commons/lang/v1</url>
     </site>
     <snapshotRepository>
       <id>ossrh</id>
