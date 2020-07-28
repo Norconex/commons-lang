@@ -243,42 +243,19 @@
 
     </plugins>
   </build>
-
+  
+  <!-- Only used to publish javadoc with "site:deploy", 
+       after they were generated -->
   <distributionManagement>
     <site>
       <id>norconex-site-deployment</id>
-      <url>${site.baseurl}/product/commons-lang</url>
+      <url>${site.baseurl}/commons/lang/v2</url>
     </site>
-  </distributionManagement>
-  
+  </distributionManagement>  
+
   <reporting>
     <plugins>
     
-      <!-- TODO: Move to parent and/or remove? -->      
-      <!-- 
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-project-info-reports-plugin</artifactId>
-        <version>2.7</version>
-        <configuration>
-          <dependencyDetailsEnabled>false</dependencyDetailsEnabled>
-          <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
-        </configuration>
-        <reportSets>
-          <reportSet>
-            <reports>
-              <report>summary</report>
-              <report>dependencies</report>
-              <report>issue-tracking</report>
-              <report>license</report>
-              <report>scm</report>
-              <report>project-team</report>
-            </reports>
-          </reportSet>
-        </reportSets>
-      </plugin>
-       -->
-
       <!-- TODO: Move to parent and/or remove? -->      
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
