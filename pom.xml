@@ -220,27 +220,7 @@
     </site>
   </distributionManagement>  
 
-  <reporting>
-    <plugins>
-    
-      <!-- TODO: Move to parent and/or remove? -->      
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-changes-plugin</artifactId>
-        <version>2.9</version>
-        <reportSets>
-          <reportSet>
-            <reports>
-              <report>changes-report</report>
-            </reports>
-          </reportSet>
-        </reportSets>
-      </plugin>
-
-    </plugins>
-  </reporting>  
-  
-  <url>https://www.norconex.com/product/commons-lang</url>
+  <url>https://opensource.norconex.com/commons/lang</url>
   <description>Norconex Commons Lang is a Java library containing utility classes that complements the Java API and are not found in commonly available libraries (such as the great Apache Commons Lang, which it relies on).</description>
   <scm>
     <url>https://github.com/Norconex/commons-lang</url>
