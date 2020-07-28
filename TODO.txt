@@ -11,17 +11,9 @@ TODO:
 
 - XSD: Always have a type and an element extending it to improve reuse.
 
-- DONE? EnhancedXMLStreamWriter: eliminate concept of "writeBlanks" and always 
-  write them for elements with text only (and attributes?)?
-
 - Replace/refactor process execution to use new process features of Java 8.
 
 - See if we eliminate JEF, have more options in this lib.
-
-- Redo website so it looks closer to collectors
-
-- Redo download page so we no longer need to have a "currentRelease" property
-  in pom.xml
 
 - Modify Jar copier to handle cases where snapshot are timestamped instead and
   not being considered the latest when they should.  Like:
