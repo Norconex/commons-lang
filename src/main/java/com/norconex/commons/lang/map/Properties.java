@@ -80,7 +80,7 @@ import com.norconex.commons.lang.text.TextMatcher;
  * <p>This class extends {@link ObservableMap} which means you can listen
  * for property changes.</p>
  *
- * <p>To insert values, there are <i>set</i> <i>add</i> methods.
+ * <p>To insert values, there are <i>set</i> and <i>add</i> methods.
  * The <i>set</i> methods will first remove any existing value(s) under the
  * given key before inserting the new one(s).
  * It is essentially the same behavior as

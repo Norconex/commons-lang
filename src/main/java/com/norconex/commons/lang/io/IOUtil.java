@@ -410,8 +410,8 @@ public final class IOUtil {
     /**
      * Given Apache has deprecated its
      * <code>IOUtils#closeQuietly(java.io.Closeable)</code> method,
-     * this one offers an alternate.
-     * @param closeable one or more input streams to close quitely
+     * this one offers an alternate one.
+     * @param closeable one or more input streams to close quietly
      * @since 2.0.0
      */
     public static void closeQuietly(Closeable... closeable) {

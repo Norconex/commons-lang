@@ -1,4 +1,4 @@
-/* Copyright 2018 Norconex Inc.
+/* Copyright 2018-2020 Norconex Inc.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -28,6 +28,13 @@ public class EnumConverter extends AbstractConverter {
     @Override
     protected <T> T nullSafeToType(String value, Class<T> type) {
         String trimmed = value.trim();
+        // Try to match with "toString()"
+        for (T e : type.getEnumConstants()) {
+            if (((Enum<?>) e).toString().equalsIgnoreCase(trimmed)) {
+                return type.cast(e);
+            }
+        }
+        // Try to match with "name()"
         for (T e : type.getEnumConstants()) {
             if (((Enum<?>) e).name().equalsIgnoreCase(trimmed)) {
                 return type.cast(e);

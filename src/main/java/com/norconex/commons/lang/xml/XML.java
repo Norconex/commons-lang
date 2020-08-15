@@ -86,7 +86,6 @@ import org.xml.sax.Attributes;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.XMLFilterImpl;
@@ -506,7 +505,7 @@ public class XML {
      * @return a new object.
      */
     public <T extends Object> T getObject(String xpathExpression) {
-        return getObject(xpathExpression, (T) null, true);
+        return getObject(xpathExpression, (T) null);
     }
     /**
      * <p>Creates a new instance of the class represented by the "class"
@@ -529,10 +528,6 @@ public class XML {
      */
     public <T> T getObject(
             String xpathExpression, T defaultObject) {
-        return getObject(xpathExpression, defaultObject, false);
-    }
-    private <T> T getObject(String xpathExpression,
-            T defaultObject, boolean canThrowException) {
         if (node == null) {
             return defaultObject;
         }
@@ -548,7 +543,7 @@ public class XML {
             return xml.toObject(defaultObject);
         } catch (Exception e) {
             handleException(
-                    node.getNodeName(), xpathExpression, e, canThrowException);
+                    node.getNodeName(), xpathExpression, e);
             return defaultObject;
         }
     }
@@ -637,7 +632,7 @@ public class XML {
      */
     public <T extends Object> T getObjectImpl(
             Class<?> type, String xpathExpression) {
-        return getObjectImpl(type, xpathExpression, (T) null, true);
+        return getObjectImpl(type, xpathExpression, (T) null);
     }
     /**
      * <p>Creates a new instance of the class represented by the "class"
@@ -671,10 +666,6 @@ public class XML {
      */
     public <T> T getObjectImpl(
             Class<?> type, String xpathExpression, T defaultObject) {
-        return getObjectImpl(type, xpathExpression, defaultObject, false);
-    }
-    private <T> T getObjectImpl(Class<?> type, String xpathExpression,
-            T defaultObject, boolean canThrowException) {
         if (node == null || type == null) {
             return defaultObject;
         }
@@ -690,7 +681,7 @@ public class XML {
             return xml.toObjectImpl(type, defaultObject);
         } catch (Exception e) {
             handleException(
-                    node.getNodeName(), xpathExpression, e, canThrowException);
+                    node.getNodeName(), xpathExpression, e);
             return defaultObject;
         }
     }
@@ -814,47 +805,44 @@ public class XML {
     }
 
     private static void handleException(
-            String rootNode, String key,
-            Exception e, boolean canThrowException) {
+            String rootNode, String key, Exception e) {
 
         // Throw exception
-        if (canThrowException) {
-            if (e instanceof XMLException) {
-                throw (XMLException) e;
-            }
-            throw new XMLException(
-                    "Could not instantiate object from configuration "
-                  + "for \"" + rootNode + " -> " + key + "\".", e);
+        if (e instanceof XMLException) {
+            throw (XMLException) e;
         }
+        throw new XMLException(
+                "Could not instantiate object from configuration "
+              + "for \"" + rootNode + " -> " + key + "\".", e);
 
-        // Log exception
-        if (e instanceof XMLException
-                && e.getCause() != null) {
-            if (e.getCause() instanceof ClassNotFoundException) {
-                LOG.error("You declared a class that does not exists for "
-                        + "\"{} -> {}\". Check for typos in your "
-                        + "XML and make sure that "
-                        + "class is part of your Java classpath.",
-                        rootNode, key, e);
-            } else if (e.getCause() instanceof SAXParseException) {
-                String systemId =
-                        ((SAXParseException) e.getCause()).getSystemId();
-                if (StringUtils.endsWith(systemId, ".xsd")) {
-                    LOG.error("XML Schema parsing error for "
-                            + "\"{} -> {}\". Schema: {}",
-                            rootNode, key, systemId, e);
-                } else {
-                    LOG.error("XML parsing error for \"{} -> "
-                            + "{}\".", rootNode, key, e);
-                }
-            } else {
-                LOG.info("Could not instantiate object from configuration "
-                        + "for \"{} -> \".", rootNode, key, e);
-            }
-        } else{
-            LOG.info("Could not instantiate object from configuration "
-                    + "for \"{} -> \".", rootNode, key, e);
-        }
+//        //TODO Keep the following to log a nice message?
+//        if (e instanceof XMLException
+//                && e.getCause() != null) {
+//            if (e.getCause() instanceof ClassNotFoundException) {
+//                LOG.error("You declared a class that does not exists for "
+//                        + "\"{} -> {}\". Check for typos in your "
+//                        + "XML and make sure that "
+//                        + "class is part of your Java classpath.",
+//                        rootNode, key, e);
+//            } else if (e.getCause() instanceof SAXParseException) {
+//                String systemId =
+//                        ((SAXParseException) e.getCause()).getSystemId();
+//                if (StringUtils.endsWith(systemId, ".xsd")) {
+//                    LOG.error("XML Schema parsing error for "
+//                            + "\"{} -> {}\". Schema: {}",
+//                            rootNode, key, systemId, e);
+//                } else {
+//                    LOG.error("XML parsing error for \"{} -> "
+//                            + "{}\".", rootNode, key, e);
+//                }
+//            } else {
+//                LOG.info("Could not instantiate object from configuration "
+//                        + "for \"{} -> \".", rootNode, key, e);
+//            }
+//        } else{
+//            LOG.info("Could not instantiate object from configuration "
+//                    + "for \"{} -> \".", rootNode, key, e);
+//        }
     }
 
     /**
