@@ -1,4 +1,4 @@
-/* Copyright 2014-2019 Norconex Inc.
+/* Copyright 2014-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -408,7 +408,7 @@ public class CachedInputStream extends InputStream implements ICachedStream {
      */
     public void enforceFullCaching() throws IOException {
         if (firstRead) {
-            IOUtils.copy(this, new NullOutputStream());
+            IOUtils.copy(this, NullOutputStream.NULL_OUTPUT_STREAM);
             length = count;
             firstRead = false;
         }

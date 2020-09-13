@@ -1,4 +1,4 @@
-/* Copyright 2018 Norconex Inc.
+/* Copyright 2018-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,54 +17,76 @@ package com.norconex.commons.lang.event;
 import java.util.EventObject;
 import java.util.Objects;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import com.norconex.commons.lang.EqualsUtil;
 
 /**
- * A generic event implementation.
+ * An immutable event.
  * @author Pascal Essiembre
- * @param <T> the type of the event source
  * @since 2.0.0
  * @see IEventListener
  */
-public class Event<T> extends EventObject {
+public class Event extends EventObject {
 
     private static final long serialVersionUID = 1L;
-    private String name;
-    private transient Throwable exception;
+    private final String name;
+    private final String message;
+    private final transient Throwable exception;
 
-    /**
-     * New event.
-     * @param name event name
-     * @param source object responsible for triggering the event
-     */
-    public Event(String name, T source) {
-        this(name, source, null);
+
+    public static class Builder<B extends Builder<B>> {
+
+        private final String name;
+        private final Object source;
+        private String message;
+        private Throwable exception;
+
+        /**
+         * New event builder. Name and source cannot be <code>null</code>.
+         * @param name event name
+         * @param source object responsible for triggering the event
+         */
+        public Builder(String name, Object source) {
+            this.name = name;
+            this.source = source;
+        }
+
+        public B message(String message) {
+            this.message = message;
+            return self();
+        }
+        public B exception(Throwable exception) {
+            this.exception = exception;
+            return self();
+        }
+
+        public Event build() {
+            return new Event(this);
+        }
+
+        @SuppressWarnings("unchecked")
+        private B self() {
+            return (B) this;
+        }
     }
 
-
-    /**
-     * New event.
-     * @param name event name
-     * @param source object responsible for triggering the event
-     * @param exception exception
-     */
-    public Event(String name, T source, Throwable exception) {
-        super(source);
-        this.name = name;
-        this.exception = exception;
+    protected Event(Builder<?> b) {
+        super(b.source);
+        this.name = Objects.requireNonNull(b.name, "'name' must not be null.");
+        this.message = b.message;
+        this.exception = b.exception;
     }
 
     /**
      * Gets the object representing the source of this event.
      * @return the subject
      */
-    @SuppressWarnings("unchecked")
     @Override
-    public T getSource() {
-        return (T) source;
+    public Object getSource() {
+        return source;
     }
 
     /**
@@ -76,6 +98,14 @@ public class Event<T> extends EventObject {
     }
 
     /**
+     * Gets a message describing the event or giving precision.
+     * @return message the messsage
+     */
+    public String getMessage() {
+        return message;
+    }
+
+    /**
      * Gets the exception, if any.
      * @return the exception or <code>null</code>
      */
@@ -83,7 +113,7 @@ public class Event<T> extends EventObject {
         return exception;
     }
 
-    public boolean is(Event<?> event) {
+    public boolean is(Event event) {
         if (event == null) {
             return false;
         }
@@ -102,8 +132,15 @@ public class Event<T> extends EventObject {
     public int hashCode() {
         return HashCodeBuilder.reflectionHashCode(this);
     }
+    /**
+     * Returns the event message, if set, or the return value of
+     * <code>toString()</code> on source.
+     */
     @Override
     public String toString() {
-        return Objects.toString(source);
+        if (StringUtils.isBlank(message)) {
+            return Objects.toString(source);
+        }
+        return message;
     }
 }

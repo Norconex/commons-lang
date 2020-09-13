@@ -1,4 +1,4 @@
-/* Copyright 2018 Norconex Inc.
+/* Copyright 2018-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,9 +23,9 @@ import java.util.function.Consumer;
  * @author Pascal Essiembre
  * @since 2.0.0
  */
-public interface IEventListener<T extends Event<?>>
+public interface IEventListener<T extends Event>
         extends Consumer<T>, EventListener {
 }
 
 
-//TODO create a FilteredEventListener that accepts a function to to filter events on
+//TODO create a FilteredEventListener accepting a function to filter events on

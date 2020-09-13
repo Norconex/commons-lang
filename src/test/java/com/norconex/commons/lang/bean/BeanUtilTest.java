@@ -1,4 +1,4 @@
-/* Copyright 2018-2019 Norconex Inc.
+/* Copyright 2018-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,8 @@ public class BeanUtilTest {
         Assertions.assertEquals("potato", map.get("string"));
         Assertions.assertEquals(123, map.get("primitiveInt"));
         Assertions.assertEquals(Integer.valueOf(456), map.get("objectInteger"));
-        Assertions.assertEquals(new Event<>("testEvent", this), map.get("event"));
+        Assertions.assertEquals(new Event.Builder<>(
+                "testEvent", this).build(), map.get("event"));
         Assertions.assertEquals(Arrays.asList(0.5d, 1.0d), map.get("doubles"));
         Assertions.assertEquals(5, map.size());
     }
@@ -66,7 +67,7 @@ public class BeanUtilTest {
         Assertions.assertEquals(123, (int) BeanUtil.getValue(bean, "primitiveInt"));
         Assertions.assertEquals(Integer.valueOf(456),
                 BeanUtil.getValue(bean, "objectInteger"));
-        Assertions.assertEquals(new Event<>("testEvent", this),
+        Assertions.assertEquals(new Event.Builder<>("testEvent", this).build(),
                 BeanUtil.getValue(bean, "event"));
     }
 
@@ -100,12 +101,14 @@ public class BeanUtilTest {
         BeanUtil.setValue(bean, "string", "carrot");
         BeanUtil.setValue(bean, "primitiveInt", 777);
         BeanUtil.setValue(bean, "objectInteger", Integer.valueOf(888));
-        BeanUtil.setValue(bean, "event", new Event<>("blah", "x"));
+        BeanUtil.setValue(bean, "event",
+                new Event.Builder<>("blah", "x").build());
 
         Assertions.assertEquals("carrot", bean.getString());
         Assertions.assertEquals(777, bean.getPrimitiveInt());
         Assertions.assertEquals(Integer.valueOf(888), bean.getObjectInteger());
-        Assertions.assertEquals(new Event<>("blah", "x"), bean.getEvent());
+        Assertions.assertEquals(
+                new Event.Builder<>("blah", "x").build(), bean.getEvent());
     }
 
     @Test
@@ -168,14 +171,14 @@ public class BeanUtilTest {
         }
     }
 
-    public static class Sub1Yes implements IEventListener<Event<?>> {
+    public static class Sub1Yes implements IEventListener<Event> {
         @Override
-        public void accept(Event<?> t) {
+        public void accept(Event t) {
         }
     }
     public static class Sub2No {
     }
-    public static class Sub3Yes implements IEventListener<Event<?>> {
+    public static class Sub3Yes implements IEventListener<Event> {
         private Sub1Yes sub1Yes;
         private Sub3_1Yes sub3_1Yes = new Sub3_1Yes();
         public Sub3Yes(Sub1Yes sub1Yes) {
@@ -195,13 +198,13 @@ public class BeanUtilTest {
             this.sub3_1Yes = sub3_1Yes;
         }
         @Override
-        public void accept(Event<?> t) {
+        public void accept(Event t) {
         }
     }
 
-    public static class Sub3_1Yes implements IEventListener<Event<?>> {
+    public static class Sub3_1Yes implements IEventListener<Event> {
         @Override
-        public void accept(Event<?> t) {
+        public void accept(Event t) {
         }
     }
 
@@ -209,7 +212,7 @@ public class BeanUtilTest {
         private String string = "potato";
         private int primitiveInt = 123;
         private Integer objectInteger = Integer.valueOf(456);
-        private Event<Bean> event = new Event<>("testEvent", this);
+        private Event event = new Event.Builder<>("testEvent", this).build();
         private List<Double> doubles = Arrays.asList(0.5d, 1.0d);
         public String getString() {
             return string;
@@ -229,10 +232,10 @@ public class BeanUtilTest {
         public void setObjectInteger(Integer objectInteger) {
             this.objectInteger = objectInteger;
         }
-        public Event<Bean> getEvent() {
+        public Event getEvent() {
             return event;
         }
-        public void setEvent(Event<Bean> event) {
+        public void setEvent(Event event) {
             this.event = event;
         }
         public List<Double> getDoubles() {

@@ -1,4 +1,4 @@
-/* Copyright 2018-2019 Norconex Inc.
+/* Copyright 2018-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,15 +62,15 @@ public class EventManager {
         this.parentEventManager = parentEventManager;
     }
 
-    private final Set<IEventListener<Event<?>>> listeners =
+    private final Set<IEventListener<Event>> listeners =
             new ListOrderedSet<>();
 
-    public void addListener(IEventListener<Event<?>> listener) {
+    public void addListener(IEventListener<Event> listener) {
         if (listener != null) {
             this.listeners.add(listener);
         }
     }
-    public void addListeners(Collection<IEventListener<Event<?>>> listeners) {
+    public void addListeners(Collection<IEventListener<Event>> listeners) {
         if (listeners != null) {
             this.listeners.addAll(listeners);
         }
@@ -80,14 +80,14 @@ public class EventManager {
         BeanUtil.visitAll(obj, this::addListener, IEventListener.class);
     }
 
-    public Set<IEventListener<Event<?>>> getListeners() {
+    public Set<IEventListener<Event>> getListeners() {
         return Collections.unmodifiableSet(this.listeners);
     }
-    public boolean removeListener(IEventListener<Event<?>> listener) {
+    public boolean removeListener(IEventListener<Event> listener) {
         return this.listeners.remove(listener);
     }
     public boolean removeListeners(
-            Collection<IEventListener<Event<?>>> listeners) {
+            Collection<IEventListener<Event>> listeners) {
         return this.listeners.removeAll(listeners);
     }
     public void clearListeners() {
@@ -97,11 +97,11 @@ public class EventManager {
         return this.listeners.size();
     }
 
-    public void fire(Event<?> event) {
+    public void fire(Event event) {
         fire(event, null);
     }
 
-    public void fire(Event<?> event, Level level) {
+    public void fire(Event event, Level level) {
         Objects.requireNonNull(event, "Cannot fire a null event.");
         log(event, level);
         doFire(event);
@@ -119,8 +119,8 @@ public class EventManager {
         this.parentEventManager = parentEventManager;
     }
 
-    private void doFire(Event<?> event) {
-        for (IEventListener<Event<?>> listener : listeners) {
+    private void doFire(Event event) {
+        for (IEventListener<Event> listener : listeners) {
             Method method = MethodUtils.getMatchingAccessibleMethod(
                     listener.getClass(), "accept", event.getClass());
             if (method != null) {
@@ -135,7 +135,9 @@ public class EventManager {
         }
     }
 
-    public void log(Event<?> event, Level level) {
+    public void log(Event event, Level level) {
+        //FYI, depending on log4j2 pattern, it is possible only the last part
+        //of the logger name is shown (after the dot)
         Logger log =  LoggerFactory.getLogger(event.getClass().getSimpleName()
                 + "." + event.getName());
         Level safeLevel = ObjectUtils.defaultIfNull(level, Level.INFO);
