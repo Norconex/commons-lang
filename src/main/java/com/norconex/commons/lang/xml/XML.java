@@ -777,10 +777,16 @@ public class XML {
         }
         return createAndInitXML(XML.of(xmlNode));
     }
+    /**
+     * If the given expression matches an element, consume that
+     * element.
+     * @param xpathExpression expression
+     * @param then XML consumer
+     */
     public void ifXML(String xpathExpression, Consumer<XML> then) {
         XML xml = getXML(xpathExpression);
         if (xml != null && xml.isDefined() && then != null) {
-            then.accept(this);
+            then.accept(xml);
         }
     }
 
@@ -1704,7 +1710,7 @@ public class XML {
     }
 
     /**
-     * Sets a list of values as a new element after joining them with
+     * Adds a list of values as a new element after joining them with
      * a comma (CSV). Values are trimmed and blank entries removed.
      * Values can be of any types, as they converted to String by
      * invoking their "toString()" method.
@@ -1716,7 +1722,7 @@ public class XML {
         return addDelimitedElementList(name, ",", values);
     }
     /**
-     * Sets a list of values as a new element after joining them with
+     * Adds a list of values as a new element after joining them with
      * the given delimiter. Values are trimmed and blank entries removed.
      * Values can be of any types, as they converted to String by
      * invoking their "toString()" method.
