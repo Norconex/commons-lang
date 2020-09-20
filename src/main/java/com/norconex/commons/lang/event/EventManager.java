@@ -17,10 +17,10 @@ package com.norconex.commons.lang.event;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
-import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.apache.commons.collections4.set.ListOrderedSet;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
 import org.slf4j.Logger;
@@ -46,6 +46,9 @@ public class EventManager {
 
     private EventManager parentEventManager;
 
+    private final CopyOnWriteArrayList<IEventListener<Event>> listeners =
+            new CopyOnWriteArrayList<>();
+
     public EventManager() {
         this(null);
     }
@@ -62,17 +65,14 @@ public class EventManager {
         this.parentEventManager = parentEventManager;
     }
 
-    private final Set<IEventListener<Event>> listeners =
-            new ListOrderedSet<>();
-
     public void addListener(IEventListener<Event> listener) {
         if (listener != null) {
-            this.listeners.add(listener);
+            this.listeners.addIfAbsent(listener);
         }
     }
     public void addListeners(Collection<IEventListener<Event>> listeners) {
         if (listeners != null) {
-            this.listeners.addAll(listeners);
+            this.listeners.addAllAbsent(listeners);
         }
     }
 
@@ -80,8 +80,8 @@ public class EventManager {
         BeanUtil.visitAll(obj, this::addListener, IEventListener.class);
     }
 
-    public Set<IEventListener<Event>> getListeners() {
-        return Collections.unmodifiableSet(this.listeners);
+    public List<IEventListener<Event>> getListeners() {
+        return Collections.unmodifiableList(this.listeners);
     }
     public boolean removeListener(IEventListener<Event> listener) {
         return this.listeners.remove(listener);
@@ -110,7 +110,6 @@ public class EventManager {
     public void bindParent(EventManager parentEventManager) {
         Objects.requireNonNull(
                 parentEventManager, "'parentEventManager' cannot be null.");
-
         if (this.parentEventManager != null
                 && this.parentEventManager != parentEventManager) {
             throw new IllegalStateException(
