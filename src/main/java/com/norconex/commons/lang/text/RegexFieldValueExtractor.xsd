@@ -19,9 +19,9 @@
   <xs:include schemaLocation="../Lang.xsd"></xs:include>
   <xs:include schemaLocation="Regex.xsd"></xs:include>
 
-  <xs:element name="regexKeyValueExtractor" type="RegexKeyValueExtractorType"/>
+  <xs:element name="regexFieldValueExtractor" type="RegexFieldValueExtractorType"/>
   
-  <xs:complexType name="RegexKeyValueExtractorType">
+  <xs:complexType name="RegexFieldValueExtractorType">
     <xs:simpleContent>
       <xs:extension base="RegexType">
         <xs:attribute name="toField" type="xs:string"></xs:attribute>

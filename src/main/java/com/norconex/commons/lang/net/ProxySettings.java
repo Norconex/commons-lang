@@ -317,10 +317,11 @@ public class ProxySettings implements IXMLConfigurable, Serializable {
             xml.checkDeprecated("proxyPort", "port", true);
             xml.checkDeprecated("proxyScheme", "scheme", true);
             xml.checkDeprecated("proxyRealm", "realm", true);
+            //TODO make host IXMLConfigurable and use populate() ?
             host = Host.loadFromXML(xml.getXML("host"), host);
             scheme = xml.getString("scheme", scheme);
             realm = xml.getString("realm", realm);
-            credentials.loadFromXML(xml.getXML("credentials"));
+            xml.ifXML("credentials", x -> x.populate(credentials));
         }
     }
 

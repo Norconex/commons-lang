@@ -26,12 +26,13 @@ import com.norconex.commons.lang.xml.XML;
 /**
  * @author Pascal Essiembre
  */
-public class RegexKeyValueExtractorTest {
+public class RegexFieldValueExtractorTest {
 
     @Test
     public void testExtractFields() {
 
-        String xml = ResourceLoader.getXmlString(RegexKeyValueExtractorTest.class);
+        String xml = ResourceLoader.getXmlString(
+                RegexFieldValueExtractorTest.class);
         Properties fields = null;
 
         fields = RegexFieldValueExtractor.extractFieldValues(xml,
@@ -140,6 +141,6 @@ public class RegexKeyValueExtractorTest {
         r.setToField("mykey");
         r.setFieldGroup(4);
         r.setValueGroup(2);
-        XML.assertWriteRead(r, "regexKeyValueExtractor");
+        XML.assertWriteRead(r, "regexFieldValueExtractor");
     }
 }

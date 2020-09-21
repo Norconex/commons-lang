@@ -295,6 +295,7 @@ public class XML {
     }
 
     /**
+     * <p>
      * Creates a new instance of the class represented by the "class" attribute
      * on this XML root node.  The class must have an empty constructor.
      * If the class is an instance of {@link IXMLConfigurable}, the object
@@ -303,6 +304,10 @@ public class XML {
      * passing it the node XML.
      * If the class is annotated with an
      * {@link XmlRootElement}, it will use JAXB to unmarshall it to an object.
+     * </p>
+     * <p>
+     * Performs XML validation if the target object has an associated schema.
+     * </p>
      * @param <T> the type of the return value
      * @return a new object.
      * @throws XMLValidationException if the XML has validation errors
@@ -312,6 +317,7 @@ public class XML {
         return toObject(null);
     }
     /**
+     * <p>
      * Creates a new instance of the class represented by the "class" attribute
      * on the given node.  The class must have an empty constructor.
      * If the class is an instance of {@link IXMLConfigurable}, the object
@@ -320,6 +326,10 @@ public class XML {
      * passing it the node XML.
      * If the class is annotated with an
      * {@link XmlRootElement}, it will use JAXB to unmarshall it to an object.
+     * </p>
+     * <p>
+     * Performs XML validation if the target object has an associated schema.
+     * </p>
      * @param defaultObject if returned object is null or undefined,
      *        returns this default object.
      * @param <T> the type of the return value
@@ -454,18 +464,55 @@ public class XML {
         return obj;
     }
 
-    public void populate(Object targetObject) {
-        if (node == null) {
-            return;
-        }
+    /**
+     * <p>
+     * Populates supplied object with the XML matching the given expression.
+     * If there is no match, the object does not get populated.
+     * Takes into consideration whether the target object implements
+     * {@link IXMLConfigurable} or JAXB.
+     * </p>
+     * <p>
+     * Performs XML validation if the target object has an associated schema.
+     * </p>
+     * @param xpathExpression XPath expression
+     * @param targetObject object to populate with this XML
+     * @return validation errors of an empty list if none
+     *         (never <code>null</code>)
+     */
+    public List<XMLValidationError> populate(
+            Object targetObject, String xpathExpression) {
+        List<XMLValidationError> errs = new ArrayList<>();
+        ifXML(xpathExpression, x -> {
+            errs.addAll(x.populate(targetObject));
+        });
+        return errs;
+    }
 
+    /**
+     * <p>
+     * Populates supplied object with this XML. Takes into consideration
+     * whether the target object implements {@link IXMLConfigurable} or
+     * JAXB.
+     * </p>
+     * <p>
+     * Performs XML validation if the target object has an associated schema.
+     * </p>
+     * @param targetObject object to populate with this XML
+     * @return validation errors of an empty list if none
+     *         (never <code>null</code>)
+     */
+    public List<XMLValidationError> populate(Object targetObject) {
+        if (node == null) {
+            return Collections.emptyList();
+        }
         try {
-            validate(targetObject.getClass());
+            List<XMLValidationError> errs = validate(targetObject.getClass());
             if (isXMLConfigurable(targetObject)) {
                 ((IXMLConfigurable) targetObject).loadFromXML(this);
             } else if (isJAXB(targetObject)) {
                 jaxbUnmarshall(targetObject);
             }
+            return errs;
         } catch (XMLException e) {
             throw e;
         } catch (Exception e) {
