@@ -16,6 +16,7 @@ package com.norconex.commons.lang;
 
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.concurrent.Callable;
 
 /**
  * System-related convenience methods.
@@ -28,6 +29,100 @@ public final class SystemUtil {
         super();
     }
 
+    /**
+     * <p>
+     * Executes the supplied {@link Runnable} after setting the system
+     * property and then resets that system property.
+     * This method is synchronized to make sure
+     * setting the property does not affect other threads.  The system property
+     * is restored to its original value (if any) after execution.
+     * Useful when the invoked code expects a system property that is
+     * configurable and may change from one thread to another.
+     * </p>
+     * <h3><code>null</code> handling</h3>
+     * <p>
+     * This method is <code>null</code>-safe.
+     * If the runnable is <code>null</code>, invoking this method has no effect.
+     * If the property name is <code>null</code>, the runnable is
+     * invoked without setting any property beforehand.
+     * If the property value is <code>null</code>, it will temporary
+     * clear any existing system property with the same name (if any) for
+     * the duration of the execution.
+     * </p>
+     * @param name system property name
+     * @param value system property value
+     * @param runnable code to run with the system property set
+     */
+    public static synchronized void runWithProperty(
+            String name, String value, Runnable runnable) {
+        if (runnable == null) {
+            return;
+        }
+        if (name == null) {
+            runnable.run();
+            return;
+        }
+        String original = value == null
+                ? System.clearProperty(name)
+                : System.setProperty(name, value);
+        try {
+            runnable.run();
+        } finally {
+            if (original == null) {
+                System.clearProperty(name);
+            } else {
+                System.setProperty(name, original);
+            }
+        }
+    }
+    /**
+     * <p>
+     * Executes the supplied {@link Callable} after setting the system
+     * property and then resets that system property.
+     * This method is synchronized to make sure
+     * setting the property does not affect other threads.  The system property
+     * is restored to its original value (if any) after execution.
+     * Useful when the invoked code expects a system property that is
+     * configurable and may change from one thread to another.
+     * </p>
+     * <h3><code>null</code> handling</h3>
+     * <p>
+     * This method is <code>null</code>-safe.
+     * If the callable is <code>null</code>, invoking this method returns
+     * <code>null</code>.
+     * If the property name is <code>null</code>, the runnable is
+     * invoked without setting any property beforehand.
+     * If the property value is <code>null</code>, it will temporary
+     * clear any existing system property with the same name (if any)
+     * for the duration of the execution.
+     * </p>
+     * @param name system property name
+     * @param value system property value
+     * @param callable code to run with the system property set
+     * @return the callable return value
+     * @throws Exception any exception the callable may throw
+     */
+    public static synchronized <T> T callWithProperty(
+            String name, String value, Callable<T> callable) throws Exception {
+        if (callable == null) {
+            return null;
+        }
+        if (name == null) {
+            return callable.call();
+        }
+        String original = value == null
+                ? System.clearProperty(name)
+                : System.setProperty(name, value);
+        try {
+            return callable.call();
+        } finally {
+            if (original == null) {
+                System.clearProperty(name);
+            } else {
+                System.setProperty(name, original);
+            }
+        }
+    }
     /**
      * Gets the environment variable or system property matching the exact
      * name, or a supported variant.

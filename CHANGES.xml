@@ -77,7 +77,6 @@
         New Properties#match, Properties#matchKeys, and Properties#matchValues
         methods.
       </action>
-      match
       <action dev="essiembre" type="add">
         New XML class replacing XMLConfigurationUtil. Now relying on 
         Java XML/XPath instead of Apache Configuration and white spaces are now

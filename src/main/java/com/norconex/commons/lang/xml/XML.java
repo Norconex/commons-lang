@@ -23,6 +23,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.math.BigDecimal;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -2204,6 +2205,25 @@ public class XML {
             String xpathExpression, List<File> defaultValue) {
         return (List<File>) getList(xpathExpression, File.class, defaultValue);
     }
+
+    //--- URL ------------------------------------------------------------------
+    public final URL getURL(String xpathExpression) {
+        return get(xpathExpression, URL.class);
+    }
+    public final URL getURL(String xpathExpression, URL defaultValue) {
+        return get(xpathExpression, URL.class, defaultValue);
+    }
+    @SuppressWarnings("unchecked")
+    public final List<URL> getURLList(String xpathExpression) {
+        return (List<URL>) getList(xpathExpression, URL.class);
+    }
+    @SuppressWarnings("unchecked")
+    public final List<URL> getURLList(
+            String xpathExpression, List<URL> defaultValue) {
+        return (List<URL>) getList(xpathExpression, URL.class, defaultValue);
+    }
+
+    //--------------------------------------------------------------------------
 
     private String getNodeString(Node n) {
         if (n.getNodeType() == Node.ATTRIBUTE_NODE) {
