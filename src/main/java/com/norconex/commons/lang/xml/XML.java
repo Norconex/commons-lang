@@ -14,6 +14,8 @@
  */
 package com.norconex.commons.lang.xml;
 
+import static org.apache.commons.lang3.StringUtils.substringBeforeLast;
+
 import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
@@ -40,6 +42,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXB;
@@ -360,6 +363,7 @@ public class XML {
                    + "using default value: {}", defaultObject);
             obj = defaultObject;
         }
+
         populate(obj);
         return obj;
     }
@@ -442,7 +446,11 @@ public class XML {
                             + type.getName() + "\" "
                             + "and ending with \"" + partialName + "\" "
                             + "where found when only 1 was expected. "
-                            + "Consider using fully qualified class name.");
+                            + "Consider using fully qualified class name. "
+                            + "Found classes: "
+                            + results.stream()
+                                    .map(c -> ((Class<?>) c).getName())
+                                    .collect(Collectors.joining(", ")));
                 }
 
                 if (results.isEmpty()) {
@@ -499,7 +507,7 @@ public class XML {
      * Performs XML validation if the target object has an associated schema.
      * </p>
      * @param targetObject object to populate with this XML
-     * @return validation errors of an empty list if none
+     * @return validation errors or an empty list if none
      *         (never <code>null</code>)
      */
     public List<XMLValidationError> populate(Object targetObject) {
@@ -519,7 +527,9 @@ public class XML {
         } catch (Exception e) {
             throw new XMLException("XML (tag: <" + getName() + ">) "
                     + "could not be converted to object of type: "
-                            + targetObject.getClass(), e);
+                            + (targetObject == null
+                                ? "[null]"
+                                : targetObject.getClass()), e);
         }
     }
 
@@ -617,11 +627,25 @@ public class XML {
      */
     public <T> List<T> getObjectList(
             String xpathExpression, List<T> defaultObjects) {
+        Optional<List<XML>> xmls = getXMLListOptional(xpathExpression);
+        // We return:
+        //   - an empty list if optional is empty.
+        //   - the default list if optional is not emtpy but node list is
+        //   - otherwise return the matching list
+
+        if (!xmls.isPresent()) {
+            return Collections.emptyList();
+        }
+        if (xmls.get().isEmpty()) {
+            return defaultObjects;
+        }
         List<T> list = new ArrayList<>();
-        List<XML> xmls = getXMLList(xpathExpression);
-        for (XML xml : xmls) {
+        for (XML xml : xmls.get()) {
             if (xml != null) {
-                list.add(xml.toObject());
+                T obj = xml.toObject();
+                if (obj != null) {
+                    list.add(obj);
+                }
             }
         }
         if (list.isEmpty()) {
@@ -766,11 +790,26 @@ public class XML {
      */
     public <T> List<T> getObjectListImpl(
             Class<?> type, String xpathExpression, List<T> defaultObjects) {
+
+        Optional<List<XML>> xmls = getXMLListOptional(xpathExpression);
+        // We return:
+        //   - an empty list if optional is empty.
+        //   - the default list if optional is not emtpy but node list is
+        //   - otherwise return the matching list
+        if (!xmls.isPresent()) {
+            return Collections.emptyList();
+        }
+        if (xmls.get().isEmpty()) {
+            return defaultObjects;
+        }
+
         List<T> list = new ArrayList<>();
-        List<XML> xmls = getXMLList(xpathExpression);
-        for (XML xml : xmls) {
+        for (XML xml : xmls.get()) {
             if (xml != null) {
-                list.add(xml.toObjectImpl(type));
+                T obj = xml.toObjectImpl(type);
+                if (obj != null) {
+                    list.add(obj);
+                }
             }
         }
         if (list.isEmpty()) {
@@ -851,11 +890,30 @@ public class XML {
      * @return XML list, never <code>null</code>
      */
     public List<XML> getXMLList(String xpathExpression) {
+        Optional<List<XML>> xmls = getXMLListOptional(xpathExpression);
+        // We return:
+        //   - an empty list if optional is empty.
+        //   - otherwise return the matching list
+        if (!xmls.isPresent()) {
+            return Collections.emptyList();
+        }
+        return xmls.get();
+    }
+
+    private Optional<List<XML>> getXMLListOptional(String xpathExpression) {
+
+        Optional<NodeArrayList> nodeList = getNodeList(xpathExpression);
+        // We return:
+        //   - an empty Optional if nodeList Optional is empty.
+        //   - otherwise return the matching list
+        if (!nodeList.isPresent()) {
+            return Optional.empty();
+        }
         List<XML> list = new ArrayList<>();
-        for (Node n : getNodeList(xpathExpression)) {
+        for (Node n : nodeList.get()) {
             list.add(createAndInitXML(XML.of(n)));
         }
-        return list;
+        return Optional.of(list);
     }
 
     private static void handleException(
@@ -1359,13 +1417,32 @@ public class XML {
         }
     }
 
-    public NodeArrayList getNodeList(String xpathExpression) {
+    private Optional<NodeArrayList> getNodeList(String xpathExpression) {
         try {
-            return new NodeArrayList((NodeList) newXPathExpression(
-                    xpathExpression).evaluate(node, XPathConstants.NODESET));
+            NodeList nodeList = (NodeList) newXPathExpression(xpathExpression)
+                    .evaluate(node, XPathConstants.NODESET);
+
+            if (nodeList != null && nodeList.getLength() > 0) {
+                return Optional.of(new NodeArrayList(nodeList));
+            }
+            // When there are no node list returned, we check if it is because
+            // the xpath expression did not match anything (in which case
+            // it may suggest to use a default value) or it did match
+            // a tag but it was empty (indicating wanting to clear any
+            // existing list).
+            String xpath = substringBeforeLast(xpathExpression, "/");
+            XML xmlTag = getXML(xpath);
+            if (xmlTag == null || StringUtils.isBlank(xmlTag.toString())) {
+                return Optional.of(new NodeArrayList((NodeList) null));
+            }
+            // If we get this far, there was a tag declared, so we treat
+            // it as an explicit request to clear so we do not return anything
+            // as a way to communicate that.
+            return Optional.empty();
         } catch (XPathExpressionException e) {
             throw new XMLException(
-                    "Could not evaluate XPath expression.", e);
+                    "Could not evaluate XPath expression: '"
+                            + xpathExpression + "'.", e);
         }
     }
     public Node getNode(String xpathExpression) {
@@ -1415,12 +1492,19 @@ public class XML {
      */
     public List<String> getStringList(
             String xpathExpression, List<String> defaultValues) {
-        NodeArrayList nodeList = getNodeList(xpathExpression);
-        if (nodeList.isEmpty()) {
+        Optional<NodeArrayList> nodeList = getNodeList(xpathExpression);
+        // We return:
+        //   - an empty list if optional is empty.
+        //   - the default list if optional is not emtpy but node list is
+        //   - otherwise return the matching list
+        if (!nodeList.isPresent()) {
+            return Collections.emptyList();
+        }
+        if (nodeList.get().isEmpty()) {
             return defaultValues;
         }
         List<String> list = new ArrayList<>();
-        for (Node n : nodeList) {
+        for (Node n : nodeList.get()) {
             String str = getNodeString(n);
             if (str != null) {
                 list.add(str);
@@ -1522,9 +1606,21 @@ public class XML {
      */
     public Map<String, String> getStringMap(String xpathList, String xpathKey,
             String xpathValue, Map<String, String> defaultValues) {
+
+        Optional<List<XML>> xmls = getXMLListOptional(xpathList);
+        // We return:
+        //   - an empty map if optional is empty.
+        //   - the default map if optional is not emtpy but node list is
+        //   - otherwise return the matching map
+        if (!xmls.isPresent()) {
+            return Collections.emptyMap();
+        }
+        if (xmls.get().isEmpty()) {
+            return defaultValues;
+        }
+
         Map<String, String> map = new HashMap<>();
-        List<XML> xmls = getXMLList(xpathList);
-        for (XML xml : xmls) {
+        for (XML xml : xmls.get()) {
             if (xml != null) {
                 map.put(xml.getString(xpathKey), xml.getString(xpathValue));
             }
@@ -2302,9 +2398,21 @@ public class XML {
             Function<XML, T> parser,
             List<T> defaultValue) {
         Objects.requireNonNull(parser, "Parser argument cannot be null.");
+
+        Optional<List<XML>> xmls = getXMLListOptional(xpathExpression);
+        // We return:
+        //   - an empty list if optional is empty.
+        //   - the default list if optional is not emtpy but node list is
+        //   - otherwise return the matching list
+        if (!xmls.isPresent()) {
+            return Collections.emptyList();
+        }
+        if (xmls.get().isEmpty()) {
+            return defaultValue;
+        }
+
         List<T> list = new ArrayList<>();
-        List<XML> xmls = getXMLList(xpathExpression);
-        for (XML xml : xmls) {
+        for (XML xml : xmls.get()) {
             if (xml != null) {
                 T obj = parser.apply(xml);
                 if (obj != null) {
@@ -2330,9 +2438,17 @@ public class XML {
             Function<XML, Entry<K, V>> parser,
             Map<K,V> defaultValue) {
         Objects.requireNonNull(parser, "Parser argument cannot be null.");
+
+        Optional<List<XML>> xmls = getXMLListOptional(xpathExpression);
+        // We return:
+        //   - an empty map if optional is empty.
+        //   - otherwise return the parsed map
+        if (!xmls.isPresent()) {
+            return Collections.emptyMap();
+        }
+
         Map<K,V> map = new HashMap<>();
-        List<XML> xmls = getXMLList(xpathExpression);
-        for (XML xml : xmls) {
+        for (XML xml : xmls.get()) {
             if (xml != null) {
                 Entry<K,V> entry = parser.apply(xml);
                 if (entry != null) {
