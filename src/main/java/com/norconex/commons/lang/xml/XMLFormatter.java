@@ -625,8 +625,8 @@ public class XMLFormatter {
         }
         /**
          * String to use for indenting attributed, when wrapped.
-         * @param indent
          * Defaults to four spaces.
+         * @param indent string to use as indent
          * @return this builder
          */
         public Builder attributeIndent(String indent) {
@@ -636,7 +636,7 @@ public class XMLFormatter {
         /**
          * Attribute wrapping strategy.
          * Defaults to {@link AttributeWrap#ALL}.
-         * @param attributeWrap attribute wrapping strategy
+         * @param attributeWrapping attribute wrapping strategy
          * @return this builder
          */
         public Builder attributeWrapping(AttributeWrap attributeWrapping) {
