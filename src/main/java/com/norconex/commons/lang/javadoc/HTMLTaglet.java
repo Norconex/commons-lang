@@ -20,6 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 
 import com.norconex.commons.lang.xml.XMLFormatter;
+import com.norconex.commons.lang.xml.XMLFormatter.Builder.AttributeWrap;
 import com.sun.javadoc.Tag;
 import com.sun.tools.doclets.Taglet;
 
@@ -34,6 +35,16 @@ import com.sun.tools.doclets.Taglet;
 public class HTMLTaglet extends AbstractInlineTaglet {
 
     public static final String NAME = "nx.html";
+
+    public static final XMLFormatter FORMATTER = XMLFormatter.builder()
+            .maxLineLength(80)
+            .minTextLength(40)
+            .attributeWrapping(AttributeWrap.ALL)
+            .elementIndent(" ")
+            .preserveTextIndent()
+            .selfCloseEmptyElements()
+            .closeWrappingTagOnOwnLine()
+            .build();
 
     /**
      * Register an instance of this taglet.
@@ -67,13 +78,7 @@ public class HTMLTaglet extends AbstractInlineTaglet {
         }
         b.append("class=\"language-html\">\n");
         b.append(StringEscapeUtils.escapeXml11(
-                new XMLFormatter()
-                        .setIndentSize(2)
-                        .setWrapAttributesAt(1)
-                        .setWrapContentAt(80)
-                        .setBlankLineBeforeComment(true)
-                        .setSelfCloseEmptyTags(true)
-                        .format(resolveIncludes(text))
+                FORMATTER.format(resolveIncludes(text))
         ));
         b.append("</code></pre>");
         return b.toString();

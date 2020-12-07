@@ -14,8 +14,17 @@
  */
 package com.norconex.commons.lang.xml;
 
+import static org.apache.commons.io.IOUtils.buffer;
+
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringWriter;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import com.norconex.commons.lang.ResourceLoader;
+import com.norconex.commons.lang.xml.XMLFormatter.Builder.AttributeWrap;
 
 /**
  * @author Pascal Essiembre
@@ -30,25 +39,28 @@ public class XMLFormatterTest {
                 "<noroot1>\n"
               + "    <child>I am a child</child>\n"
               + "</noroot1>\n"
-              + "<noroot2>I am a sibling</noroot2>\n";
+              + "<noroot2>I am a sibling</noroot2>";
 
-        Assertions.assertEquals(expected,
-                new XMLFormatter()
-                    .setIndentSize(4)
-                    .setWrapAttributesAt(1)
-                    .setWrapContentAt(80)
-                    .format(xml));
+        XMLFormatter f = XMLFormatter.builder()
+                .maxLineLength(80)
+                .minTextLength(0)
+                .attributeWrapping(AttributeWrap.NONE)
+                .elementIndent("    ")
+                .build();
+        Assertions.assertEquals(expected, f.format(xml));
     }
 
     @Test
     public void testNoTagFormat() {
         String xml = "onSet=\"[append|prepend|replace|optional]\"";
-        Assertions.assertEquals(xml,
-                new XMLFormatter()
-                    .setIndentSize(4)
-                    .setWrapAttributesAt(1)
-                    .setWrapContentAt(80)
-                    .format(xml));
+
+        XMLFormatter f = XMLFormatter.builder()
+                .maxLineLength(80)
+                .minTextLength(0)
+                .attributeWrapping(AttributeWrap.NONE)
+                .elementIndent("    ")
+                .build();
+        Assertions.assertEquals(xml, f.format(xml));
     }
 
     @Test
@@ -71,14 +83,15 @@ public class XMLFormatterTest {
               + "  <commentNotSelfClose>\n"
               + "    <!-- something -->\n"
               + "  </commentNotSelfClose>\n"
-              + "</xml>\n";
+              + "</xml>";
 
-        XMLFormatter f = new XMLFormatter()
-                .setIndentSize(2)
-                .setWrapAttributesAt(0)
-                .setWrapContentAt(80)
-                .setBlankLineBeforeComment(false)
-                .setSelfCloseEmptyTags(true);
+        XMLFormatter f = XMLFormatter.builder()
+                .maxLineLength(80)
+                .minTextLength(0)
+                .attributeWrapping(AttributeWrap.NONE)
+                .selfCloseEmptyElements()
+                .elementIndent("  ")
+                .build();
 //System.out.println(f.format(xml));
         Assertions.assertEquals(expected, f.format(xml));
     }
@@ -106,7 +119,7 @@ public class XMLFormatterTest {
               + "wishing to preserve some\n\n"
               + "                   indentation -->"
               + "<!-- this is a comment -->"
-              + "<text>Another content quite\n long in the body we want "
+              + "<text>Another content quite\nlong in the body we want "
               + "to break even if it could mess up with content format and "
               + "space preservation.</text>"
               + "</textMatcher>"
@@ -136,9 +149,9 @@ public class XMLFormatterTest {
               + "    </pattern>\n\n"
               + "    <!--\n"
               + "      this is a comment with\n"
-              + "           new lines in it\n"
+              + "                 new lines in it\n"
               + "      wishing to preserve some\n\n"
-              + "                   indentation\n"
+              + "                         indentation\n"
               + "      -->\n\n"
               + "    <!-- this is a comment -->\n"
               + "    <text>\n"
@@ -148,13 +161,75 @@ public class XMLFormatterTest {
               + "      content format and space preservation.\n"
               + "    </text>\n"
               + "  </textMatcher>\n"
-              + "</xml>\n";
-        XMLFormatter f = new XMLFormatter();
-        f.setIndentSize(2);
-        f.setWrapAttributesAt(1);
-        f.setWrapContentAt(70);
-        f.setBlankLineBeforeComment(true);
-//System.out.println(f.format(xml));
+              + "</xml>";
+        XMLFormatter f = XMLFormatter.builder()
+                .maxLineLength(70)
+                .minTextLength(0)
+                .blankLineBeforeComment()
+                .attributeWrapping(AttributeWrap.ALL)
+                .elementIndent("  ")
+                .attributeIndent("    ")
+                .preserveTextIndent()
+                .build();
         Assertions.assertEquals(expected, f.format(xml));
+    }
+
+    @Test
+    public void testWrapping() {
+        String xml =
+                "<xml id=\"blah\">"
+              + "<element attr1=\"val1\"  attr2=\"val2\">"
+              + "<!-- Comment -->"
+              + "<sub1>blah1</sub1>"
+              + "<sub2>blah2</sub2>"
+              + "<sub3/>"
+              + "</element>"
+              + "</xml>";
+
+        String expected =
+                "<xml\n"
+              + "    id=\"blah\">\n"
+              + "  <element\n"
+              + "      attr1=\"val1\"\n"
+              + "      attr2=\"val2\">\n\n"
+              + "    <!-- Comment -->\n\n"
+              + "    <sub1>blah1</sub1>\n"
+              + "    <sub2>blah2</sub2>\n"
+              + "    <sub3/>\n"
+              + "  </element>\n"
+              + "</xml>";
+
+        XMLFormatter f = XMLFormatter.builder()
+                .maxLineLength(70)
+                .minTextLength(0)
+                .blankLineBeforeComment()
+                .blankLineAfterComment()
+                .attributeWrapping(AttributeWrap.ALL)
+                .elementIndent("  ")
+                .attributeIndent("    ")
+                .build();
+        //System.out.println(f.format(xml));
+        Assertions.assertEquals(expected, f.format(xml));
+    }
+
+    @Test
+    void testMisc() throws IOException {
+        // Shoudl simply not fail. Useful for troubleshooting. Uncomment prints.
+        StringWriter w = new StringWriter();
+        try (Reader r =
+                buffer(ResourceLoader.getXmlReader(XMLFormatterTest.class))) {
+            XMLFormatter formatter = XMLFormatter.builder()
+                .maxLineLength(80)
+                .minTextLength(0)
+                .closeWrappingTagOnOwnLine()
+//                .blankLineBeforeComment()
+//                .blankLineAfterComment()
+                .attributeWrapping(AttributeWrap.ALL)
+                .preserveTextIndent()
+                .build();
+            formatter.format(r, w);
+        }
+//        System.out.println("--- XML: ---");
+//        System.out.println(w);
     }
 }

@@ -1,4 +1,4 @@
-/* Copyright 2017-2018 Norconex Inc.
+/* Copyright 2017-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -247,5 +247,86 @@ public final class StringUtil {
         return StringUtils.leftPad(StringUtils.stripStart(
                 Integer.toString(s.hashCode()), "-"),
                 TRUNCATE_HASH_LENGTH, '0');
+    }
+
+    /**
+     * Trims white spaces at the end of a string.
+     * @param str the string to trim its end
+     * @return trimmed string
+     * @since 2.0.0
+     */
+    public static String trimEnd(String str) {
+        if (str == null) {
+            return null;
+        }
+        // Logic from String#trim()
+        char[] value = str.toCharArray();
+        int len = value.length;
+        int st = 0;
+        char[] val = value;
+        while ((st < len) && (val[len - 1] <= ' ')) {
+            len--;
+        }
+        return (len < value.length) ? str.substring(st, len) : str;
+    }
+    /**
+     * Trims white spaces at the beginning of a string.
+     * @param str the string to trim its beginning
+     * @return trimmed string
+     * @since 2.0.0
+     */
+    public static String trimStart(String str) {
+        if (str == null) {
+            return null;
+        }
+        // Logic from String#trim()
+        char[] value = str.toCharArray();
+        int len = value.length;
+        int st = 0;
+        char[] val = value;
+        while ((st < len) && (val[st] <= ' ')) {
+            st++;
+        }
+        return st > 0 ? str.substring(st, len) : str;
+    }
+    /**
+     * Counts the number of consecutive matches at end of a
+     * a string.
+     * @param str the string to check
+     * @param sub the substring to count
+     * @return number of matches from the start
+     * @since 2.0.0
+     */
+    public static int countMatchesEnd(String str, String sub) {
+        if (str == null || sub == null || sub.length() > str.length()) {
+            return 0;
+        }
+        return countMatchesStart(
+                StringUtils.reverse(str), StringUtils.reverse(sub));
+    }
+    /**
+     * Counts the number of consecutive matches from the beginning of
+     * a string.
+     * @param str the string to check
+     * @param sub the substring to count
+     * @return number of matches from the end
+     * @since 2.0.0
+     */
+    public static int countMatchesStart(String str, String sub) {
+        if (str == null || sub == null || sub.length() > str.length()) {
+            return 0;
+        }
+        int len = sub.length();
+        int st = 0;
+        int cnt = 0;
+        while (st + len <= str.length()) {
+            if (str.startsWith(sub, st)) {
+                cnt++;
+                st += len;
+            } else {
+                break;
+            }
+        }
+        return cnt;
     }
 }

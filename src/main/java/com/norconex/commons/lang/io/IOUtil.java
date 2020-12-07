@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.IntPredicate;
 
 import org.apache.commons.io.input.NullInputStream;
 import org.apache.commons.io.input.NullReader;
@@ -102,10 +103,9 @@ public final class IOUtil {
     public static char[] borrowCharacters(
             Reader reader, int qty) throws IOException {
         if (reader == null) {
-            throw new IllegalArgumentException("Reader stream cannot be null.");
+            throw new IllegalArgumentException("Reader must not be null.");
         } else if (!reader.markSupported()) {
-            throw new IllegalArgumentException(
-                    "Reader stream must support mark.");
+            throw new IllegalArgumentException("Reader must support mark.");
         }
         reader.mark(qty);
         char[] chars = new char[qty];
@@ -146,8 +146,7 @@ public final class IOUtil {
         if (reader == null) {
             return true;
         } else if (!reader.markSupported()) {
-            throw new IllegalArgumentException(
-                    "Reader stream must support mark.");
+            throw new IllegalArgumentException("Reader must support mark.");
         }
         reader.mark(1);
         int numRead = reader.read();
@@ -405,6 +404,137 @@ public final class IOUtil {
             cnt++;
         }
         return cnt;
+    }
+
+    /**
+     * Consumes markable reader characters until the predicate returns
+     * <code>true</code> for a character or the end of stream is reached.
+     * The character ending the consumption is not consumed (i.e.,
+     * the reader cursor is reset just before that character).
+     * @param reader the reader to consume
+     * @param predicate the character evaluation condition
+     * @return number of characters consumed (0 if reader is <code>null</code>)
+     * @throws IOException could not consume stream
+     * @throws IllegalArgumentException if reader does not support mark
+     * @since 2.0.0
+     */
+    public static int consumeUntil(Reader reader, IntPredicate predicate)
+            throws IOException {
+        return consumeWhile(reader,  predicate, null);
+    }
+    /**
+     * Consumes markable reader characters until the predicate returns
+     * <code>true</code> for a character or the end of stream is reached.
+     * Optionally append the consumed characters to an {@link Appendable}
+     * (e.g. StringBuilder).
+     * The character ending the consumption is not consumed (i.e.,
+     * the reader cursor is reset just before that character).
+     * @param reader the reader to consume
+     * @param predicate the character evaluation condition
+     * @param appendable optional, to append consumed characters
+     * @return number of characters consumed (0 if reader is <code>null</code>)
+     * @throws IOException could not consume stream
+     * @throws IllegalArgumentException if reader does not support mark
+     * @since 2.0.0
+     */
+    public static int consumeUntil(
+            Reader reader, IntPredicate predicate, Appendable appendable)
+                    throws IOException {
+        return consumeWhile(reader,  ch -> !predicate.test(ch), appendable);
+    }
+    /**
+     * Consumes reader characters until after encountering the supplied string
+     * (the matching string is also consumed) or the end of stream is reached.
+     * Optionally append the consumed characters to an {@link Appendable}
+     * (e.g. StringBuilder).
+     * The matching string is also consumed.
+     * @param reader the reader to consume
+     * @param str the string to match
+     * @param appendable optional, to append consumed characters
+     * @return number of characters consumed (0 if reader is <code>null</code>)
+     * @throws IOException could not consume stream
+     * @since 2.0.0
+     */
+    public static int consumeUntil(
+            Reader reader, String str, Appendable appendable)
+                    throws IOException {
+
+        char[] chars = str.toCharArray();
+        int qtyRead = 0;
+        int qtyMatched = 0;
+
+        int intch;
+        while ((intch = reader.read()) != -1) {
+            char ch = (char) intch;
+            if (chars.length > 0 && chars[qtyMatched] == ch) {
+                qtyMatched++;
+            } else {
+                qtyMatched = 0;
+            }
+
+            appendable.append(ch);
+            qtyRead++;
+            if (qtyMatched == chars.length) {
+                break;
+            }
+        }
+        return qtyRead;
+    }
+    /**
+     * Consumes markable reader characters while the predicate returns
+     * <code>true</code> for a character or the end of stream is reached.
+     * The character ending the consumption is not consumed (i.e.,
+     * the reader cursor is reset just before that character).
+     * @param reader the reader to consume
+     * @param predicate the character evaluation condition
+     * @return number of characters consumed (0 if reader is <code>null</code>)
+     * @throws IOException could not consume stream
+     * @throws IllegalArgumentException if reader does not support mark
+     * @since 2.0.0
+     */
+    public static int consumeWhile(Reader reader, IntPredicate predicate)
+            throws IOException {
+        return consumeWhile(reader, predicate, null);
+    }
+    /**
+     * Consumes markable reader characters while the predicate returns
+     * <code>true</code> for a character or the end of stream is reached.
+     * Optionally append the consumed characters to an {@link Appendable}
+     * (e.g. StringBuilder).
+     * The character ending the consumption is not consumed (i.e.,
+     * the reader cursor is reset just before that character).
+     * @param reader the reader to consume
+     * @param predicate the character evaluation condition
+     * @param appendable optional, to append consumed characters
+     * @return number of characters consumed (0 if reader is <code>null</code>)
+     * @throws IOException could not consume stream
+     * @throws IllegalArgumentException if reader does not support mark
+     * @since 2.0.0
+     */
+    public static int consumeWhile(
+            Reader reader, IntPredicate predicate, Appendable appendable)
+                    throws IOException {
+
+        if (reader == null) {
+            return 0;
+        } else if (!reader.markSupported()) {
+            throw new IllegalArgumentException("Reader must support mark.");
+        }
+
+        int qtyRead = 0;
+        int ch;
+        reader.mark(1);
+        while ((ch = reader.read()) != -1) {
+            if (!predicate.test(ch)) {
+                reader.reset();
+                break;
+            } else if (appendable != null) {
+                appendable.append((char) ch);
+            }
+            reader.mark(1);
+            qtyRead++;
+        }
+        return qtyRead;
     }
 
     /**

@@ -1,4 +1,4 @@
-/* Copyright 2017-2019 Norconex Inc.
+/* Copyright 2017-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  */
 package com.norconex.commons.lang.text;
 
+import static com.norconex.commons.lang.text.StringUtil.countMatchesEnd;
+import static com.norconex.commons.lang.text.StringUtil.countMatchesStart;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.nio.charset.CharacterCodingException;
@@ -26,10 +28,10 @@ import org.junit.jupiter.api.Test;
  * @author Pascal Essiembre
  * @since 1.14.0
  */
-public class StringUtilTest {
+class StringUtilTest {
 
     @Test
-    public void testTruncateWithHash() {
+    void testTruncateWithHash() {
         String text = "I am a string with 33 characters.";
 
         // Test no truncate needed
@@ -49,7 +51,7 @@ public class StringUtilTest {
     }
 
     @Test
-    public void testTruncateBytesWithHash() throws CharacterCodingException {
+    void testTruncateBytesWithHash() throws CharacterCodingException {
         Charset utf8 = StandardCharsets.UTF_8;
 
         //total bytes: 52
@@ -82,5 +84,32 @@ public class StringUtilTest {
 
     private String hash(String s) {
         return StringUtil.getHash(s);
+    }
+
+    @Test
+    void testTrimStart() {
+        assertEquals("trimmed", StringUtil.trimStart("  \n  \t trimmed"));
+        assertEquals("trimmed", StringUtil.trimStart("trimmed"));
+        assertEquals("trimmed \n ", StringUtil.trimStart("trimmed \n "));
+        assertEquals("trimmed \n ", StringUtil.trimStart("  trimmed \n "));
+    }
+    @Test
+    void testTrimEnd() {
+        assertEquals("trimmed", StringUtil.trimEnd("trimmed  \n  \t "));
+        assertEquals("trimmed", StringUtil.trimEnd("trimmed"));
+        assertEquals(" \n trimmed", StringUtil.trimEnd(" \n trimmed"));
+        assertEquals("  trimmed", StringUtil.trimEnd("  trimmed \n "));
+    }
+    @Test
+    void testCountMatchesStart() {
+        assertEquals(2, countMatchesStart("  aa a aa ", " "));
+        assertEquals(2, countMatchesStart("aaaa a aa a", "aa"));
+        assertEquals(0, countMatchesStart("  aaa a aa a", "a"));
+    }
+    @Test
+    void testCountMatchesEnd() {
+        assertEquals(2, countMatchesEnd(" aa a aa  ", " "));
+        assertEquals(2, countMatchesEnd("a a aa aaaa", "aa"));
+        assertEquals(0, countMatchesEnd("aaa a aa a  ", "a"));
     }
 }

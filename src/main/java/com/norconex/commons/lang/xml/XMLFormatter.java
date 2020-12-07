@@ -14,30 +14,32 @@
  */
 package com.norconex.commons.lang.xml;
 
+import static java.lang.Character.isWhitespace;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
+
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-
+import org.apache.commons.collections4.map.ListOrderedMap;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.text.StringEscapeUtils;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.Attributes;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.ext.DefaultHandler2;
+
+import com.norconex.commons.lang.io.IOUtil;
+import com.norconex.commons.lang.text.StringUtil;
 
 /**
  * Simple XML Formatter. This formatter may not fully respect all XML
@@ -47,7 +49,7 @@ import org.xml.sax.ext.DefaultHandler2;
  * formatter. It is not optimized for memory (affected by very large
  * tag content only).
  * It is intended for formatting simple XML for human consumption. It supports
- * XML with no root or formatting attributes only.
+ * XML with no root or the formatting of attributes only.
  * @author Pascal Essiembre
  * @since 2.0.0
  */
@@ -55,341 +57,676 @@ public class XMLFormatter {
 
     private static final Logger LOG =
             LoggerFactory.getLogger(XMLFormatter.class);
-    private static final String WRAP_START = "<__wrapper__>";
-    private static final String WRAP_END = "</__wrapper__>";
 
-    private int indentSize;
-    private int wrapAttributesAt;
-    private int wrapContentAt;
-    private boolean blankLineBeforeComment;
-    private boolean selfCloseEmptyTags;
+    private static final int TAG_START = '<';
+    private static final char[] COMMENT_START = "<!--".toCharArray();
+    private static final char[] CLOSING_TAG_START = "</".toCharArray();
+    private static final Pattern ATTRIB_PATTERN =
+            Pattern.compile("(.*?)=\\s*\"(.*?)\"", Pattern.DOTALL);
 
-    // boolean useCDATA after X reserved characters
+    private final Builder cfg;
 
-    public int getIndentSize() {
-        return indentSize;
+    public XMLFormatter() {
+        this(null);
     }
-    public XMLFormatter setIndentSize(int indentSize) {
-        this.indentSize = indentSize;
-        return this;
-    }
-    public int getWrapAttributesAt() {
-        return wrapAttributesAt;
-    }
-    public XMLFormatter setWrapAttributesAt(int wrapAt) {
-        this.wrapAttributesAt = wrapAt;
-        return this;
-    }
-    public int getWrapContentAt() {
-        return wrapContentAt;
-    }
-    public XMLFormatter setWrapContentAt(int wrapContentAt) {
-        this.wrapContentAt = wrapContentAt;
-        return this;
-    }
-    public boolean isBlankLineBeforeComment() {
-        return blankLineBeforeComment;
-    }
-    public XMLFormatter setBlankLineBeforeComment(
-            boolean blankLineBeforeComment) {
-        this.blankLineBeforeComment = blankLineBeforeComment;
-        return this;
-    }
-    public boolean isSelfCloseEmptyTags() {
-        return selfCloseEmptyTags;
-    }
-    public XMLFormatter setSelfCloseEmptyTags(boolean selfCloseEmptyTags) {
-        this.selfCloseEmptyTags = selfCloseEmptyTags;
-        return this;
+    private XMLFormatter(Builder b) {
+        cfg = new Builder(b);
     }
 
     public String format(XML xml) {
         return format(xml.toString());
     }
-    public String format(Reader reader) {
-        try {
-            return format(IOUtils.toString(reader));
-        } catch (IOException e) {
-            throw newXMLException(e);
-        }
-    }
-    public String format(InputStream inputStream) {
-        try {
-            return format(IOUtils.toString(inputStream, StandardCharsets.UTF_8));
-        } catch (IOException e) {
-            throw newXMLException(e);
-        }
-    }
     public String format(String xml) {
-        if (xml == null) {
-            return null;
-        }
-        String wrappedXML = WRAP_START + xml + WRAP_END;
+        StringWriter w = new StringWriter();
         try {
-            StringWriter out = new StringWriter();
-            XmlHandler handler = new XmlHandler(out);
-            SAXParserFactory factory = XMLUtil.createSaxParserFactory();
-            SAXParser parser = factory.newSAXParser();
-            parser.setProperty(
-                    "http://xml.org/sax/properties/lexical-handler", handler);
-            parser.parse(
-                    new InputSource(new StringReader(wrappedXML)), handler);
-            out.flush();
-            return postFormatCleanups(out.toString().trim());
-        } catch (ParserConfigurationException | SAXException | IOException e) {
-            System.err.println("XML with formatting failure: \n" + wrappedXML);
-            throw newXMLException(e);
+            format(new StringReader(xml), w);
+        } catch (IOException e) {
+            // Since we are dealing with String reader/writer, there should
+            // not be IO exceptions.
+            LOG.error("Could not format XML.", e);
         }
+        return w.toString();
     }
-    private String postFormatCleanups(String text) {
-        String xml = text;
-        xml = StringUtils.removeStart(xml, WRAP_START);
-        xml = StringUtils.removeEnd(xml, WRAP_END);
-
-        // Remove blank lines between tags.
-        xml = xml.replaceAll("(>)\n+( *<)", "$1\n$2");
-
-        if (blankLineBeforeComment) {
-            xml = xml.replaceAll("(?m)( *<!--)", "\n$1");
+    public void format(Reader reader, Writer writer) throws IOException {
+        Writer w = IOUtils.buffer(writer);
+        int depth = 0;
+        TokenReader tokenReader = new TokenReader(reader, cfg);
+        Token token = null;
+        boolean first = true;
+        while ((token = tokenReader.next()) != null) {
+            if (!first) {
+                w.append('\n');
+            }
+            if (token instanceof CloserTag) {
+                depth--;
+            }
+            token.write(w, buildMargin(depth));
+            if (token instanceof Element && !((Element) token).closed) {
+                depth++;
+            }
+            first = false;
         }
-
-        // Convert empty bodies to self-closing tags
-        if (selfCloseEmptyTags) {
-            xml = xml.replaceAll("<(\\w+)([^>]*?)>\\s*</\\1>", "<$1$2/>");
-        }
-
-        return xml;
+        w.flush();
     }
 
-    class XmlHandler extends DefaultHandler2 {
+    //--- Token Reader ---------------------------------------------------------
 
-        private final Writer out;
-        private int depth = -1;
-
-        private int lastTagLineLength = 0;
-        private int lastTagLength = 0;
-        private boolean bodyHasComment;
-
-        private final StringBuilder body = new StringBuilder();
-
-        public XmlHandler(Writer out) {
-            super();
-            this.out = out;
+    static class TokenReader {
+        final Reader r;
+        final Builder cfg;
+        TokenReader(Reader reader, Builder cfg) {
+            this.r = IOUtils.buffer(reader);
+            this.cfg = cfg;
         }
 
+        // Return a token until null when nothing left to read.
+        Token next() throws IOException {
+            skipWhiteSpaces(r);
+
+            r.mark(1);
+            int ch = r.read();
+            r.reset();
+            if (ch == -1) {
+                return null;
+            }
+
+            Token token = null;
+            if (ch == TAG_START) {
+               if (nextCharsEquals(r, COMMENT_START)) {
+                   token = new Comment(cfg);
+               } else if (nextCharsEquals(r, CLOSING_TAG_START)) {
+                   token = new CloserTag(cfg);
+               } else {
+                   token = new Element(cfg);
+               }
+
+               //TODO CDATA
+               //TODO PROLOG + top declarations
+
+            } else {
+                token = new FreeContent(cfg);
+            }
+
+            token.read(r);
+            return token;
+        }
+    }
+
+
+    //--- XML Tokens -----------------------------------------------------------
+
+    private static abstract class Token {
+        protected final Builder cfg;
+        abstract void read(Reader r) throws IOException;
+        abstract void write(Appendable w, String margin) throws IOException;
+        public Token(Builder cfg) {
+            this.cfg = cfg;
+        }
         @Override
-        public void startElement(String uri, String localName, String qName,
-                Attributes attributes) throws SAXException {
+        public String toString() {
+            return ReflectionToStringBuilder.toString(
+                    this, ToStringStyle.SHORT_PREFIX_STYLE);
+        }
+    }
 
+    private static class Element extends Token {
+        String name;
+        String directContent; // trimmed
+        boolean closed; // either a self-closed <tag/> or has a close </tag>
+        boolean selfClosed;
+        int flIndent = 0;
+        final Map<String, String> attribs = new ListOrderedMap<>();
+        public Element(Builder cfg) {
+            super(cfg);
+        }
+        @Override
+        void read(Reader r) throws IOException {
+            final StringBuilder b = new StringBuilder();
+            skipWhiteSpaces(r);
+            r.skip(1); // '<'
+
+            //--- Tag name ---
+            IOUtil.consumeUntil(
+                    r, c -> isWhitespace(c) || c == '/' || c == '>', b);
+            name = b.toString();
+
+            //--- Attributes ---
+            b.setLength(0);
+            IOUtil.consumeUntil(r, c -> c == '>', b);
+
+            String attribsStr = b.toString().trim();
+            if (attribsStr.endsWith("/")) {
+                closed = true;
+                selfClosed = true;
+            }
+            attribsStr = StringUtils.removeEnd(attribsStr, "/");
+            Matcher m = ATTRIB_PATTERN.matcher(attribsStr);
+            while (m.find()) {
+                attribs.put(m.group(1).trim(), m.group(2).trim());
+            }
+
+            r.skip(1); // '>'
+
+            //--- Content ---
+            if (!closed) {
+                b.setLength(0);
+                IOUtil.consumeUntil(r, c -> c == '<', b);
+                String txt = b.toString();
+                flIndent = firstLineIndentSize(txt);
+                directContent = txt.trim();
+            }
+
+            //--- Possible closing Tag ---
+            r.mark(name.length() + 3);
+            char[] chars = new char[name.length() + 3];
+            r.read(chars);
+            if (("</" + name + ">").equals(new String(chars))) {
+                closed = true;
+            } else {
+                r.reset();
+            }
+
+            // Consider self-closed if empty element as per config
+            if (closed && cfg.selfCloseEmptyElements
+                    && StringUtils.isBlank(directContent)) {
+                selfClosed = true;
+            }
+        }
+        @Override
+        void write(Appendable w, String margin) throws IOException {
+            boolean attribsWrapped = false;
+
+            // name
+            w.append(margin).append('<').append(name);
+
+            // attributes
+            if (!attribs.isEmpty()) {
+                attribsWrapped = writeAttributes(w, margin);
+            }
+
+            // closing bracket
+            if (cfg.closeWrappingTagOnOwnLine && attribsWrapped) {
+                w.append('\n').append(margin);
+            }
+            if (selfClosed) {
+                w.append("/>");
+                return;
+            }
+            w.append(">");
+
+            // possible direct content
+            // we "nest" on any the following conditions:
+            boolean nestContent = !closed || attribsWrapped;
+            if (StringUtils.isNotBlank(directContent)) {
+                String trimmedContent = directContent.trim();
+                // line length = margin + '<tag>' + content + '</tag>'
+                int lineLength = margin.length() + (name.length() * 2) + 5
+                        + trimmedContent.length();
+                nestContent = nestContent
+                        || StringUtils.containsAny(trimmedContent, "\n\r")
+                        || (cfg.maxLineLength > 0
+                                && lineLength > cfg.maxLineLength);
+                if (nestContent) {
+                    w.append('\n').append(margin).append(cfg.elementIndent);
+                    nestContent = true;
+                }
+                writeContent(cfg, w, directContent,
+                        margin + cfg.elementIndent, flIndent);
+            }
+
+            // If tag not closed yet but was closed in source, close it
+            // (else remains open)
+            if (closed) {
+                if (nestContent) {
+                    w.append('\n').append(margin);
+                }
+                w.append("</" + name + ">");
+            }
+        }
+
+        // returns whether it wrapped
+        private boolean writeAttributes(Appendable w, String margin)
+                throws IOException {
+            switch (cfg.attributeWrap) {
+            case NONE:
+                writeAttribsWrapNone(w);
+                return false;
+            case AT_MAX:
+                return writeAttribsWrapAtMax(w, margin);
+            case AT_MAX_ALL:
+                return writeAttribsWrapAtMaxAll(w, margin);
+            default: // ALL
+                writeAttribsWarpAll(w, margin);
+                return true;
+            }
+        }
+        private void writeAttribsWrapNone(Appendable w)
+                throws IOException {
+            for (Entry<String, String> en: attribs.entrySet()) {
+                w.append(" " + en.getKey() + "=\"" + en.getValue() + "\"");
+            }
+        }
+        private void writeAttribsWarpAll(Appendable w, String margin)
+                throws IOException {
+            for (Entry<String, String> en: attribs.entrySet()) {
+                w.append("\n" + margin + attribIndent())
+                    .append(en.getKey() + "=\"" + en.getValue() + "\"");
+            }
+        }
+        private boolean writeAttribsWrapAtMaxAll(Appendable w, String margin)
+                throws IOException {
+
+            if (cfg.maxLineLength <= 0) {
+                writeAttribsWrapNone(w);
+                return false;
+            }
+
+            int tagEndLength = 0;
+            if (!cfg.closeWrappingTagOnOwnLine) {
+                // '/>' vs '>'
+                tagEndLength = (selfClosed) ? 2 : 1;
+            }
+
+            // Calculate the potential text length:
+            //   '<' + name length + all attribs length + '>' or '/>'
+            int txtLength = 1 + name.length()
+                    + attribs.entrySet().stream().mapToInt(en ->
+                            en.getKey().length()
+                          + en.getValue().length() + 4).sum()
+                    + tagEndLength;
+            // wrap only if needed
+            if (margin.length() + txtLength > cfg.maxLineLength
+                    && txtLength >= cfg.minTextLength) {
+                writeAttribsWarpAll(w, margin);
+                return true;
+            } else {
+                writeAttribsWrapNone(w);
+                return false;
+            }
+        }
+        private boolean writeAttribsWrapAtMax(Appendable w, String margin)
+                throws IOException {
+
+            boolean wrapped = false;
+            int tagEndLength = 0;
+            if (!cfg.closeWrappingTagOnOwnLine) {
+                // '/>' vs '>'
+                tagEndLength = (selfClosed) ? 2 : 1;
+            }
+            // we start the text length at '<' + name length
+            int txtLength = name.length() + 1;
+            for (Entry<String, String> en: attribs.entrySet()) {
+                String attribute = en.getKey() + "=\"" + en.getValue() + "\"";
+                // ' ' + attribute
+                txtLength += attribute.length() + 1;
+                int lineLength = margin.length() + txtLength + tagEndLength;
+                if (lineLength > cfg.maxLineLength
+                        && txtLength >= cfg.minTextLength) {
+                    // wrap and indent
+                    w.append("\n" + margin + attribIndent());
+                    txtLength = attribIndent().length() + attribute.length();
+                    wrapped = true;
+                } else {
+                    w.append(" ");
+                }
+                w.append(attribute);
+            }
+            return wrapped;
+        }
+        private String attribIndent() {
+            return cfg.attributeIndent == null ? EMPTY : cfg.attributeIndent;
+        }
+    }
+    private static class FreeContent extends Token {
+        String text; // trimmed
+        int flIndent = 0;
+        public FreeContent(Builder cfg) {
+            super(cfg);
+        }
+        @Override
+        void read(Reader r) throws IOException {
             StringBuilder b = new StringBuilder();
-            if (depth > 0 && lastTagLineLength > 0) {
-                write("\n");
+            IOUtil.consumeUntil(r, c -> c == '<', b);
+            String txt = b.toString();
+            flIndent = firstLineIndentSize(txt);
+            text = b.toString().trim();
+        }
+        @Override
+        void write(Appendable w, String margin) throws IOException {
+            if (StringUtils.isNotBlank(text)) {
+                w.append(margin);
+                writeContent(cfg, w, text, margin, flIndent);
             }
-            indent(b);
-            b.append('<');
-            b.append(qName);
-            for (int i = 0; i < attributes.getLength(); i++) {
-                String attribute = esc(attributes.getQName(i)) + "=\""
-                        + esc(attributes.getValue(i)) + "\"";
-                if (isWrapAttribute(b, attribute)) {
-                    write(b.toString());
-                    b.setLength(0);
-                    b.append('\n');
-                    doubleIndent(b);
-                } else {
-                    b.append(" ");
-                }
-                b.append(attribute);
+        }
+    }
+    private static class CloserTag extends Token {
+        String name = null;
+        public CloserTag(Builder cfg) {
+            super(cfg);
+        }
+        @Override
+        void read(Reader r) throws IOException {
+            StringBuilder b = new StringBuilder();
+            r.skip(2); // '</'
+            IOUtil.consumeUntil(r, c -> c == '>', b);
+            name = b.toString().trim();
+            r.skip(1); // '>'
+        }
+        @Override
+        void write(Appendable w, String margin) throws IOException {
+            if (StringUtils.isNotEmpty(name)) {
+                w.append(margin).append("</").append(name).append('>');
             }
-            b.append('>');
-            write(b.toString());
-            depth++;
-            lastTagLength = qName.length();
-            lastTagLineLength = b.length();
-            bodyHasComment = false;
+        }
+    }
+    private static class Comment extends Token {
+        String text = null; // trimmed
+        int flIndent = 0; // non-zero only if on separate line from tag
+        public Comment(Builder cfg) {
+            super(cfg);
+        }
+        @Override
+        void read(Reader r) throws IOException {
+            StringBuilder b = new StringBuilder();
+            r.skip(4); // '<!--'
+
+            IOUtil.consumeUntil(r, "-->", b);
+            b.setLength(b.length() - 3);
+            String txt = b.toString();
+            flIndent = firstLineIndentSize(txt);
+            text = txt.trim();
         }
 
         @Override
-        public void characters(char[] ch, int start, int length)
-                throws SAXException {
-            body.append(ch, start, length);
-        }
-
-        @Override
-        public void comment(char[] ch, int start, int length)
-                throws SAXException {
-
-            // if no comment, do nothing
-            String comment = new String(ch, start, length);
-            if (comment.length() == 0) {
-                return;
-            }
-            bodyHasComment = true;
-            if (isWrapComment(comment)) {
-                comment = wrapCommentText(comment, indentSize * depth + 2);
-                comment = comment.replaceFirst("^\n+", "");
-                comment = comment.replaceFirst("\\s+$", "");
-                comment = "\n" + indent() + "<!--\n" + comment;
-                comment += "\n" + indent() + "  -->\n";
-                write(comment);
-            } else {
-                write("\n");
-                write(indent() + "<!--" + comment + "-->\n");
-            }
-        }
-
-        @Override
-        public void endElement(String uri, String localName, String qName)
-                throws SAXException {
-            depth--;
-
-            String text = body.toString().trim();
-            body.setLength(0);
-
-            String closingTag = "</" + esc(qName) + ">\n";
-
-            // if no body, close right away
-            if (text.length() == 0) {
-                // if last tag length is zero, it means we are starting
-                // or body was just printed, so we indent
-                // same if the body had a comment.
-                if (lastTagLength == 0 || bodyHasComment) {
-                    write(indent());
-                }
-                write(closingTag);
-                bodyHasComment = false;
+        void write(Appendable w, String margin) throws IOException {
+            if (StringUtils.isBlank(text)) {
                 return;
             }
 
-            if (isWrapContent(text)) {
-                write(wrapBodyText(text, indentSize * (depth + 1)));
-                write(indent() + closingTag);
+            if (cfg.blankLineBeforeComment) {
+                w.append('\n');
+            }
+
+            w.append(margin).append("<!--");
+
+            // nest comment if contains new line or too big.
+            String trimmedText = text.trim();
+            int lineLength = margin.length() + 9 + trimmedText.length();
+            boolean nestContent = StringUtils.containsAny(trimmedText, "\n\r")
+                    || cfg.maxLineLength > 0 && lineLength > cfg.maxLineLength;
+            if (nestContent) {
+                w.append('\n').append(margin).append(cfg.elementIndent);
             } else {
-                write(text);
-                write(closingTag);
+                w.append(' ');
             }
-            lastTagLineLength = 0;
-            lastTagLength = 0;
-            bodyHasComment = false;
-        }
-
-        private String wrapCommentText(String text, int leftPadding) {
-            StringBuffer b = new StringBuffer();
-            Matcher m = Pattern.compile(".*?([\n\r]+|$)").matcher(text);
-            while (m.find()) {
-                String group = m.group();
-                String lineIndent = group.replaceFirst("(?s)^(\\s*).*", "$1");
-                lineIndent = StringUtils.leftPad(lineIndent, leftPadding);
-                String line = group.replaceFirst("(?s)^\\s+(.*)", "$1");
-                int textMaxChars =
-                        Math.max(wrapContentAt - lineIndent.length(), 1);
-                if (line.length() < textMaxChars) {
-                    m.appendReplacement(b,
-                            Matcher.quoteReplacement(lineIndent + line));
-                } else {
-                    m.appendReplacement(b,
-                            Matcher.quoteReplacement(breakLongLines(
-                                    lineIndent, line, textMaxChars)));
-                }
+            writeContent(cfg, w, text, margin + cfg.elementIndent, flIndent);
+            if (nestContent) {
+                w.append('\n').append(margin).append("  ");
+            } else {
+                w.append(' ');
             }
-            String newText = b.toString();
-            newText = newText.replaceFirst("(.*)\\s+$", "$1");
-            return "\n" + newText + "\n";
-        }
-
-        private String wrapBodyText(String text, int leftPadding) {
-            String lineIndent = StringUtils.repeat(' ', leftPadding);
-            int textMaxChars =
-                    Math.max(wrapContentAt - lineIndent.length(), 1);
-            StringBuffer b = new StringBuffer();
-            Matcher m = Pattern.compile(".*?([\n\r]+|$)").matcher(text);
-            while (m.find()) {
-                String line = m.group();
-                line = line.replaceFirst("(?s)^\\s+(.*)", "$1");
-
-                if (line.length() < textMaxChars) {
-                    m.appendReplacement(b,
-                            Matcher.quoteReplacement(lineIndent + line));
-                } else {
-                    m.appendReplacement(b,
-                            Matcher.quoteReplacement(breakLongLines(
-                                    lineIndent, line, textMaxChars)));
-                }
+            w.append("-->");
+            if (cfg.blankLineAfterComment) {
+                w.append('\n');
             }
-            String newText = b.toString();
-            newText = newText.replaceFirst("(.*)\\s+$", "$1");
-            return "\n" + newText + "\n";
-        }
-
-        private String breakLongLines(
-                String lineIndent, String text, int textMaxChars) {
-            return text.replaceAll(
-                    "(.{1," + textMaxChars + "})( |$)",
-                    lineIndent + "$1\n");
-        }
-
-        @Override
-        public void warning(SAXParseException e) throws SAXException {
-            LOG.warn("XML warning: {}.", e.getMessage(), e);
-        }
-        @Override
-        public void error(SAXParseException e) throws SAXException {
-            LOG.error("XML error: {}.", e.getMessage(), e);
-        }
-        @Override
-        public void fatalError(SAXParseException e) throws SAXException {
-            LOG.error("XML fatal error: {}.", e.getMessage(), e);
-        }
-
-        private String indent() {
-            return StringUtils.repeat(' ', indentSize * depth);
-        }
-        private String doubleIndent() {
-            return StringUtils.repeat(' ', indentSize * depth + indentSize * 2);
-        }
-        private void indent(StringBuilder b) {
-            if (indentSize > 0) {
-                b.append(indent());
-            }
-        }
-        private void doubleIndent(StringBuilder b) {
-            if (indentSize > 0) {
-                b.append(doubleIndent());
-            }
-        }
-        private boolean isWrapAttribute(StringBuilder b, String newText) {
-            return wrapAttributesAt > 0
-                    && b.length() + newText.length() > wrapAttributesAt;
-        }
-        private boolean isWrapContent(String text) {
-            if (wrapContentAt < 1) {
-                return false;
-            }
-            return StringUtils.containsAny(text, '\n', '\r')
-                    || lastTagLineLength + text.length()
-                    + lastTagLength + 3 > wrapContentAt;
-        }
-        private boolean isWrapComment(String text) {
-            if (wrapContentAt < 1) {
-                return false;
-            }
-            return StringUtils.containsAny(text, '\n', '\r')
-                    || (indentSize * depth) + 2 + text.length() > wrapContentAt;
-        }
-        private void write(String txt) {
-            try {
-                out.write(txt);
-            } catch (IOException e) {
-                throw newXMLException(e);
-            }
-        }
-        private String esc(String txt) {
-            return StringEscapeUtils.escapeXml11(txt);
         }
     }
 
-    private static XMLException newXMLException(Exception e) {
-        e.printStackTrace(System.err);
-        return new XMLException("Could not format XML: " + e.getMessage(), e);
+    //--- Util. Methods --------------------------------------------------------
+
+    private static final Pattern FL_INDENT_PATTERN =
+            Pattern.compile("(?s)^[\\s\n\r]*[\n\r](\\s+).*$");
+    private static int firstLineIndentSize(String str) {
+        Matcher m = FL_INDENT_PATTERN.matcher(str);
+        if (m.matches()) {
+            return m.group(1).length();
+        }
+        return 0;
+    }
+
+    private static void writeContent(
+            Builder cfg, Appendable w, String content, String margin,
+            int firstLineIndentSize) throws IOException {
+
+        //--- Analyze each line ---
+        // If single-line trim
+        // if multi-line AND preserving indent, loop through lines and find
+        // smallest indent which will be removed from each line in favor of
+        // margin.
+        int spacesToCut = -1;
+        List<String> paragraphs = Arrays.asList(content.split("\\R"));
+        for (int i = 0; i < paragraphs.size(); i++) {
+            String paragraph = paragraphs.get(i);
+            if (cfg.preserveTextIndent) {
+                if (spacesToCut == -1) {
+                    // first line, use argument
+                    spacesToCut = firstLineIndentSize;
+                } else if (StringUtils.isNotBlank(paragraph)) {
+                    spacesToCut = Math.min(StringUtil.countMatchesStart(
+                            paragraph, " "), spacesToCut);
+                }
+            } else {
+                paragraph = StringUtil.trimStart(paragraph);
+            }
+            paragraphs.set(i, paragraph);
+        }
+
+        //--- Process each lines ---
+
+        StringBuilder b = new StringBuilder();
+        for (String paragraph: paragraphs) {
+            String line = paragraph;
+            String textIndent = "";
+            if (cfg.preserveTextIndent) {
+                textIndent = StringUtils.repeat(' ',
+                        StringUtil.countMatchesStart(line, " ") - spacesToCut);
+                line = line.trim();//StringUtil.trimStart(line);
+            }
+            int lineLength =
+                    margin.length() + textIndent.length() + paragraph.length();
+            if (cfg.maxLineLength > 0
+                    && lineLength > cfg.maxLineLength
+                    && line.length() >= cfg.minTextLength) {
+                b.append(breakLongParagraphs(cfg, margin + textIndent, line));
+            } else if (StringUtils.isNotBlank(line)) {
+                b.append(margin + textIndent + line);
+            }
+            b.append('\n');
+        }
+        w.append(b.toString().trim());
+    }
+    private static String breakLongParagraphs(
+            Builder cfg, String margin, String paragraph) {
+        int maxTextLength = NumberUtils.max(
+                1, cfg.minTextLength, cfg.maxLineLength - margin.length());
+        return paragraph.replaceAll(
+                "(.{1," + maxTextLength + "})( |$)",
+                margin + "$1\n");
+    }
+    private static boolean nextCharsEquals(Reader r, char[] chars)
+            throws IOException {
+        return Arrays.equals(chars, IOUtil.borrowCharacters(r, chars.length));
+    }
+    private static int skipWhiteSpaces(Reader r) throws IOException {
+        return IOUtil.consumeWhile(r, Character::isWhitespace);
+    }
+    private String buildMargin(int depth) {
+        if (cfg.elementIndent == null) {
+            return EMPTY;
+        }
+        return StringUtils.repeat(cfg.elementIndent, depth);
+    }
+
+    //--- Builder --------------------------------------------------------------
+
+    public static class Builder {
+        public enum AttributeWrap {
+            /**
+             * Wrap ALL attributes (one per line).
+             */
+            ALL,
+            /**
+             * Never wrap attributes
+             * (ignoring {@link Builder#maxLineLength(int)}).
+             */
+            NONE,
+            /**
+             * Wrap attributes only when {@link Builder#maxLineLength(int)}
+             * is reached (respecting {@link Builder#minTextLength(int)}),
+             * keeping as many attributes as possible on each line.
+             */
+            AT_MAX,
+            /**
+             * Wrap attributes only when {@link Builder#maxLineLength(int)}
+             * is reached, but putting them all on their own line.
+             */
+            AT_MAX_ALL
+        }
+        private String elementIndent = "  ";
+        private String attributeIndent = "    ";
+        private AttributeWrap attributeWrap = AttributeWrap.ALL;
+        private boolean closeWrappingTagOnOwnLine;
+        private int maxLineLength = 80;
+        private int minTextLength = 40;
+        private boolean blankLineBeforeComment;
+        private boolean blankLineAfterComment;
+        private boolean selfCloseEmptyElements;
+        private boolean preserveTextIndent;
+
+        private Builder() {
+            super();
+        }
+        // Copy constructor
+        private Builder(Builder b) {
+            super();
+            this.elementIndent = b.elementIndent;
+            this.attributeIndent = b.attributeIndent;
+            this.attributeWrap = b.attributeWrap;
+            this.closeWrappingTagOnOwnLine = b.closeWrappingTagOnOwnLine;
+            this.maxLineLength = b.maxLineLength;
+            this.minTextLength = b.minTextLength;
+            this.blankLineBeforeComment = b.blankLineBeforeComment;
+            this.blankLineAfterComment = b.blankLineAfterComment;
+            this.selfCloseEmptyElements = b.selfCloseEmptyElements;
+            this.preserveTextIndent = b.preserveTextIndent;
+        }
+
+        /**
+         * String to use for indenting elements.
+         * Repeated as needed to match the current hierarchical depth of the
+         * element.
+         * Defaults to two spaces.
+         * @param indent string to use as indent
+         * @return this builder
+         */
+        public Builder elementIndent(String indent) {
+            this.elementIndent = indent;
+            return this;
+        }
+        /**
+         * String to use for indenting attributed, when wrapped.
+         * @param indent
+         * Defaults to four spaces.
+         * @return this builder
+         */
+        public Builder attributeIndent(String indent) {
+            this.attributeIndent = indent;
+            return this;
+        }
+        /**
+         * Attribute wrapping strategy.
+         * Defaults to {@link AttributeWrap#ALL}.
+         * @param attributeWrap attribute wrapping strategy
+         * @return this builder
+         */
+        public Builder attributeWrapping(AttributeWrap attributeWrapping) {
+            this.attributeWrap = attributeWrapping;
+            return this;
+        }
+        /**
+         * Put the closing angle bracket of tags with wrapping
+         * attributes on its own line, aligned with opening angle bracket.
+         * Defaults to adding it the closing angle bracket at the end of the
+         * last attribute.
+         * @return this builder
+         */
+        public Builder closeWrappingTagOnOwnLine() {
+          this.closeWrappingTagOnOwnLine = true;
+          return this;
+        }
+        /**
+         * Maximum length a line can have before wrapping is performed.
+         * Tries to do smart break when possible. When not possible,
+         * (e.g., a very long word) it will not wrap.
+         * {@link #minTextLength(int)} and {@link AttributeWrap#NONE}
+         * both take precedence over this value.
+         * @param charQty maximum number of characters.
+         * @return this builder
+         */
+        public Builder maxLineLength(int charQty) {
+            this.maxLineLength = charQty;
+            return this;
+        }
+        /**
+         * Minimum length for text on any line before text can be wrapped.
+         * This takes precedence over {@link #maxLineLength}.
+         * @param charQty minimum number of characters.
+         * @return this builder
+         */
+        public Builder minTextLength(int charQty) {
+            this.minTextLength = charQty;
+            return this;
+        }
+        /**
+         * Inserts a blank line before a comment.
+         * @return this builder
+         */
+        public Builder blankLineBeforeComment() {
+            this.blankLineBeforeComment = true;
+            return this;
+        }
+        /**
+         * Inserts a blank line after a comment.
+         * @return this builder
+         */
+        public Builder blankLineAfterComment() {
+            this.blankLineAfterComment = true;
+            return this;
+        }
+        /**
+         * Self-close elements with no or blank values.
+         * @return this builder
+         */
+        public Builder selfCloseEmptyElements() {
+            this.selfCloseEmptyElements = true;
+            return this;
+        }
+        /**
+         * Preserves indentation found in element or comment text.
+         * By default all lines are trimmed. When this option is set,
+         * indentations (relative to the shorted indent) are kept.
+         * @return this builder
+         */
+        public Builder preserveTextIndent() {
+            this.preserveTextIndent = true;
+            return this;
+        }
+
+        /**
+         * Creates an immutable, thread-safe XML formatter instance
+         * using this builder.
+         * @return XML formatter
+         */
+        public XMLFormatter build() {
+            return new XMLFormatter(this);
+        }
+    }
+
+    /**
+     * Gets an XML formatter builder.
+     * @return builder
+     */
+    public static Builder builder() {
+        return new Builder();
     }
 }
