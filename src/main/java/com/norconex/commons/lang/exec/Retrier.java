@@ -1,4 +1,4 @@
-/* Copyright 2010-2018 Norconex Inc.
+/* Copyright 2010-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,14 @@
 package com.norconex.commons.lang.exec;
 
 import org.apache.commons.collections4.queue.CircularFifoQueue;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.norconex.commons.lang.ExceptionUtil;
 import com.norconex.commons.lang.Sleeper;
 
 /**
@@ -26,8 +31,7 @@ import com.norconex.commons.lang.Sleeper;
  * will throw a {@link RetriableException}, wrapping the last exceptions
  * encountered, if any, to a configurable maximum.
  * @author Pascal Essiembre
- * @since 1.13.0 (previously "RetriableExecutor" part of
- *        <a href="https://opensource.norconex.com/jef/api/">JEF API</a> 4.0).
+ * @since 1.13.0
  */
 public class Retrier {
 
@@ -153,7 +157,9 @@ public class Retrier {
         return this;
     }
     /**
-     * Runs the {@link IRetriable} instance.  This method is not thread safe.
+     * Runs the {@link IRetriable} instance.  This method is only
+     * thread-safe if not modified after being used for the first time,
+     * and the exception filter is thread-safe (or <code>null</code>).
      * @param retriable the code to run
      * @param <T> type of optional return value
      * @return execution output if any, or null
@@ -161,12 +167,19 @@ public class Retrier {
      * or exception thrown when max rerun attempts is reached.
      */
     public <T> T execute(IRetriable<T> retriable) throws RetriableException {
-        int attemptCount = 0;
+        int retryCount = 0;
         CircularFifoQueue<Exception> exceptions =
                 new CircularFifoQueue<>(maxCauses);
-        while (attemptCount <= maxRetries) {
+        // we do <= instead of just < because there are always
+        // 1 execution + x retries
+        while (retryCount <= maxRetries) {
             try {
-                return retriable.execute();
+                T val = retriable.execute();
+                if (retryCount > 0) {
+                    LOG.info("Execution successfully recovered on attempt #{}",
+                            retryCount + 1);
+                }
+                return val;
             } catch (Exception e) {
                 exceptions.add(e);
                 if (exceptionFilter != null && !exceptionFilter.retry(e)) {
@@ -176,17 +189,32 @@ public class Retrier {
                           exceptions.toArray(EMPTY_EXCEPTIONS));
                 }
             }
-            attemptCount++;
-            if (attemptCount < maxRetries) {
-                LOG.warn("Execution failed, retrying "
-                        + "({} of {} maximum retries).",
-                        attemptCount, maxRetries,
-                        exceptions.get(exceptions.size() -1));
+            retryCount++;
+            if (retryCount <= maxRetries) {
+                 LOG.warn("Execution failed, retrying "
+                        + "({} of {} maximum retries). Cause:\n{}",
+                        retryCount, maxRetries,
+                        ExceptionUtil.getFormattedMessages(
+                                exceptions.get(exceptions.size() -1)));
                 Sleeper.sleepMillis(retryDelay);
             }
         }
         throw new RetriableException(
                 "Execution failed, maximum number of retries reached.",
                 exceptions.toArray(EMPTY_EXCEPTIONS));
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        return EqualsBuilder.reflectionEquals(this, other);
+    }
+    @Override
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this);
+    }
+    @Override
+    public String toString() {
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

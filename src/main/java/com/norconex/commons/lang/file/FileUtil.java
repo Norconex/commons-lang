@@ -1,4 +1,4 @@
-/* Copyright 2010-2019 Norconex Inc.
+/* Copyright 2010-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,10 +22,15 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.NotDirectoryException;
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -54,6 +59,48 @@ public final class FileUtil {
 
     private FileUtil() {
         super();
+    }
+
+
+    /**
+     * Gets whether a directory is empty of files or directories
+     * in an efficient way which does not load all files. The directory
+     * must exist and be a valid directory (e.g., not a file).
+     * @param dir the directory to check for emptiness
+     * @return <code>true</code> if directory exists and is empty
+     * @throws IOException if an I/O error occurs
+     * @since 2.0.0
+     */
+    public static boolean dirEmpty(File dir) throws IOException {
+        if (dir == null || !dir.isDirectory()) {
+            throw new NotDirectoryException(
+                    "Directory must exist and be valid: " + dir);
+        }
+        Path path = dir.toPath();
+        try (DirectoryStream<Path> directory =
+                Files.newDirectoryStream(path)) {
+            return !directory.iterator().hasNext();
+        }
+    }
+
+    /**
+     * Recursively gets whether a directory contains at least one file
+     * matching the given file filter.
+     * @param dir directory to inspect
+     * @param filter file or directory filter
+     * @return <code>true</code> upon filter matching a file or directory
+     * @throws IOException if an I/O error occurs
+     */
+    public static boolean dirHasFile(File dir, FileFilter filter)
+            throws IOException {
+        if (dir == null || !dir.isDirectory()) {
+            throw new NotDirectoryException(
+                    "Directory must exist and be valid: " + dir);
+        }
+        try (Stream<Path> walk = Files.walk(dir.toPath())) {
+            return walk.filter(Files::isRegularFile)
+                    .anyMatch(p -> filter.accept(p.toFile()));
+        }
     }
 
     /**
@@ -302,9 +349,7 @@ public final class FileUtil {
     public static void visitAllDirsAndFiles(
             File dir, IFileVisitor visitor, FileFilter filter) {
         visitor.visit(dir);
-        if (!dir.exists()) {
-            return;
-        } else if (dir.isDirectory()) {
+        if (dir.exists() && dir.isDirectory()) {
             File[] children = dir.listFiles(filter);
             if (children != null) {
                 for (int i=0; i<children.length; i++) {

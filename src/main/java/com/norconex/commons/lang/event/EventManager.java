@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
 
+import com.norconex.commons.lang.ExceptionUtil;
 import com.norconex.commons.lang.SLF4JUtil;
 import com.norconex.commons.lang.bean.BeanUtil;
 
@@ -48,6 +49,8 @@ public class EventManager {
 
     private final CopyOnWriteArrayList<IEventListener<Event>> listeners =
             new CopyOnWriteArrayList<>();
+
+    private boolean stacktraceLoggingDisabled;
 
     public EventManager() {
         this(null);
@@ -97,6 +100,13 @@ public class EventManager {
         return this.listeners.size();
     }
 
+    public boolean isStacktraceLoggingDisabled() {
+        return stacktraceLoggingDisabled;
+    }
+    public void setStacktraceLoggingDisabled(boolean disableStacktraceLogging) {
+        this.stacktraceLoggingDisabled = disableStacktraceLogging;
+    }
+
     public void fire(Event event) {
         fire(event, null);
     }
@@ -140,6 +150,13 @@ public class EventManager {
         Logger log =  LoggerFactory.getLogger(event.getClass().getSimpleName()
                 + "." + event.getName());
         Level safeLevel = ObjectUtils.defaultIfNull(level, Level.INFO);
-        SLF4JUtil.log(log, safeLevel, event.toString(), event.getException());
+        if (stacktraceLoggingDisabled && event.getException() != null) {
+            SLF4JUtil.log(log, safeLevel, event.toString()
+                    + " Cause:\n{}",
+                    ExceptionUtil.getFormattedMessages(event.getException()));
+        } else {
+            SLF4JUtil.log(
+                    log, safeLevel, event.toString(), event.getException());
+        }
     }
 }

@@ -10,6 +10,9 @@
     <release version="2.0.0-SNAPSHOT" date="2020-??-??" 
              description="Major release. NOT a drop-in replacement for 1.x.">
       <action dev="essiembre" type="add">
+        New ExceptionUtil class.
+      </action>
+      <action dev="essiembre" type="add">
         New configurable TextMatcher class supporting different methods
         of matching/replacing (basic, csv, wildcard, regex).
       </action>
@@ -68,6 +71,9 @@
       </action>
       <action dev="essiembre" type="add">
         New Properties#loadFromBean and Properties#storeToBean methods.
+      </action>
+      <action dev="essiembre" type="add">
+        New FileUtil#isDirEmpty(...) methods.
       </action>
       <action dev="essiembre" type="add">
         New Properties set, add, getValue/getLists method simplifying

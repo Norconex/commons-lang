@@ -1,4 +1,4 @@
-/* Copyright 2010-2017 Norconex Inc.
+/* Copyright 2010-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +16,19 @@ package com.norconex.commons.lang.exec;
 
 /**
  * Upon failure, the <code>run</code> method will get
- * re-executed by a {@link Retrier} until successful or fails according 
+ * re-executed by a {@link Retrier} until successful or fails according
  * to the {@link Retrier} conditions.
  * @param <T> type of optional return value
  * @author Pascal Essiembre
  * @see Retrier
- * @since 1.13.0 (previously part of 
- *        <a href="https://opensource.norconex.com/jef/api/">JEF API</a> 4.0).
+ * @since 1.13.0
  */
+@FunctionalInterface
 public interface IRetriable<T> {
     /**
      * Code to be executed until successful (no exception thrown).
-     * @throws RetriableException any exception
+     * @throws Exception any exception
      * @return optional return value
      */
-    T execute() throws RetriableException;
+    T execute() throws Exception;
 }
