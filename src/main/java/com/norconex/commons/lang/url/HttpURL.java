@@ -1,4 +1,4 @@
-/* Copyright 2010-2019 Norconex Inc.
+/* Copyright 2010-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
+import com.norconex.commons.lang.collection.CollectionUtil;
+
 /**
  * This class act as a mutable URL, which could be a replacement
  * or "wrapper" to the {@link URL} class. It can also be used as a safer way
@@ -51,7 +53,7 @@ public class HttpURL implements Serializable {
     /** Constant for "https" protocol. */
     public static final String PROTOCOL_HTTPS = "https";
 
-    private QueryString queryString;
+    private final QueryString queryString = new QueryString();
     private String host;
     private int port = -1;
     private String path;
@@ -135,7 +137,7 @@ public class HttpURL implements Serializable {
 
         // Parameters
         if (StringUtils.contains(u, "?")) {
-            queryString = new QueryString(u, encoding);
+            setQueryString(new QueryString(u, encoding));
         }
     }
 
@@ -165,18 +167,22 @@ public class HttpURL implements Serializable {
     }
 
     /**
-     * Gets the URL query string.
-     * @return URL query string, or <code>null</code> if none
+     * Gets the URL query string.  Changes to the returned query string
+     * will be applied to this URL query string.  A URL without a query
+     * string returns an empty query string.
+     * @return URL query string, never <code>null</code>
      */
     public QueryString getQueryString() {
         return queryString;
     }
     /**
-     * Sets the URL query string.
+     * Sets the URL query string, replacing this URL existing query string
+     * parameters with the ones from the supplied query string (the original
+     * query string instance is kept).
      * @param queryString the query string
      */
     public void setQueryString(QueryString queryString) {
-        this.queryString = queryString;
+        CollectionUtil.setAll(this.queryString, queryString);
     }
 
     /**
@@ -379,7 +385,7 @@ public class HttpURL implements Serializable {
             }
             b.append(encodePath(path));
         }
-        if (queryString != null && !queryString.isEmpty()) {
+        if (!queryString.isEmpty()) {
             b.append(queryString.toString());
         }
         if (fragment != null) {

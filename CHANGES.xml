@@ -254,6 +254,9 @@
       <action dev="essiembre" type="update">
         JarCopier can now run headless with new "onConflict" argument.
       </action>
+      <action dev="essiembre" type="update">
+        HttpURL#getQueryString() is now never null.
+      </action>
       <action dev="essiembre" type="fix">
         Properties#load(Map) now handles primitive array values properly,
         as well as Class, Date, and File types.
