@@ -42,6 +42,8 @@ public final class ResourceLoader {
     public static final String HTML = ".html";
     /** @since 2.0.0 */
     public static final String XML = ".xml";
+    /** @since 2.0.0 */
+    public static final String JSON = ".json";
 
     private ResourceLoader() {
         super();
@@ -183,5 +185,31 @@ public final class ResourceLoader {
      */
     public static String getHtmlString(Class<?> clazz) {
         return getString(clazz, HTML);
+    }
+    /**
+     * Gets a stream from a resource matching class name with ".json" suffix.
+     * @param clazz the class to load related resource
+     * @return JSON stream or <code>null</code>
+     */
+    public static InputStream getJsonStream(Class<?> clazz) {
+        return getStream(clazz, JSON);
+    }
+    /**
+     * Gets a UTF-8 reader from resource matching class name with ".json"
+     * suffix.
+     * @param clazz the class to load related resource
+     * @return JSON reader or <code>null</code>
+     */
+    public static Reader getJsonReader(Class<?> clazz) {
+        return getReader(clazz, JSON);
+    }
+    /**
+     * Gets a UTF-8 string from resource matching class name with ".json"
+     * suffix.
+     * @param clazz the class to load related resource
+     * @return JSON string or <code>null</code>
+     */
+    public static String getJsonString(Class<?> clazz) {
+        return getString(clazz, JSON);
     }
 }

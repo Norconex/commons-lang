@@ -14,6 +14,8 @@
  */
 package com.norconex.commons.lang.net;
 
+import java.io.Serializable;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -30,7 +32,9 @@ import com.norconex.commons.lang.xml.XML;
  * @author Pascal Essiembre
  * @since 2.0.0
  */
-public final class Host {
+public final class Host implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private String name;
     private int port;

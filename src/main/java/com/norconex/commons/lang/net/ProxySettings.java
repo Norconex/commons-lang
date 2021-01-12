@@ -50,7 +50,6 @@ import com.norconex.commons.lang.xml.XML;
  * @author Pascal Essiembre
  * @since 1.14.0
  */
-@SuppressWarnings("javadoc")
 public class ProxySettings implements IXMLConfigurable, Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -74,7 +73,8 @@ public class ProxySettings implements IXMLConfigurable, Serializable {
 
     /**
      * Gets the proxy host.
-     * @return proxy host
+     * @return proxy host or <code>null</code> if not set
+     * @see #isSet()
      */
     public Host getHost() {
         return host;
@@ -110,7 +110,7 @@ public class ProxySettings implements IXMLConfigurable, Serializable {
 
     /**
      * Gets the proxy credentials.
-     * @return proxy credentials
+     * @return proxy credentials (never <code>null</code>)
      * @since 2.0.0
      */
     public Credentials getCredentials() {

@@ -14,6 +14,8 @@
  */
 package com.norconex.commons.lang.security;
 
+import java.io.Serializable;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -103,7 +105,9 @@ import com.norconex.commons.lang.xml.XML;
  * @see EncryptionKey
  * @see EncryptionUtil
  */
-public class Credentials implements IXMLConfigurable {
+public class Credentials implements IXMLConfigurable, Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private String username;
     private String password;
