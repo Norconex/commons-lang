@@ -32,26 +32,22 @@ import com.norconex.commons.lang.xml.XML;
  * <p>
  * User credentials with an optionally encrypted password. To be encrypted,
  * there needs to be an encryption key.  Without one, the password
- * is assumed not to be encrypted despite this class name.
+ * is assumed not to be encrypted.
  * </p>
  *
  * {@nx.block #doc
- * <h3>Password encryption in XML configuration:</h3>
+ * <h3>Password encryption:</h3>
  * <p>
  * Passwords can be encrypted using <code>EncryptionUtil</code> (or
  * command-line "encrypt.bat" or "encrypt.sh" if those are available to you).
  * In order for the password to be decrypted properly, you need
  * to specify the encryption key used to encrypt it. The key can obtained
- * from a different few supported locations. The combination of the password key
+ * from a few supported locations. The combination of the password key
  * "value" and "source" is used to properly locate the key.
- * The supported sources and their values are:
+ * The supported sources are:
  * </p>
  * <p>
  * <table border="1" summary="">
- *   <tr>
- *     <th><code>source</code></th>
- *     <th><code>value</code></th>
- *   </tr>
  *   <tr>
  *     <td><code>key</code></td>
  *     <td>The actual encryption key.</td>

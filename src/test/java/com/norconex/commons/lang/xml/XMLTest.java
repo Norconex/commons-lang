@@ -1,4 +1,4 @@
-/* Copyright 2018-2019 Norconex Inc.
+/* Copyright 2018-2021 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,13 @@
 package com.norconex.commons.lang.xml;
 
 import java.awt.Dimension;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
+import org.apache.commons.collections4.map.ListOrderedMap;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
@@ -41,7 +44,7 @@ import com.norconex.commons.lang.unit.DataUnit;
 /**
  * @author Pascal Essiembre
  */
-public class XMLTest {
+class XMLTest {
 
     private static final Logger LOG =
             LoggerFactory.getLogger(XMLTest.class);
@@ -55,8 +58,42 @@ public class XMLTest {
               + "<nestedC/>"
           + "</sampleTag>";
 
+
     @Test
-    public void testJaxb() {
+    void testMap() {
+        String xmlElements =
+                "<myentry mykey=\"f1\">v1</myentry>"
+              + "<myentry mykey=\"2.22\">v2a</myentry>"
+              + "<myentry mykey=\"2.22\">v2b</myentry>"
+              + "<myentry mykey=\"2.22\">v2c</myentry>"
+              + "<myentry mykey=\"f3\">3.3</myentry>"
+              + "<myentry mykey=\"f3\">33333</myentry>";
+        String xmlNoParent = "<test>" + xmlElements + "</test>";
+        String xmlParent = "<test><mymap>" + xmlElements + "</mymap></test>";
+
+        Map<Object, Object> map = new ListOrderedMap<>();
+        // string -> string
+        map.put("f1", "v1");
+        // object -> string array
+        map.put(Double.valueOf(2.22), new String[] {"v2a", "v2b", "v2c"});
+        // string -> mixed object collection
+        map.put("f3", Arrays.asList(
+                Double.valueOf(3.3), Duration.ofMillis(33333)));
+
+        // Test without parent:
+        XML xml = XML.of("test").create();
+        xml.addElementMap("myentry", "mykey", map);
+
+        Assertions.assertEquals(xmlNoParent, xml.toString());
+
+        // Test with parent:
+        xml = XML.of("test").create();
+        xml.addElementMap("mymap", "myentry", "mykey", map);
+        Assertions.assertEquals(xmlParent, xml.toString());
+    }
+
+    @Test
+    void testJaxb() {
         JaxbPojo pojo = new JaxbPojo();
 
         pojo.setFirstName("John");
@@ -80,7 +117,7 @@ public class XMLTest {
 
 
     @Test
-    public void testGetCommonTypes() {
+    void testGetCommonTypes() {
         XML xml = XML.of(ResourceLoader.getXmlString(XMLTest.class)).create();
 
         Assertions.assertEquals("a string", xml.getString("testString"));
@@ -101,7 +138,7 @@ public class XMLTest {
     }
 
     @Test
-    public void testGetNullEmptyBlank() {
+    void testGetNullEmptyBlank() {
         XML xml = XML.of(ResourceLoader.getXmlString(XMLTest.class)).create();
 
         // As strings
@@ -132,7 +169,7 @@ public class XMLTest {
     }
 
     @Test
-    public void testAddNullEmptyBlankElements() {
+    void testAddNullEmptyBlankElements() {
         // Null, empty, and blank strings should all be loaded back as such.
         XML xml1 = XML.of("test").create();
 
@@ -163,7 +200,7 @@ public class XMLTest {
     }
 
     @Test
-    public void testUnwrap() {
+    void testUnwrap() {
         String wrapped =
                 "<rootTag id=\"banana\" remove=\"me\">"
               + SAMPLE_XML
@@ -181,20 +218,20 @@ public class XMLTest {
     }
 
     @Test
-    public void testWrap() {
+    void testWrap() {
         String target = "<parentTag>" + SAMPLE_XML + "</parentTag>";
         Assertions.assertEquals(target, XML.of(
                 SAMPLE_XML).create().wrap("parentTag").toString());
     }
 
     @Test
-    public void testClear() {
+    void testClear() {
         Assertions.assertEquals("<sampleTag/>",
                 XML.of(SAMPLE_XML).create().clear().toString());
     }
 
     @Test
-    public void testReplace() {
+    void testReplace() {
         String replacement = "<replacementTag>I replace!</replacementTag>";
         Assertions.assertEquals(replacement, XML.of(
                 SAMPLE_XML).create().replace(XML.of(
@@ -202,14 +239,14 @@ public class XMLTest {
     }
 
     @Test
-    public void testToObjectImpl() {
+    void testToObjectImpl() {
         XML xml = XML.of("<test class=\"DurationConverter\"></test>").create();
         DurationConverter c = xml.toObjectImpl(IConverter.class);
         Assertions.assertNotNull(c);
     }
 
     @Test
-    public void testGetObjectListImpl() {
+    void testGetObjectListImpl() {
         XML xml = XML.of(
                 "<test>"
               + "<converters>"
@@ -230,7 +267,7 @@ public class XMLTest {
     }
 
     @Test
-    public void testGetNullMissingDefaultElements() {
+    void testGetNullMissingDefaultElements() {
         XML xml = XML.of(ResourceLoader.getXmlString(XMLTest.class)).create();
 
         //--- Strings ---
@@ -264,7 +301,7 @@ public class XMLTest {
     }
 
     @Test
-    public void testGetListNullMissingDefaultElements() {
+    void testGetListNullMissingDefaultElements() {
         XML xml = XML.of(ResourceLoader.getXmlString(XMLTest.class)).create();
         List<Dimension> defaultList = Arrays.asList(
                 new Dimension(1, 2), new Dimension(3, 4));
@@ -321,7 +358,7 @@ public class XMLTest {
 
 
     @Test
-    public void testOverwriteDefaultWithEmptyListReadWrite() {
+    void testOverwriteDefaultWithEmptyListReadWrite() {
         ClassWithDefaultLists c = new ClassWithDefaultLists();
 
         // Defaults should be loaded back:
@@ -332,7 +369,7 @@ public class XMLTest {
         c.strings.clear();
         XML.assertWriteRead(c, "test");
     }
-    public static class ClassWithDefaultLists implements IXMLConfigurable {
+    static class ClassWithDefaultLists implements IXMLConfigurable {
 
         private final List<DataUnit> enums =
                 new ArrayList<>(Arrays.asList(DataUnit.KB));

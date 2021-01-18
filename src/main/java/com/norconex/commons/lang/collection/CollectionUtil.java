@@ -209,8 +209,8 @@ public final class CollectionUtil {
     }
 
     /**
-     * Converts an array of objects to a list of strings for
-     * each non-null elements.
+     * Converts a list of objects to a list of strings using
+     * default {@link Converter} instance.
      * If the supplied list is <code>null</code>, an empty string list
      * is returned.
      * @param values list to convert to a list of strings
@@ -220,8 +220,8 @@ public final class CollectionUtil {
         return toStringList(asListOrNull(values));
     }
     /**
-     * Converts a list of objects to a list of strings by invoking
-     * <code>toString()</code> on each non-null elements.
+     * Converts a list of objects to a list of strings using
+     * default {@link Converter} instance.
      * If the supplied list is <code>null</code>, an empty string list
      * is returned.
      * @param values list to convert to a list of strings

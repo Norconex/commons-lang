@@ -74,6 +74,7 @@ import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.collections4.map.ListOrderedMap;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ClassUtils;
@@ -1602,7 +1603,8 @@ public class XML {
      * @param xpathValue XPath expression to a node value
      * @param defaultValues default values if the expressions return
      *        <code>null</code> or an empty map
-     * @return map of strings, never <code>null</code>
+     * @return map of strings, never <code>null</code> unless default value
+     *         is returned and is <code>null</code>
      */
     public Map<String, String> getStringMap(String xpathList, String xpathKey,
             String xpathValue, Map<String, String> defaultValues) {
@@ -1610,7 +1612,7 @@ public class XML {
         Optional<List<XML>> xmls = getXMLListOptional(xpathList);
         // We return:
         //   - an empty map if optional is empty.
-        //   - the default map if optional is not emtpy but node list is
+        //   - the default map if optional is not empty but node list is
         //   - otherwise return the matching map
         if (!xmls.isPresent()) {
             return Collections.emptyMap();
@@ -1832,25 +1834,22 @@ public class XML {
     }
 
     public List<XML> addElementList(String tagName, List<?> values) {
-        return addElementList(null, tagName, values);
-    }
-    public List<XML> addElementList(
-            String parentTagName, String tagName, List<?> values) {
-
         if (CollectionUtils.isEmpty(values)) {
             return Collections.emptyList();
         }
-
-        XML parentXML = this;
-        boolean hasParent = StringUtils.isNotBlank(parentTagName);
-        if (hasParent) {
-            parentXML = addElement(parentTagName);
-        }
         List<XML> xmlList = new ArrayList<>();
         for (Object value : values) {
-            xmlList.add(parentXML.addElement(tagName, value));
+            xmlList.add(addElement(tagName, value));
         }
         return Collections.unmodifiableList(xmlList);
+    }
+    public XML addElementList(
+            String parentTagName, String tagName, List<?> values) {
+        Objects.requireNonNull(
+                parentTagName, "'parentTagName' must not be null");
+        XML parentXml = addElement(parentTagName);
+        parentXml.addElementList(tagName, values);
+        return parentXml;
     }
 
     /**
@@ -1881,6 +1880,87 @@ public class XML {
             return addElement(name, "");
         }
         return addElement(name, join(delim, values));
+    }
+
+    /**
+     * <p>
+     * Adds a {@link Map} as a series of elements without a parent element
+     * wrapping that group. Map keys are defined as element attributes
+     * and the map value is the element content. The structure can be
+     * visualized like this:
+     * </p>
+     * <pre>
+     * &lt;tagName attributeName="(key)"&gt;(value)&lt;/tagName&gt;
+     * &lt;tagName attributeName="(key)"&gt;(value)&lt;/tagName&gt;
+     * ...
+     * </pre>
+     * <p>
+     * Map keys are assumed to be strings or single objects with supported
+     * conversion to string (see {@link Converter}).
+     * Map values can be single values or multi-values.  Arrays or collections
+     * will have their values be treated as individual elements with the same
+     * key name. In any case, single or multiple values are otherwise converted
+     * to strings just like keys.
+     * </p>
+     * @param parentTagName required name of map elements wrapper tag
+     * @param tagName name of tags for each map entries
+     * @param attributeName name of the tag attribute holding the map entry key
+     * @param map map to add
+     * @return XML of parent tag, with nested element for each map entries, or
+     *     <code>null</code> if map is <code>null</code>.
+     */
+    public List<XML> addElementMap(
+            String tagName, String attributeName, Map<?, ?> map) {
+        if (MapUtils.isEmpty(map)) {
+            return Collections.emptyList();
+        }
+        List<XML> xmlList = new ArrayList<>();
+        for (Entry<?, ?> en: map.entrySet()) {
+            String name = Converter.convert(en.getKey());
+            CollectionUtil.toStringList(
+                    CollectionUtil.adaptedList(en.getValue())).forEach(v -> {
+                xmlList.add(addXML(tagName).setAttribute(
+                        attributeName, name).setTextContent(v));
+            });
+        }
+        return Collections.unmodifiableList(xmlList);
+    }
+    /**
+     * <p>
+     * Adds a {@link Map} as a series of elements with a parent element
+     * wrapping that group. Map keys are defined as element attributes
+     * and the map value is the element content. The structure can be
+     * visualized like this:
+     * </p>
+     * <pre>
+     * &lt;parentTagName&gt;
+     *   &lt;tagName attributeName="(key)"&gt;(value)&lt;/tagName&gt;
+     *   &lt;tagName attributeName="(key)"&gt;(value)&lt;/tagName&gt;
+     *   ...
+     * &lt;/parentTagName&gt;
+     * </pre>
+     * <p>
+     * Map keys are assumed to be strings or single objects with supported
+     * conversion to string (see {@link Converter}).
+     * Map values can be single values or multi-values.  Arrays or collections
+     * will have their values be treated as individual elements with the same
+     * key name. In any case, single or multiple values are otherwise converted
+     * to strings just like keys.
+     * </p>
+     * @param parentTagName required name of map elements wrapper tag
+     * @param tagName name of tags for each map entries
+     * @param attributeName name of the tag attribute holding the map entry key
+     * @param map map to add
+     * @return XML of parent tag, with nested element for each map entries, or
+     *     <code>null</code> if map is <code>null</code>.
+     */
+    public XML addElementMap(String parentTagName,
+            String tagName, String attributeName, Map<?, ?> map) {
+        Objects.requireNonNull(
+                parentTagName, "'parentTagName' must not be null");
+        XML parentXml = addElement(parentTagName);
+        parentXml.addElementMap(tagName, attributeName, map);
+        return parentXml;
     }
 
     /**
@@ -2447,7 +2527,7 @@ public class XML {
             return Collections.emptyMap();
         }
 
-        Map<K,V> map = new HashMap<>();
+        Map<K,V> map = new ListOrderedMap<>();
         for (XML xml : xmls.get()) {
             if (xml != null) {
                 Entry<K,V> entry = parser.apply(xml);
