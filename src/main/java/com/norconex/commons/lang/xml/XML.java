@@ -1902,7 +1902,6 @@ public class XML {
      * key name. In any case, single or multiple values are otherwise converted
      * to strings just like keys.
      * </p>
-     * @param parentTagName required name of map elements wrapper tag
      * @param tagName name of tags for each map entries
      * @param attributeName name of the tag attribute holding the map entry key
      * @param map map to add
