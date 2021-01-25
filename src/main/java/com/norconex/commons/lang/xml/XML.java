@@ -878,6 +878,23 @@ public class XML {
         }
     }
 
+
+
+    /**
+     * If the given expression matches one or more elements, consume those
+     * element one by one.
+     * @param xpathExpression expression
+     * @param action The action to be performed for each element
+     */
+    public void forEach(String xpathExpression, Consumer<XML> action) {
+        List<XML> xmlList = getXMLList(xpathExpression);
+        xmlList.forEach(x -> {
+            if (x != null && x.isDefined() && action != null) {
+                action.accept(x);
+            }
+        });
+    }
+
     private XML createAndInitXML(Builder builder) {
         return builder
                 .setDocumentBuilderFactory(documentBuilderFactory)
