@@ -59,6 +59,7 @@ public class XMLFormatter {
             LoggerFactory.getLogger(XMLFormatter.class);
 
     private static final int TAG_START = '<';
+    private static final char[] CDATA_START = "<![CDATA[".toCharArray();
     private static final char[] COMMENT_START = "<!--".toCharArray();
     private static final char[] CLOSING_TAG_START = "</".toCharArray();
     private static final Pattern ATTRIB_PATTERN =
@@ -132,16 +133,17 @@ public class XMLFormatter {
 
             Token token = null;
             if (ch == TAG_START) {
-               if (nextCharsEquals(r, COMMENT_START)) {
-                   token = new Comment(cfg);
-               } else if (nextCharsEquals(r, CLOSING_TAG_START)) {
-                   token = new CloserTag(cfg);
-               } else {
-                   token = new Element(cfg);
-               }
+                if (nextCharsEquals(r, CDATA_START)) {
+                    token = new CData(cfg);
+                } else if (nextCharsEquals(r, COMMENT_START)) {
+                    token = new Comment(cfg);
+                } else if (nextCharsEquals(r, CLOSING_TAG_START)) {
+                    token = new CloserTag(cfg);
+                } else {
+                    token = new Element(cfg);
+                }
 
-               //TODO CDATA
-               //TODO PROLOG + top declarations
+                //TODO PROLOG + top declarations
 
             } else {
                 token = new FreeContent(cfg);
@@ -155,7 +157,7 @@ public class XMLFormatter {
 
     //--- XML Tokens -----------------------------------------------------------
 
-    private static abstract class Token {
+    private abstract static class Token {
         protected final Builder cfg;
         abstract void read(Reader r) throws IOException;
         abstract void write(Appendable w, String margin) throws IOException;
@@ -419,6 +421,24 @@ public class XMLFormatter {
             }
         }
     }
+
+    private static class CData extends Token {
+        String text = null; // trimmed
+        public CData(Builder cfg) {
+            super(cfg);
+        }
+        @Override
+        void read(Reader r) throws IOException {
+            StringBuilder b = new StringBuilder();
+            IOUtil.consumeUntil(r, "]]>", b);
+            text = b.toString().trim();
+        }
+        @Override
+        void write(Appendable w, String margin) throws IOException {
+            w.append(margin).append(text);
+        }
+    }
+
     private static class Comment extends Token {
         String text = null; // trimmed
         int flIndent = 0; // non-zero only if on separate line from tag
