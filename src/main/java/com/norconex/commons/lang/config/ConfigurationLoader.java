@@ -314,8 +314,7 @@ public final class ConfigurationLoader {
 
         StringWriter sw = new StringWriter();
         try (Reader reader = Files.newBufferedReader(configFile)) {
-            velocityEngine.evaluate(
-                    context, sw, configFile.toString(), reader);
+            velocityEngine.evaluate(context, sw, file, reader);
         } catch (Exception e) {
             throw new ConfigurationException(
                     "Cannot load config file as a string: " + file, e);
@@ -343,6 +342,9 @@ public final class ConfigurationLoader {
                 StandardCharsets.UTF_8.toString());
         engine.setProperty(RuntimeConstants.ENCODING_DEFAULT,
                 StandardCharsets.UTF_8.toString());
+
+//        engine.setProperty(RuntimeConstants.RUNTIME_REFERENCES_STRICT, true);
+
         engine.setProperty("runtime.log", "");
         return engine;
     }

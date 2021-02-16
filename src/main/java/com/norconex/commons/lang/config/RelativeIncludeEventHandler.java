@@ -21,6 +21,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.velocity.app.event.IncludeEventHandler;
 import org.apache.velocity.context.Context;
 import org.slf4j.Logger;
@@ -34,7 +35,7 @@ import org.slf4j.LoggerFactory;
  */
 public class RelativeIncludeEventHandler implements IncludeEventHandler {
 
-    private static final Logger LOG = 
+    private static final Logger LOG =
             LoggerFactory.getLogger(RelativeIncludeEventHandler.class);
 
     @Override
@@ -43,7 +44,7 @@ public class RelativeIncludeEventHandler implements IncludeEventHandler {
         // Get main template file
         String inclFile;
         if (includeResourcePath.startsWith("/")
-                || includeResourcePath.startsWith("\\") 
+                || includeResourcePath.startsWith("\\")
                 || includeResourcePath.startsWith("file://")
                 || includeResourcePath.matches("^[A-Za-z]:\\.*")) {
             inclFile = includeResourcePath;
@@ -51,10 +52,20 @@ public class RelativeIncludeEventHandler implements IncludeEventHandler {
             String baseDir = FilenameUtils.getFullPath(currentResourcePath);
             inclFile = FilenameUtils.normalize(baseDir + includeResourcePath);
         }
-        
+
+        if (StringUtils.isBlank(inclFile)) {
+            throw new ConfigurationException("Cannot resolve relative "
+                    + "include/parse resource path: " + includeResourcePath
+                    + " (relative to: " + currentResourcePath + "). "
+                    + "Possible cause: using a relative path to identify the "
+                    + "parent template. Try with an absolute path.");
+        }
+
+        LOG.debug("Resolved include/parse template file: {}", inclFile);
+
         // Load template properties if present
         if (context != null) {
-            File vars = new File(FilenameUtils.getFullPath(inclFile) + 
+            File vars = new File(FilenameUtils.getFullPath(inclFile) +
                     FilenameUtils.getBaseName(inclFile) + ".properties");
             if (vars.exists() && vars.isFile()) {
                 Properties props = new Properties();
@@ -63,6 +74,7 @@ public class RelativeIncludeEventHandler implements IncludeEventHandler {
                     for (Entry<Object, Object> entry: props.entrySet()) {
                         context.put((String) entry.getKey(), entry.getValue());
                     }
+                    LOG.debug("Resolved include/parse variable file: {}", vars);
                 } catch (IOException e) {
                     LOG.error("Cannot load properties for template (skipped): "
                             + vars, e);
