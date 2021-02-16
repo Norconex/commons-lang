@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -240,27 +240,27 @@ public final class BeanUtil {
     public static <T> List<T> find(Object bean, Class<T> type) {
         Objects.requireNonNull(type, "Type cannot be null.");
         List<T> foundList = new ArrayList<>();
-        visit(bean, foundList::add, type, new HashSet<>());
+        visit(bean, foundList::add, type, newCache());
         return foundList;
     }
 
     // do not have to return anything... same as predicate always returning true
     public static void visitAll(Object bean, Consumer<Object> visitor) {
         visit(bean,
-                b -> {visitor.accept(b); return true;}, null, new HashSet<>());
+                b -> {visitor.accept(b); return true;}, null, newCache());
     }
     public static <T> void visitAll(
             Object bean, Consumer<T> visitor, Class<T> type) {
         visit(bean,
-                b -> {visitor.accept(b); return true;}, type, new HashSet<>());
+                b -> {visitor.accept(b); return true;}, type, newCache());
     }
 
     public static boolean visit(Object bean, Predicate<Object> visitor) {
-        return visit(bean, visitor, null, new HashSet<>());
+        return visit(bean, visitor, null, newCache());
     }
     public static <T> boolean visit(
             Object bean, Predicate<T> visitor, Class<T> type) {
-        return visit(bean, visitor, type, new HashSet<>());
+        return visit(bean, visitor, type, newCache());
     }
 
     @SuppressWarnings("unchecked")
@@ -303,6 +303,9 @@ public final class BeanUtil {
         }
         return true;
     }
+    private static Set<Object> newCache() {
+        return Collections.newSetFromMap(new IdentityHashMap<>());
+    }
 
     public static List<Object> getChildren(Object bean) {
         if (bean == null) {
@@ -335,24 +338,24 @@ public final class BeanUtil {
     public static void visitAllProperties(
             Object bean, BiConsumer<Object, PropertyDescriptor> visitor) {
         visitProperties(bean, (b, p) -> {
-            visitor.accept(b, p); return true;}, null, new HashSet<>());
+            visitor.accept(b, p); return true;}, null, newCache());
     }
     @SuppressWarnings("unchecked")
     public static <T> void visitAllProperties(Object bean,
             BiConsumer<T, PropertyDescriptor> visitor, Class<T> type) {
         visitProperties(bean, (b, p) -> {
-            visitor.accept((T) b, p); return true;}, type, new HashSet<>());
+            visitor.accept((T) b, p); return true;}, type, newCache());
     }
 
     public static boolean visitProperties(
             Object bean, BiPredicate<Object, PropertyDescriptor> visitor) {
-        return visitProperties(bean, visitor, null, new HashSet<>());
+        return visitProperties(bean, visitor, null, newCache());
     }
 
     public static <T> boolean visitProperties(
             Object bean, BiPredicate<Object, PropertyDescriptor> visitor,
             Class<T> type) {
-        return visitProperties(bean, visitor, type, new HashSet<>());
+        return visitProperties(bean, visitor, type, newCache());
     }
 
     @SuppressWarnings("unchecked")

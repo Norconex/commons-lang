@@ -70,12 +70,20 @@ public class EventManager {
 
     public void addListener(IEventListener<Event> listener) {
         if (listener != null) {
-            this.listeners.addIfAbsent(listener);
+            // Purposely compare listeners by identity, not equality/hash.
+            for (IEventListener<Event> l : this.listeners) {
+                if (listener == l) {
+                    return;
+                }
+            }
+            this.listeners.add(listener);
         }
     }
     public void addListeners(Collection<IEventListener<Event>> listeners) {
         if (listeners != null) {
-            this.listeners.addAllAbsent(listeners);
+            for (IEventListener<Event> l : listeners) {
+                addListener(l);
+            }
         }
     }
 
