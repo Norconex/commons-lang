@@ -1,4 +1,4 @@
-/* Copyright 2019 Norconex Inc.
+/* Copyright 2019-2021 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -201,7 +201,7 @@ public final class VersionUtil {
                         xml.getString("organization/name"));
             }
         } catch (XMLException | URISyntaxException | SecurityException e) {
-            LOG.debug("Could not obtain pom.xml from source.", e);
+            LOG.trace("Could not obtain pom.xml from source.", e);
         }
         return null;
     }

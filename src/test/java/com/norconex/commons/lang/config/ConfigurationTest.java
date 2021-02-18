@@ -1,4 +1,4 @@
-/* Copyright 2018-2019 Norconex Inc.
+/* Copyright 2018-2021 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,14 +25,19 @@ public class ConfigurationTest {
     public void testPreserveWhiteSpace() {
         XML xml = XML.of(
                   "<test>"
-                + "<tagPreserve>   </tagPreserve>"
+                + "<tagBlank>   </tagBlank>"
+                + "<tagPreserve xml:space=\"preserve\">   </tagPreserve>"
                 + "<tagNested>"
-                + "  <nested>   </nested>"
+                + " <nestedBlank>   </nestedBlank>"
+                + " <nestedPreserve xml:space=\"preserve\">   </nestedPreserve>"
                 + "</tagNested>"
                 + "</test>").create();
 
         Assertions.assertNull(xml.getString("tagNotPresent"));
-        Assertions.assertEquals("   ", xml.getString("tagNested/nested"));
+        Assertions.assertEquals("", xml.getString("tagBlank"));
         Assertions.assertEquals("   ", xml.getString("tagPreserve"));
+        Assertions.assertEquals("", xml.getString("tagNested/nestedBlank"));
+        Assertions.assertEquals("   ",
+                xml.getString("tagNested/nestedPreserve"));
     }
 }

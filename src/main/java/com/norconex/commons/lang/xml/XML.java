@@ -1,4 +1,4 @@
-/* Copyright 2010-2020 Norconex Inc.
+/* Copyright 2010-2021 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -125,8 +125,16 @@ import com.norconex.commons.lang.unit.DataUnitParser;
  * </p>
  * <h3>XML syntax and white spaces</h3>
  * <p>
- * White spaces in elements should always be preserved.  Empty tags
- * are interpreted as having an empty strings while
+ * Some white spaces in element text may be removed when parsed.
+ * To keep them, add the XML standard attribute
+ * <code>xml:space="preserve"</code> to your element.  For instance, the
+ * following ensures the four spaces are kept when parsed:
+ * </p>
+ * <pre>
+ *   &lt;example xml:space="preserve"&gt;    &lt;/example&gt;
+ * </pre>
+ * <p>
+ * Empty tags are interpreted as having an empty strings while
  * self-closing tags have their value interpreted as <code>null</code>.
  * Non-existing tags have no effect (when loading over an object, that
  * object current value should remain unchanged).
@@ -144,6 +152,8 @@ public class XML {
     private static final String DEFAULT_DELIM_REGEX = "(\\s*,\\s*)+";
     private static final String NULL_XML_VALUE = "\u0000";
     private static final List<String> NULL_XML_LIST = new ArrayList<>(0);
+    private static final String XPATH_ATT_CLASS = "@class";
+    private static final String ATT_XML_SPACE = "xml:space";
 
     private final Node node;
     private final ErrorHandler errorHandler;
@@ -343,7 +353,7 @@ public class XML {
      */
     @SuppressWarnings("unchecked")
     public <T> T toObject(T defaultObject) {
-        return toObject((Class<T>) getClass("@class", null), defaultObject);
+        return toObject((Class<T>) getClass(XPATH_ATT_CLASS, null), defaultObject);
     }
 
     private <T> T toObject(Class<T> objClass, T defaultObject) {
@@ -438,7 +448,7 @@ public class XML {
             obj = toObject(defaultObject);
         } catch (ConverterException e) {
             if (e.getCause() instanceof ClassNotFoundException) {
-                String partialName = getString("@class");
+                String partialName = getString(XPATH_ATT_CLASS);
                 List<?> results = ClassFinder.findSubTypes(
                         type, s -> s.endsWith(partialName));
                 if (results.size() > 1) {
@@ -492,9 +502,7 @@ public class XML {
     public List<XMLValidationError> populate(
             Object targetObject, String xpathExpression) {
         List<XMLValidationError> errs = new ArrayList<>();
-        ifXML(xpathExpression, x -> {
-            errs.addAll(x.populate(targetObject));
-        });
+        ifXML(xpathExpression, x -> errs.addAll(x.populate(targetObject)));
         return errs;
     }
 
@@ -507,12 +515,16 @@ public class XML {
      * <p>
      * Performs XML validation if the target object has an associated schema.
      * </p>
+     * <p>
+     * Invoking this method with a <code>null</code> target has no effect
+     * (returns an empty list).
+     * </p>
      * @param targetObject object to populate with this XML
      * @return validation errors or an empty list if none
      *         (never <code>null</code>)
      */
     public List<XMLValidationError> populate(Object targetObject) {
-        if (node == null) {
+        if (node == null || targetObject == null) {
             return Collections.emptyList();
         }
         try {
@@ -528,9 +540,7 @@ public class XML {
         } catch (Exception e) {
             throw new XMLException("XML (tag: <" + getName() + ">) "
                     + "could not be converted to object of type: "
-                            + (targetObject == null
-                                ? "[null]"
-                                : targetObject.getClass()), e);
+                            + targetObject.getClass(), e);
         }
     }
 
@@ -936,7 +946,6 @@ public class XML {
 
     private static void handleException(
             String rootNode, String key, Exception e) {
-
         // Throw exception
         if (e instanceof XMLException) {
             throw (XMLException) e;
@@ -944,35 +953,6 @@ public class XML {
         throw new XMLException(
                 "Could not instantiate object from configuration "
               + "for \"" + rootNode + " -> " + key + "\".", e);
-
-//        //TODO Keep the following to log a nice message?
-//        if (e instanceof XMLException
-//                && e.getCause() != null) {
-//            if (e.getCause() instanceof ClassNotFoundException) {
-//                LOG.error("You declared a class that does not exists for "
-//                        + "\"{} -> {}\". Check for typos in your "
-//                        + "XML and make sure that "
-//                        + "class is part of your Java classpath.",
-//                        rootNode, key, e);
-//            } else if (e.getCause() instanceof SAXParseException) {
-//                String systemId =
-//                        ((SAXParseException) e.getCause()).getSystemId();
-//                if (StringUtils.endsWith(systemId, ".xsd")) {
-//                    LOG.error("XML Schema parsing error for "
-//                            + "\"{} -> {}\". Schema: {}",
-//                            rootNode, key, systemId, e);
-//                } else {
-//                    LOG.error("XML parsing error for \"{} -> "
-//                            + "{}\".", rootNode, key, e);
-//                }
-//            } else {
-//                LOG.info("Could not instantiate object from configuration "
-//                        + "for \"{} -> \".", rootNode, key, e);
-//            }
-//        } else{
-//            LOG.info("Could not instantiate object from configuration "
-//                    + "for \"{} -> \".", rootNode, key, e);
-//        }
     }
 
     /**
@@ -1004,25 +984,7 @@ public class XML {
         try {
             node.normalize();
 
-            if (indent > 0) {
-                // For some reason, the following works as a workaround
-                // to indentation not working properly. Taken from:
-                // https://myshittycode.com/2014/02/10/
-                //         java-properly-indenting-xml-string/
-                XPath xPath = XPathFactory.newInstance().newXPath();
-                NodeList nodeList;
-                try {
-                    nodeList = (NodeList) xPath.evaluate(
-                            "//text()[normalize-space()='']",
-                            node, XPathConstants.NODESET);
-                    for (int i = 0; i < nodeList.getLength(); ++i) {
-                        Node n = nodeList.item(i);
-                        n.getParentNode().removeChild(n);
-                    }
-                } catch (XPathExpressionException e) {
-                    LOG.error("Could not indent XML.", e);
-                }
-            }
+            fixIndent(indent);
 
             StringWriter w = new StringWriter();
             Result outputTarget = new StreamResult(w);
@@ -1055,14 +1017,35 @@ public class XML {
                   + "for node \"" + node.getNodeName() + "\".", e);
         }
     }
+    // For some reason, the following is required as a workaround
+    // to indentation not working properly. Taken from:
+    // https://myshittycode.com/2014/02/10/
+    //         java-properly-indenting-xml-string/
+    private void fixIndent(int indent) {
+        if (indent > 0) {
+            XPath xPath = XPathFactory.newInstance().newXPath();
+            try {
+                NodeList nodeList = (NodeList) xPath.evaluate(
+                        "//text()[normalize-space()='']",
+                        node, XPathConstants.NODESET);
+                for (int i = 0; i < nodeList.getLength(); ++i) {
+                    Node n = nodeList.item(i);
+                    n.getParentNode().removeChild(n);
+                }
+            } catch (XPathExpressionException e) {
+                LOG.error("Could not indent XML.", e);
+            }
+        }
+    }
 
     /**
      * <p>
      * Validates this XML against an XSD schema attached to the class
      * represented in this XML root tag "class" attribute.
-     * In addition to being returned, validation errors/warnings will be logged.
-     * The schema expected to be found at the same classpath location and have
-     * the same name as the object class, but with the ".xsd" extension.
+     * In addition to being returned, some validation errors/warnings may be
+     * logged.
+     * The schema is expected to be found at the same classpath location and
+     * have the same name as the object class, but with the ".xsd" extension.
      * </p>
      * <p>
      * This method is the same as invoking
@@ -1070,9 +1053,8 @@ public class XML {
      * </p>
      * @return list of errors/warnings or empty (never <code>null</code>)
      */
-    //TODO rename validateXMLClassFromSchema or equivalent
     public List<XMLValidationError> validate() {
-        return validate(getClass("@class"));
+        return validate(getClass(XPATH_ATT_CLASS));
     }
 
     /**
@@ -1400,7 +1382,7 @@ public class XML {
     }
 
     // Filter out "xml:" name space so attributes like xml:space="preserve"
-    // are validated OK.
+    // are validated OK even if name space not declared in a schema.
     private static class W3XMLNamespaceFilter extends XMLFilterImpl {
         public W3XMLNamespaceFilter(XMLReader parent) {
             super(parent);
@@ -1422,7 +1404,7 @@ public class XML {
     }
 
     public static XPath newXPath() {
-        //TODO consider caching w/ ThreadLocal if performance becomes a concern
+        // Consider caching w/ ThreadLocal if performance becomes a concern
         XPathFactory xpathFactory = XPathFactory.newInstance();
         return xpathFactory.newXPath();
     }
@@ -1934,10 +1916,9 @@ public class XML {
         for (Entry<?, ?> en: map.entrySet()) {
             String name = Converter.convert(en.getKey());
             CollectionUtil.toStringList(
-                    CollectionUtil.adaptedList(en.getValue())).forEach(v -> {
-                xmlList.add(addXML(tagName).setAttribute(
-                        attributeName, name).setTextContent(v));
-            });
+                    CollectionUtil.adaptedList(en.getValue())).forEach(
+                            v -> xmlList.add(addXML(tagName).setAttribute(
+                                    attributeName, name).setTextContent(v)));
         }
         return Collections.unmodifiableList(xmlList);
     }
@@ -2075,14 +2056,27 @@ public class XML {
     public XML setTextContent(Object textContent) {
         String content = Objects.toString(textContent, null);
 
+        // When no content to set, return write away
+        if (content == null) {
+            return this;
+        }
+
+        // Writing element text:
         Element el = (Element) node;
-        el.removeAttribute("xml:space");
+        // remove existing xml:space=... attributes so set appropriate
+        // ones based on the nature of the content.
+        el.removeAttribute(ATT_XML_SPACE);
         if ("".equals(content)) {
-            if (node instanceof Element) {
-                el.setAttribute("xml:space", "empty");
-            }
-        } else if (content != null) {
-            node.setTextContent(content);
+            // If an empty string, mark as empty to prevent it from being
+            // interpreted as null when read back. See getNodeString(...)
+            el.setAttribute(ATT_XML_SPACE, "empty");
+        } else if (StringUtils.isWhitespace(content)) {
+            // if contains only white space and not empty, add space preserve
+            // to make sure white spaces are kept when read back.
+            el.setAttribute(ATT_XML_SPACE, "preserve");
+            el.setTextContent(content);
+        } else {
+            el.setTextContent(content);
         }
         return this;
     }
@@ -2421,13 +2415,31 @@ public class XML {
         if (n.getNodeType() == Node.ATTRIBUTE_NODE) {
             return n.getNodeValue();
         }
+
+        // Unlike standard XML parsing, we distinguish between
+        // self-closed tags (null) and empty/blank ones (non-null).
+        // To do so, we need to check if empty tags were detected
+        // BEFORE parsing the XML. Those would have been are identified
+        // with an extra attribute xml:space="empty" by Builder#create.
+        // Those containing white spaces cannot be confused with self-closed
+        // so we do not rely on xml:space="empty", but we check if they
+        // have the standard xml:space="preserve" to decide if we trim them
+        // or not.
+
         String str = n.getTextContent();
+
+        Optional<String> xmlSpace = Optional
+            .ofNullable(n.getAttributes().getNamedItem(ATT_XML_SPACE))
+            .map(Node::getNodeValue);
+
+        // Empty tags are converted to "" while self-closed to null:
         if (StringUtils.isEmpty(str)) {
-            Node attr = n.getAttributes().getNamedItem("xml:space");
-            if (attr != null && "empty".equalsIgnoreCase(attr.getNodeValue())) {
-                return "";
-            }
-            return null;
+            return xmlSpace.filter("empty"::equals).isPresent() ? "" : null;
+        }
+
+        // Other values are trimmed unless xml:space is "preserve":
+        if (!xmlSpace.filter("preserve"::equals).isPresent()) {
+            str = str.trim();
         }
         return str;
     }

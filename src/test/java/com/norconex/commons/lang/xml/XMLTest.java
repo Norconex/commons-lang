@@ -145,19 +145,22 @@ class XMLTest {
         Assertions.assertNull(xml.getString("testNull"));
         Assertions.assertNull(xml.getString("testNullMissing"));
         Assertions.assertEquals("", xml.getString("testEmpty"));
-        Assertions.assertEquals("  ", xml.getString("testBlank"));
+        Assertions.assertEquals("", xml.getString("testBlank"));
+        Assertions.assertEquals("  ", xml.getString("testBlankPreserve"));
 
         // As Nodes
         Assertions.assertNotNull(xml.getNode("testNull"));
         Assertions.assertNull(xml.getNode("testNullMissing"));
         Assertions.assertNotNull(xml.getNode("testEmpty"));
         Assertions.assertNotNull(xml.getNode("testBlank"));
+        Assertions.assertNotNull(xml.getString("testBlankPreserve"));
 
         // As XMLs
         Assertions.assertNotNull(xml.getXML("testNull"));
         Assertions.assertNull(xml.getXML("testNullMissing"));
         Assertions.assertNotNull(xml.getXML("testEmpty"));
         Assertions.assertNotNull(xml.getXML("testBlank"));
+        Assertions.assertNotNull(xml.getString("testBlankPreserve"));
 
         // As Enum
         Assertions.assertNull(xml.getEnum("testNull", Source.class));
@@ -166,6 +169,8 @@ class XMLTest {
                 () -> xml.getEnum("testEmpty", Source.class));
         Assertions.assertThrows(ConverterException.class,
                 () -> xml.getEnum("testBlank", Source.class));
+        Assertions.assertThrows(ConverterException.class,
+                () -> xml.getEnum("testBlankPreserve", Source.class));
     }
 
     @Test
@@ -176,12 +181,13 @@ class XMLTest {
         // As elements with no attribs
         xml1.addElement("elmNull", null);
         xml1.addElement("elmEmpty", "");
-        xml1.addElement("elmBlank", " \n ");
+        xml1.addElement("elmBlankPreserve", " \n ");
 
         // As elements with attrib
         xml1.addElement("elmNullAttr", null).setAttribute("attr", "exists");
         xml1.addElement("elmEmptyAttr", "").setAttribute("attr", "exists");
-        xml1.addElement("elmBlankAttr", " \n ").setAttribute("attr", "exists");
+        xml1.addElement(
+                "elmBlankPreserveAttr", " \n ").setAttribute("attr", "exists");
 
         String xmlStr = xml1.toString();
         LOG.debug("XML is: " + xmlStr);
@@ -190,11 +196,11 @@ class XMLTest {
 
         Assertions.assertNull(xml2.getString("elmNull"));
         Assertions.assertEquals("", xml2.getString("elmEmpty"));
-        Assertions.assertEquals(" \n ", xml2.getString("elmBlank"));
+        Assertions.assertEquals(" \n ", xml2.getString("elmBlankPreserve"));
 
         Assertions.assertNull(xml2.getString("elmNullAttr"));
         Assertions.assertEquals("", xml2.getString("elmEmptyAttr"));
-        Assertions.assertEquals(" \n ", xml2.getString("elmBlankAttr"));
+        Assertions.assertEquals(" \n ", xml2.getString("elmBlankPreserveAttr"));
 
         //TODO test attributes the same way?
     }
@@ -275,9 +281,17 @@ class XMLTest {
         // self-closing tag is null
         Assertions.assertNull(xml.getString("testNull", "shouldBeNull"));
         // empty tag is empty
-        Assertions.assertEquals("", xml.getString("testEmpty", "shouldBeEmpty"));
+        Assertions.assertEquals(
+                "", xml.getString("testEmpty", "shouldBeEmpty"));
+        // blank tag is empty
+        Assertions.assertEquals(
+                "", xml.getString("testBlank", "shouldBeEmpty"));
+        // blank preserve tag returns actual content
+        Assertions.assertEquals("  ", xml.getString(
+                "testBlankPreserve", "shouldBeTwoSpaces"));
         // missing tag uses default
-        Assertions.assertEquals("pickMe", xml.getString("testMissing", "pickMe"));
+        Assertions.assertEquals(
+                "pickMe", xml.getString("testMissing", "pickMe"));
 
         //--- Misc. Objects ---
 
@@ -291,13 +305,17 @@ class XMLTest {
         Assertions.assertEquals(new Dimension(70, 80),
                 xml.getDimension("dimMissing", new Dimension(70, 80)));
         // empty tag should fail
-        try {
-            xml.getDimension("dimEmpty", new Dimension(50, 60));
-            Assertions.fail(
-                    "Dimension wrongfully converted from empty string.");
-        } catch (ConverterException e) {
-            // swallow
-        }
+        Assertions.assertThrows(ConverterException.class, () ->
+            xml.getDimension("dimEmpty", new Dimension(50, 60)),
+            "Dimension wrongfully converted from empty string.");
+        // blank tag should fail
+        Assertions.assertThrows(ConverterException.class, () ->
+            xml.getDimension("dimBlank", new Dimension(50, 60)),
+            "Dimension wrongfully converted from blank string.");
+        // blankPreserve tag should fail
+        Assertions.assertThrows(ConverterException.class, () ->
+            xml.getDimension("dimBlankPreserve", new Dimension(50, 60)),
+            "Dimension wrongfully converted from blankPreserve string.");
     }
 
     @Test
@@ -316,21 +334,18 @@ class XMLTest {
         Assertions.assertTrue(xml.getList("listNull", Dimension.class,
                 defaultList).isEmpty(), "List not empty.");
         // empty tag should fail
-        try {
-            xml.getList("listEmpty", Dimension.class, defaultList);
-            Assertions.fail(
-                    "Dimension list wrongfully converted from empty string.");
-        } catch (ConverterException e) {
-            // swallow
-        }
+        Assertions.assertThrows(ConverterException.class, () ->
+            xml.getList("listEmpty", Dimension.class, defaultList),
+            "Dimension wrongfully converted from empty string.");
         // blank tag should fail
-        try {
-            xml.getList("listBlank", Dimension.class, defaultList);
-            Assertions.fail(
-                    "Dimension list wrongfully converted from blank string.");
-        } catch (ConverterException e) {
-            // swallow
-        }
+        Assertions.assertThrows(ConverterException.class, () ->
+            xml.getList("listBlank", Dimension.class, defaultList),
+            "Dimension wrongfully converted from blank string.");
+        // blankPreserve tag should fail
+        Assertions.assertThrows(ConverterException.class, () ->
+            xml.getList("listBlankPreserve", Dimension.class, defaultList),
+            "Dimension wrongfully converted from blankPreserve string.");
+
         // missing tag uses default
         Assertions.assertEquals(defaultList,
                 xml.getList("missingList", Dimension.class, defaultList));
