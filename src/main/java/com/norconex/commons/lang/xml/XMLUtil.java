@@ -1,4 +1,4 @@
-/* Copyright 2019-2020 Norconex Inc.
+/* Copyright 2019-2021 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,6 +50,9 @@ public final class XMLUtil {
     public static final String W3C_XML_SCHEMA_NS_URI_1_1 =
             "http://www.w3.org/XML/XMLSchema/v1.1";
 
+    private static boolean featureErrorsLogged;
+    private static boolean propertyErrorsLogged;
+
     private XMLUtil() {
         super();
     }
@@ -61,7 +64,10 @@ public final class XMLUtil {
             validator.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
             validator.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
         } catch (SAXException e) {
-            LOG.debug(e.getMessage());
+            if (propertyErrorsLogged) {
+                LOG.debug(e.getMessage());
+            }
+            propertyErrorsLogged = false;
         }
         return validator;
     }
@@ -82,7 +88,10 @@ public final class XMLUtil {
                     + "external-parameter-entities", false);
             xmlReader.setEntityResolver((publicId, systemId) -> null);
         } catch (SAXException e) {
-            LOG.debug(e.getMessage());
+            if (featureErrorsLogged) {
+                LOG.debug(e.getMessage());
+            }
+            featureErrorsLogged = false;
         }
         return xmlReader;
     }

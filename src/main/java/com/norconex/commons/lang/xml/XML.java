@@ -1093,7 +1093,8 @@ public class XML {
 
         // Only validate if .xsd file exist in classpath for class
         String xsdResource = ClassUtils.getSimpleName(clazz) + ".xsd";
-        LOG.debug("Class to validate: {}", ClassUtils.getSimpleName(clazz));
+        LOG.debug("Validating XML for class {}",
+                ClassUtils.getSimpleName(clazz));
         if (clazz.getResource(xsdResource) == null) {
             LOG.debug("XSD schema not found for validation: {}", xsdResource);
             return Collections.emptyList();

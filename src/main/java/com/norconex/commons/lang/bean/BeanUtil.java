@@ -1,4 +1,4 @@
-/* Copyright 2018-2020 Norconex Inc.
+/* Copyright 2018-2021 Norconex Inc.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.beans.Statement;
+import java.beans.Transient;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -122,7 +123,18 @@ public final class BeanUtil {
             return null;
         }
         try {
-            return (T) property.getReadMethod().invoke(bean);
+            // If child is equal to parent, it may be a source of
+            // infinite loop, so we do not return it.  We do the same
+            // if the property is transient.
+            Method getter = property.getReadMethod();
+            if (getter.getAnnotation(Transient.class) != null) {
+                return null;
+            }
+            T value = (T) getter.invoke(bean);
+            if (Objects.equals(bean, value)) {
+                return null;
+            }
+            return value;
         } catch (IllegalAccessException
                 | IllegalArgumentException
                 | InvocationTargetException e) {
