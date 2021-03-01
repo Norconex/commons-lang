@@ -7,8 +7,8 @@
   </properties>
   <body>
 
-    <release version="2.0.0-SNAPSHOT" date="2020-??-??" 
-             description="Major release. NOT a drop-in replacement for 1.x.">
+    <release version="2.0.0-M1" date="2021-02-28" 
+             description="Milestone for next major release. NOT a drop-in replacement for 1.x.">
       <action dev="essiembre" type="add">
         New ExceptionUtil class.
       </action>
