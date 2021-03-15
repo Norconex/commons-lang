@@ -44,15 +44,16 @@ class FileLockTest {
         Assertions.assertTrue(lock.unlock());
         Assertions.assertFalse(lock.isLocked());
         // Wait a bit to make sure it is done with its last sleep
-        Sleeper.sleepMillis(500);
+        Sleeper.sleepMillis(600);
 
         // Create the file manually to simulate it was locked by other process
         FileUtils.touch(file.toFile());
         Assertions.assertTrue(lock.isLocked());
         Assertions.assertThrows(FileAlreadyLockedException.class, lock::lock);
 
-        // we wait a bit and they we should be able to lock it
-        Sleeper.sleepMillis(500);
+        // we wait a bit for lock to become inactive and then we should be
+        // able to lock it
+        Sleeper.sleepMillis(600);
         Assertions.assertFalse(lock.isLocked());
         // file already exists so returns true
         Assertions.assertTrue(lock.lock());
