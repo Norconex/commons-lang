@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2021 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,13 +22,15 @@ import java.util.Locale;
 
 /**
  * Formats percentage as string.  This class is thread-safe.
+ * Methods expecting a denominator will always return zero percent if said
+ * denominator is zero.
  * @author Pascal Essiembre
  * @since 1.4.0
  */
 public class PercentFormatter implements Serializable {
 
     private static final long serialVersionUID = 3403860660255503075L;
-    
+
     private final Locale locale;
     private final int decimalPrecision;
 
@@ -41,9 +43,9 @@ public class PercentFormatter implements Serializable {
         this.decimalPrecision = 0;
         this.locale = null;
     }
-    
+
     /**
-     * Creates a new percent formatter for the given local and decimal 
+     * Creates a new percent formatter for the given local and decimal
      * precision.
      * @param decimalPrecision maximum number of decimals to display
      * @param locale a locale
@@ -74,7 +76,7 @@ public class PercentFormatter implements Serializable {
     }
 
     /**
-     * Formats fraction values as percentage with the given local and 
+     * Formats fraction values as percentage with the given local and
      * decimal precision.
      * @param numerator the value to divide
      * @param denominator the divider
@@ -82,8 +84,11 @@ public class PercentFormatter implements Serializable {
      * @param locale a locale
      * @return formatted percent string
      */
-    public static String format(double numerator, double denominator, 
+    public static String format(double numerator, double denominator,
             int decimalPrecision, Locale locale) {
+        if (denominator == 0d) {
+            return format(0d, decimalPrecision, locale);
+        }
         return format(BigDecimal.valueOf(numerator).divide(
                         BigDecimal.valueOf(denominator), decimalPrecision + 2,
                         RoundingMode.HALF_UP).doubleValue(),
@@ -91,7 +96,7 @@ public class PercentFormatter implements Serializable {
     }
 
     /**
-     * Formats a fraction as percentage with the given local and 
+     * Formats a fraction as percentage with the given local and
      * decimal precision.
      * @param fraction the value to format as percentage
      * @param decimalPrecision maximum number of decimals to display
@@ -105,7 +110,7 @@ public class PercentFormatter implements Serializable {
             safeLocale = Locale.getDefault();
         }
         //TODO cache message format with locale?
-        NumberFormat percentFormat = 
+        NumberFormat percentFormat =
                 NumberFormat.getPercentInstance(safeLocale);
         percentFormat.setMaximumFractionDigits(decimalPrecision);
         //TODO consider returning <0.1% when not zero but too small to represent

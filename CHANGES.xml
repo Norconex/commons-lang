@@ -12,6 +12,12 @@
       <action dev="essiembre" type="add">
         New FileLock class.
       </action>
+      <action dev="essiembre" type="add">
+        New Properties#toProperties() method.
+      </action>
+      <action dev="essiembre" type="fix">
+        Fixed PercentFormatter throwing exception on zero-value denominator.
+      </action>
     </release>
     
     <release version="2.0.0-M1" date="2021-02-28" 

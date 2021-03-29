@@ -2,6 +2,8 @@
 TODO:
 ==============
 
+- Add equiv. of "trimToNull" to "PropertyMatchers" so that blank values
+  could be treated as null (i.e., non-existant).
 
 - Allow specifying a base package from which to scan for classes when using
   ClassFinder.

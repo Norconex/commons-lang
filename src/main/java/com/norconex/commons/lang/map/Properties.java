@@ -312,7 +312,8 @@ public class Properties extends ObservableMap<String, List<String>>
      * @throws IOException i/o problem
      * @since 2.0.0
      */
-    public void storeToProperties(OutputStream out, String delimiter) throws IOException {
+    public void storeToProperties(OutputStream out, String delimiter)
+            throws IOException {
         storeToJavaUtilProperties(out, delimiter, false);
     }
 
@@ -523,8 +524,26 @@ public class Properties extends ObservableMap<String, List<String>>
             loadFromProperties(r);
         } catch (IOException e) {
             // Should not happen with a string.
-            throw new RuntimeException("Could not parse string.", e);
+            throw new PropertiesException("Could not parse string.", e);
         }
+    }
+    /**
+     * Converts this {@link Map} to a new Java {@link java.util.Properties}
+     * instance.
+     * Multi-value properties
+     * are merged, joined by the symbol for record separator (U+241E).
+     * @param   writer     an output character stream writer.
+     * @throws IOException i/o problem
+     * @since 2.0.0
+     * @see #loadFromMap(Map)
+     */
+    public java.util.Properties toProperties() {
+        java.util.Properties p = new java.util.Properties();
+        String sep = DEFAULT_JAVA_PROPERTIES_DELIMITER;
+        for (Entry<String, List<String>> en : entrySet()) {
+            p.setProperty(en.getKey(), StringUtils.join(en.getValue(), sep));
+        }
+        return p;
     }
 
     /**
@@ -538,6 +557,8 @@ public class Properties extends ObservableMap<String, List<String>>
      * <p>Changes to this instance
      * won't be reflected in the given <code>Map</code>.  If you want otherwise,
      * use invoke the constructor with a <code>Map</code> argument.</p>
+     * <p>You can use this method to populate this <code>Map</code>
+     * from a {@link java.util.Properties}.</p>
      * @param map the map containing values to load
      * @since 2.0.0
      */
