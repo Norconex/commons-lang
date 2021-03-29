@@ -532,8 +532,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * instance.
      * Multi-value properties
      * are merged, joined by the symbol for record separator (U+241E).
-     * @param   writer     an output character stream writer.
-     * @throws IOException i/o problem
+     * @return a <code>java.util.Properties</code> instance
      * @since 2.0.0
      * @see #loadFromMap(Map)
      */
