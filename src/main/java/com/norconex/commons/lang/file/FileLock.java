@@ -118,7 +118,7 @@ public class FileLock {
     /**
      * Unlock the file.
      * @return <code>true</code> if the lock file existed
-     * @throws IOException
+     * @throws IOException upon errors while unlocking file
      */
     public synchronized boolean unlock() throws IOException {
         boolean exists = lockFile.toFile().exists();
