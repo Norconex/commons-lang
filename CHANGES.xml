@@ -8,7 +8,15 @@
   <body>
 
     <release version="2.0.0-SNAPSHOT" date="2021-??-??" 
-             description="Major release. NOT a drop-in replacement for 1.x.">
+             description="Changes since last milestone for this upcoming major release.">
+      <action dev="essiembre" type="add">
+        New XMLFlow class for treating XML block as being a mix of predicate 
+        and consumer classes to create an execution "flow".
+      </action>
+      <action dev="essiembre" type="add">
+        New function-related utility classes: FunctionUtil, Consumers,
+        PredicatedConsumer, and Predicates.
+      </action>
       <action dev="essiembre" type="add">
         New FileLock class.
       </action>

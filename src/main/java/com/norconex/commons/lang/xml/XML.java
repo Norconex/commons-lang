@@ -2584,7 +2584,7 @@ public class XML {
         if (contains(deprecatedXPath)) {
             StringBuilder b = new StringBuilder();
             b.append('"');
-            b.append(deprecatedXPath);
+            b.append(StringUtils.substringAfterLast(deprecatedXPath, "@"));
             b.append('"');
             if (deprecatedXPath.contains("@")) {
                 b.append(" attribute ");
