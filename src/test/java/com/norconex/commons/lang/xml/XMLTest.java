@@ -58,6 +58,50 @@ class XMLTest {
               + "<nestedC/>"
           + "</sampleTag>";
 
+    @Test
+    void testInsertBeforeAfter() {
+        XML xml = new XML(SAMPLE_XML);
+        XML nestedbXml = xml.getXML("nestedB");
+        nestedbXml.insertBefore(new XML("<nestedA2>A2</nestedA2>"));
+        nestedbXml.insertAfter(new XML("<nestedB2>B2</nestedB2>"));
+        Assertions.assertEquals(
+                "<sampleTag add=\"juice\" id=\"orange\">"
+                        + "<nestedA id=\"na\" type=\"ta\">"
+                        + "Blah"
+                        + "</nestedA>"
+                        + "<nestedA2>A2</nestedA2>"
+                        + "<nestedB id=\"nb\"/>"
+                        + "<nestedB2>B2</nestedB2>"
+                        + "<nestedC/>"
+                    + "</sampleTag>", xml.toString());
+    }
+
+    @Test
+    void testRemove() {
+        XML xml = null;
+        XML removedXML = null;
+
+        // Remove child with parent
+        xml = new XML(SAMPLE_XML);
+        XML nestedAXML = xml.getXML("nestedA");
+        removedXML = nestedAXML.remove();
+        Assertions.assertEquals(
+                "<sampleTag add=\"juice\" id=\"orange\">"
+                + "<nestedB id=\"nb\"/>"
+                + "<nestedC/>"
+                + "</sampleTag>", xml.toString());
+        Assertions.assertEquals(
+                "<nestedA id=\"na\" type=\"ta\">"
+                + "Blah"
+                + "</nestedA>", removedXML.toString());
+
+        // Remove parent
+        xml = new XML(SAMPLE_XML);
+        removedXML = xml.remove();
+        Assertions.assertEquals(SAMPLE_XML, xml.toString());
+        Assertions.assertEquals(SAMPLE_XML, removedXML.toString());
+    }
+
 
     @Test
     void testMap() {

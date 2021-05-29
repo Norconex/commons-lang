@@ -1972,6 +1972,53 @@ public class XML {
     }
 
     /**
+     * Removes itself from its XML parent (if any).
+     * @return a new instance of this removed XML or this instance if
+     * it is not attached to any parent
+     */
+    public XML remove() {
+        Node parentNode = getNode().getParentNode();
+        if (parentNode != null) {
+            return new XML(parentNode.removeChild(getNode()));
+        }
+        return this;
+    }
+
+    /**
+     * Inserts a new XML node before this one, as a sibling of a shared parent.
+     * If there is no parent to this XML, the new XML is not inserted.
+     * @param newXML the XML to insert
+     * @return a new instance of the inserted XML, or the inserted node
+     * if this node is not attached to any parent.
+     */
+    public XML insertBefore(XML newXML) {
+        Node parentNode = getNode().getParentNode();
+        if (parentNode != null) {
+            Node newNode = parentNode.getOwnerDocument().importNode(
+                    newXML.getNode(), true);
+            return new XML(parentNode.insertBefore(newNode, getNode()));
+        }
+        return newXML;
+    }
+    /**
+     * Inserts a new XML node after this one, as a sibling of a shared parent.
+     * If there is no parent to this XML, the new XML is not inserted.
+     * @param newXML the XML to insert
+     * @return a new instance of the inserted XML, or the inserted node
+     * if this node is not attached to any parent.
+     */
+    public XML insertAfter(XML newXML) {
+        Node parentNode = getNode().getParentNode();
+        if (parentNode != null) {
+            Node newNode = parentNode.getOwnerDocument().importNode(
+                    newXML.getNode(), true);
+            return new XML(parentNode.insertBefore(
+                    newNode, getNode().getNextSibling()));
+        }
+        return newXML;
+    }
+
+    /**
      * Sets an attribute on this XML element, converting the supplied object
      * to a string (enums are also converted to lowercase).
      * A <code>null</code> value is equivalent to not
