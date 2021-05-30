@@ -17,7 +17,6 @@ package com.norconex.commons.lang.function;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -29,7 +28,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 
 /**
  * <p>
- * A wrapper around a series of {@link Predicate} instances, matched as a group.
+ * A list of {@link Predicate} instances, matched as a group.
  * All supplied predicates must return <code>true</code> for this one to return
  * <code>true</code>, unless the constructor is invoked with a
  * <code>true</code> <code>any</code> argument. In such case, any
@@ -43,35 +42,45 @@ import org.apache.commons.lang3.builder.ToStringStyle;
  * @author Pascal Essiembre
  * @since 2.0.0
  */
-public class Predicates<T> implements Predicate<T> {
+public class Predicates<T> extends ArrayList<Predicate<T>>
+        implements Predicate<T> {
 
-    private final List<Predicate<T>> predicateList = new ArrayList<>();
+    private static final long serialVersionUID = 1L;
+
     private final boolean any;
 
+    public Predicates() {
+        this(false);
+    }
+    public Predicates(boolean any) {
+        this.any = any;
+    }
+    public Predicates(int initialCapacity) {
+        this(initialCapacity, false);
+    }
+    public Predicates(int initialCapacity, boolean any) {
+        super(initialCapacity);
+        this.any = any;
+    }
     public Predicates(Collection<Predicate<T>> predicates) {
         this(predicates, false);
     }
     public Predicates(Collection<Predicate<T>> predicates, boolean any) {
-        super();
-        this.any = any;
-        this.predicateList.addAll(predicates == null
+        super(predicates == null
                 ? Collections.emptyList()
                 : predicates
                     .stream()
                     .filter(Objects::nonNull)
                     .collect(Collectors.toList()));
+        this.any = any;
     }
 
     public boolean isAny() {
         return any;
     }
-    public List<Predicate<T>> getPredicates() {
-        return Collections.unmodifiableList(predicateList);
-    }
-
     @Override
     public boolean test(T t) {
-        for (Predicate<T> predicate : predicateList) {
+        for (Predicate<T> predicate : this) {
             if (!predicate.test(t) && !any) {
                 return false;
             }

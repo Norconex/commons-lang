@@ -41,11 +41,9 @@ import com.norconex.commons.lang.xml.XML;
 class XMLCondition<T> implements IXMLConfigurable, Predicate<T> {
 
     enum Operator {
-
         AND("AND", "ALL", "&&"),
         OR("OR", "ANY", "||")
         ;
-
         private final List<String> tokens = new ArrayList<>();
         Operator(String... tokens) {
             this.tokens.addAll(Arrays.asList(tokens));
@@ -69,6 +67,10 @@ class XMLCondition<T> implements IXMLConfigurable, Predicate<T> {
         this.flow = flow;
     }
 
+    boolean isGroup() {
+        return predicate instanceof Predicates;
+    }
+
     @Override
     public boolean test(T t) {
         if (t == null) {
@@ -87,8 +89,31 @@ class XMLCondition<T> implements IXMLConfigurable, Predicate<T> {
 
     @Override
     public void saveToXML(XML xml) {
-        // TODO check if predicate is instance of Predicates?
+        if (predicate == null || xml == null) {
+            return;
+        }
+        if (isGroup()) {
+            // Group of conditions
+            writeGroupPredicate(xml, (Predicates<T>) predicate);
+        } else {
+            writeSinglePredicate(xml, predicate);
+        }
+    }
 
+    private void writeGroupPredicate(XML xml, Predicates<T> predicates) {
+        xml.setAttribute("operator", predicates.isAny()
+                ? Operator.OR.toString() : Operator.AND.toString());
+        predicates.forEach(p -> {
+            if (p instanceof Predicates) {
+                writeGroupPredicate(
+                        xml.addElement("conditions"), (Predicates<T>) p);
+            } else {
+                writeSinglePredicate(xml.addElement("condition"), p);
+            }
+        });
+    }
+    private void writeSinglePredicate(XML xml, Predicate<T> predicate) {
+        xml.replace(new XML(xml.getName(), predicate));
     }
 
     private Predicate<T> loadConditionFromXML(XML xml) {

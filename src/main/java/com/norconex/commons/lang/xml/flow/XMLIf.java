@@ -89,7 +89,7 @@ class XMLIf<T> implements Consumer<T>, IXMLConfigurable {
 
     @ToStringExclude @EqualsExclude @HashCodeExclude
     private final XMLFlow<T> flow;
-    private Predicate<T> condition;
+    private XMLCondition<T> condition;
     private Consumer<T> thenConsumer;
     private Consumer<T> elseConsumer;
 
@@ -147,8 +147,14 @@ class XMLIf<T> implements Consumer<T>, IXMLConfigurable {
 
     @Override
     public void saveToXML(XML xml) {
-        // TODO Auto-generated method stub
-
+        condition.saveToXML(xml.addElement(
+                condition.isGroup() ? "conditions" : "condition"));
+        if (thenConsumer != null) {
+            flow.write(xml.addElement("then"), thenConsumer);
+        }
+        if (elseConsumer != null) {
+            flow.write(xml.addElement("else"), elseConsumer);
+        }
     }
 
     @Override

@@ -20,6 +20,8 @@ import java.util.function.Consumer;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.ResourceLoader;
 import com.norconex.commons.lang.map.Properties;
@@ -31,20 +33,32 @@ import com.norconex.commons.lang.xml.flow.impl.PropertyMatcherCondition;
  */
 class XMLFlowTest {
 
+    private static final Logger LOG =
+            LoggerFactory.getLogger(XMLFlowTest.class);
+
     @Test
-    void flowTest() throws IOException {
+    void testFlow() throws IOException {
+        testFlow(sampleXML());
+    }
 
+    @Test
+    void testWriteRead() throws IOException {
+        // to test and it was written properly, we load it back and execute
+        // the same test again and it should still work just fine.
+        XMLFlow<Properties> flow = createXMLFlow();
+        XML sourceXML = sampleXML();
+        Consumer<Properties> c = flow.parse(sourceXML);
+        XML writtenXML = new XML("<xml/>");
+        flow.write(writtenXML, c);
+        LOG.info("{}", writtenXML.toString(2));
+        testFlow(writtenXML);
+    }
+
+    private void testFlow(XML xml) throws IOException {
+        XMLFlow<Properties> flow = createXMLFlow();
         Consumer<Properties> c;
-
-        XMLFlow<Properties> flow = XMLFlow
-                .<Properties>builder()
-                .defaultPredicateType(PropertyMatcherCondition.class)
-                .defaultConsumerType(MockUppercaseConsumer.class)
-                .build();
-
-
         try (Reader r = ResourceLoader.getXmlReader(getClass())) {
-            c = flow.parse(new XML(r));
+            c = flow.parse(xml);
         }
 
         Properties data1 = new Properties();
@@ -68,7 +82,17 @@ class XMLFlowTest {
         Assertions.assertEquals("john", data2.getString("firstName"));
         // last name uppercase
         Assertions.assertEquals("SMITH", data2.getString("lastName"));
+    }
 
-
+    private XML sampleXML() throws IOException {
+        try (Reader r = ResourceLoader.getXmlReader(getClass())) {
+            return new XML(r);
+        }
+    }
+    private XMLFlow<Properties> createXMLFlow() {
+        return XMLFlow.<Properties>builder()
+                .defaultPredicateType(PropertyMatcherCondition.class)
+                .defaultConsumerType(MockUppercaseConsumer.class)
+                .build();
     }
 }

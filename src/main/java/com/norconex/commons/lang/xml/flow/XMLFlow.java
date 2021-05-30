@@ -19,11 +19,13 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import com.norconex.commons.lang.function.Consumers;
 import com.norconex.commons.lang.function.FunctionUtil;
 import com.norconex.commons.lang.xml.XML;
 
@@ -78,14 +80,21 @@ import com.norconex.commons.lang.xml.XML;
  */
 public final class XMLFlow<T> {
 
+    public static final String DEFAULT_CONSUMERS_WRITE_TAG_NAME = "handler";
+
     // condition
     private final Class<? extends Predicate<T>> defaultPredicateType;
     // then/else
     private final Class<? extends Consumer<T>> defaultConsumerType;
+    // what to name consumer tags written (that are not defined by XML flow).
+    private final String consumersWriteTagName;
 
     private XMLFlow(Builder<T> b) {
         this.defaultPredicateType = b.defaultPredicateType;
         this.defaultConsumerType = b.defaultConsumerType;
+        this.consumersWriteTagName =
+                StringUtils.defaultIfBlank(b.consumersWriteTagName,
+                        DEFAULT_CONSUMERS_WRITE_TAG_NAME);
     }
 
     public Class<? extends Consumer<T>> getDefaultConsumerType() {
@@ -129,7 +138,39 @@ public final class XMLFlow<T> {
             }
             consumers.add(consumer);
         });
-        return FunctionUtil.allConsumers(consumers);
+        if (consumers.size() > 1) {
+            return FunctionUtil.allConsumers(consumers);
+        } else if (consumers.size() == 1) {
+            return consumers.get(0);
+        }
+        return null;
+    }
+
+    /**
+     * Writes a flow previously constructed by {@link #parse(XML)} to XML.
+     * @param xml the XML to write to
+     * @param consumer the consumer flow to write
+     */
+    public void write(XML xml, Consumer<T> consumer) {
+        if (consumer == null || xml == null) {
+            return;
+        }
+        if (consumer instanceof Consumers) {
+            // Group of consumers
+            ((Consumers<T>) consumer).forEach(c -> writeSingleConsumer(xml, c));
+        } else {
+            // Single custom consumer
+            writeSingleConsumer(xml, consumer);
+        }
+    }
+    private void writeSingleConsumer(XML xml, Consumer<T> consumer) {
+        if (consumer instanceof XMLIfNot) {
+            ((XMLIfNot<T>) consumer).saveToXML(xml.addElement("ifNot"));
+        } else if (consumer instanceof XMLIf) {
+            ((XMLIf<T>) consumer).saveToXML(xml.addElement("if"));
+        } else {
+            xml.addElement(consumersWriteTagName, consumer);
+        }
     }
 
     private Consumer<T> parseConsumer(XML consumerXML) {
@@ -176,6 +217,8 @@ public final class XMLFlow<T> {
         private Class<? extends Predicate<T>> defaultPredicateType;
         // then/else
         private Class<? extends Consumer<T>> defaultConsumerType;
+        // what to name custom consumer tags encountered?
+        private String consumersWriteTagName;
 
         private Builder() {}
 
@@ -189,7 +232,10 @@ public final class XMLFlow<T> {
             this.defaultConsumerType = type;
             return this;
         }
-
+        public Builder<T> consumersWriteTagName(String tagName) {
+            this.consumersWriteTagName = tagName;
+            return this;
+        }
         public XMLFlow<T> build() {
             return new XMLFlow<>(this);
         }

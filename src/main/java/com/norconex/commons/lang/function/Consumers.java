@@ -17,7 +17,6 @@ package com.norconex.commons.lang.function;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -29,7 +28,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 
 /**
  * <p>
- * A wrapper around a series of {@link Consumer} instances, each triggered
+ * A list of {@link Consumer} instances, each triggered
  * sequentially when this one is.
  * </p>
  * <p>
@@ -40,13 +39,19 @@ import org.apache.commons.lang3.builder.ToStringStyle;
  * @author Pascal Essiembre
  * @since 2.0.0
  */
-public class Consumers<T> implements Consumer<T> {
+public class Consumers<T> extends ArrayList<Consumer<T>>
+        implements Consumer<T> {
 
-    private final List<Consumer<T>> consumerList = new ArrayList<>();
+    private static final long serialVersionUID = 1L;
 
-    public Consumers(Collection<Consumer<T>> consumers) {
+    public Consumers() {
         super();
-        this.consumerList.addAll(consumers == null
+    }
+    public Consumers(int initialCapacity) {
+        super(initialCapacity);
+    }
+    public Consumers(Collection<? extends Consumer<T>> consumers) {
+        super(consumers == null
                 ? Collections.emptyList()
                 : consumers
                     .stream()
@@ -54,13 +59,9 @@ public class Consumers<T> implements Consumer<T> {
                     .collect(Collectors.toList()));
     }
 
-    public List<Consumer<T>> getConsumers() {
-        return Collections.unmodifiableList(consumerList);
-    }
-
     @Override
     public final void accept(T t) {
-        consumerList.forEach(c -> c.accept(t));
+        forEach(c -> c.accept(t));
     }
 
     @Override
