@@ -22,8 +22,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import com.norconex.commons.lang.Sleeper;
-
 class FileLockTest {
 
     @TempDir
@@ -31,36 +29,42 @@ class FileLockTest {
 
     @Test
     void testFileLock() throws IOException {
-        Path file = tempDir.resolve("test.lck");
-        FileLock lock = new FileLock(tempDir.resolve("test.lck"), 500);
+        // Loop a bunch of time to put locking under pressure for testing
+        for (int i = 1; i <= 10; i++) {
+            Path file = tempDir.resolve("test.lck");
+            FileLocker locker = new FileLocker(tempDir.resolve("test.lck"));
 
-        Assertions.assertFalse(lock.isLocked());
-        Assertions.assertFalse(lock.unlock());
+            // File is not locked at first.
+            Assertions.assertFalse(locker.isLocked());
+            // Lock was never created so unlock does nothing.
+            Assertions.assertDoesNotThrow(locker::unlock);
 
-        Assertions.assertFalse(lock.lock());
-        Assertions.assertTrue(lock.isLocked());
-        Assertions.assertThrows(FileAlreadyLockedException.class, lock::lock);
+            // Creating lock for first time, should be just fine.
+            Assertions.assertDoesNotThrow(() -> locker.lock());
+            // File should now be locked.
+            Assertions.assertTrue(locker.isLocked());
+            // Locking an already locked file should throw exception
+            Assertions.assertThrows(
+                    FileAlreadyLockedException.class, locker::lock);
+            // "Trying" to lock an already locked file should return false
+            Assertions.assertFalse(locker.tryLock());
 
-        Assertions.assertTrue(lock.unlock());
-        Assertions.assertFalse(lock.isLocked());
-        // Wait a bit to make sure it is done with its last sleep
-        Sleeper.sleepMillis(600);
+            // Given it was previously locked ok, it should unlock just fine.
+            Assertions.assertDoesNotThrow(locker::unlock);
+            // Confirms it is unlocked.
+            Assertions.assertFalse(locker.isLocked());
 
-        // Create the file manually to simulate it was locked by other process
-        FileUtils.touch(file.toFile());
-        Assertions.assertTrue(lock.isLocked());
-        Assertions.assertThrows(FileAlreadyLockedException.class, lock::lock);
+            // Create the file manually to simulate it was locked by other
+            // process, when it is not the case.
+            FileUtils.touch(file.toFile());
+            // Despite the lock file existence, it should not be locked.
+            Assertions.assertFalse(locker.isLocked());
+            // Despite the lock file existence, we should be able to lock it
+            Assertions.assertDoesNotThrow(() -> locker.lock());
 
-        // we wait a bit for lock to become inactive and then we should be
-        // able to lock it
-        Sleeper.sleepMillis(600);
-        Assertions.assertFalse(lock.isLocked());
-        // file already exists so returns true
-        Assertions.assertTrue(lock.lock());
-        Assertions.assertTrue(lock.isLocked());
-
-        // we are done, unlock
-        Assertions.assertTrue(lock.unlock());
-        Assertions.assertFalse(lock.isLocked());
+            // we are done, unlock
+            Assertions.assertDoesNotThrow(locker::unlock);
+            Assertions.assertFalse(locker.isLocked());
+        }
     }
 }

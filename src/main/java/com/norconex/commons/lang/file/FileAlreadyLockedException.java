@@ -17,10 +17,10 @@ package com.norconex.commons.lang.file;
 import java.io.IOException;
 
 /**
- * Checked exception thrown when trying to create a {@link FileLock} on an
- * active lock.
+ * Checked exception thrown by {@link FileLocker} when trying to create a
+ * lock on an on an already locked file.
  * @author Pascal Essiembre
- * @see FileLock
+ * @see FileLocker
  * @since 2.0.0
  */
 public class FileAlreadyLockedException extends IOException {
