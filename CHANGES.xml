@@ -11,7 +11,12 @@
              description="Changes since last milestone for this upcoming major release.">
       <action dev="essiembre" type="add">
         New XMLFlow class for treating XML block as being a mix of predicate 
-        and consumer classes to create an execution "flow".
+        and consumer classes to create an execution "flow" 
+        (if, then, else...).
+      </action>
+      <action dev="essiembre" type="add">
+        New Operator class for quick comparable evaluation (lower than,
+        greater than, etc.).
       </action>
       <action dev="essiembre" type="add">
         New XML methods: remove(), insertBefore(XML), and insertAfter(XML).
@@ -25,6 +30,9 @@
       </action>
       <action dev="essiembre" type="add">
         New Properties#toProperties() method.
+      </action>
+      <action dev="essiembre" type="add">
+        TextMatcher now implements BiFunction and Predicate.
       </action>
       <action dev="essiembre" type="fix">
         Fixed PercentFormatter throwing exception on zero-value denominator.

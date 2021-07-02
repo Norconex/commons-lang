@@ -402,7 +402,7 @@ public class XML {
      * </p>
      * @param type the expected class (sub)type to return
      * @param <T> the type of the return value
-     * @return a new object.
+     * @return a new object or <code>null</code>.
      * @throws XMLValidationException if the XML has validation errors
      * @throws XMLException if something prevented object creation
      */
@@ -434,7 +434,7 @@ public class XML {
      * @param defaultObject if returned object is null or undefined,
      *        returns this default object.
      * @param <T> the type of the return value
-     * @return a new object.
+     * @return a new object if not <code>null</code>, else the default object.
      * @throws XMLException if something prevented object creation
      */
     @SuppressWarnings("unchecked")

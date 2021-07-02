@@ -14,25 +14,32 @@
  */
 package com.norconex.commons.lang.xml.flow;
 
-import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import com.norconex.commons.lang.map.Properties;
-import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.commons.lang.xml.flow.impl.PropertyMatcherCondition;
 
-public class MockLowercaseConsumer
-        implements Consumer<Properties>, IXMLConfigurable {
-    private String field;
+final class MockXMLFlowPredicateAdapter
+        implements IXMLFlowPredicateAdapter<Properties> {
+
+    private Predicate<Properties> predicate;
+
     @Override
-    public void accept(Properties p) {
-        p.set(field, p.getString(field, "").toLowerCase());
+    public boolean test(Properties t) {
+        return predicate.test(t);
     }
     @Override
     public void loadFromXML(XML xml) {
-        field = xml.getString("field");
+        predicate = xml.toObjectImpl(Predicate.class);
+        if (predicate == null) {
+            // default if not set in XML
+            predicate = new PropertyMatcherCondition();
+            xml.populate(predicate);
+        }
     }
     @Override
     public void saveToXML(XML xml) {
-        xml.addElement("field", field);
+        xml.replace(new XML(xml.getName(), predicate));
     }
 }

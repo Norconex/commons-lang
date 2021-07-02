@@ -144,27 +144,32 @@ class XMLCondition<T> implements IXMLConfigurable, Predicate<T> {
         return new Predicates<>(predicateList, Operator.OR == operator);
     }
 
-    Predicate<T> parseSingleCondition(XML xml) {
-        // 1. Try if it is implementing Predicate/IXMLConfigurable.
-        Predicate<T> p = xml.toObjectImpl(Predicate.class, null);
-
-        // 2. Else, use default predicate (if any) to resolve and parse it.
-        if (p == null && flow.getDefaultPredicateType() != null) {
+    Predicate<T> parseSingleCondition(XML predicateXML) {
+        Predicate<T> p = null;
+        if (flow.getPredicateAdapter() != null) {
+            // If a predicate adapter is set, use it to parse the XML
             try {
                 //TODO throw XMLValidationException if there are any errors?
-                p = flow.getDefaultPredicateType().newInstance();
-                xml.populate(p);
+                IXMLFlowPredicateAdapter<T> adapter =
+                        flow.getPredicateAdapter().newInstance();
+                adapter.loadFromXML(predicateXML);
+                p = adapter;
             } catch (InstantiationException | IllegalAccessException e) {
-                throw new XMLFlowException(
-                        "Could not create default predicate from "
-                        + flow.getDefaultPredicateType().getName()
-                        + " for XML: " + xml);
+                throw new XMLFlowException("Predicate adapter "
+                        + flow.getPredicateAdapter().getName() + " could not "
+                        + "resolve this XML: " + predicateXML, e);
             }
+        } else {
+            // if predicate adapter is not set, the XML is expected to have a
+            // "class" attribute that resolves to Predicate<T>.
+            p = predicateXML.toObjectImpl(Predicate.class, null);
         }
         if (p == null) {
-            throw new XMLFlowException("'" + xml.getName()
-                    + "' does not resolve to an implementation of "
-                    + "java.util.function.Predicate.");
+            throw new XMLFlowException("XML element '" + predicateXML.getName()
+            + "' does not resolve to an implementation of "
+            + "java.util.function.Predicate. Add a class=\"\" attribute "
+            + "pointing to your predicate implementation, or initialize "
+            + "XMLFlow with an IXMLFlowPredicateAdapter.");
         }
         return p;
     }

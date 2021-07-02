@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.EqualsExclude;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -132,7 +133,9 @@ class XMLIf<T> implements Consumer<T>, IXMLConfigurable {
         if (bag.size() != 1) {
             throw new XMLFlowException("There must be exactly one of "
                     + "<conditions> or <condition> as a direct child element "
-                    + "of <if> or <ifNot>.");
+                    + "of <if> or <ifNot>. Got instead: \""
+                    + StringUtils.abbreviate(xml.toString(0)
+                            .replaceAll("[\n\r]", ""), 40) + "\"");
         }
         XMLCondition<T> cond = new XMLCondition<>(flow);
         cond.loadFromXML(bag.get(0));

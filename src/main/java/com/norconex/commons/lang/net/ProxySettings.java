@@ -50,6 +50,7 @@ import com.norconex.commons.lang.xml.XML;
  * @author Pascal Essiembre
  * @since 1.14.0
  */
+@SuppressWarnings("javadoc")
 public class ProxySettings implements IXMLConfigurable, Serializable {
 
     private static final long serialVersionUID = 1L;

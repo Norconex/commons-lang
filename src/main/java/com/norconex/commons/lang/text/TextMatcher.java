@@ -1,4 +1,4 @@
-/* Copyright 2019-2020 Norconex Inc.
+/* Copyright 2019-2021 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,9 @@ package com.norconex.commons.lang.text;
 
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -98,7 +101,8 @@ import com.norconex.commons.lang.xml.XML;
  * @author Pascal Essiembre
  * @since 2.0.0
  */
-public class TextMatcher implements IXMLConfigurable {
+public class TextMatcher implements
+        Predicate<CharSequence>, BinaryOperator<String>, IXMLConfigurable {
 
     public enum Method {
         BASIC(new MethodStrategy() {
@@ -159,7 +163,7 @@ public class TextMatcher implements IXMLConfigurable {
 
         private final MethodStrategy ms;
 
-        private Method(MethodStrategy ms) {
+        Method(MethodStrategy ms) {
             this.ms = ms;
         }
     }
@@ -176,8 +180,6 @@ public class TextMatcher implements IXMLConfigurable {
     private boolean ignoreDiacritic;
     private boolean replaceAll;
     private boolean partial;
-
-    //TODO add "negate"
 
     /**
      * Creates a basic matcher.
@@ -362,6 +364,18 @@ public class TextMatcher implements IXMLConfigurable {
     //--- Match/replace methods ------------------------------------------------
     /**
      * Matches this class pattern against its text.
+     * For compatibility with {@link Predicate}.  Same as invoking
+     * {@link #matches(CharSequence)}.
+     * @param text text to match
+     * @return <code>true</code> if matching
+     */
+    @Override
+    public boolean test(CharSequence text) {
+        return matches(text);
+    }
+
+    /**
+     * Matches this class pattern against its text.
      * @param text text to match
      * @return <code>true</code> if matching
      */
@@ -371,6 +385,19 @@ public class TextMatcher implements IXMLConfigurable {
         }
         Matcher m = toRegexMatcher(text);
         return partial ? m.find() : m.matches();
+    }
+
+    /**
+     * Replaces this class matching text with replacement value.
+     * For compatibility with {@link BiFunction}.  Same as invoking
+     * {@link #replace(String, String)}.
+     * @param text text to match
+     * @param replacement text replacement
+     * @return replaced text
+     */
+    @Override
+    public String apply(String text, String replacement) {
+        return replace(text, replacement);
     }
     /**
      * Replaces this class matching text with replacement value.

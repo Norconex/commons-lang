@@ -34,6 +34,30 @@
     </xs:restriction>
   </xs:simpleType>
 
+  <xs:simpleType name="OperatorType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="EQ"/>
+      <xs:enumeration value="eq"/>
+      <xs:enumeration value="is"/>
+      <xs:enumeration value="=="/>
+      <xs:enumeration value="==="/>
+      <xs:enumeration value="GE"/>
+      <xs:enumeration value="ge"/>
+      <xs:enumeration value="&gt;="/>
+      <xs:enumeration value="=&gt;"/>
+      <xs:enumeration value="GT"/>
+      <xs:enumeration value="gt"/>
+      <xs:enumeration value="&gt;"/>
+      <xs:enumeration value="LE"/>
+      <xs:enumeration value="le"/>
+      <xs:enumeration value="&lt;="/>
+      <xs:enumeration value="=&lt;"/>
+      <xs:enumeration value="LT"/>
+      <xs:enumeration value="lt"/>
+      <xs:enumeration value="&lt;"/>
+    </xs:restriction>
+  </xs:simpleType>
+
   <xs:simpleType name="nonEmptyString">
     <xs:restriction base="xs:string">
       <xs:minLength value="1"/>

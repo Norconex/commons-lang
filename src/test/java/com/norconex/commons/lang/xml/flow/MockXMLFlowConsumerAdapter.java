@@ -17,22 +17,28 @@ package com.norconex.commons.lang.xml.flow;
 import java.util.function.Consumer;
 
 import com.norconex.commons.lang.map.Properties;
-import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 
-public class MockLowercaseConsumer
-        implements Consumer<Properties>, IXMLConfigurable {
-    private String field;
+final class MockXMLFlowConsumerAdapter
+        implements IXMLFlowConsumerAdapter<Properties> {
+
+    private Consumer<Properties> consumer;
+
     @Override
-    public void accept(Properties p) {
-        p.set(field, p.getString(field, "").toLowerCase());
+    public void accept(Properties t) {
+        consumer.accept(t);
     }
     @Override
     public void loadFromXML(XML xml) {
-        field = xml.getString("field");
+        consumer = xml.toObjectImpl(Consumer.class);
+        if (consumer == null) {
+            // default if not set in XML
+            consumer = new MockUppercaseConsumer();
+            xml.populate(consumer);
+        }
     }
     @Override
     public void saveToXML(XML xml) {
-        xml.addElement("field", field);
+        xml.replace(new XML(xml.getName(), consumer));
     }
 }

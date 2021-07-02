@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
@@ -80,38 +79,26 @@ import com.norconex.commons.lang.xml.XML;
  */
 public final class XMLFlow<T> {
 
-    public static final String DEFAULT_CONSUMERS_WRITE_TAG_NAME = "handler";
+    public static final String DEFAULT_CONSUMERS_WRITE_TAG_NAME = "consumer";
 
-    // condition
-    private final Class<? extends Predicate<T>> defaultPredicateType;
-    // then/else
-    private final Class<? extends Consumer<T>> defaultConsumerType;
-    // what to name consumer tags written (that are not defined by XML flow).
-    private final String consumersWriteTagName;
+    private final Class<? extends IXMLFlowPredicateAdapter<T>> predicateAdapter;
+    private final Class<? extends IXMLFlowConsumerAdapter<T>> consumerAdapter;
 
-    private XMLFlow(Builder<T> b) {
-        this.defaultPredicateType = b.defaultPredicateType;
-        this.defaultConsumerType = b.defaultConsumerType;
-        this.consumersWriteTagName =
-                StringUtils.defaultIfBlank(b.consumersWriteTagName,
-                        DEFAULT_CONSUMERS_WRITE_TAG_NAME);
+    public XMLFlow() {
+        this(null, null);
+    }
+    public XMLFlow(
+            Class<? extends IXMLFlowConsumerAdapter<T>> consumerAdapter,
+            Class<? extends IXMLFlowPredicateAdapter<T>> predicateAdapter) {
+        this.consumerAdapter = consumerAdapter;
+        this.predicateAdapter = predicateAdapter;
     }
 
-    public Class<? extends Consumer<T>> getDefaultConsumerType() {
-        return defaultConsumerType;
+    public Class<? extends IXMLFlowConsumerAdapter<T>> getConsumerAdapter() {
+        return consumerAdapter;
     }
-    public Class<? extends Predicate<T>> getDefaultPredicateType() {
-        return defaultPredicateType;
-    }
-
-    /**
-     * Alternative to invoking:
-     * Builder&lt;SomeType&gt; builder = new XMLFlow.Builder&lt;SomeType&gt;();
-     * @param <T> type of the object to be submitted to the flow.
-     * @return this builder, for chaining
-     */
-    public static <T> Builder<T> builder() {
-        return new Builder<>();
+    public Class<? extends IXMLFlowPredicateAdapter<T>> getPredicateAdapter() {
+        return predicateAdapter;
     }
 
     // parses "if", "ifNot" and any tag backed by "Consumer".
@@ -146,6 +133,37 @@ public final class XMLFlow<T> {
         return null;
     }
 
+    private Consumer<T> parseConsumer(XML consumerXML) {
+        Consumer<T> consumer = null;
+
+        if (consumerAdapter != null) {
+            // If a consumer adapter is set, use it to parse the XML
+            try {
+                //TODO throw XMLValidationException if there are any errors?
+                IXMLFlowConsumerAdapter<T> c = consumerAdapter.newInstance();
+                c.loadFromXML(consumerXML);
+                consumer = c;
+            } catch (InstantiationException | IllegalAccessException e) {
+                throw new XMLFlowException("Consumer adapter "
+                        + consumerAdapter.getName() + " could not resolve "
+                        + "this XML: " + consumerXML, e);
+            }
+
+        } else {
+            // if not set the XML is expected to have a "class" attribute
+            // that resolves to Consumer<T>.
+            consumer = consumerXML.toObjectImpl(Consumer.class, null);
+        }
+        if (consumer == null) {
+            throw new XMLFlowException("XML element '" + consumerXML.getName()
+            + "' does not resolve to an implementation of "
+            + "java.util.function.Consumer. Add a class=\"\" attribute "
+            + "pointing to your predicate implementation, or initialize "
+            + "XMLFlow with an IXMLFlowConsumerAdapter.");
+        }
+        return consumer;
+    }
+
     /**
      * Writes a flow previously constructed by {@link #parse(XML)} to XML.
      * @param xml the XML to write to
@@ -169,33 +187,8 @@ public final class XMLFlow<T> {
         } else if (consumer instanceof XMLIf) {
             ((XMLIf<T>) consumer).saveToXML(xml.addElement("if"));
         } else {
-            xml.addElement(consumersWriteTagName, consumer);
+            xml.addElement(DEFAULT_CONSUMERS_WRITE_TAG_NAME, consumer);
         }
-    }
-
-    private Consumer<T> parseConsumer(XML consumerXML) {
-        // 1. check if it is implementing Consumer/IXMLConfigurable.
-        Consumer<T> consumer = consumerXML.toObjectImpl(Consumer.class, null);
-
-        // 2. Use default consumer (if any) to resolve and parse it.
-        if (consumer == null && defaultConsumerType != null) {
-            try {
-                //TODO throw XMLValidationException if there are any errors?
-                consumer = defaultConsumerType.newInstance();
-                consumerXML.populate(consumer);
-            } catch (InstantiationException | IllegalAccessException e) {
-                throw new XMLFlowException(
-                        "Could not create default consumer from "
-                        + defaultConsumerType.getName() + " for XML: "
-                        + consumerXML);
-            }
-        }
-        if (consumer == null) {
-            throw new XMLFlowException("'" + consumerXML.getName()
-            + "' does not resolve to an implementation of "
-            + "java.util.function.Consumer.");
-        }
-        return consumer;
     }
 
     @Override
@@ -210,34 +203,5 @@ public final class XMLFlow<T> {
     public String toString() {
         return new ReflectionToStringBuilder(
                 this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
-    }
-
-    public static class Builder<T> {
-        // condition
-        private Class<? extends Predicate<T>> defaultPredicateType;
-        // then/else
-        private Class<? extends Consumer<T>> defaultConsumerType;
-        // what to name custom consumer tags encountered?
-        private String consumersWriteTagName;
-
-        private Builder() {}
-
-        public Builder<T> defaultPredicateType(
-                Class<? extends Predicate<T>> type) {
-            this.defaultPredicateType = type;
-            return this;
-        }
-        public Builder<T> defaultConsumerType(
-                Class<? extends Consumer<T>> type) {
-            this.defaultConsumerType = type;
-            return this;
-        }
-        public Builder<T> consumersWriteTagName(String tagName) {
-            this.consumersWriteTagName = tagName;
-            return this;
-        }
-        public XMLFlow<T> build() {
-            return new XMLFlow<>(this);
-        }
     }
 }

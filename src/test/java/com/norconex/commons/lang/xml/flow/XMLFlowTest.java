@@ -26,7 +26,6 @@ import org.slf4j.LoggerFactory;
 import com.norconex.commons.lang.ResourceLoader;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.commons.lang.xml.flow.impl.PropertyMatcherCondition;
 
 /**
  * @author Pascal Essiembre
@@ -50,7 +49,7 @@ class XMLFlowTest {
         Consumer<Properties> c = flow.parse(sourceXML);
         XML writtenXML = new XML("<xml/>");
         flow.write(writtenXML, c);
-        LOG.info("{}", writtenXML.toString(2));
+        LOG.debug("{}", writtenXML.toString(2));
         testFlow(writtenXML);
     }
 
@@ -90,9 +89,8 @@ class XMLFlowTest {
         }
     }
     private XMLFlow<Properties> createXMLFlow() {
-        return XMLFlow.<Properties>builder()
-                .defaultPredicateType(PropertyMatcherCondition.class)
-                .defaultConsumerType(MockUppercaseConsumer.class)
-                .build();
+        return new XMLFlow<>(
+                MockXMLFlowConsumerAdapter.class,
+                MockXMLFlowPredicateAdapter.class);
     }
 }
