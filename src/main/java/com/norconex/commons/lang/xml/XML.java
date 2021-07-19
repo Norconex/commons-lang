@@ -2745,7 +2745,6 @@ public class XML implements Iterable<XMLCursor> {
      * elements will result in the stream skipping those already read
      * elements.
      * </p>
-     * </p>
      * <p>
      * The object argument type must be one of the following:
      * </p>
