@@ -15,6 +15,12 @@
         (if, then, else...).
       </action>
       <action dev="essiembre" type="add">
+        New "stream" and "iterator" methods added to XML.
+      </action>
+      <action dev="essiembre" type="add">
+        New XMLUtil#createXMLEventReader(Object) method.
+      </action>
+      <action dev="essiembre" type="add">
         New Operator class for quick comparable evaluation (lower than,
         greater than, etc.).
       </action>
@@ -33,6 +39,9 @@
       </action>
       <action dev="essiembre" type="add">
         TextMatcher now implements BiFunction and Predicate.
+      </action>
+      <action dev="essiembre" type="update">
+        XML now implements Iterable.
       </action>
       <action dev="essiembre" type="fix">
         Fixed PercentFormatter throwing exception on zero-value denominator.

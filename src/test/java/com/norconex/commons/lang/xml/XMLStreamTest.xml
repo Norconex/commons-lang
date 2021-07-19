@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE xml>
+<catalog>
+  <botanic:plant>
+    <common>rose</common>
+    <botanical>canadensis</botanical>
+    <zone>4</zone>
+    <light>shady</light>
+    <price>202</price>
+    <availability>446</availability>
+  </botanic:plant>
+  <botanic:plant>
+    <common>mango</common>
+    <botanical>sunny</botanical>
+    <zone>3</zone>
+    <light>shady</light>
+    <price>301</price>
+    <availability>569</availability>
+  </botanic:plant>
+  <agriculture:plant>
+    <common>marigold</common>
+    <botanical>palustris</botanical>
+    <zone>4</zone>
+    <light>sunny</light>
+    <price>500</price>
+    <availability>799</availability>
+  </agriculture:plant>
+  <plant>
+    <common>carrot</common>
+    <botanical>caltha</botanical>
+    <zone>4</zone>
+    <light>sunny</light>
+    <price>205</price>
+    <availability>679</availability>
+  </plant>
+  <food>
+    <name>daal fry</name>
+    <price>300</price>
+    <description>
+      famous daal tadka from surat
+    </description>
+    <calories>60</calories>
+  </food>
+  <food>
+    <name>dhosa</name>
+    <price>350</price>
+    <description>
+      the famous south indian dish
+    </description>
+    <calories>80</calories>
+  </food>
+  <food>
+    <name>khichdi</name>
+    <price>150</price>
+    <description>
+      the famous gujrati dish
+    </description>
+    <calories>40</calories>
+  </food>
+  <book isbn="0000-0000" pageCount="100">
+    <author>santosh bihari</author>
+    <title>php core</title>
+    <gener>programming</gener>
+    <price>44.95</price>
+    <date>2000-10-01</date>
+  </book>
+  <book isbn="1111-1111" pageCount="101">
+    <author>shyam n chawla</author>
+    <title>.net begin</title>
+    <gener>computer</gener>
+    <price>250</price>
+    <date>2002-17-05</date>
+  </book>
+  <book isbn="2222-2222" pageCount="102">
+    <author>anci c</author>
+    <title>dr. ruby</title>
+    <gener>computer</gener>
+    <price>350</price>
+    <date>2001-04-11</date>
+  </book>
+</catalog>

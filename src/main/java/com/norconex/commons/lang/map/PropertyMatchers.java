@@ -19,8 +19,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.function.Predicate;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
@@ -132,15 +130,6 @@ public class PropertyMatchers extends ArrayList<PropertyMatcher>
             }
         }
         return props;
-    }
-
-    @Override
-    public boolean equals(final Object other) {
-        return EqualsBuilder.reflectionEquals(this, other);
-    }
-    @Override
-    public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this);
     }
     @Override
     public String toString() {

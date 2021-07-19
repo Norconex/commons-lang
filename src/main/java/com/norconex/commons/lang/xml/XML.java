@@ -34,15 +34,20 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXB;
@@ -53,6 +58,7 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLEventReader;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Result;
 import javax.xml.transform.Transformer;
@@ -145,7 +151,7 @@ import com.norconex.commons.lang.unit.DataUnitParser;
  * @author Pascal Essiembre
  * @since 2.0.0
  */
-public class XML {
+public class XML implements Iterable<XMLCursor> {
 
     private static final Logger LOG = LoggerFactory.getLogger(XML.class);
 
@@ -2677,6 +2683,89 @@ public class XML {
     public static boolean isJAXB(Object obj) {
         return obj != null && obj.getClass().isAnnotationPresent(
                 XmlRootElement.class);
+    }
+
+    /**
+     * Returns an {@link Iterator} of {@link XMLCursor} from this XML,
+     * in sequential order.
+     * Invoking a "read" methods on {@link XMLCursor} which reads child
+     * elements will result in the iterator skipping those already read
+     * elements.
+     * @return XML cursor iterator
+     */
+    @Override
+    public Iterator<XMLCursor> iterator() {
+        return iterator(this);
+    }
+    /**
+     * Returns a {@link Stream} of {@link XMLCursor} from this XML,
+     * in sequential order.
+     * Invoking a "read" methods on {@link XMLCursor} which reads child
+     * elements will result in the stream skipping those already read
+     * elements.
+     * @return XML cursor stream
+     */
+    public Stream<XMLCursor> stream() {
+        return stream(this);
+    }
+    /**
+     * <p>
+     * Returns an {@link Iterator} of {@link XMLCursor} from the supplied XML
+     * object, in sequential order.
+     * Invoking a "read" methods on {@link XMLCursor} which reads child
+     * elements will result in the iterator skipping those already read
+     * elements.
+     * </p>
+     * <p>
+     * The object argument type must be one of the following:
+     * </p>
+     * <ul>
+     *   <li>{@link Path}</li>
+     *   <li>{@link File}</li>
+     *   <li>{@link Node}</li>
+     *   <li>{@link XML}</li>
+     *   <li>{@link String}</li>
+     *   <li>{@link Reader}</li>
+     *   <li>{@link XMLEventReader}</li>
+     * </ul>
+     *
+     * @param obj the XML to iterate over
+     * @return XML cursor iterator
+     */
+    public static Iterator<XMLCursor> iterator(Object obj) {
+        return new XMLIterator(XMLUtil.createXMLEventReader(obj));
+    }
+    /**
+     * <p>
+     * Returns a {@link Stream} of {@link XMLCursor} from the supplied XML
+     * object, in sequential order.
+     * Returns a {@link Stream} of this XML elements in
+     * sequential order, each represented by an {@link XMLCursor}.
+     * Invoking a "read" methods on {@link XMLCursor} which reads child
+     * elements will result in the stream skipping those already read
+     * elements.
+     * </p>
+     * </p>
+     * <p>
+     * The object argument type must be one of the following:
+     * </p>
+     * <ul>
+     *   <li>{@link Path}</li>
+     *   <li>{@link File}</li>
+     *   <li>{@link Node}</li>
+     *   <li>{@link XML}</li>
+     *   <li>{@link String}</li>
+     *   <li>{@link Reader}</li>
+     *   <li>{@link XMLEventReader}</li>
+     * </ul>
+     *
+     * @param obj the XML to stream
+     * @return XML cursor stream
+     */
+    public static Stream<XMLCursor> stream(Object obj) {
+        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(
+                iterator(obj),
+                Spliterator.ORDERED | Spliterator.IMMUTABLE), false);
     }
 
     public static Builder of(File file) {
