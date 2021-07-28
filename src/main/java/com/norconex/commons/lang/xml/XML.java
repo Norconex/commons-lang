@@ -20,6 +20,7 @@ import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -2725,6 +2726,7 @@ public class XML implements Iterable<XMLCursor> {
      *   <li>{@link Node}</li>
      *   <li>{@link XML}</li>
      *   <li>{@link String}</li>
+     *   <li>{@link InputStream}</li>
      *   <li>{@link Reader}</li>
      *   <li>{@link XMLEventReader}</li>
      * </ul>
@@ -2739,8 +2741,6 @@ public class XML implements Iterable<XMLCursor> {
      * <p>
      * Returns a {@link Stream} of {@link XMLCursor} from the supplied XML
      * object, in sequential order.
-     * Returns a {@link Stream} of this XML elements in
-     * sequential order, each represented by an {@link XMLCursor}.
      * Invoking a "read" methods on {@link XMLCursor} which reads child
      * elements will result in the stream skipping those already read
      * elements.
@@ -2754,6 +2754,7 @@ public class XML implements Iterable<XMLCursor> {
      *   <li>{@link Node}</li>
      *   <li>{@link XML}</li>
      *   <li>{@link String}</li>
+     *   <li>{@link InputStream}</li>
      *   <li>{@link Reader}</li>
      *   <li>{@link XMLEventReader}</li>
      * </ul>
@@ -2775,6 +2776,9 @@ public class XML implements Iterable<XMLCursor> {
     }
     public static Builder of(Node node) {
         return new Builder(node);
+    }
+    public static Builder of(InputStream is) {
+        return new Builder(is);
     }
     public static Builder of(Reader reader) {
         return new Builder(reader);
@@ -2827,6 +2831,9 @@ public class XML implements Iterable<XMLCursor> {
                 xmlStr = fileToString(((Path) source).toFile());
             } else if (source instanceof File) {
                 xmlStr = fileToString((File) source);
+            } else if (source instanceof InputStream) {
+                xmlStr = readerToString(
+                        new InputStreamReader((InputStream) source));
             } else if (source instanceof Reader) {
                 xmlStr = readerToString((Reader) source);
             } else if (source instanceof String) {

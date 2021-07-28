@@ -28,6 +28,9 @@
         New XML methods: remove(), insertBefore(XML), and insertAfter(XML).
       </action>
       <action dev="essiembre" type="add">
+        Added InputStream support for creating XML.
+      </action>
+      <action dev="essiembre" type="add">
         New function-related utility classes: FunctionUtil, Consumers,
         PredicatedConsumer, and Predicates.
       </action>

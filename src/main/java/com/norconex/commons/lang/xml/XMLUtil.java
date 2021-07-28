@@ -17,8 +17,11 @@ package com.norconex.commons.lang.xml;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
 import javax.xml.XMLConstants;
@@ -148,6 +151,7 @@ public final class XMLUtil {
      *   <li>{@link Node}</li>
      *   <li>{@link XML}</li>
      *   <li>{@link String}</li>
+     *   <li>{@link InputStream}</li>
      *   <li>{@link Reader}</li>
      *   <li>{@link XMLEventReader} (returns itself)</li>
      * </ul>
@@ -169,6 +173,9 @@ public final class XMLUtil {
         }
         if (obj instanceof String) {
             return createXMLEventReader((String) obj);
+        }
+        if (obj instanceof InputStream) {
+            return createXMLEventReader((InputStream) obj);
         }
         if (obj instanceof Reader) {
             return createXMLEventReader((Reader) obj);
@@ -198,6 +205,10 @@ public final class XMLUtil {
     }
     private static XMLEventReader createXMLEventReader(String xml) {
         return createXMLEventReader(new StringReader(xml));
+    }
+    private static XMLEventReader createXMLEventReader(InputStream is) {
+        return createXMLEventReader(
+                new InputStreamReader(is, StandardCharsets.UTF_8));
     }
     private static XMLEventReader createXMLEventReader(Reader reader) {
         try {
