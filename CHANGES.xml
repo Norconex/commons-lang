@@ -7,8 +7,8 @@
   </properties>
   <body>
 
-    <release version="2.0.0-SNAPSHOT" date="2021-??-??" 
-             description="Changes since last milestone for this upcoming major release.">
+    <release version="2.0.0-M2" date="2021-07-28" 
+        description="Changes since last milestone for this upcoming major release.">
       <action dev="essiembre" type="add">
         New XMLFlow class for treating XML block as being a mix of predicate 
         and consumer classes to create an execution "flow" 
