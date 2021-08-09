@@ -2638,11 +2638,13 @@ public class XML implements Iterable<XMLCursor> {
         if (contains(deprecatedXPath)) {
             StringBuilder b = new StringBuilder();
             b.append('"');
-            b.append(StringUtils.substringAfterLast(deprecatedXPath, "@"));
-            b.append('"');
             if (deprecatedXPath.contains("@")) {
+                b.append(StringUtils.substringAfterLast(deprecatedXPath, "@"));
+                b.append('"');
                 b.append(" attribute ");
             } else {
+                b.append(deprecatedXPath);
+                b.append('"');
                 b.append(" element ");
             }
             b.append("has been deprecated");
