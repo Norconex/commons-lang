@@ -130,7 +130,14 @@ public class Event extends EventObject {
     }
     @Override
     public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this);
+        // Cannot use HashCodeBuilder.reflectionHashCode here to prevent
+        // "An illegal reflective access operation has occurred"
+        return new HashCodeBuilder()
+                .append(name)
+                .append(message)
+                .append(exception)
+                .append(source)
+                .build();
     }
     /**
      * Returns the event message, if set, or the return value of

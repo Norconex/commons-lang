@@ -19,9 +19,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.function.Predicate;
 
-import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
-
 /**
  * Holds a collection of {@link PropertyMatcher} to perform tests/replace on
  * all of them at once.
@@ -130,10 +127,5 @@ public class PropertyMatchers extends ArrayList<PropertyMatcher>
             }
         }
         return props;
-    }
-    @Override
-    public String toString() {
-        return new ReflectionToStringBuilder(this,
-                ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

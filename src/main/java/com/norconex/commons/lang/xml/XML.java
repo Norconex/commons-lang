@@ -312,6 +312,14 @@ public class XML implements Iterable<XMLCursor> {
         return isDefined() && getBoolean("@disabled", false);
     }
 
+    // When calling this method, empty tags would have added a xml:space="empty"
+    // custom attribute. Else, if it has no child nodes
+    // (attributes, text, elements), we consider it as an explicitly
+    // self-closed tag, thus null.
+    private boolean isExplicitNull() {
+        return isDefined() && !node.hasAttributes() && !node.hasChildNodes();
+    }
+
     public Node toNode() {
         return node;
     }
@@ -360,7 +368,8 @@ public class XML implements Iterable<XMLCursor> {
      */
     @SuppressWarnings("unchecked")
     public <T> T toObject(T defaultObject) {
-        return toObject((Class<T>) getClass(XPATH_ATT_CLASS, null), defaultObject);
+        return toObject(
+                (Class<T>) getClass(XPATH_ATT_CLASS, null), defaultObject);
     }
 
     private <T> T toObject(Class<T> objClass, T defaultObject) {
@@ -376,6 +385,9 @@ public class XML implements Iterable<XMLCursor> {
                         "This class could not be instantiated: " + objClass, e);
             }
         } else {
+            if (isExplicitNull()) {
+                return null;
+            }
             LOG.debug("A configuration entry was found without a class "
                    + "attribute where one could have been provided; "
                    + "using default value: {}", defaultObject);
