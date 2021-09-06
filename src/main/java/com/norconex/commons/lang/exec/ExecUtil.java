@@ -27,8 +27,7 @@ import com.norconex.commons.lang.io.InputStreamConsumer;
  * Utility methods related to process execution. Checked exceptions
  * are wrapped in a runtime {@link ExecException}.
  * @author Pascal Essiembre
- * @since 1.13.0 (previously part of 
- *        <a href="https://opensource.norconex.com/jef/api/">JEF API</a> 4.0).
+ * @since 1.13.0 (previously part of now deprecated JEF API)
  */
 public final class ExecUtil {
 
@@ -36,7 +35,7 @@ public final class ExecUtil {
     public static final String STDOUT = "STDOUT";
     /** Identifier for standard error. */
     public static final String STDERR = "STDERR";
-    
+
     /**
      * Constructor.
      */
@@ -53,7 +52,7 @@ public final class ExecUtil {
      * @return process exit value
      */
     public static int watchProcess(Process process) {
-        return watchProcess(process, 
+        return watchProcess(process,
                 new IInputStreamListener[] {}, new IInputStreamListener[] {});
     }
     /**
@@ -65,7 +64,7 @@ public final class ExecUtil {
      * gets written by the process.
      * The listener line type will either be "STDERR" or "STDOUT".
      * @param process the process to watch
-     * @param listener the listener to use for both "STDERR" or "STDOUT". 
+     * @param listener the listener to use for both "STDERR" or "STDOUT".
      * @return process exit value
      */
     public static int watchProcess(
@@ -84,7 +83,7 @@ public final class ExecUtil {
      * gets written by the process.
      * The listener line type will either be "STDERR" or "STDOUT".
      * @param process the process to watch
-     * @param listeners the listeners to use for both "STDERR" or "STDOUT". 
+     * @param listeners the listeners to use for both "STDERR" or "STDOUT".
      * @return process exit value
      */
     public static int watchProcess(
@@ -92,7 +91,7 @@ public final class ExecUtil {
             IInputStreamListener[] listeners) {
         return watchProcess(process, listeners, listeners);
     }
-    
+
     /**
      * Watches a running process.  This method will wait until the process
      * as finished executing before returning with its exit value.
@@ -102,8 +101,8 @@ public final class ExecUtil {
      * gets written by the process.
      * The listener line type will either be "STDERR" or "STDOUT".
      * @param process the process to watch
-     * @param outputListener the process output listener 
-     * @param errorListener the process error listener 
+     * @param outputListener the process output listener
+     * @param errorListener the process error listener
      * @return process exit value
      * @throws InterruptedException problem while waiting for process to finish
      */
@@ -125,7 +124,7 @@ public final class ExecUtil {
      * The listener line type will either be "STDERR" or "STDOUT".
      * @param process the process to watch
      * @param outputListeners the process output listeners
-     * @param errorListeners the process error listeners 
+     * @param errorListeners the process error listeners
      * @return process exit value
      */
     public static int watchProcess(
@@ -135,7 +134,7 @@ public final class ExecUtil {
         return watchProcess(process, null, outputListeners, errorListeners);
     }
     /**
-     * Watches a running process while sending data to its STDIN. 
+     * Watches a running process while sending data to its STDIN.
      * This method will wait until the process
      * as finished executing before returning with its exit value.
      * It ensures the process does not hang on some platform by making use
@@ -146,7 +145,7 @@ public final class ExecUtil {
      * @param process the process to watch
      * @param input input sent to process STDIN
      * @param outputListeners the process output listeners
-     * @param errorListeners the process error listeners 
+     * @param errorListeners the process error listeners
      * @return process exit value
      */
     public static int watchProcess(
@@ -161,17 +160,17 @@ public final class ExecUtil {
             throw new ExecException("Process was interrupted.", e);
         }
     }
-    
+
 
     /**
-     * Watches process output.  This method is the same as 
+     * Watches process output.  This method is the same as
      * {@link #watchProcess(
      *            Process, IInputStreamListener, IInputStreamListener)}
      * with the exception of not waiting for the process to complete before
      * returning.
      * @param process the process on which to watch outputs
      * @param outputListener the process output listeners
-     * @param errorListener the process error listeners 
+     * @param errorListener the process error listeners
      */
     public static void watchProcessAsync(
             Process process,
@@ -181,17 +180,17 @@ public final class ExecUtil {
                 new IInputStreamListener[] {outputListener},
                 new IInputStreamListener[] {errorListener});
     }
-    
-    
+
+
     /**
-     * Watches process output.  This method is the same as 
+     * Watches process output.  This method is the same as
      * {@link #watchProcess(
      *            Process, IInputStreamListener[], IInputStreamListener[])}
      * with the exception of not waiting for the process to complete before
      * returning.
      * @param process the process on which to watch outputs
      * @param outputListeners the process output listeners
-     * @param errorListeners the process error listeners 
+     * @param errorListeners the process error listeners
      */
     public static void watchProcessAsync(
             Process process,
@@ -201,16 +200,16 @@ public final class ExecUtil {
     }
 
     /**
-     * Watches process output while sending data to its STDIN.  
-     * This method is the same as 
-     * {@link #watchProcess(Process, InputStream, 
+     * Watches process output while sending data to its STDIN.
+     * This method is the same as
+     * {@link #watchProcess(Process, InputStream,
      *            IInputStreamListener[], IInputStreamListener[])}
      * with the exception of not waiting for the process to complete before
      * returning.
      * @param process the process on which to watch outputs
      * @param input input sent to process STDIN
      * @param outputListeners the process output listeners
-     * @param errorListeners the process error listeners 
+     * @param errorListeners the process error listeners
      */
     public static void watchProcessAsync(
             final Process process,
@@ -246,7 +245,7 @@ public final class ExecUtil {
             } catch(InterruptedException e) {
                 throw new ExecException(
                         "Process interrupted while sending input stream.", e);
-            } 
+            }
         }
     }
 }

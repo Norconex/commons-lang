@@ -15,16 +15,15 @@
 package com.norconex.commons.lang.exec;
 
 /**
- * Filter for limiting the exceptions to be eligible for retry. 
+ * Filter for limiting the exceptions to be eligible for retry.
  * @author Pascal Essiembre
  * @see Retrier
- * @since 1.13.0 (previously part of 
- *        <a href="https://opensource.norconex.com/jef/api/">JEF API</a> 4.0).
+ * @since 1.13.0 (previously part of now deprecated JEF API)
  */
 public interface IExceptionFilter {
 
     /**
-     * Filters an exception. Runtime exceptions can be of any type, 
+     * Filters an exception. Runtime exceptions can be of any type,
      * but checked exceptions are always wrapped
      * in a {@link RetriableException}.
      * @param e the exception to filter

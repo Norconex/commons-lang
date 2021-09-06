@@ -15,8 +15,6 @@ TODO:
 
 - Replace/refactor process execution to use new process features of Java 8.
 
-- See if we eliminate JEF, have more options in this lib.
-
 - Modify Jar copier to handle cases where snapshot are timestamped instead and
   not being considered the latest when they should.  Like:
   norconex-commons-lang-1.13.0-20170328.184247-17.jar vs 

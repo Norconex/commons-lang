@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
  * This pipeline class can also be used a pipeline stage to create
  * pipe hierarchies.
  * For more sophisticated work flow needs, consider using a more advanced
- * framework such as Norconex JEF.
+ * framework.
  * @author Pascal Essiembre
  * @param <T> pipeline context type
  * @since 1.5.0

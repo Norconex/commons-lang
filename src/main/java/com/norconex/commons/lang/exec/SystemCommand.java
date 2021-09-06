@@ -40,25 +40,24 @@ import com.norconex.commons.lang.io.InputStreamLineListener;
  * which means given an executable path should be sufficient to run
  * programs on any systems (e.g. it handles prefixing an executable with OS
  * specific commands as well as preventing process hanging on some OS when
- * there is nowhere to display the output).  
- * 
+ * there is nowhere to display the output).
+ *
  * @author Pascal Essiembre
- * @since 1.13.0 (previously part of 
- *        <a href="https://opensource.norconex.com/jef/api/">JEF API</a> 4.0).
+ * @since 1.13.0 (previously part of now deprecated JEF API)
  */
 public class SystemCommand {
 
-    private static final Logger LOG = 
+    private static final Logger LOG =
             LoggerFactory.getLogger(SystemCommand.class);
 
-    private static final String[] CMD_PREFIXES_WIN_LEGACY = 
+    private static final String[] CMD_PREFIXES_WIN_LEGACY =
             new String[] { "command.com", "/C" };
-    private static final String[] CMD_PREFIXES_WIN_CURRENT = 
+    private static final String[] CMD_PREFIXES_WIN_CURRENT =
             new String[] { "cmd.exe", "/C" };
-    
+
     private static final IInputStreamListener[] EMPTY_LISTENERS =
     		new IInputStreamListener[] {};
-    
+
     private final String[] command;
     private final File workdir;
     // Null means inherit from those of java process
@@ -70,27 +69,27 @@ public class SystemCommand {
             Collections.synchronizedList(new ArrayList<IInputStreamListener>());
 
     private Process process;
-    
+
     /**
      * Creates a command for which the execution will be in the working
      * directory of the current process.  If more than one command values
      * are passed, the first element of the array
      * is the command and subsequent elements are arguments.
      * If your command or arguments contain spaces, they will be escaped
-     * according to your operating sytem (surrounding with double-quotes on 
+     * according to your operating sytem (surrounding with double-quotes on
      * Windows and backslash on other operating systems).
      * @param command the command to run
      */
     public SystemCommand(String... command) {
     	this(null, command);
     }
-    
+
     /**
      * Creates a command. If more than one command values
      * are passed, the first element of the array
      * is the command and subsequent elements are arguments.
      * If your command or arguments contain spaces, they will be escaped
-     * according to your operating sytem (surrounding with double-quotes on 
+     * according to your operating sytem (surrounding with double-quotes on
      * Windows and backslash on other operating systems).
      * @param command the command to run
      * @param workdir command working directory.
@@ -100,8 +99,8 @@ public class SystemCommand {
         this.command = command;
         this.workdir = workdir;
     }
-    
-    
+
+
     /**
      * Gets the command to be run.
      * @return the command
@@ -166,7 +165,7 @@ public class SystemCommand {
         return environmentVariables;
     }
     /**
-     * Sets environment variables. Set to <code>null</code> (default) for the 
+     * Sets environment variables. Set to <code>null</code> (default) for the
      * command to inherit the environment of the current process.
      * @param environmentVariables environment variables
      */
@@ -202,8 +201,8 @@ public class SystemCommand {
     }
 
     /**
-     * Executes this system command and returns only when the underlying 
-     * process stopped running.  
+     * Executes this system command and returns only when the underlying
+     * process stopped running.
      * @return process exit value
      * @throws SystemCommandException problem executing command
      */
@@ -214,13 +213,13 @@ public class SystemCommand {
     /**
      * Executes this system command.  When run in the background,
      * this method does not wait for the process to complete before returning.
-     * In such case the status code should always be 0 unless it terminated 
+     * In such case the status code should always be 0 unless it terminated
      * abruptly (may not reflect the process termination status).
-     * When NOT run in the background, this method waits and returns 
-     * only when the underlying process stopped running.  
-     * Alternatively, to run a command asynchronously, you can wrap it in 
+     * When NOT run in the background, this method waits and returns
+     * only when the underlying process stopped running.
+     * Alternatively, to run a command asynchronously, you can wrap it in
      * its own thread.
-     * @param runInBackground <code>true</code> to runs the system command in 
+     * @param runInBackground <code>true</code> to runs the system command in
      *         background.
      * @return process exit value
      * @throws SystemCommandException problem executing command
@@ -231,34 +230,34 @@ public class SystemCommand {
     }
 
     /**
-     * Executes this system command with the given input and returns only when 
+     * Executes this system command with the given input and returns only when
      * the underlying process stopped running.
-     * @param input process input (fed to STDIN)  
+     * @param input process input (fed to STDIN)
      * @return process exit value
      * @throws SystemCommandException problem executing command
      */
     public int execute(InputStream input) throws SystemCommandException {
         return execute(input, false);
     }
-    
+
     /**
-     * Executes this system command with the given input. When run in the 
+     * Executes this system command with the given input. When run in the
      * background, this method does not wait for the process to complete before
      * returning.
-     * In such case the status code should always be 0 unless it terminated 
+     * In such case the status code should always be 0 unless it terminated
      * abruptly (may not reflect the process termination status).
-     * When NOT run in the background, this method waits and returns 
-     * only when the underlying process stopped running.  
-     * Alternatively, to run a command asynchronously, you can wrap it in 
+     * When NOT run in the background, this method waits and returns
+     * only when the underlying process stopped running.
+     * Alternatively, to run a command asynchronously, you can wrap it in
      * its own thread.
-     * @param input process input (fed to STDIN)  
-     * @param runInBackground <code>true</code> to runs the system command in 
+     * @param input process input (fed to STDIN)
+     * @param runInBackground <code>true</code> to runs the system command in
      *         background.
      * @return process exit value
      * @throws SystemCommandException problem executing command
      * @throws IllegalStateException when command is already running
      */
-    public int execute(final InputStream input, boolean runInBackground) 
+    public int execute(final InputStream input, boolean runInBackground)
             throws SystemCommandException {
         if (isRunning()) {
             throw new IllegalStateException(
@@ -276,15 +275,15 @@ public class SystemCommand {
             throw new SystemCommandException("Could not execute command: "
                     + toString(), e);
         }
-        
-        IInputStreamListener[] outListeners = 
+
+        IInputStreamListener[] outListeners =
                 outputListeners.toArray(EMPTY_LISTENERS);
-        
-        IInputStreamListener[] errListeners = 
+
+        IInputStreamListener[] errListeners =
                 errorListeners.toArray(EMPTY_LISTENERS);
         ErrorTracker errorTracker = new ErrorTracker();
         errListeners = ArrayUtils.add(errListeners, errorTracker);
-        
+
         int exitValue = 0;
         if (runInBackground) {
             ExecUtil.watchProcessAsync(
@@ -299,7 +298,7 @@ public class SystemCommand {
             exitValue = ExecUtil.watchProcess(
                     process, input, outListeners, errListeners);
         }
-        
+
         if (exitValue != 0) {
             LOG.error("Command returned with exit value " + process.exitValue()
                     + " (command properly escaped?). Command: "
@@ -328,9 +327,9 @@ public class SystemCommand {
         }
         return envs.toArray(ArrayUtils.EMPTY_STRING_ARRAY);
     }
-    
+
     private String[] getCleanCommand() throws SystemCommandException {
-        List<String> cmd = 
+        List<String> cmd =
                 new ArrayList<>(Arrays.asList(ArrayUtils.nullToEmpty(command)));
         if (cmd.isEmpty()) {
             throw new SystemCommandException("No command specified.");
@@ -340,7 +339,7 @@ public class SystemCommand {
         wrapCommand(cmd);
         return cmd.toArray(ArrayUtils.EMPTY_STRING_ARRAY);
     }
-    
+
     // Removes OS prefixes from a command since they will be re-added
     // and can affect processing logic if not
     private void removePrefixes(List<String> cmd, String[] prefixes) {
@@ -356,7 +355,7 @@ public class SystemCommand {
             }
         }
     }
-    
+
     /**
      * Escapes spaces in each parts of the command as well as special
      * characters in some operating systems, if they are not already
@@ -374,7 +373,7 @@ public class SystemCommand {
 //            escapeNonWindows(command);
 //        }
     }
-    
+
     /**
      * Escapes spaces in each parts of the command as well as special
      * characters in some operating systems, if they are not already
@@ -391,9 +390,9 @@ public class SystemCommand {
         escape(list);
         return list.toArray(ArrayUtils.EMPTY_STRING_ARRAY);
     }
-    
-    
-    // With windows, using cmd.exe /C requires putting arguments with 
+
+
+    // With windows, using cmd.exe /C requires putting arguments with
     // spaces in quotes, and then everything after cmd.exe /C in quotes
     // as well. See:
     // http://stackoverflow.com/questions/6376113/how-to-use-spaces-in-cmd
@@ -405,11 +404,11 @@ public class SystemCommand {
             cmd.clear();
             cmd.addAll(Arrays.asList(translateCommandline(cmdLine)));
         }
-        
-        // At this point we know we have command + args, escape. 
+
+        // At this point we know we have command + args, escape.
         List<String> newCmd = new ArrayList<>();
         for (String arg : cmd) {
-            if (StringUtils.contains(arg, ' ') 
+            if (StringUtils.contains(arg, ' ')
                     && !arg.matches("^\\s*\".*\"\\s*$")) {
                 newCmd.add('"' + arg + '"');
             } else {
@@ -429,8 +428,8 @@ public class SystemCommand {
 //            cmd.clear();
 //            cmd.addAll(Arrays.asList(translateCommandline(cmdLine)));
 //        }
-//        
-//        // At this point we know we have command + args, escape. 
+//
+//        // At this point we know we have command + args, escape.
 //        for (int i = 0; i < cmd.size(); i++) {
 //            cmd.add(i, StringEscapeUtils.escapeXSI(cmd.remove(i)));
 //            if (StringUtils.contains(cmd.get(i), ' ')) {
@@ -443,7 +442,7 @@ public class SystemCommand {
         if (SystemUtils.OS_NAME == null || !SystemUtils.IS_OS_WINDOWS) {
             return;
         }
-        String[] prefixes; 
+        String[] prefixes;
         if (SystemUtils.IS_OS_WINDOWS_95
                 || SystemUtils.IS_OS_WINDOWS_98
                 || SystemUtils.IS_OS_WINDOWS_ME) {
@@ -453,7 +452,7 @@ public class SystemCommand {
             prefixes = CMD_PREFIXES_WIN_CURRENT;
         }
         removePrefixes(cmd, prefixes);
-        
+
         String wrappedCmd = "\"" + StringUtils.join(cmd, " ") + "\"";
         cmd.clear();
         cmd.addAll(Arrays.asList(prefixes));
@@ -476,9 +475,9 @@ public class SystemCommand {
         final int inQuote = 1;
         final int inDoubleQuote = 2;
         int state = normal;
-        final StringTokenizer tok = 
+        final StringTokenizer tok =
                 new StringTokenizer(toProcess, "\"\' ", true);
-        final ArrayList<String> list = new ArrayList<String>();
+        final ArrayList<String> list = new ArrayList<>();
         StringBuilder current = new StringBuilder();
         boolean lastTokenHasBeenQuoted = false;
 
@@ -531,7 +530,7 @@ public class SystemCommand {
         final String[] args = new String[list.size()];
         return list.toArray(args);
     }
-    
+
     private class ErrorTracker extends InputStreamLineListener {
         private final StringBuilder b = new StringBuilder();
         @Override
