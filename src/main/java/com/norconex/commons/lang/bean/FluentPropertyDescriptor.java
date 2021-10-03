@@ -76,7 +76,7 @@ public class FluentPropertyDescriptor extends PropertyDescriptor {
             try {
                 setWriteMethod(writeMethod);
             } catch (IntrospectionException e) {
-                // swallow
+                //NOOP swallow
             }
         }
         return writeMethod;

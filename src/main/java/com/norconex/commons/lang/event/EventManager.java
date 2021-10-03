@@ -153,7 +153,7 @@ public class EventManager {
     }
 
     public void log(Event event, Level level) {
-        //FYI, depending on log4j2 pattern, it is possible only the last part
+        //FYI, depending on logger pattern, it is possible only the last part
         //of the logger name is shown (after the dot)
         Logger log =  LoggerFactory.getLogger(event.getClass().getSimpleName()
                 + "." + event.getName());

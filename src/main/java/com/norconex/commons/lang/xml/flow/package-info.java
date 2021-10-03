@@ -13,6 +13,6 @@
  * limitations under the License.
  */
 /**
- * Classes making XML usable for basic processing flow.
+ * Classes offering basic flow-processing to XML.
  */
 package com.norconex.commons.lang.xml.flow;

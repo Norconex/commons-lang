@@ -26,7 +26,11 @@ import com.norconex.commons.lang.map.PropertyMatcher;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 
-//TODO document me.
+/**
+ * A simple XML condition matching {@link Properties} keys and values.
+ * @author Pascal Essiembre
+ * @since 2.0.0
+ */
 public class PropertyMatcherCondition
         implements Predicate<Properties>, IXMLConfigurable {
 

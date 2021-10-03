@@ -2,6 +2,11 @@ package com.norconex.commons.lang.xml.flow;
 
 import java.util.Arrays;
 
+/**
+ * An XML tag used in flow resolution.
+ * @author Pascal Essiembre
+ * @since 2.0.0
+ */
 enum Tag {
     IF("if"),
     IFNOT("ifNot"),

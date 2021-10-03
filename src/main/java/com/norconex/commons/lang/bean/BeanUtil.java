@@ -218,8 +218,8 @@ public final class BeanUtil {
         }
         return map;
     }
-    //TODO maybe accept boolean argument for non-case-sensitive keys
-    //TODO consider using only 1 of this one vs Properties#loadFromBean
+    //MAYBE: accept boolean argument for non-case-sensitive keys
+    // consider using only 1 of this one vs Properties#loadFromBean
     public static Properties toProperties(
             Object bean, String... ignoredProperties) {
         if (bean == null) {
@@ -497,7 +497,7 @@ public final class BeanUtil {
     }
 
     public static <T> String diff(T bean1, T bean2) {
-        //TODO Visit all properties keeping trail, or nesting level
+        //MAYBE: Visit all properties keeping trail, or nesting level
         Bag<String> b1 = graphLeavesAsBag(bean1);
         Bag<String> b2 = graphLeavesAsBag(bean2);
 

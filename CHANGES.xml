@@ -9,7 +9,10 @@
 
     <release version="2.0.0-SNAPSHOT" date="2021-??-??" 
         description="Changes since last milestone for this upcoming major release.">
-
+      <action dev="essiembre" type="update">
+        Configuration variable resolution order now is: system properties,
+        environment variables, properties file, variables file.
+      </action>
     </release>
 
     <release version="2.0.0-M2" date="2021-07-28" 

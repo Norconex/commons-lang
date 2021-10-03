@@ -14,11 +14,13 @@
  */
 package com.norconex.commons.lang.config;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -30,6 +32,39 @@ public class ExtendedReferenceInsertionEventHandlerTest {
 
     @TempDir
     public Path tempDir;
+
+    @Test
+    public void testPrecedence() throws IOException {
+        String baseVarName = "precedenceTest";
+
+        // precedence order
+        String valueSystemProperty = "valueSystemProperty";
+        String valuePropertiesFile = "valuePropertiesFile";
+        String valueVariablesFile = "valueVariablesFile";
+
+
+        String varName = null;
+        String before = null;
+        String after = null;
+
+        // Test with: System property + Prop. file + Var. file
+        varName = baseVarName + 1;
+        System.setProperty(varName, valueSystemProperty);
+        before = "${" + varName + "}";
+        after = resolveVariable(before,
+                varName + "=" + valuePropertiesFile,
+                varName + "=" + valueVariablesFile);
+        Assertions.assertEquals(valueSystemProperty, after);
+        System.clearProperty(varName);
+
+        // Test with: Prop. file + Var. file
+        varName = baseVarName + 2;
+        before = "${" + varName + "}";
+        after = resolveVariable(before,
+                varName + "=" + valuePropertiesFile,
+                varName + "=" + valueVariablesFile);
+        System.clearProperty(varName);
+    }
 
     @Test
     public void testWithSystemProperty() throws IOException {
@@ -75,10 +110,23 @@ public class ExtendedReferenceInsertionEventHandlerTest {
 
     private String resolveVariable(String configFileContent)
             throws IOException {
-        Path testFile = tempDir.resolve(
-                "text-" + TimeIdGenerator.next() + ".txt");
-        FileUtils.write(testFile.toFile(),
-                configFileContent, StandardCharsets.UTF_8);
+        return resolveVariable(configFileContent, null, null);
+    }
+    private String resolveVariable(String configFileContent,
+            String propertiesFileContent, String variablesFileContent)
+            throws IOException {
+        String fileBaseName = "text-" + TimeIdGenerator.next();
+        Path testFile = writeFile(fileBaseName + ".txt", configFileContent);
+        writeFile(fileBaseName + ".properties", propertiesFileContent);
+        writeFile(fileBaseName + ".variables", variablesFileContent);
         return new ConfigurationLoader().loadString(testFile);
+    }
+    private Path writeFile(String fileName, String content) throws IOException {
+        if (StringUtils.isNotBlank(content)) {
+            Path file = tempDir.resolve(fileName);
+            FileUtils.write(file.toFile(), content, UTF_8);
+            return file;
+        }
+        return null;
     }
 }

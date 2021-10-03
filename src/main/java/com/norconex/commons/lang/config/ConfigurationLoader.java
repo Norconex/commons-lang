@@ -69,6 +69,12 @@ import com.norconex.commons.lang.xml.XML;
  * can also be specified using the {@link #setVariablesFile(Path)} method.
  * </p>
  *
+ * <p>
+ * In addition, variables can be specified as system properties or environment
+ * variables. A variable defined that way takes precedence over a variable
+ * defined in a file (system properties coming first).
+ * </p>
+ *
  * <h3>Configuration fragments</h3>
  * <p>
  * To include configuration fragments and favor reuse, use the

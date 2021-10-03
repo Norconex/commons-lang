@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2021 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,6 @@
  * limitations under the License.
  */
 /**
- * Enhanced and/or useful versions of Map.
+ * Enhanced and/or useful features related to Map.
  */
 package com.norconex.commons.lang.map;

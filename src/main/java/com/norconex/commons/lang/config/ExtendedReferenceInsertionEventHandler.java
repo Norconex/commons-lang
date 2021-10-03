@@ -41,9 +41,10 @@ public class ExtendedReferenceInsertionEventHandler
 
         Object val = context.get(ref);
 
-        // if null value, try from env/property
-        if (val == null) {
-            val = SystemUtil.getEnvironmentOrProperty(ref);
+        // if it exists as env/property, replace.
+        String replacement = SystemUtil.getEnvironmentOrProperty(ref);
+        if (replacement != null) {
+            val = replacement;
         }
 
         // if still null, return original value

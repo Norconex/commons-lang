@@ -1,4 +1,4 @@
-/* Copyright 2020 Norconex Inc.
+/* Copyright 2020-2021 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import java.util.Iterator;
 import org.apache.commons.collections4.iterators.AbstractIteratorDecorator;
 
 /**
- * Counts the number of time # was invoked.
+ * Counts the number of time {@link #next()} was invoked.
  * @author Pascal Essiembre
  * @param <T> iterator type
  * @since 2.0.0
