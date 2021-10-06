@@ -7,11 +7,15 @@
   </properties>
   <body>
 
-    <release version="2.0.0-SNAPSHOT" date="2021-??-??" 
+    <release version="2.0.0-RC1" date="2021-??-??" 
         description="Changes since last milestone for this upcoming major release.">
       <action dev="essiembre" type="update">
         Configuration variable resolution order now is: system properties,
         environment variables, properties file, variables file.
+      </action>
+      <action dev="essiembre" type="fix">
+        Fixed CachedInputStream sometimes returning invalid bytes
+        when re-read from cache and byte values are higher than 127. 
       </action>
     </release>
 

@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.NullInputStream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -27,6 +28,36 @@ import org.junit.jupiter.api.Test;
  * @author Pascal Essiembre
  */
 public class CachedInputStreamTest {
+
+    @Test
+    public void testByteMasking() throws IOException {
+        String content = "èéîïâ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+        ByteArrayInputStream is = new ByteArrayInputStream(
+                content.getBytes(StandardCharsets.UTF_8));
+
+        CachedStreamFactory factory = new CachedStreamFactory(2028, 1024);
+        CachedInputStream cache = factory.newInputStream(is);
+        try {
+            // first read
+            cache.mark(8);
+            for (int i = 0; i < 8; i++) {
+                cache.read();
+            }
+            cache.reset();
+
+            // second read
+            while (cache.read() != -1) {}
+            cache.rewind();
+
+            // third read and test
+            Assertions.assertEquals(content, readCacheToString(cache));
+        }  finally {
+            try { cache.close(); } catch (IOException e) { /*NOOP*/ }
+            cache.dispose();
+        }
+    }
+
 
     @Test
     public void testContentMatchMemCache() throws IOException {
@@ -244,11 +275,12 @@ public class CachedInputStreamTest {
     }
 
     private String readCacheToString(InputStream is) throws IOException {
-        long i;
-        StringBuilder b = new StringBuilder();
-        while ((i=is.read()) != -1) {
-            b.append((char) i);
-        }
-        return b.toString();
+        return IOUtils.toString(is, StandardCharsets.UTF_8);
+//        long i;
+//        StringBuilder b = new StringBuilder();
+//        while ((i=is.read()) != -1) {
+//            b.append((char) i);
+//        }
+//        return b.toString();
     }
 }
