@@ -277,12 +277,12 @@ public class CachedInputStream extends InputStream implements ICachedStream {
                 // When getting bytes, we add 0xFF to make it a signed int and
                 // avoid incorrect negative values for byte values > 127.
                 if (memOutputStream != null) {
-                    val = byteToInt(memOutputStream.getByte(cursor));
+                    val = memOutputStream.getByte(cursor) & 0xFF;
                 } else {
                     if (cursor >= memCache.length) {
                         val = -1;
                     } else {
-                        val = byteToInt(memCache[cursor]);
+                        val = memCache[cursor] & 0xFF;
                     }
                 }
             } else {
@@ -614,13 +614,6 @@ public class CachedInputStream extends InputStream implements ICachedStream {
         if (closable != null) {
             try { closable.close(); } catch (IOException e) { /*NOOP*/ }
         }
-    }
-
-    private int byteToInt(int b) {
-        if (b == -1) {
-            return -1;
-        }
-        return b & 0xFF;
     }
 
     @Override
