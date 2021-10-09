@@ -8,7 +8,7 @@
   <body>
 
     <release version="2.0.0-RC1" date="2021-10-08" 
-        description="Changes since last milestone for this upcoming major release.">
+        description="Release Candidate 1.">
       <action dev="essiembre" type="update">
         Configuration variable resolution order now is: system properties,
         environment variables, properties file, variables file.
