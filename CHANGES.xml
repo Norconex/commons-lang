@@ -7,6 +7,14 @@
   </properties>
   <body>
 
+    <release version="2.0.0-SNAPShOT" date="2021-??-??"
+        description="Changes since RC1.">
+      <action dev="essiembre" type="update">
+        Improved XML matching of partial "class" names to prioritize exact
+        segment matches (class names and package segments). 
+      </action>
+    </release>
+
     <release version="2.0.0-RC1" date="2021-10-08" 
         description="Release Candidate 1.">
       <action dev="essiembre" type="update">

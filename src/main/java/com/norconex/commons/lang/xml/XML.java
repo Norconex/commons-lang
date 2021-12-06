@@ -471,7 +471,23 @@ public class XML implements Iterable<XMLCursor> {
                 List<?> results = ClassFinder.findSubTypes(
                         type, s -> s.endsWith(partialName));
                 if (results.size() > 1) {
-                    throw new XMLException(results.size()
+                    // see if only one of them matches a segment exactly.
+                    List<?> filteredResults = results.stream()
+                            .filter(c -> ((Class<?>) c).getName()
+                                    .endsWith("." + partialName))
+                            .collect(Collectors.toList());
+                    if (filteredResults.size() == 1) {
+                        LOG.debug("{} classes implementing \"{}\" and ending "
+                                + "with \"{}\" were found, but only one "
+                                + "matched an exact class name or class name "
+                                + "and package segment: {}",
+                                results.size(),
+                                type.getName(),
+                                partialName,
+                                ((Class<?>) filteredResults.get(0)).getName());
+                        results.retainAll(filteredResults);
+                    } else {
+                        throw new XMLException(results.size()
                             + " classes implementing \""
                             + type.getName() + "\" "
                             + "and ending with \"" + partialName + "\" "
@@ -481,6 +497,7 @@ public class XML implements Iterable<XMLCursor> {
                             + results.stream()
                                     .map(c -> ((Class<?>) c).getName())
                                     .collect(Collectors.joining(", ")));
+                    }
                 }
 
                 if (results.isEmpty()) {
