@@ -7,16 +7,18 @@
   </properties>
   <body>
 
-    <release version="2.0.0-SNAPSHOT" date="2021-??-??"
-        description="Changes since RC1.">
+    <release version="2.0.0" date="2022-01-01" 
+            description="Major release. NOT a drop-in replacement for 1.x.">
+            
+      <!-- 2.0.0 (GA) -->
+            
       <action dev="essiembre" type="update">
         Improved XML matching of partial "class" names to prioritize exact
         segment matches (class names and package segments). 
       </action>
-    </release>
-
-    <release version="2.0.0-RC1" date="2021-10-08" 
-        description="Release Candidate 1.">
+      
+      <!-- 2.0.0-RC1 -->
+      
       <action dev="essiembre" type="update">
         Configuration variable resolution order now is: system properties,
         environment variables, properties file, variables file.
@@ -25,10 +27,9 @@
         Fixed CachedInputStream sometimes returning invalid bytes
         when re-read from cache and byte values are higher than 127. 
       </action>
-    </release>
 
-    <release version="2.0.0-M2" date="2021-07-28" 
-        description="Changes since last milestone for this upcoming major release.">
+      <!-- 2.0.0-M2 -->
+
       <action dev="essiembre" type="add">
         New XMLFlow class for treating XML block as being a mix of predicate 
         and consumer classes to create an execution "flow" 
@@ -69,10 +70,9 @@
       <action dev="essiembre" type="fix">
         Fixed PercentFormatter throwing exception on zero-value denominator.
       </action>
-    </release>
-    
-    <release version="2.0.0-M1" date="2021-02-28" 
-             description="Milestone for next major release. NOT a drop-in replacement for 1.x.">
+      
+      <!-- 2.0.0-M1 -->
+      
       <action dev="essiembre" type="add">
         New ExceptionUtil class.
       </action>
