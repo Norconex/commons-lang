@@ -1,4 +1,4 @@
-/* Copyright 2010-2020 Norconex Inc.
+/* Copyright 2010-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -219,7 +219,7 @@ public class HttpURL implements Serializable {
      * @return <code>true</code> if protocol is secure
      */
     public boolean isSecure() {
-        return getProtocol().equalsIgnoreCase(PROTOCOL_HTTPS);
+        return PROTOCOL_HTTPS.equalsIgnoreCase(getProtocol());
     }
 
     /**
@@ -267,8 +267,7 @@ public class HttpURL implements Serializable {
             return StringUtils.EMPTY;
         }
         String segment = path;
-        segment = StringUtils.substringAfterLast(segment, "/");
-        return segment;
+        return StringUtils.substringAfterLast(segment, "/");
     }
     /**
      * Converts this HttpURL to a regular {@link URL}, making sure
@@ -467,16 +466,38 @@ public class HttpURL implements Serializable {
     }
 
     /**
+     * <p>
      * Converts a relative URL to an absolute one, based on the supplied
      * base URL. The base URL is assumed to be a valid URL. Behavior
      * is unexpected when base URL is invalid.
+     * </p>
+     * <p>
+     * <b>Since 2.0.1,</b> supplying a <code>null</code> or blank relative URL
+     * will return the base URL.
+     * </p>
+     * <p>
+     * <b>Since 2.0.1,</b> if the relative URL starts with a scheme, it is
+     * considered an absolute URL and is returned as is after trim.
+     * The scheme is a string starting with a letter followed by any number of
+     * letters, numbers, plus sign (+), minus sign (-) or dot (.), followed
+     * by a colon (:).
+     * </p>
+     *
      * @param baseURL URL to the reference is relative to
      * @param relativeURL the relative URL portion to transform to absolute
      * @return absolute URL
      * @since 1.8.0
      */
     public static String toAbsolute(String baseURL, String relativeURL) {
-        String relURL = relativeURL;
+        if (StringUtils.isBlank(relativeURL)) {
+            return baseURL;
+        }
+        String relURL = relativeURL.trim();
+
+        // Relative is in fact absolute
+        if (relURL.matches("^[A-Za-z][A-Za-z0-9\\+\\-\\.]*:.*$")) {
+            return relURL;
+        }
         // Relative to protocol
         if (relURL.startsWith("//")) {
             return StringUtils.substringBefore(baseURL, "//") + "//"
@@ -493,20 +514,18 @@ public class HttpURL implements Serializable {
         }
 
         // Relative to last directory/segment
-        if (!relURL.contains(":")) {
-            String base = baseURL.replaceFirst("(.*?)([\\?\\#])(.*)", "$1");
-            if (StringUtils.countMatches(base, '/') > 2) {
-                base = base.replaceFirst("(.*/)(.*)", "$1");
-            }
-            if (base.endsWith("/")) {
-                // This is a URL relative to the last URL segment
-                relURL = base + relURL;
-            } else {
-                relURL = base + "/" + relURL;
-            }
+        String base = baseURL.replaceFirst("(.*?)([\\?\\#])(.*)", "$1");
+        if (StringUtils.countMatches(base, '/') > 2) {
+            base = base.replaceFirst("(.*/)(.*)", "$1");
+        }
+        if (base.endsWith("/")) {
+            // This is a URL relative to the last URL segment
+            relURL = base + relURL;
+        } else {
+            relURL = base + "/" + relURL;
         }
 
-        // Not detected as relative, so return as is
+        // Not detected as relative. Not sure what it is, so return as is
         return relURL;
     }
 

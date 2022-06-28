@@ -24,33 +24,26 @@ import org.junit.jupiter.api.Test;
 /**
  * @author Pascal Essiembre
  */
-public class TextReaderTest {
-
+class TextReaderTest {
 
     @Test
-    public void testSentenceBreaks() throws IOException {
+    void testSentenceBreaks() throws IOException {
 
         TextReader reader = getTextReader("funkyParagraphBreaks.txt", 60);
-        @SuppressWarnings("unused")
-        String text = null;
         int count = 0;
-        while ((text = reader.readText()) != null) {
+        while ((reader.readText()) != null) {
             count++;
         }
         reader.close();
         Assertions.assertEquals(10, count, "Wrong number of sentences");
     }
 
-
-
     @Test
-    public void testParagraphBreaks() throws IOException {
+    void testParagraphBreaks() throws IOException {
 
         TextReader reader = getTextReader("funkyParagraphBreaks.txt", 100);
-        @SuppressWarnings("unused")
-        String text = null;
         int count = 0;
-        while ((text = reader.readText()) != null) {
+        while ((reader.readText()) != null) {
             count++;
         }
         reader.close();
@@ -59,7 +52,7 @@ public class TextReaderTest {
     }
 
     @Test
-    public void testNoBreak() throws IOException {
+    void testNoBreak() throws IOException {
         TextReader reader = getTextReader("funkyParagraphBreaks.txt", 1000);
         String allContent = reader.readText();
         reader.close();
@@ -68,7 +61,7 @@ public class TextReaderTest {
     }
 
     @Test
-    public void testUnlimited() throws IOException {
+    void testUnlimited() throws IOException {
         TextReader reader = getTextReader("funkyParagraphBreaks.txt", -1);
         String allContent = reader.readText();
         reader.close();

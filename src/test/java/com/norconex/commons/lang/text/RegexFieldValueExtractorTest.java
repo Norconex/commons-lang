@@ -33,9 +33,7 @@ public class RegexFieldValueExtractorTest {
 
         String xml = ResourceLoader.getXmlString(
                 RegexFieldValueExtractorTest.class);
-        Properties fields = null;
-
-        fields = RegexFieldValueExtractor.extractFieldValues(xml,
+        Properties fields = RegexFieldValueExtractor.extractFieldValues(xml,
             //Test 1) no match group, returning whole match as value
             new RegexFieldValueExtractor("<div class=\"value\">(.*?)</div>")
                 .setToField("test1"),

@@ -1,4 +1,4 @@
-/* Copyright 2015-2019 Norconex Inc.
+/* Copyright 2015-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,143 +19,150 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
-public class HttpURLTest {
+class HttpURLTest {
 
     private final String absURL = "https://www.example.com/a/b/c.html?blah";
 
     private String s;
     private String t;
 
-
-//    @Before
-//    public void before() {
-//        Logger logger = Logger.getRootLogger();
-//        logger.setLevel(Level.DEBUG);
-//        logger.setAdditivity(false);
-//        logger.addAppender(new ConsoleAppender(
-//                new PatternLayout("%-5p [%C{1}] %m%n"),
-//                ConsoleAppender.SYSTEM_OUT));
-//    }
-
     @AfterEach
-    public void tearDown() throws Exception {
+    void tearDown() throws Exception {
         s = null;
         t = null;
     }
 
     @Test
-    public void testKeepProtocolUpperCase() {
+    void testKeepProtocolUpperCase() {
         s = "HTTP://www.example.com";
         t = "HTTP://www.example.com";
         assertEquals(t, new HttpURL(s).toString());
     }
 
     @Test
-    public void testToAbsoluteRelativeToProtocol() {
+    void testToAbsoluteRelativeToProtocol() {
         s = "//www.relative.com/e/f.html";
         t = "https://www.relative.com/e/f.html";
         assertEquals(t, HttpURL.toAbsolute(absURL, s));
     }
     @Test
-    public void testToAbsoluteRelativeToDomainName() {
+    void testToAbsoluteRelativeToDomainName() {
         s = "/e/f.html";
         t = "https://www.example.com/e/f.html";
         assertEquals(t, HttpURL.toAbsolute(absURL, s));
     }
     @Test
-    public void testToAbsoluteRelativeToFullPageURL() {
+    void testToAbsoluteRelativeToFullPageURL() {
         s = "?name=john";
         t = "https://www.example.com/a/b/c.html?name=john";
         assertEquals(t, HttpURL.toAbsolute(absURL, s));
     }
     @Test
-    public void testToAbsoluteRelativeToLastDirectory() {
+    void testToAbsoluteRelativeToLastDirectory() {
         s = "g.html";
         t = "https://www.example.com/a/b/g.html";
         assertEquals(t, HttpURL.toAbsolute(absURL, s));
     }
     @Test
-    public void testToAbsoluteAbsoluteURL() {
+    void testToAbsoluteAbsoluteURL() {
         s = "http://www.sample.com/xyz.html";
         t = "http://www.sample.com/xyz.html";
         assertEquals(t, HttpURL.toAbsolute(absURL, s));
     }
+
+    //Test for issue https://github.com/Norconex/collector-http/issues/788
+    @Test
+    void testToAbsoluteRelativeWithColon() {
+        s = "h/i.html?param=1:2";
+        t = "https://www.example.com/a/b/h/i.html?param=1:2";
+        assertEquals(t, HttpURL.toAbsolute(absURL, s));
+    }
+    @Test
+    void testToAbsoluteStartsWithScheme() {
+        s = "x1+2-3.4:yz";
+        t = "x1+2-3.4:yz";
+        assertEquals(t, HttpURL.toAbsolute(absURL, s));
+        s = "1+2-3.4x:yz";
+        t = "https://www.example.com/a/b/1+2-3.4x:yz";
+        assertEquals(t, HttpURL.toAbsolute(absURL, s));
+    }
+
     //Test for issue https://github.com/Norconex/collector-http/issues/225
     @Test
-    public void testFromDomainNoTrailSlashToRelativeNoLeadSlash() {
+    void testFromDomainNoTrailSlashToRelativeNoLeadSlash() {
         s = "http://www.sample.com";
         t = "http://www.sample.com/xyz.html";
         assertEquals(t, HttpURL.toAbsolute(s, "xyz.html"));
     }
 
     @Test
-    public void testHttpProtocolNoPort() {
+    void testHttpProtocolNoPort() {
         s = "http://www.example.com/blah";
         t = "http://www.example.com/blah";
         assertEquals(t, new HttpURL(s).toString());
     }
     @Test
-    public void testHttpProtocolDefaultPort() {
+    void testHttpProtocolDefaultPort() {
         s = "http://www.example.com:80/blah";
         t = "http://www.example.com/blah";
         assertEquals(t, new HttpURL(s).toString());
     }
     @Test
-    public void testHttpProtocolNonDefaultPort() {
+    void testHttpProtocolNonDefaultPort() {
         s = "http://www.example.com:81/blah";
         t = "http://www.example.com:81/blah";
         assertEquals(t, new HttpURL(s).toString());
     }
 
     @Test
-    public void testHttpsProtocolNoPort() {
+    void testHttpsProtocolNoPort() {
         s = "https://www.example.com/blah";
         t = "https://www.example.com/blah";
         assertEquals(t, new HttpURL(s).toString());
     }
     @Test
-    public void testHttpsProtocolDefaultPort() {
+    void testHttpsProtocolDefaultPort() {
         s = "https://www.example.com:443/blah";
         t = "https://www.example.com/blah";
         assertEquals(t, new HttpURL(s).toString());
     }
     @Test
-    public void testHttpsProtocolNonDefaultPort() {
+    void testHttpsProtocolNonDefaultPort() {
         s = "https://www.example.com:444/blah";
         t = "https://www.example.com:444/blah";
         assertEquals(t, new HttpURL(s).toString());
     }
 
     @Test
-    public void testNonHttpProtocolNoPort() {
+    void testNonHttpProtocolNoPort() {
         s = "ftp://ftp.example.com/dir";
         t = "ftp://ftp.example.com/dir";
         assertEquals(t, new HttpURL(s).toString());
     }
 
     @Test
-    public void testNonHttpProtocolWithPort() {
+    void testNonHttpProtocolWithPort() {
         s = "ftp://ftp.example.com:20/dir";
         t = "ftp://ftp.example.com:20/dir";
         assertEquals(t, new HttpURL(s).toString());
     }
 
     @Test
-    public void testInvalidURL() {
+    void testInvalidURL() {
         s = "http://www.example.com/\"path\"";
         t = "http://www.example.com/%22path%22";
         assertEquals(t, new HttpURL(s).toString());
     }
 
     @Test
-    public void testURLWithLeadingTrailingSpaces() {
+    void testURLWithLeadingTrailingSpaces() {
         s = "  http://www.example.com/path  ";
         t = "http://www.example.com/path";
         assertEquals(t, new HttpURL(s).toString());
     }
 
     @Test
-    public void testNullOrBlankURLs() {
+    void testNullOrBlankURLs() {
         s = null;
         t = "";
         assertEquals(t, new HttpURL(s).toString());
@@ -168,7 +175,7 @@ public class HttpURLTest {
     }
 
     @Test
-    public void testRelativeURLs() {
+    void testRelativeURLs() {
         s = "./blah";
         t = "./blah";
         assertEquals(t, new HttpURL(s).toString());
@@ -181,7 +188,7 @@ public class HttpURLTest {
     }
 
     @Test
-    public void testFileProtocol() {
+    void testFileProtocol() {
         // Encode non-URI characters
         s = "file:///etc/some dir/my file.txt";
         t = "file:///etc/some%20dir/my%20file.txt";
