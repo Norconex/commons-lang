@@ -1,4 +1,4 @@
-/* Copyright 2020 Norconex Inc.
+/* Copyright 2020-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,24 @@
  */
 package com.norconex.commons.lang.javadoc;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
 
-import com.sun.javadoc.Tag;
-import com.sun.tools.doclets.Taglet;
+import javax.lang.model.element.Element;
+
+import org.apache.commons.lang3.StringUtils;
+
+import com.sun.source.doctree.DocTree;
+
+import jdk.javadoc.doclet.Taglet;
 
 /**
  * <p>
  * Base inline taglet class. Subclasses are by default
- * usable everywhere.
+ * usable everywhere.  Can optionally supply a heading that will appear
+ * before the tag content.
  * </p>
  * <pre>
  * {&#64;mytag #optionaIdForInclusion
@@ -37,11 +45,33 @@ import com.sun.tools.doclets.Taglet;
 public abstract class AbstractInlineTaglet implements Taglet {
 
     // References:
-    //     https://docs.oracle.com/javase/8/docs/jdk/api/javadoc/
-    //     doclet/com/sun/javadoc/package-summary.html
-    //     https://docs.oracle.com/javase/8/docs/jdk/api/javadoc/
-    //     taglet/com/sun/tools/doclets/Taglet.html
+    //   https://docs.oracle.com/en/java/javase/11/docs/api/jdk.javadoc/
+    //   https://docs.oracle.com/en/java/javase/11/docs/api/jdk.javadoc/
+    //        jdk/javadoc/doclet/package-summary.html
+    //   https://openjdk.org/groups/compiler/using-new-doclet.html
 
+    private final EnumSet<Location> allowedSet = EnumSet.allOf(Location.class);
+
+    private final String name;
+    private final Function<Tag, String> headingProvider;
+
+    protected AbstractInlineTaglet(String name) {
+        this(name, null);
+    }
+    protected AbstractInlineTaglet(
+            String name, Function<Tag, String> headingProvider) {
+        this.name = name;
+        this.headingProvider = headingProvider;
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    public Function<Tag, String> getHeadingProvider() {
+        return headingProvider;
+    }
 
     @Override
     public boolean isInlineTag() {
@@ -49,78 +79,48 @@ public abstract class AbstractInlineTaglet implements Taglet {
     }
 
     @Override
-    public String toString(Tag[] tags) {
-        return null;
+    public Set<Location> getAllowedLocations() {
+        return allowedSet;
     }
 
     @Override
-    public boolean inField() {
-        return true;
-    }
-
-    @Override
-    public boolean inConstructor() {
-        return true;
-    }
-
-    @Override
-    public boolean inMethod() {
-        return true;
-    }
-
-    @Override
-    public boolean inOverview() {
-        return true;
-    }
-
-    @Override
-    public boolean inPackage() {
-        return true;
-    }
-
-    @Override
-    public boolean inType() {
-        return true;
-    }
-
-    private static final Pattern ID_PATTERN =
-            Pattern.compile("(?s)^\\s*\\#(.*?)[\\r\\n]+.*$");
-    private static final Pattern TEXT_PATTERN =
-            Pattern.compile("(?s)^\\s*\\#.*?[\\r\\n]+(.*)$");
-    @Override
-    public String toString(Tag tag) {
-        String id = null;
-        Matcher m = ID_PATTERN.matcher(tag.text());
-        if (m.matches()) {
-            id = m.replaceFirst("$1");
+    public String toString(List<? extends DocTree> tagTrees, Element element) {
+        var tag = Tag.toTag(tagTrees).orElse(null);
+        if (tag == null) {
+            return "";
         }
 
-        String text = TEXT_PATTERN.matcher(tag.text()).replaceFirst("$1");
-        String out = toString(tag, text, id);
-        if (out == null) {
-            return text;
-        }
-        return out;
-    }
-    protected String toString(Tag tag, String text, String id) {
-        //NOOP
-        return null;
-    };
+        //TODO resolving nested includes needed or taken care of by javadoc tool???
 
-    protected String resolveIncludes(/*Tag tag,*/ String text) {
-        Matcher m = Pattern.compile(
-                "\\{\\@nx\\.include(.*?)\\}", Pattern.DOTALL).matcher(text);
-        if (!m.find()) {
-            return text;
+        //TODO return original content is toString(Tag) returns null?
+
+        var text = toString(tag);
+        if (text == null) {
+            return "";
         }
-        m.reset();
-        StringBuffer sb = new StringBuffer();
-        while (m.find()) {
-            String ref = m.group(1);
-            m.appendReplacement(sb, Matcher.quoteReplacement(
-                    IncludeTaglet.include(ref)));
+
+        var heading = headingProvider.apply(tag);
+        if (StringUtils.isNotBlank(heading)) {
+            text = heading + "\n" + text;
         }
-        m.appendTail(sb);
-        return resolveIncludes(sb.toString());
+
+        return text;
     }
+
+    protected abstract String toString(Tag tag);
+
+//    protected String resolveIncludes(String text) {
+//        var m = Pattern.compile(
+//                "\\{\\@nx\\.include(.*?)\\}", Pattern.DOTALL).matcher(text);
+//        if (!m.find()) {
+//            return text;
+//        }
+//        m.reset();
+//        var sb = new StringBuffer();
+//        while (m.find()) {
+//            m.group(1);
+//        }
+//        m.appendTail(sb);
+//        return resolveIncludes(sb.toString());
+//    }
 }

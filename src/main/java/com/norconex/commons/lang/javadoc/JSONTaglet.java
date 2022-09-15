@@ -1,4 +1,4 @@
-/* Copyright 2020 Norconex Inc.
+/* Copyright 2020-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,8 @@
  */
 package com.norconex.commons.lang.javadoc;
 
-import java.util.Map;
-
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.json.JSONObject;
-
-import com.sun.javadoc.Tag;
-import com.sun.tools.doclets.Taglet;
 
 /**
  * <p>{&#64;nx.json} JSON beautifier with enhanced functionality making
@@ -40,47 +34,18 @@ public class JSONTaglet extends AbstractInlineTaglet {
 
     public static final String NAME = "nx.json";
 
-    /**
-     * Register an instance of this taglet.
-     * @param tagletMap registry of taglets
-     */
-    public static void register(Map<String, Taglet> tagletMap) {
-        tagletMap.put(NAME, new JSONTaglet());
+    public JSONTaglet() {
+        super(NAME);
     }
 
     @Override
-    public String getName() {
-        return NAME;
-    }
-
-    protected String getHeading(String text, String id) {
-        return null;
-    }
-
-    @Override
-    protected String toString(Tag tag, String text, String id) {
-        StringBuilder b = new StringBuilder();
-
-        String heading = getHeading(text, id);
-        if (StringUtils.isNotBlank(heading)) {
-            b.append(heading);
-        }
-
-        b.append("<pre><code ");
-        if (StringUtils.isNotBlank(id)) {
-            b.append("id=\"nx-json-" + id + "\" ");
-        }
-        b.append("class=\"language-json\">\n");
-
-        String json = resolveIncludes(text);
+    protected String toString(Tag tag) {
+        var json = tag.getContent();
+        // wrap to ensure properly formed for formatting, then unwrap
         json = "{\"wrap\":" + json + "}";
         json = new JSONObject(json).toString(2);
         json = json.replaceFirst(
                 "(?s)^\\s*\\{\\s*\"?wrap\"?\\s*:\\s*(.*)\\}\\s*$", "$1").trim();
-        json = StringEscapeUtils.escapeXml11(json);
-        b.append(json);
-
-        b.append("</code></pre>");
-        return b.toString();
+        return StringEscapeUtils.escapeXml11(json);
     }
 }

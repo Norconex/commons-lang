@@ -7,13 +7,22 @@
   </properties>
   <body>
 
+    <release version="2.1.0-SNAPSHOT" date="2022-??-??" 
+        description="Feature release.">
+      <action dev="essiembre" type="update">
+        Event name now included in generated string from Event#toString(). 
+      </action>
+      <action dev="essiembre" type="update">
+        Introduced Lombok. 
+      </action>
+    </release>
+
     <release version="2.0.1" date="2022-08-29" 
         description="Maintenance release.">
       <action dev="essiembre" type="update">
         Improved URL scheme detection in HttpURL. 
       </action>
     </release>
-
 
     <release version="2.0.0" date="2022-01-01" 
             description="Major release. NOT a drop-in replacement for 1.x.">

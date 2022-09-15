@@ -14,14 +14,21 @@
  */
 package com.norconex.commons.lang.event;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 import java.util.EventObject;
 import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import com.norconex.commons.lang.EqualsUtil;
+
+import lombok.AccessLevel;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.EqualsAndHashCode.CacheStrategy;
+import lombok.NonNull;
+import lombok.Setter;
 
 /**
  * An immutable event.
@@ -29,88 +36,37 @@ import com.norconex.commons.lang.EqualsUtil;
  * @since 2.0.0
  * @see IEventListener
  */
+@Data
+@Setter(value = AccessLevel.NONE)
+@EqualsAndHashCode(cacheStrategy = CacheStrategy.LAZY)
 public class Event extends EventObject {
 
     private static final long serialVersionUID = 1L;
+    /**
+     * Gets the event name (never <code>null</code>).
+     * @return event name
+     */
+    @SuppressWarnings("javadoc")
     private final String name;
+    /**
+     * Gets a message describing the event or giving precision,
+     * or <code>null</code> if the event has no message.
+     * @return event message
+     */
+    @SuppressWarnings("javadoc")
     private final String message;
+    /**
+     * Gets the exception associated with this event, or <code>null</code>.
+     * @return event message
+     */
+    @SuppressWarnings("javadoc")
     private final transient Throwable exception;
-
-
-    public static class Builder<B extends Builder<B>> {
-
-        private final String name;
-        private final Object source;
-        private String message;
-        private Throwable exception;
-
-        /**
-         * New event builder. Name and source cannot be <code>null</code>.
-         * @param name event name
-         * @param source object responsible for triggering the event
-         */
-        public Builder(String name, Object source) {
-            this.name = name;
-            this.source = source;
-        }
-
-        public B message(String message) {
-            this.message = message;
-            return self();
-        }
-        public B exception(Throwable exception) {
-            this.exception = exception;
-            return self();
-        }
-
-        public Event build() {
-            return new Event(this);
-        }
-
-        @SuppressWarnings("unchecked")
-        private B self() {
-            return (B) this;
-        }
-    }
 
     protected Event(Builder<?> b) {
         super(b.source);
-        this.name = Objects.requireNonNull(b.name, "'name' must not be null.");
-        this.message = b.message;
-        this.exception = b.exception;
-    }
-
-    /**
-     * Gets the object representing the source of this event.
-     * @return the subject
-     */
-    @Override
-    public Object getSource() {
-        return source;
-    }
-
-    /**
-     * Gets the event name.
-     * @return the event name
-     */
-    public String getName() {
-        return name;
-    }
-
-    /**
-     * Gets a message describing the event or giving precision.
-     * @return message the messsage
-     */
-    public String getMessage() {
-        return message;
-    }
-
-    /**
-     * Gets the exception, if any.
-     * @return the exception or <code>null</code>
-     */
-    public Throwable getException() {
-        return exception;
+        name = b.name;
+        message = b.message;
+        exception = b.exception;
     }
 
     public boolean is(Event event) {
@@ -123,31 +79,95 @@ public class Event extends EventObject {
         return EqualsUtil.equalsAny(name, (Object[]) eventName);
     }
 
-
-    @Override
-    public boolean equals(final Object other) {
-        return EqualsBuilder.reflectionEquals(this, other);
-    }
-    @Override
-    public int hashCode() {
-        // Cannot use HashCodeBuilder.reflectionHashCode here to prevent
-        // "An illegal reflective access operation has occurred"
-        return new HashCodeBuilder()
-                .append(name)
-                .append(message)
-                .append(exception)
-                .append(source)
-                .build();
-    }
     /**
-     * Returns the event message, if set, or the return value of
-     * <code>toString()</code> on source.
+     * New event builder. Name and source cannot be <code>null</code>.
+     * @param name event name
+     * @param source object on which the event initially occurred
+     * @return event builder
+     * @since 3.0.0
+     */
+    @SuppressWarnings("rawtypes")
+    public static Builder builder(
+            @NonNull String name, @NonNull Object source) {
+        return new Builder<>(name, source);
+    }
+
+    /**
+     * A string representation of this event.
      */
     @Override
     public String toString() {
-        if (StringUtils.isBlank(message)) {
-            return Objects.toString(source);
+        return new StringBuilder()
+            .append(name)
+            .append(" - ")
+            .append(isBlank(message) ? Objects.toString(source) : message)
+            .append(exceptionAsString())
+            .toString();
+    }
+    private String exceptionAsString() {
+        if (exception == null) {
+            return StringUtils.EMPTY;
         }
-        return message;
+        var msg = " - " + exception.getClass().getName();
+        if (StringUtils.isNotBlank(exception.getMessage())) {
+            msg += ": " + exception.getMessage();
+        }
+        return msg;
+    }
+
+    /**
+     * Event builder.
+     * @param <B> generic self referencing to allow sub-classing.
+     */
+    public static class Builder<B extends Builder<B>> {
+
+        private final String name;
+        private final Object source;
+        private String message;
+        private Throwable exception;
+
+        /**
+         * New event builder. Name and source cannot be <code>null</code>.
+         * @param name event name
+         * @param source object on which the event initially occurred
+         * @deprecated The visibility of this constructor will be reduced
+         *     in a future release. Since 3.0.0, use
+         *     {@link Event#builder(String, Object)} instead.
+         */
+        @Deprecated
+        public Builder(String name, Object source) {
+            this.name = name;
+            this.source = source;
+        }
+        /**
+         * Sets a message describing the event or giving precision.
+         * @param message event message
+         * @return this builder
+         */
+        public B message(String message) {
+            this.message = message;
+            return self();
+        }
+        /**
+         * Sets an exception associated with this event.
+         * @param exception the exception
+         * @return this builder
+         */
+        public B exception(Throwable exception) {
+            this.exception = exception;
+            return self();
+        }
+        /**
+         * Builds the event.
+         * @return the event
+         */
+        public Event build() {
+            return new Event(this);
+        }
+
+        @SuppressWarnings("unchecked")
+        private B self() {
+            return (B) this;
+        }
     }
 }

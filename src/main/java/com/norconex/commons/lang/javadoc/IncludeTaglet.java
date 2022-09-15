@@ -1,4 +1,4 @@
-/* Copyright 2020 Norconex Inc.
+/* Copyright 2020-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,25 +14,28 @@
  */
 package com.norconex.commons.lang.javadoc;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
+import static com.sun.source.doctree.DocTree.Kind.UNKNOWN_INLINE_TAG;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Map;
-import java.util.regex.Matcher;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
+import javax.lang.model.element.Element;
+import javax.lang.model.util.Elements;
+
 import org.apache.commons.lang3.StringUtils;
 
-import com.sun.javadoc.Tag;
-import com.sun.tools.doclets.Taglet;
+import com.sun.source.doctree.DocTree;
+import com.sun.source.doctree.UnknownInlineTagTree;
+import com.sun.source.util.DocTrees;
+
+import jdk.javadoc.doclet.Doclet;
+import jdk.javadoc.doclet.DocletEnvironment;
+import jdk.javadoc.doclet.Taglet;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 
 /**
  * <p>{&#64;nx.include} Include raw content from another
@@ -60,203 +63,198 @@ import com.sun.tools.doclets.Taglet;
  * @author Pascal Essiembre
  * @since 2.0.0
  */
-@SuppressWarnings("javadoc")
-public class IncludeTaglet extends AbstractInlineTaglet {
 
-    //TODO document: can use @ (to include taglet block) or
-    // # to include taglet id (prefixed with @ or not)
+//TODO document supported use cases:
+
+//TODO document include can be "used" anywhere, but it will only look in
+// class/type documentation, not method, not anything else.
+// In other words, it is useless to define an #id for a block if not
+// in class documentation
+
+//TODO add {@nx.block.hide
+//   not in javadoc, but eligible for includes in other classes
+//}
+
+/*
+   {@include com.mypackage.MyClass}    <-- Entire Type javadoc, or.. NOT supported?
+
+   {@include com.mypackage.MyClass@nx.xml.usage} <-- References by block tag name
+   E.g.:
+     {@nx.xml.usage
+       <myxml>
+         An example
+       </myxml>
+     }
+
+   {@include com.mypackage.MyClass#someDoc} <-- References by block custom id
+   E.g.:
+     {@nx.xml.usage #someDoc   <-- with a space separating or not
+       <myxml>
+         An example
+       </myxml>
+     }
+
+   {@include com.mypackage.MyClass@nx.xml.usage#someDoc} <-- Supported, but a bit useless
+   E.g.:
+     {@nx.xml.usage #someDoc   <-- with a space separating or not
+       <myxml>
+         An example
+       </myxml>
+     }
+
+
+*/
+//TODO document: can use @ (to include taglet block) or
+// # to include taglet id (prefixed with @ or not)
+
+//SEE:
+
+
+@SuppressWarnings("javadoc")
+public class IncludeTaglet implements Taglet {
+
 
     public static final String NAME = "nx.include";
 
-    private static final String JAVA_FILE_EXT = ".java";
-    private static final Path SOURCE_DIR;
-    static {
-        Path dir = null;
-        String prop = System.getProperties().getProperty("basedir");
-        if (StringUtils.isNotBlank(prop)) {
-            Path baseDir = Paths.get(prop);
-            if (baseDir.toFile().exists()) {
-                dir = baseDir.resolve("src/main/java");
-            }
-        }
-        // If not set via system properties, check for a "src" folder assuming
-        // we are in the project root folder.
-        if (dir == null) {
-            dir = Paths.get("").toAbsolutePath().resolve(
-                    "./src/main/java").normalize();
-        }
+    private DocTrees treeUtil;
+    private Elements elementUtil;
 
-        // If still null, we recurse a few times as we may be in the "site"
-        // folder not set via system properties, check for a "src" folder
-        // assuming
-        // we are in the project root folder.
-        if (dir == null || !dir.toFile().isDirectory()) {
-            dir = Paths.get("").toAbsolutePath().resolve(
-                    "../../../src/main/java").normalize();
-        }
-        SOURCE_DIR = dir;
+    private final EnumSet<Location> allowedSet = EnumSet.allOf(Location.class);
+
+    @Override
+    public void init(DocletEnvironment env, Doclet doclet) {
+        treeUtil = env.getDocTrees();
+        elementUtil = env.getElementUtils();
     }
 
-    /**
-     * Register an instance of this taglet.
-     * @param tagletMap registry of taglets
-     */
-    public static void register(Map<String, Taglet> tagletMap) {
-        tagletMap.put(NAME, new IncludeTaglet());
+    @Override
+    public Set<Location> getAllowedLocations() {
+        return allowedSet;
     }
-
+    @Override
+    public boolean isInlineTag() {
+        return true;
+    }
     @Override
     public String getName() {
         return NAME;
     }
 
-    protected Path getSourceDir() {
-        return SOURCE_DIR;
-    }
-
     @Override
-    public String toString(Tag tag) {
-        return include(tag.text());
+    public String toString(List<? extends DocTree> tags, Element element) {
+        if (tags.isEmpty()) {
+            return "";
+        }
+
+        DocTree tag = tags.get(0);
+        if (tag.getKind() != UNKNOWN_INLINE_TAG) {
+            return "";
+        }
+
+        var includeTag = (UnknownInlineTagTree) tag;
+        if (includeTag.getContent().isEmpty()) {
+            return "";
+        }
+
+        var directive = new IncludeDirective(includeTag);
+
+        if (directive.isParseValid()) {
+            return doInclude(directive);
+        }
+        return TagletUtil.documentationError(directive.parseError);
+
+        //TODO maybe: allows {@link } blocks to support strong typing
+        // and avoid bad links. When not using taglets, it would remain
+        // an actual link.
     }
 
-    public static String include(String includeRef) {
-        String ref = includeRef.trim();
-        String className = ref.replaceFirst("^(.*?)[\\@\\#].*$", "$1");
-        String id = ref.replaceFirst("^.*?([\\@\\#].*)$", "$1");
-        if (StringUtils.isAllBlank(className, id)) {
-            System.err.println(
-                    "Missing @taglet or #id argument to class name for: "
-                    + ref);
-            System.exit(-1);
+    public String doInclude(IncludeDirective directive) {
+
+        // Technically, since we only support declared types, we assume to be
+        // dealing with one here, else we throw an error. If one day we support
+        // referencing method and other elements, we can user a visitor
+        // or loop through TypeElement#getEnclosedElements()
+        var typeEl = elementUtil.getTypeElement(directive.className);
+        if (!TagletUtil.isDeclaredType(typeEl)) {
+            return TagletUtil.documentationError(
+                    "Include directive failed as referenced element is not a "
+                    + "declared type: %s.",
+                    directive.className);
+        }
+
+        var typeCommentTree = treeUtil.getDocCommentTree(typeEl);
+
+        var content = "";
+        for (DocTree bodyPart  : typeCommentTree.getFullBody()) {
+            if (bodyPart.getKind() != UNKNOWN_INLINE_TAG) {
+                continue;
+            }
+            var tag =
+                    new Tag(TagletUtil.toUnknownInlineTagTreeOrFail(bodyPart));
+            if (directive.matches(tag)) {
+                content = tag.getContent();
+            }
+        }
+
+        return content;
+    }
+
+    @Getter
+    @ToString
+    @EqualsAndHashCode
+    private static class IncludeDirective {
+        private String reference;
+        private String tagName;
+        private String className;
+        private String parseError;
+        private IncludeDirective(DocTree docTree) {
+
+            var tag = TagletUtil.toUnknownInlineTagTreeOrFail(
+                    docTree, IncludeTaglet.NAME);
+
+            // There shall be only one TEXT entry in content.
+            var content = tag.getContent().get(0).toString();
+
+            // className
+            var cls = extractGroup1(content, "^(.*?)(\\s|\\@|\\#|$)");
+            if (StringUtils.isBlank(cls)) {
+                parseError = "Include directive missing fully qualified "
+                        + "class name.";
+                return;
+            }
+            className = cls;
+
+            // tagName
+            tagName = extractGroup1(content, "@(.*?)(\\s|\\#|$)");
+
+            // reference
+            reference = extractGroup1(content, "#(.*?)(\\s|\\@|$)");
+
+            if (StringUtils.isAllBlank(tagName, reference)) {
+                parseError = "Include directive missing both tag name "
+                        + "and reference.";
+            }
+        }
+
+        boolean matches(Tag tag) {
+            return isParseValid() && nameOK(tag) && refOK(tag);
+        }
+
+        private boolean nameOK(Tag tag) {
+            return tagName == null || tagName.equals(tag.getName());
+        }
+        private boolean refOK(Tag tag) {
+            return reference == null || reference.equals(tag.getReference());
+        }
+        private static String extractGroup1(String txt, String regex) {
+            var m = Pattern.compile(regex).matcher(txt);
+            if (m.find()) {
+                return m.group(1);
+            }
             return null;
         }
-
-        String source = getJavaSource(className);
-        String block = findInSource(source, id);
-        if (StringUtils.isBlank(block)) {
-            System.err.println("ID '" + id
-                    + "' not found in source: " + className);
-            return "!! DOCUMENTATION ERROR !! Refer to " + className
-                    + " class documentation for additional information.";
+        private boolean isParseValid() {
+            return parseError == null;
         }
-        return block;
-    }
-
-    private static String findInSource(String source, String id) {
-        Matcher m = Pattern.compile(
-                "\\/\\*\\*(.*?)\\*\\/", Pattern.DOTALL).matcher(source);
-        while (m.find()) {
-            String comment = m.group(1).replaceAll("(?m)^ *?\\* ?(.*)$", "$1");
-            String snippet = extractFromComment(comment, id);
-            if (StringUtils.isNotBlank(snippet)) {
-                return snippet.trim();
-            }
-        }
-        return null;
-    }
-
-    private static final Pattern BRACES_PATTERN = Pattern.compile(
-            "(?=\\{)(?:(?=.*?\\{(?!.*?\\1)(.*\\}"
-            + "(?!.*\\2).*))(?=.*?\\}(?!.*?\\2)(.*)).)+?.*?(?=\\1)"
-            + "[^{]*(?=\\2$)", Pattern.DOTALL);
-    private static String extractFromComment(String comment, String id) {
-        String regex = id;
-        if (regex.startsWith("@")) {
-            regex = regex.replaceFirst("\\s*\\#", "\\s*#");
-        } else {
-            regex = "@nx\\..*?\\" + regex;
-        }
-        regex = "(?s)^\\{\\" + regex + "\\b(.*)\\}$";
-        Matcher m = BRACES_PATTERN.matcher(comment);
-        while (m.find()) {
-            String snippet = m.group();
-            if (snippet.matches(regex)) {
-                return snippet.replaceFirst(regex, "$1");
-            }
-        }
-        return null;
-    }
-
-    protected static String getJavaSource(String className) {
-        String source = readSourceFromFile(className);
-        if (source == null) {
-            source = readSourceFromClasspath(className);
-        }
-        if (source == null) {
-            System.err.println("Source not found: " + className);
-            return "!! DOCUMENTATION ERROR !! Refer to " + className
-                    + " class documentation for additional information.";
-        }
-        return source;
-    }
-
-    private static String readSourceFromFile(String className) {
-        String relativePath = className.replace('.', '/') + JAVA_FILE_EXT;
-        if (SOURCE_DIR != null) {
-            File resourceFile = SOURCE_DIR.resolve(relativePath).toFile();
-            if (resourceFile.exists()) {
-                try {
-                    return FileUtils.readFileToString(resourceFile, UTF_8);
-                } catch (IOException e) {
-                    e.printStackTrace(System.err);
-                }
-            }
-        }
-        return null;
-    }
-    private static String readSourceFromClasspath(String className) {
-        String fullPath = StringUtils.prependIfMissing(
-                className, "/").replace('.', '/')  + JAVA_FILE_EXT;
-
-        String source = null;
-        URL url = IncludeTaglet.class.getResource(fullPath);
-
-        if (url != null) {
-            try {
-                source = readSourceFromURL(url);
-            } catch (IOException e) {
-                e.printStackTrace(System.err);
-            }
-        }
-
-        if (source == null) {
-            // For some reason even if sources.jar is included as a dependency,
-            // it may not be found by the class loader.
-            // Here we try to force it to look at the source.
-            try {
-                source = readSourceFromURL(toSourceURL(className));
-            } catch (IOException | ClassNotFoundException e) {
-                e.printStackTrace(System.err);
-            }
-        }
-        return source;
-    }
-
-    private static String readSourceFromURL(URL url) throws IOException {
-        if (url == null) {
-            return null;
-        }
-        try (InputStream is = url.openStream()) {
-            if (is != null) {
-                return IOUtils.toString(is, UTF_8);
-            }
-        }
-        return null;
-    }
-
-    private static URL toSourceURL(String className)
-            throws MalformedURLException, ClassNotFoundException {
-        Class<?> cls = Class.forName(className);
-        URL classURL = cls.getResource(cls.getSimpleName() + ".class");
-        if (classURL == null) {
-            return null;
-        }
-        String origPath = classURL.toExternalForm();
-        String sourcePath = origPath.replace(".jar!", "-sources.jar!");
-        sourcePath = sourcePath.replaceFirst("\\.class$", ".java");
-        if (origPath.equals(sourcePath)) {
-            return null;
-        }
-        return new URL(sourcePath);
     }
 }
