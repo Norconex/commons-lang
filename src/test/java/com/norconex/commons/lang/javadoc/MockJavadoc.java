@@ -23,6 +23,14 @@ package com.norconex.commons.lang.javadoc;
  * </xml>
  * }
  *
+ * {@nx.block #blockWithInclude
+ * Before XML include.
+ *   {@nx.xml
+ *     {@nx.include com.norconex.commons.lang.javadoc.MockJavaDoc #spaceId}
+ *   }
+ * After XML include.
+ * }
+ *
  */
 public class MockJavadoc {
 
@@ -35,24 +43,27 @@ public class MockJavadoc {
      * </a>
      * }
      */
-    public void xmlTag() {}
+    public void xml() {}
 
     /**
      * XML include:
      * {@nx.include com.norconex.commons.lang.javadoc.MockJavadoc#spaceId}
      */
-    public void intludeTag() {}
+    public void include() {}
 
-    /**
-     *
-     */
-    public void nestedIncludesTag() {}
+
+   /**
+    * Before block include.
+    * {@nx.include com.norconex.commons.lang.javadoc.MockJavadoc#blockWithInclude}
+    * After block include.
+    */
+   public void includeNested() {}
 
 
     /**
      * Some text before.
      *
-     * {@nx.xml #block1
+     * {@nx.xml
      * <a>
      *   <b attr="xyz">{@value #SOME_VALUE}</b>
      * </a>

@@ -14,12 +14,10 @@
  */
 package com.norconex.commons.lang.javadoc;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.text.StringEscapeUtils;
+import static org.apache.commons.text.StringEscapeUtils.escapeXml11;
 
 import com.norconex.commons.lang.xml.XMLFormatter;
 import com.norconex.commons.lang.xml.XMLFormatter.Builder.AttributeWrap;
-import com.sun.source.doctree.DocTree;
 
 /**
  * <p>{&#64;nx.html} HTML beautifier with enhanced functionality.
@@ -46,17 +44,10 @@ public class HTMLTaglet extends AbstractInlineTaglet {
     }
 
     @Override
-    protected String toString(DocTree tag, String text, String id) {
-        var b = new StringBuilder();
-        b.append("<pre><code ");
-        if (StringUtils.isNotBlank(id)) {
-            b.append("id=\"nx-html-" + id + "\" ");
-        }
-        b.append("class=\"language-html\">\n");
-        b.append(StringEscapeUtils.escapeXml11(
-                FORMATTER.format(resolveIncludes(text))
-        ));
-        b.append("</code></pre>");
-        return b.toString();
+    protected String toString(NxTag tag) {
+        return TagletUtil.preCodeWrap(
+                TagletUtil.toHtmlIdOrNull(tag, "nx-html-"),
+                "language-html",
+                escapeXml11(FORMATTER.format(tag.getContent())));
     }
 }

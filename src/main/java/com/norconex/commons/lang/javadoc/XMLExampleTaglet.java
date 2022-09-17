@@ -43,7 +43,7 @@ public class XMLExampleTaglet extends XMLTaglet {
     }
 
     @Override
-    protected String toString(Tag tag) {
+    protected String toString(NxTag tag) {
         return super.toString(
                 tag.withReference(orDefaultId(tag.getReference())));
     }

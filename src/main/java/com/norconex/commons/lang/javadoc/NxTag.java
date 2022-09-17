@@ -31,7 +31,7 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-class Tag {
+class NxTag {
     @NonNull
     private final UnknownInlineTagTree unknownTag;
     private String reference;
@@ -54,21 +54,21 @@ class Tag {
         return content;
     }
 
-    Tag withReference(String reference) {
-        return new Tag(unknownTag, reference, content, parsed);
+    NxTag withReference(String reference) {
+        return new NxTag(unknownTag, reference, content, parsed);
     }
-    Tag withContent(String content) {
-        return new Tag(unknownTag, reference, content, parsed);
+    NxTag withContent(String content) {
+        return new NxTag(unknownTag, reference, content, parsed);
     }
 
     // Must have content and be UnknownInlineTag
-    static Optional<Tag> toTag(List<? extends DocTree> docTrees) {
+    static Optional<NxTag> toTag(List<? extends DocTree> docTrees) {
         if (docTrees.isEmpty()) {
             return Optional.empty();
         }
         return toTag(docTrees.get(0));
     }
-    static Optional<Tag> toTag(DocTree docTree) {
+    static Optional<NxTag> toTag(DocTree docTree) {
         if (docTree.getKind() != UNKNOWN_INLINE_TAG) {
             return Optional.empty();
         }
@@ -76,7 +76,7 @@ class Tag {
         if (unknownTag.getContent().isEmpty()) {
             return Optional.empty();
         }
-        return Optional.of(new Tag(unknownTag));
+        return Optional.of(new NxTag(unknownTag));
     }
 
     private void parse() {
@@ -91,6 +91,7 @@ class Tag {
         }
         parsed = true;
     }
+
     @Override
     public String toString() {
         return "Tag [name=" + unknownTag.getTagName()

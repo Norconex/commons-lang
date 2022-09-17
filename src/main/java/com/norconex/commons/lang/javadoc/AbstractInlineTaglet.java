@@ -53,13 +53,13 @@ public abstract class AbstractInlineTaglet implements Taglet {
     private final EnumSet<Location> allowedSet = EnumSet.allOf(Location.class);
 
     private final String name;
-    private final Function<Tag, String> headingProvider;
+    private final Function<NxTag, String> headingProvider;
 
     protected AbstractInlineTaglet(String name) {
         this(name, null);
     }
     protected AbstractInlineTaglet(
-            String name, Function<Tag, String> headingProvider) {
+            String name, Function<NxTag, String> headingProvider) {
         this.name = name;
         this.headingProvider = headingProvider;
     }
@@ -69,7 +69,7 @@ public abstract class AbstractInlineTaglet implements Taglet {
         return name;
     }
 
-    public Function<Tag, String> getHeadingProvider() {
+    public Function<NxTag, String> getHeadingProvider() {
         return headingProvider;
     }
 
@@ -85,7 +85,7 @@ public abstract class AbstractInlineTaglet implements Taglet {
 
     @Override
     public String toString(List<? extends DocTree> tagTrees, Element element) {
-        var tag = Tag.toTag(tagTrees).orElse(null);
+        var tag = NxTag.toTag(tagTrees).orElse(null);
         if (tag == null) {
             return "";
         }
@@ -99,15 +99,17 @@ public abstract class AbstractInlineTaglet implements Taglet {
             return "";
         }
 
-        var heading = headingProvider.apply(tag);
-        if (StringUtils.isNotBlank(heading)) {
-            text = heading + "\n" + text;
+        if (headingProvider != null) {
+            var heading = headingProvider.apply(tag);
+            if (StringUtils.isNotBlank(heading)) {
+                text = heading + "\n" + text;
+            }
         }
 
         return text;
     }
 
-    protected abstract String toString(Tag tag);
+    protected abstract String toString(NxTag tag);
 
 //    protected String resolveIncludes(String text) {
 //        var m = Pattern.compile(

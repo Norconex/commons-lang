@@ -158,10 +158,12 @@ public class IncludeTaglet implements Taglet {
 
         var directive = new IncludeDirective(includeTag);
 
-        if (directive.isParseValid()) {
-            return doInclude(directive);
+        if (!directive.isParseValid()) {
+            return TagletUtil.documentationError(directive.parseError);
         }
-        return TagletUtil.documentationError(directive.parseError);
+
+
+        return doInclude(directive);
 
         //TODO maybe: allows {@link } blocks to support strong typing
         // and avoid bad links. When not using taglets, it would remain
@@ -186,13 +188,13 @@ public class IncludeTaglet implements Taglet {
 
         var content = "";
         for (DocTree bodyPart  : typeCommentTree.getFullBody()) {
-            if (bodyPart.getKind() != UNKNOWN_INLINE_TAG) {
-                continue;
-            }
-            var tag =
-                    new Tag(TagletUtil.toUnknownInlineTagTreeOrFail(bodyPart));
-            if (directive.matches(tag)) {
-                content = tag.getContent();
+            if (bodyPart.getKind() == UNKNOWN_INLINE_TAG) {
+                var tag = new NxTag(
+                        TagletUtil.toUnknownInlineTagTreeOrFail(bodyPart));
+                if (directive.matches(tag)) {
+                    content = tag.getContent();
+                    break;
+                }
             }
         }
 
@@ -236,14 +238,14 @@ public class IncludeTaglet implements Taglet {
             }
         }
 
-        boolean matches(Tag tag) {
+        boolean matches(NxTag tag) {
             return isParseValid() && nameOK(tag) && refOK(tag);
         }
 
-        private boolean nameOK(Tag tag) {
+        private boolean nameOK(NxTag tag) {
             return tagName == null || tagName.equals(tag.getName());
         }
-        private boolean refOK(Tag tag) {
+        private boolean refOK(NxTag tag) {
             return reference == null || reference.equals(tag.getReference());
         }
         private static String extractGroup1(String txt, String regex) {

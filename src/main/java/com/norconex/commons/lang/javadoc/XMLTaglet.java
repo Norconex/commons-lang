@@ -60,12 +60,12 @@ public class XMLTaglet extends AbstractInlineTaglet {
     public XMLTaglet() {
         super(NAME);
     }
-    protected XMLTaglet(String name, Function<Tag, String> headingProvider) {
+    protected XMLTaglet(String name, Function<NxTag, String> headingProvider) {
         super(name, headingProvider);
     }
 
     @Override
-    protected String toString(Tag tag) {
+    protected String toString(NxTag tag) {
         return TagletUtil.preCodeWrap(
                 TagletUtil.toHtmlIdOrNull(tag, "nx-xml-"),
                 "language-xml",

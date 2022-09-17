@@ -17,6 +17,8 @@ package com.norconex.commons.lang.javadoc;
 import static com.sun.source.doctree.DocTree.Kind.UNKNOWN_INLINE_TAG;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
+import java.util.regex.Pattern;
+
 import javax.lang.model.element.TypeElement;
 
 import org.apache.commons.lang3.StringUtils;
@@ -76,8 +78,30 @@ final class TagletUtil {
         return html;
     }
 
-    static String toHtmlIdOrNull(Tag tag, String prefix) {
+    static String toHtmlIdOrNull(NxTag tag, String prefix) {
         return isNotBlank(tag.getReference())
                 ? prefix + tag.getReference() : null;
+    }
+
+    //TODO check if there is a way to create tags out of thin air (from include text)
+    // Look at DocletEnvironment utility classes.
+    // worst case, maybe save to file and parse as source file?
+
+    // or just parse... create an include directive... and take it from
+    // there like any other directives.
+
+    static String resolveIncludes(String text) {
+        var m = Pattern.compile("\\{\\@nx\\.include +([^\\n]+?)\\}",
+                Pattern.DOTALL).matcher(text);
+        if (!m.find()) {
+            return text;
+        }
+        m.reset();
+        var sb = new StringBuffer();
+        while (m.find()) {
+            m.group(1);
+        }
+        m.appendTail(sb);
+        return resolveIncludes(sb.toString());
     }
 }
