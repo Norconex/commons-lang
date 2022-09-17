@@ -32,7 +32,7 @@ public class BlockTaglet extends AbstractInlineTaglet {
     }
 
     @Override
-    protected String toString(NxTag tag) {
+    protected String toString(TagContent tag) {
         var b = new StringBuilder();
 
         b.append("<span");

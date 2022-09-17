@@ -25,6 +25,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.sun.source.doctree.DocTree;
 
+import jdk.javadoc.doclet.Doclet;
+import jdk.javadoc.doclet.DocletEnvironment;
 import jdk.javadoc.doclet.Taglet;
 
 /**
@@ -53,15 +55,21 @@ public abstract class AbstractInlineTaglet implements Taglet {
     private final EnumSet<Location> allowedSet = EnumSet.allOf(Location.class);
 
     private final String name;
-    private final Function<NxTag, String> headingProvider;
+    private final Function<TagContent, String> headingProvider;
+    private DocletEnvironment env;
 
     protected AbstractInlineTaglet(String name) {
         this(name, null);
     }
     protected AbstractInlineTaglet(
-            String name, Function<NxTag, String> headingProvider) {
+            String name, Function<TagContent, String> headingProvider) {
         this.name = name;
         this.headingProvider = headingProvider;
+    }
+
+    @Override
+    public void init(DocletEnvironment env, Doclet doclet) {
+        this.env = env;
     }
 
     @Override
@@ -69,7 +77,7 @@ public abstract class AbstractInlineTaglet implements Taglet {
         return name;
     }
 
-    public Function<NxTag, String> getHeadingProvider() {
+    public Function<TagContent, String> getHeadingProvider() {
         return headingProvider;
     }
 
@@ -85,14 +93,14 @@ public abstract class AbstractInlineTaglet implements Taglet {
 
     @Override
     public String toString(List<? extends DocTree> tagTrees, Element element) {
-        var tag = NxTag.toTag(tagTrees).orElse(null);
+        var tag = TagContent.of(tagTrees).orElse(null);
         if (tag == null) {
             return "";
         }
 
-        //TODO resolving nested includes needed or taken care of by javadoc tool???
-
-        //TODO return original content is toString(Tag) returns null?
+        // resolve nested includes
+        tag = tag.withContent(
+                IncludeTaglet.resolveContentIncludes(tag.getContent(), env));
 
         var text = toString(tag);
         if (text == null) {
@@ -109,20 +117,5 @@ public abstract class AbstractInlineTaglet implements Taglet {
         return text;
     }
 
-    protected abstract String toString(NxTag tag);
-
-//    protected String resolveIncludes(String text) {
-//        var m = Pattern.compile(
-//                "\\{\\@nx\\.include(.*?)\\}", Pattern.DOTALL).matcher(text);
-//        if (!m.find()) {
-//            return text;
-//        }
-//        m.reset();
-//        var sb = new StringBuffer();
-//        while (m.find()) {
-//            m.group(1);
-//        }
-//        m.appendTail(sb);
-//        return resolveIncludes(sb.toString());
-//    }
+    protected abstract String toString(TagContent tag);
 }

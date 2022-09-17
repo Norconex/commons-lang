@@ -39,7 +39,7 @@ public class JSONTaglet extends AbstractInlineTaglet {
     }
 
     @Override
-    protected String toString(NxTag tag) {
+    protected String toString(TagContent tag) {
         var json = tag.getContent();
         // wrap to ensure properly formed for formatting, then unwrap
         json = "{\"wrap\":" + json + "}";

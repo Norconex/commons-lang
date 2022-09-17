@@ -44,7 +44,7 @@ public class HTMLTaglet extends AbstractInlineTaglet {
     }
 
     @Override
-    protected String toString(NxTag tag) {
+    protected String toString(TagContent tag) {
         return TagletUtil.preCodeWrap(
                 TagletUtil.toHtmlIdOrNull(tag, "nx-html-"),
                 "language-html",

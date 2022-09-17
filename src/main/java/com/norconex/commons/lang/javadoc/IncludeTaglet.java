@@ -22,20 +22,13 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import javax.lang.model.element.Element;
-import javax.lang.model.util.Elements;
-
-import org.apache.commons.lang3.StringUtils;
 
 import com.sun.source.doctree.DocTree;
 import com.sun.source.doctree.UnknownInlineTagTree;
-import com.sun.source.util.DocTrees;
 
 import jdk.javadoc.doclet.Doclet;
 import jdk.javadoc.doclet.DocletEnvironment;
 import jdk.javadoc.doclet.Taglet;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
 
 /**
  * <p>{&#64;nx.include} Include raw content from another
@@ -116,15 +109,13 @@ public class IncludeTaglet implements Taglet {
 
     public static final String NAME = "nx.include";
 
-    private DocTrees treeUtil;
-    private Elements elementUtil;
+    private DocletEnvironment env;
 
     private final EnumSet<Location> allowedSet = EnumSet.allOf(Location.class);
 
     @Override
     public void init(DocletEnvironment env, Doclet doclet) {
-        treeUtil = env.getDocTrees();
-        elementUtil = env.getElementUtils();
+        this.env = env;
     }
 
     @Override
@@ -156,107 +147,72 @@ public class IncludeTaglet implements Taglet {
             return "";
         }
 
-        var directive = new IncludeDirective(includeTag);
+        var directive = IncludeDirective.of(includeTag);
 
-        if (!directive.isParseValid()) {
-            return TagletUtil.documentationError(directive.parseError);
+        if (directive.hasParseError()) {
+            return TagletUtil.documentationError(directive.getParseError());
         }
 
 
-        return doInclude(directive);
+        return resolveIncludeDirective(directive, env);
 
         //TODO maybe: allows {@link } blocks to support strong typing
         // and avoid bad links. When not using taglets, it would remain
         // an actual link.
     }
 
-    public String doInclude(IncludeDirective directive) {
+
+    // When a resolved comment has one or more includes in it, resolve them.
+    static String resolveContentIncludes(
+            String content, DocletEnvironment env) {
+        var m = Pattern.compile("\\{\\@nx\\.include +([^\\n]+?)\\}",
+                Pattern.DOTALL).matcher(content);
+        return m.replaceAll(mr ->
+           resolveIncludeDirective(IncludeDirective.of(mr.group(1)), env)
+        );
+    }
+
+    // directive derived from javadoc tool picking up {@nx.include ...}
+    static String resolveIncludeDirective(
+            IncludeDirective directive, DocletEnvironment env) {
 
         // Technically, since we only support declared types, we assume to be
         // dealing with one here, else we throw an error. If one day we support
         // referencing method and other elements, we can user a visitor
         // or loop through TypeElement#getEnclosedElements()
-        var typeEl = elementUtil.getTypeElement(directive.className);
+        var typeEl = env.getElementUtils().getTypeElement(
+                directive.getClassName());
+        if (typeEl == null) {
+//System.out.println("RETURN ERROR typeEl is null for directive: " + directive);
+            return TagletUtil.documentationError(
+                    "Include directive failed as type element could not be "
+                    + "resolved: %s (maybe a typo?).",
+                    directive.getClassName());
+        }
+
         if (!TagletUtil.isDeclaredType(typeEl)) {
+//System.out.println("RETURN ERROR typeEl not a declared type for directive: " + directive);
             return TagletUtil.documentationError(
                     "Include directive failed as referenced element is not a "
                     + "declared type: %s.",
-                    directive.className);
+                    directive.getClassName());
         }
 
-        var typeCommentTree = treeUtil.getDocCommentTree(typeEl);
+        var typeCommentTree = env.getDocTrees().getDocCommentTree(typeEl);
 
         var content = "";
         for (DocTree bodyPart  : typeCommentTree.getFullBody()) {
             if (bodyPart.getKind() == UNKNOWN_INLINE_TAG) {
-                var tag = new NxTag(
+                var tag = TagContent.of(
                         TagletUtil.toUnknownInlineTagTreeOrFail(bodyPart));
-                if (directive.matches(tag)) {
-                    content = tag.getContent();
+                if (tag.isPresent() && directive.matches(tag.get())) {
+                    content = tag.get().getContent();
                     break;
                 }
             }
         }
+//System.out.println("RETURN OK for directive: " + directive + ", with content: " + content);
 
-        return content;
-    }
-
-    @Getter
-    @ToString
-    @EqualsAndHashCode
-    private static class IncludeDirective {
-        private String reference;
-        private String tagName;
-        private String className;
-        private String parseError;
-        private IncludeDirective(DocTree docTree) {
-
-            var tag = TagletUtil.toUnknownInlineTagTreeOrFail(
-                    docTree, IncludeTaglet.NAME);
-
-            // There shall be only one TEXT entry in content.
-            var content = tag.getContent().get(0).toString();
-
-            // className
-            var cls = extractGroup1(content, "^(.*?)(\\s|\\@|\\#|$)");
-            if (StringUtils.isBlank(cls)) {
-                parseError = "Include directive missing fully qualified "
-                        + "class name.";
-                return;
-            }
-            className = cls;
-
-            // tagName
-            tagName = extractGroup1(content, "@(.*?)(\\s|\\#|$)");
-
-            // reference
-            reference = extractGroup1(content, "#(.*?)(\\s|\\@|$)");
-
-            if (StringUtils.isAllBlank(tagName, reference)) {
-                parseError = "Include directive missing both tag name "
-                        + "and reference.";
-            }
-        }
-
-        boolean matches(NxTag tag) {
-            return isParseValid() && nameOK(tag) && refOK(tag);
-        }
-
-        private boolean nameOK(NxTag tag) {
-            return tagName == null || tagName.equals(tag.getName());
-        }
-        private boolean refOK(NxTag tag) {
-            return reference == null || reference.equals(tag.getReference());
-        }
-        private static String extractGroup1(String txt, String regex) {
-            var m = Pattern.compile(regex).matcher(txt);
-            if (m.find()) {
-                return m.group(1);
-            }
-            return null;
-        }
-        private boolean isParseValid() {
-            return parseError == null;
-        }
+        return resolveContentIncludes(content, env);
     }
 }
