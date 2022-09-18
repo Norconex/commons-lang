@@ -1,12 +1,33 @@
+/* Copyright 2022 Norconex Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.norconex.commons.lang.javadoc;
 
 import static org.apache.commons.text.StringEscapeUtils.escapeHtml4;
+import static org.apache.commons.text.StringEscapeUtils.escapeXml11;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -16,6 +37,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+
+import com.sun.source.doctree.DocTree;
+import com.sun.source.doctree.DocTreeVisitor;
+import com.sun.source.doctree.TextTree;
+import com.sun.source.doctree.UnknownInlineTagTree;
+
+import jdk.javadoc.doclet.Taglet.Location;
 
 class TagletTest {
 
@@ -34,15 +62,30 @@ class TagletTest {
     // method name -> javadoc
     static Map<String, String> methodJavadocs = new HashMap<>();
 
+    //--- XML* -----------------------------------------------------------------
+
     @Test
-    void testXMLTaglet() {
-        var expected = "<pre><code class=\"language-xml\">\n"
-                + TEST_XML + "</code></pre>";
+    void testXML() {
+        var expected =
+                "<pre><code class=\"language-xml\">\n"
+              + TEST_XML + "</code></pre>";
         assertEquals(expected, methodJavadocs.get("xml"));
     }
 
     @Test
-    void testXMLUsageTaglet() {
+    void testXMLNoParent() {
+        var expected =
+                "<pre><code class=\"language-xml\">\n"
+              + escapeHtml4(
+                      "<a>123</a>\n"
+                    + "<b>456</b>"
+                )
+              + "</code></pre>";
+        assertEquals(expected, methodJavadocs.get("xmlNoParent"));
+    }
+
+    @Test
+    void testXMLUsage() {
         var expected =
                 "<h3 id=\"nx-xml-usage-heading\">"
                   + "XML configuration usage:"
@@ -54,7 +97,7 @@ class TagletTest {
     }
 
     @Test
-    void testXMLExampleTaglet() {
+    void testXMLExample() {
         var expected =
                 "<h4 id=\"nx-xml-example-heading\">"
                   + "XML usage example:"
@@ -65,8 +108,94 @@ class TagletTest {
         assertEquals(expected, methodJavadocs.get("xmlExample"));
     }
 
+    //--- JSON -----------------------------------------------------------------
+
     @Test
-    void testIncludeTaglet() {
+    void testJSON() {
+        var expected = "<pre><code class=\"language-json\">\n" + escapeXml11(
+                "{\n"
+              + "  \"object\": {\n"
+              + "    \"prop1\": \"text\",\n"
+              + "    \"prop2\": 123,\n"
+              + "    \"prop3\": true\n"
+              + "  }\n"
+              + "}")
+              + "</code></pre>";
+        assertEquals(expected, methodJavadocs.get("json"));
+    }
+
+    @Test
+    void testJSONPropertiesNoParent() {
+        var expected = "<pre><code class=\"language-json\">\n" + escapeXml11(
+                "\"object1\": {\n"
+              + "  \"prop1\": \"value1\"\n"
+              + "},\n"
+              + "\"object2\": {\n"
+              + "  \"prop2\": \"value2\"\n"
+              + "},")
+              + "</code></pre>";
+        assertEquals(expected, methodJavadocs.get("jsonPropertiesNoParent"));
+    }
+
+    @Test
+    void testJSONObjectsNoParent() {
+        var expected = "<pre><code class=\"language-json\">\n" + escapeXml11(
+                "{\n"
+              + "  \"prop1\": \"value1\"\n"
+              + "},\n"
+              + "{\n"
+              + "  \"prop2\": \"value2\"\n"
+              + "},")
+              + "</code></pre>";
+        assertEquals(expected, methodJavadocs.get("jsonObjectsNoParent"));
+    }
+
+    @Test
+    void testJSONArraysNoParent() {
+        var expected = "<pre><code class=\"language-json\">\n" + escapeXml11(
+                "[\n"
+              + "  \"value1A\",\n"
+              + "  \"value1B\"\n"
+              + "],\n"
+              + "[\n"
+              + "  \"value2A\",\n"
+              + "  \"value2B\"\n"
+              + "],")
+              + "</code></pre>";
+        assertEquals(expected, methodJavadocs.get("jsonArraysNoParent"));
+    }
+
+    //--- HTML -----------------------------------------------------------------
+
+    @Test
+    void testHTML() {
+        var expected =
+                "<pre><code class=\"language-html\">\n"
+              + escapeHtml4(
+                      "<div>\n"
+                    + "  <h1>Title</h1>\n"
+                    + "</div>"
+                )
+              + "</code></pre>";
+        assertEquals(expected, methodJavadocs.get("html"));
+    }
+
+    @Test
+    void testHTMLNoParent() {
+        var expected =
+                "<pre><code class=\"language-html\">\n"
+              + escapeHtml4(
+                      "<div>a</div>\n"
+                    + "<div>b</div>"
+                )
+              + "</code></pre>";
+        assertEquals(expected, methodJavadocs.get("htmlNoParent"));
+    }
+
+    //--- Include + Block ------------------------------------------------------
+
+    @Test
+    void testInclude() {
         // XML in this case is not formatted since we are simply including it
         var expected = "XML include:\n"
                 + " <xml>\n"
@@ -76,7 +205,7 @@ class TagletTest {
     }
 
     @Test
-    void testNestedIncludeTaglet() {
+    void testNestedInclude() {
         var expected = "Before block include.\n"
               + " Before include.\n"
               + "   Inside NO include.\n"
@@ -85,10 +214,85 @@ class TagletTest {
         assertEquals(expected, methodJavadocs.get("includeNested"));
     }
 
-    //TODO test with typo in class that we get this error somewhere
-    // !!! Documentation error: Include directive failed as type element could not be resolved: ...
+    //--- Errors ---------------------------------------------------------------
 
-    //TODO MAYBE: test that nx.block must have a reference?
+    @Test
+    void testJsonBadSyntax() {
+        assertTrue(methodJavadocs.get("jsonBadSyntax").contains(
+                "!!! Documentation error: JSONTaglet could not "
+                + "parse JSON content:"));
+    }
+
+    @Test
+    void testIncludeNonExisting() {
+        assertTrue(methodJavadocs.get("includeNonExisting").contains(
+                "!!! Documentation error: Include directive failed as type "
+                + "element could not be resolved:"));
+    }
+
+    //--- Misc. ----------------------------------------------------------------
+
+    @Test
+    void testMisc() {
+        var taglet = new XMLUsageTaglet();
+
+        assertNotNull(taglet.getHeadingProvider());
+        assertEquals(
+                EnumSet.allOf(Location.class), taglet.getAllowedLocations());
+        assertEquals("nx.xml.usage", taglet.getName());
+    }
+
+    @Test
+    void testTagContent() {
+        var tagContent = TagContent.of(new UnknownInlineTagTree() {
+            @Override
+            public String getTagName() {
+                return "SOMENAME";
+            }
+            @Override
+            public Kind getKind() {
+                return DocTree.Kind.UNKNOWN_INLINE_TAG;
+            }
+            @Override
+            public <R, D> R accept(DocTreeVisitor<R, D> visitor, D data) {
+                return null;
+            }
+            @Override
+            public List<? extends DocTree> getContent() {
+                return new ArrayList<>(
+                        Arrays.asList(new TextTree() {
+                    @Override
+                    public Kind getKind() {
+                        return DocTree.Kind.TEXT;
+                    }
+                    @Override
+                    public <R, D> R accept(
+                            DocTreeVisitor<R, D> visitor, D data) {
+                        return null;
+                    }
+                    @Override
+                    public String getBody() {
+                        return "#someref\nsomebody";
+                    }
+                    @Override
+                    public String toString() {
+                        return getBody();
+                    }
+                }) ) {
+                    private static final long serialVersionUID = 1L;
+                    @Override
+                    public String toString() {
+                        return get(0).toString();
+                    }
+                };
+            }
+        }).get();
+
+        assertEquals("SOMENAME", tagContent.getName());
+        assertEquals("someref", tagContent.getReference());
+        assertEquals("somebody", tagContent.getContent());
+        assertTrue(tagContent.toString().startsWith("Tag [name=SOMENAME, "));
+    }
 
     //--- Life-cycle methods ---------------------------------------------------
 

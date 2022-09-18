@@ -17,7 +17,7 @@ package com.norconex.commons.lang.javadoc;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * <p>{&#64;nx.block} A wrapper around any JavaDoc content for
+ * <p>{&#64;nx.block} A wrapper around any JavaDoc text for
  * inclusion in other classes.</p>
  *
  * @author Pascal Essiembre

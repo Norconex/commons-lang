@@ -33,7 +33,7 @@ public class HTMLTaglet extends AbstractInlineTaglet {
             .maxLineLength(80)
             .minTextLength(40)
             .attributeWrapping(AttributeWrap.ALL)
-            .elementIndent(" ")
+            .elementIndent("  ")
             .preserveTextIndent()
             .selfCloseEmptyElements()
             .closeWrappingTagOnOwnLine()

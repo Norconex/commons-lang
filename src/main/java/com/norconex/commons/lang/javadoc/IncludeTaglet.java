@@ -31,79 +31,126 @@ import jdk.javadoc.doclet.DocletEnvironment;
 import jdk.javadoc.doclet.Taglet;
 
 /**
- * <p>{&#64;nx.include} Include raw content from another
- * taglet in a different source file.</p>
- * <p>Example that includes the {@link XMLUsageTaglet} usage example:</p>
+ * <p>
+ * {&#64;nx.include} Include text from other JavaDoc documentation found in
+ * source files.
+ * </p>
+ *
+ * <h3>Making comments eligible for inclusion</h3>
+ * <p>
+ * The text to be included is taken from the declared type JavaDoc comment of
+ * the referenced class source file. The given text needs to be wrapped by
+ * a block tag such as {@link BlockTaglet},
+ * {@link HTMLTaglet}, {@link JSONTaglet}, {@link XMLTaglet}, etc.
+ * </p>
+ * <p>
+ * If you have multiple blocks of text to include from a JavaDoc comment,
+ * you can add a reference anchor to it (a recommended practice).
+ * In the following example, the JavaDoc comment has two HTML blocks
+ * ready to be included by any other JavaDoc comments.
+ * </p>
+ *
  * <pre>
- * &lt;xml&gt;
- *   &lt;sample attr="whatever"&gt;Next line should be replaced.&lt;/sample&gt;
- *   {&#64;nx.include com.norconex.commons.lang.javadoc.XMLUsageTaglet@nx.xml.usage}
- * &lt;/xml&gt;
+ *  package com.somepackage;
+ *
+ *  &sol;**
+ *   * &lt;h1&gt;How to create a list&lt;/h1&gt;
+ *   * &lt;p&gt;Two examples:&lt;/p&gt;
+ *   *
+ *   * {&commat;nx.html #ordered
+ *   *   &lt;ol&gt;
+ *   *     &lt;li&gt;An item.&lt;/li&gt;
+ *   *     &lt;li&gt;Another item.&lt;/li&gt;
+ *   *   &lt;/ol&gt;
+ *   * }
+ *   *
+ *   * {&commat;nx.html #unordered
+ *   *   &lt;ul&gt;
+ *   *     &lt;li&gt;An item.&lt;/li&gt;
+ *   *     &lt;li&gt;Another item.&lt;/li&gt;
+ *   *   &lt;/ul&gt;
+ *   * }
+ *   *&sol;
+ *  public class MyClassWithReusableComments {
+ *    //...
+ *  }
  * </pre>
  *
- * <p>Results in:</p>
- * {@nx.xml
- * <xml>
- *   <sub attr="whatever">Next line should be replaced.</sub>
- *   {@nx.include com.norconex.commons.lang.javadoc.XMLExampleTaglet@nx.xml.example}
- * </xml>
- * }
+ * <h3>Including comments</h3>
+ * <p>
+ * The <code>{&commat;nx.include ...}</code> directive is used
+ * to reference other classes along with which comment block to include.
+ * The complete syntax is:
+ * </p>
+ * <pre>
+ * {&commat;nx.include [class][@tagName][#reference]}
+ * </pre>
+ * <p>
+ * Where each elements in square brackets are:
+ * </p>
+ * <table cellpadding="3">
+ *   <tr>
+ *     <td style="vertical-align: top;"><b>class</b></td>
+ *     <td>
+ *       The fully qualified class name containing the comment to include.
+ *       Required.
+ *     </td>
+ *   </tr>
+ *   <tr>
+ *     <td style="vertical-align: top;"><b>@tagName</b></td>
+ *     <td>
+ *       The name of the block tag wrapping the comment. If there are multiple
+ *       block tags with the same name in the class comment, the first one
+ *       will be picked. Use <code>#reference</code> for more precision.
+ *       At least one of <code>@tagName</code> and <code>#reference</code>
+ *       need to be specified.
+ *     </td>
+ *   </tr>
+ *   <tr>
+ *     <td style="vertical-align: top;"><b>#reference</b></td>
+ *     <td>
+ *       Matches the reference anchor defined in the included class comment.
+ *       Those should be unique within a class comment so should be favored
+ *       over <code>@tagName</code> when present.
+ *       At least one of <code>@tagName</code> and <code>#reference</code>
+ *       need to be specified.
+ *     </td>
+ *   </tr>
+ * </table>
  *
- * <p>Can be nested in nx.xml.* taglets.</p>
+ * <p>
+ * The following example will insert the two blocks defined in the previous
+ * example along with additional HTML.
+ * </p>
  *
- * <p>Can also use # if the target defines such as id.</p>
+ * <pre>
+ *  &sol;**
+ *   * &lt;p&gt;
+ *   *   Here are two types of HTML lists:
+ *   * &lt;/p&gt;
+ *   * {&commat;nx.html
+ *   *
+ *   *   &lt;h1&gt;Ordered List&lt;/h1&gt;
+ *   *   {&commat;nx.include com.somepackage.MyClassWithReusableComments#ordered}
+ *   *
+ *   *   &lt;h1&gt;Unordered List&lt;/h1&gt;
+ *   *   {&commat;nx.include com.somepackage.MyClassWithReusableComments#unordered}
+ *   * }
+ *   *&sol;
+ *  public class MyClassIncludingComments {
+ *    //...
+ *  }
+ * </pre>
+ *
+ * <p>
+ * One thing to keep in mind is the included text is taken as is.
+ * If you want to format it, you would need to wrap it yourself like above.
+ * Includes can be nested in any other <code>@nx.*</code> taglets.
+ * </p>
  *
  * @author Pascal Essiembre
  * @since 2.0.0
  */
-
-//TODO document supported use cases:
-
-//TODO document include can be "used" anywhere, but it will only look in
-// class/type documentation, not method, not anything else.
-// In other words, it is useless to define an #id for a block if not
-// in class documentation
-
-//TODO add {@nx.block.hide
-//   not in javadoc, but eligible for includes in other classes
-//}
-
-/*
-   {@include com.mypackage.MyClass}    <-- Entire Type javadoc, or.. NOT supported?
-
-   {@include com.mypackage.MyClass@nx.xml.usage} <-- References by block tag name
-   E.g.:
-     {@nx.xml.usage
-       <myxml>
-         An example
-       </myxml>
-     }
-
-   {@include com.mypackage.MyClass#someDoc} <-- References by block custom id
-   E.g.:
-     {@nx.xml.usage #someDoc   <-- with a space separating or not
-       <myxml>
-         An example
-       </myxml>
-     }
-
-   {@include com.mypackage.MyClass@nx.xml.usage#someDoc} <-- Supported, but a bit useless
-   E.g.:
-     {@nx.xml.usage #someDoc   <-- with a space separating or not
-       <myxml>
-         An example
-       </myxml>
-     }
-
-
-*/
-//TODO document: can use @ (to include taglet block) or
-// # to include taglet id (prefixed with @ or not)
-
-//SEE:
-
-
-@SuppressWarnings("javadoc")
 public class IncludeTaglet implements Taglet {
 
 
@@ -153,12 +200,7 @@ public class IncludeTaglet implements Taglet {
             return TagletUtil.documentationError(directive.getParseError());
         }
 
-
         return resolveIncludeDirective(directive, env);
-
-        //TODO maybe: allows {@link } blocks to support strong typing
-        // and avoid bad links. When not using taglets, it would remain
-        // an actual link.
     }
 
 
@@ -183,7 +225,6 @@ public class IncludeTaglet implements Taglet {
         var typeEl = env.getElementUtils().getTypeElement(
                 directive.getClassName());
         if (typeEl == null) {
-//System.out.println("RETURN ERROR typeEl is null for directive: " + directive);
             return TagletUtil.documentationError(
                     "Include directive failed as type element could not be "
                     + "resolved: %s (maybe a typo?).",
@@ -191,7 +232,6 @@ public class IncludeTaglet implements Taglet {
         }
 
         if (!TagletUtil.isDeclaredType(typeEl)) {
-//System.out.println("RETURN ERROR typeEl not a declared type for directive: " + directive);
             return TagletUtil.documentationError(
                     "Include directive failed as referenced element is not a "
                     + "declared type: %s.",
@@ -211,7 +251,6 @@ public class IncludeTaglet implements Taglet {
                 }
             }
         }
-//System.out.println("RETURN OK for directive: " + directive + ", with content: " + content);
 
         return resolveContentIncludes(content, env);
     }
