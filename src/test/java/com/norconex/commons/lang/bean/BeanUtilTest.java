@@ -1,4 +1,4 @@
-/* Copyright 2018-2020 Norconex Inc.
+/* Copyright 2018-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,138 +14,313 @@
  */
 package com.norconex.commons.lang.bean;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.beans.IntrospectionException;
+import java.beans.PropertyDescriptor;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.mutable.MutableInt;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.event.Event;
 import com.norconex.commons.lang.event.IEventListener;
-import com.norconex.commons.lang.map.Properties;
 
+import lombok.Data;
+import lombok.ToString;
 
-/**
- * Bean utility methods.
- * @author Pascal Essiembre
- * @since 2.0.0
- */
-public class BeanUtilTest {
+class BeanUtilTest {
 
     @Test
-    public void testToMap() {
-        Map<String, Object> map = BeanUtil.toMap(new Bean());
-        Assertions.assertEquals("potato", map.get("string"));
-        Assertions.assertEquals(123, map.get("primitiveInt"));
-        Assertions.assertEquals(Integer.valueOf(456), map.get("objectInteger"));
-        Assertions.assertEquals(new Event.Builder<>(
-                "testEvent", this).build(), map.get("event"));
-        Assertions.assertEquals(Arrays.asList(0.5d, 1.0d), map.get("doubles"));
-        Assertions.assertEquals(5, map.size());
+    void testGetPropertyDescriptors() {
+        assertThat(BeanUtil.getPropertyDescriptors(new Bean())
+                .stream()
+                .map(PropertyDescriptor::getName)
+                .collect(Collectors.toList()))
+            .containsExactlyInAnyOrder(
+                    "string",
+                    "primitiveInt",
+                    "objectInteger",
+                    "event",
+                    "doubles");
     }
 
     @Test
-    public void testToProperties() {
-        Properties props = BeanUtil.toProperties(new Bean(), "event");
-        Assertions.assertEquals("potato", props.getString("string"));
-        Assertions.assertEquals("123", props.getString("primitiveInt"));
-        Assertions.assertEquals("456", props.getString("objectInteger"));
-        Assertions.assertEquals(
-                Arrays.asList("0.5", "1.0"), props.getStrings("doubles"));
-        Assertions.assertEquals(4, props.size());
+    void testCopyPropertiesOverNulls() {
+
+        //--- Base Test ---
+
+        var target = new SubBean();
+        target.setObjectInteger(null);
+
+        var source = new SubBean();
+        // These two should not be copied because they do not have a setter
+        // AND a getter.
+        source.readOnly = "read";
+        source.writeOnly = "write";
+        source.setDate(null);
+        source.setPrimitiveInt(678);
+
+        var expected = new SubBean();
+        expected.setDate(null);
+        expected.setObjectInteger(456);
+
+        // because accessors for "unrelated" are intentionally
+        // messing up "string", we exclude it from comparison.
+        BeanUtil.copyPropertiesOverNulls(target, source);
+        assertThat(target)
+            .usingRecursiveComparison()
+            .ignoringFields("string")
+            .isEqualTo(expected);
+
+        //--- Test when different types ---
+        // Expected to be unchanged
+        BeanUtil.copyPropertiesOverNulls(target, "Not same type");
+        assertThat(target)
+            .usingRecursiveComparison()
+            .ignoringFields("string")
+            .isEqualTo(expected);
+
+        //--- Test when source is null ---
+        // Expected to be unchanged
+        BeanUtil.copyPropertiesOverNulls(target, null);
+        assertThat(target)
+            .usingRecursiveComparison()
+            .ignoringFields("string")
+            .isEqualTo(expected);
     }
 
     @Test
-    public void testGetValue() {
-        Bean bean = new Bean();
-        Assertions.assertEquals("potato", BeanUtil.getValue(bean, "string"));
-        Assertions.assertEquals(123, (int) BeanUtil.getValue(bean, "primitiveInt"));
-        Assertions.assertEquals(Integer.valueOf(456),
-                BeanUtil.getValue(bean, "objectInteger"));
-        Assertions.assertEquals(new Event.Builder<>("testEvent", this).build(),
-                BeanUtil.getValue(bean, "event"));
+    void testCopyProperties() {
+
+        //--- Base Test ---
+
+        var target = new SubBean();
+        target.setObjectInteger(null);
+
+        var source = new SubBean();
+        // These two should not be copied because they do not have a setter
+        // AND a getter.
+        source.readOnly = "read";
+        source.writeOnly = "write";
+        source.setDate(null);
+        source.setPrimitiveInt(678);
+
+        var expected = new SubBean();
+        expected.setDate(null);
+        expected.setObjectInteger(456);
+        expected.setPrimitiveInt(678);
+
+        // because accessors for "unrelated" are intentionally
+        // messing up "string", we exclude it from comparison.
+        BeanUtil.copyProperties(target, source);
+        assertThat(target)
+            .usingRecursiveComparison()
+            .ignoringFields("string")
+            .isEqualTo(expected);
+
+        //--- Test when different types ---
+        // Expected to be unchanged
+        BeanUtil.copyProperties(target, "Not same type");
+        assertThat(target)
+            .usingRecursiveComparison()
+            .ignoringFields("string")
+            .isEqualTo(expected);
+
+        //--- Test when source is null ---
+        // Expected to be unchanged
+        BeanUtil.copyProperties(target, null);
+        assertThat(target)
+            .usingRecursiveComparison()
+            .ignoringFields("string")
+            .isEqualTo(expected);
     }
 
     @Test
-    public void testSetSubValue() {
-        SubBean bean = new SubBean();
-        // set value on super
-        BeanUtil.setValue(bean, "string", "potato");
-        // set overridden value
-        BeanUtil.setValue(bean, "objectInteger", Integer.valueOf(999));
-        // set sub value
-        BeanUtil.setValue(bean, "date", new Date(946684800000L));
-        // set readonly
-        try {
-            BeanUtil.setValue(bean, "readOnly", "should fail");
-            Assertions.fail("Setting a readonly property should fail.");
-        } catch (BeanException e) {
-            //NOOP
-        }
-        // set writeonly
-        BeanUtil.setValue(bean, "writeOnly", "should be OK");
+    void testClone() {
+        var bean = new SubBean();
+        bean.writeOnly = "write";
+        bean.readOnly = "read";
 
-        assertEquals("potato", bean.getString());
-        assertEquals(Integer.valueOf(999), bean.getObjectInteger());
-        assertEquals(new Date(946684800000L), bean.getDate());
+        var actualBean = BeanUtil.clone(bean);
+
+        // because accessors for "unrelated" are intentionally
+        // messing up "string", we exclude it from comparison.
+        // we also exclude write/readOnly as they are not compliant accessors.
+        assertThat(actualBean)
+            .usingRecursiveComparison()
+            .ignoringFields("string", "writeOnly", "readOnly")
+            .isEqualTo(bean);
+        assertThat(actualBean.readOnly).isNull();
+        assertThat(actualBean.writeOnly).isNull();
     }
 
     @Test
-    public void testSetValue() {
-        Bean bean = new Bean();
+    void testDiff() {
+        var bean1 = new Bean();
+        var bean2 = new Bean();
+        bean2.setPrimitiveInt(321);
+        bean2.setObjectInteger(654);
+
+        var expected =
+                "< Bean.objectInteger = 456\n"
+              + "> Bean.objectInteger = 654\n"
+              + "< Bean.primitiveInt = 123\n"
+              + "> Bean.primitiveInt = 321";
+        assertThat(BeanUtil.diff(bean1, bean2)).isEqualTo(expected);
+    }
+
+    @Test
+    void testGetPropertyType() {
+        var bean = new Bean();
+        assertThat(BeanUtil.getPropertyType(bean, "string"))
+                .isEqualTo(String.class);
+        assertThat(BeanUtil.getPropertyType(bean, "primitiveInt"))
+                .isEqualTo(Integer.TYPE);
+        assertThat(BeanUtil.getPropertyType(bean, "objectInteger"))
+                .isEqualTo(Integer.class);
+        assertThat(BeanUtil.getPropertyType(bean, "event"))
+                .isEqualTo(Event.class);
+        assertThat(BeanUtil.getPropertyType(bean, "doubles"))
+                .isEqualTo(List.class);
+
+        assertThat(BeanUtil.getPropertyType(null, "doubles")).isNull();
+        assertThat(BeanUtil.getPropertyType(bean, null)).isNull();
+        assertThatExceptionOfType(BeanException.class).isThrownBy(
+                () -> BeanUtil.getPropertyType(bean, "badProperty"));
+    }
+
+    @Test
+    void testGetPropertyGenericType() {
+        assertThat(BeanUtil.getPropertyGenericType(Bean.class, "doubles"))
+                .isEqualTo(Double.class);
+        assertThat(BeanUtil.getPropertyGenericType(null, "doubles")).isNull();
+        assertThat(BeanUtil.getPropertyGenericType(Bean.class, null)).isNull();
+        assertThatExceptionOfType(BeanException.class).isThrownBy(() ->
+                BeanUtil.getPropertyGenericType(Bean.class, "badProperty"));
+    }
+
+    @Test
+    void testGetValueObjectString() {
+        var bean = new Bean();
+        assertThat((String) BeanUtil.getValue(bean, "string"))
+                .isEqualTo("potato");
+        assertThat((int) BeanUtil.getValue(bean, "primitiveInt"))
+                .isEqualTo(123);
+        assertThat((Integer) BeanUtil.getValue(bean, "objectInteger"))
+                .isEqualTo(Integer.valueOf(456));
+        assertThat((Event) BeanUtil.getValue(bean, "event"))
+                .isEqualTo(Event.builder("testEvent", "test").build());
+
+        assertThat((List<?>) BeanUtil.getValue(null, "doubles")).isNull();
+        assertThat((String) BeanUtil.getValue(Bean.class, (String) null))
+                .isNull();
+        assertThatExceptionOfType(BeanException.class).isThrownBy(() ->
+                BeanUtil.getValue(Bean.class, "badProperty"));
+    }
+
+    @Test
+    void testGetValueObjectPropertyDescriptor() throws IntrospectionException {
+        var pd = new PropertyDescriptor("string", Bean.class);
+        var bean = new Bean();
+        assertThat((String) BeanUtil.getValue(bean, pd)).isEqualTo("potato");
+
+        assertThat((String) BeanUtil.getValue(null, pd)).isNull();
+        assertThat((String) BeanUtil.getValue(
+                Bean.class, (PropertyDescriptor) null)).isNull();
+    }
+
+    @Test
+    void testSetValue() {
+
+        // Direct values
+
+        var bean = new Bean();
         BeanUtil.setValue(bean, "string", "carrot");
         BeanUtil.setValue(bean, "primitiveInt", 777);
         BeanUtil.setValue(bean, "objectInteger", Integer.valueOf(888));
-        BeanUtil.setValue(bean, "event",
-                new Event.Builder<>("blah", "x").build());
+        BeanUtil.setValue(bean, "event", Event.builder("blah", "x").build());
 
         Assertions.assertEquals("carrot", bean.getString());
         Assertions.assertEquals(777, bean.getPrimitiveInt());
         Assertions.assertEquals(Integer.valueOf(888), bean.getObjectInteger());
         Assertions.assertEquals(
-                new Event.Builder<>("blah", "x").build(), bean.getEvent());
+                Event.builder("blah", "x").build(), bean.getEvent());
+
+        // Nested values
+
+        var subBean = new SubBean();
+        // set value on super
+        BeanUtil.setValue(subBean, "string", "potato");
+        // set overridden value
+        BeanUtil.setValue(subBean, "objectInteger", Integer.valueOf(999));
+        // set sub value
+        BeanUtil.setValue(subBean, "date", new Date(946684800000L));
+        // set readonly
+        try {
+            BeanUtil.setValue(subBean, "readOnly", "should fail");
+            Assertions.fail("Setting a readonly property should fail.");
+        } catch (BeanException e) {
+            //NOOP
+        }
+        // set writeonly
+        BeanUtil.setValue(subBean, "writeOnly", "should be OK");
+
+        assertEquals("potato", subBean.getString());
+        assertEquals(Integer.valueOf(999), subBean.getObjectInteger());
+        assertEquals(new Date(946684800000L), subBean.getDate());
     }
 
     @Test
-    public void testGetGenericType() {
-        Assertions.assertEquals(Double.class,
-                BeanUtil.getPropertyGenericType(Bean.class, "doubles"));
+    void testIsSettable() {
+        var bean = new SubBean();
+        assertThat(BeanUtil.isSettable(bean, "writeOnly")).isTrue();
+        assertThat(BeanUtil.isSettable(bean, "readOnly")).isFalse();
     }
 
     @Test
-    public void testVisit() {
-        Root root = new Root();
-
-        Assertions.assertEquals(3, BeanUtil.getChildren(root).size());
-        Assertions.assertEquals(3,
-                BeanUtil.find(root, IEventListener.class).size());
-
-//        for (Object obj : BeanGraphUtil.getChildren(root)) {
-//            System.out.println("Root child: " + obj);
-//        }
-//        for (Object obj : BeanGraphUtil.find(root, IEventListener.class)) {
-//            System.out.println("Event listener: " + obj);
-//        }
+    void testIsGettable() {
+        var bean = new SubBean();
+        assertThat(BeanUtil.isGettable(bean, "writeOnly")).isFalse();
+        assertThat(BeanUtil.isGettable(bean, "readOnly")).isTrue();
     }
 
     @Test
-    public void testVisitProperties() {
-        Root root = new Root();
-
-        MutableInt cnt = new MutableInt();
-        BeanUtil.visitAllProperties(root, (obj, pd) -> {
-//            System.out.println("Property: " + obj.getClass().getSimpleName()
-//                    + " -> " + pd.getName());
-            cnt.increment();
-        });
-        Assertions.assertEquals(5, cnt.intValue());
-
+    void testToMap() {
+        throw new RuntimeException("not yet implemented");
     }
+
+    @Test
+    void testToProperties() {
+        throw new RuntimeException("not yet implemented");
+    }
+
+    @Test
+    void testFind() {
+        throw new RuntimeException("not yet implemented");
+    }
+
+    @Test
+    void testGetChildren() {
+        throw new RuntimeException("not yet implemented");
+    }
+
+    @Test
+    void testHasChildren() {
+        throw new RuntimeException("not yet implemented");
+    }
+
+    @Test
+    void testGetWriteMethod() {
+        throw new RuntimeException("not yet implemented");
+    }
+
+    //--- Test classes ---------------------------------------------------------
 
     public static class Root {
         private Sub1Yes sub1yes = new Sub1Yes();
@@ -182,7 +357,6 @@ public class BeanUtilTest {
         private Sub1Yes sub1Yes;
         private Sub3_1Yes sub3_1Yes = new Sub3_1Yes();
         public Sub3Yes(Sub1Yes sub1Yes) {
-            super();
             this.sub1Yes = sub1Yes;
         }
         public Sub1Yes getSub1Yes() {
@@ -208,44 +382,16 @@ public class BeanUtilTest {
         }
     }
 
+    @Data
     public static class Bean {
         private String string = "potato";
         private int primitiveInt = 123;
-        private Integer objectInteger = Integer.valueOf(456);
-        private Event event = new Event.Builder<>("testEvent", this).build();
+        private Integer objectInteger = 456;
+        private Event event = Event.builder("testEvent", "test").build();
         private List<Double> doubles = Arrays.asList(0.5d, 1.0d);
-        public String getString() {
-            return string;
-        }
-        public void setString(String string) {
-            this.string = string;
-        }
-        public int getPrimitiveInt() {
-            return primitiveInt;
-        }
-        public void setPrimitiveInt(int primitiveInt) {
-            this.primitiveInt = primitiveInt;
-        }
-        public Integer getObjectInteger() {
-            return objectInteger;
-        }
-        public void setObjectInteger(Integer objectInteger) {
-            this.objectInteger = objectInteger;
-        }
-        public Event getEvent() {
-            return event;
-        }
-        public void setEvent(Event event) {
-            this.event = event;
-        }
-        public List<Double> getDoubles() {
-            return doubles;
-        }
-        public void setDoubles(List<Double> doubles) {
-            this.doubles = doubles;
-        }
     }
 
+    @ToString
     public static class SubBean extends Bean {
         private Date date;
         private String readOnly;
@@ -277,4 +423,5 @@ public class BeanUtilTest {
             setString(str);
         }
     }
+
 }

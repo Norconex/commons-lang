@@ -2,13 +2,14 @@
 TODO:
 ==============
 
+- Consider integration with GitHub Actions and deploy zips there?
+
 - Add {@nx.block.hidden that would hide in javadoc, but eligible for includes 
   in other classes.
 
 - Maybe: allows {@link } blocks to support strong typing
   and avoid bad links.. When not using taglets, it would remain
   an actual link.
-  
 
 - Add equiv. of "trimToNull" to "PropertyMatchers" so that blank values
   could be treated as null (i.e., non-existant).

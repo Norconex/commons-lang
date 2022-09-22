@@ -20,13 +20,13 @@ import java.util.EventObject;
 import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import com.norconex.commons.lang.EqualsUtil;
 
 import lombok.AccessLevel;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.EqualsAndHashCode.CacheStrategy;
 import lombok.NonNull;
 import lombok.Setter;
 
@@ -38,7 +38,6 @@ import lombok.Setter;
  */
 @Data
 @Setter(value = AccessLevel.NONE)
-@EqualsAndHashCode(cacheStrategy = CacheStrategy.LAZY)
 public class Event extends EventObject {
 
     private static final long serialVersionUID = 1L;
@@ -90,6 +89,30 @@ public class Event extends EventObject {
     public static Builder builder(
             @NonNull String name, @NonNull Object source) {
         return new Builder<>(name, source);
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        if (other == null) { return false; }
+        if (other == this) { return true; }
+        if (other.getClass() != getClass()) { return false; }
+        var event = (Event) other;
+        return new EqualsBuilder()
+                .append(name, event.name)
+                .append(message, event.message)
+                .append(exception, event.exception)
+                .append(source, event.source)
+                .isEquals();
+    }
+    @Override
+    public int hashCode() {
+        // Need to build manually as parent does not implement hashCode
+        return new HashCodeBuilder()
+                .append(name)
+                .append(message)
+                .append(exception)
+                .append(source)
+                .build();
     }
 
     /**
