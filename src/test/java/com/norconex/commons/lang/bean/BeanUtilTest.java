@@ -14,6 +14,8 @@
  */
 package com.norconex.commons.lang.bean;
 
+import static com.norconex.commons.lang.bean.BeanUtil.isReadable;
+import static com.norconex.commons.lang.bean.BeanUtil.isWritable;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -28,11 +30,13 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.bean.BeanUtilTest.MiscAccessorsBean.Fields;
 import com.norconex.commons.lang.event.Event;
 import com.norconex.commons.lang.event.IEventListener;
 
 import lombok.Data;
 import lombok.ToString;
+import lombok.experimental.FieldNameConstants;
 
 class BeanUtilTest {
 
@@ -50,7 +54,7 @@ class BeanUtilTest {
                     "doubles");
     }
 
-    @Test
+    @Test 
     void testCopyPropertiesOverNulls() {
 
         //--- Base Test ---
@@ -277,14 +281,55 @@ class BeanUtilTest {
     }
 
     @Test
-    void testIsSettable() {
-        var bean = new SubBean();
-        assertThat(BeanUtil.isSettable(bean, "writeOnly")).isTrue();
-        assertThat(BeanUtil.isSettable(bean, "readOnly")).isFalse();
+    void testIsWritable() {
+        var b = new MiscAccessorsBean();
+        assertThat(isWritable(b, Fields.normal)).isTrue();
+        assertThat(isWritable(b, Fields.normalSetterNoGetter)).isTrue();
+        assertThat(isWritable(b, Fields.normalGetterNoSetter)).isFalse();
+        assertThat(isWritable(b, Fields.fluent)).isTrue();
+        assertThat(isWritable(b, Fields.fluentSetterNoGetter)).isTrue();
+        assertThat(isWritable(b, Fields.boolNormal)).isTrue();
+        assertThat(isWritable(b, Fields.boolSetterNoGetter)).isTrue();
+        assertThat(isWritable(b, Fields.boolGetterNoSetter)).isFalse();
+        assertThat(isWritable(b, Fields.boolFluent)).isTrue();
+        assertThat(isWritable(b, Fields.boolFluentSetterNoGetter)).isTrue();
+        assertThat(isWritable(b, Fields.compactNormal)).isTrue();
+        assertThat(isWritable(b, Fields.compactSetterNoGetter)).isTrue();
+        assertThat(isWritable(b, Fields.compactGetterNoSetter)).isFalse();
+        assertThat(isWritable(b, Fields.compactFluent)).isTrue();
+        assertThat(isWritable(b, Fields.compactFluentSetterNoGetter)).isTrue();
     }
 
     @Test
-    void testIsGettable() {
+    void testIsReadable() {
+        var b = new MiscAccessorsBean();
+        assertThat(isReadable(b, Fields.normal)).isTrue();
+        assertThat(isReadable(b, Fields.normalSetterNoGetter)).isFalse();
+        assertThat(isReadable(b, Fields.normalGetterNoSetter)).isTrue();
+        assertThat(isReadable(b, Fields.fluent)).isTrue();
+        assertThat(isReadable(b, Fields.fluentSetterNoGetter)).isFalse();
+        assertThat(isReadable(b, Fields.boolNormal)).isTrue();
+        assertThat(isReadable(b, Fields.boolSetterNoGetter)).isFalse();
+        assertThat(isReadable(b, Fields.boolGetterNoSetter)).isTrue();
+        assertThat(isReadable(b, Fields.boolFluent)).isTrue();
+        assertThat(isReadable(b, Fields.boolFluentSetterNoGetter)).isFalse();
+        assertThat(isReadable(b, Fields.compactNormal)).isTrue();
+        assertThat(isReadable(b, Fields.compactSetterNoGetter)).isFalse();
+        assertThat(isReadable(b, Fields.compactGetterNoSetter)).isTrue();
+        assertThat(isReadable(b, Fields.compactFluent)).isTrue();
+        assertThat(isReadable(b, Fields.compactFluentSetterNoGetter)).isFalse();
+    }
+
+
+    @Test
+    void testisWritableDELETE() {
+        var bean = new SubBean();
+        assertThat(BeanUtil.isWritable(bean, "writeOnly")).isTrue();
+       // assertThat(BeanUtil.isWritable(bean, "readOnly")).isFalse();
+    }
+
+    @Test
+    void testIsGettableDELETE() {
         var bean = new SubBean();
         assertThat(BeanUtil.isGettable(bean, "writeOnly")).isFalse();
         assertThat(BeanUtil.isGettable(bean, "readOnly")).isTrue();
@@ -424,4 +469,124 @@ class BeanUtilTest {
         }
     }
 
+    @ToString
+    @FieldNameConstants
+    public static class MiscAccessorsBean {
+        // * getX();  void setX(*)
+        private String normal;
+        public String getNormal() {
+            return normal;
+        }
+        public void setNormal(String normal) {
+            this.normal = normal;
+        }
+
+        // -       ;  void setX(*)
+        private String normalSetterNoGetter;
+        public void setNormalSetterNoGetter(String normalSetterNoGetter) {
+            this.normalSetterNoGetter = normalSetterNoGetter;
+        }
+
+        // * getX();  -
+        private String normalGetterNoSetter;
+        public String getNormalGetterNoSetter() {
+            return normalGetterNoSetter;
+        }
+
+        // * getX();  <this> setX(*)
+        private String fluent;
+        public String getFluent() {
+            return fluent;
+        }
+        public MiscAccessorsBean setFluent(String fluent) {
+            this.fluent = fluent;
+            return this;
+        }
+
+        // -       ;  <this> setX(*)
+        private String fluentSetterNoGetter;
+        public MiscAccessorsBean setFluentSetterNoGetter(
+                String fluentSetterNoGetter) {
+            this.fluentSetterNoGetter = fluentSetterNoGetter;
+            return this;
+        }
+
+        // * isX() ;  void setX(*)
+        private boolean boolNormal;
+        public boolean isBoolNormal() {
+            return boolNormal;
+        }
+        public void setBoolNormal(boolean boolNormal) {
+            this.boolNormal = boolNormal;
+        }
+
+        // -       ;  void setX(*)
+        private boolean boolSetterNoGetter;
+        public void setBoolSetterNoGetter(boolean boolSetterNoGetter) {
+            this.boolSetterNoGetter = boolSetterNoGetter;
+        }
+
+        // * isX() ;  -
+        private boolean boolGetterNoSetter;
+        public boolean isBoolGetterNoSetter() {
+            return boolGetterNoSetter;
+        }
+
+        // * isX() ;  <this> setX(*)
+        private boolean boolFluent;
+        public boolean isBoolFluent() {
+            return boolFluent;
+        }
+        public MiscAccessorsBean setBoolFluent(boolean boolFluent) {
+            this.boolFluent = boolFluent;
+            return this;
+        }
+
+        // -       ;  <this> setX(*)
+        private boolean boolFluentSetterNoGetter;
+        public MiscAccessorsBean setBoolFluentSetterNoGetter(
+                boolean boolFluentSetterNoGetter) {
+            this.boolFluentSetterNoGetter = boolFluentSetterNoGetter;
+            return this;
+        }
+
+        // * x()   ;  void x(*)
+        private String compactNormal;
+        public String compactNormal() {
+            return compactNormal;
+        }
+        public void compactNormal(String compactNormal) {
+            this.compactNormal = compactNormal;
+        }
+
+        // -       ;  void x(*)
+        private String compactSetterNoGetter;
+        public void compactSetterNoGetter(String compactSetterNoGetter) {
+            this.compactSetterNoGetter = compactSetterNoGetter;
+        }
+
+        // * x()   ;  -
+        private String compactGetterNoSetter;
+        public String compactGetterNoSetter() {
+            return compactGetterNoSetter;
+        }
+
+        // * x()   ;  <this> x(*)
+        private String compactFluent;
+        public String compactFluent() {
+            return compactFluent;
+        }
+        public MiscAccessorsBean compactFluent(String compactFluent) {
+            this.compactFluent = compactFluent;
+            return this;
+        }
+
+        // -       ;  <this> x(*)
+        private String compactFluentSetterNoGetter;
+        public MiscAccessorsBean compactFluentSetterNoGetter(
+                String compactFluentSetterNoGetter) {
+            this.compactFluentSetterNoGetter = compactFluentSetterNoGetter;
+            return this;
+        }
+    }
 }
