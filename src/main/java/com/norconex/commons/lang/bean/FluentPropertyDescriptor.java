@@ -17,172 +17,139 @@ package com.norconex.commons.lang.bean;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
-import java.util.stream.Stream;
+import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
 
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
-
 /**
  * <p>
- * An implementation of {@link PropertyDescriptor} that is more relaxed.
- * Unless a method name is explicitly specified in a constructor, it will
- * attempt to detect read and write methods in different style variations
- * (e.g., fluent or builder-style).
+ * An implementation of {@link PropertyDescriptor} that is more relaxed
+ * when deriving method names from property names.
+ * Unless a method or method name is explicitly passed in a constructor,
+ * this class will attempt to detect read and write methods with different
+ * style variations (e.g., fluent or builder-style).
  * </p>
  * <p>
  * In addition, it supports read-only and write-only methods by default
- * (no need to pass <code>null</code> constructor arguments for method names).
+ * with the short constructor form (no need to pass <code>null</code>
+ * as constructor arguments for method or method names).
  * Extra methods are also provided to check for the existence of read or
  * write methods: {@link #isReadable()} and {@link #isWritable()}.
- * If a property has no read method (write only), the property type will be
- * derived from the first setter with a single parameter encountered.
+ * Shortcut methods are also provided to set or get a bean value:
+ * {@link #readValue(Object bean)} and
+ * {@link #writeValue(Object bean, Object value)}.
+ * If a property has no read method (write-only), the property type will be
+ * derived from the first matching setter encountered with a single parameter.
  * </p>
  * <p>
  * The following are examples of supported variations, in order of precedence
- * (if more than one variation is used for the same property).
+ * (for cases where their might be more than one variation on a class for
+ * the same property).
  * </p>
- * <h3>Getters</h3>
+ * {@nx.block #readables
+ * <h3>Supported readable method styles (getters)</h3>
  * <ul>
  *   <li><code>Foo getFoo()</code></li>
  *   <li><code>boolean isFoo()</code>
  *   <li><code>Foo foo()</code></li>
  * </ul>
+ * }
  *
- * <h3>Setters</h3>
+ * {@nx.block #writables
+ * <h3>Supported writable method styles (setters)</h3>
  * <ul>
  *   <li><code>void setFoo(Foo foo)</code></li>
  *   <li><code><i>Self</i> setFoo(Foo foo) //Self is "this" instance</code></li>
  *   <li><code>void foo(Foo foo)</code></li>
  *   <li><code><i>Self</i> foo(Foo foo) //Self is "this" instance</code></li>
  * </ul>
+ * }
  *
  * @author Pascal Essiembre
  * @version 2.0.0
  */
-@EqualsAndHashCode
-@ToString
 public class FluentPropertyDescriptor extends PropertyDescriptor {
 
-    private static class BeanClassHolder {
-        private final InheritableThreadLocal<Class<?>> TL =
-                new InheritableThreadLocal<>();
-        Class<?> set(Class<?> cls) {
-            TL.set(cls);
-            return cls;
-        }
-        Class<?> get() {
-            return TL.get();
-        }
-    }
-    private static final BeanClassHolder beanClassHolder =
-            new BeanClassHolder();
-    private boolean readMethodSet;
-    private boolean writeMethodSet;
-
+    /**
+     * Creates a new property descriptor with the specified write and
+     * read method names.
+     * When a supplied method name is <code>null</code> or blank, it will
+     * try to derive it using a few method name variations, as described
+     * in this class documentation.
+     * @param propertyName the bean property name
+     * @param beanClass the bean class name
+     * @param readMethodName optional read method name (getter)
+     * @param writeMethodName optional write method name (setter)
+     * @throws IntrospectionException problem creating property descriptor
+     */
     public FluentPropertyDescriptor(
             String propertyName, Class<?> beanClass,
             String readMethodName, String writeMethodName)
-            throws IntrospectionException {
-        super(propertyName, beanClassHolder.set(beanClass),
-                readMethodName, writeMethodName);
+                    throws IntrospectionException {
+        super(propertyName,
+                readMethod(beanClass, propertyName, readMethodName),
+                writeMethod(beanClass, propertyName, writeMethodName));
     }
+
+    /**
+     * Creates a new property descriptor, trying to derive the
+     * reader and writer methods using a few naming variations, as described
+     * in this class documentation.
+     * @param propertyName the bean property name
+     * @param beanClass the bean class name
+     * @throws IntrospectionException problem creating property descriptor
+     */
     public FluentPropertyDescriptor(String propertyName, Class<?> beanClass)
             throws IntrospectionException {
-        super(propertyName, beanClassHolder.set(beanClass), null, null);
+        super(propertyName,
+                readMethod(beanClass, propertyName, null),
+                writeMethod(beanClass, propertyName, null));
     }
-    public FluentPropertyDescriptor(String propertyName, Method readMethod,
-            Method writeMethod) throws IntrospectionException {
-        super(propertyName, readMethod, writeMethod);
-        if (readMethod != null) {
-            beanClassHolder.set(readMethod.getDeclaringClass());
-        } else if (writeMethod != null) {
-            beanClassHolder.set(writeMethod.getDeclaringClass());
-        }
+
+    /**
+     * Creates a new property descriptor with the specified write and
+     * read method. One (and only one) of the methods can be <code>null</code>
+     * to have it automatically detected (if it exists).  If both methods
+     * are provided, this constructor behaves the same as
+     * {@link PropertyDescriptor#PropertyDescriptor(String, Method, Method)}.
+     * @param propertyName the bean property name
+     * @param readMethod read method
+     * @param writeMethod write method
+     * @throws IntrospectionException problem creating property descriptor
+     * @throws NullPointerException if both read and write methods are
+     *     <code>null</code>
+     */
+    public FluentPropertyDescriptor(
+            String propertyName, Method readMethod, Method writeMethod)
+                    throws IntrospectionException {
+        super(propertyName,
+                Optional.ofNullable(readMethod).orElseGet(() -> readMethod(
+                        writeMethod.getDeclaringClass(), propertyName, null)),
+                Optional.ofNullable(writeMethod).orElseGet(() -> writeMethod(
+                        readMethod.getDeclaringClass(), propertyName, null)));
     }
+
+    /**
+     * Copy constructor.  If the supplied property descriptor has a
+     * <code>null</code> read or write method, it will try to detect one
+     * using a few method name variations.
+     * @param propertyDescriptor the property descriptor to copy
+     * @throws IntrospectionException problem creating property descriptor
+     */
     public FluentPropertyDescriptor(PropertyDescriptor propertyDescriptor)
             throws IntrospectionException {
         this(propertyDescriptor.getName(),
-                propertyDescriptor.getReadMethod(),
-                propertyDescriptor.getWriteMethod());
-    }
-
-    @Override
-    public synchronized Method getWriteMethod() {
-        var writeMethod = super.getWriteMethod();
-
-        // exists the standard way or already set, end now
-        if (writeMethod != null || writeMethodSet) {
-            writeMethodSet = true;
-            return writeMethod;
-        }
-
-        // if not found the standard way, try variations
-
-        Class<?> beanClass = beanClassHolder.get();
-        // Reader is more likely to be unique so we get property class from it
-        // if not read-only.
-        var readMethod = getReadMethod();
-        var propType = readMethod != null ? readMethod.getReturnType() : null;
-
-        // if read method is null, try normal way (else, super would return it)
-        if (readMethod == null) {
-            var methodName = "set" + StringUtils.capitalize(getName());
-            writeMethod = getAlternateWriteMethod(
-                    beanClass, methodName, propType, false);
-        }
-
-        // try fluent-style, returning self
-        if (writeMethod == null) {
-            var methodName = "set" + StringUtils.capitalize(getName());
-            writeMethod = getAlternateWriteMethod(
-                    beanClass, methodName, propType, true);
-        }
-
-        // try build-style, returning void
-        if (writeMethod == null) {
-            writeMethod = getAlternateWriteMethod(
-                    beanClass, getName(), propType, false);
-        }
-
-        // try build-style, returning self
-        if (writeMethod == null) {
-            writeMethod = getAlternateWriteMethod(
-                    beanClass, getName(), propType, true);
-        }
-
-        try {
-            setWriteMethod(writeMethod);
-        } catch (IntrospectionException e) {
-            //NOOP swallow
-        }
-        writeMethodSet = true;
-        return writeMethod;
-    }
-
-    @Override
-    public synchronized Method getReadMethod() {
-        var readMethod = super.getReadMethod();
-
-        // exists the standard way, or already set, end now
-        if (readMethod != null || readMethodSet) {
-            readMethodSet = true;
-            return readMethod;
-        }
-
-        // if not found the standard way, try build-style
-        readMethod = MethodUtils.getAccessibleMethod(
-                beanClassHolder.get(), getName());
-
-        try {
-            setReadMethod(readMethod);
-        } catch (IntrospectionException e) {
-            //NOOP swallow
-        }
-        readMethodSet = true;
-        return readMethod;
+                Optional.ofNullable(propertyDescriptor.getReadMethod())
+                    .orElseGet(() -> readMethod(
+                        propertyDescriptor.getWriteMethod().getDeclaringClass(),
+                        propertyDescriptor.getName(),
+                        null)),
+                Optional.ofNullable(propertyDescriptor.getWriteMethod())
+                    .orElseGet(() -> writeMethod(
+                        propertyDescriptor.getReadMethod().getDeclaringClass(),
+                        propertyDescriptor.getName(),
+                        null)));
     }
 
     /**
@@ -201,57 +168,36 @@ public class FluentPropertyDescriptor extends PropertyDescriptor {
         return getWriteMethod() != null;
     }
 
-    /**
-     * Initialize a new {@link FluentPropertyDescriptor} with the
-     * supplied {@link PropertyDescriptor} unless it already
-     * is an instance of {@link FluentPropertyDescriptor}.
-     *
-     * @param pd property descriptor
-     * @return fluent property descriptor or <code>null</code> if
-     *     the property descriptor is <code>null</code>
-     * @throws IntrospectionException if we cannot convert to fluent instance
-     */
-    public static FluentPropertyDescriptor toFluent(PropertyDescriptor pd)
-            throws IntrospectionException {
-        if (pd == null) {
-            return null;
-        }
-        if (pd instanceof FluentPropertyDescriptor) {
-            return (FluentPropertyDescriptor) pd;
-        }
-        return new FluentPropertyDescriptor(pd);
+    public <T> T readValue(Object bean) {
+        return BeanUtil.getValue(bean, this);
+    }
+    public void writeValue(Object bean, Object value) {
+        BeanUtil.setValue(bean, getName(), value);
     }
 
-    private Method getAlternateWriteMethod(
+    private static Method readMethod(
             Class<?> beanClass,
-            String methodName,
-            Class<?> propType,
-            boolean fluent) {
-        // if propType is set, use it. Else, guess it, by picking the
-        // first setter with a matching name.
-        Method method = null;
-        if (propType != null) {
-            try {
-                method = beanClass.getMethod(methodName, propType);
-            } catch (NoSuchMethodException
-                    | SecurityException
-                    | NullPointerException e ) {
-                // swallow
+            String propertyName,
+            String readMethodName) {
+        if (StringUtils.isNotBlank(readMethodName)) {
+            return MethodUtils.getAccessibleMethod(beanClass, readMethodName);
+        }
+        return BeanUtil.getReadMethod(beanClass, propertyName);
+    }
+    private static Method writeMethod(
+            Class<?> beanClass,
+            String propertyName,
+            String writeMethodName) {
+        if (StringUtils.isNotBlank(writeMethodName)) {
+            var method = BeanUtil.getWriteMethod(
+                    beanClass, writeMethodName, null, false);
+            if (method == null) {
+                // try fluent style
+                method = BeanUtil.getWriteMethod(
+                        beanClass, writeMethodName, null, true);
             }
-        } else {
-            // get first matching method name, having a single argument
-            method = Stream.of(beanClass.getMethods())
-                .filter(m -> m.getName().equals(methodName))
-                .filter(m -> m.getParameterCount() == 1)
-                .findFirst()
-                .orElse(null);
+            return method;
         }
-
-        // if fluent is requested and is not fluent, we don't return it
-        if (fluent && method != null
-                && !method.getReturnType().equals(beanClass)) {
-            method = null;
-        }
-        return method;
+        return BeanUtil.getWriteMethod(beanClass, propertyName);
     }
 }

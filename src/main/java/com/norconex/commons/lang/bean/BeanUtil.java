@@ -21,8 +21,12 @@ import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.beans.Transient;
+import java.io.Serializable;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -47,7 +51,11 @@ import org.apache.commons.collections4.bag.HashBag;
 import org.apache.commons.collections4.bag.TreeBag;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ClassUtils;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.ObjectUtils.Null;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
+import org.apache.commons.lang3.reflect.MethodUtils;
 
 import com.norconex.commons.lang.collection.CollectionUtil;
 import com.norconex.commons.lang.convert.Converter;
@@ -62,11 +70,6 @@ import lombok.extern.slf4j.Slf4j;
  * <p>
  * Bean/object utilities.
  * </p>
- * <p>
- * Unless otherwise stated, methods dealing with properties or property
- * descriptors support extra method name variations over tranditional
- * Java beans. See {@link FluentPropertyDescriptor} for a list.
- * </p>
  *
  * @since 2.0.0
  * @see FluentPropertyDescriptor
@@ -76,58 +79,107 @@ public final class BeanUtil {
 
     private BeanUtil() {}
 
-    //--- Bean methods ---------------------------------------------------------
+
+    //--------------------------------------------------------------------------
+    // Bean methods
+    //--------------------------------------------------------------------------
 
     /**
      * <p>
-     * Gets a list of standard property descriptors from the supplied bean
-     * where both the read and write methods are defined and public.
-     * If there is an error in retrieving the properties, an empty
-     * list will be returned and and error message will be logged.
+     * Gets a list of fluent property descriptors from the supplied bean.
+     * Only beans and properties meeting these conditions will have their
+     * property descriptors extracted:
+     * </p>
+     * <ul>
+     *   <li>Bean class must have a public, no-argument constructor</li>
+     *   <li>Bean class must implement {@link Serializable}</li>
+     *   <li>Property field must be private</li>
+     *   <li>Property must have at least one public read or write method.</li>
+     * </ul>
+     * <p>
+     * If there is an error in retrieving a properties, it will be
+     * silently skipped.
      * </p>
      * <p>
-     * For obtaining a specific property descriptor with default support for
-     * read-only or write-only properties, as well
-     * as supporting a few method name variations, use
-     * {@link FluentPropertyDescriptor}.
+     * Since 3.0.0, properties descriptors with read-only or write-only methods
+     * are supported and method name variations will be used to detect
+     * read and write methods.
      * </p>
+     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#writables}
+     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#readables}
+     *
      * @param bean the bean to get property descriptors from
-     * @return list of property descriptors
+     * @return list of property descriptors or an empty list if the supplied
+     *     bean does not qualify or is <code>null</code>.
      */
-    public static List<PropertyDescriptor> getPropertyDescriptors(Object bean) {
-        try {
-            return Stream.of(Introspector.getBeanInfo(
-                    bean.getClass()).getPropertyDescriptors())
-                .filter(pd -> pd.getReadMethod() != null
-                        && pd.getWriteMethod() != null)
-                .collect(Collectors.toList());
-
-//TODO using fluent here as it is does not seem to bring any value so either
-// remove, or get property descriptors for all variations, but this could be
-// messy
-//            List<PropertyDescriptor> pdList = new ArrayList<>();
-//            for (PropertyDescriptor pd : Introspector.getBeanInfo(
-//                    bean.getClass()).getPropertyDescriptors()) {
-//                var fpd = new FluentPropertyDescriptor(pd);
-//                if (fpd.getReadMethod() != null
-//                        && fpd.getWriteMethod() != null) {
-//                    pdList.add(fpd);
-//                }
-//            }
-//            return pdList;
-        } catch (IntrospectionException e) {
-            LOG.error("Cannot get properties of {} instance.",
-                    bean.getClass().getName(), e);
+    public static List<FluentPropertyDescriptor> getPropertyDescriptors(
+            Object bean) {
+        if (bean == null) {
             return Collections.emptyList();
         }
+        return getPropertyDescriptors(bean.getClass());
+    }
+
+    /**
+     * <p>
+     * Gets a list of fluent property descriptors from the supplied bean class.
+     * Only classes and properties meeting these conditions will have their
+     * property descriptors extracted:
+     * </p>
+     * <ul>
+     *   <li>Bean class must have a public, no-argument constructor</li>
+     *   <li>Bean class must implement {@link Serializable}</li>
+     *   <li>Property field must be private</li>
+     *   <li>Property must have at least one public read or write method.</li>
+     * </ul>
+     * <p>
+     * If there is an error in retrieving a properties, it will be silently
+     * skipped.
+     * </p>
+     * Supports method name variations for accessors.
+     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#writables}
+     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#readables}
+     *
+     * @param beanClass the bean class to get property descriptors from
+     * @return list of property descriptors or an empty list if the supplied
+     *     bean does not qualify or is <code>null</code>.
+     * @since 3.0.0
+     */
+    public static List<FluentPropertyDescriptor> getPropertyDescriptors(
+            Class<?> beanClass) {
+        if (beanClass == null
+                || !Serializable.class.isAssignableFrom(beanClass)
+                || String.class.equals(beanClass)
+                || ClassUtils.isPrimitiveOrWrapper(beanClass)) {
+            return Collections.emptyList();
+        }
+        Constructor<?> constructor = null;
+        try {
+            constructor = beanClass.getConstructor();
+        } catch (NoSuchMethodException | SecurityException e) {
+            // swallow
+        }
+        if (constructor == null) {
+            LOG.debug("Could not find an accessible public no-arg "
+                    + "constructor on {}.", beanClass);
+            return Collections.emptyList();
+        }
+        return FieldUtils.getAllFieldsList(beanClass).stream()
+            .filter(f -> Modifier.isPrivate(f.getModifiers())
+                    && !Modifier.isNative(f.getModifiers())
+                    && !Modifier.isStatic(f.getModifiers()))
+            .map(f -> getFluentPropertyDescriptor(beanClass, f))
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
     }
 
     /**
      * Performs shallow copies of source object property values
      * over the corresponding target properties whose values are
      * <code>null</code>.
-     * Supports method name variations for accessors. See
-     * {@link FluentPropertyDescriptor} for a list.
+     * Supports method name variations for accessors.
+     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#writables}
+     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#readables}
      * @param <T> the type of source and target objects
      * @param target the target object
      * @param source the source object
@@ -141,7 +193,8 @@ public final class BeanUtil {
                 return false;
             }
             var name = pd.getName();
-            if (getValue(target, name) == null) {
+            // only copy if target property is null and is writable
+            if (getValue (target, name) == null && isWritable(target, name)) {
                 setValue(target, name, getValue(source, name));
             }
             return true;
@@ -151,8 +204,9 @@ public final class BeanUtil {
     /**
      * Performs shallow copies of source object property values
      * over the corresponding target properties.
-     * Supports method name variations for accessors. See
-     * {@link FluentPropertyDescriptor} for a list.
+     * Supports method name variations for accessors.
+     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#writables}
+     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#readables}
      * @param <T> the type of source and target objects
      * @param target the target object
      * @param source the source object
@@ -176,11 +230,13 @@ public final class BeanUtil {
      * performing shallow copies of the given object property values
      * over the corresponding target properties of the new object.
      * The object type must have an empty constructor.
-     * Supports method name variations for accessors. See
-     * {@link FluentPropertyDescriptor} for a list.
+     * Supports method name variations for accessors.
+     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#writables}
+     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#readables}
      * @param <T> the type of the object being cloned
      * @param bean the object being cloned
      * @return the cloned object
+     * @throws BeanException error cloning the bean
      */
     public static <T> T clone(T bean) {
         if (bean == null) {
@@ -192,7 +248,6 @@ public final class BeanUtil {
                     || ClassUtils.isPrimitiveOrWrapper(bean.getClass())) {
                 return bean;
             }
-
             @SuppressWarnings("unchecked")
             var newBean =
                     (T) bean.getClass().getDeclaredConstructor().newInstance();
@@ -245,13 +300,57 @@ public final class BeanUtil {
         return StringUtils.join(allDiffs, "\n");
     }
 
-    //--- Property methods -----------------------------------------------------
+    /**
+     * Gets child property beans of the supplied objects (nested beans).
+     * For a bean object to be returned as a child, it needs to be accessible
+     * via a read method (getter).
+     * @param bean the object to obtain child beans from
+     * @return list of child beans
+     */
+    public static List<Object> getChildren(Object bean) {
+        if (bean == null) {
+            return Collections.emptyList();
+        }
+        List<Object> list = new ArrayList<>();
+        for (PropertyDescriptor desc : getPropertyDescriptors(bean)) {
+            final var name = desc.getName();
+            if (desc.getReadMethod() != null && !"class".equals(name)) {
+                list.add(getValue(bean, name));
+            }
+        }
+        return list;
+    }
+
+    /**
+     * Gets whether the supplied object has any children (nested beans).
+     * That is, it has at least one property with a read method.
+     * @param bean the bean to test for children
+     * @return <code>true</code> if the object has child beans
+     */
+    public static boolean hasChildren(Object bean) {
+        if (bean == null) {
+            return false;
+        }
+        for (PropertyDescriptor desc : getPropertyDescriptors(bean)) {
+            final var name = desc.getName();
+            if (desc.getReadMethod() != null && !"class".equals(name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    //--------------------------------------------------------------------------
+    // Property methods
+    //--------------------------------------------------------------------------
 
     /**
      * Gets the type of specified object property based on its
      * property descriptor.
-     * Supports method name variations for accessors. See
-     * {@link FluentPropertyDescriptor} for a list.
+     * Supports method name variations for accessors.
+     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#writables}
+     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#readables}
      * @param bean the object
      * @param propertyName the property name
      * @return object property type
@@ -298,109 +397,188 @@ public final class BeanUtil {
     }
 
     /**
-     * Gets the value of a bean property.
-     * Supports method name variations for accessors. See
-     * {@link FluentPropertyDescriptor} for a list.
-     * This method will throw an exception if there is no read method for
-     * the specified property name. To avoid throwing exceptions on missing
-     * read methods, use {@link #getValueIfReadable(Object, String)}
-     * instead.
-     * @param bean the object
-     * @param propertyName the property name
-     * @return object property value
-     * @throws BeanException on error obtaining the property value
+     * Gets the read method (getter) for a bean property.
+     * Supports method name variations for accessors.
+     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#writables}
+     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#readables}
+     * @param bean bean object
+     * @param propertyName property name
+     * @return read method, or {@link Null} if property is write-only
+     * @since 3.0.0
      */
-    public static <T> T getValue(Object bean, String propertyName) {
+    public static Method getReadMethod(Object bean, String propertyName) {
         if (bean == null || propertyName == null) {
             return null;
         }
-        try {
-            var pd = new FluentPropertyDescriptor(
-                    propertyName, bean.getClass());
-            if (!pd.isReadable()) {
-                throw new BeanException(String.format(
-                        "Could not get value for property \"%s\" on bean "
-                        + "type \"%s\". No read method found. "
-                        + "Use #getValueIfReadable to avoid this exception.",
-                        propertyName,
-                        bean.getClass().getName()));
-            }
-            return getValue(bean, pd);
-        } catch (IntrospectionException e) {
-            throw accessorException("get value",
-                    propertyName, bean.getClass().getCanonicalName(), e);
+        return getReadMethod(bean.getClass(), propertyName);
+    }
+
+    /**
+     * Gets the read method (getter) for a bean property.
+     * Supports method name variations for accessors.
+     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#writables}
+     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#readables}
+     * @param beanClass object class
+     * @param propertyName property name
+     * @return read method, or {@link Null} if property is write-only
+     * @since 3.0.0
+     */
+    public static Method getReadMethod(
+            Class<?> beanClass, String propertyName) {
+        if (beanClass == null || propertyName == null) {
+            return null;
         }
+
+        var readMethod = MethodUtils.getAccessibleMethod(
+                beanClass, "get" + StringUtils.capitalize(propertyName));
+
+        // try regular way, boolean
+        if (readMethod == null) {
+            readMethod = MethodUtils.getAccessibleMethod(
+                    beanClass,
+                    "is" + StringUtils.capitalize(propertyName));
+            if (readMethod != null
+                    && !readMethod.getReturnType().equals(Boolean.class)
+                    && !readMethod.getReturnType().equals(Boolean.TYPE)) {
+                readMethod = null;
+            }
+        }
+
+        // if not found the standard way, try build-style (as is)
+        if (readMethod == null) {
+            readMethod = MethodUtils.getAccessibleMethod(
+                    beanClass, propertyName);
+        }
+
+        return readMethod;
+    }
+
+    /**
+     * Gets the write method (setter) for a bean property.
+     * Supports method name variations for accessors.
+     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#writables}
+     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#readables}
+     * @param bean object
+     * @param propertyName property name
+     * @return write method, or <code>null</code> if property is read-only
+     * @since 3.0.0
+     */
+    public static Method getWriteMethod(Object bean, String propertyName) {
+        if (bean == null || propertyName == null) {
+            return null;
+        }
+        return getWriteMethod(bean.getClass(), propertyName);
+    }
+
+    /**
+     * Gets the write method (setter) for a bean property.
+     * Supports method name variations for accessors.
+     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#writables}
+     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#readables}
+     * @param beanClass object class
+     * @param propertyName property name
+     * @return write method, or {@link Null} if property is read-only
+     * @since 3.0.0
+     */
+    public static Method getWriteMethod(
+            Class<?> beanClass, String propertyName) {
+        return getWriteMethod(beanClass, propertyName, null);
+    }
+    /**
+     * Gets the write method (setter) for a bean property.
+     * Supports method name variations for accessors.
+     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#writables}
+     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#readables}
+     * @param beanClass object class
+     * @param propertyName property name
+     * @param propertyType property type, or <code>null</code> if to be detected
+     * @return write method, or {@link Null} if property is read-only
+     * @since 3.0.0
+     */
+    public static Method getWriteMethod(
+            Class<?> beanClass, String propertyName, Class<?> propertyType) {
+
+        if (beanClass == null || propertyName == null) {
+            return null;
+        }
+
+        Method writeMethod;
+
+        var methodName = "set" + StringUtils.capitalize(propertyName);
+
+        // try regular way
+        writeMethod = getWriteMethod(
+                beanClass, methodName, propertyType, false);
+
+        // try fluent-style, returning self
+        if (writeMethod == null) {
+            writeMethod = getWriteMethod(
+                    beanClass, methodName, propertyType, true);
+        }
+
+        // try build-style, returning void
+        if (writeMethod == null) {
+            writeMethod = getWriteMethod(
+                    beanClass, propertyName, propertyType, false);
+        }
+
+        // try build-style, returning self
+        if (writeMethod == null) {
+            writeMethod = getWriteMethod(
+                    beanClass, propertyName, propertyType, true);
+        }
+
+        return writeMethod;
     }
 
     /**
      * Gets the value of a bean property. Returns <code>null</code> if the
      * property has no read method.
-     * Supports method name variations for accessors. See
-     * {@link FluentPropertyDescriptor} for a list.
+     * Supports method name variations for accessors.
+     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#writables}
+     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#readables}
      * @param bean the object
      * @param propertyName the property name
      * @return object property value or <code>null</code> if no read method
      * @throws BeanException on error obtaining the property value
+     * @see BeanUtil#isReadable(Object, String)
      */
-    public static <T> T getValueIfReadable(Object bean, String propertyName) {
+    public static <T> T getValue(Object bean, String propertyName) {
         if (bean == null || propertyName == null) {
             return null;
         }
-        try {
-            var pd = new FluentPropertyDescriptor(
-                    propertyName, bean.getClass());
-            if (pd.isReadable()) {
-                return getValue(bean, pd);
-            }
-            return null;
-        } catch (IntrospectionException e) {
-            throw accessorException("get value",
-                    propertyName, bean.getClass().getCanonicalName(), e);
-        }
+        return getValue(
+                getReadMethod(bean.getClass(), propertyName),
+                bean,
+                propertyName);
     }
 
     /**
      * Gets the value of a bean property based on a {@link PropertyDescriptor}.
-     * Supports method name variations for accessors. See
-     * {@link FluentPropertyDescriptor} for a list.
+     * This is a convenience method equivalent to invoking the method obtained
+     * with {@link PropertyDescriptor#getReadMethod()} when not read-only.
      * @param bean the object
-     * @param property the property descriptor
+     * @param propertyDescriptor the property descriptor
      * @return object property value
      * @throws BeanException on error obtaining the property value
      */
-    @SuppressWarnings("unchecked")
-    public static <T> T getValue(Object bean, PropertyDescriptor property) {
-        if (bean == null || property == null) {
+    public static <T> T getValue(
+            Object bean, PropertyDescriptor propertyDescriptor) {
+        if (bean == null || propertyDescriptor == null) {
             return null;
         }
-        try {
-            // If child is equal to parent, it may be a source of
-            // infinite loop, so we do not return it.  We do the same
-            // if the property is transient.
-            var getter = FluentPropertyDescriptor.toFluent(
-                    property).getReadMethod();
-            if (getter.getAnnotation(Transient.class) != null) {
-                return null;
-            }
-            var value = (T) getter.invoke(bean);
-            if (Objects.equals(bean, value)) {
-                return null;
-            }
-            return value;
-        } catch (IllegalAccessException
-                | IllegalArgumentException
-                | InvocationTargetException
-                | IntrospectionException e) {
-            throw accessorException("get value",
-                    property.getName(), bean.getClass().getCanonicalName(), e);
-        }
+        return getValue(
+                propertyDescriptor.getReadMethod(),
+                bean,
+                propertyDescriptor.getName());
     }
 
     /**
      * Gets whether a given bean property has a read method for it
      * (getter).
-     * Supports method name variations for accessors. See
-     * {@link FluentPropertyDescriptor} for a list.
+     * Supports method name variations for accessors.
+     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#writables}
+     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#readables}
      * @param bean the object
      * @param propertyName the property name
      * @return <code>true</code> if the object property as a getter method
@@ -412,16 +590,26 @@ public final class BeanUtil {
         if (bean == null || propertyName == null) {
             return false;
         }
-        try {
-            var p =
-                    new PropertyDescriptor(propertyName, bean.getClass());
-            return p.getReadMethod() != null;
-        } catch (IntrospectionException | IllegalArgumentException e) {
-            LOG.trace("Could not get information for property \"{}\" on "
-                    + "bean type \"{}\".",
-                    propertyName, bean.getClass().getCanonicalName(), e);
+        return isReadable(bean.getClass(), propertyName);
+    }
+
+    /**
+     * Gets whether a given class property has a read method for it
+     * (getter).
+     * Supports method name variations for accessors.
+     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#writables}
+     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#readables}
+     * @param beanClass a bean class
+     * @param propertyName the property name
+     * @return <code>true</code> if the object property as a getter method
+     * @throws BeanException on error obtaining property information
+     * @since 3.0.0
+     */
+    public static boolean isReadable(Class<?> beanClass, String propertyName) {
+        if (beanClass == null || propertyName == null) {
             return false;
         }
+        return getReadMethod(beanClass, propertyName) != null;
     }
 
     /**
@@ -438,50 +626,18 @@ public final class BeanUtil {
     }
 
     /**
-     * Sets the value of a bean property.
-     * Supports method name variations for accessors. See
-     * {@link FluentPropertyDescriptor} for a list.
-     * This method will throw an exception if there is no write method for
-     * the specified property name. To avoid throwing exceptions on missing
-     * write methods, use {@link #setValueIfWritable(Object, String, Object)}
-     * instead.
-     *
-     * @param bean the object
-     * @param propertyName the property name
-     * @param value object property value
-     * @throws BeanException on error obtaining the property value or if
-     *     the property is read-only
-     */
-    public static void setValue(
-            @NonNull Object bean, @NonNull String propertyName, Object value) {
-        try {
-            var method = getWriteMethod(bean, propertyName);
-            if (method == null) {
-                throw new BeanException(String.format(
-                        "Could not set value for property \"%s\" on bean "
-                        + "type \"%s\". No write method found. "
-                        + "Use #setValueIfWritable to avoid this exception.",
-                        propertyName,
-                        bean.getClass().getName()));
-            }
-            method.invoke(bean, value);
-        } catch (Exception e) {
-            throw accessorException("set value",
-                    propertyName, bean.getClass().getCanonicalName(), e);
-        }
-    }
-    /**
      * Sets the value of a bean property only if it is writable. Otherwise
      * does nothing.
-     * Supports method name variations for accessors. See
-     * {@link FluentPropertyDescriptor} for a list.
-     *
+     * Supports method name variations for accessors.
+     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#writables}
+     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#readables}
      * @param bean the object
      * @param propertyName the property name
      * @param value object property value
      * @throws BeanException on error obtaining the property value
+     * @see #isWritable(Object, String)
      */
-    public static void setValueIfWritable(
+    public static void setValue(
             @NonNull Object bean, @NonNull String propertyName, Object value) {
         try {
             var method = getWriteMethod(bean, propertyName);
@@ -495,13 +651,10 @@ public final class BeanUtil {
     }
 
     /**
-     * <p>
-     * Gets whether a given bean property has a setter method for it, with
-     * support for these three different notations:
-     * </p>
-     * <ul>
-     *
-     * </ul>
+     * Gets whether a given bean property has a write method for it (setter).
+     * Supports method name variations for accessors.
+     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#writables}
+     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#readables}
      * @param bean the object
      * @param propertyName the property name
      * @return <code>true</code> if the object property as a setter method
@@ -514,42 +667,45 @@ public final class BeanUtil {
     }
 
     /**
-     * <p>
-     * Gets whether a given bean property has a setter method for it, with
-     * support for these three different notations:
-     * </p>
-     * <ul>
-     *
-     * </ul>
+     * Gets whether a given bean property has a write method for it (setter).
+     * Supports method name variations for accessors.
+     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#writables}
+     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#readables}
      * @param bean the object
      * @param propertyName the property name
-     * @return <code>true</code> if the object property as a setter method
+     * @return <code>true</code> if the object property as a write method
      * @throws BeanException on error obtaining property information
+     * @since 3.0.0
      */
     public static boolean isWritable(Object bean, String propertyName) {
         if (bean == null || propertyName == null) {
             return false;
         }
-        try {
-            var p = new FluentPropertyDescriptor(propertyName, bean.getClass());
-            return p.getWriteMethod() != null;
-        } catch (IntrospectionException | IllegalArgumentException e) {
-            LOG.trace("Could not get information for property \"{}\" on "
-                    + "bean type \"{}\".",
-                    propertyName, bean.getClass().getCanonicalName(), e);
+        return isWritable(bean.getClass(), propertyName);
+    }
+
+    /**
+     * Gets whether a given bean property has a write method for it (setter).
+     * Supports method name variations for accessors.
+     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#writables}
+     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#readables}
+     * @param beanClass bean class
+     * @param propertyName property name
+     * @return <code>true</code> if the object property as a write method
+     * @throws BeanException on error obtaining property information
+     * @since 3.0.0
+     */
+    public static boolean isWritable(Class<?> beanClass, String propertyName) {
+        if (beanClass == null || propertyName == null) {
             return false;
         }
-    }
-
-    private static BeanException accessorException(
-            String action, String property, String className, Exception e) {
-        return new BeanException(String.format(
-                "Could not %s for property \"%s\" on bean type \"%s\".",
-                action, property, className), e);
+        return getWriteMethod(beanClass, propertyName) != null;
     }
 
 
-    //--- Map/Properties methods -----------------------------------------------
+    //--------------------------------------------------------------------------
+    // Map/Properties methods
+    //--------------------------------------------------------------------------
 
     /**
      * Converts a bean to a map where the keys are the object property names
@@ -622,7 +778,9 @@ public final class BeanUtil {
     }
 
 
-    //--- Visitor/Graph methods ------------------------------------------------
+    //--------------------------------------------------------------------------
+    // Visitor/Graph methods
+    //--------------------------------------------------------------------------
 
     /**
      * Finds a list of objects matching the given type by traversing
@@ -631,6 +789,7 @@ public final class BeanUtil {
      * @param <T> the type of objects to find
      * @param bean the bean on which to find matches
      * @param type class instance of the type to find
+     *     (must not be <code>null</code>)
      * @return a list of objects matching the supplied type
      */
     public static <T> List<T> find(Object bean, @NonNull Class<T> type) {
@@ -712,44 +871,6 @@ public final class BeanUtil {
                 .visitor(visitor)
                 .type(type)
                 .build());
-    }
-
-    /**
-     * Gets child objects of the supplied bean.
-     * @param bean the object to obtain child objects from
-     * @return list of child objects
-     */
-    public static List<Object> getChildren(Object bean) {
-        if (bean == null) {
-            return Collections.emptyList();
-        }
-        List<Object> list = new ArrayList<>();
-        for (PropertyDescriptor desc : getPropertyDescriptors(bean)) {
-            final var name = desc.getName();
-            if (desc.getReadMethod() != null && !"class".equals(name)) {
-                list.add(getValue(bean, name));
-            }
-        }
-        return list;
-    }
-
-    /**
-     * Gets whether the supplied object has any children. That is, it
-     * has at least one property with a getter method.
-     * @param bean the bean to test for children
-     * @return <code>true</code> if the object has child beans
-     */
-    public static boolean hasChildren(Object bean) {
-        if (bean == null) {
-            return false;
-        }
-        for (PropertyDescriptor desc : getPropertyDescriptors(bean)) {
-            final var name = desc.getName();
-            if (desc.getReadMethod() != null && !"class".equals(name)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**
@@ -839,6 +960,11 @@ public final class BeanUtil {
                 .build());
     }
 
+
+    //--------------------------------------------------------------------------
+    // Private/package methods
+    //--------------------------------------------------------------------------
+
     @SuppressWarnings("unchecked")
     private static <T> boolean doVisit(VisitArgs<Predicate<T>, T> args) {
         if (args.isBeanNullOrCached()) {
@@ -870,6 +996,7 @@ public final class BeanUtil {
         }
         return true;
     }
+
     private static <T> boolean doVisitCollection(
             Collection<Object> collection,
             VisitArgs<Predicate<T>, T> args) {
@@ -957,28 +1084,93 @@ public final class BeanUtil {
         return bag;
     }
 
+    private static BeanException accessorException(
+            String action, String property, String className, Exception e) {
+        return new BeanException(String.format(
+                "Could not %s for property \"%s\" on bean type \"%s\".",
+                action, property, className), e);
+    }
 
-    /**
-     * Gets a bean write method, with supports for fluent API (returning self).
-     * @param bean object
-     * @param propertyName property name
-     * @return method, or <code>null</code> in no writable method is found
-     */
-    public static Method getWriteMethod(Object bean, String propertyName) {
-        if (bean == null || propertyName == null) {
+    static Method getWriteMethod(
+            Class<?> beanClass,
+            String methodName,
+            Class<?> propType,
+            boolean fluent) {
+        // if propType is set, use it. Else, guess it, by picking the
+        // first setter with a matching name.
+        Method method = null;
+        if (propType != null) {
+            try {
+                method = beanClass.getMethod(methodName, propType);
+            } catch (NoSuchMethodException
+                    | SecurityException
+                    | NullPointerException e ) {
+                // swallow
+            }
+        } else {
+            // get first matching method name, having a single argument
+            method = Stream.of(beanClass.getMethods())
+                .filter(m -> m.getName().equals(methodName))
+                .filter(m -> m.getParameterCount() == 1)
+                .findFirst()
+                .orElse(null);
+        }
+
+        // if fluent is requested and is not fluent, we don't return it
+        if (fluent && method != null
+                && !method.getReturnType().equals(beanClass)) {
+            method = null;
+        }
+        return method;
+    }
+
+    private static FluentPropertyDescriptor getFluentPropertyDescriptor(
+            @NonNull Class<?> beanClass, @NonNull Field field) {
+        try {
+            var readMethod = getReadMethod(beanClass, field.getName());
+            var writeMethod = getWriteMethod(
+                    beanClass, field.getName(), field.getType());
+            if (ObjectUtils.allNull(readMethod, writeMethod)) {
+                LOG.debug("Cannot get descriptor for property \"{}\" of bean "
+                        + "class \"{}\". Property has no read or "
+                        + "write methods.",
+                        field.getName(), beanClass.getName());
+                return null;
+            }
+            return new FluentPropertyDescriptor(
+                    field.getName(), readMethod, writeMethod);
+        } catch (IntrospectionException e) {
+            LOG.debug("Cannot get descriptor for property \"{}\" of bean "
+                    + "class \"{}\".",
+                    field.getName(), beanClass.getName(), e);
+            return null;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> T getValue(Method method, Object bean, String property) {
+        // We don't attempt to get the value if transient
+        if (method == null
+                || bean == null
+                || method.getAnnotation(Transient.class) != null) {
             return null;
         }
         try {
-            var pd =
-                    new FluentPropertyDescriptor(propertyName, bean.getClass());
-            return pd.getWriteMethod();
-        } catch (IntrospectionException e) {
-            LOG.error("Cannot get write method from {}.",
-                    bean.getClass().getName(), e);
+            var value = (T) method.invoke(bean);
+            // If it equals to self, we do not consider it a bean property.
+            // Plus, it may be a source of infinite loop, so we do not return
+            // it.
+            if (Objects.equals(bean, value)) {
+                return null;
+            }
+            return value;
+        } catch (IllegalAccessException
+                | IllegalArgumentException
+                | InvocationTargetException e) {
+            throw accessorException("get value",
+                    property, bean.getClass().getCanonicalName(), e);
         }
-        return null;
     }
-
 
     //--- Inner classes --------------------------------------------------------
 
