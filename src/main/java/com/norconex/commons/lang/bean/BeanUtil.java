@@ -353,7 +353,8 @@ public final class BeanUtil {
      * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#readables}
      * @param bean the object
      * @param propertyName the property name
-     * @return object property type
+     * @return object property type or <code>null</code> if not a bean property
+     *     (e.g., has no read or write method)
      * @throws BeanException on error obtaining the property type
      */
     public static Class<?> getPropertyType(Object bean, String propertyName) {
@@ -362,9 +363,12 @@ public final class BeanUtil {
         }
         try {
             var p = new FluentPropertyDescriptor(propertyName, bean.getClass());
+            if (p.getReadMethod() == null && p.getWriteMethod() == null) {
+                return null;
+            }
             return p.getPropertyType();
         } catch (IntrospectionException | IllegalArgumentException e) {
-            throw accessorException("get type",
+            throw accessorException("get property type",
                     propertyName, bean.getClass().getCanonicalName(), e);
         }
     }

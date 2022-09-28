@@ -14,14 +14,19 @@
  */
 package com.norconex.commons.lang.bean;
 
+import static com.norconex.commons.lang.bean.BeanUtil.getReadMethod;
+import static com.norconex.commons.lang.bean.BeanUtil.getWriteMethod;
 import static com.norconex.commons.lang.bean.BeanUtil.isReadable;
 import static com.norconex.commons.lang.bean.BeanUtil.isWritable;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -30,6 +35,7 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.ibm.icu.math.BigDecimal;
 import com.norconex.commons.lang.bean.BeanUtilTest.MiscAccessorsBean.Fields;
 import com.norconex.commons.lang.event.Event;
 import com.norconex.commons.lang.event.IEventListener;
@@ -41,7 +47,7 @@ import lombok.experimental.FieldNameConstants;
 class BeanUtilTest {
 
     @Test
-    void testGetPropertyDescriptors() {
+    void testGetPropertyDescriptorsObject() {
         assertThat(BeanUtil.getPropertyDescriptors(new Bean())
                 .stream()
                 .map(PropertyDescriptor::getName)
@@ -52,13 +58,32 @@ class BeanUtilTest {
                     "objectInteger",
                     "event",
                     "doubles");
+        assertThat(BeanUtil.getPropertyDescriptors((Object) null)).isEmpty();
+        // Test no empty args contructor
+        assertThat(BeanUtil.getPropertyDescriptors(
+                new BigDecimal(0))).isEmpty();
+    }
+    @Test
+    void testGetPropertyDescriptorsClass() {
+        assertThat(BeanUtil.getPropertyDescriptors(Bean.class)
+                .stream()
+                .map(PropertyDescriptor::getName)
+                .collect(Collectors.toList()))
+            .containsExactlyInAnyOrder(
+                    "string",
+                    "primitiveInt",
+                    "objectInteger",
+                    "event",
+                    "doubles");
+        assertThat(BeanUtil.getPropertyDescriptors((Class<?>) null)).isEmpty();
+        // Test no empty args contructor
+        assertThat(BeanUtil.getPropertyDescriptors(
+                new BigDecimal(0))).isEmpty();
     }
 
-    @Test 
+    @Test
     void testCopyPropertiesOverNulls() {
-
         //--- Base Test ---
-
         var target = new SubBean();
         target.setObjectInteger(null);
 
@@ -101,9 +126,7 @@ class BeanUtilTest {
 
     @Test
     void testCopyProperties() {
-
         //--- Base Test ---
-
         var target = new SubBean();
         target.setObjectInteger(null);
 
@@ -162,7 +185,12 @@ class BeanUtilTest {
             .isEqualTo(bean);
         assertThat(actualBean.readOnly).isNull();
         assertThat(actualBean.writeOnly).isNull();
+
+        assertThat((SubBean) BeanUtil.clone(null)).isNull();
+        assertThat(BeanUtil.clone("nope")).isEqualTo("nope");
+        assertThat(BeanUtil.clone(123)).isEqualTo(123);
     }
+
 
     @Test
     void testDiff() {
@@ -177,6 +205,19 @@ class BeanUtilTest {
               + "< Bean.primitiveInt = 123\n"
               + "> Bean.primitiveInt = 321";
         assertThat(BeanUtil.diff(bean1, bean2)).isEqualTo(expected);
+    }
+
+    @Test
+    void testGetChildren() {
+        assertThat(BeanUtil.getChildren(new Root())).hasSize(3);
+        assertThat(BeanUtil.getChildren((Class<?>) null)).isEmpty();
+    }
+
+    @Test
+    void testHasChildren() {
+        assertThat(BeanUtil.hasChildren(new Root())).isTrue();
+        assertThat(BeanUtil.hasChildren(null)).isFalse();
+        assertThat(BeanUtil.hasChildren(new Sub3_1Yes())).isFalse();
     }
 
     @Test
@@ -195,37 +236,86 @@ class BeanUtilTest {
 
         assertThat(BeanUtil.getPropertyType(null, "doubles")).isNull();
         assertThat(BeanUtil.getPropertyType(bean, null)).isNull();
-        assertThatExceptionOfType(BeanException.class).isThrownBy(
-                () -> BeanUtil.getPropertyType(bean, "badProperty"));
+        assertThat(BeanUtil.getPropertyType(bean, "badProperty")).isNull();
     }
 
     @Test
     void testGetPropertyGenericType() {
         assertThat(BeanUtil.getPropertyGenericType(Bean.class, "doubles"))
-                .isEqualTo(Double.class);
+            .isEqualTo(Double.class);
         assertThat(BeanUtil.getPropertyGenericType(null, "doubles")).isNull();
         assertThat(BeanUtil.getPropertyGenericType(Bean.class, null)).isNull();
         assertThatExceptionOfType(BeanException.class).isThrownBy(() ->
-                BeanUtil.getPropertyGenericType(Bean.class, "badProperty"));
+            BeanUtil.getPropertyGenericType(Bean.class, "badProperty"));
+    }
+
+    @Test
+    void testGetReadMethod() {
+        var b = new MiscAccessorsBean();
+        assertThat(getReadMethod(b, Fields.normal)).isNotNull();
+        assertThat(getReadMethod(b, Fields.normalSetterNoGetter)).isNull();
+        assertThat(getReadMethod(b, Fields.normalGetterNoSetter)).isNotNull();
+        assertThat(getReadMethod(b, Fields.fluent)).isNotNull();
+        assertThat(getReadMethod(b, Fields.fluentSetterNoGetter)).isNull();
+        assertThat(getReadMethod(b, Fields.boolNormal)).isNotNull();
+        assertThat(getReadMethod(b, Fields.boolSetterNoGetter)).isNull();
+        assertThat(getReadMethod(b, Fields.boolGetterNoSetter)).isNotNull();
+        assertThat(getReadMethod(b, Fields.boolFluent)).isNotNull();
+        assertThat(getReadMethod(b, Fields.boolFluentSetterNoGetter)).isNull();
+        assertThat(getReadMethod(b, Fields.compactNormal)).isNotNull();
+        assertThat(getReadMethod(b, Fields.compactSetterNoGetter)).isNull();
+        assertThat(getReadMethod(b, Fields.compactGetterNoSetter)).isNotNull();
+        assertThat(getReadMethod(b, Fields.compactFluent)).isNotNull();
+        assertThat(getReadMethod(
+                b, Fields.compactFluentSetterNoGetter)).isNull();
+        assertThat(getReadMethod((Object) null, Fields.compactFluent)).isNull();
+        assertThat(getReadMethod(
+                (Class<?>) null, Fields.compactFluent)).isNull();
+    }
+
+    @Test
+    void testGetWriteMethodObjectString() {
+        var b = new MiscAccessorsBean();
+        assertThat(getWriteMethod(b, Fields.normal)).isNotNull();
+        assertThat(getWriteMethod(b, Fields.normalSetterNoGetter)).isNotNull();
+        assertThat(getWriteMethod(b, Fields.normalGetterNoSetter)).isNull();
+        assertThat(getWriteMethod(b, Fields.fluent)).isNotNull();
+        assertThat(getWriteMethod(b, Fields.fluentSetterNoGetter)).isNotNull();
+        assertThat(getWriteMethod(b, Fields.boolNormal)).isNotNull();
+        assertThat(getWriteMethod(b, Fields.boolSetterNoGetter)).isNotNull();
+        assertThat(getWriteMethod(b, Fields.boolGetterNoSetter)).isNull();
+        assertThat(getWriteMethod(b, Fields.boolFluent)).isNotNull();
+        assertThat(getWriteMethod(
+                b, Fields.boolFluentSetterNoGetter)).isNotNull();
+        assertThat(getWriteMethod(b, Fields.compactNormal)).isNotNull();
+        assertThat(getWriteMethod(b, Fields.compactSetterNoGetter)).isNotNull();
+        assertThat(getWriteMethod(b, Fields.compactGetterNoSetter)).isNull();
+        assertThat(getWriteMethod(b, Fields.compactFluent)).isNotNull();
+        assertThat(getWriteMethod(
+                b, Fields.compactFluentSetterNoGetter)).isNotNull();
+        assertThat(getWriteMethod(
+                (Object) null, Fields.compactFluent)).isNull();
+        assertThat(getWriteMethod(
+                (Class<?>) null, Fields.compactFluent)).isNull();
     }
 
     @Test
     void testGetValueObjectString() {
         var bean = new Bean();
-        assertThat((String) BeanUtil.getValue(bean, "string"))
-                .isEqualTo("potato");
-        assertThat((int) BeanUtil.getValue(bean, "primitiveInt"))
-                .isEqualTo(123);
-        assertThat((Integer) BeanUtil.getValue(bean, "objectInteger"))
-                .isEqualTo(Integer.valueOf(456));
+        assertThat((String) BeanUtil.getValue(
+                bean, "string")).isEqualTo("potato");
+        assertThat((int) BeanUtil.getValue(
+                bean, "primitiveInt")).isEqualTo(123);
+        assertThat((Integer) BeanUtil.getValue(
+                bean, "objectInteger")).isEqualTo(Integer.valueOf(456));
         assertThat((Event) BeanUtil.getValue(bean, "event"))
                 .isEqualTo(Event.builder("testEvent", "test").build());
 
         assertThat((List<?>) BeanUtil.getValue(null, "doubles")).isNull();
-        assertThat((String) BeanUtil.getValue(Bean.class, (String) null))
-                .isNull();
-        assertThatExceptionOfType(BeanException.class).isThrownBy(() ->
-                BeanUtil.getValue(Bean.class, "badProperty"));
+        assertThat((String) BeanUtil.getValue(
+                Bean.class, (String) null)).isNull();
+        assertThat((String) BeanUtil.getValue(
+                Bean.class, "badProperty")).isNull();
     }
 
     @Test
@@ -240,8 +330,32 @@ class BeanUtilTest {
     }
 
     @Test
-    void testSetValue() {
+    void testIsReadable() {
+        var b = new MiscAccessorsBean();
+        assertThat(isReadable(b, Fields.normal)).isTrue();
+        assertThat(isReadable(b, Fields.normalSetterNoGetter)).isFalse();
+        assertThat(isReadable(b, Fields.normalGetterNoSetter)).isTrue();
+        assertThat(isReadable(b, Fields.fluent)).isTrue();
+        assertThat(isReadable(b, Fields.fluentSetterNoGetter)).isFalse();
+        assertThat(isReadable(b, Fields.boolNormal)).isTrue();
+        assertThat(isReadable(b, Fields.boolSetterNoGetter)).isFalse();
+        assertThat(isReadable(b, Fields.boolGetterNoSetter)).isTrue();
+        assertThat(isReadable(b, Fields.boolFluent)).isTrue();
+        assertThat(isReadable(b, Fields.boolFluentSetterNoGetter)).isFalse();
+        assertThat(isReadable(b, Fields.compactNormal)).isTrue();
+        assertThat(isReadable(b, Fields.compactSetterNoGetter)).isFalse();
+        assertThat(isReadable(b, Fields.compactGetterNoSetter)).isTrue();
+        assertThat(isReadable(b, Fields.compactFluent)).isTrue();
+        assertThat(isReadable(b, Fields.compactFluentSetterNoGetter)).isFalse();
 
+        assertThat(isReadable(null, Fields.normal)).isFalse();
+        assertThat(isReadable((Object) null, Fields.normal)).isFalse();
+        assertThat(isReadable((Class<?>) null, Fields.normal)).isFalse();
+        assertThat(isReadable(b, "badProperty")).isFalse();
+    }
+
+    @Test
+    void testSetValue() {
         // Direct values
 
         var bean = new Bean();
@@ -266,12 +380,9 @@ class BeanUtilTest {
         // set sub value
         BeanUtil.setValue(subBean, "date", new Date(946684800000L));
         // set readonly
-        try {
-            BeanUtil.setValue(subBean, "readOnly", "should fail");
-            Assertions.fail("Setting a readonly property should fail.");
-        } catch (BeanException e) {
-            //NOOP
-        }
+        assertThatNoException().isThrownBy(() -> BeanUtil.setValue(
+                subBean, "readOnly", "should fail silently"));
+
         // set writeonly
         BeanUtil.setValue(subBean, "writeOnly", "should be OK");
 
@@ -298,76 +409,157 @@ class BeanUtilTest {
         assertThat(isWritable(b, Fields.compactGetterNoSetter)).isFalse();
         assertThat(isWritable(b, Fields.compactFluent)).isTrue();
         assertThat(isWritable(b, Fields.compactFluentSetterNoGetter)).isTrue();
-    }
 
-    @Test
-    void testIsReadable() {
-        var b = new MiscAccessorsBean();
-        assertThat(isReadable(b, Fields.normal)).isTrue();
-        assertThat(isReadable(b, Fields.normalSetterNoGetter)).isFalse();
-        assertThat(isReadable(b, Fields.normalGetterNoSetter)).isTrue();
-        assertThat(isReadable(b, Fields.fluent)).isTrue();
-        assertThat(isReadable(b, Fields.fluentSetterNoGetter)).isFalse();
-        assertThat(isReadable(b, Fields.boolNormal)).isTrue();
-        assertThat(isReadable(b, Fields.boolSetterNoGetter)).isFalse();
-        assertThat(isReadable(b, Fields.boolGetterNoSetter)).isTrue();
-        assertThat(isReadable(b, Fields.boolFluent)).isTrue();
-        assertThat(isReadable(b, Fields.boolFluentSetterNoGetter)).isFalse();
-        assertThat(isReadable(b, Fields.compactNormal)).isTrue();
-        assertThat(isReadable(b, Fields.compactSetterNoGetter)).isFalse();
-        assertThat(isReadable(b, Fields.compactGetterNoSetter)).isTrue();
-        assertThat(isReadable(b, Fields.compactFluent)).isTrue();
-        assertThat(isReadable(b, Fields.compactFluentSetterNoGetter)).isFalse();
-    }
-
-
-    @Test
-    void testisWritableDELETE() {
-        var bean = new SubBean();
-        assertThat(BeanUtil.isWritable(bean, "writeOnly")).isTrue();
-       // assertThat(BeanUtil.isWritable(bean, "readOnly")).isFalse();
-    }
-
-    @Test
-    void testIsGettableDELETE() {
-        var bean = new SubBean();
-        assertThat(BeanUtil.isGettable(bean, "writeOnly")).isFalse();
-        assertThat(BeanUtil.isGettable(bean, "readOnly")).isTrue();
+        assertThat(isWritable(null, Fields.normal)).isFalse();
+        assertThat(isWritable((Object) null, Fields.normal)).isFalse();
+        assertThat(isWritable((Class<?>) null, Fields.normal)).isFalse();
+        assertThat(isWritable(b, "badProperty")).isFalse();
     }
 
     @Test
     void testToMap() {
-        throw new RuntimeException("not yet implemented");
+        var map = BeanUtil.toMap(new Bean());
+        Assertions.assertEquals("potato", map.get("string"));
+        Assertions.assertEquals(123, map.get("primitiveInt"));
+        Assertions.assertEquals(Integer.valueOf(456), map.get("objectInteger"));
+        Assertions.assertEquals(Event.builder(
+                "testEvent", "test").build(), map.get("event"));
+        Assertions.assertEquals(Arrays.asList(0.5d, 1.0d), map.get("doubles"));
+        Assertions.assertEquals(5, map.size());
+
+        assertThat(BeanUtil.toMap(null)).isEmpty();
     }
 
     @Test
     void testToProperties() {
-        throw new RuntimeException("not yet implemented");
+        var props = BeanUtil.toProperties(new Bean(), "event");
+        Assertions.assertEquals("potato", props.getString("string"));
+        Assertions.assertEquals("123", props.getString("primitiveInt"));
+        Assertions.assertEquals("456", props.getString("objectInteger"));
+        Assertions.assertEquals(
+                Arrays.asList("0.5", "1.0"), props.getStrings("doubles"));
+        Assertions.assertEquals(4, props.size());
+
+        assertThat(BeanUtil.toProperties(null)).isEmpty();
     }
 
     @Test
     void testFind() {
-        throw new RuntimeException("not yet implemented");
+        assertThat(BeanUtil.find(new Root(), IEventListener.class)).hasSize(3);
     }
 
     @Test
-    void testGetChildren() {
-        throw new RuntimeException("not yet implemented");
+    void testVisitAllObjectConsumer() {
+        List<String> names = new ArrayList<>();
+        BeanUtil.visitAll(
+                new Root(),
+                o -> names.add(o.getClass().getSimpleName()));
+        assertThat(names).containsExactly(
+                "Root", "Sub1Yes", "Sub2No", "Sub3Yes", "Sub3_1Yes");
     }
 
     @Test
-    void testHasChildren() {
-        throw new RuntimeException("not yet implemented");
+    void testVisitAllObjectConsumerClass() {
+        List<String> names = new ArrayList<>();
+        BeanUtil.visitAll(
+                new Root(),
+                o -> names.add(o.getClass().getSimpleName()),
+                IEventListener.class);
+        assertThat(names).containsExactly("Sub1Yes", "Sub3Yes", "Sub3_1Yes");
     }
 
     @Test
-    void testGetWriteMethod() {
-        throw new RuntimeException("not yet implemented");
+    void testVisitObjectPredicate() {
+        List<String> names = new ArrayList<>();
+        BeanUtil.visit(
+                new Root(),
+                o -> {
+                    names.add(o.getClass().getSimpleName());
+                    return !o.getClass().getName().endsWith("No");
+                });
+        assertThat(names).containsExactly("Root", "Sub1Yes", "Sub2No");
     }
+
+    @Test
+    void testVisitObjectPredicateClass() {
+        List<String> names = new ArrayList<>();
+        BeanUtil.visit(
+                new Root(),
+                o -> {
+                    names.add(o.getClass().getSimpleName());
+                    return !"Sub3Yes".equals(o.getClass().getSimpleName());
+                },
+                IEventListener.class);
+        assertThat(names).containsExactly("Sub1Yes", "Sub3Yes");
+    }
+
+    @Test
+    void testVisitAllPropertiesObjectBiConsumer() {
+        List<String> names = new ArrayList<>();
+        BeanUtil.visitAllProperties(
+                new Root(),
+                (o, pd) -> names.add(pd.getName()));
+        assertThat(names).containsExactly(
+                "sub1yes", "sub2no", "sub3yes", "sub1Yes", "sub3_1Yes");
+    }
+
+    @Test
+    void testVisitAllPropertiesObjectBiConsumerClass() {
+        List<String> names = new ArrayList<>();
+        BeanUtil.visitAllProperties(
+                new Root(),
+                (o, pd) -> names.add(pd.getName()),
+                IEventListener.class);
+        // Only Sub3Yes qualifies (IEventListener) AND has any properties to
+        // return, so returned property can only be from that class.
+        assertThat(names).containsExactly("sub1Yes", "sub3_1Yes");
+    }
+
+    @Test
+    void testVisitPropertiesObjectBiPredicate() {
+        List<String> names = new ArrayList<>();
+        BeanUtil.visitProperties(
+                new Root(),
+                (o, pd) -> {
+                    names.add(pd.getName());
+                    return !"sub3yes".equals(pd.getName());
+                });
+        assertThat(names).containsExactly("sub1yes", "sub2no", "sub3yes");
+    }
+
+    @Test
+    void testVisitPropertiesObjectBiPredicateClass() {
+        // Only Sub3Yes qualifies (IEventListener) AND has any properties to
+        // return, so returned property can only be from that class.
+        List<String> names = new ArrayList<>();
+        BeanUtil.visitProperties(
+                new Root(),
+                (o, pd) -> {
+                    names.add(pd.getName());
+                    // "sub3yes" should never be encountered, so it continues..
+                    return !"sub3yes".equals(pd.getName());
+                },
+                IEventListener.class);
+        assertThat(names).containsExactly("sub1Yes", "sub3_1Yes");
+
+
+        names.clear();
+        BeanUtil.visitProperties(
+                new Root(),
+                (o, pd) -> {
+                    names.add(pd.getName());
+                    // "sub1Yes" is encountered, so we stop there
+                    return !"sub1Yes".equals(pd.getName());
+                },
+                IEventListener.class);
+        assertThat(names).containsExactly("sub1Yes");
+    }
+
 
     //--- Test classes ---------------------------------------------------------
 
-    public static class Root {
+    public static class Root implements Serializable {
+        private static final long serialVersionUID = 1L;
         private Sub1Yes sub1yes = new Sub1Yes();
         private Sub2No sub2no = new Sub2No();
         private Sub3Yes sub3yes = new Sub3Yes(sub1yes);
@@ -391,16 +583,20 @@ class BeanUtilTest {
         }
     }
 
-    public static class Sub1Yes implements IEventListener<Event> {
+    public static class Sub1Yes implements IEventListener<Event>, Serializable {
+        private static final long serialVersionUID = 1L;
         @Override
         public void accept(Event t) {
         }
     }
-    public static class Sub2No {
+    public static class Sub2No implements Serializable {
+        private static final long serialVersionUID = 1L;
     }
-    public static class Sub3Yes implements IEventListener<Event> {
+    public static class Sub3Yes implements IEventListener<Event>, Serializable {
+        private static final long serialVersionUID = 1L;
         private Sub1Yes sub1Yes;
         private Sub3_1Yes sub3_1Yes = new Sub3_1Yes();
+        public Sub3Yes() {}
         public Sub3Yes(Sub1Yes sub1Yes) {
             this.sub1Yes = sub1Yes;
         }
@@ -421,14 +617,17 @@ class BeanUtilTest {
         }
     }
 
-    public static class Sub3_1Yes implements IEventListener<Event> {
+    public static class Sub3_1Yes
+            implements IEventListener<Event>, Serializable {
+        private static final long serialVersionUID = 1L;
         @Override
         public void accept(Event t) {
         }
     }
 
     @Data
-    public static class Bean {
+    public static class Bean implements Serializable {
+        private static final long serialVersionUID = 1L;
         private String string = "potato";
         private int primitiveInt = 123;
         private Integer objectInteger = 456;
@@ -438,6 +637,7 @@ class BeanUtilTest {
 
     @ToString
     public static class SubBean extends Bean {
+        private static final long serialVersionUID = 1L;
         private Date date;
         private String readOnly;
         private String writeOnly;
@@ -471,7 +671,15 @@ class BeanUtilTest {
 
     @ToString
     @FieldNameConstants
-    public static class MiscAccessorsBean {
+    public static class MiscAccessorsBean implements Serializable {
+        private static final long serialVersionUID = 1L;
+
+        public MiscAccessorsBean() {
+            // useless assignments, fix for IDE auto-save messing those up:
+            boolSetterNoGetter = false;
+            boolFluentSetterNoGetter = false;
+        }
+
         // * getX();  void setX(*)
         private String normal;
         public String getNormal() {
