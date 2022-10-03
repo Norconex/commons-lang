@@ -168,7 +168,7 @@ public final class BeanUtil {
             .filter(f -> Modifier.isPrivate(f.getModifiers())
                     && !Modifier.isNative(f.getModifiers())
                     && !Modifier.isStatic(f.getModifiers()))
-            .map(f -> getFluentPropertyDescriptor(beanClass, f))
+            .map(f -> doGetFluentPropertyDescriptor(beanClass, f))
             .filter(Objects::nonNull)
             .collect(Collectors.toList());
     }
@@ -1128,7 +1128,7 @@ public final class BeanUtil {
         return method;
     }
 
-    private static FluentPropertyDescriptor getFluentPropertyDescriptor(
+    private static FluentPropertyDescriptor doGetFluentPropertyDescriptor(
             @NonNull Class<?> beanClass, @NonNull Field field) {
         try {
             var readMethod = getReadMethod(beanClass, field.getName());

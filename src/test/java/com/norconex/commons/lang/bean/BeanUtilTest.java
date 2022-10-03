@@ -29,7 +29,12 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Assertions;
@@ -40,7 +45,9 @@ import com.norconex.commons.lang.bean.BeanUtilTest.MiscAccessorsBean.Fields;
 import com.norconex.commons.lang.event.Event;
 import com.norconex.commons.lang.event.IEventListener;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.experimental.FieldNameConstants;
 
@@ -456,6 +463,21 @@ class BeanUtilTest {
                 o -> names.add(o.getClass().getSimpleName()));
         assertThat(names).containsExactly(
                 "Root", "Sub1Yes", "Sub2No", "Sub3Yes", "Sub3_1Yes");
+
+
+        // collections/maps
+        Set<String> nameSet = new TreeSet<>();
+        BeanUtil.visitAll(
+                new CollectionsHolder(),
+                o -> nameSet.add(o.getClass().getSimpleName()));
+        assertThat(nameSet).containsExactly(
+                "ArrayList",
+                "CollectionEntry",
+                "CollectionsHolder",
+                "HashMap",
+                "HashSet",
+                "String"
+        );
     }
 
     @Test
@@ -525,6 +547,18 @@ class BeanUtilTest {
                     return !"sub3yes".equals(pd.getName());
                 });
         assertThat(names).containsExactly("sub1yes", "sub2no", "sub3yes");
+
+        // collections/maps
+        List<String> propList = new ArrayList<>();
+        BeanUtil.visitProperties(
+                new CollectionsHolder(),
+                (o, pd) -> {
+                    propList.add(pd.getName());
+                    return !"entryName".equals(pd.getName());
+                });
+        assertThat(propList).containsExactly(
+                "multiValueMap", "entries", "entryName"
+        );
     }
 
     @Test
@@ -796,5 +830,29 @@ class BeanUtilTest {
             this.compactFluentSetterNoGetter = compactFluentSetterNoGetter;
             return this;
         }
+    }
+
+    @Data
+    public static class CollectionsHolder implements Serializable {
+        private static final long serialVersionUID = 1L;
+        private final Map<String, List<CollectionEntry>> multiValueMap =
+                new HashMap<>();
+        private final Set<CollectionEntry> entries = new HashSet<>();
+
+        public CollectionsHolder() {
+            multiValueMap.put("key1", Arrays.asList(
+                    new CollectionEntry("mapValue1aName", "mapValue1aValue")));
+            multiValueMap.put("key2", null);
+            entries.add(new CollectionEntry("setName1", "setValue1"));
+            entries.add(new CollectionEntry("setName2", null));
+        }
+    }
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class CollectionEntry implements Serializable {
+        private static final long serialVersionUID = 1L;
+        private String entryName;
+        private String entryValue;
     }
 }
