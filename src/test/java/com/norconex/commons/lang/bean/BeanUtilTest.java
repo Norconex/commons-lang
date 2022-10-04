@@ -41,7 +41,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.ibm.icu.math.BigDecimal;
-import com.norconex.commons.lang.bean.BeanUtilTest.MiscAccessorsBean.Fields;
+import com.norconex.commons.lang.bean.MiscAccessorsBean.Fields;
 import com.norconex.commons.lang.event.Event;
 import com.norconex.commons.lang.event.IEventListener;
 
@@ -49,7 +49,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import lombok.experimental.FieldNameConstants;
 
 class BeanUtilTest {
 
@@ -700,135 +699,6 @@ class BeanUtilTest {
         }
         public void setUnrelated(String str) {
             setString(str);
-        }
-    }
-
-    @ToString
-    @FieldNameConstants
-    public static class MiscAccessorsBean implements Serializable {
-        private static final long serialVersionUID = 1L;
-
-        public MiscAccessorsBean() {
-            // useless assignments, fix for IDE auto-save messing those up:
-            boolSetterNoGetter = false;
-            boolFluentSetterNoGetter = false;
-        }
-
-        // * getX();  void setX(*)
-        private String normal;
-        public String getNormal() {
-            return normal;
-        }
-        public void setNormal(String normal) {
-            this.normal = normal;
-        }
-
-        // -       ;  void setX(*)
-        private String normalSetterNoGetter;
-        public void setNormalSetterNoGetter(String normalSetterNoGetter) {
-            this.normalSetterNoGetter = normalSetterNoGetter;
-        }
-
-        // * getX();  -
-        private String normalGetterNoSetter;
-        public String getNormalGetterNoSetter() {
-            return normalGetterNoSetter;
-        }
-
-        // * getX();  <this> setX(*)
-        private String fluent;
-        public String getFluent() {
-            return fluent;
-        }
-        public MiscAccessorsBean setFluent(String fluent) {
-            this.fluent = fluent;
-            return this;
-        }
-
-        // -       ;  <this> setX(*)
-        private String fluentSetterNoGetter;
-        public MiscAccessorsBean setFluentSetterNoGetter(
-                String fluentSetterNoGetter) {
-            this.fluentSetterNoGetter = fluentSetterNoGetter;
-            return this;
-        }
-
-        // * isX() ;  void setX(*)
-        private boolean boolNormal;
-        public boolean isBoolNormal() {
-            return boolNormal;
-        }
-        public void setBoolNormal(boolean boolNormal) {
-            this.boolNormal = boolNormal;
-        }
-
-        // -       ;  void setX(*)
-        private boolean boolSetterNoGetter;
-        public void setBoolSetterNoGetter(boolean boolSetterNoGetter) {
-            this.boolSetterNoGetter = boolSetterNoGetter;
-        }
-
-        // * isX() ;  -
-        private boolean boolGetterNoSetter;
-        public boolean isBoolGetterNoSetter() {
-            return boolGetterNoSetter;
-        }
-
-        // * isX() ;  <this> setX(*)
-        private boolean boolFluent;
-        public boolean isBoolFluent() {
-            return boolFluent;
-        }
-        public MiscAccessorsBean setBoolFluent(boolean boolFluent) {
-            this.boolFluent = boolFluent;
-            return this;
-        }
-
-        // -       ;  <this> setX(*)
-        private boolean boolFluentSetterNoGetter;
-        public MiscAccessorsBean setBoolFluentSetterNoGetter(
-                boolean boolFluentSetterNoGetter) {
-            this.boolFluentSetterNoGetter = boolFluentSetterNoGetter;
-            return this;
-        }
-
-        // * x()   ;  void x(*)
-        private String compactNormal;
-        public String compactNormal() {
-            return compactNormal;
-        }
-        public void compactNormal(String compactNormal) {
-            this.compactNormal = compactNormal;
-        }
-
-        // -       ;  void x(*)
-        private String compactSetterNoGetter;
-        public void compactSetterNoGetter(String compactSetterNoGetter) {
-            this.compactSetterNoGetter = compactSetterNoGetter;
-        }
-
-        // * x()   ;  -
-        private String compactGetterNoSetter;
-        public String compactGetterNoSetter() {
-            return compactGetterNoSetter;
-        }
-
-        // * x()   ;  <this> x(*)
-        private String compactFluent;
-        public String compactFluent() {
-            return compactFluent;
-        }
-        public MiscAccessorsBean compactFluent(String compactFluent) {
-            this.compactFluent = compactFluent;
-            return this;
-        }
-
-        // -       ;  <this> x(*)
-        private String compactFluentSetterNoGetter;
-        public MiscAccessorsBean compactFluentSetterNoGetter(
-                String compactFluentSetterNoGetter) {
-            this.compactFluentSetterNoGetter = compactFluentSetterNoGetter;
-            return this;
         }
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2018 Norconex Inc.
+/* Copyright 2018-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,30 +14,16 @@
  */
 package com.norconex.commons.lang.bean;
 
+import lombok.experimental.StandardException;
+
 /**
  * Runtime exception indicating a bean-operation error.
  * @author Pascal Essiembre
  * @see BeanUtil
  * @since 2.0.0
  */
+@StandardException
 public class BeanException extends RuntimeException {
 
-    private static final long serialVersionUID = -6879301747242838385L;
-
-    public BeanException() {
-        super();
-    }
-    public BeanException(String message, Throwable cause,
-            boolean enableSuppression, boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
-    }
-    public BeanException(String message, Throwable cause) {
-        super(message, cause);
-    }
-    public BeanException(String message) {
-        super(message);
-    }
-    public BeanException(Throwable cause) {
-        super(cause);
-    }
+    private static final long serialVersionUID = 1L;
 }

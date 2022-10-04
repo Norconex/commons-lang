@@ -1,4 +1,4 @@
-/* Copyright 2018 Norconex Inc.
+/* Copyright 2018-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,6 @@
  * limitations under the License.
  */
 /**
- * Extends the abilities of Apache Commons BeanUtils.
+ * Bean related utilities.
  */
 package com.norconex.commons.lang.bean;
