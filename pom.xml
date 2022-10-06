@@ -420,6 +420,7 @@
           <reportOutputDirectory>${project.build.directory}/site</reportOutputDirectory>
           <outputDirectory>${project.build.directory}/site/apidocs</outputDirectory>
           <stylesheetfile>${project.build.directory}/site/apidocs/norconex-javadoc.css</stylesheetfile>
+<!--
           <resourcesArtifacts>
             <resourcesArtifact>
               <groupId>com.norconex.commons</groupId>
@@ -427,6 +428,7 @@
               <version>${project.parent.version}</version>
             </resourcesArtifact>
           </resourcesArtifacts>
+-->
           <additionalJOptions>
             <additionalJOption>&#45;&#45;allow-script-in-comments</additionalJOption>
             <additionalJOption>-J-Dbasedir=${basedir}</additionalJOption>

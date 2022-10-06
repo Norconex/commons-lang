@@ -1,4 +1,4 @@
-/* Copyright 2018-2020 Norconex Inc.
+/* Copyright 2018-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.norconex.commons.lang.convert.Converter;
 
+import lombok.NonNull;
+
 /**
  * Collection-related utility methods.
  * @author Pascal Essiembre
@@ -41,7 +43,6 @@ import com.norconex.commons.lang.convert.Converter;
 public final class CollectionUtil {
 
     private CollectionUtil() {
-        super();
     }
 
     /**
@@ -58,7 +59,7 @@ public final class CollectionUtil {
      */
     @SuppressWarnings("unchecked")
     public static <T> List<T> adaptedList(Object object) {
-        ArrayList<T> list = new ArrayList<>();
+        var list = new ArrayList<T>();
         if (object == null || (object instanceof String
                 && StringUtils.isBlank((String) object))) {
             return list;
@@ -89,18 +90,25 @@ public final class CollectionUtil {
     }
 
     /**
-     * Converts a collection to an array using the specified type.
-     * @param c collection to convert
-     * @param arrayType array type
-     * @return the new array
+     * <p>
+     * Converts a collection to an array using the specified type
+     * (never <code>null</code>).
+     * </p>
+     * <p>
+     * <b>Since 3.0.0</b>, passing a <code>null</code> collection argument will
+     * will return an empty array of the supplied type.
+     * </p>
+     * @param c collection to convert or <code>null</code>
+     * @param arrayType array type (must not be <code>null</code>)
+     * @return the new array (never <code>null</code>)
+     * @throws NullPointerException if arrayType is <code>null</code>
      */
-    public static Object toArray(Collection<?> c, Class<?> arrayType) {
+    public static Object toArray(Collection<?> c, @NonNull Class<?> arrayType) {
         if (c == null) {
-            return null;
+            return Array.newInstance(arrayType, 0);
         }
-
-        Object array = Array.newInstance(arrayType, c.size());
-        int i = 0;
+        var array = Array.newInstance(arrayType, c.size());
+        var i = 0;
         for (Object t : c) {
             Array.set(array, i++, t);
         }
@@ -179,7 +187,7 @@ public final class CollectionUtil {
      * version of {@link Arrays#asList(Object...)}.
      * @param values the array by which the list will be backed
      * @param <T> objects class type
-     * @return a list view of the specified array
+     * @return a list view of the specified array (never <code>null</code>)
      * @see #asListOrNull(Object...)
      */
     @SafeVarargs
@@ -276,19 +284,24 @@ public final class CollectionUtil {
     /**
      * Returns an unmodifiable view of the specified list. Convenience method
      * for doing with an array the same as
-     * {@link Collections#unmodifiableList(List)}.
+     * {@link Collections#unmodifiableList(List)}. A <code>null</code>
+     * array argument will return an empty list.
      * @param <T> target objects class type
      * @param values the values to convert to an unmodifiable list
-     * @return unmodifiable list
+     * @return unmodifiable list (never <code>null</code>)
      */
     @SuppressWarnings("unchecked")
     public static <T> List<T> unmodifiableList(T... values) {
-        return Collections.unmodifiableList(Arrays.asList(values));
+        return Collections.unmodifiableList(
+                values == null
+                ? Collections.emptyList()
+                : Arrays.asList(values));
     }
     /**
      * Returns an unmodifiable view of the specified set. Convenience method
      * for doing with an array the same as
-     * {@link Collections#unmodifiableSet(Set)}.
+     * {@link Collections#unmodifiableSet(Set)}. A <code>null</code>
+     * array argument will return an empty set.
      * This method uses a {@link LinkedHashSet} to maintain order.
      * @param <T> target objects class type
      * @param values the values to convert to an unmodifiable list
@@ -297,7 +310,9 @@ public final class CollectionUtil {
     @SuppressWarnings("unchecked")
     public static <T> Set<T> unmodifiableSet(T... values) {
         return Collections.unmodifiableSet(
-                new LinkedHashSet<>(Arrays.asList(values)));
+                values == null
+                ? Collections.emptySet()
+                : new LinkedHashSet<>(Arrays.asList(values)));
     }
 
     /**
@@ -309,7 +324,7 @@ public final class CollectionUtil {
         if (c == null) {
             return;
         }
-        c.removeIf(Objects::nonNull);
+        c.removeIf(Objects::isNull);
     }
 
     /**
@@ -381,6 +396,4 @@ public final class CollectionUtil {
         }
         CollectionUtils.transform(c, e -> StringUtils.isBlank(e) ? null : e);
     }
-
-    //TODO have a version that accepts a function that returns a string?
 }

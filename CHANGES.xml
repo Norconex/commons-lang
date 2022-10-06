@@ -24,6 +24,13 @@
       <action dev="essiembre" type="update">
         Huge jump in unit test code coverage.
       </action>
+      <action dev="essiembre" type="update">
+        CollectionUtil#toArray now returns an empty array instead of null 
+        when a null collection is supplied.
+      </action>
+      <action dev="essiembre" type="fix">
+        Fixed CollectionUtil#testRemoveNulls having opposite effect.
+      </action>
     </release>
 
   </body>
