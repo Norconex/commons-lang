@@ -1,0 +1,3 @@
+# A file to be passed as argument.
+
+varA = coffee

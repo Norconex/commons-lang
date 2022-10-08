@@ -88,19 +88,12 @@ import com.norconex.commons.lang.file.ContentType;
  */
 public final class Converter implements IConverter {
 
-    //TODO consider divorcing from Commons BeanUtils if not needed much
-    //elsewhere.
-
-//    private static final Logger LOG =
-//            LoggerFactory.getLogger(Converter.class);
-
     private static final Converter DEFAULT_INSTANCE =
             new Converter(createDefaultConverters());
 
     private final Map<Class<?>, IConverter> converters;
 
     public Converter(Map<Class<?>, IConverter> converters) {
-        super();
         this.converters = Collections.unmodifiableMap(converters);
     }
     public static Converter defaultInstance() {
@@ -201,14 +194,6 @@ public final class Converter implements IConverter {
         }
         return CollectionUtil.toStringList(objects);
     }
-//    @Override
-//    public List<String> toString(List<?> objects, List<String> defaultValues) {
-//        if (object == null) {
-//            return null;
-//        }
-//        return nullSafeConverter(
-//                object.getClass()).toString(object, defaultValue);
-//    }
 
     @Override
     public String toString(Object object) {
@@ -220,7 +205,7 @@ public final class Converter implements IConverter {
     @Override
     public String toString(Object object, String defaultValue) {
         if (object == null) {
-            return null;
+            return defaultValue;
         }
         return nullSafeConverter(
                 object.getClass()).toString(object, defaultValue);
@@ -238,7 +223,7 @@ public final class Converter implements IConverter {
             return c;
         }
 
-        //Those are defined in converters mapping at the top.  Really needed?????????????????????????????????????????????????????
+        //Those are defined in converters mapping at the top.  Really needed??
 
         if (Enum.class.isAssignableFrom(type)) {
             c = converters.get(Enum.class);

@@ -1,4 +1,4 @@
-/* Copyright 2010-2018 Norconex Inc.
+/* Copyright 2010-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,15 @@
  */
 package com.norconex.commons.lang.config;
 
-import java.io.IOException;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Objects;
-import java.util.Properties;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.runtime.RuntimeConstants;
@@ -67,6 +63,9 @@ import com.norconex.commons.lang.xml.XML;
  *
  * <p>Any <code>.variables</code> or <code>.properties</code> file
  * can also be specified using the {@link #setVariablesFile(Path)} method.
+ * <b>Since 3.0.0</b>, {@link #setVariablesFile(Path)} treats any variable
+ * files without the <code>.properties</code> extension as if it was
+ * <code>.variables</code>.
  * </p>
  *
  * <p>
@@ -131,12 +130,6 @@ import com.norconex.commons.lang.xml.XML;
  */
 public final class ConfigurationLoader {
 
-    //TODO really needed for XML since the XML class could do it, mixed
-    // with calling loadString?
-
-    private static final String EXTENSION_PROPERTIES = ".properties";
-    private static final String EXTENSION_VARIABLES = ".variables";
-
     private final VelocityEngine velocityEngine;
     private final VelocityContext defaultContext;
 
@@ -146,7 +139,6 @@ public final class ConfigurationLoader {
      * Constructor.
      */
     public ConfigurationLoader() {
-        super();
         defaultContext = createDefaultContext();
         velocityEngine = createVelocityEngine();
     }
@@ -178,17 +170,18 @@ public final class ConfigurationLoader {
      * @return XML
      * @since 2.0.0
      */
-    public XML loadXML(Path configFile, ErrorHandler errorHandler) {
-        if (!configFile.toFile().exists()) {
+    public XML loadXML(
+            Path configFile, ErrorHandler errorHandler) {
+        if (configFile == null || !configFile.toFile().exists()) {
             return null;
         }
         try {
-            String xml = loadString(configFile);
+            var xml = loadString(configFile);
             // clean-up extra duplicate declaration tags due to template
             // includes/imports that could break parsing.
             // Keep first <?xml... tag only, and delete all <!DOCTYPE...
             // as they are not necessary to parse configs.
-            xml = Pattern.compile("((?!^)<\\?xml.*?\\?>|<\\!DOCTYPE.*?>)")
+            xml = Pattern.compile("((?!^)<\\?xml.*?\\?>|<\\!DOCTYPE[^>]*>)")
                     .matcher(xml).replaceAll("");
             return XML.of(xml).setErrorHandler(errorHandler).create();
         } catch (Exception e) {
@@ -246,7 +239,7 @@ public final class ConfigurationLoader {
      */
     public <T> T loadFromXML(
             Path configFile, Class<T> objClass, ErrorHandler errorHandler) {
-        XML xml = loadXML(configFile, errorHandler);
+        var xml = loadXML(configFile, errorHandler);
         if (xml == null) {
             return null;
         }
@@ -255,8 +248,8 @@ public final class ConfigurationLoader {
         }
         T obj;
         try {
-            obj = objClass.newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
+            obj = objClass.getDeclaredConstructor().newInstance();
+        } catch (Exception e) {
             throw new ConfigurationException(
                     "This class could not be instantiated: " + objClass, e);
         }
@@ -282,7 +275,7 @@ public final class ConfigurationLoader {
     public void loadFromXML(
             Path configFile, Object object, ErrorHandler errorHandler) {
         Objects.requireNonNull("'object' must not be null.");
-        XML xml = loadXML(configFile, errorHandler);
+        var xml = loadXML(configFile, errorHandler);
         if (xml != null) {
             xml.populate(object);
         }
@@ -303,22 +296,20 @@ public final class ConfigurationLoader {
             return null;
         }
 
-        VelocityContext context = new VelocityContext(defaultContext);
+        var context = new VelocityContext(defaultContext);
 
         // Load from explicitly referenced properties
-        loadVariables(context, variablesFile);
+        VariablesFileResolver.resolve(variablesFile).forEach(context::put);
+
 
         // Load from properties matching config file name
-        String file = configFile.toAbsolutePath().toString();
-        String fullpath = FilenameUtils.getFullPath(file);
-        String baseName = FilenameUtils.getBaseName(file);
+        var file = configFile.toAbsolutePath().toString();
+        var fullpath = FilenameUtils.getFullPath(file);
+        var baseName = FilenameUtils.getBaseName(file);
 
-        Path varsFile = getVariablesFile(fullpath, baseName);
-        if (varsFile != null) {
-            loadVariables(context, varsFile);
-        }
+        VariablesFileResolver.resolve(fullpath, baseName).forEach(context::put);
 
-        StringWriter sw = new StringWriter();
+        var sw = new StringWriter();
         try (Reader reader = Files.newBufferedReader(configFile)) {
             velocityEngine.evaluate(context, sw, file, reader);
         } catch (Exception e) {
@@ -337,7 +328,7 @@ public final class ConfigurationLoader {
 
     // @since 2.0.0
     protected VelocityEngine createVelocityEngine() {
-        VelocityEngine engine = new VelocityEngine();
+        var engine = new VelocityEngine();
         engine.setProperty(RuntimeConstants.EVENTHANDLER_INCLUDE,
                 RelativeIncludeEventHandler.class.getName());
         engine.setProperty(RuntimeConstants.EVENTHANDLER_REFERENCEINSERTION,
@@ -349,57 +340,7 @@ public final class ConfigurationLoader {
         engine.setProperty(RuntimeConstants.ENCODING_DEFAULT,
                 StandardCharsets.UTF_8.toString());
 
-//        engine.setProperty(RuntimeConstants.RUNTIME_REFERENCES_STRICT, true);
-
         engine.setProperty("runtime.log", "");
         return engine;
-    }
-
-    //--- Private methods ------------------------------------------------------
-
-    private Path getVariablesFile(String fullpath, String baseName) {
-        Path vars = Paths.get(fullpath + baseName + EXTENSION_PROPERTIES);
-        if (isVariableFile(vars, EXTENSION_PROPERTIES)) {
-        	return vars;
-        }
-        vars = Paths.get(fullpath + baseName + EXTENSION_VARIABLES);
-        if (isVariableFile(vars, EXTENSION_VARIABLES)) {
-            return vars;
-        }
-        return null;
-    }
-
-    private void loadVariables(VelocityContext context, Path vars) {
-        try {
-            if (isVariableFile(vars, EXTENSION_VARIABLES)) {
-                for (String line : Files.readAllLines(vars)) {
-					if (line.contains("=")) {
-						String key =
-								StringUtils.substringBefore(line, "=").trim();
-						String value =
-								StringUtils.substringAfter(line, "=").trim();
-	                    context.put(key, value);
-					}
-				}
-            } else if (isVariableFile(vars, EXTENSION_PROPERTIES)) {
-                Properties props = new Properties();
-
-                try (Reader r = Files.newBufferedReader(vars)) {
-                    props.load(r);
-                }
-                for (String key : props.stringPropertyNames()) {
-                    context.put(key, props.getProperty(key));
-                }
-            }
-        } catch (IOException e) {
-            throw new ConfigurationException(
-                    "Cannot load variables from file: " + vars, e);
-        }
-    }
-
-    private boolean isVariableFile(Path vars,  String extension) {
-        return vars != null && vars.toFile().exists()
-                && vars.toFile().isFile()
-                && vars.toString().endsWith(extension);
     }
 }

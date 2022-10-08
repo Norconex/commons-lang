@@ -9,7 +9,7 @@
   </Appenders>
   <Loggers>
   
-    <Logger name="com.norconex.commons.lang" level="info" additivity="false">
+    <Logger name="com.norconex.commons.lang" level="DEBUG" additivity="false">
       <AppenderRef ref="Console"/>
     </Logger>
     <Logger name="org.apache" level="warn" additivity="false">

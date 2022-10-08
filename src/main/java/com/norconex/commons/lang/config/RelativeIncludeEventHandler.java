@@ -14,12 +14,6 @@
  */
 package com.norconex.commons.lang.config;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.Map.Entry;
-import java.util.Properties;
-
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.velocity.app.event.IncludeEventHandler;
@@ -41,6 +35,7 @@ public class RelativeIncludeEventHandler implements IncludeEventHandler {
     @Override
     public String includeEvent(Context context, String includeResourcePath,
             String currentResourcePath, String directiveName) {
+
         // Get main template file
         String inclFile;
         if (includeResourcePath.startsWith("/")
@@ -49,7 +44,7 @@ public class RelativeIncludeEventHandler implements IncludeEventHandler {
                 || includeResourcePath.matches("^[A-Za-z]:\\.*")) {
             inclFile = includeResourcePath;
         } else {
-            String baseDir = FilenameUtils.getFullPath(currentResourcePath);
+            var baseDir = FilenameUtils.getFullPath(currentResourcePath);
             inclFile = FilenameUtils.normalize(baseDir + includeResourcePath);
         }
 
@@ -61,26 +56,14 @@ public class RelativeIncludeEventHandler implements IncludeEventHandler {
                     + "parent template. Try with an absolute path.");
         }
 
-        LOG.debug("Resolved include/parse template file: {}", inclFile);
-
         // Load template properties if present
         if (context != null) {
-            File vars = new File(FilenameUtils.getFullPath(inclFile) +
-                    FilenameUtils.getBaseName(inclFile) + ".properties");
-            if (vars.exists() && vars.isFile()) {
-                Properties props = new Properties();
-                try (FileInputStream is = new FileInputStream(vars)) {
-                    props.load(is);
-                    for (Entry<Object, Object> entry: props.entrySet()) {
-                        context.put((String) entry.getKey(), entry.getValue());
-                    }
-                    LOG.debug("Resolved include/parse variable file: {}", vars);
-                } catch (IOException e) {
-                    LOG.error("Cannot load properties for template (skipped): "
-                            + vars, e);
-                }
-            }
+            VariablesFileResolver.resolve(
+                    FilenameUtils.getFullPath(inclFile),
+                    FilenameUtils.getBaseName(inclFile))
+                .forEach(context::put);
         }
+        LOG.debug("Resolved include/parse template file: {}", inclFile);
         return inclFile;
     }
 }

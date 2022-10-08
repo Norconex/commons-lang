@@ -1,0 +1,4 @@
+<credentials class="com.norconex.commons.lang.security.Credentials">
+  <username>${usr}</username>
+  <password>${pwd}</password>
+</credentials>

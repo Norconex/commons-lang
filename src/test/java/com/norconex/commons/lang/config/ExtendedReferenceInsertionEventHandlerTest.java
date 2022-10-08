@@ -1,4 +1,4 @@
-/* Copyright 2020 Norconex Inc.
+/* Copyright 2020-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,13 +28,13 @@ import org.junit.jupiter.api.io.TempDir;
 
 import com.norconex.commons.lang.TimeIdGenerator;
 
-public class ExtendedReferenceInsertionEventHandlerTest {
+class ExtendedReferenceInsertionEventHandlerTest {
 
     @TempDir
-    public Path tempDir;
+    Path tempDir;
 
     @Test
-    public void testPrecedence() throws IOException {
+    void testPrecedence() throws IOException {
         String baseVarName = "precedenceTest";
 
         // precedence order
@@ -43,9 +43,9 @@ public class ExtendedReferenceInsertionEventHandlerTest {
         String valueVariablesFile = "valueVariablesFile";
 
 
-        String varName = null;
-        String before = null;
-        String after = null;
+        String varName;
+        String before;
+        String after;
 
         // Test with: System property + Prop. file + Var. file
         varName = baseVarName + 1;
@@ -67,7 +67,7 @@ public class ExtendedReferenceInsertionEventHandlerTest {
     }
 
     @Test
-    public void testWithSystemProperty() throws IOException {
+    void testWithSystemProperty() throws IOException {
 
         String expected = "propertyValue";
         System.setProperty("propertyTest", expected);
@@ -80,7 +80,7 @@ public class ExtendedReferenceInsertionEventHandlerTest {
     }
 
     @Test
-    public void testWithDefaultValueInReference() throws IOException {
+    void testWithDefaultValueInReference() throws IOException {
 
         String expectedDefault = "defaultValue";
         String expectedResolved = "resolvedValue";
@@ -101,7 +101,7 @@ public class ExtendedReferenceInsertionEventHandlerTest {
     // a false-fail.
     @Disabled
     @Test
-    public void testWithEnvironmentVariable() throws IOException {
+    void testWithEnvironmentVariable() throws IOException {
         String before = "${javaHome}";
         String after = resolveVariable(before);
         Assertions.assertNotEquals(before, after);

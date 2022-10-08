@@ -1,4 +1,4 @@
-/* Copyright 2018-2021 Norconex Inc.
+/* Copyright 2018-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,13 @@ import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.xml.XML;
 
-public class ConfigurationTest {
+class ConfigurationTest {
+
+    //TODO move to XMLTest or equivalent
 
     @Test
-    public void testPreserveWhiteSpace() {
-        XML xml = XML.of(
+    void testPreserveWhiteSpace() {
+        var xml = XML.of(
                   "<test>"
                 + "<tagBlank>   </tagBlank>"
                 + "<tagPreserve xml:space=\"preserve\">   </tagPreserve>"

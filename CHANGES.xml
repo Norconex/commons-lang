@@ -28,8 +28,24 @@
         CollectionUtil#toArray now returns an empty array instead of null 
         when a null collection is supplied.
       </action>
+      <action dev="essiembre" type="update">
+        ConfigurationLoader#setVariablesFile now assumes the variables
+        file is of the ".variables" format when its extension is neither
+        ".variables" nor ".properties". 
+      </action>
+      <action dev="essiembre" type="update">
+        Converter#toString(Object, String) will now return the default value
+        when the object is null. 
+      </action>
       <action dev="essiembre" type="fix">
         Fixed CollectionUtil#testRemoveNulls having opposite effect.
+      </action>
+      <action dev="essiembre" type="fix">
+        Fixed ConfigurationLoader not resolving fragment ".variables" file 
+        properly when including or parsing fragments.
+      </action>
+      <action dev="essiembre" type="remove">
+        Removed a number of deprecated classes and methods.
       </action>
     </release>
 

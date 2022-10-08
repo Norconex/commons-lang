@@ -92,13 +92,16 @@ public final class BeanUtil {
      * </p>
      * <ul>
      *   <li>Bean class must have a public, no-argument constructor</li>
-     *   <li>Bean class must implement {@link Serializable}</li>
      *   <li>Property field must be private</li>
      *   <li>Property must have at least one public read or write method.</li>
      * </ul>
      * <p>
      * If there is an error in retrieving a properties, it will be
      * silently skipped.
+     * </p>
+     * <p>
+     * Contrary to regular Java beans, the supplied class does not have
+     * to implement {@link Serializable}.
      * </p>
      * <p>
      * Since 3.0.0, properties descriptors with read-only or write-only methods
@@ -128,7 +131,6 @@ public final class BeanUtil {
      * </p>
      * <ul>
      *   <li>Bean class must have a public, no-argument constructor</li>
-     *   <li>Bean class must implement {@link Serializable}</li>
      *   <li>Property field must be private</li>
      *   <li>Property must have at least one public read or write method.</li>
      * </ul>
@@ -136,9 +138,15 @@ public final class BeanUtil {
      * If there is an error in retrieving a properties, it will be silently
      * skipped.
      * </p>
+     * <p>
+     * Contrary to regular Java beans, the supplied class does not have
+     * to implement {@link Serializable}.
+     * </p>
+     * <p>
      * Supports method name variations for accessors.
      * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#writables}
      * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#readables}
+     * </p>
      *
      * @param beanClass the bean class to get property descriptors from
      * @return list of property descriptors or an empty list if the supplied
@@ -148,7 +156,6 @@ public final class BeanUtil {
     public static List<FluentPropertyDescriptor> getPropertyDescriptors(
             Class<?> beanClass) {
         if (beanClass == null
-                || !Serializable.class.isAssignableFrom(beanClass)
                 || String.class.equals(beanClass)
                 || ClassUtils.isPrimitiveOrWrapper(beanClass)) {
             return Collections.emptyList();

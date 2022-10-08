@@ -1,4 +1,4 @@
-/* Copyright 2018 Norconex Inc.
+/* Copyright 2018-2022 Norconex Inc.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ public class CharsetConverter extends AbstractConverter {
     protected <T> T nullSafeToType(String value, Class<T> type) {
         try {
             return type.cast(Charset.forName(value));
-        } catch (IllegalArgumentException e) {
+        } catch (RuntimeException e) {
             throw toTypeException(value, type, e);
         }
     }

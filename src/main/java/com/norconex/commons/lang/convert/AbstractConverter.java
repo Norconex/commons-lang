@@ -1,4 +1,4 @@
-/* Copyright 2018 Norconex Inc.
+/* Copyright 2018-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,9 @@
  */
 package com.norconex.commons.lang.convert;
 
-import java.util.Objects;
-
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.ToString;
 
 /**
  * <p>
@@ -32,11 +29,12 @@ import org.apache.commons.lang3.builder.ToStringStyle;
  * @see ConverterException
  * @since 2.0.0
  */
+@EqualsAndHashCode
+@ToString
 public abstract class AbstractConverter implements IConverter {
 
     @Override
-    public final <T> T toType(String value, Class<T> type) {
-        Objects.requireNonNull(type, "type must not be null");
+    public final <T> T toType(String value, @NonNull Class<T> type) {
         if (value == null) {
             return null;
         }
@@ -64,9 +62,9 @@ public abstract class AbstractConverter implements IConverter {
     }
 
     protected abstract <T> T nullSafeToType(
-            String value, Class<T> type) throws Exception;
+            String value, Class<T> type) throws Exception; //NOSONAR
     protected abstract String nullSafeToString(
-            Object object) throws Exception;
+            Object object) throws Exception; //NOSONAR
 
     protected ConverterException toUnsupportedTypeException(Object obj) {
         return new ConverterException(
@@ -92,19 +90,5 @@ public abstract class AbstractConverter implements IConverter {
         return new ConverterException(String.format(
                 "Cannot convert object of type \"%s\" to String.",
                 object.getClass().getName()), e);
-    }
-
-    @Override
-    public boolean equals(final Object other) {
-        return EqualsBuilder.reflectionEquals(this, other);
-    }
-    @Override
-    public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this);
-    }
-    @Override
-    public String toString() {
-        return new ReflectionToStringBuilder(
-                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

@@ -1,4 +1,4 @@
-/* Copyright 2018 Norconex Inc.
+/* Copyright 2018-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,30 +14,16 @@
  */
 package com.norconex.commons.lang.convert;
 
+import lombok.experimental.StandardException;
+
 /**
  * Runtime exception indicating a conversion error.
  * @author Pascal Essiembre
  * @see Converter
  * @since 2.0.0
  */
+@StandardException
 public class ConverterException extends RuntimeException {
 
     private static final long serialVersionUID = -6879301747242838385L;
-
-    public ConverterException() {
-        super();
-    }
-    public ConverterException(String message, Throwable cause,
-            boolean enableSuppression, boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
-    }
-    public ConverterException(String message, Throwable cause) {
-        super(message, cause);
-    }
-    public ConverterException(String message) {
-        super(message);
-    }
-    public ConverterException(Throwable cause) {
-        super(cause);
-    }
 }
