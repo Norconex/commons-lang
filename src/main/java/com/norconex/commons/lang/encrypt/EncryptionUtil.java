@@ -71,12 +71,12 @@ import com.norconex.commons.lang.security.Credentials;
 public class EncryptionUtil {
 
     private EncryptionUtil() {
-        super();
     }
 
     public static void main(String[] args) {
         if (args.length != 4) {
             printUsage();
+            return;
         }
         String cmdArg = args[0];
         String typeArg = args[1];
@@ -95,6 +95,7 @@ public class EncryptionUtil {
         } else {
             System.err.println("Unsupported type of key: " + type);
             printUsage();
+            return;
         }
 
         EncryptionKey key = new EncryptionKey(keyArg, type);
@@ -106,7 +107,6 @@ public class EncryptionUtil {
             System.err.println("Unsupported command: " + cmdArg);
             printUsage();
         }
-        System.exit(0);
     }
     private static void printUsage() {
         PrintStream out = System.out;
@@ -124,7 +124,6 @@ public class EncryptionUtil {
         out.println("  key      the encryption key (or file, or env. "
                 + "variable, etc.)");
         out.println("  text     text to encrypt or decrypt");
-        System.exit(-1);
     }
 
     /**

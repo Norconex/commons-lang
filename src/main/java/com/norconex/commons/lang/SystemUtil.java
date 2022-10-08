@@ -26,7 +26,6 @@ import java.util.concurrent.Callable;
 public final class SystemUtil {
 
     private SystemUtil() {
-        super();
     }
 
     /**
@@ -124,6 +123,7 @@ public final class SystemUtil {
             }
         }
     }
+
     /**
      * Gets the environment variable or system property matching the exact
      * name, or a supported variant.
@@ -183,7 +183,6 @@ public final class SystemUtil {
         }
         return null;
     }
-
 
     /**
      * Gets the value of the system property matching the exact name,

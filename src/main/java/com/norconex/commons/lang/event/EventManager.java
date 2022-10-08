@@ -1,4 +1,4 @@
-/* Copyright 2018-2020 Norconex Inc.
+/* Copyright 2018-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,12 +31,15 @@ import com.norconex.commons.lang.ExceptionUtil;
 import com.norconex.commons.lang.SLF4JUtil;
 import com.norconex.commons.lang.bean.BeanUtil;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * Manages event listeners and logs events.  New event managers can be
  * constructed with a "parent" event manager. When chained as such,
  * event on a particular event manager are bubbled up to the parents but
- * never down to children. Events are logged by the manager that first fires
- * the event.
+ * never down to children. Events are logged by the manager in the chain that
+ * first fires the event.
  * @author Pascal Essiembre
  * @since 2.0.0
  */
@@ -50,6 +53,8 @@ public class EventManager {
     private final CopyOnWriteArrayList<IEventListener<Event>> listeners =
             new CopyOnWriteArrayList<>();
 
+    @Setter
+    @Getter
     private boolean stacktraceLoggingDisabled;
 
     public EventManager() {
@@ -60,25 +65,38 @@ public class EventManager {
      * will be fired on this instance listeners first, then its parent
      * listeners.
      * Modifying the list of listeners in this instance does not impact
-     * listeners of the parrent event manager.
+     * listeners of the parent event manager.
      * @param parentEventManager parent event manager
      */
     public EventManager(EventManager parentEventManager) {
-        super();
         this.parentEventManager = parentEventManager;
     }
 
+    /**
+     * Adds an event listener. Event listeners are added by "identity", meaning
+     * you can have multiple listeners coexisting even if their test
+     * for equality returns <code>true</code>.
+     * Adding a <code>null</code> event listener has no effect.
+     * @param listener an event listener
+     */
     public void addListener(IEventListener<Event> listener) {
         if (listener != null) {
             // Purposely compare listeners by identity, not equality/hash.
-            for (IEventListener<Event> l : this.listeners) {
+            for (IEventListener<Event> l : listeners) {
                 if (listener == l) {
                     return;
                 }
             }
-            this.listeners.add(listener);
+            listeners.add(listener);
         }
     }
+    /**
+     * Adds event listeners. Event listeners are added by "identity", meaning
+     * you can have multiple listeners coexisting even if their test
+     * for equality returns <code>true</code>.
+     * Adding a <code>null</code> collection has no effect.
+     * @param listeners event listeners
+     */
     public void addListeners(Collection<IEventListener<Event>> listeners) {
         if (listeners != null) {
             for (IEventListener<Event> l : listeners) {
@@ -87,32 +105,74 @@ public class EventManager {
         }
     }
 
+    /**
+     * Adds listeners found in an object graph. Recursively
+     * queries the object bean properties for non <code>null</code>
+     * objects implementing {@link IEventListener}.
+     * @param obj the object to retrive listeners from
+     */
     public void addListenersFromScan(Object obj) {
         BeanUtil.visitAll(obj, this::addListener, IEventListener.class);
     }
 
+    /**
+     * Returns an unmodifiable list of event listeners in this event manager.
+     * @return list of listeners
+     */
     public List<IEventListener<Event>> getListeners() {
-        return Collections.unmodifiableList(this.listeners);
-    }
-    public boolean removeListener(IEventListener<Event> listener) {
-        return this.listeners.remove(listener);
-    }
-    public boolean removeListeners(
-            Collection<IEventListener<Event>> listeners) {
-        return this.listeners.removeAll(listeners);
-    }
-    public void clearListeners() {
-        this.listeners.clear();
-    }
-    public int getListenerCount() {
-        return this.listeners.size();
+        return Collections.unmodifiableList(listeners);
     }
 
-    public boolean isStacktraceLoggingDisabled() {
-        return stacktraceLoggingDisabled;
+    /**
+     * Removes a listener instance. Removal is done by "identity", meaning
+     * you can have listeners that are not removed despite testing
+     * <code>true</code> for equality.
+     * Removing a <code>null</code> listener has no effect.
+     * @param listener the listener instance to remove
+     * @return <code>true</code> if a matching instance was removed
+     */
+    public boolean removeListener(IEventListener<Event> listener) {
+        if (listener == null) {
+            return false;
+        }
+        return listeners.removeIf(l -> l == listener);
     }
-    public void setStacktraceLoggingDisabled(boolean disableStacktraceLogging) {
-        this.stacktraceLoggingDisabled = disableStacktraceLogging;
+    /**
+     * Removes listener instances. Removal is done by "identity", meaning
+     * you can have listeners that are not removed despite testing
+     * <code>true</code> for equality.
+     * Removing a <code>null</code> collection has no effect.
+     * @param listeners listener instances to remove
+     * @return <code>true</code> if one or more listeners were removed
+     */
+    public boolean removeListeners(
+            Collection<IEventListener<Event>> listeners) {
+        if (listeners == null) {
+            return false;
+        }
+        boolean anyRemoved = false;
+        for (IEventListener<Event> l : listeners) {
+            if (removeListener(l)) {
+                anyRemoved = true;
+            }
+        }
+        return anyRemoved;
+    }
+
+    /**
+     * Clears all previously added listeners.  Does not affect listeners
+     * associated with a parent event manager.
+     */
+    public void clearListeners() {
+        listeners.clear();
+    }
+    /**
+     * Gets the number of event listeners registered with this event manager.
+     * Listeners attached to a parent are not counted.
+     * @return listener count
+     */
+    public int getListenerCount() {
+        return listeners.size();
     }
 
     public void fire(Event event) {

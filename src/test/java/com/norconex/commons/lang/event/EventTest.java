@@ -1,5 +1,6 @@
 package com.norconex.commons.lang.event;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -45,5 +46,16 @@ class EventTest {
         assertEquals(name + " - No exception message - "
                 + "java.lang.RuntimeException", event3.toString());
 
+    }
+
+    @Test
+    void testEquality() {
+        Event event1 = Event.builder("blah", "sourceBlah").build();
+        Event event2 = Event.builder("blah", "sourceBlah").build();
+        Event event3 = Event.builder("nope", "sourceNope").build();
+        assertThat(event1).isEqualTo(event2);
+        assertThat(event1.hashCode()).isEqualTo(event2.hashCode());
+        assertThat(event1).isNotEqualTo(event3);
+        assertThat(event1.hashCode()).isNotEqualTo(event3.hashCode());
     }
 }

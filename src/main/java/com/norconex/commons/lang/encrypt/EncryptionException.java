@@ -1,4 +1,4 @@
-/* Copyright 2015 Norconex Inc.
+/* Copyright 2015-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,29 +14,15 @@
  */
 package com.norconex.commons.lang.encrypt;
 
+import lombok.experimental.StandardException;
+
 /**
  * Runtime exception thrown if there is a problem with the encryption
  * or decryption.
  * @author Pascal Essiembre
  * @since 1.9.0
  */
+@StandardException
 public class EncryptionException extends RuntimeException {
-
     private static final long serialVersionUID = -2107977615189833553L;
-
-    public EncryptionException() {
-        super();
-    }
-
-    public EncryptionException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public EncryptionException(String s) {
-        super(s);
-    }
-
-    public EncryptionException(Throwable cause) {
-        super(cause);
-    }
 }

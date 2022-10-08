@@ -9,6 +9,19 @@
 
     <release version="3.0.0-SNAPSHOT" date="2022-??-??" 
         description="Feature release.">
+      <action dev="essiembre" type="add">
+        New FluentPropertyDescriptor methods: #isReadable, #isWritable, 
+        #readValue, and #writeValue. 
+      </action>
+      <action dev="essiembre" type="add">
+        FluentPropertyDescriptor now has added support for builder-style 
+        accessor methods. 
+      </action>
+      <action dev="essiembre" type="add">
+        New BeanUtil methods: #getPropertyDescriptors(Class), #getWriteMethod,
+        #getReadMethod, #isWritable, #isReadable (the last two replaces the
+        now deprecated #isGettable and #isSettable).
+      </action>
       <action dev="essiembre" type="update">
         Now require Java 11+. 
       </action>
@@ -37,6 +50,13 @@
         Converter#toString(Object, String) will now return the default value
         when the object is null. 
       </action>
+      <action dev="essiembre" type="update">
+        EncryptionUtil#main(String[]) no longer issue a System#exit. 
+      </action>
+      <action dev="essiembre" type="update">
+        EventManager#removeListener not remove entries by identity to be 
+        consistent with add methods. 
+      </action>
       <action dev="essiembre" type="fix">
         Fixed CollectionUtil#testRemoveNulls having opposite effect.
       </action>
@@ -45,7 +65,8 @@
         properly when including or parsing fragments.
       </action>
       <action dev="essiembre" type="remove">
-        Removed a number of deprecated classes and methods.
+        Removed a number of deprecated classes and methods:
+        *.config.IXMLConfigurable, *.encrypt.EncryptionXMLUtil.
       </action>
     </release>
 

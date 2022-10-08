@@ -155,6 +155,7 @@ public class FluentPropertyDescriptor extends PropertyDescriptor {
     /**
      * Gets whether this described property can be read (has a reader method).
      * @return <code>true</code> if it can be read
+     * @since 3.0.0
      */
     public boolean isReadable() {
         return getReadMethod() != null;
@@ -163,14 +164,28 @@ public class FluentPropertyDescriptor extends PropertyDescriptor {
      * Gets whether this described property can be written to
      * (has a writer method).
      * @return <code>true</code> if it can be written
+     * @since 3.0.0
      */
     public boolean isWritable() {
         return getWriteMethod() != null;
     }
 
+    /**
+     * Reads the bean value matching the property descriptor.
+     * @param <T> returned value type
+     * @param bean bean to get property value from
+     * @return a value
+     * @since 3.0.0
+     */
     public <T> T readValue(Object bean) {
         return BeanUtil.getValue(bean, this);
     }
+    /**
+     * Writes the bean value matching the property descriptor.
+     * @param bean bean to write property to
+     * @param value the value to write
+     * @since 3.0.0
+     */
     public void writeValue(Object bean, Object value) {
         BeanUtil.setValue(bean, getName(), value);
     }

@@ -1,4 +1,4 @@
-/* Copyright 2015-2020 Norconex Inc.
+/* Copyright 2015-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,8 @@ import java.nio.file.Paths;
 import com.norconex.commons.lang.security.Credentials;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
+
+import lombok.EqualsAndHashCode;
 
 /**
  * <p>Pointer to the an encryption key, or the encryption key itself. An
@@ -64,6 +66,7 @@ import com.norconex.commons.lang.xml.XML;
  * @see EncryptionUtil
  * @see Credentials
  */
+@EqualsAndHashCode
 public final class EncryptionKey implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -98,7 +101,6 @@ public final class EncryptionKey implements Serializable {
      * @param source the type of value
      */
     public EncryptionKey(String value, Source source, int size) {
-        super();
         this.value = value;
         this.source = source;
         this.size = size;
@@ -175,12 +177,12 @@ public final class EncryptionKey implements Serializable {
     }
 
     private String fromEnv() {
-        //TODO allow a flag to optionally throw an exception when null?
+        //MAYBE allow a flag to optionally throw an exception when null?
         return System.getenv(value);
     }
 
     private String fromProperty() {
-        //TODO allow a flag to optionally throw an exception when null?
+        //MAYBE allow a flag to optionally throw an exception when null?
         return System.getProperty(value);
     }
 
@@ -192,7 +194,7 @@ public final class EncryptionKey implements Serializable {
                     + file.getAbsolutePath());
         }
         try {
-            //TODO allow a flag to optionally throw an exception when null?
+            //MAYBE allow a flag to optionally throw an exception when null?
             return new String(Files.readAllBytes(
                     Paths.get(value)), StandardCharsets.UTF_8);
         } catch (IOException e) {
@@ -240,49 +242,6 @@ public final class EncryptionKey implements Serializable {
                 xml.addElement("source", key.source.name().toLowerCase());
             }
         }
-    }
-
-    //Do not use Apache Commons Lang below to avoid any dependency
-    //when used on command-line with EncryptionUtil.
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((source == null) ? 0 : source.hashCode());
-        result = prime * result + ((value == null) ? 0 : value.hashCode());
-        result = prime * result + size;
-        return result;
-    }
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (!(obj instanceof EncryptionKey)) {
-            return false;
-        }
-        EncryptionKey other = (EncryptionKey) obj;
-        if (source != other.source) {
-            return false;
-        }
-        if (value == null) {
-            if (other.value != null) {
-                return false;
-            }
-        } else if (!value.equals(other.value)) {
-            return false;
-        }
-        if (size == null) {
-            if (other.size != null) {
-                return false;
-            }
-        } else if (!size.equals(other.size)) {
-           return false;
-        }
-        return true;
     }
 
     @Override
