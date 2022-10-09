@@ -1,4 +1,4 @@
-/* Copyright 2019-2021 Norconex Inc.
+/* Copyright 2019-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,28 +21,25 @@ import java.util.Objects;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.commons.lang.xml.XMLException;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Version-related convenience methods.
  * @author Pascal Essiembre
  * @since 2.0.0
  */
+@Slf4j
 public final class VersionUtil {
 
-    private static final Logger LOG =
-            LoggerFactory.getLogger(VersionUtil.class);
+    //MAYBE: Extract from pom if not found in manifest?
+    //MAYBE: Create a Version class that breaks the parts and use it in JarFile
 
     private VersionUtil() {
-        super();
     }
-
-    //TODO Extract from pom if not found in manifest?
-    //TODO Create a Version class that breaks the parts and use it in JarFile
 
     /**
      * <p>
@@ -220,11 +217,10 @@ public final class VersionUtil {
     }
 
     private static class DetailedVersion {
-        final private String version;
-        final private String title;
-        final private String vendor;
+        private final String version;
+        private final String title;
+        private final String vendor;
         public DetailedVersion(String version, String title, String vendor) {
-            super();
             this.version = version;
             this.title = title;
             this.vendor = vendor;

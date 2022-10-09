@@ -72,7 +72,8 @@
       </action>
       <action dev="essiembre" type="remove">
         Removed a number of deprecated classes and methods:
-        *.config.IXMLConfigurable, *.encrypt.EncryptionXMLUtil.
+        *.lang.config.IXMLConfigurable, *.lang.encrypt.EncryptionXMLUtil, 
+        *.lang.StringUtil.
       </action>
     </release>
 
