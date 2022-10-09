@@ -29,6 +29,8 @@ import java.util.Locale;
  */
 public class PercentFormatter implements Serializable {
 
+    //MAYBE: consider having a builder instead of multi-args.
+
     private static final long serialVersionUID = 3403860660255503075L;
 
     private final Locale locale;
@@ -39,9 +41,8 @@ public class PercentFormatter implements Serializable {
      * the default system locale.
      */
     public PercentFormatter() {
-        super();
-        this.decimalPrecision = 0;
-        this.locale = null;
+        decimalPrecision = 0;
+        locale = null;
     }
 
     /**
@@ -51,7 +52,6 @@ public class PercentFormatter implements Serializable {
      * @param locale a locale
      */
     public PercentFormatter(int decimalPrecision, Locale locale) {
-        super();
         this.decimalPrecision = decimalPrecision;
         this.locale = locale;
     }
@@ -109,11 +109,12 @@ public class PercentFormatter implements Serializable {
         if (safeLocale == null) {
             safeLocale = Locale.getDefault();
         }
-        //TODO cache message format with locale?
+        //MAYBE cache message format with locale?
         NumberFormat percentFormat =
                 NumberFormat.getPercentInstance(safeLocale);
         percentFormat.setMaximumFractionDigits(decimalPrecision);
-        //TODO consider returning <0.1% when not zero but too small to represent
+        //MAYBE consider returning <0.1% when not zero but too small to
+        //represent
         return percentFormat.format(fraction);
     }
 }

@@ -1,4 +1,4 @@
-/* Copyright 2018 Norconex Inc.
+/* Copyright 2018-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,11 @@
 package com.norconex.commons.lang;
 
 import org.apache.commons.lang3.SystemUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
- * Provides an abstraction over operating-system specific resources 
+ * Provides an abstraction over operating-system specific resources
  * (e.g. paths).
  * Simply a convenience class saving you from checking for the OS yourself
  * to figure out which resource to use, for major OSes.
@@ -27,10 +27,8 @@ import org.slf4j.LoggerFactory;
  * @param <T> resource type
  * @since 2.0.0
  */
+@Slf4j
 public class OSResource<T> {
-
-    private static final Logger LOG = LoggerFactory.getLogger(
-            OSResource.class);
 
     private T resource;
 
