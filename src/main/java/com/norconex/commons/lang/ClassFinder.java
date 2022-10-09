@@ -1,4 +1,4 @@
-/* Copyright 2010-2020 Norconex Inc.
+/* Copyright 2010-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,8 +38,8 @@ import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Utility class for finding names of classes implementing an interface or class
@@ -47,16 +47,13 @@ import org.slf4j.LoggerFactory;
  *
  * @author Pascal Essiembre
  */
+@Slf4j
 public final class ClassFinder {
 
-    private static final Logger LOG =
-            LoggerFactory.getLogger(ClassFinder.class);
-
-    private static WeakReference<Cache> CACHE;
+    private static WeakReference<Cache> refCache;
 
 
     private ClassFinder() {
-        super();
     }
 
     /**
@@ -213,7 +210,7 @@ public final class ClassFinder {
 
     private static synchronized Cache cache() {
         Cache cache;
-        if (CACHE == null || CACHE.get() == null) {
+        if (refCache == null || refCache.get() == null) {
             Set<String> classes = new HashSet<>();
             for (File file : Arrays.stream(SystemUtils.JAVA_CLASS_PATH.split(
                     File.pathSeparator)).distinct().map(
@@ -224,9 +221,9 @@ public final class ClassFinder {
                 }
             }
             cache = new Cache(classes);
-            CACHE = new WeakReference<>(cache);
+            refCache = new WeakReference<>(cache);
         } else {
-            cache = CACHE.get();
+            cache = refCache.get();
         }
         return cache;
     }
@@ -291,12 +288,11 @@ public final class ClassFinder {
             }
         } catch (IOException e) {
             LOG.error("Could not read JAR: {}", jarFile, e);
-            return classes;
         }
         return classes;
     }
 
-    private static String resolveClassName(/*ClassLoader loader,*/ String rawName) {
+    private static String resolveClassName(String rawName) {
         if (!rawName.endsWith(".class")
                 || rawName.contains("$")
                 || rawName.endsWith("module-info.class")
@@ -311,15 +307,12 @@ public final class ClassFinder {
         String className = rawName;
         className = className.replaceAll("[\\\\/]", ".");
         className = StringUtils.removeStart(className, ".");
-        className = StringUtils.removeEnd(className, ".class");
-
-        return className;
+        return StringUtils.removeEnd(className, ".class");
     }
 
     private static class Cache {
         private final Set<String> classes;
         public Cache(Set<String> classes) {
-            super();
             this.classes = Collections.unmodifiableSet(classes);
         }
     }

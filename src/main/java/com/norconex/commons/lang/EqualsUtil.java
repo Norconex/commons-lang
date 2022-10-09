@@ -1,4 +1,4 @@
-/* Copyright 2010-2017 Norconex Inc.
+/* Copyright 2010-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import org.apache.commons.lang3.StringUtils;
 public final class EqualsUtil {
 
     private EqualsUtil() {
-        super();
     }
 
     /**
@@ -39,6 +38,9 @@ public final class EqualsUtil {
         if (targets == null) {
             return source == null;
         }
+        if (targets.length == 0) {
+            return false;
+        }
         for (Object object : targets) {
             if (Objects.equals(source, object)) {
                 return true;
@@ -49,7 +51,7 @@ public final class EqualsUtil {
     /**
      * Whether a source string equals ANY of the target string.
      * @param source string being tested for equality with target strings
-     * @param targets one or more strings to be tested with source string 
+     * @param targets one or more strings to be tested with source string
      *                for equality
      * @return <code>true</code> if any of the target strings are equal
      */
@@ -58,6 +60,9 @@ public final class EqualsUtil {
         if (targets == null) {
             return source == null;
         }
+        if (targets.length == 0) {
+            return false;
+        }
         for (CharSequence target : targets) {
             if (StringUtils.equalsIgnoreCase(source, target)) {
                 return true;
@@ -65,7 +70,7 @@ public final class EqualsUtil {
         }
         return false;
     }
-    
+
     /**
      * Whether a source object equals ALL of the target objects
      * @param source object being tested for equality with targets
@@ -75,6 +80,9 @@ public final class EqualsUtil {
     public static boolean equalsAll(Object source, Object... targets) {
         if (targets == null) {
             return source == null;
+        }
+        if (targets.length == 0) {
+            return false;
         }
         for (Object object : targets) {
             if (!Objects.equals(source, object)) {
@@ -86,7 +94,7 @@ public final class EqualsUtil {
     /**
      * Whether a source string equals ALL of the target string.
      * @param source string being tested for equality with target strings
-     * @param targets one or more strings to be tested with source string 
+     * @param targets one or more strings to be tested with source string
      *                for equality
      * @return <code>true</code> if all of the target strings are equal
      */
@@ -94,6 +102,9 @@ public final class EqualsUtil {
             CharSequence source, CharSequence... targets) {
         if (targets == null) {
             return source == null;
+        }
+        if (targets.length == 0) {
+            return false;
         }
         for (CharSequence target : targets) {
             if (!StringUtils.equalsIgnoreCase(source, target)) {
@@ -115,21 +126,21 @@ public final class EqualsUtil {
     /**
      * Whether a source string equals NONE of the target string.
      * @param source string being tested for equality with target strings
-     * @param targets one or more strings to be tested with source string 
+     * @param targets one or more strings to be tested with source string
      *                for equality
      * @return <code>true</code> if none of the target strings are equal
      */
     public static boolean equalsNoneIgnoreCase(
-            String source, String... targets) {
+            String source, CharSequence... targets) {
         return !equalsAnyIgnoreCase(source, targets);
     }
-    
+
     /**
      * Compares that two maps are equals, regardless of entry orders.
      * It does so by making sure the two maps are the same size
-     * and the first map contains all entries of the other one. 
+     * and the first map contains all entries of the other one.
      * Map elements should implement <code>equals</code>.
-     * @param map1 first map 
+     * @param map1 first map
      * @param map2 second map
      * @return <code>true</code> if the two maps are equal
      * @since 1.14.0
@@ -138,10 +149,7 @@ public final class EqualsUtil {
         if (map1 == null && map2 == null) {
             return true;
         }
-        if (map1 == null || map2 == null) {
-            return false;
-        }
-        if (map1.size() != map2.size()) {
+        if (map1 == null || map2 == null || (map1.size() != map2.size())) {
             return false;
         }
         return map1.entrySet().containsAll(map2.entrySet());

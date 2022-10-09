@@ -1,4 +1,4 @@
-/* Copyright 2020 Norconex Inc.
+/* Copyright 2020-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import java.lang.annotation.Annotation;
 public final class ClassUtil {
 
     private ClassUtil() {
-        super();
     }
 
     /**
@@ -32,8 +31,8 @@ public final class ClassUtil {
      * one class in the hierarchy has an annotation of the same type, the
      * first one matching is returned.
      * @param <A> annotation type
-     * @param annotatedClass annotation class
-     * @param annotationClass class we search for an annotatation
+     * @param annotatedClass annotated class
+     * @param annotationClass the annotation class we are looking for
      * @return an annotation, or <code>null</code> if none is found
      */
     public static <A extends Annotation> A getAnnotation(

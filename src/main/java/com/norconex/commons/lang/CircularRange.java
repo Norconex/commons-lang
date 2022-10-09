@@ -1,4 +1,4 @@
-/* Copyright 2017 Norconex Inc.
+/* Copyright 2017-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,70 +19,79 @@ import java.util.Comparator;
 
 import org.apache.commons.lang3.Range;
 
+import lombok.EqualsAndHashCode;
+
 /**
  * <p>
  * A range from a possible set of values that rolls over when defined circular
  * start or end is reached. Because the range is circular, there is no
- * concept of before and after and maximum range can be smaller than minimum. 
+ * concept of before and after and maximum range can be smaller than minimum.
  * This class is otherwise similar to Apache Commons Lang {@link Range} class.
- * </p> 
+ * </p>
+ * <p>
+ * Even though this class implements {@link Serializable}, it makes no
+ * guarantee about supplied arguments. If serialization is important to you,
+ * make sure supplied arguments are serializable.
+ * </p>
  * @param <T> the range type
  * @author Pascal Essiembre
  * @since 1.14.0
  */
+@EqualsAndHashCode
 public final class CircularRange<T> implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private final Comparator<T> comparator;
-    private final T minimum;
-    private final T maximum;
-    private final T circleStart;
-    private final T circleEnd;
-    private transient int hashCode;
+    @EqualsAndHashCode.Exclude
+    private final Comparator<T> comparator; //NOSONAR
+    private final T minimum; //NOSONAR
+    private final T maximum; //NOSONAR
+    private final T circleStart; //NOSONAR
+    private final T circleEnd; //NOSONAR
     private transient String toString;
 
     @SuppressWarnings("unchecked")
     private CircularRange(
-            final T circleStart, final T circleEnd, 
+            final T circleStart, final T circleEnd,
             final T minimum, final T maximum, final Comparator<T> comp) {
         if (circleStart == null || circleEnd == null) {
-            throw new IllegalArgumentException(
-                    "Circular boundaries must not be null: circleStart="
-                            + circleStart + ", circleEnd=" + circleEnd);
+            throw new IllegalArgumentException(String.format(
+                    "Circular boundaries must not be null: circleStart=%s"
+                            + ", circleEnd=%s", circleStart, circleEnd));
         }
         if (minimum == null || maximum == null) {
-            throw new IllegalArgumentException(
-                    "Elements in a range must not be null: minimum="
-                            + minimum + ", maximum=" + maximum);
+            throw new IllegalArgumentException(String.format(
+                    "Elements in a range must not be null: minimum=%s"
+                            + ", maximum=%s", minimum, maximum));
         }
         if (comp == null) {
             this.comparator = ComparableComparator.INSTANCE;
         } else {
-            this.comparator = comp;            
+            this.comparator = comp;
         }
         if (!inNormalRange(minimum, circleStart, circleEnd)
                 || !inNormalRange(maximum, circleStart, circleEnd)) {
-            throw new IllegalArgumentException(
+            throw new IllegalArgumentException(String.format(
                     "Elements in a range must fit between circular start/end: "
-                  + "circleStart=" + circleStart + ", circleEnd=" + circleEnd
-                  + ", minimum=" + minimum + ", maximum=" + maximum);
-        }        
-        if (compare(circleEnd, circleStart) < 1) {
-            throw new IllegalArgumentException(
-                    "Circular start must be smaller than circlar end: "
-                  + "circleStart=" + circleStart + ", circleEnd=" + circleEnd);
-        }        
+                  + "circleStart=%s, circleEnd=%s, minimum=%s, maximum=%s",
+                          circleStart, circleEnd, minimum, maximum));
+        }
+        if (compare(circleEnd, circleStart) < 0) {
+            throw new IllegalArgumentException(String.format(
+                    "Circular start must be smaller than or equal to circlar "
+                    + "end: circleStart=%s, circleEnd=%s",
+                            circleStart, circleEnd));
+        }
         this.circleStart = circleStart;
         this.circleEnd = circleEnd;
         this.minimum = minimum;
         this.maximum = maximum;
     }
-    
+
     /**
      * <p>Obtains a range using the specified element as both the minimum
      * and maximum in this range and as both circular start and end.</p>
-     * 
+     *
      * <p>The range uses the natural ordering of the elements to determine where
      * values lie in the range.</p>
      *
@@ -100,7 +109,7 @@ public final class CircularRange<T> implements Serializable {
     /**
      * <p>Obtains a range using the specified element as both the minimum
      * and maximum in this range and as both circular start and end.</p>
-     * 
+     *
      * <p>The range uses the specified {@code Comparator} to determine where
      * values lie in the range.</p>
      *
@@ -120,19 +129,19 @@ public final class CircularRange<T> implements Serializable {
     /**
      * <p>Obtains a range with the specified minimum and maximum values also
      * serving as circular start and end (all inclusive).</p>
-     * 
+     *
      * <p>The range uses the natural ordering of the elements to determine where
      * values lie in the range.</p>
      *
      * <p>The arguments must be passed in order (min,max).
      *
      * @param <T> the type of the elements in this range
-     * @param fromInclusive  the first value that defines the edge of 
+     * @param fromInclusive  the first value that defines the edge of
      *        the range, inclusive
-     * @param toInclusive  the second value that defines the edge of 
+     * @param toInclusive  the second value that defines the edge of
      *        the range, inclusive
      * @return the range object, not null
-     * @throws IllegalArgumentException 
+     * @throws IllegalArgumentException
      *             if either element is null or not in order
      * @throws ClassCastException if the elements are not {@code Comparable}
      */
@@ -144,124 +153,124 @@ public final class CircularRange<T> implements Serializable {
     /**
      * <p>Obtains a range with the specified minimum and maximum values also
      * serving as circular start and end (all inclusive).</p>
-     * 
+     *
      * <p>The range uses the specified {@code Comparator} to determine where
      * values lie in the range.</p>
      *
      * <p>The arguments must be passed in order (min,max).</p>
      *
      * @param <T> the type of the elements in this range
-     * @param fromInclusive  the first value that defines the edge of the 
+     * @param fromInclusive  the first value that defines the edge of the
      *        range, inclusive
-     * @param toInclusive  the second value that defines the edge of the 
+     * @param toInclusive  the second value that defines the edge of the
      *        range, inclusive
      * @param comparator  the comparator to be used, null for natural ordering
      * @return the range object, not null
      * @throws IllegalArgumentException if either element is null
-     * @throws ClassCastException if using natural ordering and the elements 
+     * @throws ClassCastException if using natural ordering and the elements
      *         are not {@code Comparable}
      */
     public static <T> CircularRange<T> between(
-            final T fromInclusive, final T toInclusive, 
+            final T fromInclusive, final T toInclusive,
             final Comparator<T> comparator) {
-        return between(fromInclusive, toInclusive, 
+        return between(fromInclusive, toInclusive,
                 fromInclusive, toInclusive, comparator);
     }
-    
+
     /**
-     * <p>Obtains a range with the specified minimum and maximum values 
+     * <p>Obtains a range with the specified minimum and maximum values
      * and circular start and end values (all inclusive).</p>
-     * 
+     *
      * <p>The range uses the natural ordering of the elements to determine where
      * values lie in the range.</p>
      *
-     * <p>The circle arguments must be passed in order (min,max).  The 
+     * <p>The circle arguments must be passed in order (min,max).  The
      * range arguments can be passed in any order (min,max or max,min).
      * The order will be respected.
      *
      * @param <T> the type of the elements in this range
-     * @param rangeFromInclusive  the first value that defines the edge of 
+     * @param rangeFromInclusive  the first value that defines the edge of
      *        the range, inclusive
-     * @param rangeToInclusive  the second value that defines the edge of 
+     * @param rangeToInclusive  the second value that defines the edge of
      *        the range, inclusive
-     * @param circleStartInclusive the value that defines the circular start, 
-     *        inclusive 
-     * @param circleEndInclusive the value that defines the circular end, 
-     *        inclusive 
+     * @param circleStartInclusive the value that defines the circular start,
+     *        inclusive
+     * @param circleEndInclusive the value that defines the circular end,
+     *        inclusive
      * @return the range object, not null
-     * @throws IllegalArgumentException 
+     * @throws IllegalArgumentException
      *             if either element is null or not in order
      * @throws ClassCastException if the elements are not {@code Comparable}
      */
     public static <T extends Comparable<T>> CircularRange<T> between(
             final T circleStartInclusive,
             final T circleEndInclusive,
-            final T rangeFromInclusive, 
+            final T rangeFromInclusive,
             final T rangeToInclusive) {
-        return between(circleStartInclusive, circleEndInclusive, 
+        return between(circleStartInclusive, circleEndInclusive,
                 rangeFromInclusive, rangeToInclusive, null);
     }
 
     /**
      * <p>Obtains a range with the specified minimum and maximum values
      * and circular start and end values (all inclusive).</p>
-     * 
+     *
      * <p>The range uses the specified {@code Comparator} to determine where
      * values lie in the range.</p>
      *
-     * <p>The circle arguments must be passed in order (min,max).  The 
+     * <p>The circle arguments must be passed in order (min,max).  The
      * range arguments can be passed in any order (min,max or max,min).
      * The order will be respected.
      *
      * @param <T> the type of the elements in this range
-     * @param rangeFromInclusive  the first value that defines the edge of the 
+     * @param rangeFromInclusive  the first value that defines the edge of the
      *        range, inclusive
-     * @param rangeToInclusive  the second value that defines the edge of the 
+     * @param rangeToInclusive  the second value that defines the edge of the
      *        range, inclusive
-     * @param circleStartInclusive the value that defines the circular start, 
-     *        inclusive 
-     * @param circleEndInclusive the value that defines the circular end, 
-     *        inclusive 
+     * @param circleStartInclusive the value that defines the circular start,
+     *        inclusive
+     * @param circleEndInclusive the value that defines the circular end,
+     *        inclusive
      * @param comparator  the comparator to be used, null for natural ordering
      * @return the range object, not null
      * @throws IllegalArgumentException if either element is null
-     * @throws ClassCastException if using natural ordering and the elements 
+     * @throws ClassCastException if using natural ordering and the elements
      *         are not {@code Comparable}
      */
     public static <T> CircularRange<T> between(
             final T circleStartInclusive,
             final T circleEndInclusive,
-            final T rangeFromInclusive, 
-            final T rangeToInclusive, 
+            final T rangeFromInclusive,
+            final T rangeToInclusive,
             final Comparator<T> comparator) {
         return new CircularRange<>(
                 circleStartInclusive, circleEndInclusive,
                 rangeFromInclusive, rangeToInclusive, comparator);
     }
-    
+
     /**
-     * <p>Obtains a new range with the specified circular start and end 
+     * <p>Obtains a new range with the specified circular start and end
      * values (both inclusive). The range values and comparator are the same.
      * </p>
-     * @param circleStartInclusive the value that defines the circular start, 
-     *        inclusive 
-     * @param circleEndInclusive the value that defines the circular end, 
-     *        inclusive 
+     * @param circleStartInclusive the value that defines the circular start,
+     *        inclusive
+     * @param circleEndInclusive the value that defines the circular end,
+     *        inclusive
      * @return the range object, not null
      * @throws IllegalArgumentException if either element is null
      */
     public CircularRange<T> withCircularBoundaries(
             final T circleStartInclusive, final T circleEndInclusive) {
         return new CircularRange<>(
-                circleStartInclusive, circleEndInclusive, 
+                circleStartInclusive, circleEndInclusive,
                 getMinimum(), getMaximum(), getComparator());
     }
     /**
-     * <p>Obtains a new range with the specified minimum and maximum range 
+     * <p>Obtains a new range with the specified minimum and maximum range
      * values (both inclusive). The circular start and end are the same.</p>
-     * @param rangeFromInclusive  the first value that defines the edge of the 
+     * @param rangeFromInclusive  the first value that defines the edge of the
      *        range, inclusive
-     * @param rangeToInclusive  the second value that defines the edge of the 
+     * @param rangeToInclusive  the second value that defines the edge of the
      *        range, inclusive
      * @return the range object, not null
      * @throws IllegalArgumentException if either element is null
@@ -272,7 +281,7 @@ public final class CircularRange<T> implements Serializable {
                 getCircleStart(), getCircleEnd(),
                 rangeFromInclusive, rangeToInclusive, getComparator());
     }
-    
+
     // Accessors
     //--------------------------------------------------------------------
 
@@ -305,9 +314,9 @@ public final class CircularRange<T> implements Serializable {
         return circleEnd;
     }
     /**
-     * <p>Gets the comparator being used to determine if objects are 
+     * <p>Gets the comparator being used to determine if objects are
      * within the range.</p>
-     * 
+     *
      * <p>Natural ordering uses an internal comparator implementation, thus this
      * method never returns null. See {@link #isNaturalOrdering()}.</p>
      *
@@ -318,9 +327,9 @@ public final class CircularRange<T> implements Serializable {
     }
 
     /**
-     * <p>Whether or not the CircularRange is using the natural ordering of 
+     * <p>Whether or not the CircularRange is using the natural ordering of
      * the elements.</p>
-     * 
+     *
      * <p>Natural ordering uses an internal comparator implementation, thus this
      * method is the only way to check if a null comparator was specified.</p>
      *
@@ -338,7 +347,7 @@ public final class CircularRange<T> implements Serializable {
     public boolean isRolling() {
         return compare(minimum, maximum) > -1;
     }
-    
+
     // Element tests
     //--------------------------------------------------------------------
 
@@ -389,10 +398,10 @@ public final class CircularRange<T> implements Serializable {
     //--------------------------------------------------------------------
 
     /**
-     * <p>Checks whether this range contains all the elements of the 
+     * <p>Checks whether this range contains all the elements of the
      *    specified range.</p>
      *
-     * <p>This method may fail if the ranges have two different comparators 
+     * <p>This method may fail if the ranges have two different comparators
      *    or element types.</p>
      *
      * @param otherRange  the range to check, null returns false
@@ -403,13 +412,13 @@ public final class CircularRange<T> implements Serializable {
         if (otherRange == null) {
             return false;
         }
-        
+
         // Normal vs Normal
         if (!isRolling() && !otherRange.isRolling()) {
             return contains(otherRange.minimum)
                     && contains(otherRange.maximum);
         }
-        
+
         // 9 10 11 12 1 2 3 4
         //   10 11 12 1 2
         // Rolling vs Rolling
@@ -435,10 +444,10 @@ public final class CircularRange<T> implements Serializable {
 
     /**
      * <p>Checks whether this range is overlapped by the specified range.</p>
-     * 
+     *
      * <p>Two ranges overlap if there is at least one element in common.</p>
      *
-     * <p>This method may fail if the ranges have two different comparators or 
+     * <p>This method may fail if the ranges have two different comparators or
      * element types.</p>
      *
      * @param otherRange  the range to test, null returns false
@@ -461,61 +470,11 @@ public final class CircularRange<T> implements Serializable {
     private boolean inNormalRange(T element, T min, T max) {
         return compare(element, min) > -1 && compare(element, max) < 1;
     }
-    
-    // Basics
-    //--------------------------------------------------------------------
-
-    /**
-     * <p>Compares this range to another object to test if they are equal.</p>.
-     *
-     * <p>To be equal, the minimum and maximum values as well as circular
-     * start and end values must be equal, which
-     * ignores any differences in the comparator.</p>
-     *
-     * @param obj the reference object with which to compare
-     * @return true if this object is equal
-     */
-    @Override
-    public boolean equals(final Object obj) {
-        if (obj == this) {
-            return true;
-        } else if (obj == null || obj.getClass() != getClass()) {
-            return false;
-        } else {
-            @SuppressWarnings("unchecked")
-            final
-            CircularRange<T> range = (CircularRange<T>) obj;
-            return minimum.equals(range.minimum)
-                && maximum.equals(range.maximum)
-                && circleStart.equals(range.circleStart)
-                && circleEnd.equals(range.circleEnd);
-        }
-    }
-
-    /**
-     * <p>Gets a suitable hash code for the range.</p>
-     *
-     * @return a hash code value for this object
-     */
-    @Override
-    public int hashCode() {
-        int result = hashCode;
-        if (hashCode == 0) {
-            result = 17;
-            result = 37 * result + getClass().hashCode();
-            result = 37 * result + minimum.hashCode();
-            result = 37 * result + maximum.hashCode();
-            result = 37 * result + circleStart.hashCode();
-            result = 37 * result + circleEnd.hashCode();
-            hashCode = result;
-        }
-        return result;
-    }
 
     /**
      * <p>Gets the range as a {@code String}.</p>
      *
-     * <p>The format of the String is 
+     * <p>The format of the String is
      * '[<i>min</i>..<i>max</i>](<i>start</i>..<i>end</i>)'.</p>
      *
      * @return the {@code String} representation of this range
@@ -523,7 +482,7 @@ public final class CircularRange<T> implements Serializable {
     @Override
     public String toString() {
         if (toString == null) {
-            toString = "[" + minimum + ".." + maximum 
+            toString = "[" + minimum + ".." + maximum
                      + "](" + circleStart + ".." + circleEnd + ")";
         }
         return toString;
@@ -531,25 +490,25 @@ public final class CircularRange<T> implements Serializable {
 
     /**
      * <p>Formats the receiver using the given format.</p>
-     * 
-     * <p>This uses {@link java.util.Formattable} to perform the formatting. 
+     *
+     * <p>This uses {@link java.util.Formattable} to perform the formatting.
      * Five variables may be used to embed the minimum, maximum, circular start,
      * circular end and comparator.
-     * Use {@code %1$s} for the minimum element, 
+     * Use {@code %1$s} for the minimum element,
      * {@code %2$s} for the maximum element,
      * {@code %3$s} for the circular start,
      * {@code %4$s} for the circular end,
      * and {@code %5$s} for the comparator.
-     * The default format used by {@code toString()} is 
+     * The default format used by {@code toString()} is
      * {@code [%1$s..%2$s](%3$s..%4$s)}.</p>
-     * 
-     * @param format  the format string, optionally containing {@code %1$s}, 
-     *        {@code %2$s}, {@code %3$s}, {@code %4$s} and {@code %3$s}, 
+     *
+     * @param format  the format string, optionally containing {@code %1$s},
+     *        {@code %2$s}, {@code %3$s}, {@code %4$s} and {@code %3$s},
      *        not null
      * @return the formatted string, not null
      */
     public String toString(final String format) {
-        return String.format(format, minimum, maximum, 
+        return String.format(format, minimum, maximum,
                 circleStart, circleEnd, comparator);
     }
 
@@ -558,7 +517,7 @@ public final class CircularRange<T> implements Serializable {
     private enum ComparableComparator implements Comparator {
         INSTANCE;
         /**
-         * Comparable based compare implementation. 
+         * Comparable based compare implementation.
          *
          * @param obj1 left hand side of comparison
          * @param obj2 right hand side of comparison

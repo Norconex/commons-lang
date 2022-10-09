@@ -57,12 +57,18 @@
         EventManager#removeListener not remove entries by identity to be 
         consistent with add methods. 
       </action>
+      <action dev="essiembre" type="update">
+        EqualUtil now considers supplying an empty vargars as always non equal.
+      </action>
       <action dev="essiembre" type="fix">
         Fixed CollectionUtil#testRemoveNulls having opposite effect.
       </action>
       <action dev="essiembre" type="fix">
         Fixed ConfigurationLoader not resolving fragment ".variables" file 
         properly when including or parsing fragments.
+      </action>
+      <action dev="essiembre" type="fix">
+        Fixed CircularRange#is(...) always throwing IllegalArgumentException.
       </action>
       <action dev="essiembre" type="remove">
         Removed a number of deprecated classes and methods:

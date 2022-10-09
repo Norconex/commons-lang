@@ -28,14 +28,12 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 public final class ExceptionUtil {
 
     private ExceptionUtil() {
-        super();
     }
 
     /**
      * <p>Gets a formatted string made of short messages summarizing all
      * exceptions objects in the exception chain, starting with and including
-     * the supplied
-     * exception.</p>
+     * the supplied exception.</p>
      *
      * <p>Each messages returned are in the form
      * {ClassNameWithoutPackage}: {ThrowableMessage}.
