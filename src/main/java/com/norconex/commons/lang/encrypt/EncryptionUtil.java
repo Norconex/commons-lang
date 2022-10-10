@@ -93,23 +93,23 @@ public class EncryptionUtil {
         } else if ("-p".equalsIgnoreCase(typeArg)) {
             type = Source.PROPERTY;
         } else {
-            System.err.println("Unsupported type of key: " + type);
+            System.err.println("Unsupported type of key: " + type); //NOSONAR
             printUsage();
             return;
         }
 
         EncryptionKey key = new EncryptionKey(keyArg, type);
         if ("encrypt".equalsIgnoreCase(cmdArg)) {
-            System.out.println(encrypt(textArg, key));
+            System.out.println(encrypt(textArg, key)); //NOSONAR
         } else if ("decrypt".equalsIgnoreCase(cmdArg)) {
-            System.out.println(decrypt(textArg, key));
+            System.out.println(decrypt(textArg, key)); //NOSONAR
         } else {
-            System.err.println("Unsupported command: " + cmdArg);
+            System.err.println("Unsupported command: " + cmdArg); //NOSONAR
             printUsage();
         }
     }
     private static void printUsage() {
-        PrintStream out = System.out;
+        PrintStream out = System.out; //NOSONAR
         out.println("<appName> encrypt|decrypt -k|-f|-e|-p key text");
         out.println();
         out.println("Where:");

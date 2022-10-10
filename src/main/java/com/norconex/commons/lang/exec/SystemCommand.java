@@ -1,4 +1,4 @@
-/* Copyright 2010-2018 Norconex Inc.
+/* Copyright 2010-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,11 +28,11 @@ import java.util.StringTokenizer;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.io.IInputStreamListener;
 import com.norconex.commons.lang.io.InputStreamLineListener;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Represents a program to be executed by the underlying system
@@ -45,18 +45,15 @@ import com.norconex.commons.lang.io.InputStreamLineListener;
  * @author Pascal Essiembre
  * @since 1.13.0 (previously part of now deprecated JEF API)
  */
+@Slf4j
 public class SystemCommand {
 
-    private static final Logger LOG =
-            LoggerFactory.getLogger(SystemCommand.class);
-
     private static final String[] CMD_PREFIXES_WIN_LEGACY =
-            new String[] { "command.com", "/C" };
+            { "command.com", "/C" };
     private static final String[] CMD_PREFIXES_WIN_CURRENT =
-            new String[] { "cmd.exe", "/C" };
+            { "cmd.exe", "/C" };
 
-    private static final IInputStreamListener[] EMPTY_LISTENERS =
-    		new IInputStreamListener[] {};
+    private static final IInputStreamListener[] EMPTY_LISTENERS = {};
 
     private final String[] command;
     private final File workdir;
@@ -95,7 +92,6 @@ public class SystemCommand {
      * @param workdir command working directory.
      */
     public SystemCommand(File workdir, String... command) {
-        super();
         this.command = command;
         this.workdir = workdir;
     }
@@ -138,6 +134,15 @@ public class SystemCommand {
         }
     }
     /**
+     * Gets an unmodifiable list of error (STDERR) listeners.
+     * @return error listeners
+     * @since 3.0.0
+     */
+    public List<IInputStreamListener> getErrorListeners() {
+        return Collections.unmodifiableList(errorListeners);
+    }
+
+    /**
      * Adds an output (STDOUT) listener to this system command.
      * @param listener command output listener
      */
@@ -157,6 +162,15 @@ public class SystemCommand {
         	outputListeners.remove(listener);
         }
     }
+    /**
+     * Gets an unmodifiable list of output (STDOUT) listeners.
+     * @return output listeners
+     * @since 3.0.0
+     */
+    public List<IInputStreamListener> getOutputListeners() {
+        return Collections.unmodifiableList(outputListeners);
+    }
+
     /**
      * Gets environment variables.
      * @return environment variables
@@ -265,8 +279,8 @@ public class SystemCommand {
         }
         String[] cleanCommand = getCleanCommand();
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Executing command: "
-                    + StringUtils.join(cleanCommand, " "));
+            LOG.debug("Executing command: {}",
+                    StringUtils.join(cleanCommand, " "));
         }
         try {
             process = Runtime.getRuntime().exec(
@@ -299,11 +313,12 @@ public class SystemCommand {
                     process, input, outListeners, errListeners);
         }
 
-        if (exitValue != 0) {
-            LOG.error("Command returned with exit value " + process.exitValue()
-                    + " (command properly escaped?). Command: "
-                    + StringUtils.join(cleanCommand, " ") + " Error: \""
-                    + errorTracker.b.toString() + "\"");
+        if ((exitValue != 0) && LOG.isErrorEnabled()) {
+            LOG.error("Command returned with exit value {} (command "
+                    + "properly escaped?). Command: {} Error: \"{}\"",
+                    process.exitValue(),
+                    StringUtils.join(cleanCommand, " "),
+                    errorTracker.b.toString());
         }
         process = null;
         return exitValue;
@@ -319,7 +334,7 @@ public class SystemCommand {
 
     private String[] environmentArray() {
         if (environmentVariables == null) {
-            return null;
+            return null; //NOSONAR
         }
         List<String> envs = new ArrayList<>();
         for (Entry<String, String> entry : environmentVariables.entrySet()) {
@@ -348,30 +363,11 @@ public class SystemCommand {
         }
         for (int i = 0; i < prefixes.length; i++) {
             String prefix = prefixes[i];
-            if (cmd.size() > i && prefix.equalsIgnoreCase(cmd.get(0))) {
-                cmd.remove(0);
-            } else {
+            if ((cmd.size() <= i) || !prefix.equalsIgnoreCase(cmd.get(0))) {
                 return;
             }
+            cmd.remove(0); //NOSONAR
         }
-    }
-
-    /**
-     * Escapes spaces in each parts of the command as well as special
-     * characters in some operating systems, if they are not already
-     * escaped. Escapes according to operating system escape mechanism.
-     * If there is only one part to the command (size-one list), it
-     * can be the entire command with arguments passed as one string. In such
-     * case, there are little ways to tell if spaces are part of an argument
-     * or separates two arguments, so no escaping is performed.
-     * @param command the command to escape.
-     */
-    public static void escape(List<String> command) {
-//        if (SystemUtils.IS_OS_WINDOWS) {
-            escapeWindows(command);
-//        } else {
-//            escapeNonWindows(command);
-//        }
     }
 
     /**
@@ -391,23 +387,34 @@ public class SystemCommand {
         return list.toArray(ArrayUtils.EMPTY_STRING_ARRAY);
     }
 
-
+    /**
+     * Escapes spaces in each parts of the command as well as special
+     * characters in some operating systems, if they are not already
+     * escaped. Escapes according to operating system escape mechanism.
+     * If there is only one part to the command (size-one list), it
+     * can be the entire command with arguments passed as one string. In such
+     * case, there are little ways to tell if spaces are part of an argument
+     * or separates two arguments, so no escaping is performed.
+     * @param command the command to escape.
+     */
     // With windows, using cmd.exe /C requires putting arguments with
     // spaces in quotes, and then everything after cmd.exe /C in quotes
     // as well. See:
     // http://stackoverflow.com/questions/6376113/how-to-use-spaces-in-cmd
-    private static void escapeWindows(List<String> cmd) {
+    public static void escape(List<String> command) {
         // If only 1 arg, it can be the command plus args together so
         // attempt to split as such.
-        if (cmd.size() == 1) {
-            String cmdLine = cmd.get(0);
-            cmd.clear();
-            cmd.addAll(Arrays.asList(translateCommandline(cmdLine)));
+        if (command.size() == 1) {
+            String cmdLine = command.get(0);
+            command.clear();
+            if (StringUtils.isNotEmpty(cmdLine)) {
+                command.addAll(translateCommandline(cmdLine));
+            }
         }
 
         // At this point we know we have command + args, escape.
         List<String> newCmd = new ArrayList<>();
-        for (String arg : cmd) {
+        for (String arg : command) {
             if (StringUtils.contains(arg, ' ')
                     && !arg.matches("^\\s*\".*\"\\s*$")) {
                 newCmd.add('"' + arg + '"');
@@ -415,28 +422,9 @@ public class SystemCommand {
                 newCmd.add(arg);
             }
         }
-        cmd.clear();
-        cmd.addAll(newCmd);
+        command.clear();
+        command.addAll(newCmd);
     }
-
-//    // Escape spaces with a backslash if not already escaped
-//    private static void escapeNonWindows(List<String> cmd) {
-//        // If only 1 arg, it can be the command plus args together so
-//        // attempt to split as such.
-//        if (cmd.size() == 1) {
-//            String cmdLine = cmd.get(0);
-//            cmd.clear();
-//            cmd.addAll(Arrays.asList(translateCommandline(cmdLine)));
-//        }
-//
-//        // At this point we know we have command + args, escape.
-//        for (int i = 0; i < cmd.size(); i++) {
-//            cmd.add(i, StringEscapeUtils.escapeXSI(cmd.remove(i)));
-//            if (StringUtils.contains(cmd.get(i), ' ')) {
-//                cmd.add(i, StringEscapeUtils.escapeXSI(cmd.remove(i)));
-//            }
-//        }
-//    }
 
     private void wrapCommand(List<String> cmd) {
         if (SystemUtils.OS_NAME == null || !SystemUtils.IS_OS_WINDOWS) {
@@ -462,76 +450,61 @@ public class SystemCommand {
     //XXX This method is taken from Apache Commons Exec "CommandLine" class.
     //XXX It shall be removed once SystemCommand and related classes
     //XXX are replaced with Apache Commons Exec classes.
-    //XXX https://commons.apache.org/proper/commons-exec/apidocs/src-html/org/apache/commons/exec/CommandLine.html
-    private static String[] translateCommandline(final String toProcess) {
-        if (toProcess == null || toProcess.length() == 0) {
-            // no command? no string
-            return new String[0];
-        }
-
-        // parse with a simple finite state machine
-
-        final int normal = 0;
-        final int inQuote = 1;
-        final int inDoubleQuote = 2;
-        int state = normal;
-        final StringTokenizer tok =
-                new StringTokenizer(toProcess, "\"\' ", true);
-        final ArrayList<String> list = new ArrayList<>();
-        StringBuilder current = new StringBuilder();
-        boolean lastTokenHasBeenQuoted = false;
-
+    //XXX https://commons.apache.org/proper/commons-exec/apidocs/src-html/
+    //XXX org/apache/commons/exec/CommandLine.html
+    private static List<String> translateCommandline(final String toProcess) {
+        State state = new State();
+        StringTokenizer tok = new StringTokenizer(toProcess, "\"\' ", true);
         while (tok.hasMoreTokens()) {
             final String nextTok = tok.nextToken();
-            switch (state) {
-            case inQuote:
+            if (State.Type.NORMAL == state.type) {
                 if ("\'".equals(nextTok)) {
-                    lastTokenHasBeenQuoted = true;
-                    state = normal;
-                } else {
-                    current.append(nextTok);
-                }
-                break;
-            case inDoubleQuote:
-                if ("\"".equals(nextTok)) {
-                    lastTokenHasBeenQuoted = true;
-                    state = normal;
-                } else {
-                    current.append(nextTok);
-                }
-                break;
-            default:
-                if ("\'".equals(nextTok)) {
-                    state = inQuote;
+                    state.type = State.Type.IN_QUOTE;
                 } else if ("\"".equals(nextTok)) {
-                    state = inDoubleQuote;
+                    state.type = State.Type.IN_DOUBLE_QUOTE;
                 } else if (" ".equals(nextTok)) {
-                    if (lastTokenHasBeenQuoted || current.length() != 0) {
-                        list.add(current.toString());
-                        current = new StringBuilder();
-                    }
+                    state.resolveLastToken();
                 } else {
-                    current.append(nextTok);
+                    state.current.append(nextTok);
                 }
-                lastTokenHasBeenQuoted = false;
-                break;
+                state.lastTokenHasBeenQuoted = false;
+            } else if (state.isEndQuote(nextTok)) {
+                state.lastTokenHasBeenQuoted = true;
+                state.type = State.Type.NORMAL;
+            } else {
+                state.current.append(nextTok);
             }
         }
-
-        if (lastTokenHasBeenQuoted || current.length() != 0) {
-            list.add(current.toString());
-        }
-
-        if (state == inQuote || state == inDoubleQuote) {
-            throw new IllegalArgumentException("Unbalanced quotes in "
-                    + toProcess);
-        }
-
-        final String[] args = new String[list.size()];
-        return list.toArray(args);
+        state.resolveLastToken();
+        state.ensureBalancedQuotes(toProcess);
+        return state.list;
     }
 
-    private class ErrorTracker extends InputStreamLineListener {
+    private static class State {
+        private enum Type {NORMAL, IN_QUOTE, IN_DOUBLE_QUOTE}
+        private Type type = Type.NORMAL;
+        private StringBuilder current = new StringBuilder();
+        private final ArrayList<String> list = new ArrayList<>();
+        private boolean lastTokenHasBeenQuoted;
+        private boolean isEndQuote(String nextTok) {
+            return Type.IN_DOUBLE_QUOTE == type && "\"".equals(nextTok)
+                    || Type.IN_QUOTE == type && "\'".equals(nextTok);
+        }
+        private void ensureBalancedQuotes(String toProcess) {
+            if (Type.NORMAL != type) {
+                throw new IllegalArgumentException(
+                        "Unbalanced quotes in " + toProcess);
+            }
+        }
+        private void resolveLastToken() {
+            if (lastTokenHasBeenQuoted || current.length() != 0) {
+                list.add(current.toString());
+                current.setLength(0);
+            }
+        }
+    }
+
+    private static class ErrorTracker extends InputStreamLineListener {
         private final StringBuilder b = new StringBuilder();
         @Override
         protected void lineStreamed(String type, String line) {

@@ -1,4 +1,4 @@
-/* Copyright 2010-2017 Norconex Inc.
+/* Copyright 2010-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,6 @@ public final class ExecUtil {
      * Constructor.
      */
     private ExecUtil() {
-        super();
     }
 
     /**
@@ -104,12 +103,11 @@ public final class ExecUtil {
      * @param outputListener the process output listener
      * @param errorListener the process error listener
      * @return process exit value
-     * @throws InterruptedException problem while waiting for process to finish
      */
     public static int watchProcess(
             Process process,
             IInputStreamListener outputListener,
-            IInputStreamListener errorListener) throws InterruptedException {
+            IInputStreamListener errorListener) {
         return watchProcess(process,
                 new IInputStreamListener[] {outputListener},
                 new IInputStreamListener[] {errorListener});
@@ -157,6 +155,7 @@ public final class ExecUtil {
         try {
             return process.waitFor();
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             throw new ExecException("Process was interrupted.", e);
         }
     }
@@ -243,6 +242,7 @@ public final class ExecUtil {
             try{
                t.join();
             } catch(InterruptedException e) {
+                Thread.currentThread().interrupt();
                 throw new ExecException(
                         "Process interrupted while sending input stream.", e);
             }

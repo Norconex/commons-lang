@@ -1,4 +1,4 @@
-/* Copyright 2017-2020 Norconex Inc.
+/* Copyright 2017-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,10 @@
  * limitations under the License.
  */
 package com.norconex.commons.lang.exec;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,7 +35,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import com.norconex.commons.lang.io.InputStreamLineListener;
 
-public class SystemCommandTest {
+class SystemCommandTest {
 
     public static final String IN_FILE_PATH = "/exec/sample-input.txt";
     public static final String EXPECTED_OUT_FILE_PATH =
@@ -41,7 +45,7 @@ public class SystemCommandTest {
     static Path tempFolder;
 
     @Test
-    public void testInFileOutFile() throws IOException, SystemCommandException {
+    void testInFileOutFile() throws IOException, SystemCommandException {
         File inFile = inputAsFile();
         File outFile = newTempFile();
 
@@ -58,7 +62,7 @@ public class SystemCommandTest {
     }
 
     @Test
-    public void testInFileStdout() throws IOException, SystemCommandException {
+    void testInFileStdout() throws IOException, SystemCommandException {
         File inFile = inputAsFile();
 
         SystemCommand cmd = ExternalApp.newSystemCommand(
@@ -71,7 +75,7 @@ public class SystemCommandTest {
     }
 
     @Test
-    public void testStdinOutFile() throws IOException, SystemCommandException {
+    void testStdinOutFile() throws IOException, SystemCommandException {
         InputStream input = inputAsStream();
         File outFile = newTempFile();
 
@@ -86,9 +90,8 @@ public class SystemCommandTest {
     }
 
     @Test
-    public void testStdinStdout() throws IOException, SystemCommandException {
+    void testStdinStdout() throws IOException, SystemCommandException {
         InputStream input = inputAsStream();
-
         SystemCommand cmd = ExternalApp.newSystemCommand(
                 ExternalApp.TYPE_STDIN_STDOUT);
         ExternalAppListener l = addEnvAndListener(cmd);
@@ -97,6 +100,37 @@ public class SystemCommandTest {
         Assertions.assertEquals(expectedOutputAsString(), l.getStdoutContent());
         Assertions.assertTrue(
                 l.capturedThemAll(), "Listener missed some output.");
+    }
+
+    @Test
+    void testDefaultsNullErrors() {
+        SystemCommand cmd = new SystemCommand("blah");
+
+        ExternalAppListener l = addEnvAndListener(cmd);
+        assertThat(cmd.getOutputListeners()).hasSize(1);
+        assertThat(cmd.getErrorListeners()).hasSize(1);
+        cmd.removeOutputListener(l);
+        cmd.removeErrorListener(l);
+        assertThat(cmd.getOutputListeners()).isEmpty();
+        assertThat(cmd.getOutputListeners()).isEmpty();
+
+        assertThat(cmd.getCommand()[0]).isEqualTo("blah");
+        assertThat(cmd.getWorkdir()).isNull();
+
+        assertThat(cmd.getEnvironmentVariables()).containsOnly(
+            entry(ExternalApp.ENV_STDOUT_BEFORE, ExternalApp.ENV_STDOUT_BEFORE),
+            entry(ExternalApp.ENV_STDOUT_AFTER, ExternalApp.ENV_STDOUT_AFTER),
+            entry(ExternalApp.ENV_STDERR_BEFORE, ExternalApp.ENV_STDERR_BEFORE),
+            entry(ExternalApp.ENV_STDERR_AFTER, ExternalApp.ENV_STDERR_AFTER)
+        );
+
+        assertThat(cmd.isRunning()).isFalse();
+        assertDoesNotThrow(() -> cmd.abort());
+
+        assertThat(SystemCommand.escape("ha \"ha\" 'ha'"))
+            .containsExactly("ha", "ha", "ha");
+        assertThat(SystemCommand.escape("ha ha", "\"ha\"", "'ha'"))
+            .containsExactly("\"ha ha\"", "\"ha\"", "'ha'");
     }
 
     private File inputAsFile() throws IOException {
@@ -174,5 +208,4 @@ public class SystemCommandTest {
             return b.toString();
         }
     }
-
 }

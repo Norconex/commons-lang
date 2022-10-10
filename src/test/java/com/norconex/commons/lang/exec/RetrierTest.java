@@ -1,4 +1,4 @@
-/* Copyright 2017-2019 Norconex Inc.
+/* Copyright 2017-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,32 @@
  */
 package com.norconex.commons.lang.exec;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class RetrierTest {
+class RetrierTest {
 
     @Test
-    public void testRetrierMaxRetryReached() {
+    void testRetrierDefaults() {
+        Retrier r = new Retrier();
+        r.setExceptionFilter(null);
+        assertThat(r.getMaxCauses()).isEqualTo(Retrier.DEFAULT_MAX_CAUSES_KEPT);
+        assertThat(r.getMaxRetries()).isEqualTo(Retrier.DEFAULT_MAX_RETRIES);
+        assertThat(r.getRetryDelay()).isEqualTo(Retrier.DEFAULT_RETRY_DELAY);
+        try {
+            r.execute(() -> { throw new RuntimeException(); });
+        } catch (RetriableException e) {
+            // initial run + default retries
+            assertThat(e.getAllCauses()).hasSize(Retrier.DEFAULT_MAX_RETRIES);
+        }
+    }
+
+    @Test
+    void testRetrierMaxRetryReached() {
         final MutableInt count = new MutableInt();
         try {
             new Retrier(20).setMaxCauses(5).execute(() -> {
@@ -39,7 +57,7 @@ public class RetrierTest {
     }
 
     @Test
-    public void testRetrierExceptionFilter() {
+    void testRetrierExceptionFilter() {
         final MutableInt count = new MutableInt();
         try {
             new Retrier(e -> "retryMe".equals(e.getMessage()), 20).execute(() -> {
@@ -56,5 +74,23 @@ public class RetrierTest {
             Assertions.assertEquals("retryMe", e.getAllCauses()[0].getMessage());
             Assertions.assertEquals("failMe", e.getCause().getMessage());
         }
+    }
+
+    @Test
+    void testRetrierRecovered() {
+        final MutableInt count = new MutableInt();
+        Retrier r = new Retrier(e -> true);
+        r.setMaxRetries(12);
+        r.setRetryDelay(2);
+        assertThat(r.getExceptionFilter()).isNotNull();
+
+        int returnedCount = assertDoesNotThrow(() -> r.execute(() -> {
+            count.increment();
+            if (count.intValue() != 4) {
+                throw new RuntimeException("failMe");
+            }
+            return count.getValue();
+        }));
+        assertThat(returnedCount).isEqualTo(4);
     }
 }

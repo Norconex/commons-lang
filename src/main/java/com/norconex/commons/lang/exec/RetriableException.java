@@ -1,4 +1,4 @@
-/* Copyright 2010-2020 Norconex Inc.
+/* Copyright 2010-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,15 +36,15 @@ public class RetriableException extends Exception {
      * Constructor.
      * @param message exception message
      */
-    /*default*/ RetriableException(final String message) {
+    RetriableException(final String message) {
         super(message);
-        this.causes = null;
+        causes = null;
     }
     /**
      * Constructor.
      * @param causes exception causes
      */
-    /*default*/ RetriableException(final Throwable... causes) {
+    RetriableException(final Throwable... causes) {
         super(getLastCause(causes));
         this.causes = causes;
     }
@@ -52,8 +52,7 @@ public class RetriableException extends Exception {
      * @param message exception message
      * @param causes exception causes
      */
-    /*default*/ RetriableException(
-            final String message, final Throwable... causes) {
+    RetriableException(final String message, final Throwable... causes) {
         super(message, getLastCause(causes));
         this.causes = causes;
     }

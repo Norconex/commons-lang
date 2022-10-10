@@ -22,6 +22,9 @@
         #getReadMethod, #isWritable, #isReadable (the last two replaces the
         now deprecated #isGettable and #isSettable).
       </action>
+      <action dev="essiembre" type="add">
+        New SystemCommand methods: #getErrorListeners and #getOutputListeners.
+      </action>
       <action dev="essiembre" type="update">
         Now require Java 11+. 
       </action>

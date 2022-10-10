@@ -1,4 +1,4 @@
-/* Copyright 2010-2020 Norconex Inc.
+/* Copyright 2010-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,15 +15,14 @@
 package com.norconex.commons.lang.exec;
 
 import org.apache.commons.collections4.queue.CircularFifoQueue;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.ExceptionUtil;
 import com.norconex.commons.lang.Sleeper;
+
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 /**
  * This class is responsible for executing {@link IRetriable}
@@ -33,6 +32,8 @@ import com.norconex.commons.lang.Sleeper;
  * @author Pascal Essiembre
  * @since 1.13.0
  */
+@EqualsAndHashCode
+@ToString
 public class Retrier {
 
     private static final Logger LOG = LoggerFactory.getLogger(Retrier.class);
@@ -44,7 +45,7 @@ public class Retrier {
     /** Default maximum number of exception causes kept. */
     public static final int DEFAULT_MAX_CAUSES_KEPT = 10;
 
-    private static final Exception[] EMPTY_EXCEPTIONS = new Exception[] {};
+    private static final Exception[] EMPTY_EXCEPTIONS = {};
 
     private int maxRetries = DEFAULT_MAX_RETRIES;
     private long retryDelay = DEFAULT_RETRY_DELAY;
@@ -56,7 +57,6 @@ public class Retrier {
      * retry delay (no delay).
      */
     public Retrier() {
-        super();
     }
     /**
      * Creates a new instance with the default retry delay (no delay).
@@ -83,7 +83,6 @@ public class Retrier {
      * @param maxRetries maximum number of retries
      */
     public Retrier(IExceptionFilter exceptionFilter, int maxRetries) {
-        super();
         this.maxRetries = maxRetries;
         this.exceptionFilter = exceptionFilter;
     }
@@ -202,19 +201,5 @@ public class Retrier {
         throw new RetriableException(
                 "Execution failed, maximum number of retries reached.",
                 exceptions.toArray(EMPTY_EXCEPTIONS));
-    }
-
-    @Override
-    public boolean equals(final Object other) {
-        return EqualsBuilder.reflectionEquals(this, other);
-    }
-    @Override
-    public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this);
-    }
-    @Override
-    public String toString() {
-        return new ReflectionToStringBuilder(
-                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

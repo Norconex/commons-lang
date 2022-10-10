@@ -1,4 +1,4 @@
-/* Copyright 2017 Norconex Inc.
+/* Copyright 2017 -2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,36 +14,15 @@
  */
 package com.norconex.commons.lang.exec;
 
+import lombok.experimental.StandardException;
+
 /**
  * An exception thrown by {@link ExecUtil}.
  * @author Pascal Essiembre
  * @see ExecUtil
  * @since 1.13.0
  */
+@StandardException
 public class ExecException extends RuntimeException {
-
-    private static final long serialVersionUID = -1219238586367858298L;
-
-    /**
-     * @see Exception#Exception(String)
-     * @param message exception message
-     */
-    public ExecException(final String message) {
-        super(message);
-    }
-    /**
-     * @see Exception#Exception(Throwable)
-     * @param cause exception cause
-     */
-    public ExecException(final Throwable cause) {
-        super(cause);
-    }
-    /**
-     * @see Exception#Exception(String, Throwable)
-     * @param message exception message
-     * @param cause exception cause
-     */
-    public ExecException(final String message, final Throwable cause) {
-        super(message, cause);
-    }
+    private static final long serialVersionUID = 1L;
 }
