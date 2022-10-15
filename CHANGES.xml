@@ -25,6 +25,18 @@
       <action dev="essiembre" type="add">
         New SystemCommand methods: #getErrorListeners and #getOutputListeners.
       </action>
+      <action dev="essiembre" type="add">
+        New FileUtil#isFile methods providing a null-safe variant to 
+        File#isFile or Files#isRegularFile.
+      </action>
+      <action dev="essiembre" type="add">
+        New FileUtil#isFile methods providing a null-safe variant to 
+        File#isDirectory or Files#isDirectory.
+      </action>
+      <action dev="essiembre" type="add">
+        New FileUtil#toPath methods providing a null-safe variant to 
+        File#toPath.
+      </action>
       <action dev="essiembre" type="update">
         Now require Java 11+. 
       </action>
@@ -63,6 +75,33 @@
       <action dev="essiembre" type="update">
         EqualUtil now considers supplying an empty vargars as always non equal.
       </action>
+      <action dev="essiembre" type="update">
+        FileUtil#head now returns lines in order they are read.
+      </action>      
+      <action dev="essiembre" type="update">
+        FileUtil#deleteEmptyDirs now deletes directories with empty 
+        directories, recursively.
+      </action>      
+      <action dev="essiembre" type="update">
+        FileUtil#deleteEmptyDirs now throws IOException.
+      </action>
+      <action dev="essiembre" type="update">
+        FileUtil#deleteEmptyDirs methods were overloaded to support Path.
+      </action>
+      <action dev="essiembre" type="update">
+        FileUtil#dirEmpty method was overloaded to support Path.
+      </action>
+      <action dev="essiembre" type="update">
+        FileUtil#moveFile was overloaded to support Path and now creates
+        missing directories in destination path. I also waits
+        half a second between retries (was 1 second).
+      </action>
+      <action dev="essiembre" type="update">
+        FileUtil#moveFileToDir was overloaded to support Path.
+      </action>
+      <action dev="essiembre" type="update">
+        FileUtil#dirHasFile was overloaded to support Path.
+      </action>
       <action dev="essiembre" type="fix">
         Fixed CollectionUtil#testRemoveNulls having opposite effect.
       </action>
@@ -72,6 +111,12 @@
       </action>
       <action dev="essiembre" type="fix">
         Fixed CircularRange#is(...) always throwing IllegalArgumentException.
+      </action>
+      <action dev="essiembre" type="fix">
+        Fixed FileUtil#tail now always reading lines properly.
+      </action>
+      <action dev="essiembre" type="fix">
+        Fixed FileUtil#visitEmpty dir not always returning only empty dirs.
       </action>
       <action dev="essiembre" type="remove">
         Removed a number of deprecated classes and methods:

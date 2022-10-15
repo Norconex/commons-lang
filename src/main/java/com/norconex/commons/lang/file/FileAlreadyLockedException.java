@@ -1,4 +1,4 @@
-/* Copyright 2021 Norconex Inc.
+/* Copyright 2021-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@ package com.norconex.commons.lang.file;
 
 import java.io.IOException;
 
+import lombok.experimental.StandardException;
+
 /**
  * Checked exception thrown by {@link FileLocker} when trying to create a
  * lock on an on an already locked file.
@@ -23,20 +25,7 @@ import java.io.IOException;
  * @see FileLocker
  * @since 2.0.0
  */
+@StandardException
 public class FileAlreadyLockedException extends IOException {
-
     private static final long serialVersionUID = 1L;
-
-    public FileAlreadyLockedException() {
-        super();
-    }
-    public FileAlreadyLockedException(String message, Throwable cause) {
-        super(message, cause);
-    }
-    public FileAlreadyLockedException(String message) {
-        super(message);
-    }
-    public FileAlreadyLockedException(Throwable cause) {
-        super(cause);
-    }
 }

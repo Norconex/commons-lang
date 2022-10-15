@@ -1,4 +1,4 @@
-/* Copyright 2010-2018 Norconex Inc.
+/* Copyright 2010-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import lombok.EqualsAndHashCode;
+
 /**
  * Represents a file Content-Type (also called MIME-Type or Media Type).
  * <br><br>
@@ -59,6 +61,7 @@ import org.slf4j.LoggerFactory;
  * @author Pascal Essiembre
  * @since 1.4.0
  */
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public final class ContentType implements Serializable {
 
     private static final long serialVersionUID = 6416074869536512030L;
@@ -83,7 +86,7 @@ public final class ContentType implements Serializable {
     private static final Map<Locale, ResourceBundle> BUNDLE_DISPLAYNAMES =
             new HashMap<>();
 
-    //TODO how many do we want? Do we list them all??
+    // how many do we want? Do we list them all??
     public static final ContentType TEXT = new ContentType("text/plain");
     public static final ContentType HTML = new ContentType("text/html");
     public static final ContentType PDF = new ContentType("application/pdf");
@@ -100,6 +103,7 @@ public final class ContentType implements Serializable {
     public static final ContentType BMP = new ContentType("image/bmp");
     public static final ContentType PNG = new ContentType("image/png");
 
+    @EqualsAndHashCode.Include
     private final String type;
 
     /**
@@ -107,8 +111,7 @@ public final class ContentType implements Serializable {
      * @param contentType string representation of a content type
      */
     private ContentType(String contentType) {
-        super();
-        this.type = contentType;
+        type = contentType;
         REGISTRY.put(contentType, this);
     }
 
@@ -195,8 +198,7 @@ public final class ContentType implements Serializable {
         try {
             return getDisplayBundle(safeLocale).getString(toBaseTypeString());
         } catch (MissingResourceException e) {
-            LOG.debug("Could not find display name for content type: "
-                    + type);
+            LOG.debug("Could not find display name for content type: {}", type);
         }
         return "[" + type + "]";
     }
@@ -255,38 +257,7 @@ public final class ContentType implements Serializable {
      * @return {@code true} if the given string matches this content type
      */
     public boolean matches(String contentType) {
-        return this.type.equals(StringUtils.trim(contentType));
-    }
-
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result
-                + ((type == null) ? 0 : type.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        ContentType other = (ContentType) obj;
-        if (type == null) {
-            if (other.type != null) {
-                return false;
-            }
-        } else if (!type.equals(other.type)) {
-            return false;
-        }
-        return true;
+        return type.equals(StringUtils.trim(contentType));
     }
 
     /**

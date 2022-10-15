@@ -1,4 +1,4 @@
-/* Copyright 2010-2019 Norconex Inc.
+/* Copyright 2010-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,17 @@
  */
 package com.norconex.commons.lang.file;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.Locale;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class ContentFamilyTest {
+class ContentFamilyTest {
 
     @Test
-    public void testGetDisplayName() {
-
+    void testGetDisplayName() {
         Assertions.assertEquals("Word Processor", ContentFamily.valueOf(
                 "wordprocessor").getDisplayName(Locale.ENGLISH));
         Assertions.assertEquals("Traitement de texte", ContentFamily.valueOf(
@@ -38,5 +39,30 @@ public class ContentFamilyTest {
         Assertions.assertEquals("other", ContentFamily.forContentType(
                 "application/octet-stream").getId());
 
+        assertThat(ContentFamily.valueOf(
+                "wordprocessor").getDisplayName(null)).isNotNull();
+        assertThat(ContentFamily.valueOf("idontexist")
+                .getDisplayName()).isEqualTo("[idontexist]");
+    }
+
+    @Test
+    void testContains() {
+        assertThat(ContentFamily.valueOf("spreadsheet")
+                .contains(ContentType.TSV)).isTrue();
+        assertThat(ContentFamily.valueOf("spreadsheet")
+                .contains(ContentType.PNG)).isFalse();
+        assertThat(ContentFamily.valueOf("spreadsheet")
+                .contains((ContentType) null)).isFalse();
+    }
+
+    @Test
+    void testNullEqualsToString() {
+        assertThat(ContentFamily. forContentType((String) null)).isNull();
+        assertThat(ContentFamily. forContentType((String) null)).isNull();
+
+        assertThat(ContentFamily.valueOf("spreadsheet")).isNotEqualTo(
+                ContentFamily.valueOf("text"));
+        assertThat(ContentFamily.valueOf("spreadsheet")).hasToString(
+                "spreadsheet");
     }
 }

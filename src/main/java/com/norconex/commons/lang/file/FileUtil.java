@@ -1,4 +1,4 @@
-/* Copyright 2010-2020 Norconex Inc.
+/* Copyright 2010-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.LinkedList;
-import java.util.Objects;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
@@ -37,15 +36,14 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.commons.lang3.time.DateFormatUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.Sleeper;
 import com.norconex.commons.lang.io.IInputStreamFilter;
 import com.norconex.commons.lang.io.ReverseFileInputStream;
 import com.norconex.commons.lang.text.StringUtil;
+
+import lombok.NonNull;
 
 /**
  * Utility methods when dealing with files and directories.
@@ -53,13 +51,9 @@ import com.norconex.commons.lang.text.StringUtil;
  */
 public final class FileUtil {
 
-    private static final Logger LOG = LoggerFactory.getLogger(FileUtil.class);
-
     private static final int MAX_FILE_OPERATION_ATTEMPTS = 10;
 
-    private FileUtil() {
-        super();
-    }
+    private FileUtil() {}
 
 
     /**
@@ -72,14 +66,25 @@ public final class FileUtil {
      * @since 2.0.0
      */
     public static boolean dirEmpty(File dir) throws IOException {
-        if (dir == null || !dir.isDirectory()) {
+        return dirEmpty(dir == null ? null : dir.toPath());
+    }
+
+    /**
+     * Gets whether a directory is empty of files or directories
+     * in an efficient way which does not load all files. The directory
+     * must exist and be a valid directory (e.g., not a file).
+     * @param dir the directory to check for emptiness
+     * @return <code>true</code> if directory exists and is empty
+     * @throws IOException if an I/O error occurs
+     * @since 3.0.0
+     */
+    public static boolean dirEmpty(Path dir) throws IOException {
+        if (dir == null || !Files.isDirectory(dir)) {
             throw new NotDirectoryException(
                     "Directory must exist and be valid: " + dir);
         }
-        Path path = dir.toPath();
-        try (DirectoryStream<Path> directory =
-                Files.newDirectoryStream(path)) {
-            return !directory.iterator().hasNext();
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
+            return !stream.iterator().hasNext();
         }
     }
 
@@ -93,11 +98,26 @@ public final class FileUtil {
      */
     public static boolean dirHasFile(File dir, FileFilter filter)
             throws IOException {
-        if (dir == null || !dir.isDirectory()) {
+        return dirHasFile(toPath(dir), filter);
+    }
+
+    /**
+     * Recursively gets whether a directory contains at least one file
+     * matching the given file filter.
+     * @param dir directory to inspect
+     * @param filter file or directory filter
+     * @return <code>true</code> upon filter matching a file or directory
+     * @throws IOException if an I/O error occurs
+     * @since 3.0.0
+     */
+    public static boolean dirHasFile(Path dir, FileFilter filter)
+            throws IOException {
+        if (!isDirectory(dir)) {
             throw new NotDirectoryException(
-                    "Directory must exist and be valid: " + dir);
+                    "Directory does not exist or is otherwise not valid: "
+                            + dir);
         }
-        try (Stream<Path> walk = Files.walk(dir.toPath())) {
+        try (Stream<Path> walk = Files.walk(dir)) {
             return walk.filter(Files::isRegularFile)
                     .anyMatch(p -> filter.accept(p.toFile()));
         }
@@ -129,6 +149,7 @@ public final class FileUtil {
         }
         return b.toString();
     }
+
     /**
      * Converts a "safe" file name originally created with
      * {@link #toSafeFileName(String)} into its original string.
@@ -140,7 +161,8 @@ public final class FileUtil {
             return null;
         }
         StringBuilder b = new StringBuilder();
-        for (int i = 0; i < safeFileName.length(); i++){
+        int i = 0;
+        while (i < safeFileName.length()) {
             char ch = safeFileName.charAt(i);
             if (ch == '_') {
                 String intVal = StringUtils.substring(safeFileName, i + 1,
@@ -150,10 +172,10 @@ public final class FileUtil {
             } else {
                 b.append(ch);
             }
+            i++;
         }
         return b.toString();
     }
-
 
     /**
      * Moves a file to a directory.   Like {@link #moveFile(File, File)}:
@@ -161,31 +183,57 @@ public final class FileUtil {
      *   <li>If the target directory does not exists, it creates it first.</li>
      *   <li>If the target file already exists, it deletes it first.</li>
      *   <li>If target file deletion does not work, it will try 10 times,
-     *       waiting 1 second between each try to give a chance to whatever
-     *       OS lock on the file to go.</li>
+     *       waiting half a second between each try to give a chance to
+     *       whatever OS lock on the file to go.</li>
      *   <li>It throws a IOException if the move failed (as opposed to fail
      *       silently).</li>
      * </ul>
      * @param sourceFile source file to move
      * @param targetDir target destination
+     * @return new location of moved file (since 3.0.0)
      * @throws IOException cannot move file.
      */
-    public static void moveFileToDir(File sourceFile, File targetDir)
-            throws IOException {
-        if (sourceFile == null || !sourceFile.isFile()) {
-            throw new IOException("Source file is not valid: " + sourceFile);
+    public static File moveFileToDir(
+            @NonNull File sourceFile, @NonNull File targetDir)
+                    throws IOException {
+        return moveFileToDir(toPath(sourceFile), toPath(targetDir)).toFile();
+    }
+
+    /**
+     * Moves a file to a directory.   Like {@link #moveFile(File, File)}:
+     * <ul>
+     *   <li>If the target directory does not exists, it creates it first.</li>
+     *   <li>If the target file already exists, it deletes it first.</li>
+     *   <li>If target file deletion does not work, it will try 10 times,
+     *       waiting half a second between each try to give a chance to
+     *       whatever OS lock on the file to go.</li>
+     *   <li>It throws a IOException if the move failed (as opposed to fail
+     *       silently).</li>
+     * </ul>
+     * @param sourceFile source file to move
+     * @param targetDir target destination
+     * @return new location of moved file
+     * @throws IOException cannot move file.
+     * @since 3.0.0
+     */
+    public static Path moveFileToDir(
+            @NonNull Path sourceFile, @NonNull Path targetDir)
+                    throws IOException {
+        if (!isFile(sourceFile)) {
+            throw new IOException("Source file does not exist, is not a file, "
+                    + "or is otherwise not valid: " + sourceFile);
         }
-        if (targetDir == null ||
-                targetDir.exists() && !targetDir.isDirectory()) {
+        boolean targetDirExists = Files.exists(targetDir);
+        if (targetDirExists && !Files.isDirectory(targetDir)) {
             throw new IOException("Target directory is not valid:" + targetDir);
         }
-        if (!targetDir.exists()) {
-            FileUtils.forceMkdir(targetDir);
+        if (!targetDirExists) {
+            Files.createDirectories(targetDir);
         }
 
-        String fileName = sourceFile.getName();
-        File targetFile = new File(targetDir, fileName);
+        Path targetFile = targetDir.resolve(sourceFile.getFileName());
         moveFile(sourceFile, targetFile);
+        return targetFile;
     }
 
     /**
@@ -194,46 +242,72 @@ public final class FileUtil {
      * <ul>
      *   <li>If the target file already exists, it deletes it first.</li>
      *   <li>If target file deletion does not work, it will try 10 times,
-     *       waiting 1 second between each try to give a chance to whatever
-     *       OS lock on the file to go.</li>
+     *       waiting half a second between each try to give a chance to
+     *       whatever OS lock on the file to go.</li>
      *   <li>It throws a IOException if the move failed (as opposed to fail
      *       silently).</li>
+     *   <li><b>Since 3.0.0</b>, it attempts to create any missing directories
+     *       in the target path.</li>
      * </ul>
      * @param sourceFile source file to move
      * @param targetFile target destination
      * @throws IOException cannot move file.
      */
-    public static void moveFile(File sourceFile, File targetFile)
-            throws IOException {
+    public static void moveFile(
+            @NonNull File sourceFile, @NonNull File targetFile)
+                    throws IOException {
+        moveFile(toPath(sourceFile), toPath(targetFile));
+    }
 
+    /**
+     * Moves a file to a new file location. This method is different from the
+     * {@link File#renameTo(File)} method in such that:
+     * <ul>
+     *   <li>If the target file already exists, it deletes it first.</li>
+     *   <li>If target file deletion does not work, it will try 10 times,
+     *       waiting half a second between each try to give a chance to
+     *       whatever OS lock on the file to go.</li>
+     *   <li>It throws a IOException if the move failed (as opposed to fail
+     *       silently).</li>
+     *   <li>It attempts to create any missing directories
+     *       in the target path.</li>
+     * </ul>
+     * @param sourceFile source file to move
+     * @param targetFile target destination
+     * @throws IOException cannot move file.
+     * @since 3.0.0
+     */
+    public static void moveFile(
+            @NonNull Path sourceFile, @NonNull Path targetFile)
+                    throws IOException {
         if (!isFile(sourceFile)) {
-            throw new IOException(
-                    "Source file is not a file or is not valid: " + sourceFile);
-        }
-        if (targetFile == null || targetFile.exists() && !targetFile.isFile()) {
-            throw new IOException(
-                    "Target file is not a file or is not valid: " + targetFile);
+            throw new IOException("Source file does not exist, is not a file, "
+                    + "or is otherwise not valid: " + sourceFile);
         }
         int failure = 0;
         Exception ex = null;
         while (failure < MAX_FILE_OPERATION_ATTEMPTS) {
-            if (targetFile.exists() && !targetFile.delete()
-                    || !sourceFile.renameTo(targetFile)) {
+            try {
+                Files.createDirectories(targetFile.getParent());
+                Files.deleteIfExists(targetFile);
+                if (Files.isRegularFile(Files.move(sourceFile, targetFile))) {
+                    break;
+                }
+            } catch (Exception e) {
+                ex = e;
                 failure++;
-                Sleeper.sleepSeconds(1);
-            } else {
-                break;
+                Sleeper.sleepMillis(500);
             }
         }
         if (failure >= MAX_FILE_OPERATION_ATTEMPTS) {
-            throw new IOException(
-                    "Could not move \"" + sourceFile + "\" to \""
-                            + targetFile + "\".", ex);
+            throw new IOException(String.format(
+                    "Could not move \"%s\" to \"%s\".",
+                    sourceFile, targetFile), ex);
         }
     }
 
     /**
-     * Deletes a file or a directory recursively in a more robust way.
+     * Deletes a file or empty directory recursively, in a more robust way.
      * This method applies the following strategies:
      * <ul>
      *   <li>If file or directory deletion does not work, it will re-try 10
@@ -261,58 +335,109 @@ public final class FileUtil {
         while (!success && failure < MAX_FILE_OPERATION_ATTEMPTS) {
             if (file.exists() && !FileUtils.deleteQuietly(file)) {
                 failure++;
-                System.gc();
+                System.gc(); //NOSONAR
                 Sleeper.sleepSeconds(1);
                 continue;
             }
             success = true;
         }
         if (!success) {
-            throw new IOException(
-                    "Could not delete \"" + file + "\".");
+            throw new IOException(String.format(
+                    "Could not delete \"%s\".", file));
         }
     }
 
     /**
-     * Deletes all directories that are empty from a given parent directory.
+     * Recursively deletes all empty directories.
+     * The supplied directory itself is also considered for deletion.
+     * Directories containing only empty child directories (and no files)
+     * are also considered empty and will be deleted.
      * @param parentDir the directory where to start looking for empty
      *        directories
      * @return the number of deleted directories
+     * @throws IOException error occurred deleting empty directories
      */
-    public static int deleteEmptyDirs(File parentDir) {
+    public static int deleteEmptyDirs(File parentDir) throws IOException {
         return deleteEmptyDirs(parentDir, null);
     }
 
     /**
-     * Deletes all directories that are empty and are <b>older</b>
+     * Recursively deletes all empty directories.
+     * The supplied directory itself is also considered for deletion.
+     * Directories containing only empty child directories (and no files)
+     * are also considered empty and will be deleted.
+     * @param parentDir the directory where to start looking for empty
+     *        directories
+     * @return the number of deleted directories
+     * @throws IOException error occurred deleting empty directories
+     */
+    public static int deleteEmptyDirs(Path parentDir) throws IOException {
+        return deleteEmptyDirs(parentDir, null);
+    }
+
+    /**
+     * <p>
+     * Recursively deletes all directories that are empty and are <b>older</b>
      * than the given date.  If the date is <code>null</code>, all empty
      * directories will be deleted, regardless of their date.
+     * The supplied directory itself is also considered for deletion.
+     * </p>
+     * <p>
+     * <b>Since 3.0.0</b>, directories containing only empty child directories
+     * (and no files) are also considered empty and will be deleted.
+     * </p>
      * @param parentDir the directory where to start looking for empty
      *        directories
      * @param date the date to compare empty directories against
      * @return the number of deleted directories
+     * @throws IOException error occurred deleting empty directories
      * @since 1.3.0
      */
-    public static int deleteEmptyDirs(File parentDir, final Date date) {
-        final MutableInt dirCount = new MutableInt(0);
-        visitEmptyDirs(parentDir, file -> {
-            if (date == null || FileUtils.isFileOlder(file, date)) {
-                String[] children = file.list();
-                if (file.isDirectory()
-                        && (children == null || children.length == 0)) {
-                    try {
-                        FileUtil.delete(file);
-                        dirCount.increment();
-                    } catch (IOException e) {
-                        LOG.error("Could not be delete directory: "
-                                + file, e);
-                    }
-                }
-            }
-        });
-        return dirCount.intValue();
+    public static int deleteEmptyDirs(File parentDir, final Date date)
+            throws IOException {
+        if (parentDir == null || !parentDir.isDirectory()) {
+            return 0;
+        }
+        return deleteEmptyDirs(parentDir.toPath(), date);
     }
 
+    /**
+     * Recursively deletes all directories that are empty and are <b>older</b>
+     * than the given date.  If the date is <code>null</code>, all empty
+     * directories will be deleted, regardless of their date.
+     * The supplied directory itself is also considered for deletion.
+     * Directories containing only empty child directories (and no files)
+     * are also considered empty and will be deleted.
+     * @param parentDir the directory where to start looking for empty
+     *        directories
+     * @param date the date to compare empty directories against
+     * @return the number of deleted directories
+     * @throws IOException error occurred deleting empty directories
+     * @since 3.0.0
+     */
+    public static int deleteEmptyDirs(Path parentDir, final Date date)
+            throws IOException {
+        int deletedCount = 0;
+        if (parentDir == null || !Files.isDirectory(parentDir)) {
+            return deletedCount;
+        }
+
+        // take care of child directories first
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(
+                parentDir, Files::isDirectory)) {
+            for (Path childDir : stream) {
+                deletedCount += deleteEmptyDirs(childDir, date);
+            }
+        }
+
+        // now that we took care of child directories, delete the current
+        // one if old enough and empty.
+        if ((date == null || isOlder(parentDir, date)) && dirEmpty(parentDir)) {
+            delete(parentDir.toFile());
+            deletedCount++;
+        }
+        return deletedCount;
+    }
 
     /**
      * Create all parent directories for a file if they do not exists.
@@ -352,8 +477,8 @@ public final class FileUtil {
         if (dir.exists() && dir.isDirectory()) {
             File[] children = dir.listFiles(filter);
             if (children != null) {
-                for (int i=0; i<children.length; i++) {
-                    visitAllDirsAndFiles(children[i], visitor, filter);
+                for (File child : children) {
+                    visitAllDirsAndFiles(child, visitor, filter);
                 }
             }
         }
@@ -368,13 +493,14 @@ public final class FileUtil {
     public static void visitEmptyDirs(File dir, IFileVisitor visitor) {
         if (!dir.exists()) {
             return;
-        } else if (dir.isDirectory()) {
+        }
+        if (dir.isDirectory()) {
             String[] children = dir.list();
-            if (children == null || children.length == 0) {
+            if (ArrayUtils.isEmpty(children)) {
                 visitor.visit(dir);
             } else {
-                for (int i=0; i<children.length; i++) {
-                    visitAllDirs(new File(dir, children[i]), visitor);
+                for (String child : children) {
+                    visitEmptyDirs(new File(dir, child), visitor);
                 }
             }
         }
@@ -390,13 +516,14 @@ public final class FileUtil {
             File dir, IFileVisitor visitor, FileFilter filter) {
         if (!dir.exists()) {
             return;
-        } else if (dir.isDirectory()) {
+        }
+        if (dir.isDirectory()) {
             File[] children = dir.listFiles(filter);
             if (children == null || children.length == 0) {
                 visitor.visit(dir);
             } else {
-                for (int i=0; i<children.length; i++) {
-                    visitAllDirs(children[i], visitor, filter);
+                for (File child : children) {
+                    visitEmptyDirs(child, visitor, filter);
                 }
             }
         }
@@ -410,12 +537,13 @@ public final class FileUtil {
     public static void visitAllDirs(File dir, IFileVisitor visitor) {
         if (!dir.exists()) {
             return;
-        } else if (dir.isDirectory()) {
+        }
+        if (dir.isDirectory()) {
             visitor.visit(dir);
             String[] children = dir.list();
             if (children != null) {
-                for (int i=0; i<children.length; i++) {
-                    visitAllDirs(new File(dir, children[i]), visitor);
+                for (String child : children) {
+                    visitAllDirs(new File(dir, child), visitor);
                 }
             }
         }
@@ -431,12 +559,13 @@ public final class FileUtil {
             File dir, IFileVisitor visitor, FileFilter filter) {
         if (!dir.exists()) {
             return;
-        } else if (dir.isDirectory()) {
+        }
+        if (dir.isDirectory()) {
             visitor.visit(dir);
             File[] children = dir.listFiles(filter);
             if (children != null) {
-                for (int i=0; i<children.length; i++) {
-                    visitAllDirs(children[i], visitor, filter);
+                for (File child : children) {
+                    visitAllDirs(child, visitor, filter);
                 }
             }
         }
@@ -462,11 +591,12 @@ public final class FileUtil {
             File dir, IFileVisitor visitor, FileFilter filter) {
         if (!dir.exists()) {
             return;
-        } else if (dir.isDirectory()) {
+        }
+        if (dir.isDirectory()) {
             String[] children = dir.list();
             if (children != null) {
-                for (int i=0; i<children.length; i++) {
-                    visitAllFiles(new File(dir, children[i]), visitor, filter);
+                for (String child : children) {
+                    visitAllFiles(new File(dir, child), visitor, filter);
                 }
             }
         } else if (filter == null || filter.accept(dir)) {
@@ -541,12 +671,9 @@ public final class FileUtil {
             String line = StringUtils.EMPTY;
             while(line != null && remainingLinesToRead-- > 0){
                  line = reader.readLine();
-                 if (!stripBlankLines || StringUtils.isNotBlank(line)) {
-                     if (filter != null && filter.accept(line)) {
-                         lines.addFirst(line);
-                     } else {
-                         remainingLinesToRead++;
-                     }
+                 if ((!stripBlankLines || StringUtils.isNotBlank(line))
+                         && (filter == null || filter.accept(line))) {
+                     lines.add(line);
                  } else {
                      remainingLinesToRead++;
                  }
@@ -628,12 +755,9 @@ public final class FileUtil {
                     break;
                 }
                 String newLine = StringUtils.reverse(line);
-                if (!stripBlankLines || StringUtils.isNotBlank(line)) {
-                    if (filter != null && filter.accept(newLine)) {
-                        lines.addFirst(newLine);
-                    } else {
-                        remainingLinesToRead++;
-                    }
+                if ((!stripBlankLines || StringUtils.isNotBlank(line))
+                        && (filter == null || filter.accept(newLine))) {
+                    lines.addFirst(newLine);
                 } else {
                     remainingLinesToRead++;
                 }
@@ -641,7 +765,6 @@ public final class FileUtil {
         }
         return lines.toArray(ArrayUtils.EMPTY_STRING_ARRAY);
     }
-
 
     /**
      * Creates (if not already existing) a series of directories reflecting
@@ -658,6 +781,7 @@ public final class FileUtil {
     public static File createDateDirs(File parentDir) throws IOException {
         return createDateDirs(parentDir, new Date());
     }
+
     /**
      * Creates (if not already existing) a series of directories reflecting
      * a date, up to the day unit, under a given parent directory.  For example,
@@ -730,12 +854,11 @@ public final class FileUtil {
      * @since 2.0.0
      */
     public static File createDateFormattedDirs(
-            File parentDir, Date dateTime, String format) throws IOException {
-        Objects.requireNonNull(parentDir, "parentDir");
-        Objects.requireNonNull(dateTime, "dateTime");
+            @NonNull File parentDir, @NonNull Date dateTime, String format)
+                    throws IOException {
         if (parentDir.exists() && !parentDir.isDirectory()) {
-            throw new IOException("Parent directory \"" + parentDir
-                    + "\" already exists and is not a directory.");
+            throw new IOException(String.format("Parent directory \"%s\" "
+                    + "already exists and is not a directory.", parentDir));
         }
         File dir = toDateFormattedDir(parentDir, dateTime, format);
         FileUtils.forceMkdir(dir);
@@ -761,9 +884,7 @@ public final class FileUtil {
      * @since 2.0.0
      */
     public static File toDateFormattedDir(
-            File parentDir, Date dateTime, String format) {
-        Objects.requireNonNull(parentDir, "parentDir");
-        Objects.requireNonNull(dateTime, "dateTime");
+            @NonNull File parentDir, @NonNull Date dateTime, String format) {
         return new File(parentDir.getAbsolutePath(),
                 DateFormatUtils.format(dateTime, format));
     }
@@ -858,13 +979,11 @@ public final class FileUtil {
      * @throws IOException if the parent directory is not valid
      */
     public static File createURLDirs(
-            File parentDir, String url, boolean truncate) throws IOException {
-
-        Objects.requireNonNull(parentDir, "parentDir");
-        Objects.requireNonNull(url, "url");
+            @NonNull File parentDir, @NonNull String url, boolean truncate)
+                    throws IOException {
         if (parentDir.exists() && !parentDir.isDirectory()) {
-            throw new IOException("Parent directory \"" + parentDir
-                    + "\" already exists and is not a directory.");
+            throw new IOException(String.format("Parent directory \"%s\" "
+                    + "already exists and is not a directory.", parentDir));
         }
         File dir = toURLDir(parentDir, url, truncate);
         createDirsForFile(dir);
@@ -934,9 +1053,70 @@ public final class FileUtil {
      * @since 2.0.0
      */
     public static File toURLDir(
-            File parentDir, URL url, boolean truncate) {
-        Objects.requireNonNull(url, "url");
+            @NonNull File parentDir, @NonNull URL url, boolean truncate) {
         return toURLDir(parentDir, url.toString(), truncate);
+    }
+
+    /**
+     * Null-safe alternative to {@link File#isFile()}. A <code>null</code> file
+     * always returns <code>false</code>.
+     * @param file the file to test
+     * @return <code>true</code> if the file is not <code>null</code>, exists,
+     *     and is a regular file
+     * @since 3.0.0
+     */
+    public static boolean isFile(File file) {
+        return file != null && file.isFile();
+    }
+
+    /**
+     * Null-safe alternative to
+     * {@link Files#isRegularFile(Path, java.nio.file.LinkOption...)}.
+     * A <code>null</code> file always returns <code>false</code>.
+     * @param file the file to test
+     * @return <code>true</code> if the file is not <code>null</code>, exists,
+     *     and is a regular file
+     * @since 3.0.0
+     */
+    public static boolean isFile(Path file) {
+        return file != null && Files.isRegularFile(file);
+    }
+
+    /**
+     * Null-safe alternative to
+     * {@link Files#isDirectory(Path, java.nio.file.LinkOption...)}
+     * A <code>null</code> directory always returns <code>false</code>.
+     * @param dir the directory to test
+     * @return <code>true</code> if the directory is not <code>null</code>,
+     *     exists, and is a directory
+     * @since 3.0.0
+     */
+    public static boolean isDirectory(File dir) {
+        return dir != null && dir.isDirectory();
+    }
+
+    /**
+     * Null-safe alternative to
+     * {@link Files#isDirectory(Path, java.nio.file.LinkOption...)}
+     * A <code>null</code> directory always returns <code>false</code>.
+     * @param dir the directory to test
+     * @return <code>true</code> if the directory is not <code>null</code>,
+     *     exists, and is a directory
+     * @since 3.0.0
+     */
+    public static boolean isDirectory(Path dir) {
+        return dir != null && Files.isDirectory(dir);
+    }
+
+    /**
+     * Null-safe alternative to {@link File#toPath()}. A <code>null</code> file
+     * returns <code>null</code>.
+     * @param file the file to test
+     * @return a {@link Path} or <code>null</code> if file is <code>null</code>
+     * @since 3.0.0
+     */
+    public static Path toPath(File file) {
+        return file != null ? file.toPath() : null;
     }
 
     /**
@@ -958,12 +1138,11 @@ public final class FileUtil {
      * @since 2.0.0
      */
     public static File toURLDir(
-            File parentDir, String url, boolean truncate) {
-        Objects.requireNonNull(parentDir, "parentDir");
-        Objects.requireNonNull(url, "url");
+            @NonNull File parentDir, @NonNull String url, boolean truncate) {
         if (truncate && parentDir.getAbsolutePath().length() > 200) {
-            throw new IllegalArgumentException("Parent directory \"" + parentDir
-                    + "\" is too long (must be 200 characters or less).");
+            throw new IllegalArgumentException(String.format(
+                    "Parent directory \"%s\" is too long (must be 200 "
+                    + "characters or less).", parentDir));
         }
         StringBuilder b = new StringBuilder(parentDir.getAbsolutePath());
         String[] segs = url.replaceFirst("://", "/") .split("/");
@@ -991,9 +1170,9 @@ public final class FileUtil {
         }
     }
 
-    //TODO make public as a null-safe method, along with similar methods?
-    private static boolean isFile(File file) {
-        return file != null && file.isFile();
+    private static boolean isOlder(
+            @NonNull Path file, @NonNull Date date) throws IOException {
+        return Files.getLastModifiedTime(file)
+                .toInstant().isBefore(date.toInstant());
     }
-
 }

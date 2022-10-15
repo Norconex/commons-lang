@@ -1,4 +1,4 @@
-/* Copyright 2021 Norconex Inc.
+/* Copyright 2021-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-class FileLockTest {
+class FileLockerTest {
 
     @TempDir
     Path tempDir;
@@ -66,5 +66,13 @@ class FileLockTest {
             Assertions.assertDoesNotThrow(locker::unlock);
             Assertions.assertFalse(locker.isLocked());
         }
+    }
+
+    @Test
+    void testTryLock() throws IOException {
+        // File was never locked, true on first attempt, false after
+        FileLocker locker = new FileLocker(tempDir.resolve("try.lck"));
+        Assertions.assertTrue(locker.tryLock());
+        Assertions.assertFalse(locker.tryLock());
     }
 }
