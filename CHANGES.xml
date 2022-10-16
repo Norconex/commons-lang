@@ -118,6 +118,10 @@
       <action dev="essiembre" type="fix">
         Fixed FileUtil#visitEmpty dir not always returning only empty dirs.
       </action>
+      <action dev="essiembre" type="fix">
+        Fixed WebFile#compareTo throwing a ClassCastException when
+        comparing to another WebFile instance.
+      </action>
       <action dev="essiembre" type="remove">
         Removed a number of deprecated classes and methods:
         *.lang.config.IXMLConfigurable, *.lang.encrypt.EncryptionXMLUtil, 

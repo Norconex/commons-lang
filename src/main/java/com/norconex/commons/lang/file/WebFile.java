@@ -1,4 +1,4 @@
-/* Copyright 2018 Norconex Inc.
+/* Copyright 2018-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -182,7 +182,7 @@ public class WebFile implements Path {
         return localName.replaceFirst("^.*[\\/\\\\](.*)$", "$1");
     }
 
-    private synchronized Path getResolvedFile() {
+    synchronized Path getResolvedFile() {
         if (localFile.toFile().exists()) {
             LOG.debug("Web file already downloaded: {}", localFile);
         } else {
@@ -212,8 +212,8 @@ public class WebFile implements Path {
             LOG.debug("Web file downloaded from \"{}\" to \"{}\"",
                     url, localFile);
         } catch (IOException e) {
-            LOG.error("Could not download web file: {}", url, e);
-            throw new UncheckedIOException(e);
+            throw new UncheckedIOException(
+                    "Could not download web file: " + url, e);
         }
     }
 
@@ -321,21 +321,31 @@ public class WebFile implements Path {
     public Iterator<Path> iterator() {
         return getResolvedFile().iterator();
     }
-    @Override
-    public int compareTo(Path other) {
-        return getResolvedFile().compareTo(other);
-    }
 
     @Override
     public String toString() {
         return localFile.toString();
     }
     @Override
-    public boolean equals(Object obj) {
-        return localFile.equals(obj);
-    }
-    @Override
     public int hashCode() {
         return localFile.hashCode();
+    }
+
+    // JDK assumes a specific implementation of Path, so for the following,
+    // if "other" is a WebFile, use its resolved file to avoid cast exception.
+    @Override
+    public int compareTo(Path other) {
+        return getResolvedFile().compareTo(nativePath(other));
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return localFile.equals(nativePath(obj));
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> T nativePath(T path) {
+        return path instanceof WebFile
+                ? (T) ((WebFile) path).getResolvedFile() : path;
     }
 }
