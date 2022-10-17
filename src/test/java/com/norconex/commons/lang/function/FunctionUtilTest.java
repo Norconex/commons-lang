@@ -1,4 +1,4 @@
-/* Copyright 2021 Norconex Inc.
+/* Copyright 2021-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,12 @@
  */
 package com.norconex.commons.lang.function;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.junit.jupiter.api.Assertions;
@@ -26,7 +31,7 @@ class FunctionUtilTest {
     void testPredicatedConsumer() {
         MutableObject<String> result = new MutableObject<>();
         Consumer<String> c = FunctionUtil.predicatedConsumer(
-                v -> "potato".equals(v),
+                "potato"::equals,
                 v -> result.setValue("fries"));
 
         c.accept("tomato");
@@ -35,4 +40,44 @@ class FunctionUtilTest {
         c.accept("potato");
         Assertions.assertEquals("fries", result.getValue());
     }
+
+    @Test
+    void testAllConsumers() {
+        List<String> output = new ArrayList<>();
+        Consumers<String> consumers = FunctionUtil.allConsumers(
+                s -> output.add(s + "b"),
+                s -> output.add(s + "bc"));
+        consumers.accept("a");
+        assertThat(output).containsExactly("ab", "abc");
+
+        assertThat(FunctionUtil.allConsumers(
+                (Consumer<Object>[]) null)).isEmpty();
+    }
+
+    @Test
+    void testAllPredicates() {
+        assertThat(FunctionUtil.allPredicates(
+                s -> true, s -> false).test("")).isFalse();
+        assertThat(FunctionUtil.allPredicates(
+                s -> false, s -> false).test("")).isFalse();
+        assertThat(FunctionUtil.allPredicates(
+                s -> true, s -> true).test("")).isTrue();
+
+        assertThat((List<Predicate<Object>>) FunctionUtil.allPredicates(
+                (Predicate<Object>[]) null)).isEmpty();
+    }
+
+    @Test
+    void testAnyPredicates() {
+        assertThat(FunctionUtil.anyPredicates(
+                s -> true, s -> false).test("")).isTrue();
+        assertThat(FunctionUtil.anyPredicates(
+                s -> false, s -> false).test("")).isFalse();
+        assertThat(FunctionUtil.anyPredicates(
+                s -> true, s -> true).test("")).isTrue();
+
+        assertThat((List<Predicate<Object>>) FunctionUtil.anyPredicates(
+                (Predicate<Object>[]) null)).isEmpty();
+    }
+
 }

@@ -1,4 +1,4 @@
-/* Copyright 2021 Norconex Inc.
+/* Copyright 2021-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,8 @@ package com.norconex.commons.lang.function;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 /**
  * <p>
@@ -44,6 +42,8 @@ import org.apache.commons.lang3.builder.ToStringStyle;
  * @author Pascal Essiembre
  * @since 2.0.0
  */
+@EqualsAndHashCode
+@ToString
 public class PredicatedConsumer<T> implements Consumer<T> {
 
     private final Predicate<T> predicate;
@@ -55,7 +55,6 @@ public class PredicatedConsumer<T> implements Consumer<T> {
     }
     public PredicatedConsumer(
             Predicate<T> predicate, Consumer<T> consumer, boolean negate) {
-        super();
         this.predicate = predicate;
         this.consumer = consumer;
         this.negate = negate;
@@ -80,19 +79,5 @@ public class PredicatedConsumer<T> implements Consumer<T> {
         if (passed) {
             consumer.accept(t);
         }
-    }
-
-    @Override
-    public boolean equals(final Object other) {
-        return EqualsBuilder.reflectionEquals(this, other);
-    }
-    @Override
-    public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this);
-    }
-    @Override
-    public String toString() {
-        return new ReflectionToStringBuilder(
-                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }
