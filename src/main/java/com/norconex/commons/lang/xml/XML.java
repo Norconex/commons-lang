@@ -51,12 +51,6 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import javax.xml.XMLConstants;
-import javax.xml.bind.JAXB;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLEventReader;
@@ -111,6 +105,13 @@ import com.norconex.commons.lang.time.DurationParser;
 import com.norconex.commons.lang.time.DurationParserException;
 import com.norconex.commons.lang.unit.DataUnit;
 import com.norconex.commons.lang.unit.DataUnitParser;
+
+import jakarta.xml.bind.JAXB;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.Unmarshaller;
+import jakarta.xml.bind.annotation.XmlRootElement;
 
 //TODO consider checking for a "disable=false|true" and setting it on
 //a method if this method exists, and/or do not load if set to true.
@@ -466,52 +467,51 @@ public class XML implements Iterable<XMLCursor> {
         try {
             obj = toObject(defaultObject);
         } catch (ConverterException e) {
-            if (e.getCause() instanceof ClassNotFoundException) {
-                String partialName = getString(XPATH_ATT_CLASS);
-                List<?> results = ClassFinder.findSubTypes(
-                        type, s -> s.endsWith(partialName));
-                if (results.size() > 1) {
-                    // see if only one of them matches a segment exactly.
-                    List<?> filteredResults = results.stream()
-                            .filter(c -> ((Class<?>) c).getName()
-                                    .endsWith("." + partialName))
-                            .collect(Collectors.toList());
-                    if (filteredResults.size() == 1) {
-                        LOG.debug("{} classes implementing \"{}\" and ending "
-                                + "with \"{}\" were found, but only one "
-                                + "matched an exact class name or class name "
-                                + "and package segment: {}",
-                                results.size(),
-                                type.getName(),
-                                partialName,
-                                ((Class<?>) filteredResults.get(0)).getName());
-                        results.retainAll(filteredResults);
-                    } else {
-                        throw new XMLException(results.size()
-                            + " classes implementing \""
-                            + type.getName() + "\" "
-                            + "and ending with \"" + partialName + "\" "
-                            + "where found when only 1 was expected. "
-                            + "Consider using fully qualified class name. "
-                            + "Found classes: "
-                            + results.stream()
-                                    .map(c -> ((Class<?>) c).getName())
-                                    .collect(Collectors.joining(", ")));
-                    }
-                }
-
-                if (results.isEmpty()) {
-                    throw new XMLException(
-                              "No class implementing \""
-                            + type.getName() + "\" "
-                            + "and ending with \"" + partialName + "\" "
-                            + "could be found. Check your classpath or "
-                            + "consider using fully qualified class name.");
-                }
-                obj = toObject((Class<T>) results.get(0), defaultObject);
-            } else {
+            if (!(e.getCause() instanceof ClassNotFoundException)) {
                 throw e;
             }
+            String partialName = getString(XPATH_ATT_CLASS);
+            List<?> results = ClassFinder.findSubTypes(
+                    type, s -> s.endsWith(partialName));
+            if (results.size() > 1) {
+                // see if only one of them matches a segment exactly.
+                List<?> filteredResults = results.stream()
+                        .filter(c -> ((Class<?>) c).getName()
+                                .endsWith("." + partialName))
+                        .collect(Collectors.toList());
+                if (filteredResults.size() == 1) {
+                    LOG.debug("{} classes implementing \"{}\" and ending "
+                            + "with \"{}\" were found, but only one "
+                            + "matched an exact class name or class name "
+                            + "and package segment: {}",
+                            results.size(),
+                            type.getName(),
+                            partialName,
+                            ((Class<?>) filteredResults.get(0)).getName());
+                    results.retainAll(filteredResults);
+                } else {
+                    throw new XMLException(results.size()
+                        + " classes implementing \""
+                        + type.getName() + "\" "
+                        + "and ending with \"" + partialName + "\" "
+                        + "where found when only 1 was expected. "
+                        + "Consider using fully qualified class name. "
+                        + "Found classes: "
+                        + results.stream()
+                                .map(c -> ((Class<?>) c).getName())
+                                .collect(Collectors.joining(", ")));
+                }
+            }
+
+            if (results.isEmpty()) {
+                throw new XMLException(
+                          "No class implementing \""
+                        + type.getName() + "\" "
+                        + "and ending with \"" + partialName + "\" "
+                        + "could be found. Check your classpath or "
+                        + "consider using fully qualified class name.");
+            }
+            obj = toObject((Class<T>) results.get(0), defaultObject);
         }
         if (obj != null && !type.isInstance(obj)) {
             throw new XMLException(
@@ -1576,7 +1576,7 @@ public class XML implements Iterable<XMLCursor> {
         if (value == null) {
             return null;
         }
-        if (value.equals(NULL_XML_VALUE)) {
+        if (NULL_XML_VALUE.equals(value)) {
             return defaultValue;
         }
         return Converter.convert(value, type, defaultValue);
@@ -2154,12 +2154,12 @@ public class XML implements Iterable<XMLCursor> {
             // If an empty string, mark as empty to prevent it from being
             // interpreted as null when read back. See getNodeString(...)
             el.setAttribute(ATT_XML_SPACE, "empty");
-        } else if (StringUtils.isWhitespace(content)) {
-            // if contains only white space and not empty, add space preserve
-            // to make sure white spaces are kept when read back.
-            el.setAttribute(ATT_XML_SPACE, "preserve");
-            el.setTextContent(content);
         } else {
+            if (StringUtils.isWhitespace(content)) {
+                // if contains only white space and not empty, add space preserve
+                // to make sure white spaces are kept when read back.
+                el.setAttribute(ATT_XML_SPACE, "preserve");
+            }
             el.setTextContent(content);
         }
         return this;
@@ -2833,7 +2833,6 @@ public class XML implements Iterable<XMLCursor> {
             this(source, null);
         }
         private Builder(Object source, String rootElementName) {
-            super();
             this.source = source;
             this.rootElementName = rootElementName;
         }
@@ -2847,8 +2846,8 @@ public class XML implements Iterable<XMLCursor> {
             return this;
         }
         public XML create() {
-            this.errorHandler = defaultIfNull(errorHandler);
-            this.documentBuilderFactory = defaultIfNull(documentBuilderFactory);
+            errorHandler = defaultIfNull(errorHandler);
+            documentBuilderFactory = defaultIfNull(documentBuilderFactory);
 
             if (source instanceof Node) {
                 return new XML((Node) source,

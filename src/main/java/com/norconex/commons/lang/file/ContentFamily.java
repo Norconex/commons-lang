@@ -36,7 +36,8 @@ import org.slf4j.LoggerFactory;
  * the word "custom" inserted: <code>ContentFamily-custom-[...]</code>.
  * The actual custom names and classpath location are:
  * <br><br>
- * <table border="1" summary="">
+ * <table border="1">
+ *   <caption style="display:none;">Original vs custom mapping files.</caption>
  *   <tr>
  *     <th>Original</th>
  *     <th>Custom</th>

@@ -22,7 +22,6 @@ class TimeIdGeneratorTest {
 
     @Test
     void testTimeIdGenerator() {
-        assertThat(TimeIdGenerator.last()).isEqualTo(-1);
         assertThat(TimeIdGenerator.next()).isLessThan(TimeIdGenerator.next());
         assertThat(TimeIdGenerator.last()).isNotEqualTo(-1);
         assertThat(TimeIdGenerator.last()).isLessThan(TimeIdGenerator.next());

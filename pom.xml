@@ -37,13 +37,14 @@
     <commons-lang3.version>3.12.0</commons-lang3.version>
     <commons-text.version>1.9</commons-text.version>
     <java-cup.version>10k</java-cup.version>
-    <jaxb-runtime.version>2.3.5</jaxb-runtime.version>
+    <!--<jaxb-runtime.version>2.3.5</jaxb-runtime.version>-->
     <json.version>1.8</json.version>
     <log4j.version>2.17.1</log4j.version>
     <slf4j.version>1.7.32</slf4j.version>
     <velocity-engine.version>2.3</velocity-engine.version>
     <xerces.version>2.12.2</xerces.version>
-    <xml-bind-api.version>2.3.3</xml-bind-api.version>
+    <!--<xml-bind-api.version>2.3.3</xml-bind-api.version>-->
+    <xml-bind-api.version>4.0.0</xml-bind-api.version>
     <xpath2.version>2.1.100</xpath2.version>
 
     <!-- Test dependencies -->
@@ -54,7 +55,7 @@
     <testcontainers.version>1.16.0</testcontainers.version>
 
     <!-- Test and provided -->      
-    <lombok.version>1.18.22</lombok.version>
+    <lombok.version>1.18.24</lombok.version>
     
   </properties>
 
@@ -111,11 +112,6 @@
       <version>${slf4j.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-collections4</artifactId>
-      <version>${commons-collections4.version}</version>
-    </dependency>
-    <dependency>
       <groupId>org.imgscalr</groupId>
       <artifactId>imgscalr-lib</artifactId>
       <version>4.2</version>
@@ -146,16 +142,26 @@
       <artifactId>org.eclipse.wst.xml.xpath2.processor</artifactId>
       <version>${xpath2.version}</version>
     </dependency>
+
+
     <dependency>
       <groupId>jakarta.xml.bind</groupId>
       <artifactId>jakarta.xml.bind-api</artifactId>
       <version>${xml-bind-api.version}</version>
     </dependency>
     <dependency>
+      <groupId>com.sun.xml.bind</groupId>
+      <artifactId>jaxb-impl</artifactId>
+      <version>${xml-bind-api.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+    <!--
+    <dependency>
       <groupId>org.glassfish.jaxb</groupId>
       <artifactId>jaxb-runtime</artifactId>
       <version>${jaxb-runtime.version}</version>
     </dependency>
+    -->
 
 
     <dependency>
@@ -334,7 +340,7 @@
                   <artifactId>maven-remote-resources-plugin</artifactId>
                   <versionRange>[1.0,)</versionRange>
                   <goals>
-                      <goal>process</goal>
+                    <goal>process</goal>
                   </goals>
                 </pluginExecutionFilter>
                 <action>
@@ -347,21 +353,53 @@
         </configuration>
       </plugin>
 
-
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
+        <groupId>org.projectlombok</groupId>
+        <artifactId>lombok-maven-plugin</artifactId>
+        <version>1.18.20.0</version>
+        <configuration>
+          <sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
+          <outputDirectory>${delombok.output}</outputDirectory>
+          <addOutputDirectory>false</addOutputDirectory>
+        </configuration>
+        <executions>
+          <execution>
+<!--
+            <phase>process-sources</phase>
+  -->
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>delombok</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
 
+      <!-- https://www.mojohaus.org/license-maven-plugin/ -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>license-maven-plugin</artifactId>
-      </plugin>      
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-remote-resources-plugin</artifactId>
+        <version>2.0.0</version>
+        <executions>
+          <execution>
+            <id>download-licenses</id>
+            <goals>
+              <goal>download-licenses</goal>
+            </goals>
+            <phase>generate-resources</phase>
+          </execution>
+          <!-- NOT NEEDED: listing available in licenses.xml sufficient?
+          <execution>
+            <id>create-license-list</id>
+            <goals>
+              <goal>add-third-party</goal>
+            </goals>
+            <phase>generate-resources</phase>
+          </execution>
+           -->
+        </executions>
       </plugin>
+
       <!-- To Skip: -Dassembly.skipAssembly=true -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -380,25 +418,6 @@
               <appendAssemblyId>true</appendAssemblyId>
             </configuration>
           </execution>
-        </executions>        
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.8.0</version>
-        <configuration>
-          <source>${maven.compiler.source}</source>
-          <target>${maven.compiler.target}</target>
-          <encoding>UTF-8</encoding>
-        </configuration>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <version>3.1.1</version>
-        <executions>
           <execution>
             <id>make-dist-assembly</id>
             <phase>package</phase>
@@ -412,7 +431,18 @@
               <appendAssemblyId>false</appendAssemblyId>
             </configuration>
           </execution>
-        </executions>
+        </executions>        
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.8.0</version>
+        <configuration>
+          <source>${maven.compiler.source}</source>
+          <target>${maven.compiler.target}</target>
+          <encoding>UTF-8</encoding>
+        </configuration>
       </plugin>
 
       <plugin>
@@ -438,6 +468,32 @@
             </resourcesArtifact>
           </resourcesArtifacts>
 -->
+          
+          <additionalDependencies>
+<!--          
+            <additionalDependency>
+              <groupId>org.slf4j</groupId>
+              <artifactId>slf4j-api</artifactId>
+              <version>${slf4j.version}</version>
+            </additionalDependency>
+            <additionalDependency>
+              <groupId>org.apache.logging.log4j</groupId>
+              <artifactId>log4j-slf4j-impl</artifactId>
+              <version>${log4j.version}</version>
+            </additionalDependency>
+            <additionalDependency>
+              <groupId>jakarta.xml.bind</groupId>
+              <artifactId>jakarta.xml.bind-api</artifactId>
+              <version>${xml-bind-api.version}</version>
+            </additionalDependency>
+            <additionalDependency>
+              <groupId>org.glassfish.jaxb</groupId>
+              <artifactId>jaxb-runtime</artifactId>
+              <version>${jaxb-runtime.version}</version>
+            </additionalDependency>
+-->
+          </additionalDependencies>
+          
           <additionalJOptions>
             <additionalJOption>&#45;&#45;allow-script-in-comments</additionalJOption>
             <additionalJOption>-J-Dbasedir=${basedir}</additionalJOption>
@@ -470,7 +526,11 @@
           </footer>
           <show>protected</show>
           <nodeprecated>false</nodeprecated>
+          <!--
           <source>${maven.compiler.source}</source>
+          <sourcepath>${delombok.output}</sourcepath>
+          -->
+          <sourcepath>target/generated-sources/delombok</sourcepath>
           <detectLinks>false</detectLinks>
           <links>
             <!-- All above dependencies are referenced here. 
@@ -479,7 +539,9 @@
               -->
 
             <!-- Norconex dependencies -->
+            <!--
             <link>https://opensource.norconex.com/commons/lang/v3/apidocs</link>
+            -->
 
             <!-- Regular dependencies -->
             <link>https://commons.apache.org/proper/commons-lang/javadocs/api-release</link>
@@ -517,7 +579,7 @@
             <tagletArtifact>
               <groupId>com.norconex.commons</groupId>
               <artifactId>norconex-commons-lang</artifactId>
-              <version>${norconex-commons-lang.version}</version>
+              <version>${project.version}</version>
             </tagletArtifact>
           </tagletArtifacts>
         </configuration>
@@ -576,36 +638,11 @@
         <version>3.0.0-M5</version>
       </plugin>
 
-      <!-- https://www.mojohaus.org/license-maven-plugin/ -->
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>license-maven-plugin</artifactId>
-        <version>1.17</version>
-        <executions>
-          <execution>
-            <id>download-licenses</id>
-            <goals>
-              <goal>download-licenses</goal>
-            </goals>
-            <phase>generate-resources</phase>
-          </execution>
-          <!-- NOT NEEDED: listing available in licenses.xml sufficient?
-          <execution>
-            <id>create-license-list</id>
-            <goals>
-              <goal>add-third-party</goal>
-            </goals>
-            <phase>generate-resources</phase>
-          </execution>
-           -->
-        </executions>
-      </plugin>
-
       <!-- Use VM argument -Dgpg.skip=true to disable GPG signing. -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-gpg-plugin</artifactId>
-        <version>1.6</version>
+        <version>3.0.1</version>
         <executions>
           <execution>
             <id>sign-artifacts</id>
@@ -627,7 +664,7 @@
       <plugin>
         <groupId>org.sonatype.plugins</groupId>
         <artifactId>nexus-staging-maven-plugin</artifactId>
-        <version>1.6.8</version>
+        <version>1.6.13</version>
         <extensions>true</extensions>
         <configuration>
           <serverId>ossrh</serverId>
@@ -655,16 +692,6 @@
         </dependencies>
       </plugin>        
       
-      <!--  Use VM argument -Dgpg.skip=true to disable GPG signing. -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-gpg-plugin</artifactId>
-      </plugin>
-
-      <plugin>
-        <groupId>org.sonatype.plugins</groupId>
-        <artifactId>nexus-staging-maven-plugin</artifactId>
-      </plugin>    
     </plugins>
 
   </build>

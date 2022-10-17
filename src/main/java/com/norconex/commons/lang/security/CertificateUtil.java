@@ -30,12 +30,13 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
-import javax.xml.bind.DatatypeConverter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.url.HttpURL;
+
+import jakarta.xml.bind.DatatypeConverter;
 
 /**
  * Certificate-related (e.g., SSL) utility methods.
@@ -52,7 +53,6 @@ public final class CertificateUtil {
             LoggerFactory.getLogger(CertificateUtil.class);
 
     private CertificateUtil() {
-        super();
     }
 
     /**

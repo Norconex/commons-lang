@@ -259,6 +259,34 @@ class TagletTest {
             }
             @Override
             public List<? extends DocTree> getContent() {
+                TextTree textTree = new TextTree() {
+                    @Override
+                    public Kind getKind() {
+                        return DocTree.Kind.TEXT;
+                    }
+                    @Override
+                    public <R, D> R accept(
+                            DocTreeVisitor<R, D> visitor, D data) {
+                        return null;
+                    }
+                    @Override
+                    public String getBody() {
+                        return "#someref\nsomebody";
+                    }
+                    @Override
+                    public String toString() {
+                        return getBody();
+                    }
+                };
+                return new ArrayList<>(
+                        Arrays.asList(textTree)) {
+                    private static final long serialVersionUID = 1L;
+                    @Override
+                    public String toString() {
+                        return get(0).toString();
+                    }
+                };
+                /*
                 return new ArrayList<>(
                         Arrays.asList(new TextTree() {
                     @Override
@@ -285,6 +313,7 @@ class TagletTest {
                         return get(0).toString();
                     }
                 };
+                */
             }
         }).get();
 

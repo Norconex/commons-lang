@@ -53,24 +53,24 @@ import jdk.javadoc.doclet.Taglet;
  * <pre>
  *  package com.somepackage;
  *
- *  &sol;**
+ *  &#x2F;**
  *   * &lt;h1&gt;How to create a list&lt;/h1&gt;
  *   * &lt;p&gt;Two examples:&lt;/p&gt;
  *   *
- *   * {&commat;nx.html #ordered
+ *   * {&#x40;nx.html #ordered
  *   *   &lt;ol&gt;
  *   *     &lt;li&gt;An item.&lt;/li&gt;
  *   *     &lt;li&gt;Another item.&lt;/li&gt;
  *   *   &lt;/ol&gt;
  *   * }
  *   *
- *   * {&commat;nx.html #unordered
+ *   * {&#x40;nx.html #unordered
  *   *   &lt;ul&gt;
  *   *     &lt;li&gt;An item.&lt;/li&gt;
  *   *     &lt;li&gt;Another item.&lt;/li&gt;
  *   *   &lt;/ul&gt;
  *   * }
- *   *&sol;
+ *   *&#x2F;
  *  public class MyClassWithReusableComments {
  *    //...
  *  }
@@ -78,17 +78,18 @@ import jdk.javadoc.doclet.Taglet;
  *
  * <h3>Including comments</h3>
  * <p>
- * The <code>{&commat;nx.include ...}</code> directive is used
+ * The <code>{&#x40;nx.include ...}</code> directive is used
  * to reference other classes along with which comment block to include.
  * The complete syntax is:
  * </p>
  * <pre>
- * {&commat;nx.include [class][@tagName][#reference]}
+ * {&#x40;nx.include [class][@tagName][#reference]}
  * </pre>
  * <p>
  * Where each elements in square brackets are:
  * </p>
- * <table cellpadding="3">
+ * <table style="padding: 2px;">
+ *   <caption style="display: none;">Include tag elements</caption>
  *   <tr>
  *     <td style="vertical-align: top;"><b>class</b></td>
  *     <td>
@@ -124,19 +125,19 @@ import jdk.javadoc.doclet.Taglet;
  * </p>
  *
  * <pre>
- *  &sol;**
+ *  &#x2F;**
  *   * &lt;p&gt;
  *   *   Here are two types of HTML lists:
  *   * &lt;/p&gt;
- *   * {&commat;nx.html
+ *   * {&#x40;nx.html
  *   *
  *   *   &lt;h1&gt;Ordered List&lt;/h1&gt;
- *   *   {&commat;nx.include com.somepackage.MyClassWithReusableComments#ordered}
+ *   *   {&#x40;nx.include com.somepackage.MyClassWithReusableComments#ordered}
  *   *
  *   *   &lt;h1&gt;Unordered List&lt;/h1&gt;
- *   *   {&commat;nx.include com.somepackage.MyClassWithReusableComments#unordered}
+ *   *   {&#x40;nx.include com.somepackage.MyClassWithReusableComments#unordered}
  *   * }
- *   *&sol;
+ *   *&#x2F;
  *  public class MyClassIncludingComments {
  *    //...
  *  }

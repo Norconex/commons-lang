@@ -50,8 +50,8 @@ import com.norconex.commons.lang.xml.XML;
  *       expects a "class" attribute pointing to a Predicate implementation.
  *       E.g.:
  *       -->
- *     <condition class="(a Predicate implementation)">
- *     <condition class="(a Predicate implementation)">
+ *     <condition class="(a Predicate implementation)"/>
+ *     <condition class="(a Predicate implementation)"/>
  *   </conditions>
  *   <then>
  *     <!--
@@ -127,7 +127,8 @@ public final class XMLFlow<T> {
         });
         if (consumers.size() > 1) {
             return FunctionUtil.allConsumers(consumers);
-        } else if (consumers.size() == 1) {
+        }
+        if (consumers.size() == 1) {
             return consumers.get(0);
         }
         return null;

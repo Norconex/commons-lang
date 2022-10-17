@@ -103,7 +103,7 @@ import org.slf4j.LoggerFactory;
  * This class is thread-safe.
  * </p>
  *
- * <a name="year2262"></a>
+ * <a id="year2262"></a>
  * <h3>Year 2262 and beyond</h3>
  * <p>
  * Whenever the millisecond EPOCH representation of the current time reaches
@@ -135,7 +135,6 @@ public final class TimeIdGenerator {
     private static int previousGeneratedDupSequence = 0;
 
     private TimeIdGenerator() {
-        super();
     }
 
     /**

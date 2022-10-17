@@ -87,7 +87,7 @@ public class ByteArrayOutputStream extends OutputStream {
                 "Negative initial size: " + size);
         }
         synchronized (this) {
-            this.bufferCapacity = size;
+            bufferCapacity = size;
             addNewBuffer();
         }
 
@@ -177,7 +177,8 @@ public class ByteArrayOutputStream extends OutputStream {
                 || ((off + len) > b.length)
                 || ((off + len) < 0)) {
             throw new IndexOutOfBoundsException();
-        } else if (len == 0) {
+        }
+        if (len == 0) {
             return;
         }
         synchronized (this) {
@@ -243,9 +244,9 @@ public class ByteArrayOutputStream extends OutputStream {
     }
 
     /**
-     * Closing a <tt>ByteArrayOutputStream</tt> has no effect. The methods in
+     * Closing a <code>ByteArrayOutputStream</code> has no effect. The methods in
      * this class can be called after the stream has been closed without
-     * generating an <tt>IOException</tt>.
+     * generating an <code>IOException</code>.
      *
      * @throws IOException never (this method should not declare this exception
      * but it has to now due to backwards compatability)

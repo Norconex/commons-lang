@@ -548,6 +548,7 @@ public final class BeanUtil {
      * Supports method name variations for accessors.
      * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#writables}
      * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#readables}
+     * @param <T> return value type
      * @param bean the object
      * @param propertyName the property name
      * @return object property value or <code>null</code> if no read method
@@ -568,6 +569,7 @@ public final class BeanUtil {
      * Gets the value of a bean property based on a {@link PropertyDescriptor}.
      * This is a convenience method equivalent to invoking the method obtained
      * with {@link PropertyDescriptor#getReadMethod()} when not read-only.
+     * @param <T> return value type
      * @param bean the object
      * @param propertyDescriptor the property descriptor
      * @return object property value

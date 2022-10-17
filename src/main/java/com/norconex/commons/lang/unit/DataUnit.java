@@ -25,7 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 
 /**
  * <p>
- * A <tt>DataUnit</tt> offers representation and conversion of various
+ * A <code>DataUnit</code> offers representation and conversion of various
  * quantity of bytes/bits. Release 2.0.0 introduces exa, zetta, and yotta
  * units.
  * </p>
@@ -147,21 +147,21 @@ public enum DataUnit {
     private final String prefix;
     private final int index;
 
-    private DataUnit(int index, String symbol, String prefix, long bits) {
+    DataUnit(int index, String symbol, String prefix, long bits) {
         this.bits = BigDecimal.valueOf(bits);
         this.symbol = symbol;
         this.prefix = prefix;
         this.index = index;
     }
-    private DataUnit(int index, String symbol, String prefix, int base, int power) {
-        this.bits = BigDecimal.valueOf(base).pow(power);
+    DataUnit(int index, String symbol, String prefix, int base, int power) {
+        bits = BigDecimal.valueOf(base).pow(power);
         this.symbol = symbol;
         this.prefix = prefix;
         this.index = index;
     }
-    private DataUnit(int index, String symbol,
+    DataUnit(int index, String symbol,
             String prefix, int base, int power, int multiplier) {
-        this.bits = BigDecimal.valueOf(
+        bits = BigDecimal.valueOf(
                 base).pow(power).multiply(BigDecimal.valueOf(multiplier));
         this.symbol = symbol;
         this.prefix = prefix;
@@ -185,10 +185,10 @@ public enum DataUnit {
     }
 
     public boolean isBitUnit() {
-        return this.name().contains("BIT");
+        return name().contains("BIT");
     }
     public boolean isByteUnit() {
-        return !this.name().contains("BIT");
+        return !name().contains("BIT");
     }
     public boolean isBinary() {
         return BINARY_BIT_UNITS.contains(this)
@@ -289,10 +289,7 @@ public enum DataUnit {
 
         // compare
         for (DataUnit unit : values()) {
-            if (unit.getSymbol().equalsIgnoreCase(txt)) {
-                return unit;
-            }
-            if (unit.getName().equalsIgnoreCase(txt)) {
+            if (unit.getSymbol().equalsIgnoreCase(txt) || unit.getName().equalsIgnoreCase(txt)) {
                 return unit;
             }
         }

@@ -22,8 +22,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 
-import javax.xml.bind.DatatypeConverter;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.AutoCloseInputStream;
 import org.apache.commons.lang3.time.StopWatch;
@@ -31,6 +29,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.security.Credentials;
+
+import jakarta.xml.bind.DatatypeConverter;
 
 /**
  * Provides a quick and easy way to stream a URL.
@@ -41,7 +41,6 @@ public final class URLStreamer {
     private static final Logger LOG = LoggerFactory.getLogger(URLStreamer.class);
 
     private URLStreamer() {
-        super();
     }
 
     /**
@@ -412,7 +411,6 @@ public final class URLStreamer {
         private final String hostName;
         private final int port;
         public HttpHost(String hostName, int port) {
-            super();
             this.hostName = hostName;
             this.port = port;
         }

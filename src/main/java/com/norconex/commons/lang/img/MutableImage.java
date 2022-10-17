@@ -31,7 +31,6 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 import javax.imageio.ImageIO;
-import javax.xml.bind.DatatypeConverter;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -44,6 +43,8 @@ import org.imgscalr.Scalr.Method;
 import org.imgscalr.Scalr.Mode;
 
 import com.norconex.commons.lang.io.ByteArrayOutputStream;
+
+import jakarta.xml.bind.DatatypeConverter;
 
 /**
  * Holds an image in memory and offers simple ways to do common operations.
@@ -59,7 +60,7 @@ public class MutableImage {
         HIGH(Method.QUALITY),
         MAX(Method.ULTRA_QUALITY);
         private Method scaleMethod;
-        private Quality(Method scaleMethod) {
+        Quality(Method scaleMethod) {
             this.scaleMethod = scaleMethod;
         }
         public Method getScaleMethod() {
