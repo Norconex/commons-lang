@@ -1,4 +1,4 @@
-/* Copyright 2019 Norconex Inc.
+/* Copyright 2019-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,10 +34,6 @@ import javax.imageio.ImageIO;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 import org.imgscalr.Scalr;
 import org.imgscalr.Scalr.Method;
 import org.imgscalr.Scalr.Mode;
@@ -45,12 +41,17 @@ import org.imgscalr.Scalr.Mode;
 import com.norconex.commons.lang.io.ByteArrayOutputStream;
 
 import jakarta.xml.bind.DatatypeConverter;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.ToString;
 
 /**
  * Holds an image in memory and offers simple ways to do common operations.
  * @author Pascal Essiembre
  * @since 2.0.0
  */
+@EqualsAndHashCode
+@ToString
 public class MutableImage {
 
     public enum Quality {
@@ -71,16 +72,13 @@ public class MutableImage {
     private BufferedImage image;
     private Quality resizeQuality; // whether scaling or stretching
 
-    public MutableImage(Path imageFile) throws IOException {
-        Objects.requireNonNull(imageFile, "'imageFile' must not be null.");
+    public MutableImage(@NonNull Path imageFile) throws IOException {
         image = ImageIO.read(imageFile.toFile());
     }
-    public MutableImage(InputStream imageStream) throws IOException {
-        Objects.requireNonNull(imageStream, "'imageStream' must not be null.");
+    public MutableImage(@NonNull InputStream imageStream) throws IOException {
         image = ImageIO.read(imageStream);
     }
-    public MutableImage(Image image) {
-        Objects.requireNonNull(image, "'image' must not be null.");
+    public MutableImage(@NonNull Image image) {
         if (image instanceof BufferedImage) {
             this.image = (BufferedImage) image;
         } else {
@@ -118,21 +116,18 @@ public class MutableImage {
         return new ByteArrayInputStream(os.toByteArray());
     }
 
-    public void write(Path file) throws IOException {
-        Objects.requireNonNull(file, "'file' must not be null.");
+    public void write(@NonNull Path file) throws IOException {
         write(file, null);
     }
-    public void write(Path file, String format) throws IOException {
-        Objects.requireNonNull(file, "'file' must not be null.");
+    public void write(@NonNull Path file, String format) throws IOException {
         String f = format;
         if (StringUtils.isBlank(format)) {
             f = FilenameUtils.getExtension(file.toString());
         }
         ImageIO.write(image, f, file.toFile());
     }
-    public void write(OutputStream out, String format) throws IOException {
-        Objects.requireNonNull(out, "'out' must not be null.");
-        Objects.requireNonNull(format, "'format' must not be null.");
+    public void write(@NonNull OutputStream out, @NonNull String format)
+            throws IOException {
         ImageIO.write(image, format, out);
     }
 
@@ -146,12 +141,27 @@ public class MutableImage {
         return image.getWidth();
     }
 
+    //--- Rotation -------------------------------------------------------------
+
+    /**
+     * Rotates this image counterclockwise by 90 degrees.
+     * @return this image
+     */
     public MutableImage rotateLeft() {
         return rotate(-90);
     }
+    /**
+     * Rotates this image clockwise by 90 degrees.
+     * @return this image
+     */
     public MutableImage rotateRight() {
         return rotate(90);
     }
+    /**
+     * Rotates this image clockwise by the specified degrees.
+     * @param degrees degrees by which to rotate the image
+     * @return this image
+     */
     public MutableImage rotate(double degrees) {
         return apply(t -> {
             int w = image.getWidth();
@@ -168,6 +178,8 @@ public class MutableImage {
         });
     }
 
+    //--- Flip -----------------------------------------------------------------
+
     public MutableImage flipHorizontal() {
         return apply(t -> {
             t.translate(image.getWidth(), 0);
@@ -181,11 +193,15 @@ public class MutableImage {
         });
     }
 
+    //--- Crop -----------------------------------------------------------------
+
     public MutableImage crop(Rectangle rectangle) {
         Objects.requireNonNull(rectangle, "'rectangle' must not be null.");
         return apply(Scalr.crop(image,
                 rectangle.x, rectangle.y, rectangle.width, rectangle.height));
     }
+
+    //--- Stretch --------------------------------------------------------------
 
     public MutableImage stretchWidth(int width) {
         return stretch(width, image.getHeight());
@@ -215,6 +231,8 @@ public class MutableImage {
         return apply(Scalr.resize(
                 image, getScaleMethod(), Mode.FIT_EXACT, width, height));
     }
+
+    //--- Scale ----------------------------------------------------------------
 
     public MutableImage scaleWidth(int width) {
         return apply(Scalr.resize(
@@ -248,6 +266,8 @@ public class MutableImage {
         return apply(Scalr.resize(image,
                 getScaleMethod(), Mode.AUTOMATIC, maxWidth, maxHeight));
     }
+
+    //--- Comparison -----------------------------------------------------------
 
     public boolean largerThan(MutableImage img) {
         if (img == null) {
@@ -316,9 +336,13 @@ public class MutableImage {
         return this;
     }
 
+    //--- Area -----------------------------------------------------------------
+
     public long getArea() {
         return (long) image.getWidth() * (long) image.getHeight();
     }
+
+    //--- Private methods ------------------------------------------------------
 
     private Method getScaleMethod() {
         return Optional.ofNullable(
@@ -343,19 +367,5 @@ public class MutableImage {
         }
         image = newImage;
         return this;
-    }
-
-    @Override
-    public boolean equals(final Object other) {
-        return EqualsBuilder.reflectionEquals(this, other);
-    }
-    @Override
-    public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this);
-    }
-    @Override
-    public String toString() {
-        return new ReflectionToStringBuilder(
-                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

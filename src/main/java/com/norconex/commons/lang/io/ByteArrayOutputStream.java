@@ -1,4 +1,4 @@
-/* Copyright 2015-2019 Norconex Inc.
+/* Copyright 2015-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,12 +20,15 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.SequenceInputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.io.input.ClosedInputStream;
 import org.apache.commons.lang3.ArrayUtils;
+
+import lombok.NonNull;
 
 /**
  * <p>This class is an alternate version of
@@ -134,7 +137,7 @@ public class ByteArrayOutputStream extends OutputStream {
                     "Target byte array cannot be null.");
         }
 
-        //TODO no need to synchronize since read-only and no cursor?
+        // no need to synchronize since read-only and no cursor?
         int thisStartOffset = Math.max(0, offset);
         if (thisStartOffset >= totalCount) {
             return -1;
@@ -170,7 +173,7 @@ public class ByteArrayOutputStream extends OutputStream {
      * @param len The number of bytes to write
      */
     @Override
-    public void write(byte[] b, int off, int len) {
+    public void write(@NonNull byte[] b, int off, int len) {
         if ((off < 0)
                 || (off > b.length)
                 || (len < 0)
@@ -244,8 +247,8 @@ public class ByteArrayOutputStream extends OutputStream {
     }
 
     /**
-     * Closing a <code>ByteArrayOutputStream</code> has no effect. The methods in
-     * this class can be called after the stream has been closed without
+     * Closing a <code>ByteArrayOutputStream</code> has no effect. The methods
+     * in this class can be called after the stream has been closed without
      * generating an <code>IOException</code>.
      *
      * @throws IOException never (this method should not declare this exception
@@ -395,6 +398,19 @@ public class ByteArrayOutputStream extends OutputStream {
      * @see java.io.ByteArrayOutputStream#toString(String)
      */
     public String toString(String enc) throws UnsupportedEncodingException {
+        return new String(toByteArray(), enc);
+    }
+    /**
+     * Gets the current contents of this byte stream as a string
+     * using the specified encoding.
+     *
+     * @param enc  the character encoding
+     * @return the string converted from the byte array
+     * @throws UnsupportedEncodingException if the encoding is not supported
+     * @see java.io.ByteArrayOutputStream#toString(String)
+     * @since 3.0.0
+     */
+    public String toString(Charset enc) throws UnsupportedEncodingException {
         return new String(toByteArray(), enc);
     }
 }

@@ -105,6 +105,9 @@
       <action dev="essiembre" type="update">
         Dependency "java.xml.bind" replaced by "jakarta.xml.bind".
       </action>
+      <action dev="essiembre" type="update">
+        ByteArrayOutputStream#toString method was overloaded to support Charset.
+      </action>
       <action dev="essiembre" type="fix">
         Fixed CollectionUtil#testRemoveNulls having opposite effect.
       </action>

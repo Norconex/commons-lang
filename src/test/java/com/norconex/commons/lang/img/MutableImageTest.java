@@ -1,4 +1,4 @@
-/* Copyright 2019 Norconex Inc.
+/* Copyright 2019-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,9 @@
  */
 package com.norconex.commons.lang.img;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.io.File;
 import java.io.IOException;
@@ -22,104 +25,193 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import javax.imageio.ImageIO;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-//@Ignore
-public class MutableImageTest {
+import com.norconex.commons.lang.img.MutableImage.Quality;
+import com.norconex.commons.lang.io.ByteArrayOutputStream;
 
-    private static final Logger LOG =
-            LoggerFactory.getLogger(MutableImageTest.class);
+import lombok.extern.slf4j.Slf4j;
 
-//    private String ext;
+@Slf4j
+class MutableImageTest {
 
-    static Stream<String> extensionProvider() {
-        return Stream.of("png", "gif", "jpg", "bmp");
+    @TempDir
+    private Path tempDir;
+
+    // 50 x 75
+    private MutableImage img;
+
+    @BeforeEach
+    void beforeEach() throws IOException {
+        img = new MutableImage(
+                Paths.get("src/test/resources/img/triangle.png"));
     }
 
-//    public MutableImageTest(String extension) {
-//        super();
-//        this.ext = extension;
-//    }
+    @Test
+    void testMisc() throws IOException {
+        img.toBase64String("png");
+        img.toInputStream("png");
+        img.write(tempDir.resolve("test.png"));
+        img.write(tempDir.resolve("test"), "png");
+        img.write(new ByteArrayOutputStream(), "png");
 
-//    @Parameters(name = "{index}: {0}")
-//    public static Collection<String> extensions() {
-//        return Arrays.asList("png", "gif", "jpg", "bmp");
-//    }
+        img.setResizeQuality(Quality.HIGH);
+        assertThat(img.getResizeQuality()).isSameAs(Quality.HIGH);
+        assertThat(img.getDimension()).isEqualTo(new Dimension(50, 75));
+        assertThat(img.getWidth()).isEqualTo(50);
+        assertThat(img.getHeight()).isEqualTo(75);
+
+        assertThat(img.getArea()).isEqualTo(3750);
+    }
+
+    @Test
+    void testStretch() throws IOException {
+        img.stretchWidth(100);
+        img.stretchHeight(150);
+        assertThat(img.getWidth()).isEqualTo(100);
+        assertThat(img.getHeight()).isEqualTo(150);
+        img.stretch(new Dimension(200, 300));
+        assertThat(img.getWidth()).isEqualTo(200);
+        assertThat(img.getHeight()).isEqualTo(300);
+        img.stretch(25);
+        assertThat(img.getWidth()).isEqualTo(25);
+        assertThat(img.getHeight()).isEqualTo(25);
+    }
+
+    @Test
+    void testScale() throws IOException {
+        // scaling respects ratios so scaling numbers provided are max values
+        img.scale(150);
+        assertThat(img.getWidth()).isEqualTo(100);
+        assertThat(img.getHeight()).isEqualTo(150);
+        img.scale(new Dimension(1000, 50));
+        assertThat(img.getWidth()).isEqualTo(33);
+        assertThat(img.getHeight()).isEqualTo(50);
+    }
+
+    @Test
+    void testComparisonImage() throws IOException {
+        MutableImage largerImg = new MutableImage(img.toImage()).scaleFactor(2);
+        MutableImage sameImg = new MutableImage(img.toImage());
+        MutableImage smallerImg =
+                new MutableImage(img.toImage()).scaleFactor(0.5);
+        assertThat(img.largerThan(largerImg)).isFalse();
+        assertThat(img.largerThan(sameImg)).isFalse();
+        assertThat(img.largerThan(smallerImg)).isTrue();
+        assertThat(img.largerThan((MutableImage) null)).isFalse();
+        assertThat(img.smallerThan(largerImg)).isTrue();
+        assertThat(img.smallerThan(sameImg)).isFalse();
+        assertThat(img.smallerThan(smallerImg)).isFalse();
+        assertThat(img.smallerThan((MutableImage) null)).isFalse();
+        assertThat(img.largest(largerImg)).isSameAs(largerImg);
+        assertThat(img.largest(sameImg)).isSameAs(img);
+        assertThat(img.largest(smallerImg)).isSameAs(img);
+        assertThat(img.largest(null)).isSameAs(img);
+        assertThat(img.smallest(largerImg)).isSameAs(img);
+        assertThat(img.smallest(sameImg)).isSameAs(img);
+        assertThat(img.smallest(smallerImg)).isSameAs(smallerImg);
+        assertThat(img.smallest(null)).isSameAs(img);
+        assertThat(img.tallest(largerImg)).isSameAs(largerImg);
+        assertThat(img.tallest(sameImg)).isSameAs(img);
+        assertThat(img.tallest(smallerImg)).isSameAs(img);
+        assertThat(img.tallest(null)).isSameAs(img);
+        assertThat(img.widest(largerImg)).isSameAs(largerImg);
+        assertThat(img.widest(sameImg)).isSameAs(img);
+        assertThat(img.widest(smallerImg)).isSameAs(img);
+        assertThat(img.widest(null)).isSameAs(img);
+    }
+
+    @Test
+    void testComparisonDimension() throws IOException {
+        Dimension sameDimension = new Dimension(50, 75);
+        Dimension largerDimension = new Dimension(51, 76);
+        Dimension smallerDimension = new Dimension(49, 74);
+        assertThat(img.largerThan(largerDimension)).isFalse();
+        assertThat(img.largerThan(sameDimension)).isFalse();
+        assertThat(img.largerThan(smallerDimension)).isTrue();
+        assertThat(img.largerThan((Dimension) null)).isFalse();
+        assertThat(img.smallerThan(largerDimension)).isTrue();
+        assertThat(img.smallerThan(sameDimension)).isFalse();
+        assertThat(img.smallerThan(smallerDimension)).isFalse();
+        assertThat(img.smallerThan((Dimension) null)).isFalse();
+    }
 
     @ExtensionTest
-    public void testRotateLeft(String ext) throws IOException {
+    void testRotateLeft(String ext) throws IOException {
         test(MutableImage::rotateLeft, ext);
     }
-
     @ExtensionTest
-    public void testRotate45Left(String ext) throws IOException {
+    void testRotate45Left(String ext) throws IOException {
         test(img -> img.rotate(-45), ext);
     }
     @ExtensionTest
-    public void testRotateRight(String ext) throws IOException {
+    void testRotateRight(String ext) throws IOException {
         test(MutableImage::rotateRight, ext);
     }
     @ExtensionTest
-    public void testRotate45Right(String ext) throws IOException {
+    void testRotate45Right(String ext) throws IOException {
         test(img -> img.rotate(45), ext);
     }
     @ExtensionTest
-    public void testFlipHorizontal(String ext) throws IOException {
+    void testFlipHorizontal(String ext) throws IOException {
         test(MutableImage::flipHorizontal, ext);
     }
     @ExtensionTest
-    public void testFilpVertical(String ext) throws IOException {
+    void testFilpVertical(String ext) throws IOException {
         test(MutableImage::flipVertical, ext);
     }
     @ExtensionTest
-    public void testCrop(String ext) throws IOException {
+    void testCrop(String ext) throws IOException {
         test(img -> img.crop(new Rectangle(10, 48, 30, 26)), ext);
     }
 
     @ExtensionTest
-    public void testStretch75x20(String ext) throws IOException {
+    void testStretch75x20(String ext) throws IOException {
         test(img -> img.stretch(75, 20), ext);
     }
     @ExtensionTest
-    public void testStretchHeightFactor1_5(String ext) throws IOException {
+    void testStretchHeightFactor1_5(String ext) throws IOException {
         test(img -> img.stretchHeightFactor(1.5f), ext);
     }
     @ExtensionTest
-    public void testStretchWidthFactor1_5(String ext) throws IOException {
+    void testStretchWidthFactor1_5(String ext) throws IOException {
         test(img -> img.stretchWidthFactor(1.5f), ext);
     }
     @ExtensionTest
-    public void testStretchFactor3x0_5(String ext) throws IOException {
+    void testStretchFactor3x0_5(String ext) throws IOException {
         test(img -> img.stretchFactor(3.0f, 0.5f), ext);
     }
 
     @ExtensionTest
-    public void testScale75_20(String ext) throws IOException {
+    void testScale75_20(String ext) throws IOException {
         test(img -> img.scale(75, 20), ext);
     }
     @ExtensionTest
-    public void testScaleHeightFactor1_5(String ext) throws IOException {
+    void testScaleHeightFactor1_5(String ext) throws IOException {
         test(img -> img.scaleHeightFactor(1.5f), ext);
     }
     @ExtensionTest
-    public void testScaleWidthFactor1_5(String ext) throws IOException {
+    void testScaleWidthFactor1_5(String ext) throws IOException {
         test(img -> img.scaleWidthFactor(1.5f), ext);
     }
     @ExtensionTest
-    public void testScaleInHalf(String ext) throws IOException {
+    void testScaleInHalf(String ext) throws IOException {
         test(img -> img.scaleFactor(0.5f), ext);
     }
     @ExtensionTest
-    public void testScaleDouble(String ext) throws IOException {
+    void testScaleDouble(String ext) throws IOException {
         test(img -> img.scaleFactor(2.0f), ext);
     }
 
@@ -132,11 +224,11 @@ public class MutableImageTest {
         LOG.debug("Writing: " + targetImage);
         try (InputStream is =
                 MutableImageTest.class.getResourceAsStream(srcImage)) {
-            MutableImage img = new MutableImage(is);
+            MutableImage imgToWrite = new MutableImage(is);
             //img.setResizeQuality(Quality.MAX);
-            c.accept(img);
+            c.accept(imgToWrite);
             Assertions.assertTrue(ImageIO.write(
-                    img.toImage(), ext, new File(targetImage)),
+                    imgToWrite.toImage(), ext, new File(targetImage)),
                     "Could not find image writer.");
         }
     }
@@ -144,8 +236,11 @@ public class MutableImageTest {
     @Target(ElementType.METHOD)
     @Retention(RetentionPolicy.RUNTIME)
     @ParameterizedTest(name = "extension: {0}")
-//    @ParameterizedTest(name = "{index}: {0}")
     @MethodSource("extensionProvider")
     @interface ExtensionTest {
+    }
+    @SuppressWarnings("unused")
+    private static Stream<String> extensionProvider() {
+        return Stream.of("png", "gif", "jpg", "bmp");
     }
 }

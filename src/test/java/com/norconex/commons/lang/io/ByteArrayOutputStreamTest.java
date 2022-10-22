@@ -1,4 +1,4 @@
-/* Copyright 2015-2019 Norconex Inc.
+/* Copyright 2015-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,27 +14,32 @@
  */
 package com.norconex.commons.lang.io;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
+import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /**
  * @author Pascal Essiembre
  */
-public class ByteArrayOutputStreamTest {
+class ByteArrayOutputStreamTest {
 
     @Test
-    public void testByteArrayOutputStream() throws IOException {
+    void testByteArrayOutputStream() throws IOException {
         String val1 = "0123456789";
         String val2 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        byte[] b = null;
+        byte[] b = new byte[5];
         ByteArrayOutputStream out = new ByteArrayOutputStream(5);
         String enc = StandardCharsets.US_ASCII.toString();
 
-        // test nothing written
-        b = new byte[5];
         Assertions.assertEquals(-1, out.getByte(5), "no-write-yet-getByte");
         Assertions.assertEquals(
                 -1, out.getBytes(b, 0), "no-write-yet-getBytes");
@@ -77,4 +82,59 @@ public class ByteArrayOutputStreamTest {
         out.close();
     }
 
+    @Test
+    void testNullAndErrors() throws IOException {
+        assertThrows(IllegalArgumentException.class,
+                () -> new ByteArrayOutputStream(-123));
+        assertThrows(IllegalArgumentException.class, //NOSONAR
+                () -> new ByteArrayOutputStream().getBytes(null, 0));
+        assertThrows(IndexOutOfBoundsException.class, //NOSONAR
+                () -> new ByteArrayOutputStream().write(new byte [] {}, -1, 0));
+        assertThrows(NullPointerException.class, //NOSONAR
+                () -> new ByteArrayOutputStream().write(null, 0, 0));
+    }
+
+    @Test
+    void testWrite() throws IOException {
+        String val1 = "012345678";
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream(10)) {
+            out.write(val1.getBytes(UTF_8));
+            out.write('9');
+            out.write('A');
+            assertThat(out.toString()).hasToString("0123456789A");
+        }
+
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream(10);
+                ByteArrayInputStream in =
+                        new ByteArrayInputStream(val1.getBytes(UTF_8))) {
+            assertThat(out.write(in)).isEqualTo(9);
+            out.reset();
+            assertThat(out.write(in)).isEqualTo(0);
+        }
+
+        String val2 = "012345678";
+        try (ByteArrayOutputStream out1 = new ByteArrayOutputStream(10);
+                ByteArrayOutputStream out2 = new ByteArrayOutputStream(10)) {
+            out1.write(val2.getBytes(UTF_8));
+            out1.writeTo(out2);
+            assertThat(out2.toString()).hasToString("012345678");
+        }
+    }
+
+    @Test
+    void testToX() throws IOException {
+        String val = "0123456789";
+        try (ByteArrayInputStream in =
+                        new ByteArrayInputStream(val.getBytes(UTF_8))) {
+            InputStream is = ByteArrayOutputStream.toBufferedInputStream(in);
+            assertThat(IOUtils.toString(is, UTF_8)).hasToString(val);
+        }
+
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream(10)) {
+            assertThat(out.toByteArray()).isEmpty();
+            out.write(val.getBytes(UTF_8));
+            assertThat(out.toString(UTF_8)).isEqualTo(val);
+            assertThat(out.toString(UTF_8.toString())).isEqualTo(val);
+        }
+    }
 }
