@@ -1,4 +1,4 @@
-/* Copyright 2017 Norconex Inc.
+/* Copyright 2017-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,12 +24,12 @@ import java.util.List;
 import org.apache.commons.lang3.ArrayUtils;
 
 /**
- * A stream consumer will read all it can from a stream in its own thread.  
- * This is often required by some processes/operating systems in order to 
- * prevent application freeze.  For example, this is a way to capture the 
- * STDOUT and STDERR from a process.  This class also allows to "listen" to 
- * what is being read. Listeners should not be considered thread-safe. 
- * If you share a listener between threads, make sure to 
+ * A stream consumer will read all it can from a stream in its own thread.
+ * This is often required by some processes/operating systems in order to
+ * prevent application freeze.  For example, this is a way to capture the
+ * STDOUT and STDERR from a process.  This class also allows to "listen" to
+ * what is being read. Listeners should not be considered thread-safe.
+ * If you share a listener between threads, make sure to
  * have unique types to identify each one or the content being streamed
  * from different threads can easily be mixed up in the order sent and is
  * likely not a desired behavior.
@@ -38,14 +38,14 @@ import org.apache.commons.lang3.ArrayUtils;
  */
 public class InputStreamConsumer extends Thread {
 
-    public static final int DEFAULT_CHUNK_SIZE = 1024; 
-    private final List<IInputStreamListener> listeners = 
+    public static final int DEFAULT_CHUNK_SIZE = 1024;
+    private final List<IInputStreamListener> listeners =
             Collections.synchronizedList(new ArrayList<IInputStreamListener>());
     /** The input stream we are reading. */
     private final InputStream input;
     private final String type;
     private final int chunkSize;
-    
+
     /**
      * Constructor.
      * @param input input stream
@@ -57,27 +57,27 @@ public class InputStreamConsumer extends Thread {
      * Constructor.
      * @param input input stream
      * @param type an optional way to identify each portion being read to
-     *        stream listeners. Useful when listeners are shared. 
+     *        stream listeners. Useful when listeners are shared.
      *        Can be <code>null</code>.
      * @param listeners input stream listeners
      */
     public InputStreamConsumer(
-            InputStream input, String type, 
+            InputStream input, String type,
             IInputStreamListener... listeners) {
         this(input, DEFAULT_CHUNK_SIZE, type, listeners);
     }
     /**
      * Constructor.
      * @param input input stream
-     * @param chunkSize how many bytes to read at once before (will also 
-     *        be the maximum byte array size sent to listeners) 
+     * @param chunkSize how many bytes to read at once before (will also
+     *        be the maximum byte array size sent to listeners)
      * @param type an optional way to identify each portion being read to
      *        stream listeners. Useful when listeners are shared.
      *        Can be <code>null</code>.
      * @param listeners input stream listeners
      */
     public InputStreamConsumer(
-            InputStream input, int chunkSize, String type, 
+            InputStream input, int chunkSize, String type,
             IInputStreamListener... listeners) {
         super("StreamConsumer" + (type == null ? "": "-" + type));
         this.input = input;
@@ -87,7 +87,7 @@ public class InputStreamConsumer extends Thread {
             this.listeners.addAll(0, Arrays.asList(listeners));
         }
     }
-    
+
     @Override
     public void run() {
         beforeStreaming();
@@ -119,14 +119,14 @@ public class InputStreamConsumer extends Thread {
     }
     /**
      * Invoked just before steaming begins, in a new thread.
-     * Default implementation does nothing.  This method is for implementors. 
+     * Default implementation does nothing.  This method is for implementors.
      */
     protected void beforeStreaming() {
         // do nothing (for subclasses)
     }
     /**
      * Invoked just after steaming ended, before the thread dies.
-     * Default implementation does nothing.  This method is for implementors. 
+     * Default implementation does nothing.  This method is for implementors.
      */
     protected void afterStreaming() {
         // do nothing (for subclasses)
@@ -141,10 +141,11 @@ public class InputStreamConsumer extends Thread {
         try {
             join();
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             throw new StreamException("Streaming interrupted.", e);
         }
     }
-    
+
     private synchronized void fireStreamed(byte[] bytes, int length) {
         for (IInputStreamListener listener : listeners) {
             listener.streamed(type, bytes, length);
@@ -152,36 +153,36 @@ public class InputStreamConsumer extends Thread {
     }
 
     /**
-     * Convenience method for creasing a consumer instance and starting it.
+     * Convenience method for creating a consumer instance and starting it.
      * @param input input stream to consume.
      */
     public static void consume(InputStream input) {
         consume(input, null);
     }
     /**
-     * Convenience method for creasing a consumer instance and starting it.
+     * Convenience method for creating a consumer instance and starting it.
      * @param input input stream
      * @param type an optional way to identify each portion being read to
      *        stream listeners. Useful when listeners are shared.
      *        Can be <code>null</code>.
      * @param listeners input stream listeners
      */
-    public static void consume(InputStream input, String type, 
+    public static void consume(InputStream input, String type,
             IInputStreamListener... listeners) {
-        consume(input,DEFAULT_CHUNK_SIZE, type);
+        consume(input, DEFAULT_CHUNK_SIZE, type, listeners);
     }
     /**
      * Convenience method for creasing a consumer instance, starting it,
      * and waiting for it to complete.
      * @param input input stream
-     * @param chunkSize how many bytes to read at once before (will also 
-     *        be the maximum byte array size sent to listeners) 
+     * @param chunkSize how many bytes to read at once before (will also
+     *        be the maximum byte array size sent to listeners)
      * @param type an optional way to identify each portion being read to
      *        stream listeners. Useful when listeners are shared.
      *        Can be <code>null</code>.
      * @param listeners input stream listeners
      */
-    public static void consume(InputStream input, int chunkSize, String type, 
+    public static void consume(InputStream input, int chunkSize, String type,
             IInputStreamListener... listeners) {
         new InputStreamConsumer(input, chunkSize, type, listeners).start();
     }
@@ -201,23 +202,23 @@ public class InputStreamConsumer extends Thread {
      *        Can be <code>null</code>.
      * @param listeners input stream listeners
      */
-    public static void consumeAndWait(InputStream input, String type, 
+    public static void consumeAndWait(InputStream input, String type,
             IInputStreamListener... listeners) {
-        consumeAndWait(input,DEFAULT_CHUNK_SIZE, type);
+        consumeAndWait(input, DEFAULT_CHUNK_SIZE, type, listeners);
     }
     /**
      * Convenience method for creasing a consumer instance, starting it,
      * and waiting for it to complete.
      * @param input input stream
-     * @param chunkSize how many bytes to read at once before (will also 
-     *        be the maximum byte array size sent to listeners) 
+     * @param chunkSize how many bytes to read at once before (will also
+     *        be the maximum byte array size sent to listeners)
      * @param type an optional way to identify each portion being read to
      *        stream listeners. Useful when listeners are shared.
      *        Can be <code>null</code>.
      * @param listeners input stream listeners
      */
     public static void consumeAndWait(
-            InputStream input, int chunkSize, String type, 
+            InputStream input, int chunkSize, String type,
             IInputStreamListener... listeners) {
         new InputStreamConsumer(
                 input, chunkSize, type, listeners).startAndWait();

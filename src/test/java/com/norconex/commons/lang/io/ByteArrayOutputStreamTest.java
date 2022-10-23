@@ -109,7 +109,7 @@ class ByteArrayOutputStreamTest {
                         new ByteArrayInputStream(val1.getBytes(UTF_8))) {
             assertThat(out.write(in)).isEqualTo(9);
             out.reset();
-            assertThat(out.write(in)).isEqualTo(0);
+            assertThat(out.write(in)).isZero();
         }
 
         String val2 = "012345678";

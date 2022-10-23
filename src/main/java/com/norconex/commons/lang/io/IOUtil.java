@@ -1,4 +1,4 @@
-/* Copyright 2010-2020 Norconex Inc.
+/* Copyright 2010-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,8 @@ import org.apache.commons.io.input.NullInputStream;
 import org.apache.commons.io.input.NullReader;
 import org.apache.commons.lang3.ArrayUtils;
 
+import lombok.NonNull;
+
 /**
  * I/O related utility methods.
  * @author Pascal Essiembre
@@ -41,13 +43,16 @@ import org.apache.commons.lang3.ArrayUtils;
 public final class IOUtil {
 
     /** Empty strings. */
-    private static final String[] EMPTY_STRINGS = new String[] {};
+    private static final String[] EMPTY_STRINGS = {};
+    private static final String ERR_READER_MUST_SUPPORT_MARK =
+            "Reader must support mark.";
+    private static final String ERR_STREAM_MUST_SUPPORT_MARK =
+            "Input stream must support mark.";
 
     /**
      * Constructor.
      */
     private IOUtil() {
-        super();
     }
 
     /**
@@ -78,16 +83,14 @@ public final class IOUtil {
      * @since 2.0.0
      */
     public static byte[] borrowBytes(
-            InputStream is, int qty) throws IOException {
-        if (is == null) {
-            throw new IllegalArgumentException("Input stream cannot be null.");
-        } else if (!is.markSupported()) {
+            @NonNull InputStream is, int qty) throws IOException {
+        if (!is.markSupported()) {
             throw new IllegalArgumentException(
-                    "Input stream must support mark.");
+                    ERR_STREAM_MUST_SUPPORT_MARK);
         }
         is.mark(qty);
         byte[] bytes = new byte[qty];
-        is.read(bytes);
+        is.read(bytes); //NOSONAR
         is.reset();
         return bytes;
     }
@@ -101,11 +104,9 @@ public final class IOUtil {
      * @since 2.0.0
      */
     public static char[] borrowCharacters(
-            Reader reader, int qty) throws IOException {
-        if (reader == null) {
-            throw new IllegalArgumentException("Reader must not be null.");
-        } else if (!reader.markSupported()) {
-            throw new IllegalArgumentException("Reader must support mark.");
+            @NonNull Reader reader, int qty) throws IOException {
+        if (!reader.markSupported()) {
+            throw new IllegalArgumentException(ERR_READER_MUST_SUPPORT_MARK);
         }
         reader.mark(qty);
         char[] chars = new char[qty];
@@ -125,9 +126,10 @@ public final class IOUtil {
     public static boolean isEmpty(InputStream is) throws IOException {
         if (is == null) {
             return true;
-        } else if (!is.markSupported()) {
+        }
+        if (!is.markSupported()) {
             throw new IllegalArgumentException(
-                    "Input stream must support mark.");
+                    ERR_STREAM_MUST_SUPPORT_MARK);
         }
         is.mark(1);
         int numRead = is.read();
@@ -145,8 +147,9 @@ public final class IOUtil {
     public static boolean isEmpty(Reader reader) throws IOException {
         if (reader == null) {
             return true;
-        } else if (!reader.markSupported()) {
-            throw new IllegalArgumentException("Reader must support mark.");
+        }
+        if (!reader.markSupported()) {
+            throw new IllegalArgumentException(ERR_READER_MUST_SUPPORT_MARK);
         }
         reader.mark(1);
         int numRead = reader.read();
@@ -160,10 +163,7 @@ public final class IOUtil {
      * @return buffered reader
      * @since 1.6.0
      */
-    public static BufferedReader toBufferedReader(Reader reader) {
-        if (reader == null) {
-            throw new IllegalArgumentException("Reader cannot be null");
-        }
+    public static BufferedReader toBufferedReader(@NonNull Reader reader) {
         if (BufferedReader.class.isAssignableFrom(reader.getClass())) {
             return (BufferedReader) reader;
         }
@@ -177,10 +177,8 @@ public final class IOUtil {
      * @return buffered input stream
      * @since 1.6.0
      */
-    public static BufferedInputStream toBufferedInputStream(InputStream in) {
-        if (in == null) {
-            throw new IllegalArgumentException("InputStream cannot be null");
-        }
+    public static BufferedInputStream toBufferedInputStream(
+            @NonNull InputStream in) {
         if (BufferedInputStream.class.isAssignableFrom(in.getClass())) {
             return (BufferedInputStream) in;
         }
@@ -420,7 +418,7 @@ public final class IOUtil {
      */
     public static int consumeUntil(Reader reader, IntPredicate predicate)
             throws IOException {
-        return consumeWhile(reader,  predicate, null);
+        return consumeWhile(reader,  ch -> !predicate.test(ch), null);
     }
     /**
      * Consumes markable reader characters until the predicate returns
@@ -517,8 +515,9 @@ public final class IOUtil {
 
         if (reader == null) {
             return 0;
-        } else if (!reader.markSupported()) {
-            throw new IllegalArgumentException("Reader must support mark.");
+        }
+        if (!reader.markSupported()) {
+            throw new IllegalArgumentException(ERR_READER_MUST_SUPPORT_MARK);
         }
 
         int qtyRead = 0;
@@ -528,7 +527,8 @@ public final class IOUtil {
             if (!predicate.test(ch)) {
                 reader.reset();
                 break;
-            } else if (appendable != null) {
+            }
+            if (appendable != null) {
                 appendable.append((char) ch);
             }
             reader.mark(1);
@@ -540,7 +540,7 @@ public final class IOUtil {
     /**
      * Given Apache has deprecated its
      * <code>IOUtils#closeQuietly(java.io.Closeable)</code> method,
-     * this one offers an alternate one.
+     * this one offers an alternative.
      * @param closeable one or more input streams to close quietly
      * @since 2.0.0
      */

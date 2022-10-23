@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,11 @@ package com.norconex.commons.lang.io;
 
 /**
  * <p>
- * Listener that is being notified every time a chunk of bytes is 
+ * Listener that is being notified every time a chunk of bytes is
  * processed from a given input stream.
  * </p>
  * <p>
- * Since 1.13.0, use {@link InputStreamLineListener} to listen to each line 
+ * Since 1.13.0, use {@link InputStreamLineListener} to listen to each line
  * being streamed from text files.
  * </p>
  * <p>
@@ -30,14 +30,15 @@ package com.norconex.commons.lang.io;
  * @see InputStreamConsumer
  * @see InputStreamLineListener
  */
+@FunctionalInterface
 public interface IInputStreamListener {
-    
+
     /**
      * Invoked when a chunk of bytes is streamed.
-     * @param type type of what is being streamed, as defined by the class 
+     * @param type type of what is being streamed, as defined by the class
      *        using this listener
      * @param bytes chunk of bytes streamed
-     * @param length length of valid bytes to read or -1 if no more bytes to 
+     * @param length length of valid bytes to read or -1 if no more bytes to
      *        read
      */
     void streamed(String type, byte[] bytes, int length);

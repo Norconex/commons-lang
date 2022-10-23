@@ -1,4 +1,4 @@
-/* Copyright 2014-2020 Norconex Inc.
+/* Copyright 2014-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -116,19 +116,17 @@ public class CachedInputStream extends InputStream implements ICachedStream {
      * @param cacheDirectory directory where to store large content
      * @param is InputStream to cache
      */
-    /*default*/ CachedInputStream(
+    CachedInputStream(
             CachedStreamFactory factory, Path cacheDirectory, InputStream is) {
-        super();
-
         this.factory = factory;
-        this.tracker = factory.new MemoryTracker();
+        tracker = factory.new MemoryTracker();
 
         memOutputStream = new ByteArrayOutputStream();
 
         if (is instanceof BufferedInputStream) {
-            this.inputStream = is;
+            inputStream = is;
         } else {
-            this.inputStream = new BufferedInputStream(is);
+            inputStream = new BufferedInputStream(is);
         }
         this.cacheDirectory = nullSafeCacheDirectory(cacheDirectory);
     }
@@ -139,16 +137,16 @@ public class CachedInputStream extends InputStream implements ICachedStream {
      * @param cacheDirectory directory where to store large content
      * @param memCache memory byte cache.
      */
-    /*default*/ CachedInputStream(
+    CachedInputStream(
             CachedStreamFactory factory, Path cacheDirectory, byte[] memCache) {
         this.factory = factory;
-        this.tracker = factory.new MemoryTracker();
+        tracker = factory.new MemoryTracker();
         this.memCache = ArrayUtils.clone(memCache);
         this.cacheDirectory = nullSafeCacheDirectory(cacheDirectory);
-        this.firstRead = false;
-        this.needNewStream = true;
+        firstRead = false;
+        needNewStream = true;
         if (memCache != null) {
-            this.length = memCache.length;
+            length = memCache.length;
         }
     }
     /**
@@ -157,17 +155,17 @@ public class CachedInputStream extends InputStream implements ICachedStream {
      * @param cacheDirectory directory where to store large content
      * @param cacheFile the file cache
      */
-    /*default*/ CachedInputStream(
+    CachedInputStream(
             CachedStreamFactory factory, Path cacheDirectory, Path cacheFile) {
         this.factory = factory;
-        this.tracker = factory.new MemoryTracker();
-        this.fileCache = cacheFile;
+        tracker = factory.new MemoryTracker();
+        fileCache = cacheFile;
         this.cacheDirectory = nullSafeCacheDirectory(cacheDirectory);
-        this.firstRead = false;
-        this.needNewStream = true;
+        firstRead = false;
+        needNewStream = true;
         File file = cacheFile.toFile();
         if (file != null && file.exists() && file.isFile()) {
-            this.length = (int) file.length();
+            length = (int) file.length();
         }
     }
 
@@ -250,7 +248,7 @@ public class CachedInputStream extends InputStream implements ICachedStream {
     }
 
     /**
-     * Returns <code>true</code> if this input stream is empty (zero-lenght
+     * Returns <code>true</code> if this input stream is empty (zero-length
      * content). Unless the stream has been fully read at least once, this
      * method is more efficient than checking if {@link #length()}
      * is zero.
@@ -278,12 +276,10 @@ public class CachedInputStream extends InputStream implements ICachedStream {
                 // avoid incorrect negative values for byte values > 127.
                 if (memOutputStream != null) {
                     val = memOutputStream.getByte(cursor) & 0xFF;
+                } else if (cursor >= memCache.length) {
+                    val = -1;
                 } else {
-                    if (cursor >= memCache.length) {
-                        val = -1;
-                    } else {
-                        val = memCache[cursor] & 0xFF;
-                    }
+                    val = memCache[cursor] & 0xFF;
                 }
             } else {
                 randomAccessFile.seek(cursor);
@@ -340,27 +336,7 @@ public class CachedInputStream extends InputStream implements ICachedStream {
         int cursor = pos;
         int read = 0;
         if (cursor < count) {
-            int toRead = Math.min(len, count - cursor);
-            if (isInMemory()) {
-                if (memOutputStream != null) {
-                    byte[] bytes = new byte[toRead];
-                    read = memOutputStream.getBytes(bytes, cursor);
-                    System.arraycopy(bytes, 0, b, off, toRead);
-                } else {
-                    if (cursor >= memCache.length) {
-                        read = -1;
-                    } else {
-                        System.arraycopy(memCache, cursor, b, off, toRead);
-                        read = toRead;
-                    }
-                }
-            } else {
-                randomAccessFile.seek(cursor);
-                read = randomAccessFile.read(b, off, toRead);
-            }
-            if (read != -1) {
-                pos += read;
-            }
+            read = readFromCursorToEndOfCache(b, off, len, cursor);
         }
 
         if (read != -1 && read < len) {
@@ -376,6 +352,33 @@ public class CachedInputStream extends InputStream implements ICachedStream {
         }
         return read;
     }
+
+    private int readFromCursorToEndOfCache(
+            byte[] b, int off, int len, int cursor) throws IOException {
+        int read;
+        int toRead = Math.min(len, count - cursor);
+        if (isInMemory()) {
+            if (memOutputStream != null) {
+                byte[] bytes = new byte[toRead];
+                read = memOutputStream.getBytes(bytes, cursor);
+                System.arraycopy(bytes, 0, b, off, toRead);
+            } else if (cursor >= memCache.length) {
+                read = -1;
+            } else {
+                System.arraycopy(memCache, cursor, b, off, toRead);
+                read = toRead;
+            }
+        } else {
+            randomAccessFile.seek(cursor);
+            read = randomAccessFile.read(b, off, toRead);
+        }
+        if (read != -1) {
+            pos += read;
+        }
+        return read;
+    }
+
+
 
     private int realRead(byte[] b, int off, int len) throws IOException {
         if (needNewStream) {
@@ -552,7 +555,7 @@ public class CachedInputStream extends InputStream implements ICachedStream {
             try {
                 enforceFullCaching();
                 resetStream();
-                //TODO investigate having a seek(int) method instead
+                //MAYBE have a seek(int) method instead?
                 IOUtils.skip(this, savedPos);
             } catch (IOException e) {
                 throw new StreamException("Could not read entire stream "
@@ -614,11 +617,5 @@ public class CachedInputStream extends InputStream implements ICachedStream {
         if (closable != null) {
             try { closable.close(); } catch (IOException e) { /*NOOP*/ }
         }
-    }
-
-    @Override
-    protected void finalize() throws Throwable {
-        dispose();
-        super.finalize();
     }
 }

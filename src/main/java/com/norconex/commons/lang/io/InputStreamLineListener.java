@@ -1,4 +1,4 @@
-/* Copyright 2017 Norconex Inc.
+/* Copyright 2017-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,9 +24,9 @@ import org.apache.commons.io.Charsets;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * Listener that is being notified every time a line is processed from a 
+ * Listener that is being notified every time a line is processed from a
  * given stream.  Not thread-safe. Use a new instance for each thread or at
- * a minimum, make sure to give a unique type argument to 
+ * a minimum, make sure to give a unique type argument to
  * each {@link InputStreamConsumer} to prevent lines content being mixed up.
  * @author Pascal Essiembre
  * @see InputStreamConsumer
@@ -36,24 +36,23 @@ public abstract class InputStreamLineListener implements IInputStreamListener {
     private static final byte NL = (byte) '\n';
     private static final byte CR = (byte) '\r';
     private static final byte RESET = (byte) '\0';
-    
+
     private final Map<String, Buffer> buffers = new HashMap<>();
-    
+
     private final Charset charset;
-    
+
     /**
      * Creates a line listener with UTF-8 character encoding.
      */
-    public InputStreamLineListener() {
+    protected InputStreamLineListener() {
         this(StandardCharsets.UTF_8);
     }
     /**
-     * Creates a line listener with supplied character encoding 
+     * Creates a line listener with supplied character encoding
      * (defaults to UTF-8 if null).
      * @param charset character encoding
      */
-    public InputStreamLineListener(Charset charset) {
-        super();
+    protected InputStreamLineListener(Charset charset) {
         if (charset == null) {
             this.charset = StandardCharsets.UTF_8;
         } else {
@@ -61,17 +60,25 @@ public abstract class InputStreamLineListener implements IInputStreamListener {
         }
     }
     /**
-     * Creates a line listener with supplied character encoding 
+     * Creates a line listener with supplied character encoding
      * (defaults to UTF-8 if null).
      * @param charset character encoding
      */
-    public InputStreamLineListener(String charset) {
-        super();
+    protected InputStreamLineListener(String charset) {
         if (charset == null) {
             this.charset = StandardCharsets.UTF_8;
         } else {
             this.charset = Charsets.toCharset(charset);
         }
+    }
+
+    /**
+     * Gets the character encoding this listener is expected to receive.
+     * @return character encoding
+     * @since 3.0.0
+     */
+    protected Charset getCharset() {
+        return charset;
     }
 
     @Override
@@ -100,7 +107,7 @@ public abstract class InputStreamLineListener implements IInputStreamListener {
             }
         }
     }
-    
+
     /**
      * Invoked when a line is streamed.
      * @param type type of line, as defined by the class using the listener
@@ -111,7 +118,7 @@ public abstract class InputStreamLineListener implements IInputStreamListener {
     private boolean isEOL(byte b) {
         return b == NL || b == CR;
     }
-    
+
     private void flushBuffer(String type, Buffer buffer) {
         try {
             lineStreamed(type, buffer.baos.toString(charset.toString()));
@@ -121,19 +128,13 @@ public abstract class InputStreamLineListener implements IInputStreamListener {
             throw new StreamException("Unsupported charset: " + charset, e);
         }
     }
-    
+
     private synchronized Buffer getBuffer(String type) {
         String key = type;
         if (key == null) {
             key = StringUtils.EMPTY;
         }
-        
-        Buffer buf = buffers.get(key);
-        if (buf == null) {
-            buf = new Buffer();
-            buffers.put(key, buf);
-        }
-        return buf;
+        return buffers.computeIfAbsent(key, k -> new Buffer());
     }
 
     class Buffer {

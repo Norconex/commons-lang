@@ -1,4 +1,4 @@
-/* Copyright 2010-2017 Norconex Inc.
+/* Copyright 2010-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,13 +21,13 @@ import java.io.RandomAccessFile;
 
 /**
  * {@link InputStream} implementation for streaming files in reverse order
- * (from the end of file to its beginning). 
+ * (from the end of file to its beginning).
  * @author Pascal Essiembre
  */
-public class ReverseFileInputStream extends InputStream {
+public class ReverseFileInputStream extends InputStream { //NOSONAR
 
     private static final int BUFFER_SIZE = 4096;
-    
+
     private final byte[] buffer = new byte[BUFFER_SIZE];
 
     private final RandomAccessFile raf;
@@ -65,14 +65,14 @@ public class ReverseFileInputStream extends InputStream {
             return read();
         }
         currentPositionInFile--;
-        return buffer[currentPositionInBuffer];
+        return buffer[currentPositionInBuffer] & 0xFF; // make it a signed byte
     }
 
     @Override
     public void close() throws IOException {
         raf.close();
     }
-    
+
     private static void assertFile(File file) throws IOException {
         if (file == null || !file.exists()
                 || !file.isFile() || !file.canRead()) {

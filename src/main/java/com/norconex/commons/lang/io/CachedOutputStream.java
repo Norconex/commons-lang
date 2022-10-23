@@ -70,7 +70,6 @@ public class CachedOutputStream extends OutputStream
 
     private Path fileCache;
     private OutputStream fileOutputStream;
-    private final boolean doneWriting = false;
     private boolean closed = false;
     private boolean cacheEmpty = true;
     private final Path cacheDirectory;
@@ -84,20 +83,18 @@ public class CachedOutputStream extends OutputStream
      * @param cacheDirectory directory where to store large content
      * @param out OutputStream to cache
      */
-    /*default*/ CachedOutputStream(CachedStreamFactory factory,
+    CachedOutputStream(CachedStreamFactory factory,
             Path cacheDirectory, OutputStream out) {
-        super();
-
         this.factory = factory;
-        this.tracker = factory.new MemoryTracker();
+        tracker = factory.new MemoryTracker();
 
         memOutputStream = new ByteArrayOutputStream();
 
         if (out != null) {
             if (out instanceof BufferedOutputStream) {
-                this.outputStream = out;
+                outputStream = out;
             } else {
-                this.outputStream = new BufferedOutputStream(out);
+                outputStream = new BufferedOutputStream(out);
             }
         }
         if (cacheDirectory == null) {
@@ -111,7 +108,7 @@ public class CachedOutputStream extends OutputStream
 
     @Override
     public void write(int b) throws IOException {
-        if (doneWriting) {
+        if (closed) {
             throw new IllegalStateException(
                     "Cannot write to this closed output stream.");
         }
@@ -134,7 +131,7 @@ public class CachedOutputStream extends OutputStream
 
     @Override
     public void write(byte[] b, int off, int len) throws IOException {
-        if (doneWriting) {
+        if (closed) {
             throw new IllegalStateException(
                     "Cannot write to this closed output stream.");
         }
@@ -160,15 +157,15 @@ public class CachedOutputStream extends OutputStream
         }
         CachedInputStream is;
         if (fileCache != null) {
-            is = factory.newInputStream(fileCache);
+            is = factory.newInputStream(fileCache); //NOSONAR
         } else if (memCache != null) {
-            is = factory.newInputStream(memCache);
+            is = factory.newInputStream(memCache); //NOSONAR
         } else {
             memCache = memOutputStream.toByteArray();
             memOutputStream.close();
             memOutputStream = null;
-            is = factory.newInputStream(memCache);
-        }
+            is = factory.newInputStream(memCache); //NOSONAR
+        } 
         close(false);
         return is;
     }
@@ -179,27 +176,27 @@ public class CachedOutputStream extends OutputStream
             if (memCache != null && clearCache) {
                 memCache = null;
             }
-            if (outputStream != null) {
-                outputStream.flush();
-                try { outputStream.close(); } catch (IOException e) { /*NOOP*/ }
-                outputStream = null;
-            }
-            if (fileOutputStream != null) {
-                fileOutputStream.flush();
-                try {fileOutputStream.close();} catch (IOException e) {/*NOOP*/}
-                fileOutputStream = null;
-            }
+            closeOuputStream(outputStream);
+            outputStream = null;
+            closeOuputStream(fileOutputStream);
+            fileOutputStream = null;
             if (fileCache != null && clearCache) {
                 FileUtil.delete(fileCache.toFile());
                 LOG.debug("Deleted cache file: {}", fileCache);
                 fileCache = null;
             }
-            if (memOutputStream != null && clearCache) {
-                memOutputStream.flush();
-                memOutputStream.close();
+            if (clearCache) {
+                closeOuputStream(memOutputStream);
                 memOutputStream = null;
             }
             cacheEmpty = true;
+        }
+    }
+
+    private void closeOuputStream(OutputStream os) throws IOException {
+        if (os != null) {
+            os.flush();
+            try { os.close(); } catch (IOException e) { /*NOOP*/ }
         }
     }
 
@@ -249,24 +246,18 @@ public class CachedOutputStream extends OutputStream
         return 0;
     }
 
-    @SuppressWarnings("resource")
     private void cacheToFile() throws IOException {
         fileCache = Files.createTempFile(
                 cacheDirectory, "CachedOutputStream-", "-temp");
         fileCache.toFile().deleteOnExit();
         LOG.debug("Reached max cache size. Swapping to file: {}", fileCache);
-        RandomAccessFile f = new RandomAccessFile(fileCache.toFile(), "rw");
+        // RAF is closed with this stream
+        RandomAccessFile f = 
+                new RandomAccessFile(fileCache.toFile(), "rw"); //NOSONAR
         FileChannel channel = f.getChannel();
         fileOutputStream = Channels.newOutputStream(channel);
 
         IOUtils.write(memOutputStream.toByteArray(), fileOutputStream);
         memOutputStream = null;
     }
-
-    @Override
-    protected void finalize() throws Throwable {
-        close();
-        super.finalize();
-    }
-
 }

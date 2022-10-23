@@ -108,6 +108,9 @@
       <action dev="essiembre" type="update">
         ByteArrayOutputStream#toString method was overloaded to support Charset.
       </action>
+      <action dev="essiembre" type="update">
+        IInputStreamFilter is now deprecated in favor of a string Predicate.
+      </action>
       <action dev="essiembre" type="fix">
         Fixed CollectionUtil#testRemoveNulls having opposite effect.
       </action>
@@ -128,10 +131,22 @@
         Fixed WebFile#compareTo throwing a ClassCastException when
         comparing to another WebFile instance.
       </action>
+      <action dev="essiembre" type="fix">
+        Fixed some InputStreamConsumer#consume methods not registering 
+        listeners.
+      </action>
+      <action dev="essiembre" type="fix">
+        Fixed IOUtil#consumeUntil(Reader, IntPredicate) behaving like 
+        "consumeWhile".
+      </action>
       <action dev="essiembre" type="remove">
         Removed a number of deprecated classes and methods:
         *.lang.config.IXMLConfigurable, *.lang.encrypt.EncryptionXMLUtil, 
         *.lang.StringUtil.
+      </action>
+      <action dev="essiembre" type="remove">
+        Removed #finalize method from CachedInputStream and CachedOutputStream
+        (finalize is deprecated in the Java API since Java 9). 
       </action>
     </release>
 

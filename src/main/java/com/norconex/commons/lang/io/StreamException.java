@@ -1,4 +1,4 @@
-/* Copyright 2010-2016 Norconex Inc.
+/* Copyright 2010-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,41 +14,13 @@
  */
 package com.norconex.commons.lang.io;
 
+import lombok.experimental.StandardException;
+
 /**
  * Runtime exception when dealing with I/O streams.
  * @author Pascal Essiembre
  */
+@StandardException
 public class StreamException extends RuntimeException {
-
     private static final long serialVersionUID = 2988235417669737473L;
-
-    /**
-     * Constructor.
-     */
-    public StreamException() {
-        super();
-    }
-    /**
-     * Constructor.
-     * @param message exception message
-     */
-    public StreamException(String message) {
-        super(message);
-    }
-    /**
-     * Constructor.
-     * @param cause exception cause
-     */
-    public StreamException(Throwable cause) {
-        super(cause);
-    }
-    /**
-     * Constructor.
-     * @param message exception message
-     * @param cause exception cause
-     */
-    public StreamException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
 }

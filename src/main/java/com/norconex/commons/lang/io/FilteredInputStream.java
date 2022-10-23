@@ -1,4 +1,4 @@
-/* Copyright 2010-2017 Norconex Inc.
+/* Copyright 2010-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,9 @@
  */
 package com.norconex.commons.lang.io;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -21,6 +24,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.function.Predicate;
 
 /**
  * Decorates an InputStream with a stream filter.  The stream filter
@@ -28,10 +32,10 @@ import java.nio.charset.StandardCharsets;
  * instance when read.
  * @author Pascal Essiembre
  */
-public class FilteredInputStream extends InputStream {
-    
+public class FilteredInputStream extends InputStream { // NOSONAR
+
     private final BufferedReader bufferedInput;
-    private final IInputStreamFilter filter;
+    private final Predicate<String> filter;
     private final Charset encoding;
     private InputStream lineStream;
     private boolean closed = false;
@@ -42,7 +46,7 @@ public class FilteredInputStream extends InputStream {
      * @param filter the filter to apply
      * @throws IOException i/o problem
      */
-    public FilteredInputStream(InputStream is, IInputStreamFilter filter)
+    public FilteredInputStream(InputStream is, Predicate<String> filter)
             throws IOException {
         this(is, filter, StandardCharsets.UTF_8);
     }
@@ -55,15 +59,14 @@ public class FilteredInputStream extends InputStream {
      * @since 1.14.0
      */
     public FilteredInputStream(
-            InputStream is, IInputStreamFilter filter, Charset encoding)
+            InputStream is, Predicate<String> filter, Charset encoding)
             throws IOException {
-        super();
         if (encoding == null) {
             this.encoding = StandardCharsets.UTF_8;
         } else {
             this.encoding = encoding;
         }
-        this.bufferedInput = new BufferedReader(
+        bufferedInput = new BufferedReader(
                 new InputStreamReader(is, this.encoding));
         this.filter = filter;
         nextLine();
@@ -77,9 +80,9 @@ public class FilteredInputStream extends InputStream {
      * @since 1.5.0
      */
     public FilteredInputStream(
-            InputStream is, IInputStreamFilter filter, String encoding)
+            InputStream is, Predicate<String> filter, String encoding)
             throws IOException {
-        this(is, filter, Charset.forName(encoding));
+        this(is, filter, isBlank(encoding) ? UTF_8 : Charset.forName(encoding));
     }
 
     @Override
@@ -107,8 +110,8 @@ public class FilteredInputStream extends InputStream {
         }
         String line;
         while ((line = bufferedInput.readLine()) != null) {
-            if (filter.accept(line)) {
-                line += "\n";
+            if (filter.test(line)) {
+                line += "\n"; //NOSONAR
                 lineStream = new ByteArrayInputStream(line.getBytes(encoding));
                 return true;
             }

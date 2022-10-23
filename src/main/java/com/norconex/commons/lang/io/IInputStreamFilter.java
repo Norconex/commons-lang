@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,22 @@
  */
 package com.norconex.commons.lang.io;
 
+import java.util.function.Predicate;
+
 /**
- * Filters lines of text read from an InputStream decorated with 
+ * Filters lines of text read from an InputStream decorated with
  * {@link FilteredInputStream}.
  * @author Pascal Essiembre
+ * @deprecated use a String {@link Predicate} instead
  */
-public interface IInputStreamFilter {
+@Deprecated(since = "3.0.0")
+@FunctionalInterface
+public interface IInputStreamFilter extends Predicate<String> { //NOSONAR
+
+    @Override
+    default boolean test(String line) {
+        return accept(line);
+    }
 
     /**
      * Whether a line is "accepted" or not.  An accepted line is being

@@ -1,4 +1,4 @@
-/* Copyright 2014-2019 Norconex Inc.
+/* Copyright 2014-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,10 @@
  */
 package com.norconex.commons.lang.io;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,10 +31,10 @@ import org.junit.jupiter.api.Test;
 /**
  * @author Pascal Essiembre
  */
-public class CachedInputStreamTest {
+class CachedInputStreamTest {
 
     @Test
-    public void testByteMasking() throws IOException {
+    void testByteMasking() throws IOException {
         String content = "èéîïâ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
         ByteArrayInputStream is = new ByteArrayInputStream(
@@ -51,7 +55,7 @@ public class CachedInputStreamTest {
             cache.rewind();
 
             // third read and test
-            Assertions.assertEquals(content, readCacheToString(cache));
+            Assertions.assertEquals(content, toString(cache));
         }  finally {
             try { cache.close(); } catch (IOException e) { /*NOOP*/ }
             cache.dispose();
@@ -60,19 +64,20 @@ public class CachedInputStreamTest {
 
 
     @Test
-    public void testContentMatchMemCache() throws IOException {
+    void testContentMatchMemCache() throws IOException {
         String content = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
         ByteArrayInputStream is = new ByteArrayInputStream(content.getBytes());
 
         CachedStreamFactory factory = new CachedStreamFactory(200, 100);
-        CachedInputStream cache = factory.newInputStream(is);
+        CachedInputStream cache = factory.newInputStream(
+                new BufferedInputStream(is));
         try {
             // first time should cache
-            Assertions.assertEquals(content, readCacheToString(cache));
+            Assertions.assertEquals(content, toString(cache));
             cache.rewind();
             // second time should read from cache
-            Assertions.assertEquals(content, readCacheToString(cache));
+            Assertions.assertEquals(content, toString(cache));
         }  finally {
             try { cache.close(); } catch (IOException e) { /*NOOP*/ }
             cache.dispose();
@@ -80,7 +85,7 @@ public class CachedInputStreamTest {
     }
 
     @Test
-    public void testMarking() throws IOException {
+    void testMarking() throws IOException {
         String content = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
         ByteArrayInputStream is = new ByteArrayInputStream(content.getBytes());
@@ -89,8 +94,7 @@ public class CachedInputStreamTest {
         CachedInputStream cache = factory.newInputStream(is);
         try {
             String enc = StandardCharsets.US_ASCII.toString();
-            byte[] bytes = null;
-            bytes = new byte[5];
+            byte[] bytes = new byte[5];
             cache.read(bytes);
             Assertions.assertEquals("01234", new String(bytes, enc));
             cache.mark(999);
@@ -107,7 +111,7 @@ public class CachedInputStreamTest {
     }
 
     @Test
-    public void testContentMatchPoolMaxFileCache() throws IOException {
+    void testContentMatchPoolMaxFileCache() throws IOException {
         CachedStreamFactory factory = new CachedStreamFactory(
                 200 * 1024, 150 * 1024);
         CachedInputStream cache1 = null;
@@ -116,12 +120,16 @@ public class CachedInputStreamTest {
             // first time loads 6 bytes
             cache1 = factory.newInputStream(new NullInputStream(
                     140 * 1024));
-            readCacheToString(cache1);
+            toString(cache1);
+            assertThat(cache1.getMemCacheSize()).isEqualTo(140 * 1024);
+            assertThat(cache1.isInMemory()).isTrue();
 
             // first time loads 6 bytes, totaling 12, forcing file cache
             cache2 = factory.newInputStream(new NullInputStream(
                     140 * 1024));
-            readCacheToString(cache2);
+            toString(cache2);
+            assertThat(cache2.getMemCacheSize()).isZero();
+            assertThat(cache2.isInMemory()).isFalse();
         }  finally {
             try { cache1.close(); } catch (IOException e) { /*NOOP*/ }
             try { cache2.close(); } catch (IOException e) { /*NOOP*/ }
@@ -131,7 +139,7 @@ public class CachedInputStreamTest {
     }
 
     @Test
-    public void testContentMatchInstanceFileCache() throws IOException {
+    void testContentMatchInstanceFileCache() throws IOException {
         String content = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
         ByteArrayInputStream is = new ByteArrayInputStream(content.getBytes());
@@ -139,10 +147,10 @@ public class CachedInputStreamTest {
         CachedInputStream cache = factory.newInputStream(is);
         try {
             // first time should cache
-            Assertions.assertEquals(content, readCacheToString(cache));
+            Assertions.assertEquals(content, toString(cache));
             cache.rewind();
             // second time should read from cache
-            Assertions.assertEquals(content, readCacheToString(cache));
+            Assertions.assertEquals(content, toString(cache));
         }  finally {
             try { cache.close(); } catch (IOException e) { /*NOOP*/ }
             cache.dispose();
@@ -150,7 +158,7 @@ public class CachedInputStreamTest {
     }
 
     @Test
-    public void testLengthNoReadFileCache() throws IOException {
+    void testLengthNoReadFileCache() throws IOException {
         String content = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         CachedInputStream cache = newCachedInputStream(content, 200, 10);
         try {
@@ -158,14 +166,14 @@ public class CachedInputStreamTest {
             Assertions.assertEquals(36, cache.length());
             // can re-read proper?
             cache.rewind();
-            Assertions.assertEquals(content, readCacheToString(cache));
+            Assertions.assertEquals(content, toString(cache));
         }  finally {
             try { cache.close(); } catch (IOException e) { /*NOOP*/ }
             cache.dispose();
         }
     }
     @Test
-    public void testLengthSmallReadFileCache() throws IOException {
+    void testLengthSmallReadFileCache() throws IOException {
         String content = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         CachedInputStream cache = newCachedInputStream(content, 200, 10);
         try {
@@ -186,7 +194,7 @@ public class CachedInputStreamTest {
         }
     }
     @Test
-    public void testLengthBigReadFileCache() throws IOException {
+    void testLengthBigReadFileCache() throws IOException {
         String content = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         CachedInputStream cache = newCachedInputStream(content, 200, 10);
         try {
@@ -209,7 +217,7 @@ public class CachedInputStreamTest {
     }
 
     @Test
-    public void testLengthNoReadMemCache() throws IOException {
+    void testLengthNoReadMemCache() throws IOException {
         String content = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         CachedInputStream cache = newCachedInputStream(content, 200, 100);
         try {
@@ -217,14 +225,14 @@ public class CachedInputStreamTest {
             Assertions.assertEquals(36, cache.length());
             // can re-read proper?
             cache.rewind();
-            Assertions.assertEquals(content, readCacheToString(cache));
+            Assertions.assertEquals(content, toString(cache));
         }  finally {
             try { cache.close(); } catch (IOException e) { /*NOOP*/ }
             cache.dispose();
         }
     }
     @Test
-    public void testLengthSmallReadMemCache() throws IOException {
+    void testLengthSmallReadMemCache() throws IOException {
         String content = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         CachedInputStream cache = newCachedInputStream(content, 200, 100);
         try {
@@ -245,7 +253,7 @@ public class CachedInputStreamTest {
         }
     }
     @Test
-    public void testLengthBigReadMemCache() throws IOException {
+    void testLengthBigReadMemCache() throws IOException {
         String content = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         CachedInputStream cache = newCachedInputStream(content, 200, 100);
         try {
@@ -266,21 +274,53 @@ public class CachedInputStreamTest {
             cache.dispose();
         }
     }
+
+    @Test
+    void testCache() throws IOException {
+        String val = "blah";
+        CachedStreamFactory factory = new CachedStreamFactory(200, 10);
+        CachedInputStream cis1 =
+                CachedInputStream.cache(newInputStream(val), factory);
+        assertThat(cis1.getStreamFactory()).isSameAs(factory);
+
+        CachedInputStream cis2 =
+                CachedInputStream.cache(newInputStream(val));
+        assertThat(toString(cis1)).isEqualTo(val);
+        assertThat(toString(cis2)).isEqualTo(val);
+
+        assertThat(CachedInputStream.cache(null)).isNull();
+        assertThat(CachedInputStream.cache(cis2)).isSameAs(cis2);
+    }
+
+    @Test
+    void testMisc() throws IOException {
+        CachedInputStream cis = CachedInputStream.cache(newInputStream("blah"));
+
+        assertThat(cis.markSupported()).isTrue();
+        cis.dispose();
+        assertThat(cis.isDisposed()).isTrue();
+        assertThat(cis.isCacheEmpty()).isTrue();
+        assertThrows(IOException.class, () -> cis.read());
+
+        assertThat(CachedInputStream.cache(
+                newInputStream("")).isEmpty()).isTrue();
+
+        assertThat(toString(
+                cis.newInputStream(newInputStream("ok")))).isEqualTo("ok");
+    }
+
 
     private CachedInputStream newCachedInputStream(
             String content, int poolMaxMemory, int instanceMaxMemory) {
-        ByteArrayInputStream is = new ByteArrayInputStream(content.getBytes());
         CachedStreamFactory factory = new CachedStreamFactory(200, 10);
-        return factory.newInputStream(is);
+        return factory.newInputStream(newInputStream(content));
     }
 
-    private String readCacheToString(InputStream is) throws IOException {
+    private ByteArrayInputStream newInputStream(String content) {
+        return new ByteArrayInputStream(content.getBytes());
+    }
+
+    private String toString(InputStream is) throws IOException {
         return IOUtils.toString(is, StandardCharsets.UTF_8);
-//        long i;
-//        StringBuilder b = new StringBuilder();
-//        while ((i=is.read()) != -1) {
-//            b.append((char) i);
-//        }
-//        return b.toString();
     }
 }

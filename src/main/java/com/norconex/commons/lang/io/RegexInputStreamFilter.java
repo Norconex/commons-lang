@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,25 +14,25 @@
  */
 package com.norconex.commons.lang.io;
 
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
 /**
- * Filters lines of text read from an InputStream decorated with 
+ * Filters lines of text read from an InputStream decorated with
  * {@link FilteredInputStream}, based on a given regular expression.
  * @author Pascal Essiembre
  * @see Pattern
  */
-public class RegexInputStreamFilter implements IInputStreamFilter {
+public class RegexInputStreamFilter implements Predicate<String> {
 
     private final Pattern pattern;
-    
+
     /**
      * Constructor.
      * @param regex regular expression
      */
     public RegexInputStreamFilter(String regex) {
-        super();
-        this.pattern = Pattern.compile(regex);
+        pattern = Pattern.compile(regex);
     }
 
     /**
@@ -40,13 +40,11 @@ public class RegexInputStreamFilter implements IInputStreamFilter {
      * @param pattern regular expression pattern
      */
     public RegexInputStreamFilter(Pattern pattern) {
-        super();
         this.pattern = pattern;
     }
 
     @Override
-    public boolean accept(String string) {
+    public boolean test(String string) {
         return pattern.matcher(string).matches();
     }
-
 }
