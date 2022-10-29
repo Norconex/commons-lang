@@ -7,10 +7,16 @@
   </properties>
   <body>
 
-    <release version="3.0.0-SNAPSHOT" date="2022-??-??" 
+    <release version="3.0.0-SNAPSHOT" date="202?-??-??" 
         description="Feature release.">
       <action dev="essiembre" type="add">
         New SemanticVersion and SemanticVersionParser classes. 
+      </action>
+      <action dev="essiembre" type="add">
+        New PackageManifest class. 
+      </action>
+      <action dev="essiembre" type="add">
+        New StringUtil #ifBlank and #ifNotBlank methods.  
       </action>
       <action dev="essiembre" type="add">
         New FluentPropertyDescriptor methods: #isReadable, #isWritable, 

@@ -86,15 +86,15 @@ class SemanticVersionTest {
         assertThat(parse("1.0.0-snapshot")
                 .isGreaterOrEquivalentTo(parse("1.0.0"))).isFalse();
 
-        assertThat(SemanticVersion.builder()
-                .major(1).minor(2).patch(-1).build().isVersioned()).isFalse();
+        assertThat(SemanticVersion.of(1, 2, -1).isVersioned()).isFalse();
 
         assertThat(parse("2.0.0")).hasToString("2.0.0");
         assertThat(parse("2.1.0-M2ab+b345")).hasToString("2.1.0-M2ab+b345");
 
-        assertThat(SemanticVersion.builder()
-                .major(1).minor(2).patch(3).preRelease("").build()
-                .isVersioned()).isTrue();
+        assertThat(SemanticVersion.of(1, 2, 3, "").isVersioned()).isTrue();
+
+        assertThat(SemanticVersion.of(1)).hasToString("1.0.0");
+        assertThat(SemanticVersion.of(1, 2)).hasToString("1.2.0");
     }
 
     private static SemanticVersion parse(String v) {

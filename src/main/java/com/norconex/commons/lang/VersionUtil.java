@@ -14,32 +14,24 @@
  */
 package com.norconex.commons.lang;
 
-import java.io.File;
-import java.net.URISyntaxException;
-import java.security.CodeSource;
-import java.util.Objects;
-
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import com.norconex.commons.lang.xml.XML;
-import com.norconex.commons.lang.xml.XMLException;
+import com.norconex.commons.lang.version.SemanticVersion;
 
-import lombok.extern.slf4j.Slf4j;
+import lombok.NonNull;
 
 /**
  * Version-related convenience methods.
  * @author Pascal Essiembre
  * @since 2.0.0
+ * @see PackageManifest
+ * @see SemanticVersion
+ * @deprecated Use {@link PackageManifest} instead.
  */
-@Slf4j
-public final class VersionUtil {
+@Deprecated(forRemoval = true, since = "3.0.0")
+public final class VersionUtil { //NOSONAR
 
-    //MAYBE: Extract from pom if not found in manifest?
-    //MAYBE: Create a Version class that breaks the parts and use it in JarFile
-
-    private VersionUtil() {
-    }
+    private VersionUtil() {}
 
     /**
      * <p>
@@ -92,13 +84,9 @@ public final class VersionUtil {
      * @param fallback text to return when no version could be found
      * @return the version number or the fallback value if not found
      */
-    public static String getVersion(Class<?> cls, String fallback) {
-        Objects.requireNonNull(cls, "'cls' must not be null.");
-        DetailedVersion dv = doGetDetailedVersion(cls);
-        if (dv == null) {
-            return fallback;
-        }
-        return dv.version;
+    public static String getVersion(@NonNull Class<?> cls, String fallback) {
+        String version = PackageManifest.of(cls).getVersion();
+        return StringUtils.isBlank(version) ? fallback : version;
     }
 
     /**
@@ -153,77 +141,9 @@ public final class VersionUtil {
      * @param fallback text to return when no version could be found
      * @return the version number or the fallback value if not found
      */
-    public static String getDetailedVersion(Class<?> cls, String fallback) {
-        Objects.requireNonNull(cls, "'cls' must not be null.");
-        DetailedVersion dv = doGetDetailedVersion(cls);
-        if (dv == null) {
-            return fallback;
-        }
-
-        StringBuilder b = new StringBuilder();
-        if (StringUtils.isNotBlank(dv.title)) {
-            b.append(dv.title).append(' ');
-        }
-        b.append(dv.version);
-        if (StringUtils.isNotBlank(dv.vendor)) {
-            b.append(" (").append(dv.vendor).append(')');
-        }
-        return b.toString();
-    }
-
-    private static DetailedVersion doGetDetailedVersion(Class<?> cls) {
-        return ObjectUtils.firstNonNull(
-                fromJarManifest(cls),
-                fromUnpackedMavenPomXml(cls)
-        );
-    }
-
-    // When unpacked, if Maven structure is respected, the pom.xml location
-    // should be found at: ../../pom.xml
-    // (from current directory: [...]/target/classes/).
-    private static DetailedVersion fromUnpackedMavenPomXml(Class<?> cls) {
-        try {
-            CodeSource source = cls.getProtectionDomain().getCodeSource();
-            if (source != null) {
-                File pom = new File(source.getLocation().toURI().resolve(
-                        "../../pom.xml").getPath());
-                XML xml = XML.of(pom).create();
-                String version = xml.getString("version");
-                if (StringUtils.isBlank(version)) {
-                    return null;
-                }
-                return new DetailedVersion(
-                        version,
-                        xml.getString("name"),
-                        xml.getString("organization/name"));
-            }
-        } catch (XMLException | URISyntaxException | SecurityException e) {
-            LOG.trace("Could not obtain pom.xml from source.", e);
-        }
-        return null;
-    }
-
-    // Maven Jar plugin with addDefaultImplementationEntries = true
-    private static DetailedVersion fromJarManifest(Class<?> cls) {
-        Package p = cls.getPackage();
-        String version = p.getImplementationVersion();
-        if (StringUtils.isBlank(version)) {
-            return null;
-        }
-        return new DetailedVersion(
-                version,
-                p.getImplementationTitle(),
-                p.getImplementationVendor());
-    }
-
-    private static class DetailedVersion {
-        private final String version;
-        private final String title;
-        private final String vendor;
-        public DetailedVersion(String version, String title, String vendor) {
-            this.version = version;
-            this.title = title;
-            this.vendor = vendor;
-        }
+    public static String getDetailedVersion(
+            @NonNull Class<?> cls, String fallback) {
+        String str = PackageManifest.of(cls).toString();
+        return StringUtils.isBlank(str) ? fallback : str;
     }
 }

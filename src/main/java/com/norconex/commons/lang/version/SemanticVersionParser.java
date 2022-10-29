@@ -204,14 +204,12 @@ public class SemanticVersionParser {
             throw new SemanticVersionParserException(
                     "Version pre-release prefix '-' is missing: " + version);
         }
-
-        return SemanticVersion.builder()
-            .major(NumberUtils.toInt(major))
-            .minor(NumberUtils.toInt(minor))
-            .patch(NumberUtils.toInt(patch))
-            .preRelease(preRelease)
-            .metadata(metadata)
-            .build();
+        return SemanticVersion.of(
+                NumberUtils.toInt(major),
+                NumberUtils.toInt(minor),
+                NumberUtils.toInt(patch),
+                preRelease,
+                metadata);
     }
 
     private String handleLongVersionString(String v) {

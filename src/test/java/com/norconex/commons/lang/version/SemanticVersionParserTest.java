@@ -122,12 +122,11 @@ class SemanticVersionParserTest {
     }
     private SemanticVersion semver(
             int major, int minor, int patch, String preRelease, String meta) {
-        return SemanticVersion.builder()
-                .major(major)
-                .minor(minor)
-                .patch(patch)
-                .preRelease(preRelease)
-                .metadata(meta)
-                .build();
+        return SemanticVersion.of(
+                major,
+                minor,
+                patch,
+                preRelease,
+                meta);
     }
 }

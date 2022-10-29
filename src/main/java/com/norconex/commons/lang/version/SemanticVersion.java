@@ -39,6 +39,7 @@ import lombok.Getter;
  * Immutable semantic version representation, conforming to
  * <a href="https://semver.org/">https://semver.org/</a> specifications.
  * </p>
+ * @see SemanticVersionParser
  * @since 3.0.0
  */
 @Getter
@@ -96,20 +97,65 @@ public class SemanticVersion implements Comparable<SemanticVersion> {
     private final int minor;
     private final int patch;
     private final String preRelease;
-    private final String metadata;
+    private final String buildMetadata;
 
     /**
-     * Create a semantic version. For more options, use {@link #builder()}.
+     * Create a new semantic version with the minor and patch numbers set
+     * to zero (0).
+     * @param major major number
+     * @return a semantic version
+     */
+    public static SemanticVersion of(int major) {
+        return of(major, 0, 0, null, null);
+    }
+
+    /**
+     * Create a new semantic version with the patch number set to zero (0).
+     * @param major major number
+     * @param minor minor number
+     * @return a semantic version
+     */
+    public static SemanticVersion of(int major, int minor) {
+        return of(major, minor, 0, null, null);
+    }
+
+    /**
+     * Create a new semantic version.
      * @param major major number
      * @param minor minor number
      * @param patch patch number
+     * @return a semantic version
      */
-    public SemanticVersion(int major, int minor, int patch) {
-        this.major = major;
-        this.minor = minor;
-        this.patch = patch;
-        preRelease = null;
-        metadata = null;
+    public static SemanticVersion of(int major, int minor, int patch) {
+        return of(major, minor, patch, null, null);
+    }
+
+    /**
+     * Create a new semantic version.
+     * @param major major number
+     * @param minor minor number
+     * @param patch patch number
+     * @param preRelease pre-release qualifier (can be <code>null</code>)
+     * @return a semantic version
+     */
+    public static SemanticVersion of(int major, int minor, int patch,
+            String preRelease) {
+        return of(major, minor, patch, preRelease, null);
+    }
+
+    /**
+     * Create a new semantic version.
+     * @param major major number
+     * @param minor minor number
+     * @param patch patch number
+     * @param preRelease pre-release qualifier (can be <code>null</code>)
+     * @param buildMetadata build metadata (can be <code>null</code>)
+     * @return a semantic version
+     */
+    public static SemanticVersion of(int major, int minor, int patch,
+            String preRelease, String buildMetadata) {
+        return new SemanticVersion(
+                major, minor, patch, preRelease, buildMetadata);
     }
 
     /**
@@ -236,8 +282,8 @@ public class SemanticVersion implements Comparable<SemanticVersion> {
         if (StringUtils.isNotBlank(preRelease)) {
             b.append("-").append(preRelease);
         }
-        if (StringUtils.isNotBlank(metadata)) {
-            b.append("+").append(metadata);
+        if (StringUtils.isNotBlank(buildMetadata)) {
+            b.append("+").append(buildMetadata);
         }
         return b.toString();
     }

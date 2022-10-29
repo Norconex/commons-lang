@@ -1,4 +1,4 @@
-/* Copyright 2017-2020 Norconex Inc.
+/* Copyright 2017-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
+import java.util.function.Consumer;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -36,8 +37,29 @@ public final class StringUtil {
 
     public static final int TRUNCATE_HASH_LENGTH = 10;
 
-    private StringUtil() {
-        super();
+    private StringUtil() {}
+
+    /**
+     * Consume the given string only if it is blank.
+     * @param str the string to consume
+     * @param runnable code to be executed
+     * @since 3.0.0
+     */
+    public static void ifBlank(String str, Runnable runnable) {
+        if (runnable != null && StringUtils.isBlank(str)) {
+            runnable.run();
+        }
+    }
+    /**
+     * Consume the given string only if it is not blank.
+     * @param str the string to consume
+     * @param consumer string consumer
+     * @since 3.0.0
+     */
+    public static void ifNotBlank(String str, Consumer<String> consumer) {
+        if (consumer != null && StringUtils.isNotBlank(str)) {
+            consumer.accept(str);
+        }
     }
 
     /**
@@ -200,10 +222,7 @@ public final class StringUtil {
     public static byte[] truncateBytesWithHash(
             byte[] bytes, Charset charset, int maxByteLength, String separator)
                     throws CharacterCodingException {
-        if (bytes == null) {
-            return bytes;
-        }
-        if (bytes.length <= maxByteLength) {
+        if ((bytes == null) || (bytes.length <= maxByteLength)) {
             return bytes;
         }
 
@@ -320,12 +339,11 @@ public final class StringUtil {
         int st = 0;
         int cnt = 0;
         while (st + len <= str.length()) {
-            if (str.startsWith(sub, st)) {
-                cnt++;
-                st += len;
-            } else {
+            if (!str.startsWith(sub, st)) {
                 break;
             }
+            cnt++;
+            st += len;
         }
         return cnt;
     }
