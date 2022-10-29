@@ -10,6 +10,9 @@
     <release version="3.0.0-SNAPSHOT" date="2022-??-??" 
         description="Feature release.">
       <action dev="essiembre" type="add">
+        New SemanticVersion and SemanticVersionParser classes. 
+      </action>
+      <action dev="essiembre" type="add">
         New FluentPropertyDescriptor methods: #isReadable, #isWritable, 
         #readValue, and #writeValue. 
       </action>
