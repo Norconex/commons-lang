@@ -33,6 +33,7 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -45,7 +46,6 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 
 import com.norconex.commons.lang.Sleeper;
-import com.norconex.commons.lang.io.IInputStreamFilter;
 import com.norconex.commons.lang.io.ReverseFileInputStream;
 import com.norconex.commons.lang.text.StringUtil;
 
@@ -671,7 +671,7 @@ public final class FileUtil {
      */
     public static String[] head(File file, String encoding,
             final int numberOfLinesToRead, boolean stripBlankLines,
-            IInputStreamFilter filter)
+            Predicate<String> filter)
             throws IOException {
         assertFile(file);
         assertNumOfLinesToRead(numberOfLinesToRead);
@@ -683,7 +683,7 @@ public final class FileUtil {
             while(line != null && remainingLinesToRead-- > 0){
                  line = reader.readLine();
                  if ((!stripBlankLines || StringUtils.isNotBlank(line))
-                         && (filter == null || filter.accept(line))) {
+                         && (filter == null || filter.test(line))) {
                      lines.add(line);
                  } else {
                      remainingLinesToRead++;
@@ -751,7 +751,7 @@ public final class FileUtil {
      */
     public static String[] tail(File file, String encoding,
             final int numberOfLinesToRead, boolean stripBlankLines,
-            IInputStreamFilter filter)
+            Predicate<String> filter)
             throws IOException {
         assertFile(file);
         assertNumOfLinesToRead(numberOfLinesToRead);
@@ -767,7 +767,7 @@ public final class FileUtil {
                 }
                 String newLine = StringUtils.reverse(line);
                 if ((!stripBlankLines || StringUtils.isNotBlank(line))
-                        && (filter == null || filter.accept(newLine))) {
+                        && (filter == null || filter.test(newLine))) {
                     lines.addFirst(newLine);
                 } else {
                     remainingLinesToRead++;
