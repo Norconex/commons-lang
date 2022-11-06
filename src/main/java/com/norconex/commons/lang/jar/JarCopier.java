@@ -1,4 +1,4 @@
-/* Copyright 2016-2020 Norconex Inc.
+/* Copyright 2016-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,22 +14,38 @@
  */
 package com.norconex.commons.lang.jar;
 
+import static java.util.Optional.ofNullable;
+import static org.apache.commons.lang3.StringUtils.rightPad;
+
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.Scanner;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.function.BiFunction;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.lang3.stream.Streams;
 
+import com.norconex.commons.lang.ExceptionUtil;
 import com.norconex.commons.lang.file.FileUtil;
+import com.norconex.commons.lang.jar.JarCopier.OnJarConflict.SourceAction;
+import com.norconex.commons.lang.jar.JarCopier.OnJarConflict.TargetAction;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.With;
+import lombok.experimental.Accessors;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Performs a version-sensitive copy a Jar file or directory containing Jar
@@ -39,130 +55,130 @@ import com.norconex.commons.lang.file.FileUtil;
  * @author Pascal Essiembre
  * @since 1.10.0
  */
+@Slf4j
 public class JarCopier {
 
-    private static final Logger LOG = LoggerFactory.getLogger(JarCopier.class);
+    //MAYBE option to do a dry-run (show table-like findings + expected result)
 
-    /**
-     * Copy source Jar only if greater or same version as target
-     * Jar after renaming target Jar (.bak-[timestamp]).
-     */
-    public static final int STRATEGY_RENAME_COPY = 1;
-    /**
-     * Copy source Jar only if greater or same version as target
-     * Jar after deleting target Jar.
-     */
-    public static final int STRATEGY_DELETE_COPY = 2;
-    /**
-     * Do not copy source Jar (leave target Jar as is).
-     */
-    public static final int STRATEGY_NO_COPY = 3;
-    /**
-     * Copy source Jar regardless of target Jar
-     * (may overwrite or cause mixed versions).
-     */
-    public static final int STRATEGY_PLAIN_COPY = 4;
-    /**
-     * Interactive, let the user chose (requires execution on command prompt).
-     */
-    public static final int STRATEGY_INTERACTIVE = 5;
+    static boolean commandLine = false;
 
-    private static boolean commandLine = false;
+    private static final String OUTCOME_COPIED = "COPIED";
+    private static final String OUTCOME_SKIPPED = "SKIPPED";
 
-    private final int strategy;
-    private final Scanner scanner;
+    private final BiFunction<JarFile, JarFile, OnJarConflict>
+            onJarConflictSupplier;
+
+    //--- Constructors ---------------------------------------------------------
 
     /**
      * Constructor.
      * Only source Jars with greater or equal versions than
      * their existing target will be copied over, and conflicting Jars will be
      * renamed in the target directory (suffixed with .bak-[timestamp]).
-     * Same as invoking {@link JarCopier#JarCopier(int)} with
-     * {@link #STRATEGY_RENAME_COPY}.
      */
     public JarCopier() {
-        this(STRATEGY_RENAME_COPY);
+        this((BiFunction<JarFile, JarFile, OnJarConflict>) null);
     }
 
-
     /**
-     * Constructor.
-     * @param strategy the strategy to use when encountering
-     *                 duplicates/conflicts
+     * Constructor with custom behavior for jar conflict resolution.
+     * @param onJarConflict conflict resolution options
+     * @since 3.0.0
      */
-    public JarCopier(int strategy) {
-        super();
-        if (strategy < 1 || strategy > 5) {
-            throw new IllegalArgumentException("Invalid strategy: " + strategy);
-        }
-        this.strategy = strategy;
-        if (strategy == STRATEGY_INTERACTIVE) {
-            scanner = new Scanner(System.in);
+    public JarCopier(@NonNull OnJarConflict onJarConflict) {
+        this((s, t) -> onJarConflict);
+    }
+
+    // at this point, treat null as interactive
+    JarCopier(
+            BiFunction<JarFile, JarFile, OnJarConflict> onJarConflictSupplier) {
+        if (onJarConflictSupplier == null) {
+            OnJarConflict ojc = new OnJarConflict();
+            this.onJarConflictSupplier = (s, t) -> ojc;
         } else {
-            scanner = null;
+            this.onJarConflictSupplier = onJarConflictSupplier;
         }
     }
 
-    /**
-     * Gets the strategy used when encountering duplicates or version conflicts.
-     * @return strategy id
-     */
-    public int getStrategy() {
-        return strategy;
-    }
+    //--- Copy Jar Directory ---------------------------------------------------
 
     /**
-     * Copies Jars from a source directory to a target one taking into
-     * consideration Jar versions.
-     * @param fromJarDirectory directory to copy Jars from
-     * @param toJarDirectory directory to copy Jars to
+     * Copies jars from a source directory to a target one taking into
+     * consideration potential jar duplicates.
+     * @param sourceDirectory directory to copy Jars from
+     * @param targetDirectory directory to copy Jars to
      * @throws IOException problem copying files
      */
     public void copyJarDirectory(
-            String fromJarDirectory, String toJarDirectory) throws IOException {
-        copyJarDirectory(new File(fromJarDirectory), new File(toJarDirectory));
+            @NonNull String sourceDirectory,
+            @NonNull String targetDirectory) throws IOException {
+        copyJarDirectory(new File(sourceDirectory), new File(targetDirectory));
     }
     /**
-     * Copies Jars from a source directory to a target one taking into
-     * consideration Jar versions.
-     * @param fromJarDirectory directory to copy Jars from
-     * @param toJarDirectory directory to copy Jars to
+     * Copies jars from a source directory to a target one taking into
+     * consideration potential jar duplicates.
+     * @param sourceDirectory directory to copy Jars from
+     * @param targetDirectory directory to copy Jars to
      * @throws IOException problem copying files
      */
     public void copyJarDirectory(
-            File fromJarDirectory, File toJarDirectory) throws IOException {
+            @NonNull File sourceDirectory,
+            @NonNull File targetDirectory) throws IOException {
 
-        if (!fromJarDirectory.isDirectory()) {
-            error("Invalid source directory: " + fromJarDirectory);
+        info("Copying jar(s)...");
+        info("=================");
+        info("Source directory: %s", sourceDirectory.getAbsolutePath());
+        info("Target directory: %s", targetDirectory.getAbsolutePath());
+        if (!sourceDirectory.isDirectory()) {
+            error("Invalid source directory: " + sourceDirectory);
             return;
         }
-        if (!toJarDirectory.isDirectory()) {
-            error("Invalid target directory: " + toJarDirectory);
-            return;
-        }
-        File[] jarsToCopy = fromJarDirectory.listFiles(JarFile.FILTER);
-        if (ArrayUtils.isEmpty(jarsToCopy)) {
-            error("No jar files were found in " + fromJarDirectory);
+        if (!targetDirectory.isDirectory()) {
+            error("Invalid target directory: " + sourceDirectory);
             return;
         }
 
-        List<JarDuplicates> dups = JarDuplicateFinder.findJarDuplicates(
-                fromJarDirectory, toJarDirectory);
-
-        info(String.format("%d duplicate jar(s) found.", dups.size()));
-        int copyStrategy = strategy;
-        if (strategy == STRATEGY_INTERACTIVE && !dups.isEmpty()) {
-            copyStrategy = getDuplicatesHandlingUserGlobalChoice();
+        // list all jars in source directory and identify/remove jar duplicates
+        // before processing them for copy, one by one.
+        List<File> sourceFiles = new ArrayList<>(
+                Arrays.asList(sourceDirectory.listFiles(JarFile.FILTER)));
+        if (sourceFiles.isEmpty()) {
+            error("    No jar files were found in " + sourceDirectory);
+            return;
         }
+        Map<JarFile, List<DupResult>> resultsBySource = new TreeMap<>();
+        JarDuplicateFinder.findJarDuplicates(sourceFiles).forEach(dups -> {
+            resultsBySource.put(
+                    dups.getGreatest(),
+                    dups.getAllButGreatest().stream()
+                        .map(jf -> new DupResult(jf, "source ignored"))
+                        .collect(Collectors.toList()));
+            sourceFiles.removeAll(dups.getJarFiles().stream()
+                    .map(JarFile::toFile)
+                    .collect(Collectors.toList()));
+        });
+        // add remaining sources with no dups
+        sourceFiles.stream().forEach(f -> resultsBySource.put(
+                new JarFile(f), new ArrayList<>()));
 
-        for (File file : jarsToCopy) {
-            JarDuplicates dup = getDuplicates(dups, file);
-            copyJarFile(file, toJarDirectory, dup, copyStrategy);
-        }
 
-        info("---");
-        info("DONE");
+        info("");
+        info("File(s)...");
+        info("=================");
+
+        // copy each source jars one by one
+        resultsBySource.forEach((jf, results) -> {
+            try {
+                doCopyJarFile(jf, targetDirectory, results);
+            } catch (IOException e) {
+                error("Could not copy file: \"%s\". Error: %s",
+                        jf.getFullName(),
+                        ExceptionUtil.getFormattedMessages(e));
+            }
+        });
     }
+
+    //--- Copy Jar File --------------------------------------------------------
 
     /**
      * Copies a single Jar to a target directory, taking into
@@ -172,264 +188,206 @@ public class JarCopier {
      * @throws IOException problem copying files
      */
     public void copyJarFile(
-            String sourceJarFile, String toDirectory) throws IOException {
+            @NonNull String sourceJarFile, @NonNull String toDirectory)
+                    throws IOException {
         copyJarFile(new File(sourceJarFile), new File(toDirectory));
     }
     /**
      * Copies a single Jar to a target directory, taking into
      * consideration Jar versions.
      * @param sourceJarFile the Jar file to copy
-     * @param toDirectory directory to copy the jar into
+     * @param targetDirectory directory to copy the jar into
      * @throws IOException problem copying files
      */
     public void copyJarFile(
-            File sourceJarFile, File toDirectory) throws IOException {
-
-        if (!sourceJarFile.isFile()
-                || !sourceJarFile.getName().endsWith(".jar")) {
-            error("File does not appear to be a Jar: " + sourceJarFile);
-            return;
-        }
-        if (!toDirectory.isDirectory()) {
-            error("Invalid target directory: " + toDirectory);
-            return;
-        }
-
-
-        List<JarDuplicates> dups = JarDuplicateFinder.findJarDuplicates(
-                sourceJarFile, toDirectory);
-
-        info(String.format("%d duplicate jar(s) found.", dups.size()));
-
-        JarDuplicates dup = getDuplicates(dups, sourceJarFile);
-        copyJarFile(sourceJarFile, toDirectory, dup, strategy);
-
-        info("---");
-        info("DONE");
-    }
-
-    private void copyJarFile(
-            File file, File targetDir, JarDuplicates dups, int copyStragegy)
+            @NonNull File sourceJarFile,  File targetDirectory)
                     throws IOException {
-        info("---");
-        // no duplicate, just copy
-        if (dups == null) {
-            copy(file, targetDir);
+        copyJarFile(new JarFile(sourceJarFile), targetDirectory);
+    }
+    /**
+     * Copies a single Jar to a target directory, taking into
+     * consideration Jar versions.
+     * @param sourceJarFile the Jar file to copy
+     * @param targetDirectory directory to copy the jar into
+     * @throws IOException problem copying files
+     * @since 3.0.0
+     */
+    public void copyJarFile(
+            @NonNull JarFile sourceJarFile, @NonNull File targetDirectory)
+                    throws IOException {
+        if (!targetDirectory.isDirectory()) {
+            error("Invalid target directory: " + targetDirectory);
+            return;
+        }
+        doCopyJarFile(sourceJarFile, targetDirectory, new ArrayList<>());
+
+
+    }
+
+    private void doCopyJarFile(
+            JarFile sourceJar, File targetDir, List<DupResult> dupResults)
+                    throws IOException {
+
+        List<JarFile> targetDups = JarDuplicateFinder.findJarDuplicatesOf(
+                sourceJar.toFile(), Arrays.asList(targetDir));
+
+
+        // if there are no duplicates, just copy
+        if (targetDups.isEmpty()) {
+            copy(sourceJar, targetDir);
+            infoFileOutcome(sourceJar, dupResults, OUTCOME_COPIED);
             return;
         }
 
-        // duplicate! follow strategy
-        JarFile sourceJar = getSourceJarFile(dups, file);
-        JarFile targetJar = getTargetJarFile(dups, file);
+        OnJarConflict onConflict = ofNullable(
+                onJarConflictSupplier.apply(sourceJar, targetDups.get(0)))
+                .orElse(OnJarConflict.DEFAULT);
+        SourceAction sourceAction = onConflict.sourceAction();
 
-        info("Duplicate:");
-        info("  Source: " + sourceJar.getPath().getName());
-        info("  Target: " + targetJar.getPath().getName());
-
-        boolean copyOnlyIfSourceIsGreater = true;
-        int finalStrategy = copyStragegy;
-
-        if (finalStrategy == STRATEGY_INTERACTIVE) {
-            finalStrategy = getDuplicatesHandlingUserFileChoice();
-            copyOnlyIfSourceIsGreater = false;
+        // source action: always copy source upon conflict
+        if (sourceAction == OnJarConflict.SourceAction.COPY) {
+            performTargetAction(
+                    onConflict.targetAction(), targetDups, dupResults);
+            copy(sourceJar, targetDir);
+            infoFileOutcome(sourceJar, dupResults, OUTCOME_COPIED);
+            return;
         }
 
-        if (finalStrategy == STRATEGY_RENAME_COPY) {
-            if (!copyOnlyIfSourceIsGreater
-                    || sourceJar.isVersionGreaterThan(targetJar)) {
-                renameToBackup(targetJar);
-                copy(file, targetDir);
-            } else {
-                info("No copy: target version is greater for \""
-                        + file + "\".");
+        // source action: always keep target upon conflict (no copy)
+        if (sourceAction == OnJarConflict.SourceAction.NOOP) {
+            if (targetDups.size() > 1) {
+                performTargetAction(  // target action only on non-greatest
+                        onConflict.targetAction(),
+                        targetDups.subList(1, targetDups.size()),
+                        dupResults);
             }
+            targetDups.forEach(jf ->
+                    dupResults.add(new DupResult(jf, "target kept")));
+            infoFileOutcome(sourceJar, dupResults, OUTCOME_SKIPPED);
             return;
         }
-        if (finalStrategy == STRATEGY_DELETE_COPY) {
-            if (!copyOnlyIfSourceIsGreater
-                    || sourceJar.isVersionGreaterThan(targetJar)) {
-                delete(targetJar);
-                copy(file, targetDir);
-            } else {
-                info("No copy: target version is greater for \""
-                        + file + "\".");
-            }
+
+        // source action: copy if greatest, or if greatest or equiv.
+        JarFile greatestTarget = targetDups.get(0);
+        if (sourceNeedsCopy(sourceAction, sourceJar, greatestTarget)) {
+            performTargetAction(
+                    onConflict.targetAction(), targetDups, dupResults);
+            copy(sourceJar, targetDir);
+            infoFileOutcome(sourceJar, dupResults, OUTCOME_COPIED);
             return;
         }
-        if (finalStrategy == STRATEGY_NO_COPY) {
-            info("No copy for \"" + file + "\".");
-            return;
+        dupResults.add(new DupResult(greatestTarget, "target kept"));
+        if (targetDups.size() > 1) {
+            performTargetAction(
+                    onConflict.targetAction(),
+                    targetDups.subList(1,  targetDups.size()),
+                    dupResults);
         }
-        if (finalStrategy == STRATEGY_PLAIN_COPY) {
-            copy(file, targetDir);
-            return;
+        infoFileOutcome(sourceJar, dupResults, OUTCOME_SKIPPED);
+    }
+
+    private boolean sourceNeedsCopy(
+            SourceAction sa, JarFile source, JarFile target) {
+        return sa == SourceAction.COPY_IF_GREATER && source.isGreaterThan(target)
+                || sa == SourceAction.COPY_IF_GREATER_OR_EQUIVALENT
+                        && source.isGreaterOrEquivalentTo(target);
+    }
+
+    //--- Target Actions -------------------------------------------------------
+
+    private void performTargetAction(
+            TargetAction action,
+            List<JarFile> jarFiles,
+            List<DupResult> dupResults) {
+        switch (action) {
+        case RENAME:
+            Streams.stream(jarFiles) //entry.getConflictingTargets())
+                .forEach(jf -> {
+                    renameToBackup(jf);
+                    dupResults.add(new DupResult(jf, "target renamed"));
+                });
+            break;
+        case DELETE:
+            Streams.stream(jarFiles) //entry.getConflictingTargets())
+                .forEach(jf -> {
+                    delete(jf);
+                    dupResults.add(new DupResult(jf, "target deleted"));
+                });
+            break;
+        default:
+            break;
         }
     }
 
-    private void copy(File sourceFile, File targetDir) throws IOException {
-        info("Copying \"" + sourceFile + "\".");
-        FileUtils.copyFileToDirectory(sourceFile, targetDir, true);
+    private static void copy(JarFile sourceFile, File targetDir) throws IOException {
+        FileUtils.copyFileToDirectory(sourceFile.toFile(), targetDir, true);
     }
-    private void delete(JarFile file) throws IOException {
-        info("Deleting \"" + file.getPath() + "\".");
-        FileUtil.delete(file.getPath());
+    private static void delete(JarFile file) throws IOException {
+        FileUtil.delete(file.toFile());
     }
-    private void renameToBackup(JarFile file) throws IOException {
-        File renamedFile = new File(file.getPath().getAbsolutePath()
+    private static void renameToBackup(JarFile file) throws IOException {
+        File renamedFile = new File(file.toFile().getAbsolutePath()
                 + ".bak-" + createTimestamp());
-        info("Renaming \"" + file.getPath().getName() + "\" to \""
-                + renamedFile.getName() + "\".");
-        if (!file.getPath().renameTo(renamedFile)) {
-            throw new IOException("Could not rename from \""
-                    + file + "\" to \"" + renamedFile + "\".");
-        }
+        FileUtil.moveFile(file.toFile(), renamedFile);
     }
-    private String createTimestamp() {
+    private static String createTimestamp() {
         return new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
     }
 
-    private JarFile getSourceJarFile(JarDuplicates dups, File sourceFile) {
-        for (JarFile jarFile : dups.getJarFiles()) {
-            if (jarFile.getPath().equals(sourceFile)) {
-                return jarFile;
-            }
-        }
-        return null;
-    }
-    private JarFile getTargetJarFile(JarDuplicates dups, File sourceFile) {
-        for (JarFile jarFile : dups.getJarFiles()) {
-            if (!jarFile.getPath().equals(sourceFile)) {
-                return jarFile;
-            }
-        }
-        return null;
-    }
+    //--- Logging --------------------------------------------------------------
 
-    private int getDuplicatesHandlingUserGlobalChoice() {
-        info("");
-        info("How do you want to handle duplicates? For each Jar...");
-        info("");
-        info("  1) Copy source Jar only if greater or same version as target");
-        info("     Jar after renaming target Jar (preferred option).");
-        info("");
-        info("  2) Copy source Jar only if greater or same version as target");
-        info("     Jar after deleting target Jar.");
-        info("");
-        info("  3) Do not copy source Jar (leave target Jar as is).");
-        info("");
-        info("  4) Copy source Jar regardless of target Jar");
-        info("     (may overwrite or cause mixed versions).");
-        info("");
-        info("  5) Let me choose for each files.");
-
-        while (true) {
-            info("");
-            System.out.print("Your choice (default = 1): ");
-            String choiceStr = scanner.nextLine();
-            if (StringUtils.isEmpty(choiceStr)) {
-                return 1;
-            }
-
-            int choice = NumberUtils.toInt(choiceStr);
-            if (choice < 1 || choice > 5) {
-                info("");
-                info("Wrong selection! Try again.");
-            } else {
-                return choice;
-            }
-        }
-    }
-    private int getDuplicatesHandlingUserFileChoice() {
-        info("");
-        info("Your action:");
-        info("");
-        info("  1) Copy source Jar after renaming target Jar.");
-        info("");
-        info("  2) Copy source Jar after deleting target Jar.");
-        info("");
-        info("  3) Do not copy source Jar (leave target Jar as is).");
-        info("");
-        info("  4) Copy source Jar regardless of target Jar (may overwrite");
-        info("     or cause mixed versions, usually not recommended).");
-        while (true) {
-            info("");
-            System.out.print("Your choice (default = 1): ");
-            String choiceStr = scanner.nextLine();
-            if (StringUtils.isEmpty(choiceStr)) {
-                return 1;
-            }
-
-            int choice = NumberUtils.toInt(choiceStr);
-            if (choice < 1 || choice > 4) {
-                info("");
-                info("Wrong selection! Try again.");
-            } else {
-                return choice;
-            }
-        }
-    }
-
-
-    private JarDuplicates getDuplicates(List<JarDuplicates> dups, File jar) {
-        for (JarDuplicates dup : dups) {
-            if (dup.contains(jar)) {
-                return dup;
-            }
-        }
-        return null;
-    }
-
-    private void error(String error) {
+    private static void error(String error, Object... args) {
         if (commandLine) {
-            System.err.println(error);
-        } else {
-            LOG.error(error);
+            System.err.println(String.format(error, args)); //NOSONAR
+        } else if (LOG.isErrorEnabled()) {
+            LOG.error(String.format(error, args));
         }
     }
-    private void info(String info) {
+    private static void info(String info, Object... args) {
         if (commandLine) {
-            System.out.println(info);
-        } else {
-            LOG.info(info);
+            System.out.println(String.format(info, args)); //NOSONAR
+        } else if (LOG.isInfoEnabled()){
+            LOG.info(String.format(info, args));
         }
+    }
+    private static void infoFileOutcome(
+            JarFile srcFile, List<DupResult> dupResults, String outcome) {
+        info(rightPad(srcFile.getFullName() + ' ',
+                55 - outcome.length(), '.') + ' ' + outcome);
+        dupResults.forEach(res -> info(compareSymbol(srcFile, res.dup)
+                + res.dup.getFullName() + " " + res.action));
+    }
+    private static String compareSymbol(JarFile first, JarFile second) {
+        int result = first.compareTo(second);
+        if (result < 0) {
+            return "  < ";
+        }
+        if (result > 0) {
+            return "  > ";
+        }
+        return "  = ";
     }
 
     public static void main(String[] args) throws IOException {
-        commandLine = true;
-        if (args.length < 1) {
-            PrintStream err = System.err;
-            err.println("Missing argument(s).");
-            err.println("");
-            err.println("Usage:");
-            err.println("");
-            err.println("  <app> sourcePath [targetPath [onConflict]]");
-            err.println("");
-            err.println("Where:");
-            err.println("");
-            err.println("  sourcePath  Path to either a Jar file or a "
-                    + "directory containing Jars.");
-            err.println("");
-            err.println("  targetPath  Optional. Directory where Jars will "
-                    + "be copied.");
-            err.println("              If not provided, you will be prompted "
-                    + "for it.");
-            err.println("");
-            err.println("  onConflict  Optional. The copy "
-                    + "strategy to use when encountring duplicates.");
-            err.println("              If not provided, you will be prompted "
-                    + "for it.");
-            err.println("              Must be a number from 1 to 5:");
-            err.println("");
-            err.println("              1 -> rename target");
-            err.println("              2 -> delete target");
-            err.println("              3 -> do not copy source");
-            err.println("              4 -> overwrite target");
-            err.println("              5 -> interactive");
-
+        try {
+            doMain(args);
+        } catch (Exception e) {
+            if (e.getMessage() != null) {
+                System.err.println(e.getMessage()); //NOSONAR
+            }
             System.exit(-1);
         }
+    }
 
-        //--- Resolve source ---
+    static void doMain(String... args) throws IOException {
+        commandLine = true;
+        JarCopierCmdPrompts cmdPrompts = new JarCopierCmdPrompts();
+        if (args.length < 1) {
+            cmdPrompts.printUsage();
+            throw new IllegalArgumentException();
+        }
+
+        //--- Resolve source path ---
         File source = new File(args[0]);
         boolean isSourceDirectory = source.isDirectory();
         if (!isSourceDirectory) {
@@ -437,36 +395,43 @@ public class JarCopier {
         }
 
         //--- Resolve target ---
-        File target;
-        if (args.length >= 2) {
-            target = new File(args[1]);
-        } else {
-            target = getDirectoryFromCommandLinePrompt();
-        }
+        File target = args.length >= 2
+                ? new File(args[1])
+                : cmdPrompts.promptForTargetDirectory();
         if (!target.exists()) {
-            System.out.println(
+            System.out.println( //NOSONAR
                     "The target directory does not exist and will be created.");
             target.mkdirs();
         }
 
-        //--- Conflict strategy ---
-        int strategy = -1;
+        //--- Source action ---
+        SourceAction sourceAction = null;
         if (args.length >= 3) {
-            try {
-                strategy = Integer.parseInt(args[2]);
-            } catch (NumberFormatException  e) {
-                System.out.println("Invalid 'onConflict' argument. Must be "
-                        + "a number from 1 to 5. Was: " + args[2]);
-                System.exit(-1);
+            int choice = parseIntChoiceArg("onCondition", args[2], 1, 5);
+            if (choice != 5) {
+                sourceAction = SourceAction.of(choice);
             }
+        } else {
+            sourceAction = cmdPrompts.promptForGlobalSourceAction();
         }
 
-
-        //--- Invoke the proper copy method ---
-        if (strategy == -1) {
-            strategy = STRATEGY_INTERACTIVE;
+        JarCopier jarCopier = null;
+        if (sourceAction == null) {
+            jarCopier = new JarCopier(cmdPrompts);
+        } else {
+            //--- Target action ---
+            TargetAction targetAction;
+            if (args.length >= 4) {
+                int choice = parseIntChoiceArg("onOverwrite", args[3], 1, 3);
+                targetAction = TargetAction.of(choice);
+            } else {
+                targetAction = cmdPrompts.promptForGlobalTargetAction();
+            }
+            jarCopier = new JarCopier(
+                    new OnJarConflict(sourceAction, targetAction));
         }
-        JarCopier jarCopier = new JarCopier(strategy);
+
+        //--- Perform the copying ---
         if (isSourceDirectory) {
             jarCopier.copyJarDirectory(source, target);
         } else {
@@ -474,25 +439,177 @@ public class JarCopier {
         }
     }
 
-    private static File getDirectoryFromCommandLinePrompt() {
-        System.out.println("Please enter a target directory:");
-        @SuppressWarnings("resource")
-        Scanner scanner = new Scanner(System.in);
-        File file = new File(scanner.nextLine());
-        if (file.exists() && !file.isDirectory()) {
-            System.err.println(
-                    "Path already exists and is not a directory: " + file);
-            System.exit(-1);
+    private static int parseIntChoiceArg(
+            String argName, String argValue, int fromIncl, int toIncl) {
+        int choice = NumberUtils.toInt(argValue, -1);
+        if (choice < fromIncl || choice > toIncl) {
+            throw new IllegalArgumentException(String.format(
+                    "Invalid \"%s\" argument. Must be a number between"
+                    + "%s and %s, inclusively. Was: %s.",
+                    argName, fromIncl, toIncl, argValue));
         }
-        return file;
+        return choice;
     }
 
     private static void validateCommandLineJarPath(File path) {
         if (path.isFile() && path.getName().endsWith(".jar")) {
             return;
         }
-        System.err.println("Path not a valid/existing Jar or directory: "
-                + path.getAbsolutePath());
-        System.exit(-1);
+        throw new IllegalArgumentException(String.format(
+                "Path not a valid/existing Jar or directory: %s"
+                + "%s and %s, inclusively. Was: %s.",
+                path.getAbsolutePath()));
+    }
+
+    //--- Inner-Classes --------------------------------------------------------
+
+    /**
+     * Encapsulate target jar conflict resolution options.
+     * @author Pascal Essiembre
+     * @since 3.0.0
+     */
+    @Data
+    @Getter
+    @With
+    @Accessors(fluent = true)
+    public static final class OnJarConflict {
+
+        public static final OnJarConflict DEFAULT = new OnJarConflict();
+
+        enum SourceAction {
+            COPY_IF_GREATER_OR_EQUIVALENT,
+            COPY_IF_GREATER,
+            COPY,
+            NOOP
+            ;
+            final int cmdLineOption;
+            SourceAction() {
+                cmdLineOption = ordinal() + 1;
+            }
+            static SourceAction of(int option) {
+                return Stream.of(values())
+                    .filter(sa -> sa.cmdLineOption == option)
+                    .findFirst()
+                    .orElse(null);
+            }
+        }
+        enum TargetAction {
+            RENAME,
+            DELETE,
+            NOOP
+            ;
+            final int cmdLineOption;
+            TargetAction() {
+                cmdLineOption = ordinal() + 1;
+            }
+            static TargetAction of(int option) {
+                return Stream.of(values())
+                    .filter(sa -> sa.cmdLineOption == option)
+                    .findFirst()
+                    .orElse(null);
+            }
+        }
+
+        private final SourceAction sourceAction;
+        private final TargetAction targetAction;
+
+        public OnJarConflict() {
+            this(null, null);
+        }
+        public OnJarConflict(
+                SourceAction sourceAction, TargetAction targetAction) {
+            this.sourceAction = ofNullable(sourceAction)
+                    .orElse(SourceAction.COPY_IF_GREATER_OR_EQUIVALENT);
+            this.targetAction = ofNullable(targetAction)
+                    .orElse(TargetAction.RENAME);
+        }
+    }
+
+    @AllArgsConstructor
+    private static class DupResult {
+        private JarFile dup;
+        private String action;
+    }
+
+    //--- Deprecated -----------------------------------------------------------
+
+    /**
+     * Copy source Jar only if greater or same version as target
+     * Jar after renaming target Jar (.bak-[timestamp]).
+     * @deprecated Use {@link JarCopier#JarCopier(OnJarConflict)} instead with
+     *     {@link SourceAction#COPY_IF_GREATER_OR_EQUIVALENT} and
+     *     {@link TargetAction#RENAME}
+     */
+    @Deprecated(since = "3.0.0")
+    public static final int STRATEGY_RENAME_COPY = 1; //NOSONAR
+    /**
+     * Copy source Jar only if greater or same version as target
+     * Jar after deleting target Jar.
+     * @deprecated Use {@link JarCopier#JarCopier(OnJarConflict)} instead with
+     *     {@link SourceAction#COPY_IF_GREATER_OR_EQUIVALENT} and
+     *     {@link TargetAction#DELETE}.
+     */
+    @Deprecated(since = "3.0.0")
+    public static final int STRATEGY_DELETE_COPY = 2; //NOSONAR
+    /**
+     * Do not copy source Jar (leave target Jar as is).
+     * @deprecated Use {@link JarCopier#JarCopier(OnJarConflict)} instead with
+     *     {@link SourceAction#NOOP}.
+     */
+    @Deprecated(since = "3.0.0")
+    public static final int STRATEGY_NO_COPY = 3; //NOSONAR
+    /**
+     * Copy source Jar regardless of target Jar
+     * (may overwrite or cause mixed versions).
+     * @deprecated Use {@link JarCopier#JarCopier(OnJarConflict)} instead with
+     *     {@link SourceAction#COPY}.
+     */
+    @Deprecated(since = "3.0.0")
+    public static final int STRATEGY_PLAIN_COPY = 4; //NOSONAR
+    /**
+     * Interactive, let the user chose (requires execution on command prompt).
+     * @deprecated
+     */
+    @Deprecated(since = "3.0.0")
+    public static final int STRATEGY_INTERACTIVE = 5; //NOSONAR
+
+    /**
+     * Constructor.
+     * @param strategy the strategy to use when encountering
+     *                 duplicates/conflicts
+     * @deprecated
+     */
+    @Deprecated(since = "3.0.0")
+    public JarCopier(int strategy) { //NOSONAR
+        this(strategy == STRATEGY_INTERACTIVE
+                ? new JarCopierCmdPrompts()
+                : (s, t) -> toOnJarConflict(strategy));
+    }
+
+    static OnJarConflict toOnJarConflict(int strategy) {
+        switch (strategy) {
+        case STRATEGY_RENAME_COPY: //NOSONAR
+            return new OnJarConflict();
+        case STRATEGY_DELETE_COPY: //NOSONAR
+            return new OnJarConflict().withTargetAction(TargetAction.DELETE);
+        case STRATEGY_NO_COPY: //NOSONAR
+            return new OnJarConflict(SourceAction.NOOP, TargetAction.NOOP);
+        case STRATEGY_PLAIN_COPY: //NOSONAR
+            return new OnJarConflict(SourceAction.COPY, TargetAction.NOOP);
+        case STRATEGY_INTERACTIVE: //NOSONAR
+            return null;
+        default:
+            throw new IllegalArgumentException("Invalid strategy: " + strategy);
+        }
+    }
+
+    /**
+     * Gets the strategy used when encountering duplicates or version conflicts.
+     * @return <code>-1</code>.
+     * @deprecated
+     */
+    @Deprecated(since = "3.0.0")
+    public int getStrategy() { //NOSONAR
+        return -1;
     }
 }

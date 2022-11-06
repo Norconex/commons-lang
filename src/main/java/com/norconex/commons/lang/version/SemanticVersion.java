@@ -172,6 +172,11 @@ public class SemanticVersion implements Comparable<SemanticVersion> {
 
     @Override
     public int compareTo(SemanticVersion o) {
+        if (equals(o)) {
+            return 0;
+        }
+
+        // Compare major.minor.patch
         int result = new CompareToBuilder()
                 .append(major, o.major)
                 .append(minor, o.minor)
@@ -181,13 +186,13 @@ public class SemanticVersion implements Comparable<SemanticVersion> {
             return result;
         }
 
+        // Compare pre-release
         String thisPrTxt = lowerCase(trimToNull(preRelease));
         String thatPrTxt = lowerCase(trimToNull(o.preRelease));
 
         if (Objects.equals(thisPrTxt, thatPrTxt)) {
             return 0;
         }
-
         result = nullComparator.compare(thisPrTxt, thatPrTxt);
         if (result != 0) {
             return result;

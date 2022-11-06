@@ -1,0 +1,86 @@
+/* Copyright 2022 Norconex Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+<usage>
+Missing argument(s).
+
+Usage:
+
+  <app> sourcePath [targetPath [onCondition [onOverwrite]]]
+
+Where:
+
+  sourcePath   Required. Path to either a Jar file or a directory 
+               containing Jars.
+
+  targetPath   Optional. Directory where Jars will be copied.
+               If not provided, you will be prompted for it.
+
+  onCondition  Optional. The condition under which source jars file should
+               be copied over conflicting ones in the target directory. If not 
+               provided, you will be prompted for it.
+
+               1 -> if greater or equivalent
+               2 -> if greater
+               3 -> always
+               4 -> never
+               5 -> interactive (decide for each file)
+
+  onOverwrite  Optional. What to do with conflicting jar files in target
+               directory before overwriting them. If not provided,
+               default is to rename them first (option 1). Not applicable
+               in interactive mode (you will be prompted for each file).
+
+               1 -> rename (backup)
+               2 -> delete
+               3 -> nothing (just overwrite)
+</usage>
+
+<globalGourceAction>
+
+How do you want to handle jar conflicts? For each jar:
+
+  1) Copy source jar only if greater or equivalent to target jar.
+
+  2) Copy source Jar only if greater than target jar.
+
+  3) Always copy source jar, even if target is greater.
+  
+  4) Do not copy source jar (keep target jar).
+
+  5) Let me choose for each files.
+</globalGourceAction>
+
+<globalTargetAction>
+
+What do you want to do with conflicting target jars before they are overwritten?
+
+  1) Rename them first, appending ".bak-[timestamp]" to the original name.
+
+  2) Delete them first.
+  
+  3) Do nothing (let them be overwritten).
+</globalTargetAction>
+
+<singleFileActions>
+Your action:
+
+  1) Copy source jar after renaming target jar.
+
+  2) Copy source jar after deleting target Jar.
+  
+  3) Copy source jar (may not eliminate the duplicate).
+  
+  4) Do not copy source jar (leave target jar as is).
+</singleFileActions>

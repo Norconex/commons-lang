@@ -16,6 +16,9 @@
         New PackageManifest class. 
       </action>
       <action dev="essiembre" type="add">
+        New JarDuplicates#get(File) method and collection based constructor. 
+      </action>
+      <action dev="essiembre" type="add">
         New StringUtil #ifBlank and #ifNotBlank methods.  
       </action>
       <action dev="essiembre" type="add">
@@ -45,6 +48,15 @@
       <action dev="essiembre" type="add">
         New FileUtil#toPath methods providing a null-safe variant to 
         File#toPath.
+      </action>
+      <action dev="essiembre" type="add">
+        New FileUtil#toPaths methods.
+      </action>
+      <action dev="essiembre" type="add">
+        New JarDuplicates#getAllButGreatest method. 
+      </action>
+      <action dev="essiembre" type="add">
+        New JarFile#toJarFiles methods.
       </action>
       <action dev="essiembre" type="update">
         Now require Java 11+. 
@@ -119,6 +131,23 @@
       </action>
       <action dev="essiembre" type="update">
         IInputStreamFilter is now deprecated in favor of a string Predicate.
+      </action>
+      <action dev="essiembre" type="update">
+        JarDuplicates #hasVersionConflict and #getLatestVersion methods have
+        been deprecated in favor of #areEquivalent and #getGreatest 
+        respectively.
+      </action>
+      <action dev="essiembre" type="update">
+        JarFile #getPath has been deprecated in favor of #toFile. 
+      </action>
+      <action dev="essiembre" type="update">
+        JarDuplicateFinder#findJarDuplicates method was overloaded to also 
+        support collection of files.
+      </action>
+      <action dev="essiembre" type="update">
+        JarCopier now distinguish between source action and target action
+        when resolving jar conflicts. Deprecated integer-based on-conflict
+        strategies in favor of OnJarConflict.
       </action>
       <action dev="essiembre" type="fix">
         Fixed CollectionUtil#testRemoveNulls having opposite effect.

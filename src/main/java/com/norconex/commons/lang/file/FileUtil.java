@@ -27,10 +27,16 @@ import java.nio.file.Files;
 import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.CharUtils;
@@ -52,6 +58,11 @@ import lombok.NonNull;
 public final class FileUtil {
 
     private static final int MAX_FILE_OPERATION_ATTEMPTS = 10;
+
+    /** @since 3.0.0 */
+    public static final Path[] EMPTY_PATH_ARRAY = {};
+    /** @since 3.0.0 */
+    public static final File[] EMPTY_FILE_ARRAY = {};
 
     private FileUtil() {}
 
@@ -1111,12 +1122,39 @@ public final class FileUtil {
     /**
      * Null-safe alternative to {@link File#toPath()}. A <code>null</code> file
      * returns <code>null</code>.
-     * @param file the file to test
+     * @param file the file to convert
      * @return a {@link Path} or <code>null</code> if file is <code>null</code>
      * @since 3.0.0
      */
     public static Path toPath(File file) {
         return file != null ? file.toPath() : null;
+    }
+
+    /**
+     * Converts all supplied files to {@link Path} (<code>null</code> entries
+     * remain <code>null</code>).
+     * @param files the files to convert
+     * @return an array of {@link Path}, never <code>null</code>
+     * @since 3.0.0
+     */
+    public static Path[] toPaths(File[] files) {
+        if (ArrayUtils.isEmpty(files)) {
+            return EMPTY_PATH_ARRAY;
+        }
+        return toPaths(Arrays.asList(files)).toArray(EMPTY_PATH_ARRAY);
+    }
+    /**
+     * Converts all supplied files to {@link Path} (<code>null</code> entries
+     * remain <code>null</code>).
+     * @param files the files to convert
+     * @return a list of {@link Path}, never <code>null</code>
+     * @since 3.0.0
+     */
+    public static List<Path> toPaths(Collection<File> files) {
+        return CollectionUtils.emptyIfNull(files).stream()
+            .filter(Objects::nonNull)
+            .map(File::toPath)
+            .collect(Collectors.toList());
     }
 
     /**
