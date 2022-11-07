@@ -1,4 +1,4 @@
-/* Copyright 2020 Norconex Inc.
+/* Copyright 2020-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,14 +27,14 @@ import java.util.Map;
  * @see Collections#synchronizedMap(Map)
  * @since 2.0.0
  */
-public final class FifoMap<K,V> extends LinkedHashMap<K,V> {
+public final class FifoMap<K,V> //NOSONAR we don't consider maxSize for equality
+        extends LinkedHashMap<K,V> {
 
     private static final long serialVersionUID = 1L;
 
     private final int maxSize;
 
     public FifoMap(int maxSize) {
-        super();
         this.maxSize = maxSize;
         if (this.maxSize < 1) {
             throw new IllegalArgumentException(

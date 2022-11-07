@@ -16,7 +16,6 @@ package com.norconex.commons.lang.text;
 
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
@@ -24,14 +23,12 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 
-import com.norconex.commons.lang.bean.BeanUtil;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
+
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 /**
  * <p>
@@ -57,12 +54,33 @@ import com.norconex.commons.lang.xml.XML;
  * This class is not thread-safe.
  * </p>
  *
+ * <h3>Empty and <code>null</code> values</h3>
+ * <p>
+ * <b>Since 3.0.0</b>, <code>null</code> or empty strings are not matched by
+ * default. To have those considered as positive matches, set
+ * <code>matchEmpty</code> to <code>true</code>. To have blank values
+ * (containing white spaces only) considered as positive matches,
+ * also set <code>trim</code> to <code>true</code>.
+ * When matching empties, doing replacement on a <code>null</code> value
+ * behaves as if the value is an empty string.
+ * </p>
+ *
+ * <h3><code>null</code> pattern</h3>
+ * <p>
+ * Unless otherwise stated by consuming classes,
+ * a <code>null</code> expressions will match everything, but replace nothing.
+ * when invoking {@link #matches(CharSequence)} or
+ * {@link #replace(String, String)}.
+ * </p>
+ *
  * {@nx.xml.usage #attributes
  *     method="[basic|csv|wildcard|regex]"
  *     ignoreCase="[false|true]"
  *     ignoreDiacritic="[false|true]"
  *     replaceAll="[false|true]"
  *     partial="[false|true]"
+ *     trim="[false|true]"
+ *     matchEmpty="[false|true]"
  * }
  *
  * <p>
@@ -70,13 +88,6 @@ import com.norconex.commons.lang.xml.XML;
  * The actual expression is expected to be the tag content.
  * </p>
  *
- * <h3>Null handling</h3>
- * <p>
- * Unless otherwise stated by consuming classes,
- * a <code>null</code> expressions will match everything, but replace nothing.
- * when invoking {@link #matches(CharSequence)} or
- * {@link #replace(String, String)}.
- * </p>
  * <p>
  * When simply matching (no replacements) the attributes are the same,
  * minus the "replaceAll" (which is simply ignored):
@@ -86,6 +97,8 @@ import com.norconex.commons.lang.xml.XML;
  *     ignoreCase="[false|true]"
  *     ignoreDiacritic="[false|true]"
  *     partial="[false|true]"
+ *     trim="[false|true]"
+ *     matchEmpty="[false|true]"
  * }
  *
  * {@nx.xml.example
@@ -101,6 +114,8 @@ import com.norconex.commons.lang.xml.XML;
  * @author Pascal Essiembre
  * @since 2.0.0
  */
+@ToString
+@EqualsAndHashCode
 public class TextMatcher implements
         Predicate<CharSequence>, BinaryOperator<String>, IXMLConfigurable {
 
@@ -180,12 +195,13 @@ public class TextMatcher implements
     private boolean ignoreDiacritic;
     private boolean replaceAll;
     private boolean partial;
+    private boolean trim;
+    private boolean matchEmpty;
 
     /**
      * Creates a basic matcher.
      */
     public TextMatcher() {
-        super();
     }
     /**
      * Creates a basic matcher with the given pattern.
@@ -193,7 +209,6 @@ public class TextMatcher implements
      * @param pattern expression used for matching
      */
     public TextMatcher(String pattern) {
-        super();
         this.pattern = pattern;
     }
     /**
@@ -201,7 +216,6 @@ public class TextMatcher implements
      * @param method matching method
      */
     public TextMatcher(Method method) {
-        super();
         this.method = method;
     }
     /**
@@ -210,7 +224,6 @@ public class TextMatcher implements
      * @param method matching method
      */
     public TextMatcher(String pattern, Method method) {
-        super();
         this.pattern = pattern;
         this.method = method;
     }
@@ -220,14 +233,8 @@ public class TextMatcher implements
      * @param textMatcher instance to copy
      */
     public TextMatcher(TextMatcher textMatcher) {
-        super();
         if (textMatcher != null) {
-            this.method = textMatcher.method;
-            this.pattern = textMatcher.pattern;
-            this.ignoreCase = textMatcher.ignoreCase;
-            this.ignoreDiacritic = textMatcher.ignoreDiacritic;
-            this.replaceAll = textMatcher.replaceAll;
-            this.partial = textMatcher.partial;
+            copyFrom(textMatcher);
         }
     }
 
@@ -309,11 +316,116 @@ public class TextMatcher implements
         return copy().setReplaceAll(replaceAll);
     }
 
+    /**
+     * Gets whether <code>null</code> or empty strings should be considered a
+     * positive match.
+     * @return <code>true</code> if <code>null</code> and empty strings
+     *     are considered a match
+     * @since 3.0.0
+     */
+    public boolean isMatchEmpty() {
+        return matchEmpty;
+    }
+    /**
+     * Sets whether <code>null</code> or empty strings should be considered a
+     * positive match. To also consider blank values as positive matches,
+     * use {@link #setTrim(boolean)}.
+     * @param matchEmpty <code>true</code> to have <code>null</code> and empty
+     *     strings are considered a match.
+     * @return this instance
+     * @since 3.0.0
+     */
+    public TextMatcher setMatchEmpty(boolean matchEmpty) {
+        this.matchEmpty = matchEmpty;
+        return this;
+    }
+    /**
+     * Sets that <code>null</code> or empty strings should be considered a
+     * positive match. Same as invoking {@link #setMatchEmpty(boolean)} with
+     * <code>true</code>.
+     * @return this instance
+     * @since 3.0.0
+     */
+    public TextMatcher matchEmpty() {
+        return setMatchEmpty(true);
+    }
+    /**
+     * Sets whether <code>null</code> or empty strings should be considered a
+     * positive match. To also consider blank values as positive matches,
+     * use {@link #setTrim(boolean)}.
+     * @param matchEmpty <code>true</code> to have <code>null</code> and empty
+     *     strings are considered a match.
+     * @return a copy of this instance, leaving this instance unchanged
+     * @since 3.0.0
+     */
+    public TextMatcher withMatchEmpty(boolean matchEmpty) {
+        return copy().setMatchEmpty(matchEmpty);
+    }
+
+    /**
+     * Gets whether values should be trimmed before being evaluated
+     * (as per {@link String#trim()}).
+     * @return <code>true</code> if values are trimmed before evaluation
+     * @since 3.0.0
+     */
+    public boolean isTrim() {
+        return trim;
+    }
+    /**
+     * Sets whether values should be trimmed before being evaluated
+     * (as per {@link String#trim()}).
+     * @param trim <code>true</code> to trim values before evaluation
+     * @return this instance
+     * @since 3.0.0
+     */
+    public TextMatcher setTrim(boolean trim) {
+        this.trim = trim;
+        return this;
+    }
+    /**
+     * Sets that values should be trimmed before being evaluated
+     * (as per {@link String#trim()}). Same as invoking
+     * {@link #setTrim(boolean)} with <code>true</code>.
+     * @return this instance
+     * @since 3.0.0
+     */
+    public TextMatcher trim() {
+        return setTrim(true);
+    }
+    /**
+     * Sets whether values should be trimmed before being evaluated
+     * (as per {@link String#trim()}).
+     * @param trim <code>true</code> to trim values before evaluation
+     * @return a copy of this instance, leaving this instance unchanged
+     * @since 3.0.0
+     */
+    public TextMatcher withTrim(boolean trim) {
+        return copy().setTrim(trim);
+    }
+
     public void copyTo(TextMatcher tm) {
-        BeanUtil.copyProperties(tm, this);
+        if (tm != null) {
+            tm.method = method;
+            tm.pattern = pattern;
+            tm.ignoreCase = ignoreCase;
+            tm.ignoreDiacritic = ignoreDiacritic;
+            tm.replaceAll = replaceAll;
+            tm.partial = partial;
+            tm.trim = trim;
+            tm.matchEmpty = matchEmpty;
+        }
     }
     public void copyFrom(TextMatcher tm) {
-        BeanUtil.copyProperties(this, tm);
+        if (tm != null) {
+            method = tm.method;
+            pattern = tm.pattern;
+            ignoreCase = tm.ignoreCase;
+            ignoreDiacritic = tm.ignoreDiacritic;
+            replaceAll = tm.replaceAll;
+            partial = tm.partial;
+            trim = tm.trim;
+            matchEmpty = tm.matchEmpty;
+        }
     }
 
     private TextMatcher copy() {
@@ -389,7 +501,7 @@ public class TextMatcher implements
 
     /**
      * Replaces this class matching text with replacement value.
-     * For compatibility with {@link BiFunction}.  Same as invoking
+     * For compatibility with {@link BinaryOperator}.  Same as invoking
      * {@link #replace(String, String)}.
      * @param text text to match
      * @param replacement text replacement
@@ -410,6 +522,7 @@ public class TextMatcher implements
             return text;
         }
         String quotedRepl = safeMethod().ms.toQuotedReplacement(replacement);
+
         Matcher m = toRegexMatcher(text);
         if (!partial && m.matches()) {
             return m.replaceFirst(quotedRepl);
@@ -429,11 +542,13 @@ public class TextMatcher implements
      * @return matcher
      */
     public Matcher toRegexMatcher(CharSequence text) {
-            return new Regex(safeMethod().ms.toMatchExpression(this))
-                    .dotAll()
-                    .setIgnoreCase(ignoreCase)
-                    .setIgnoreDiacritic(ignoreDiacritic)
-                    .matcher(text);
+        return new Regex(safeMethod().ms.toMatchExpression(this))
+                .dotAll()
+                .setIgnoreCase(ignoreCase)
+                .setIgnoreDiacritic(ignoreDiacritic)
+                .setTrim(trim)
+                .setMatchEmpty(matchEmpty)
+                .matcher(text);
     }
     /**
      * Compiles this text matcher to create a regular expression
@@ -445,9 +560,10 @@ public class TextMatcher implements
                 .dotAll()
                 .setIgnoreCase(ignoreCase)
                 .setIgnoreDiacritic(ignoreDiacritic)
+                .setTrim(trim)
+                .setMatchEmpty(matchEmpty)
                 .compile();
     }
-
 
     private Method safeMethod() {
         return ObjectUtils.defaultIfNull(method, Method.BASIC);
@@ -463,6 +579,8 @@ public class TextMatcher implements
         setIgnoreDiacritic(xml.getBoolean("@ignoreDiacritic", ignoreDiacritic));
         setReplaceAll(xml.getBoolean("@replaceAll", replaceAll));
         setPartial(xml.getBoolean("@partial", partial));
+        setTrim(xml.getBoolean("@trim", trim));
+        setMatchEmpty(xml.getBoolean("@matchEmpty", matchEmpty));
         setPattern(xml.getString("."));
     }
     @Override
@@ -475,20 +593,8 @@ public class TextMatcher implements
         xml.setAttribute("ignoreDiacritic", ignoreDiacritic);
         xml.setAttribute("replaceAll", replaceAll);
         xml.setAttribute("partial", partial);
+        xml.setAttribute("trim", trim);
+        xml.setAttribute("matchEmpty", matchEmpty);
         xml.setTextContent(pattern);
-    }
-
-    @Override
-    public boolean equals(final Object other) {
-        return EqualsBuilder.reflectionEquals(this, other);
-    }
-    @Override
-    public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this);
-    }
-    @Override
-    public String toString() {
-        return new ReflectionToStringBuilder(
-                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

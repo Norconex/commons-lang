@@ -1,4 +1,4 @@
-/* Copyright 2010-2019 Norconex Inc.
+/* Copyright 2010-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,14 @@
  */
 package com.norconex.commons.lang.map;
 
-import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 /**
  * Here is an example of {@code MapChangeSupport} usage:
@@ -55,9 +53,10 @@ import org.apache.commons.lang3.builder.ToStringStyle;
  * @param <K> the type of keys maintained by the map we are observing
  * @param <V> the type of mapped values
  */
-public class MapChangeSupport<K,V> implements Serializable {
+@ToString
+@EqualsAndHashCode
+public class MapChangeSupport<K,V> {
 
-    private static final long serialVersionUID = 3044416439660906663L;
     private final List<IMapChangeListener<K,V>> listeners = new ArrayList<>();
     private final Map<K, V> source;
 
@@ -93,6 +92,23 @@ public class MapChangeSupport<K,V> implements Serializable {
     }
 
     /**
+     * Gets an unmodifiable list of listeners.
+     * @return listeners
+     * @since 3.0.0
+     */
+    public List<IMapChangeListener<K, V>> getMapChangeListeners() {
+        return Collections.unmodifiableList(listeners);
+    }
+
+    /**
+     * Clears the listeners associated with this instance.
+     * @since 3.0.0
+     */
+    public void clear() {
+        listeners.clear();
+    }
+
+    /**
      * Fires a {@link MapChangeEvent} to all change listeners.
      * @param key the key for the value change
      * @param oldValue the old value
@@ -109,21 +125,11 @@ public class MapChangeSupport<K,V> implements Serializable {
         }
     }
 
+    /**
+     * Gets whether this instance has no listeners.
+     * @return <code>true</code> if there are no listeners
+     */
     public boolean isEmpty() {
         return listeners.isEmpty();
-    }
-
-    @Override
-    public boolean equals(final Object other) {
-        return EqualsBuilder.reflectionEquals(this, other);
-    }
-    @Override
-    public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this);
-    }
-    @Override
-    public String toString() {
-        return new ReflectionToStringBuilder(
-                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

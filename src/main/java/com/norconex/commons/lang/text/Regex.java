@@ -24,18 +24,30 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
+import org.apache.commons.lang3.StringUtils;
 
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+
 /**
  * <p>
  * Builder and utility methods making it easier to construct and use
- * regular expressions.
+ * regular expressions. In addition, you can obtain a {@link Matcher}
+ * with support for empty or <code>null</code> values
+ * </p>
+ *
+ * <h3>Empty and <code>null</code> values</h3>
+ * <p>
+ * <b>Since 3.0.0</b>, you can force <code>null</code> and empty strings
+ * to be considered a positive match, regardless of the specified pattern.
+ * To do so, set <code>matchEmpty</code> to <code>true</code>.
+ * To have blank values (containing white spaces only) considered as
+ * positive matches, also set <code>trim</code> to <code>true</code>.
+ * When matching empties, doing replacement on a <code>null</code> value
+ * behaves as if the value is an empty string.
  * </p>
  *
  * {@nx.xml.usage #attributes
@@ -49,6 +61,8 @@ import com.norconex.commons.lang.xml.XML;
  *     canonEq="[false|true]"
  *     unicodeCase="[false|true]"
  *     unicodeCharacterClass="[false|true]"
+ *     trim="[false|true]"
+ *     matchEmpty="[false|true]"
  * }
  * <p>
  * The above are configurable attributes consuming classes can expect.
@@ -71,6 +85,8 @@ import com.norconex.commons.lang.xml.XML;
  * @since 2.0.0
  * @see Pattern
  */
+@ToString
+@EqualsAndHashCode
 public class Regex implements IXMLConfigurable {
 
     /**
@@ -92,16 +108,15 @@ public class Regex implements IXMLConfigurable {
 
     private String pattern;
     private final Set<Integer> flags = new HashSet<>();
+    private boolean trim;
+    private boolean matchEmpty;
 
     public Regex() {
-        super();
     }
     public Regex(String pattern) {
-        super();
         this.pattern = pattern;
     }
     public Regex(String pattern, int... flags) {
-        super();
         this.pattern = pattern;
         this.flags.addAll(Arrays.asList(ArrayUtils.toObject(flags)));
     }
@@ -211,6 +226,71 @@ public class Regex implements IXMLConfigurable {
         return flags.contains(UNICODE_MARK_INSENSTIVE_FLAG);
     }
 
+    /**
+     * Gets whether <code>null</code> or empty strings should be considered a
+     * positive match.
+     * @return <code>true</code> if <code>null</code> and empty strings
+     *     are considered a match
+     * @since 3.0.0
+     */
+    public boolean isMatchEmpty() {
+        return matchEmpty;
+    }
+    /**
+     * Sets whether <code>null</code> or empty strings should be considered a
+     * positive match. To also consider blank values as positive matches,
+     * use {@link #setTrim(boolean)}.
+     * @param matchEmpty <code>true</code> to have <code>null</code> and empty
+     *     strings are considered a match.
+     * @return this instance
+     * @since 3.0.0
+     */
+    public Regex setMatchEmpty(boolean matchEmpty) {
+        this.matchEmpty = matchEmpty;
+        return this;
+    }
+    /**
+     * Sets that <code>null</code> or empty strings should be considered a
+     * positive match. Same as invoking {@link #setMatchEmpty(boolean)} with
+     * <code>true</code>.
+     * @return this instance
+     * @since 3.0.0
+     */
+    public Regex matchEmpty() {
+        return setMatchEmpty(true);
+    }
+
+    /**
+     * Gets whether values should be trimmed before being evaluated
+     * (as per {@link String#trim()}).
+     * @return <code>true</code> if values are trimmed before evaluation
+     * @since 3.0.0
+     */
+    public boolean isTrim() {
+        return trim;
+    }
+    /**
+     * Sets whether values should be trimmed before being evaluated
+     * (as per {@link String#trim()}).
+     * @param trim <code>true</code> to trim values before evaluation
+     * @return this instance
+     * @since 3.0.0
+     */
+    public Regex setTrim(boolean trim) {
+        this.trim = trim;
+        return this;
+    }
+    /**
+     * Sets that values should be trimmed before being evaluated
+     * (as per {@link String#trim()}). Same as invoking
+     * {@link #setTrim(boolean)} with <code>true</code>.
+     * @return this instance
+     * @since 3.0.0
+     */
+    public Regex trim() {
+        return setTrim(true);
+    }
+
     public void setFlags(int... flags) {
         this.flags.clear();
         if (flags != null) {
@@ -235,6 +315,7 @@ public class Regex implements IXMLConfigurable {
      * </p>
      * <p>
      * For text-matching with diacritical mark insensitivity support enabled,
+     * or for {@link #trim} and {@link #matchEmpty} support,
      * use {@link #matcher(CharSequence)} instead.
      * </p>
      * @return compiled pattern
@@ -248,10 +329,12 @@ public class Regex implements IXMLConfigurable {
      * </p>
      * <p>
      * For text-matching with diacritical mark insensitivity support enabled,
+     * or for {@link #trim} and {@link #matchEmpty} support,
      * use {@link #matcher(String, CharSequence)} instead.
      * </p>
      * @param pattern the pattern to compile
      * @return compiled pattern
+     * @throws IllegalArgumentException if pattern is <code>null</code>
      */
     public Pattern compile(String pattern) {
         if (pattern == null) {
@@ -318,19 +401,32 @@ public class Regex implements IXMLConfigurable {
     /**
      * Matches the the given pattern against the given text without assigning
      * the pattern to this object.
+     * <b>Since 3.0.0</b>, <code>null</code> or empty text will generate
+     * no match unless {@link #isMatchEmpty()} is <code>true</code>, in which
+     * case it will match positively.
      * @param pattern the pattern to match
      * @param text the text to match
      * @return matcher
      */
     public Matcher matcher(String pattern, CharSequence text) {
-        if (text == null) {
-            throw new IllegalArgumentException("Text cannot be null.");
+        String p = pattern;
+        String t = text.toString();
+        if (trim) {
+            t = StringUtils.trim(t);
         }
-        CharSequence t = text;
+        if (t == null) {
+            t = StringUtils.EMPTY;
+        }
+        if (matchEmpty && StringUtils.isEmpty(t)) {
+            p = ".*";
+        }
+        if (!matchEmpty && StringUtils.isEmpty(t)) {
+            p = "(?=x)(?!x)"; // never matches
+        }
         if (flags.contains(UNICODE_MARK_INSENSTIVE_FLAG)) {
             t = Normalizer.normalize(t, Form.NFD);
         }
-        return compile(pattern).matcher(t);
+        return compile(p).matcher(t);
     }
 
     public RegexFieldValueExtractor createKeyValueExtractor() {
@@ -371,6 +467,8 @@ public class Regex implements IXMLConfigurable {
         setUnicodeCase(xml.getBoolean("@unicodeCase", isUnicodeCase()));
         setUnicodeCharacterClass(xml.getBoolean(
                 "@unicodeCharacterClass", isUnicodeCharacterClass()));
+        setTrim(xml.getBoolean("@trim", trim));
+        setMatchEmpty(xml.getBoolean("@matchEmpty", matchEmpty));
         setPattern(xml.getString(".", getPattern()));
     }
     @Override
@@ -385,20 +483,8 @@ public class Regex implements IXMLConfigurable {
         xml.setAttribute("canonEq", isCanonEq());
         xml.setAttribute("unicodeCase", isUnicodeCase());
         xml.setAttribute("unicodeCharacterClass", isUnicodeCharacterClass());
+        xml.setAttribute("trim", trim);
+        xml.setAttribute("matchEmpty", matchEmpty);
         xml.setTextContent(getPattern());
-    }
-
-    @Override
-    public boolean equals(final Object other) {
-        return EqualsBuilder.reflectionEquals(this, other);
-    }
-    @Override
-    public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this);
-    }
-    @Override
-    public String toString() {
-        return new ReflectionToStringBuilder(
-                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
-   Copyright 2020 Norconex Inc.
+   Copyright 2020-2022 Norconex Inc.
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,6 +32,8 @@
         <xs:attribute name="canonEq" type="xs:boolean"></xs:attribute>
         <xs:attribute name="unicodeCase" type="xs:boolean"></xs:attribute>
         <xs:attribute name="unicodeCharacterClass" type="xs:boolean"></xs:attribute>
+        <xs:attribute name="trim" type="xs:boolean"></xs:attribute>
+        <xs:attribute name="matchEmpty" type="xs:boolean"></xs:attribute>
       </xs:extension>
     </xs:simpleContent>
   </xs:complexType>

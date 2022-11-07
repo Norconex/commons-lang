@@ -58,6 +58,16 @@
       <action dev="essiembre" type="add">
         New JarFile#toJarFiles methods.
       </action>
+      <action dev="essiembre" type="add">
+        New #getMapChangeListeners and #clearMapChangeListeners methods
+        on ObservableMap and MapChangeSupport.
+      </action>
+      <action dev="essiembre" type="add">
+        New TextMatcher #trim and #matchEmpty methods.
+      </action>
+      <action dev="essiembre" type="add">
+        New Regex #trim and #matchEmpty methods.
+      </action>
       <action dev="essiembre" type="update">
         Now require Java 11+. 
       </action>
@@ -149,6 +159,15 @@
         when resolving jar conflicts. Deprecated integer-based on-conflict
         strategies in favor of OnJarConflict.
       </action>
+      <action dev="essiembre" type="update">
+        PropertyMatcher now support null field and value matchers.
+      </action>
+      <action dev="essiembre" type="add">
+        TextMatcher now considers null values as non-matching by defualt.
+      </action>
+      <action dev="essiembre" type="fix">
+        Properties#loadFromXML is now null-safe.
+      </action>
       <action dev="essiembre" type="fix">
         Fixed CollectionUtil#testRemoveNulls having opposite effect.
       </action>
@@ -180,7 +199,8 @@
       <action dev="essiembre" type="remove">
         Removed a number of deprecated classes and methods:
         *.lang.config.IXMLConfigurable, *.lang.encrypt.EncryptionXMLUtil, 
-        *.lang.StringUtil.
+        *.lang.StringUtil, *.lang.map.Properties#set[...], 
+        *.lang.map.PropertyMatcher#[...]
       </action>
       <action dev="essiembre" type="remove">
         Removed #finalize method from CachedInputStream and CachedOutputStream

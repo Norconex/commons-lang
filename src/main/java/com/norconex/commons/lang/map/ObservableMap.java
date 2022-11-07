@@ -1,4 +1,4 @@
-/* Copyright 2010-2016 Norconex Inc.
+/* Copyright 2010-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,41 +14,39 @@
  */
 package com.norconex.commons.lang.map;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 /**
  * A map implementation that reports changes to added {@link IMapChangeListener}
  * instance.  Changes are triggered when a value change is detected
- * in the following method calls: {@link #put(Object, Object)}, 
+ * in the following method calls: {@link #put(Object, Object)},
  * {@link #putAll(Map)}, {@link #remove(Object)}, and {@link #clear()}.
  * This class will not detect changes made to key or value objects modified
  * outside this class.
  * This class can be used as a decorator to other {@link Map} implementations.
- * 
+ *
  * @author Pascal Essiembre
  * @since 1.4
  *
  * @param <K> the type of keys maintained by the map we are observing
  * @param <V> the type of mapped values
  */
-public class ObservableMap<K,V> implements Map<K,V>, Serializable {
+public class ObservableMap<K,V> implements Map<K,V> {
 
-    private static final long serialVersionUID = 8109864235479497466L;
-
-    private final MapChangeSupport<K,V> mcs = new MapChangeSupport<>(this);    
+    private final MapChangeSupport<K,V> mcs = new MapChangeSupport<>(this);
     private final Map<K, V> map;
-    
+
     public ObservableMap() {
         this(null);
     }
     /**
      * Decorates map argument as an {@code ObservableMap}.
-     * @param map the Map to decorate 
+     * @param map the Map to decorate
      */
     public ObservableMap(Map<K, V> map) {
         if (map == null) {
@@ -72,7 +70,24 @@ public class ObservableMap<K,V> implements Map<K,V>, Serializable {
     public void removeMapChangeListener(IMapChangeListener<K,V> listener) {
         this.mcs.removeMapChangeListener(listener);
     }
-    
+
+    /**
+     * Gets an unmodifiable list of listeners.
+     * @return listeners
+     * @since 3.0.0
+     */
+    public List<IMapChangeListener<K, V>> getMapChangeListeners() {
+        return mcs.getMapChangeListeners();
+    }
+
+    /**
+     * Clears the listeners associated with this instance.
+     * @since 3.0.0
+     */
+    public void clearMapChangeListeners() {
+        mcs.clear();
+    }
+
     @Override
     public int size() {
         return map.size();
@@ -118,12 +133,12 @@ public class ObservableMap<K,V> implements Map<K,V>, Serializable {
             map.putAll(m);
             return;
         }
-        Iterator<? extends Map.Entry<? extends K, ? extends V>> it = 
+        Iterator<? extends Entry<? extends K, ? extends V>> it =
                 m.entrySet().iterator();
         while (it.hasNext()) {
-            Map.Entry<? extends K, ? extends V> entry = it.next();
+            Entry<? extends K, ? extends V> entry = it.next();
             put(entry.getKey(), entry.getValue());
-        } 
+        }
     }
     @Override
     public void clear() {
@@ -133,7 +148,7 @@ public class ObservableMap<K,V> implements Map<K,V>, Serializable {
         }
         Map<K, V> oldMap = new HashMap<>(map);
         map.clear();
-        Iterator<? extends Map.Entry<? extends K, 
+        Iterator<? extends Map.Entry<? extends K,
                 ? extends V>> it = oldMap.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry<? extends K, ? extends V> entry = it.next();
@@ -149,7 +164,7 @@ public class ObservableMap<K,V> implements Map<K,V>, Serializable {
         return map.values();
     }
     @Override
-    public Set<java.util.Map.Entry<K, V>> entrySet() {
+    public Set<Entry<K, V>> entrySet() {
         return map.entrySet();
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2010-2017 Norconex Inc.
+/* Copyright 2010-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,13 @@
  */
 package com.norconex.commons.lang.map;
 
-import java.io.Serializable;
 import java.util.Map;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 /**
  * A event representing a change of values in an {@link Map}.
- * @author Pascal Essiembre
  *
  * @author Pascal Essiembre
  * @since 1.4
@@ -30,16 +28,14 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
  * @param <K> the type of keys maintained by the map we are observing
  * @param <V> the type of mapped values
  */
-public class MapChangeEvent<K, V> implements Serializable {
-
-    private static final long serialVersionUID = -5475381612189548521L;
+@ToString
+@EqualsAndHashCode
+public class MapChangeEvent<K, V> {
 
     private final Map<K, V> source;
     private final K key;
     private final V oldValue;
     private final V newValue;
-
-    private transient int hashCode;
 
     /**
      * Creates a new event.
@@ -50,7 +46,6 @@ public class MapChangeEvent<K, V> implements Serializable {
      */
     public MapChangeEvent(
             Map<K, V> source, K key, V oldValue, V newValue) {
-        super();
         this.source = source;
         this.key = key;
         this.oldValue = oldValue;
@@ -84,34 +79,5 @@ public class MapChangeEvent<K, V> implements Serializable {
      */
     public V getNewValue() {
         return newValue;
-    }
-
-
-
-    @Override
-    public String toString() {
-        return "MapChangeEvent [source=" + source + ", key=" + key
-                + ", oldValue=" + oldValue + ", newValue=" + newValue + "]";
-    }
-
-    @Override
-    public boolean equals(final Object other) {
-        if (!(other instanceof MapChangeEvent)) {
-            return false;
-        }
-        MapChangeEvent<?, ?> castOther = (MapChangeEvent<?, ?>) other;
-        return new EqualsBuilder().append(source, castOther.source)
-                .append(key, castOther.key)
-                .append(oldValue, castOther.oldValue)
-                .append(newValue, castOther.newValue).isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        if (hashCode == 0) {
-            hashCode = new HashCodeBuilder().append(source).append(key)
-                    .append(oldValue).append(newValue).toHashCode();
-        }
-        return hashCode;
     }
 }

@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,14 @@ import java.util.Map;
  * Listener for {@link Map} changes.
  * @author Pascal Essiembre
  * @since 1.4
+ * @see ObservableMap
+ * @see MapChangeSupport
  *
  * @param <K> the type of keys maintained by the map we are observing
  * @param <V> the type of mapped values
  */
-public interface IMapChangeListener<K,V> {
+@FunctionalInterface
+public interface IMapChangeListener<K, V> {
 
     /**
      * The observed map has changed.

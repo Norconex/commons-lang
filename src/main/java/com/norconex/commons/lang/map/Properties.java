@@ -1,4 +1,4 @@
-/* Copyright 2010-2020 Norconex Inc.
+/* Copyright 2010-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,8 @@
  * limitations under the License.
  */
 package com.norconex.commons.lang.map;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.File;
 import java.io.IOException;
@@ -103,9 +105,9 @@ public class Properties extends ObservableMap<String, List<String>>
 
     public static final String DEFAULT_JAVA_PROPERTIES_DELIMITER = "\\u241E";
 
-    //TODO rename plural methods to getXxxList()?
+    //MAYBE rename plural methods to getXxxList()?
 
-    //TODO remove support for case sensitivity and provide a utility
+    //MAYBE remove support for case sensitivity and provide a utility
     //class that does it instead on any string-key maps?
     // OR, store it in a case sensitive way instead of keeping
     // multiple keys of different cases around. Could provide
@@ -115,7 +117,7 @@ public class Properties extends ObservableMap<String, List<String>>
     private static final long serialVersionUID = -7215126924574341L;
     private static final Logger LOG = LoggerFactory.getLogger(Properties.class);
 
-    //TODO still support this?
+    //MAYBE still support this?
     private final boolean caseInsensitiveKeys;
 
     /**
@@ -221,6 +223,9 @@ public class Properties extends ObservableMap<String, List<String>>
      * @since 2.0.0
      */
     public Properties match(PropertyMatcher propertyMatcher) {
+        if (propertyMatcher == null) {
+            return new Properties(isCaseInsensitiveKeys());
+        }
         return propertyMatcher.match(this);
     }
     /**
@@ -482,7 +487,7 @@ public class Properties extends ObservableMap<String, List<String>>
             String property = it.getKey();
             List<String> values = it.getValue();
             if (property == null || values.isEmpty()
-                    || !BeanUtil.isSettable(bean, property)) {
+                    || !BeanUtil.isWritable(bean, property)) {
                 LOG.debug("Property is not writable (no setter?): {}",
                         property);
                 continue;
@@ -550,8 +555,8 @@ public class Properties extends ObservableMap<String, List<String>>
      * add them to this <code>Map</code>.  Keys and values are converted to
      * strings using their toString() method, with exception
      * of values being arrays or collections.  In such case, the entry
-     * is considered a multi-value one and each value will be converted
-     * to individual strings. <code>null</code> keys are ignored.
+     * is considered a multi-value one and each value will be separately
+     * converted to string. <code>null</code> keys are ignored.
      * <code>null</code> values are converted to an empty string.</p>
      * <p>Changes to this instance
      * won't be reflected in the given <code>Map</code>.  If you want otherwise,
@@ -562,39 +567,21 @@ public class Properties extends ObservableMap<String, List<String>>
      * @since 2.0.0
      */
     public synchronized void loadFromMap(Map<?, ?> map) {
-        if (map != null) {
-            for (Entry<?, ?> entry : map.entrySet()) {
-                Object keyObj = entry.getKey();
-                if (keyObj == null) {
-                    continue;
-                }
-                String key = toString(keyObj);
-                Object valObj = entry.getValue();
-                if (valObj == null) {
-                    valObj = StringUtils.EMPTY;
-                }
-                Iterable<?> it = null;
-                if (valObj.getClass().isArray()) {
-                    if(valObj.getClass().getComponentType().isPrimitive()) {
-                        List<Object> objs = new ArrayList<>();
-                        for (int i = 0; i < Array.getLength(valObj); i++) {
-                            objs.add(Array.get(valObj, i));
-                        }
-                        it = objs;
-                    } else {
-                        it = Arrays.asList((Object[]) valObj);
-                    }
-                } else if (valObj instanceof Iterable) {
-                    it = (Iterable<?>) valObj;
-                }
-                if (it == null) {
-                    add(key, toString(valObj));
-                } else {
-                    for (Object val : it) {
-                        add(key, toString(val));
-                    }
-                }
+        if (map == null) {
+            return;
+        }
+
+        for (Entry<?, ?> entry : map.entrySet()) {
+            Object keyObj = entry.getKey();
+            if (keyObj == null) {
+                continue;
             }
+            String key = toString(keyObj);
+            Object valObj = entry.getValue();
+            if (valObj == null) {
+                valObj = StringUtils.EMPTY;
+            }
+            addMapEntry(key, valObj);
         }
     }
 
@@ -720,6 +707,10 @@ public class Properties extends ObservableMap<String, List<String>>
     private synchronized void loadFromJavaUtilProperties(
             Object input, String delimiter, boolean isXML) throws IOException {
 
+        if (input == null) {
+            return;
+        }
+
         java.util.Properties p = new java.util.Properties();
         String sep = StringUtils.defaultIfEmpty(
                 delimiter, DEFAULT_JAVA_PROPERTIES_DELIMITER);
@@ -731,14 +722,10 @@ public class Properties extends ObservableMap<String, List<String>>
             } else {
                 p.load((Reader) input);
             }
+        } else if (isXML) {
+            p.loadFromXML((InputStream) input);
         } else {
-            if (isXML) {
-                p.loadFromXML((InputStream) input);
-            } else {
-//System.err.println("PROPERTY 1:");
-//System.err.println(IOu);
-                p.load((InputStream) input);
-            }
+            p.load((InputStream) input);
         }
 
         for (Entry<Object, Object> entry : p.entrySet()) {
@@ -761,7 +748,7 @@ public class Properties extends ObservableMap<String, List<String>>
         if (in == null) {
             return;
         }
-        loadFromJSON(new InputStreamReader(in, "UTF-8"));
+        loadFromJSON(new InputStreamReader(in, UTF_8));
     }
     /**
      * Loads all of the properties from the JSON document reader
@@ -914,7 +901,7 @@ public class Properties extends ObservableMap<String, List<String>>
             return;
         }
         List<String> list = CollectionUtil.toStringList(values);
-        //TODO benchmark if an issue with long lists to do a separate
+        //MAYBE benchmark if an issue with long lists to do a separate
         //iteration for converting nulls
         CollectionUtil.nullsToEmpties(list);
         put(key, list);
@@ -938,7 +925,7 @@ public class Properties extends ObservableMap<String, List<String>>
             list = new ArrayList<>(values.size());
         }
         List<String> newList = CollectionUtil.toStringList(values);
-        //TODO benchmark if an issue with long lists to do a separate
+        //MAYBE benchmark if an issue with long lists to do a separate
         //iteration for converting nulls
         CollectionUtil.nullsToEmpties(newList);
         list.addAll(newList);
@@ -953,7 +940,7 @@ public class Properties extends ObservableMap<String, List<String>>
      */
     public final String getString(String key) {
         List<String> list = get(key);
-        if (list != null && !list.isEmpty()) {
+        if (CollectionUtils.isNotEmpty(list)) {
             return list.get(0);
         }
         return null;
@@ -979,33 +966,6 @@ public class Properties extends ObservableMap<String, List<String>>
             return new ArrayList<>();
         }
         return new ArrayList<>(values);
-    }
-    /**
-     * Sets one or multiple string values replacing existing ones.
-     * Setting a single <code>null</code> value or an empty string array is
-     * the same as calling {@link #remove(Object)} with the same key.
-     * When setting multiple values, <code>null</code> values are converted
-     * to blank strings.
-     * @param key the key of the value to set
-     * @param values the values to set
-     * @deprecated Since 2.0.0, use {@link #set(String, Object...)}
-     */
-    @Deprecated
-    public final void setString(String key, String... values) {
-        set(key, values);
-    }
-    /**
-     * Adds one or multiple string values.
-     * Adding a single <code>null</code> value has no effect.
-     * When adding multiple values, <code>null</code> values are converted
-     * to blank strings.
-     * @param key the key of the value to set
-     * @param values the values to set
-     * @deprecated Since 2.0.0, use {@link #add(String, Object...)}
-     */
-    @Deprecated
-    public final void addString(String key, String... values) {
-        add(key, values);
     }
 
     //--- Integer --------------------------------------------------------------
@@ -1034,26 +994,6 @@ public class Properties extends ObservableMap<String, List<String>>
     public final List<Integer> getIntegers(String key) {
         return getList(key, Integer.class);
     }
-    /**
-     * Sets one or multiple integer values, replacing existing ones.
-     * @param key the key of the values to set
-     * @param values the values to set
-     * @deprecated Since 2.0.0, use {@link #set(String, Object...)}
-     */
-    @Deprecated
-    public final void setInt(String key, int... values) {
-        set(key, values);
-    }
-    /**
-     * Adds one or multiple integer values values.
-     * @param key the key of the values to set
-     * @param values the values to set
-     * @deprecated Since 2.0.0, use {@link #add(String, Object...)}
-     */
-    @Deprecated
-    public final void addInt(String key, int... values) {
-        add(key, values);
-    }
 
     //--- Double ---------------------------------------------------------------
     /**
@@ -1080,26 +1020,6 @@ public class Properties extends ObservableMap<String, List<String>>
      */
     public final List<Double> getDoubles(String key) {
         return getList(key, Double.class);
-    }
-    /**
-     * Sets one or multiple double values, replacing existing ones.
-     * @param key the key of the values to set
-     * @param values the values to set
-     * @deprecated Since 2.0.0, use {@link #set(String, Object...)}
-     */
-    @Deprecated
-    public final void setDouble(String key, double... values) {
-        set(key, values);
-    }
-    /**
-     * Adds one or multiple double values.
-     * @param key the key of the values to set
-     * @param values the values to set
-     * @deprecated Since 2.0.0, use {@link #add(String, Object...)}
-     */
-    @Deprecated
-    public final void addDouble(String key, double... values) {
-        add(key, values);
     }
 
     //--- Long -----------------------------------------------------------------
@@ -1128,27 +1048,6 @@ public class Properties extends ObservableMap<String, List<String>>
     public final List<Long> getLongs(String key) {
         return getList(key, Long.class);
     }
-    /**
-     * Sets one or multiple long values, replacing existing ones.
-     * @param key the key of the values to set
-     * @param values the values to set
-     * @deprecated Since 2.0.0, use {@link #set(String, Object...)}
-     */
-    @Deprecated
-    public final void setLong(String key, long... values) {
-        set(key, values);
-    }
-    /**
-     * Add one or multiple long values.
-     * @param key the key of the values to set
-     * @param values the values to set
-     * @deprecated Since 2.0.0, use {@link #add(String, Object...)}
-     */
-    @Deprecated
-    public final void addLong(String key, long... values) {
-        add(key, values);
-    }
-
 
     //--- Float ----------------------------------------------------------------
     /**
@@ -1176,26 +1075,6 @@ public class Properties extends ObservableMap<String, List<String>>
     public final List<Float> getFloats(String key) {
         return getList(key, Float.class);
     }
-    /**
-     * Sets one or multiple float values, replacing existing ones.
-     * @param key the key of the values to set
-     * @param values the values to set
-     * @deprecated Since 2.0.0, use {@link #set(String, Object...)}
-     */
-    @Deprecated
-    public final void setFloat(String key, float... values) {
-        set(key, values);
-    }
-    /**
-     * Adds one or multiple long values.
-     * @param key the key of the values to set
-     * @param values the values to set
-     * @deprecated Since 2.0.0, use {@link #add(String, Object...)}
-     */
-    @Deprecated
-    public final void addFloat(String key, float... values) {
-        add(key, values);
-    }
 
     //--- BigDecimal -----------------------------------------------------------
     /**
@@ -1222,26 +1101,6 @@ public class Properties extends ObservableMap<String, List<String>>
      */
     public final List<BigDecimal> getBigDecimals(String key) {
         return getList(key, BigDecimal.class);
-    }
-    /**
-     * Sets one or multiple BigDecimal values, replacing existing ones.
-     * @param key the key of the values to set
-     * @param values the values to set
-     * @deprecated Since 2.0.0, use {@link #set(String, Object...)}
-     */
-    @Deprecated
-    public final void setBigDecimal(String key, BigDecimal... values) {
-        set(key, values);
-    }
-    /**
-     * Add one or multiple BigDecimal values.
-     * @param key the key of the values to set
-     * @param values the values to set
-     * @deprecated Since 2.0.0, use {@link #add(String, Object...)}
-     */
-    @Deprecated
-    public final void addBigDecimal(String key, BigDecimal... values) {
-        add(key, values);
     }
 
     //--- LocalDateTime --------------------------------------------------------
@@ -1340,26 +1199,6 @@ public class Properties extends ObservableMap<String, List<String>>
     public final List<Date> getDates(String key) {
         return getList(key, Date.class);
     }
-    /**
-     * Sets one or multiple date values, replacing existing ones.
-     * @param key the key of the values to set
-     * @param values the values to set
-     * @deprecated Since 2.0.0, use {@link #set(String, Object...)}
-     */
-    @Deprecated
-    public final void setDate(String key, Date... values) {
-        set(key, values);
-    }
-    /**
-     * Add one or multiple date values.
-     * @param key the key of the values to set
-     * @param values the values to set
-     * @deprecated Since 2.0.0, use {@link #add(String, Object...)}
-     */
-    @Deprecated
-    public final void addDate(String key, Date... values) {
-        add(key, values);
-    }
 
     //--- Boolean --------------------------------------------------------------
     /**
@@ -1394,26 +1233,6 @@ public class Properties extends ObservableMap<String, List<String>>
     public final List<Boolean> getBooleans(String key) {
         return getList(key, Boolean.class);
     }
-    /**
-     * Sets one or multiple boolean values, replacing existing ones.
-     * @param key the key of the values to set
-     * @param values the values to set
-     * @deprecated Since 2.0.0, use {@link #set(String, Object...)}
-     */
-    @Deprecated
-    public final void setBoolean(String key, boolean... values) {
-        set(key, values);
-    }
-    /**
-     * Adds one or multiple boolean values.
-     * @param key the key of the values to set
-     * @param values the values to set
-     * @deprecated Since 2.0.0, use {@link #add(String, Object...)}
-     */
-    @Deprecated
-    public final void addBoolean(String key, boolean... values) {
-        add(key, values);
-    }
 
     //--- Locale ---------------------------------------------------------------
     /**
@@ -1440,26 +1259,6 @@ public class Properties extends ObservableMap<String, List<String>>
      */
     public final List<Locale> getLocales(String key) {
         return getList(key, Locale.class);
-    }
-    /**
-     * Sets one or multiple locale values, replacing existing ones.
-     * @param key the key of the values to set
-     * @param values the values to set
-     * @deprecated Since 2.0.0, use {@link #set(String, Object...)}
-     */
-    @Deprecated
-    public final void setLocale(String key, Locale... values) {
-        set(key, values);
-    }
-    /**
-     * Adds one or multiple locale values.
-     * @param key the key of the values to set
-     * @param values the values to set
-     * @deprecated Since 2.0.0, use {@link #add(String, Object...)}
-     */
-    @Deprecated
-    public final void addLocale(String key, Locale... values) {
-        add(key, values);
     }
 
     //--- File -----------------------------------------------------------------
@@ -1488,26 +1287,6 @@ public class Properties extends ObservableMap<String, List<String>>
      */
     public final List<File> getFiles(String key) {
         return getList(key, File.class);
-    }
-    /**
-     * Sets one or multiple file values, replacing existing ones.
-     * @param key the key of the values to set
-     * @param values the values to set
-     * @deprecated Since 2.0.0, use {@link #set(String, Object...)}
-     */
-    @Deprecated
-    public final void setFile(String key, File... values) {
-        set(key, values);
-    }
-    /**
-     * Adds one or multiple file values.
-     * @param key the key of the values to set
-     * @param values the values to set
-     * @deprecated Since 2.0.0, use {@link #add(String, Object...)}
-     */
-    @Deprecated
-    public final void addFile(String key, File... values) {
-        add(key, values);
     }
 
     //--- Class ----------------------------------------------------------------
@@ -1539,26 +1318,6 @@ public class Properties extends ObservableMap<String, List<String>>
     @SuppressWarnings("rawtypes")
     public final List<Class> getClasses(String key) {
         return getList(key, Class.class);
-    }
-    /**
-     * Sets one or multiple class values, replacing existing ones.
-     * @param key the key of the values to set
-     * @param values the values to set
-     * @deprecated Since 2.0.0, use {@link #set(String, Object...)}
-     */
-    @Deprecated
-    public final void setClass(String key, Class<?>... values) {
-        set(key, values);
-    }
-    /**
-     * Adds one or multiple class values.
-     * @param key the key of the values to set
-     * @param values the values to set
-     * @deprecated Since 2.0.0, use {@link #add(String, Object...)}
-     */
-    @Deprecated
-    public final void addClass(String key, Class<?>... values) {
-        add(key, values);
     }
 
     //--- Other ----------------------------------------------------------------
@@ -1603,18 +1362,14 @@ public class Properties extends ObservableMap<String, List<String>>
             super.putAll(m);
             return;
         }
-
         if (m == null) {
             return;
         }
-        for (Entry<? extends String, ? extends List<String>> entry :
-            m.entrySet()) {
-            String key = entry.getKey();
-            List<String> values = entry.getValue();
-            if (values != null) {
-                addList(key, values);
+        m.forEach((key, vals) -> {
+            if (vals != null) {
+                addList(key, vals);
             }
-        }
+        });
     }
 
     /**
@@ -1629,6 +1384,18 @@ public class Properties extends ObservableMap<String, List<String>>
             list.addAll(values);
         }
         return list;
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        if (!(other instanceof Map<?, ?>)) {
+            return false;
+        }
+        return EqualsUtil.equalsMap(this, (Map<?, ?>) other);
+    }
+    @Override
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this);
     }
 
     //--- Privates -------------------------------------------------------------
@@ -1648,181 +1415,35 @@ public class Properties extends ObservableMap<String, List<String>>
         return resolvedKey;
     }
 
-    // TODO consider calling this from toStringArray(array) and have
+    private void addMapEntry(String key, Object valObj) {
+        Iterable<?> it = null;
+        if (valObj.getClass().isArray()) {
+            if(valObj.getClass().getComponentType().isPrimitive()) {
+                List<Object> objs = new ArrayList<>();
+                for (int i = 0; i < Array.getLength(valObj); i++) {
+                    objs.add(Array.get(valObj, i));
+                }
+                it = objs;
+            } else {
+                it = Arrays.asList((Object[]) valObj);
+            }
+        } else if (valObj instanceof Iterable) {
+            it = (Iterable<?>) valObj;
+        }
+        if (it == null) {
+            add(key, toString(valObj));
+        } else {
+            for (Object val : it) {
+                add(key, toString(val));
+            }
+        }
+    }
+
+    // MAYBE consider calling this from toStringArray(array) and have
     // Class, Date, etc, setters call that method. But check
     // implications of EMPTY vs null. (why have empty for elements in in array,
     // and null otherwise?) Should always be null or not kept in array.
     private String toString(Object obj) {
         return Converter.convert(obj);
-    }
-
-    //=== DEPRECATED ===========================================================
-    /**
-     * Deprecated.
-     * @param   reader   the input character stream.
-     * @throws IOException i/o problem
-     * @deprecated Since 2.0.0, use <code>loadFromProperties(...)</code>
-     */
-    @Deprecated
-    public void load(Reader reader) throws IOException {
-        load(reader, null);
-    }
-    /**
-     * Deprecated.
-     * @param   reader   the input character stream.
-     * @param delimiter delimiter string to used to parse a multi-value key.
-     * @throws IOException i/o problem
-     * @see Properties#load(Reader)
-     * @deprecated Since 2.0.0, use <code>loadFromProperties(...)</code>
-     */
-    @Deprecated
-    public void load(Reader reader, String delimiter)
-            throws IOException {
-        load(reader, null, delimiter, false);
-    }
-
-    /**
-     * Deprecated.
-     * @param   inStream   the input stream.
-     * @throws IOException i/o problem
-     * @see Properties#load(InputStream)
-     * @deprecated Since 2.0.0, use <code>loadFromProperties(...)</code>
-     */
-    @Deprecated
-    public synchronized void load(InputStream inStream) throws IOException {
-        load(inStream, null);
-    }
-    /**
-     * Deprecated.
-     * @param   inStream   the input stream.
-     * @param encoding delimiter string to used to parse a multi-value key.
-     * @throws IOException i/o problem
-     * @see Properties#load(InputStream)
-     * @deprecated Since 2.0.0, use <code>loadFromProperties(...)</code>
-     */
-    @Deprecated
-    public synchronized void load(InputStream inStream, String encoding)
-            throws IOException {
-        load(inStream, encoding, null);
-    }
-    /**
-     * Deprecated.
-     * @param   inStream   the input stream.
-     * @param encoding delimiter string to used to parse a multi-value key.
-     * @param delimiter delimiter string to used to parse a multi value
-     *        key.
-     * @throws IOException i/o problem
-     * @since 1.14.0
-     * @deprecated Since 2.0.0, use <code>loadFromProperties(...)</code>
-     */
-    @Deprecated
-    public synchronized void load(
-            InputStream inStream, String encoding, String delimiter)
-                    throws IOException {
-        load(inStream, encoding, delimiter, false);
-    }
-    @Deprecated
-    private synchronized void load(
-            Object input, String encoding, String delimiter, boolean isXML)
-                    throws IOException {
-        if (input instanceof Reader) {
-            loadFromProperties((Reader) input);
-        } else {
-            loadFromProperties((InputStream) input);
-        }
-    }
-
-    /**
-     * Deprecated.
-     * @param   writer     an output character stream writer.
-     * @throws IOException i/o problem
-     * @deprecated Since 2.0.0, use <code>storeToProperties(...)</code>
-     */
-    @Deprecated
-    public void store(Writer writer) throws IOException {
-        store(writer, null);
-    }
-    /**
-     * Deprecated.
-     * @param   writer     an output character stream writer.
-     * @param   comments   a description of the property list.
-     * @throws IOException i/o problem
-     * @deprecated Since 2.0.0, use <code>storeToProperties(...)</code>
-     */
-    @Deprecated
-    public void store(Writer writer, String comments) throws IOException {
-        store(writer, comments, null);
-    }
-    /**
-     * Deprecated.
-     * @param   writer     an output character stream writer.
-     * @param   comments   a description of the property list.
-     * @param delimiter string to used as a separator when joining
-     *        multiple values for the same key.
-     * @throws IOException i/o problem
-     * @deprecated Since 2.0.0, use <code>storeToProperties(...)</code>
-     */
-    @Deprecated
-    public void store(Writer writer, String comments, String delimiter)
-            throws IOException {
-        store(writer, comments, null, delimiter, false);
-    }
-    /**
-     * Deprecated.
-     * @param   out      an output stream.
-     * @throws IOException i/o problem
-     * @deprecated Since 2.0.0, use <code>storeToProperties(...)</code>
-     */
-    @Deprecated
-    public void store(OutputStream out) throws IOException {
-        store(out, null);
-    }
-    /**
-     * Deprecated.
-     * @param   out      an output stream.
-     * @param   comments   a description of the property list.
-     * @throws IOException i/o problem
-     * @deprecated Since 2.0.0, use <code>storeToProperties(...)</code>
-     */
-    @Deprecated
-    public void store(OutputStream out, String comments) throws IOException {
-        store(out, comments, null);
-    }
-    /**
-     * Deprecated.
-     * @param   out      an output stream.
-     * @param   comments   a description of the property list.
-     * @param delimiter delimiter string to used as a separator when joining
-     *        multiple values for the same key.
-     * @throws IOException i/o problem
-     * @deprecated Since 2.0.0, use <code>storeToProperties(...)</code>
-     */
-    @Deprecated
-    public void store(OutputStream out, String comments, String delimiter)
-            throws IOException {
-        store(out, comments, null, delimiter, false);
-    }
-    // input is either Writer or OuputStream
-    @Deprecated
-    private synchronized void store(
-            Object output, String comments, String encoding,
-            String delimiter, boolean isXML)  throws IOException {
-        if (output instanceof Writer) {
-            storeToProperties((Writer) output);
-        } else {
-            storeToProperties((OutputStream) output);
-        }
-    }
-
-    @Override
-    public boolean equals(final Object other) {
-        if (!(other instanceof Map<?, ?>)) {
-            return false;
-        }
-        return EqualsUtil.equalsMap(this, (Map<?, ?>) other);
-    }
-    @Override
-    public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this);
     }
 }

@@ -1,4 +1,4 @@
-/* Copyright 2010-2015 Norconex Inc.
+/* Copyright 2010-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,23 +14,15 @@
  */
 package com.norconex.commons.lang.map;
 
+import lombok.experimental.StandardException;
+
 /**
- * <code>Properties</code> exception.  Typically thrown when 
+ * <code>Properties</code> exception.  Typically thrown when
  * setting/getting invalid property values.
  * @author Pascal Essiembre
  * @see Properties
  */
+@StandardException
 public class PropertiesException extends RuntimeException {
-
     private static final long serialVersionUID = 3040976896770771979L;
-
-    public PropertiesException(final String msg) {
-        super(msg);
-    }
-    public PropertiesException(final Throwable cause) {
-        super(cause);
-    }
-    public PropertiesException(final String msg, final Throwable cause) {
-        super(msg, cause);
-    }
 }
