@@ -1,4 +1,4 @@
-/* Copyright 2018-2020 Norconex Inc.
+/* Copyright 2018-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,35 +16,49 @@ package com.norconex.commons.lang.map;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.function.Predicate;
 
+import com.norconex.commons.lang.collection.CollectionUtil;
+
 /**
- * Holds a collection of {@link PropertyMatcher} to perform tests/replace on
- * all of them at once.
+ * Holds a collection of {@link PropertyMatcher} to perform multiple matches
+ * or replacements at once.
  * @author Pascal Essiembre
  * @since 2.0.0
  */
-//TODO check if nulls are inserted and do not add if null?
 public class PropertyMatchers extends ArrayList<PropertyMatcher>
         implements Predicate<Properties> {
 
     private static final long serialVersionUID = 1L;
 
-    public PropertyMatchers() {
-        super();
-    }
-
     /**
-     * Adds one or more property matchers.
+     * Adds one or more property matchers. A <code>null</code> array
+     * as well as <code>null</code> array elements are not added.
      * @param matchers property matchers
+     * @return <code>true</code> if this list chanced as a result of the call
      */
-    public void addAll(PropertyMatcher... matchers) {
-        addAll(Arrays.asList(matchers));
+    public boolean addAll(PropertyMatcher... matchers) {
+        if (matchers == null) {
+            return false;
+        }
+        return addAll(Arrays.asList(matchers));
+    }
+
+    @Override
+    public boolean addAll(Collection<? extends PropertyMatcher> matchers) {
+        if (matchers == null) {
+            return false;
+        }
+        List<PropertyMatcher> nullFree = new ArrayList<>(matchers);
+        CollectionUtil.removeNulls(nullFree);
+        return super.addAll(nullFree);
     }
 
     /**
-     * Removes all matchers for a given field.
+     * Removes all matchers matching the given property field.
      * @param field the field to remove matchers on
      * @return how many matchers were removed
      */
@@ -63,12 +77,16 @@ public class PropertyMatchers extends ArrayList<PropertyMatcher>
 
     /**
      * Returns <code>true</code> if any of the properties key and values
-     * match any of the property matchers.
+     * match any of the property matchers (only one property matcher needs
+     * to match). Returns <code>false</code>
+     * if the supplied argument is <code>null</code>.
      * @param properties the properties to look for a match
-     * @return <code>true</code> if at least one value for the key matches
-     * the list of matcher regular expressions
+     * @return <code>true</code> if one property matcher matches.
      */
     public boolean matches(Properties properties) {
+        if (properties == null) {
+            return false;
+        }
         for (PropertyMatcher matcher : this) {
             if (matcher.test(properties)) {
                 return true;
@@ -92,6 +110,8 @@ public class PropertyMatchers extends ArrayList<PropertyMatcher>
     /**
      * Returns a new instance that is a subset of the given properties,
      * containing only keys and matching values.
+     * Returns an empty <code>Properties</code> instance
+     * if the supplied argument is <code>null</code>.
      * @param properties the properties to look for a match
      * @return a list of matching values, or an empty list
      * @see #test(Properties)
@@ -110,10 +130,14 @@ public class PropertyMatchers extends ArrayList<PropertyMatcher>
         return props;
     }
     /**
+     * Replaces all matching values of the matching keys in the given
+     * {@link Properties} with the given replacement.
      * Returns properties that were replaced (or empty).
+     * Returns an empty <code>Properties</code> instance
+     * if the supplied argument is <code>null</code>.
      * @param properties the properties to look for a match and replace
      * @param replacement text replacement
-     * @return properties that were replaced
+     * @return properties that were replaced with their original values
      */
     public Properties replace(Properties properties, String replacement) {
         Properties props = new Properties();

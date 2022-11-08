@@ -41,14 +41,34 @@ import com.norconex.commons.lang.xml.XML;
  * @since 2.0.0
  */
 public enum PropertySetter {
-    APPEND((p, k, v) -> p.addList(k, v)),
+    /**
+     * Inserts supplied value(s) at the end of an existing list of values
+     * associated with the supplied key.
+     * If there are no matching keys or the key has no associated value(s),
+     * the supplied value(s) are set like a normal list addition.
+     */
+    APPEND(Properties::addList),
+    /**
+     * Inserts supplied value(s) at the beginning of an existing list of values.
+     * If there are no matching keys or the key has no associated value(s),
+     * the supplied value(s) are set like a normal list addition.
+     */
     PREPEND((p, k, v) -> {
         List<Object> fullList = new ArrayList<>(p.getStrings(k));
         fullList.addAll(0, v);
         p.setList(k, fullList);
     }),
-    REPLACE((p, k, v) -> p.setList(k, v)),
-    // only if not set
+    /**
+     * Replaces all value(s) already existing for a matching key with the
+     * supplied one(s).
+     * If there are no matching keys or the key has no associated value(s),
+     * the supplied value(s) are set like a normal list addition.
+     */
+    REPLACE(Properties::setList),
+    /**
+     * Only set supplied value(s) if the supplied key does not exist or
+     * if it does not have any values associated.
+     */
     OPTIONAL((p, k, v) -> {
         if (CollectionUtils.isEmpty(p.get(k))) {
             p.setList(k, v);
@@ -56,11 +76,23 @@ public enum PropertySetter {
     });
 
     private final Strategy s;
-    private PropertySetter(Strategy s) {
+    PropertySetter(Strategy s) {
         this.s = s;
     }
+
+    /**
+     * Applies the <code>PropertySetter</code> strategy on the supplied
+     * properties with the given key and value.  Supplying a
+     * <code>null</code> properties argument as no effect.
+     * @param properties the properties to possibly add a key/value to
+     * @param key the key on which we set value
+     * @param value the value to possibly set
+     */
     public void apply(Properties properties, String key, Object value) {
-        this.s.apply(properties, key, CollectionUtil.adaptedList(value));
+        if (properties == null) {
+            return;
+        }
+        s.apply(properties, key, CollectionUtil.adaptedList(value));
     }
 
     public static PropertySetter from(
@@ -106,10 +138,15 @@ public enum PropertySetter {
 
     // Gets from XML, returns default value if not defined
     public static PropertySetter fromXML(XML xml, PropertySetter defaultValue) {
+        if (xml == null) {
+            return defaultValue;
+        }
         return xml.getEnum("@onSet", PropertySetter.class, defaultValue);
     }
     public static void toXML(XML xml, PropertySetter setter) {
-        xml.setAttribute("onSet", setter);
+        if (xml != null) {
+            xml.setAttribute("onSet", setter);
+        }
     }
 
     @FunctionalInterface

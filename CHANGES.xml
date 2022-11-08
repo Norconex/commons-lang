@@ -162,6 +162,10 @@
       <action dev="essiembre" type="update">
         PropertyMatcher now support null field and value matchers.
       </action>
+      <action dev="essiembre" type="update">
+        PropertyMatchers#addAll(varargs) now returns a boolean with a true
+        value if the list has changed. Null values are now ignored.
+      </action>
       <action dev="essiembre" type="add">
         TextMatcher now considers null values as non-matching by defualt.
       </action>

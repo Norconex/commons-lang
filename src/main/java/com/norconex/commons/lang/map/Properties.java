@@ -36,6 +36,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -43,6 +44,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -920,14 +922,14 @@ public class Properties extends ObservableMap<String, List<String>>
         if (CollectionUtils.isEmpty(values)) {
             return;
         }
-        List<String> list = get(key);
-        if (list == null) {
-            list = new ArrayList<>(values.size());
-        }
+        // obtained list could be immutable so we wrap it in a mutable one
+        List<String> list = new ArrayList<>(
+                Optional.ofNullable(get(key)).orElse(Collections.emptyList()));
         List<String> newList = CollectionUtil.toStringList(values);
         //MAYBE benchmark if an issue with long lists to do a separate
         //iteration for converting nulls
         CollectionUtil.nullsToEmpties(newList);
+
         list.addAll(newList);
         put(key, list);
     }
