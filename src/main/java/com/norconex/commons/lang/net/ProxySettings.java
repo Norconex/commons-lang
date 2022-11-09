@@ -1,4 +1,4 @@
-/* Copyright 2018-2020 Norconex Inc.
+/* Copyright 2018-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,15 @@ package com.norconex.commons.lang.net;
 
 import java.io.Serializable;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
-
 import com.norconex.commons.lang.bean.BeanUtil;
-import com.norconex.commons.lang.encrypt.EncryptionKey;
 import com.norconex.commons.lang.security.Credentials;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
+
+import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+import lombok.experimental.FieldNameConstants;
 
 /**
  * <p>
@@ -51,6 +50,9 @@ import com.norconex.commons.lang.xml.XML;
  * @since 1.14.0
  */
 @SuppressWarnings("javadoc")
+@ToString
+@EqualsAndHashCode
+@FieldNameConstants(level = AccessLevel.PRIVATE)
 public class ProxySettings implements IXMLConfigurable, Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -60,15 +62,11 @@ public class ProxySettings implements IXMLConfigurable, Serializable {
     private final Credentials credentials = new Credentials();
     private String realm;
 
-    public ProxySettings() {
-        super();
-    }
+    public ProxySettings() {}
     public ProxySettings(String name, int port) {
-        super();
-        this.host = new Host(name, port);
+        this(new Host(name, port));
     }
     public ProxySettings(Host host) {
-        super();
         this.host = host;
     }
 
@@ -147,159 +145,6 @@ public class ProxySettings implements IXMLConfigurable, Serializable {
         return this;
     }
 
-    /**
-     * Gets the proxy host.
-     * @return proxy host
-     * @deprecated Since 2.0.0, use {@link #getHost()}.
-     */
-    @Deprecated
-    public String getProxyHost() {
-        if (host != null) {
-            return host.getName();
-        }
-        return null;
-    }
-    /**
-     * Sets proxy host.
-     * @param proxyHost proxy host
-     * @return this
-     * @deprecated Since 2.0.0, use {@link #setHost(Host)}.
-     */
-    @Deprecated
-    public ProxySettings setProxyHost(String proxyHost) {
-        if (this.host != null) {
-            this.host = new Host(proxyHost, host.getPort());
-        }
-        return this;
-    }
-
-    /**
-     * Gets the proxy port.
-     * @return proxy port
-     * @deprecated Since 2.0.0, use {@link #getHost()}.
-     */
-    @Deprecated
-    public int getProxyPort() {
-        if (host != null) {
-            return host.getPort();
-        }
-        return 0;
-    }
-    /**
-     * Sets proxy port.
-     * @param proxyPort proxy port
-     * @return this
-     * @deprecated Since 2.0.0, use {@link #setHost(Host)}.
-     */
-    @Deprecated
-    public ProxySettings setProxyPort(int proxyPort) {
-        if (this.host != null) {
-            this.host = new Host(host.getName(), proxyPort);
-        }
-        return this;
-    }
-
-    /**
-     * Gets the proxy scheme.
-     * @return proxy scheme
-     * @deprecated Since 2.0.0, use {@link #getScheme()}.
-     */
-    @Deprecated
-    public String getProxyScheme() {
-        return getScheme();
-    }
-    /**
-     * Sets proxy scheme.
-     * @param proxyScheme proxy scheme
-     * @return this
-     * @deprecated Since 2.0.0, use {@link #setScheme(String)}.
-     */
-    @Deprecated
-    public ProxySettings setProxyScheme(String proxyScheme) {
-        return setScheme(proxyScheme);
-    }
-
-    /**
-     * Gets proxy username.
-     * @return proxy username
-     * @deprecated Since 2.0.0, use {@link #getCredentials()}.
-     */
-    @Deprecated
-    public String getProxyUsername() {
-        return  credentials.getUsername();
-    }
-    /**
-     * Sets proxy username.
-     * @param proxyUsername proxy username
-     * @return this instance
-     * @deprecated Since 2.0.0, use {@link #setCredentials(Credentials)}.
-     */
-    @Deprecated
-    public ProxySettings setProxyUsername(String proxyUsername) {
-        this.credentials.setUsername(proxyUsername);
-        return this;
-    }
-    /**
-     * Gets proxy password.
-     * @return proxy password
-     * @deprecated Since 2.0.0, use {@link #getCredentials()}.
-     */
-    @Deprecated
-    public String getProxyPassword() {
-        return credentials.getPassword();
-    }
-    /**
-     * Sets proxy password.
-     * @param proxyPassword proxy password
-     * @return this instance
-     * @deprecated Since 2.0.0,
-     *             use {@link #setCredentials(Credentials)}.
-     */
-    @Deprecated
-    public ProxySettings setProxyPassword(String proxyPassword) {
-        this.credentials.setPassword(proxyPassword);
-        return this;
-    }
-    /**
-     * Gets proxy password key.
-     * @return proxy password key
-     * @deprecated Since 2.0.0, use {@link #getCredentials()}.
-     */
-    @Deprecated
-    public EncryptionKey getProxyPasswordKey() {
-        return credentials.getPasswordKey();
-    }
-    /**
-     * Sets proxy password key.
-     * @param proxyPasswordKey proxy password key
-     * @return this instance
-     * @deprecated Since 2.0.0, use {@link #setCredentials(Credentials)}.
-     */
-    @Deprecated
-    public ProxySettings setProxyPasswordKey(EncryptionKey proxyPasswordKey) {
-        this.credentials.setPasswordKey(proxyPasswordKey);
-        return this;
-    }
-    /**
-     * Gets proxy realm.
-     * @return proxy realm
-     * @deprecated Since 2.0.0, use {@link #getRealm()}.
-     */
-    @Deprecated
-    public String getProxyRealm() {
-        return realm;
-    }
-    /**
-     * Sets proxy realm.
-     * @param proxyRealm proxy realm
-     * @return this instance
-     * @deprecated Since 2.0.0, use {@link #setRealm(String)}.
-     */
-    @Deprecated
-    public ProxySettings setProxyRealm(String proxyRealm) {
-        this.realm = proxyRealm;
-        return this;
-    }
     public boolean isSet() {
         return host != null && host.isSet();
     }
@@ -314,39 +159,25 @@ public class ProxySettings implements IXMLConfigurable, Serializable {
     @Override
     public void loadFromXML(XML xml) {
         if (xml != null) {
-            xml.checkDeprecated("proxyHost", "host", true);
-            xml.checkDeprecated("proxyPort", "port", true);
-            xml.checkDeprecated("proxyScheme", "scheme", true);
-            xml.checkDeprecated("proxyRealm", "realm", true);
-            //TODO make host IXMLConfigurable and use populate() ?
-            host = Host.loadFromXML(xml.getXML("host"), host);
-            scheme = xml.getString("scheme", scheme);
-            realm = xml.getString("realm", realm);
-            xml.ifXML("credentials", x -> x.populate(credentials));
+            xml.checkDeprecated("proxyHost", Fields.host, true);
+            xml.checkDeprecated("proxyPort", Fields.host, true);
+            xml.checkDeprecated("proxyScheme", Fields.scheme, true);
+            xml.checkDeprecated("proxyRealm", Fields.realm, true);
+            //MAYBE: make host IXMLConfigurable and use populate() ?
+            host = Host.loadFromXML(xml.getXML(Fields.host), host);
+            scheme = xml.getString(Fields.scheme, scheme);
+            realm = xml.getString(Fields.realm, realm);
+            xml.ifXML(Fields.credentials, x -> x.populate(credentials));
         }
     }
 
     @Override
     public void saveToXML(XML xml) {
         if (xml != null) {
-            Host.saveToXML(xml.addElement("host"), host);
-            xml.addElement("scheme", scheme);
-            xml.addElement("realm", realm);
-            credentials.saveToXML(xml.addElement("credentials"));
+            Host.saveToXML(xml.addElement(Fields.host), host);
+            xml.addElement(Fields.scheme, scheme);
+            xml.addElement(Fields.realm, realm);
+            credentials.saveToXML(xml.addElement(Fields.credentials));
         }
-    }
-
-    @Override
-    public boolean equals(final Object other) {
-        return EqualsBuilder.reflectionEquals(this, other);
-    }
-    @Override
-    public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this);
-    }
-    @Override
-    public String toString() {
-        return new ReflectionToStringBuilder(
-                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

@@ -1,4 +1,4 @@
-/* Copyright 2014-2019 Norconex Inc.
+/* Copyright 2014-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,35 +17,37 @@ package com.norconex.commons.lang.pipeline;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.norconex.commons.lang.function.Predicates;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Represent a very simple pipeline container for a list of executable tasks
  * called "pipeline stages" (defined using
- * {@link IPipelineStage}).
- * This pipeline class can also be used a pipeline stage to create
+ * {@link Predicate}).
+ * This pipeline class can also be used as a pipeline stage to create
  * pipe hierarchies.
- * For more sophisticated work flow needs, consider using a more advanced
+ * Any of the pipeline stages returning <code>false</code> effectively
+ * puts an end to the pipeline execution.
+ * For more sophisticated workflow needs, consider using a more advanced
  * framework.
  * @author Pascal Essiembre
  * @param <T> pipeline context type
  * @since 1.5.0
+ * @deprecated Use {@link Predicates} or {@link Predicate} chaining instead
  */
-//TODO make it implement List?
-public class Pipeline<T> implements IPipelineStage<T> {
-
-    private static final Logger LOG = LoggerFactory.getLogger(Pipeline.class);
+@Deprecated(since="3.0.0")
+@Slf4j
+public class Pipeline<T> implements IPipelineStage<T> { // NOSONAR
 
     private final List<IPipelineStage<T>> stages = new ArrayList<>();
 
     /**
      * Constructor.
      */
-    public Pipeline() {
-        super();
-    }
+    public Pipeline() {}
     /**
      * Creates a new pipeline with the specified stages.
      * @param stages the stages to execute
@@ -89,13 +91,10 @@ public class Pipeline<T> implements IPipelineStage<T> {
     public boolean execute(T context) {
         for (IPipelineStage<T> stage : stages) {
             if (!stage.execute(context)) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Pipeline execution stopped at stage: {}", stage);
-                }
+                LOG.debug("Pipeline execution stopped at stage: {}", stage);
                 return false;
             }
         }
         return true;
     }
-
 }

@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,23 @@
  */
 package com.norconex.commons.lang.pipeline;
 
+import java.util.function.Predicate;
 
 /**
  * A logical step in the pipepline.  Typically an action to be executed.
  * @author Pascal Essiembre
  * @param <T> pipeline context type
  * @since 1.5.0
+ * @deprecated Use {@link Predicate} instead.
  */
-public interface IPipelineStage<T> {
+@Deprecated(since="3.0.0")
+@FunctionalInterface
+public interface IPipelineStage<T> extends Predicate<T> { // NOSONAR
+
+    @Override
+    default boolean test(T t) {
+        return execute(t);
+    }
 
     /**
      * Executes this pipeline stage.  Implementors are encouraged to throw

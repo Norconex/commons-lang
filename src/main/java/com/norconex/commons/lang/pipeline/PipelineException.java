@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,29 +14,14 @@
  */
 package com.norconex.commons.lang.pipeline;
 
+import lombok.experimental.StandardException;
+
 /**
  * Exception thrown when pipeline could not be executed properly.
  * @author Pascal Essiembre
  * @since 1.5.0
  */
+@StandardException
 public class PipelineException extends RuntimeException {
-
     private static final long serialVersionUID = -805913995358009121L;
-
-    public PipelineException() {
-        super();
-    }
-
-    public PipelineException(String message) {
-        super(message);
-    }
-
-    public PipelineException(Throwable cause) {
-        super(cause);
-    }
-
-    public PipelineException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
 }

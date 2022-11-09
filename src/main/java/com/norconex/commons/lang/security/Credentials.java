@@ -1,4 +1,4 @@
-/* Copyright 2020 Norconex Inc.
+/* Copyright 2020-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,6 @@ package com.norconex.commons.lang.security;
 import java.io.Serializable;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
@@ -27,6 +25,10 @@ import com.norconex.commons.lang.encrypt.EncryptionKey;
 import com.norconex.commons.lang.encrypt.EncryptionUtil;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
+
+import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.FieldNameConstants;
 
 /**
  * <p>
@@ -101,6 +103,8 @@ import com.norconex.commons.lang.xml.XML;
  * @see EncryptionKey
  * @see EncryptionUtil
  */
+@EqualsAndHashCode
+@FieldNameConstants(level = AccessLevel.PRIVATE)
 public class Credentials implements IXMLConfigurable, Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -109,11 +113,32 @@ public class Credentials implements IXMLConfigurable, Serializable {
     private String password;
     private EncryptionKey passwordKey;
 
-    public Credentials() {
-        super();
+    public Credentials() {}
+    /**
+     * Creates a new Credentials instance with the supplied username and
+     * password.
+     * @param username the username
+     * @param password the password
+     * @since 3.0.0
+     */
+    public Credentials(String username, String password) {
+        this(username, password, null);
+    }
+    /**
+     * Creates a new Credentials instance with the supplied username,
+     * password and password key.
+     * @param username the username
+     * @param password the password
+     * @param passwordKey the password encryption key
+     * @since 3.0.0
+     */
+    public Credentials(
+            String username, String password, EncryptionKey passwordKey) {
+        this.username = username;
+        this.password = password;
+        this.passwordKey = passwordKey;
     }
     public Credentials(Credentials copy) {
-        super();
         copyFrom(copy);
     }
 
@@ -156,34 +181,28 @@ public class Credentials implements IXMLConfigurable, Serializable {
     @Override
     public void loadFromXML(XML xml) {
         if (xml != null) {
-            setUsername(xml.getString("username", getUsername()));
-            setPassword(xml.getString("password", getPassword()));
+            setUsername(xml.getString(Fields.username, getUsername()));
+            setPassword(xml.getString(Fields.password, getPassword()));
             setPasswordKey(EncryptionKey.loadFromXML(
-                    xml.getXML("passwordKey"), passwordKey));
+                    xml.getXML(Fields.passwordKey), passwordKey));
         }
     }
     @Override
     public void saveToXML(XML xml) {
         if (xml != null) {
-            xml.addElement("username", getUsername());
-            xml.addElement("password", getPassword());
-            EncryptionKey.saveToXML(xml.addElement("passwordKey"), passwordKey);
+            xml.addElement(Fields.username, getUsername());
+            xml.addElement(Fields.password, getPassword());
+            EncryptionKey.saveToXML(
+                    xml.addElement(Fields.passwordKey), passwordKey);
         }
     }
-    @Override
-    public boolean equals(final Object other) {
-        return EqualsBuilder.reflectionEquals(this, other);
-    }
-    @Override
-    public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this);
-    }
+
     @Override
     public String toString() {
         return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-            .append("username", username)
-            .append("password", "********")
-            .append("passwordKey", passwordKey)
+            .append(Fields.username, username)
+            .append(Fields.password, "********")
+            .append(Fields.passwordKey, passwordKey)
             .toString();
     }
 }

@@ -81,10 +81,11 @@ public class Predicates<T> extends ArrayList<Predicate<T>>
     @Override
     public boolean test(T t) {
         for (Predicate<T> predicate : this) {
-            if (!predicate.test(t) && !any) {
+            boolean result = predicate.test(t);
+            if (!result && !any) {
                 return false;
             }
-            if (predicate.test(t) && any) {
+            if (result && any) {
                 return true;
             }
         }

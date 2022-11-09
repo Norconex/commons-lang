@@ -1,4 +1,4 @@
-/* Copyright 2020-2021 Norconex Inc.
+/* Copyright 2020-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,10 @@ package com.norconex.commons.lang.net;
 import java.io.Serializable;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import com.norconex.commons.lang.xml.XML;
+
+import lombok.EqualsAndHashCode;
 
 /**
  * Holds a host name and port.
@@ -32,6 +32,7 @@ import com.norconex.commons.lang.xml.XML;
  * @author Pascal Essiembre
  * @since 2.0.0
  */
+@EqualsAndHashCode
 public final class Host implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -40,7 +41,6 @@ public final class Host implements Serializable {
     private int port = -1;
 
     public Host(String name, int port) {
-        super();
         this.name = name;
         this.port = port;
     }
@@ -62,14 +62,6 @@ public final class Host implements Serializable {
         return new Host(getName(), port);
     }
 
-    @Override
-    public boolean equals(final Object other) {
-        return EqualsBuilder.reflectionEquals(this, other);
-    }
-    @Override
-    public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this);
-    }
     @Override
     public String toString() {
         return name + ":" + port;
