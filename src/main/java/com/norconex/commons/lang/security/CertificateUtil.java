@@ -1,4 +1,4 @@
-/* Copyright 2020 Norconex Inc.
+/* Copyright 2020-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import com.norconex.commons.lang.url.HttpURL;
 
 import jakarta.xml.bind.DatatypeConverter;
+import lombok.NonNull;
 
 /**
  * Certificate-related (e.g., SSL) utility methods.
@@ -45,15 +46,14 @@ import jakarta.xml.bind.DatatypeConverter;
  */
 public final class CertificateUtil {
 
-    //TODO make those configurable: protocol, provider, algorithm
-    //TODO maybe in config, have the ability to specify which host to trust
+    //MAYBE: make those configurable: protocol, provider, algorithm
+    //MAYBE: maybe provide option to specify which host to trust
     // with a matcher (.* for all).
 
     private static final Logger LOG =
             LoggerFactory.getLogger(CertificateUtil.class);
 
-    private CertificateUtil() {
-    }
+    private CertificateUtil() {}
 
     /**
      * Fetches certificates associated with the URL host.
@@ -62,11 +62,12 @@ public final class CertificateUtil {
      * @throws GeneralSecurityException certificate exception
      * @throws IOException I/O exception
      */
-    public static List<X509Certificate> fetchCertificates(String url)
+    public static List<X509Certificate> fetchCertificates(@NonNull String url)
             throws GeneralSecurityException, IOException {
         HttpURL u = new HttpURL(url);
         return fetchCertificates(u.getHost(), u.getPort());
     }
+
     /**
      * Fetches certificates associated with the given host and port.
      * @param host from which to fetch certificates
@@ -75,8 +76,9 @@ public final class CertificateUtil {
      * @throws GeneralSecurityException certificate exception
      * @throws IOException I/O exception
      */
-    public static List<X509Certificate> fetchCertificates(String host, int port)
-            throws GeneralSecurityException, IOException {
+    public static List<X509Certificate> fetchCertificates(
+            @NonNull String host, int port)
+                    throws GeneralSecurityException, IOException {
         List<X509Certificate> certs = new ArrayList<>();
         fetchCertificates(certs, host, port, null);
         return certs;
@@ -91,8 +93,9 @@ public final class CertificateUtil {
      * @throws GeneralSecurityException certificate exception
      * @throws IOException I/O exception
      */
-    public static boolean isTrusted(String host, int port, KeyStore keyStore)
-            throws GeneralSecurityException, IOException {
+    public static boolean isTrusted(
+            @NonNull String host, int port, KeyStore keyStore)
+                    throws GeneralSecurityException, IOException {
         return fetchCertificates(new ArrayList<>(), host, port, keyStore);
     }
 
@@ -107,7 +110,7 @@ public final class CertificateUtil {
      * @throws GeneralSecurityException certificate exception
      * @throws IOException I/O exception
      */
-    public static int trustHost(String url, KeyStore keyStore)
+    public static int trustHost(@NonNull String url, KeyStore keyStore)
             throws GeneralSecurityException, IOException {
         HttpURL u = new HttpURL(url);
         return trustHost(u.getHost(), u.getPort(), keyStore);
@@ -125,8 +128,9 @@ public final class CertificateUtil {
      * @throws GeneralSecurityException certificate exception
      * @throws IOException I/O exception
      */
-    public static int trustHost(String host, int port, KeyStore keyStore)
-            throws GeneralSecurityException, IOException {
+    public static int trustHost(
+            @NonNull String host, int port, KeyStore keyStore)
+                    throws GeneralSecurityException, IOException {
         List<X509Certificate> certs = new ArrayList<>();
         boolean trusted = fetchCertificates(certs, host, port, keyStore);
         if (LOG.isDebugEnabled()) {
@@ -150,7 +154,7 @@ public final class CertificateUtil {
      * @return string display of certificates
      * @throws GeneralSecurityException certificate exception
      */
-    public static String toString(List<X509Certificate> certificates)
+    public static String toString(@NonNull List<X509Certificate> certificates)
             throws GeneralSecurityException {
         MessageDigest sha1 = MessageDigest.getInstance("SHA1");
         MessageDigest md5 = MessageDigest.getInstance("MD5");
@@ -216,13 +220,13 @@ public final class CertificateUtil {
             return chain;
         }
         @Override
-        public X509Certificate[] getAcceptedIssuers() {
-            throw new UnsupportedOperationException();
+        public X509Certificate[] getAcceptedIssuers() { // NOSONAR
+            return chain;
         }
         @Override
         public void checkClientTrusted(X509Certificate[] chain, String authType)
                 throws CertificateException {
-            throw new UnsupportedOperationException();
+            tm.checkClientTrusted(chain, authType);
         }
         @Override
         public void checkServerTrusted(X509Certificate[] chain, String authType)

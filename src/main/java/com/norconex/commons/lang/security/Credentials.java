@@ -27,7 +27,8 @@ import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 
 import lombok.AccessLevel;
-import lombok.EqualsAndHashCode;
+import lombok.Data;
+import lombok.experimental.Accessors;
 import lombok.experimental.FieldNameConstants;
 
 /**
@@ -103,8 +104,9 @@ import lombok.experimental.FieldNameConstants;
  * @see EncryptionKey
  * @see EncryptionUtil
  */
-@EqualsAndHashCode
 @FieldNameConstants(level = AccessLevel.PRIVATE)
+@Data
+@Accessors(chain = true)
 public class Credentials implements IXMLConfigurable, Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -113,7 +115,9 @@ public class Credentials implements IXMLConfigurable, Serializable {
     private String password;
     private EncryptionKey passwordKey;
 
-    public Credentials() {}
+    public Credentials() {
+        this(null, null);
+    }
     /**
      * Creates a new Credentials instance with the supplied username and
      * password.
@@ -147,28 +151,6 @@ public class Credentials implements IXMLConfigurable, Serializable {
     }
     public boolean isEmpty() {
         return StringUtils.isAllBlank(username, password);
-    }
-
-    public String getPassword() {
-        return password;
-    }
-    public Credentials setPassword(String password) {
-        this.password = password;
-        return this;
-    }
-    public EncryptionKey getPasswordKey() {
-        return passwordKey;
-    }
-    public Credentials setPasswordKey(EncryptionKey passwordKey) {
-        this.passwordKey = passwordKey;
-        return this;
-    }
-    public String getUsername() {
-        return username;
-    }
-    public Credentials setUsername(String username) {
-        this.username = username;
-        return this;
     }
 
     public void copyTo(Credentials creds) {
