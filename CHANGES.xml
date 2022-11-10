@@ -170,6 +170,9 @@
         PropertyMatchers#addAll(varargs) now returns a boolean with a true
         value if the list has changed. Null values are now ignored.
       </action>
+      <action dev="essiembre" type="update">
+        Regex#setFlags now returns itself.
+      </action>
       <action dev="essiembre" type="add">
         TextMatcher now considers null values as non-matching by defualt.
       </action>

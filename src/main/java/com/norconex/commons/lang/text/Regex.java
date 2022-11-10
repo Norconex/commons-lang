@@ -19,6 +19,7 @@ import java.text.Normalizer.Form;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -104,7 +105,8 @@ public class Regex implements IXMLConfigurable {
             Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
 
     private static final Pattern ESCAPE_PATTERN = Pattern.compile(
-            "[" + ("<([{\\^-=$!|]})?*+.>".replaceAll(".", "\\\\$0")) + "]");
+            "[" + ("<([{\\^-=$!|]})?*+.>".replaceAll(
+                    ".", "\\\\$0")) + "]"); // NOSONAR not a misuse: intended
 
     private String pattern;
     private final Set<Integer> flags = new HashSet<>();
@@ -291,11 +293,12 @@ public class Regex implements IXMLConfigurable {
         return setTrim(true);
     }
 
-    public void setFlags(int... flags) {
+    public Regex setFlags(int... flags) {
         this.flags.clear();
         if (flags != null) {
             this.flags.addAll(Arrays.asList(ArrayUtils.toObject(flags)));
         }
+        return this;
     }
     public Set<Integer> getFlags() {
         return Collections.unmodifiableSet(flags);
@@ -410,7 +413,7 @@ public class Regex implements IXMLConfigurable {
      */
     public Matcher matcher(String pattern, CharSequence text) {
         String p = pattern;
-        String t = text.toString();
+        String t = Objects.toString(text, null);
         if (trim) {
             t = StringUtils.trim(t);
         }

@@ -1,4 +1,4 @@
-/* Copyright 2019-2020 Norconex Inc.
+/* Copyright 2019-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,13 @@
  */
 package com.norconex.commons.lang.text;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.assertThatNoException;
+
 import java.text.Collator;
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -25,10 +30,38 @@ import com.norconex.commons.lang.xml.XML;
 /**
  * @author Pascal Essiembre
  */
-public class RegexTest {
+class RegexTest {
 
     @Test
-    public void testMarkInsensitive() {
+    void testMisc() {
+        assertThatExceptionOfType(IllegalArgumentException.class)
+            .isThrownBy(() -> new Regex().compile(null)); //NOSONAR
+        assertThatExceptionOfType(IllegalArgumentException.class)
+            .isThrownBy(() -> Regex.compileDotAll(null, false)); //NOSONAR
+        assertThat(Regex.escape(null)).isNull();
+        assertThat(new Regex("blah").createKeyValueExtractor().getRegex())
+            .isEqualTo(new Regex("blah"));
+        assertThat(new Regex("blah").createKeyValueExtractor("key").getRegex())
+            .isEqualTo(new Regex("blah"));
+        assertThat(new Regex("blah").createKeyValueExtractor("key", 1)
+            .getRegex()).isEqualTo(new Regex("blah"));
+        assertThat(new Regex("blah").createKeyValueExtractor(1, 2).getRegex())
+            .isEqualTo(new Regex("blah"));
+
+        assertThat(new Regex("blah")
+            .trim()
+            .matchEmpty()
+            .matcher(null)
+            .pattern()).hasToString(".*");
+        assertThat(new Regex("blah")
+            .trim()
+            .setMatchEmpty(false)
+            .matcher(null)
+            .pattern()).hasToString("(?=x)(?!x)");
+    }
+
+    @Test
+    void testMarkInsensitive() {
         String pattern = "(èg)";
         String[] tests = {
                 "\u00e9gal",  // égal
@@ -46,14 +79,12 @@ public class RegexTest {
             String replaced = regex.matcher(test).replaceFirst("[$1]rég");
             String expected = "[" + test.replaceFirst("al", "") + "]régal";
             Collator collator = Collator.getInstance(Locale.FRENCH);
-            Assertions.assertTrue(collator.compare(
-                    expected, replaced) == 0,
-                            expected + "not matching" + replaced);
+            assertThat(collator.compare(expected, replaced)).isZero();
         }
     }
 
     @Test
-    public void testMarkInsensitiveWithEscape() {
+    void testMarkInsensitiveWithEscape() {
         String t = "one.*(two).?three(?Twô)*öne";
         String p = "one.*(two).?three(?twò)*oNé";
         p = Regex.escape(p);
@@ -64,10 +95,54 @@ public class RegexTest {
     }
 
     @Test
-    public void testWriteRead() {
-        Regex r = new Regex("mypattern")
+    void testFluentAndFlags() {
+        assertThat(
+            new Regex(".*")
+                .canonEq()
+                .comments()
+                .dotAll()
+                .literal()
+                .matchEmpty()
+                .multiline()
+                .trim()
+                .unicodeCase()
+                .unicodeCharacterClass()
+                .unixLines()
+        ).isEqualTo(
+            new Regex(".*")
                 .setCanonEq(true)
-                .setMultiline(true);
-        XML.assertWriteRead(r, "regex");
+                .setComments(true)
+                .setDotAll(true)
+                .setLiteral(true)
+                .setMatchEmpty(true)
+                .setMultiline(true)
+                .setTrim(true)
+                .setUnicodeCase(true)
+                .setUnicodeCharacterClass(true)
+                .setUnixLines(true)
+        );
+
+        assertThat(
+            new Regex(".*", Pattern.DOTALL, Pattern.CASE_INSENSITIVE)
+                .setFlags(Pattern.MULTILINE, Pattern.CANON_EQ)
+        ).isEqualTo(
+            new Regex()
+                .setPattern(".*")
+                .multiline()
+                .canonEq()
+        );
+
+        assertThat(new Regex("example.com")
+                .setFlags(Pattern.DOTALL, Regex.UNICODE_CASE_INSENSTIVE_FLAG)
+                    .compile().pattern())
+            .isEqualTo(Regex.compileDotAll("example.com", true).pattern());
+    }
+
+    @Test
+    void testWriteRead() {
+        assertThatNoException().isThrownBy(() ->
+            XML.assertWriteRead(new Regex("mypattern")
+                    .setCanonEq(true)
+                    .setMultiline(true), "regex"));
     }
 }

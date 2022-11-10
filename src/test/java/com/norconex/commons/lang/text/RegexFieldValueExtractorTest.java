@@ -1,4 +1,4 @@
-/* Copyright 2017-2020 Norconex Inc.
+/* Copyright 2017-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,26 +26,23 @@ import com.norconex.commons.lang.xml.XML;
 /**
  * @author Pascal Essiembre
  */
-public class RegexFieldValueExtractorTest {
+class RegexFieldValueExtractorTest {
 
     @Test
-    public void testExtractFields() {
+    void testExtractFields() {
 
         String xml = ResourceLoader.getXmlString(
                 RegexFieldValueExtractorTest.class);
         Properties fields = RegexFieldValueExtractor.extractFieldValues(xml,
             //Test 1) no match group, returning whole match as value
-            new RegexFieldValueExtractor("<div class=\"value\">(.*?)</div>")
-                .setToField("test1"),
+            new RegexFieldValueExtractor(
+                    "<div class=\"value\">(.*?)</div>", "test1"),
             //Test 2) 1 match group, returning specified match value
-            new RegexFieldValueExtractor("<div class=\"value\">(.*?)</div>")
-                .setToField("test2")
-                .setValueGroup(1),
+            new RegexFieldValueExtractor(
+                    "<div class=\"value\">(.*?)</div>", "test2", 1),
             //Test 3) 2 match groups, returning field name and values
             new RegexFieldValueExtractor("<div class=\"field\">(.*?)</div>.*?"
-                    + "<div class=\"value\">(.*?)</div>")
-                .setFieldGroup(1)
-                .setValueGroup(2)
+                    + "<div class=\"value\">(.*?)</div>", 1, 2)
         );
 
         //Test 1
@@ -133,7 +130,7 @@ public class RegexFieldValueExtractorTest {
     }
 
     @Test
-    public void testWriteRead() {
+    void testWriteRead() {
         RegexFieldValueExtractor r = new RegexFieldValueExtractor();
         r.setRegex(new Regex(".*something.*", Pattern.UNICODE_CASE));
         r.setToField("mykey");

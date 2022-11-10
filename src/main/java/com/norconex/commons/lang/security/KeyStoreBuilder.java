@@ -1,4 +1,4 @@
-/* Copyright 2020 Norconex Inc.
+/* Copyright 2020-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ import com.norconex.commons.lang.encrypt.EncryptionUtil;
  */
 public final class KeyStoreBuilder {
 
-    //TODO have new class KeyStoreSession or TrustingKeyStore that will
+    //MAYBE: have new class KeyStoreSession or TrustingKeyStore that will
     // automatically trust everything and save back?
 
     private static final Logger LOG =
@@ -54,7 +54,6 @@ public final class KeyStoreBuilder {
     private EncryptionKey passwordKey;
 
     private KeyStoreBuilder(Path storeFile) {
-        super();
         this.storeFile = storeFile;
     }
 
@@ -133,7 +132,7 @@ public final class KeyStoreBuilder {
 
     private char[] passwordArray() {
         if (password == null) {
-            return null;
+            return null; //NOSONAR  KeyStore API expects null to indicate empty
         }
         return EncryptionUtil.decrypt(password, passwordKey).toCharArray();
     }
@@ -170,7 +169,7 @@ public final class KeyStoreBuilder {
     public static KeyStoreBuilder fromFile(Path file) {
         if (file == null || !file.toFile().exists()) {
             throw new IllegalArgumentException(
-                    "KeyStore file does not exist: " + file.toAbsolutePath());
+                    "KeyStore file does not exist: " + file);
         }
         return new KeyStoreBuilder(file);
     }

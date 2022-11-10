@@ -487,7 +487,8 @@ public class TextMatcher implements
     }
 
     /**
-     * Matches this class pattern against its text.
+     * Matches this class pattern against its text. A <code>null</code> pattern
+     * will match all.
      * @param text text to match
      * @return <code>true</code> if matching
      */

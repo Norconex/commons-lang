@@ -15,7 +15,7 @@
 package com.norconex.commons.lang.security;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 
 import org.junit.jupiter.api.Test;
 
@@ -47,6 +47,7 @@ class CredentialsTest {
         assertThat(creds.toString()).contains(
                 "password=********", "EncryptionKey [value=********");
 
-        assertDoesNotThrow(() -> XML.assertWriteRead(creds, "credentials"));
+        assertThatNoException().isThrownBy(
+                () -> XML.assertWriteRead(creds, "credentials"));
     }
 }

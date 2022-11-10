@@ -1,4 +1,4 @@
-/* Copyright 2019-2020 Norconex Inc.
+/* Copyright 2019-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,10 @@
  */
 package com.norconex.commons.lang.text;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
+
+import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.junit.jupiter.api.Assertions;
@@ -28,23 +32,135 @@ import com.norconex.commons.lang.xml.XML;
  * @author Pascal Essiembre
  * @since 2.0.0
  */
-public class TextMatcherTest {
+class TextMatcherTest {
 
     @Test
-    public void testWriteRead() {
-        TextMatcher sr = new TextMatcher()
+    void testMisc() {
+        TextMatcher tm = TextMatcher
+                .basic("blah")
+                .trim()
+                .replaceAll()
+                .ignoreCase();
+        TextMatcher tmCopy = new TextMatcher();
+        tm.copyTo(tmCopy);
+        assertThat(tmCopy).isEqualTo(tm);
+
+        tmCopy = new TextMatcher();
+        tmCopy.copyFrom(tm);
+        assertThat(tmCopy).isEqualTo(tm);
+
+        assertThatNoException().isThrownBy(() -> tm.copyFrom(null));
+        assertThatNoException().isThrownBy(() -> tm.copyTo(null));
+
+        assertThat(TextMatcher.basic(null).test("something")).isTrue();
+    }
+
+    @Test
+    void testReplace() {
+        String text = "un gros-gros éléphant";
+
+        TextMatcher tm = new TextMatcher("gros");
+
+        assertThat(tm
+                .replace(text, "super"))
+                .isEqualTo(text);
+
+        assertThat(tm
+                .withPartial(true)
+                .replace(text, "super"))
+                .isEqualTo("un super-gros éléphant");
+        assertThat(tm
+                .withPartial(true)
+                .withReplaceAll(true)
+                .apply(text, "super"))
+                .isEqualTo("un super-super éléphant");
+
+        assertThat(TextMatcher.csv("GROS")
+                .withPartial(true)
+                .withIgnoreCase(true)
+                .replace(text, "super"))
+                .isEqualTo("un super-gros éléphant");
+
+        assertThat(TextMatcher.wildcard("un * elephant")
+                .withIgnoreDiacritic(true)
+                .replace(text, "un petit ours"))
+                .isEqualTo("un petit ours");
+
+
+        tm.partial();
+        tm.setMethod(Method.REGEX);
+        tm.setReplaceAll(true);
+
+        assertThat(tm
+                .withPattern("(gros.)+")
+                .replace(text, "super "))
+                .isEqualTo("un super éléphant");
+        assertThat(tm
+                .withPattern("ele")
+                .replace(text, "oli"))
+                .isEqualTo("un gros-gros éléphant");
+        assertThat(tm
+                .withPattern("ele")
+                .ignoreDiacritic()
+                .replace(text, "oli"))
+                .isEqualTo("un gros-gros oliphant");
+
+        assertThat(tm
+                .withPattern(null)
+                .replace("aaa", "bbb"))
+                .isEqualTo("aaa");
+    }
+
+    @Test
+    void testTrimAndEmpty() {
+        assertThat(TextMatcher.basic("blah").matches(" blah ")).isFalse();
+        assertThat(TextMatcher.csv("blah").trim().matches(" blah ")).isTrue();
+        assertThat(new TextMatcher()
+                .withMethod(Method.WILDCARD)
+                .withPattern("aaa")
+                .matches(" "))
+                .isFalse();
+        assertThat(TextMatcher.regex("bbb").trim().matches(" ")).isFalse();
+        assertThat(new TextMatcher("ccc", Method.BASIC)
+                .withTrim(true)
+                .withMatchEmpty(true)
+                .matches(" "))
+                .isTrue();
+        assertThat(TextMatcher.basic("ddd")
+                .matchEmpty()
+                .matches(null))
+                .isTrue();
+    }
+
+    @Test
+    void testRegexPattern() {
+        assertThat(
+            TextMatcher
+                .wildcard("ab*ef?h")
+                .toRegexPattern()
+                .pattern()
+        ).isEqualTo(Pattern.compile("ab.*ef.h").pattern());
+    }
+
+    @Test
+    void testWriteRead() {
+        TextMatcher tm = new TextMatcher()
                 .setPattern("mypattern")
-                .setPartial(true)
-                .setIgnoreDiacritic(true)
-                .setIgnoreCase(true)
-                .setReplaceAll(true)
+                .partial()
+                .ignoreDiacritic()
+                .ignoreCase()
+                .replaceAll()
                 .setMethod(Method.WILDCARD);
-        XML.assertWriteRead(sr, "textMatcher");
+        assertThatNoException().isThrownBy(
+                () -> XML.assertWriteRead(tm, "textMatcher"));
+
+        assertThatNoException().isThrownBy(() -> tm.loadFromXML(null));
+        assertThatNoException().isThrownBy(() -> tm.saveToXML(null));
     }
 
     @ParameterizedTest()
     @CsvFileSource(numLinesToSkip = 1, resources = "TextMatcherTest.csv")
-    public void testMatch(
+    void testMatch(
             String text,
             String pattern,
             boolean matchWhole,
@@ -77,6 +193,4 @@ public class TextMatcherTest {
             }
         );
     }
-
-    //TODO testReplace
 }
