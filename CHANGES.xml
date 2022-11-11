@@ -72,6 +72,9 @@
         New Credentials constructors accepting username, password, 
         and password key.
       </action>
+      <action dev="essiembre" type="add">
+        New DateUtil date conversion methods using UTC.
+      </action>
       <action dev="essiembre" type="update">
         Now require Java 11+. 
       </action>
@@ -206,6 +209,10 @@
       <action dev="essiembre" type="fix">
         Fixed IOUtil#consumeUntil(Reader, IntPredicate) behaving like 
         "consumeWhile".
+      </action>
+      <action dev="essiembre" type="fix">
+        Fixed DateUtil#toDate[...](Instant) not converting non UTC dates 
+        properly.
       </action>
       <action dev="essiembre" type="remove">
         Removed a number of deprecated classes and methods:

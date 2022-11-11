@@ -1,4 +1,4 @@
-/* Copyright 2018-2019 Norconex Inc.
+/* Copyright 2018-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class DurationFormatterTest {
+class DurationFormatterTest {
 
     private static final long TEST_DATETIME_DURATION =
             DurationUnit.YEAR.toMilliseconds(4)
@@ -45,7 +45,7 @@ public class DurationFormatterTest {
     private DurationFormatter abbr;
 
     @BeforeEach
-    public void before() {
+    void before() {
         full = new DurationFormatter();
         compact = DurationFormatter.COMPACT;
         abbr = new DurationFormatter().withUnitFormatter(
@@ -53,7 +53,7 @@ public class DurationFormatterTest {
     }
 
     @Test
-    public void testCompactAllUnitsFormat() {
+    void testCompactAllUnitsFormat() {
         Assertions.assertEquals("4Y1M3W5D18h1m23s469ms", compact
                 .withLocale(Locale.CHINA)
                 .format(TEST_DATETIME_DURATION));
@@ -63,7 +63,7 @@ public class DurationFormatterTest {
 
     }
     @Test
-    public void testFullAllUnitsFormat() {
+    void testFullAllUnitsFormat() {
         Assertions.assertEquals("4 years 1 month 3 weeks 5 days "
                 + "18 hours 1 minute 23 seconds 469 milliseconds", full
                 .format(TEST_DATETIME_DURATION));
@@ -73,7 +73,7 @@ public class DurationFormatterTest {
                 .format(TEST_DATETIME_DURATION));
     }
     @Test
-    public void testAbbrAllUnitsFormat() {
+    void testAbbrAllUnitsFormat() {
         Assertions.assertEquals("4 yrs 1 mo 3 wks 5 days "
                 + "18 hrs 1 min 23 secs 469 msecs", abbr
                 .format(TEST_DATETIME_DURATION));
@@ -83,7 +83,7 @@ public class DurationFormatterTest {
                 .format(TEST_DATETIME_DURATION));
     }
     @Test
-    public void testCompactDaysToSecondsFormat() {
+    void testCompactDaysToSecondsFormat() {
         Assertions.assertEquals("5D18h1m23s", compact
                 .withLocale(Locale.CHINA)
                 .withHighestUnit(DurationUnit.DAY)
@@ -97,7 +97,7 @@ public class DurationFormatterTest {
 
     }
     @Test
-    public void testFullDaysToSecondsFormat() {
+    void testFullDaysToSecondsFormat() {
         Assertions.assertEquals("5 days 18 hours 1 minute 23 seconds", full
                 .withHighestUnit(DurationUnit.DAY)
                 .withLowestUnit(DurationUnit.SECOND)
@@ -109,7 +109,7 @@ public class DurationFormatterTest {
                 .format(TEST_DAYTIME_DURATION));
     }
     @Test
-    public void testAbbrDaysToSecondsFormat() {
+    void testAbbrDaysToSecondsFormat() {
         Assertions.assertEquals("5 days 18 hrs 1 min 23 secs", abbr
                 .withHighestUnit(DurationUnit.DAY)
                 .withLowestUnit(DurationUnit.SECOND)
@@ -121,7 +121,7 @@ public class DurationFormatterTest {
                 .format(TEST_DAYTIME_DURATION));
     }
     @Test
-    public void testHighestUnitsSmaller() {
+    void testHighestUnitsSmaller() {
         Assertions.assertEquals("138 hours 1 minute 23 seconds", full
                 .withHighestUnit(DurationUnit.HOUR)
                 .withLowestUnit(DurationUnit.SECOND)
@@ -134,7 +134,7 @@ public class DurationFormatterTest {
     }
 
     @Test
-    public void testPrecision() {
+    void testPrecision() {
         Assertions.assertEquals("138 hours", full
                 .withHighestUnit(DurationUnit.HOUR)
                 .withLowestUnit(DurationUnit.SECOND)
@@ -148,7 +148,7 @@ public class DurationFormatterTest {
     }
 
     @Test
-    public void testNumberFormat() {
+    void testNumberFormat() {
         Assertions.assertEquals("496,883 seconds 469 milliseconds", full
                 .withHighestUnit(DurationUnit.SECOND)
                 .withNumberFormat(
@@ -158,7 +158,7 @@ public class DurationFormatterTest {
     }
 
     @Test
-    public void testFullFormatter() {
+    void testFullFormatter() {
         DurationFormatter df =
                 DurationFormatter.FULL.withOuterSeparator(", ");
 

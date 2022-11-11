@@ -1,4 +1,4 @@
-/* Copyright 2017-2019 Norconex Inc.
+/* Copyright 2017-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import java.util.Locale;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class DurationParserTest {
+class DurationParserTest {
 
     private static final long SECOND = 1000;
     private static final long MINUTE = 60 * SECOND;
@@ -34,7 +34,7 @@ public class DurationParserTest {
             new DurationParser().withLocale(Locale.FRENCH);
 
     @Test
-    public void testParseToMilliseconds() {
+    void testParseToMilliseconds() {
         Assertions.assertEquals(TEST_DURATION, englishParser.parseToMillis(
                 "54d18h1m23s"));
         Assertions.assertEquals(TEST_DURATION, englishParser.parseToMillis(
@@ -49,7 +49,7 @@ public class DurationParserTest {
     }
 
     @Test
-    public void testParseToDuration() {
+    void testParseToDuration() {
         Duration duration = Duration.ofMillis(TEST_DURATION);
         Assertions.assertEquals(duration, englishParser.parse("54d18h1m23s"));
         Assertions.assertEquals(duration, englishParser.parse(
@@ -65,7 +65,7 @@ public class DurationParserTest {
 
 
     @Test
-    public void testDefaultValue() {
+    void testDefaultValue() {
         Assertions.assertEquals(2, englishParser.parseToMillis("-5", 2));
         try {
             englishParser.parse("-5");
