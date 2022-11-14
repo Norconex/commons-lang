@@ -1,4 +1,4 @@
-/* Copyright 2010-2020 Norconex Inc.
+/* Copyright 2010-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,18 @@
  */
 package com.norconex.commons.lang.unit;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.math.RoundingMode;
 import java.util.Locale;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class DataUnitFormatterTest {
+class DataUnitFormatterTest {
 
     @Test
-    public void testFormat() {
+    void testFormat() {
         DataUnitFormatter decFmt = new DataUnitFormatter();
         DataUnitFormatter binFmt =
                 new DataUnitFormatter().setBinaryNotation(true);
@@ -67,5 +69,23 @@ public class DataUnitFormatterTest {
         // Format binary to decimal
         Assertions.assertEquals("2.048\u00A0kB",
                 decFmt.withDecimalPrecision(3).format(2, DataUnit.KIB));
+    }
+
+    @Test
+    void testMisc() {
+        DataUnitFormatter duf = new DataUnitFormatter();
+        assertThat(duf.getLocale()).isNull();
+        assertThat(duf.getDecimalPrecision()).isZero();
+        assertThat(duf.isFixedUnit()).isFalse();
+        duf = duf.withFixedUnit(true);
+        assertThat(duf.isFixedUnit()).isTrue();
+        assertThat(duf.isBinaryNotation()).isFalse();
+        duf = duf.withBinaryNotation(true);
+        assertThat(duf.isBinaryNotation()).isTrue();
+        assertThat(duf.getRoundingMode()).isNull();
+        duf = duf.withRoundingMode(RoundingMode.HALF_DOWN);
+        assertThat(duf.getRoundingMode()).isSameAs(RoundingMode.HALF_DOWN);
+
+
     }
 }

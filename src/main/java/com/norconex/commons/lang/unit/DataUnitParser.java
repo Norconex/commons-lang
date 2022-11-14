@@ -1,4 +1,4 @@
-/* Copyright 2020 Norconex Inc.
+/* Copyright 2020-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * <p>
@@ -106,17 +106,13 @@ import org.slf4j.LoggerFactory;
  * @author Pascal Essiembre
  * @since 2.0.0
  */
+@Slf4j
 public final class DataUnitParser {
 
-    private static final Logger LOG =
-            LoggerFactory.getLogger(DataUnitParser.class);
-
     private static final Pattern PATTERN =
-            Pattern.compile("(\\d+([\\.,]\\d+){0,1})(\\D+)");
+            Pattern.compile("(\\d+([\\.,]\\d+)?)(\\D+)");
 
-    private DataUnitParser() {
-        super();
-    }
+    private DataUnitParser() {}
 
 
     /**

@@ -1,4 +1,4 @@
-/* Copyright 2010-2020 Norconex Inc.
+/* Copyright 2010-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,10 +23,8 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 /**
  * <p>
@@ -41,6 +39,8 @@ import org.apache.commons.lang3.builder.ToStringStyle;
  * @author Pascal Essiembre
  * @since 1.4.0
  */
+@ToString
+@EqualsAndHashCode
 public class DataUnitFormatter implements Serializable {
 
     private static final long serialVersionUID = -8672773710734223185L;
@@ -56,7 +56,6 @@ public class DataUnitFormatter implements Serializable {
      * with default system locale, and without decimals.
      */
     public DataUnitFormatter() {
-        super();
     }
 
     /**
@@ -66,10 +65,10 @@ public class DataUnitFormatter implements Serializable {
      */
     public DataUnitFormatter(DataUnitFormatter formatter) {
         if (formatter != null) {
-            this.locale = formatter.locale;
-            this.decimalPrecision = formatter.decimalPrecision;
-            this.fixedUnit = formatter.fixedUnit;
-            this.binaryNotation = formatter.binaryNotation;
+            locale = formatter.locale;
+            decimalPrecision = formatter.decimalPrecision;
+            fixedUnit = formatter.fixedUnit;
+            binaryNotation = formatter.binaryNotation;
         }
     }
 
@@ -127,61 +126,6 @@ public class DataUnitFormatter implements Serializable {
     }
     public DataUnitFormatter withRoundingMode(RoundingMode roundingMode) {
         return new DataUnitFormatter(this).setRoundingMode(roundingMode);
-    }
-
-    /**
-     * Creates a new DataUnit formatter without decimals.
-     * The decimal and thousand separator symbols are set according to
-     * supplied locale.
-     * @param locale a locale
-     * @deprecated Since 2.0.0 use setter methods.
-     */
-    @Deprecated
-    public DataUnitFormatter(Locale locale) {
-        this(locale, 0);
-    }
-    /**
-     * Creates a new DataUnit formatter with default system locale
-     * with the maximum number of decimals returned when applicable.
-     * @param decimalPrecision number of decimals
-     * @deprecated Since 2.0.0 use setter methods.
-     */
-    @Deprecated
-    public DataUnitFormatter(int decimalPrecision) {
-        this(null, decimalPrecision);
-    }
-    /**
-     * Creates a new DataUnit formatter with the maximum number of decimals
-     * returned when applicable.
-     * The decimal and thousand separator symbols are set according to
-     * supplied locale.
-     * @param locale a locale
-     * @param decimalPrecision number of decimals
-     * @deprecated Since 2.0.0 use setter methods.
-     */
-    @Deprecated
-    public DataUnitFormatter(Locale locale, int decimalPrecision) {
-        this(locale, decimalPrecision, false);
-    }
-    /**
-     * Creates a new DataUnit formatter with the maximum number of decimals
-     * returned when applicable.
-     * The decimal and thousand separator symbols are set according to
-     * supplied locale.
-     * Set the <code>fixedUnit</code> to <code>true</code> to ensure
-     * the data units supplied are not change in the formatting.
-     * @param locale a locale
-     * @param decimalPrecision number of decimals
-     * @param fixedUnit <code>true</code> to keep original unit in formatting
-     * @deprecated Since 2.0.0 use setter methods.
-     */
-    @Deprecated
-    public DataUnitFormatter(
-            Locale locale, int decimalPrecision, boolean fixedUnit) {
-        super();
-        this.locale = locale;
-        this.decimalPrecision = decimalPrecision;
-        this.fixedUnit = fixedUnit;
     }
 
     /**
@@ -249,19 +193,5 @@ public class DataUnitFormatter implements Serializable {
             b.append('\u00A0').append(unit.getSymbol());
         }
         return b.toString();
-    }
-
-    @Override
-    public boolean equals(final Object other) {
-        return EqualsBuilder.reflectionEquals(this, other);
-    }
-    @Override
-    public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this);
-    }
-    @Override
-    public String toString() {
-        return new ReflectionToStringBuilder(
-                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

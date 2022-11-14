@@ -1,4 +1,4 @@
-/* Copyright 2010-2020 Norconex Inc.
+/* Copyright 2010-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,17 @@
  */
 package com.norconex.commons.lang.unit;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.math.BigDecimal;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class DataUnitTest {
+class DataUnitTest {
 
     @Test
-    public void testConversions() {
+    void testConversions() {
         Assertions.assertEquals(0, DataUnit.B.to(5, DataUnit.KB).intValue());
         Assertions.assertEquals(2000, DataUnit.KB.toBytes(2).intValue());
         Assertions.assertEquals(
@@ -29,5 +33,26 @@ public class DataUnitTest {
 
         // Test bytes vs bits
         Assertions.assertEquals(1024*8, DataUnit.KIB.toBits(1).intValue());
+
+        assertThat(DataUnit.B.getName()).isEqualTo("byte");
+        assertThat(DataUnit.EIB)
+            .returns("exibyte", DataUnit::getName)
+            .returns("exi", DataUnit::getPrefix)
+            .returns("EiB", DataUnit::getSymbol)
+            .returns(6, DataUnit::getGroupIndex)
+            .returns(true, DataUnit::isByteUnit)
+            .returns(true, DataUnit::isBinary)
+            .returns(false, DataUnit::isDecimal)
+            ;
+        assertThat(DataUnit.KBIT.bits()).isEqualTo(1000);
+        assertThat(DataUnit.KBIT.bytes()).isEqualTo(125);
+        assertThat(DataUnit.KBIT.fromBits(2000))
+            .isEqualByComparingTo(BigDecimal.valueOf(2));
+        assertThat(DataUnit.KBIT.fromBytes(250))
+            .isEqualByComparingTo(BigDecimal.valueOf(2));
+
+        assertThat(DataUnit.from("EIB")).isEqualTo(DataUnit.EIB);
+        assertThat(DataUnit.EIB).hasToString("EiB");
+        assertThat(DataUnit.from(null)).isNull();
     }
 }

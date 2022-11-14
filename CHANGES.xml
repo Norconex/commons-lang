@@ -225,11 +225,13 @@
         properly.
       </action>
       <action dev="essiembre" type="remove">
-        Removed a number of deprecated classes and methods:
+        Removed a number of classes and methods deprecated in previous major 
+        release:
         *.lang.config.IXMLConfigurable, *.lang.encrypt.EncryptionXMLUtil, 
         *.lang.StringUtil, *.lang.map.Properties#set[...], 
         *.lang.map.PropertyMatcher#[...], ProxySettings get|setProxy[...],
-        DurationUtil
+        DurationUtil, DataUnit#convert, DataUnit@to[...]., DataUnitFormatter
+        constructors.
       </action>
       <action dev="essiembre" type="remove">
         Removed #finalize method from CachedInputStream and CachedOutputStream

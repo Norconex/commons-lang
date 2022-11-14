@@ -296,38 +296,6 @@ public enum DataUnit {
         return null;
     }
 
-    /**
-     * Converts a given source data amount and type to this type.
-     * @param sourceAmount source data amount
-     * @param sourceUnit source data unit
-     * @return converted value
-     * @deprecated Since 2.0.0, use {@link #from(BigDecimal, DataUnit)}
-     */
-    @Deprecated
-    public long convert(long sourceAmount, DataUnit sourceUnit) {
-        return from(BigDecimal.valueOf(sourceAmount), sourceUnit).longValue();
-    }
-    @Deprecated
-    public long toKilobytes(long amount) {
-        return to(amount, KB).longValue();
-    }
-    @Deprecated
-    public long toMegabytes(long amount) {
-        return to(amount, MB).longValue();
-    }
-    @Deprecated
-    public long toGigabytes(long amount) {
-        return to(amount, GB).longValue();
-    }
-    @Deprecated
-    public long toTerabytes(long amount) {
-        return to(amount, TB).longValue();
-    }
-    @Deprecated
-    public long toPetabytes(long amount) {
-        return to(amount, PB).longValue();
-    }
-
     @Override
     public String toString() {
         return symbol;

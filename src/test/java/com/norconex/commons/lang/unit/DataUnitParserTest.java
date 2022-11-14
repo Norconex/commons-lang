@@ -1,4 +1,4 @@
-/* Copyright 2020 Norconex Inc.
+/* Copyright 2020-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,21 @@
  */
 package com.norconex.commons.lang.unit;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+
 import java.math.BigDecimal;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class DataUnitParserTest {
+class DataUnitParserTest {
 
     private static final long TEST_AMOUNT_B = 54018001023L;
     private static final double TEST_AMOUNT_MB = 54018.001023D;
 
     @Test
-    public void testParseToBytes() {
+    void testParseToBytes() {
 
         Assertions.assertEquals(TEST_AMOUNT_B, parse("54GB18MB1kB23B"));
         Assertions.assertEquals(TEST_AMOUNT_B, parse(
@@ -37,7 +40,7 @@ public class DataUnitParserTest {
     }
 
     @Test
-    public void testParseToMegabyte() {
+    void testParseToMegabyte() {
         Assertions.assertEquals(TEST_AMOUNT_MB, parseMB("54GB18MB1kB23B"));
         Assertions.assertEquals(TEST_AMOUNT_MB, parseMB(
                 "54 gigabytes, 18 megabytes, 1 kilobyte, and 23 bytes"));
@@ -48,16 +51,27 @@ public class DataUnitParserTest {
     }
 
     @Test
-    public void testDefaultValue() {
+    void testDefaultValue() {
         Assertions.assertEquals(2,
                 DataUnitParser.parse("-5", BigDecimal.valueOf(2)).intValue());
-        try {
-            DataUnitParser.parse("-5");
-            Assertions.fail("Should have thrown exception.");
-        } catch (Exception e) {
-            // swallow
-        }
+        assertThatExceptionOfType(DataUnitParserException.class).isThrownBy(
+                () -> DataUnitParser.parse("-5"));
     }
+
+    @Test
+    void testMisc() {
+        assertThat(DataUnitParser.parse(
+                "2MIB", DataUnit.KIB, BigDecimal.valueOf(-1)))
+                        .isEqualByComparingTo(BigDecimal.valueOf(2048));
+        assertThat(DataUnitParser.parse(
+                "", DataUnit.KIB, BigDecimal.valueOf(-1)))
+                        .isEqualByComparingTo(BigDecimal.valueOf(-1));
+        assertThat(DataUnitParser.parse("3", DataUnit.B))
+                .isEqualByComparingTo(BigDecimal.valueOf(3));
+        assertThatExceptionOfType(DataUnitParserException.class).isThrownBy(
+                () -> DataUnitParser.parse("BAD", DataUnit.B));
+    }
+
 
     private long parse(String text) {
         return DataUnitParser.parse(text).longValue();

@@ -1,4 +1,4 @@
-/* Copyright 2020 Norconex Inc.
+/* Copyright 2020-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,46 +14,15 @@
  */
 package com.norconex.commons.lang.unit;
 
+import lombok.experimental.StandardException;
+
 /**
  * Runtime exception when a {@link DataUnitParser} could not parse a string
  * value.
  * @author Pascal Essiembre
  * @since 2.0.0
  */
+@StandardException
 public class DataUnitParserException extends RuntimeException {
-
     private static final long serialVersionUID = 1L;
-
-    /**
-     * Constructor.
-     */
-    public DataUnitParserException() {
-        super();
-    }
-
-    /**
-     * Constructor.
-     * @param message exception message
-     */
-    public DataUnitParserException(String message) {
-        super(message);
-    }
-
-    /**
-     * Constructor.
-     * @param cause exception root cause
-     */
-    public DataUnitParserException(Throwable cause) {
-        super(cause);
-    }
-
-    /**
-     * Constructor.
-     * @param message exception message
-     * @param cause exception root cause
-     */
-    public DataUnitParserException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
 }
