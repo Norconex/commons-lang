@@ -81,7 +81,7 @@ class RegexFieldValueExtractorTest {
                 fields.getStrings("test4").get(3), "Wrong test4 value.");
 
         //Test 5) No field group specified, no default field name
-        try {
+        try { //NOSONAR
             fields = null;
             fields = RegexFieldValueExtractor.extractFieldValues(xml,
                     new RegexFieldValueExtractor(
@@ -107,7 +107,7 @@ class RegexFieldValueExtractorTest {
                 fields.getString("Last Name"), "Wrong test6 value.");
 
         //Test 7) No value or field group
-        try {
+        try { //NOSONAR
             fields = null;
             fields = RegexFieldValueExtractor.extractFieldValues(xml,
                 new RegexFieldValueExtractor("<div class=\"field\">(.*?)</div>.*?"

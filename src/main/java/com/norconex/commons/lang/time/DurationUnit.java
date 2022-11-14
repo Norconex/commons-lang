@@ -1,4 +1,4 @@
-/* Copyright 2018 Norconex Inc.
+/* Copyright 2018-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,12 +23,14 @@ import java.time.temporal.TemporalUnit;
 import org.apache.commons.lang3.ArrayUtils;
 
 /**
- * Duration Unit.
+ * Duration unit. These units are best used with a general estimation is
+ * acceptable.  The quantities for each units are fixed, and never change
+ * according to a specific era or moment in time.  For instance a year is
+ * a fixed average of approximately 365.2425 days.
+ *
  * @author Pascal Essiembre
  * @since 2.0.0
  */
-//TODO document that units are always worth the same values, and never estimated
-// (unlike Duration)
 public enum DurationUnit {
 
     MILLISECOND(1, ChronoUnit.MILLIS),
@@ -40,7 +42,7 @@ public enum DurationUnit {
     MONTH(2629746000L, ChronoUnit.MONTHS), // 365.2425 days / 12
     YEAR(12 * MONTH.ms, ChronoUnit.YEARS);
 
-    private static final DurationUnit[] REVERSE_VALUES = 
+    private static final DurationUnit[] REVERSE_VALUES =
             new DurationUnit[values().length];
     static {
         int idx = 0;
@@ -48,15 +50,15 @@ public enum DurationUnit {
             REVERSE_VALUES[idx++] = values()[i];
         }
     }
-    
+
     private final long ms;
     private final ChronoUnit chronoUnit;
 
     DurationUnit(long ms, ChronoUnit unit) {
         this.ms = ms;
-        this.chronoUnit = unit;
+        chronoUnit = unit;
     }
-    
+
     public ChronoUnit toTemporalUnit() {
         return chronoUnit;
     }
@@ -117,10 +119,10 @@ public enum DurationUnit {
                 BigDecimal.valueOf(amount)).divide(BigDecimal.valueOf(
                         targetUnit.ms), RoundingMode.DOWN).longValueExact();
     }
-    
+
     /**
      * Gets the largest unit fitting in the provided duration. If the duration
-     * is <code>null</code>, zero, or less, <code>null</code> is returned. 
+     * is <code>null</code>, zero, or less, <code>null</code> is returned.
      * @param duration duration in milliseconds
      * @return duration unit
      */
@@ -132,22 +134,21 @@ public enum DurationUnit {
     }
     /**
      * Gets the largest unit fitting in the provided duration. If the duration
-     * is zero or less, <code>null</code> is returned. 
+     * is zero or less, <code>null</code> is returned.
      * @param duration duration in milliseconds
      * @return duration unit
      */
     public static DurationUnit from(long duration) {
         DurationUnit match = null;
         for (DurationUnit u : values()) {
-            if (u.ms <= duration) {
-                match = u;
-            } else {
+            if (u.ms > duration) {
                 break;
             }
+            match = u;
         }
         return match;
     }
-    
+
     /**
      * Gets the DurationUnit matching the provided string (case insensitive)
      * or <code>null</code> if there are no units matching.
@@ -176,9 +177,9 @@ public enum DurationUnit {
         }
         return null;
     }
-    
+
     /**
-     * Returns all units from the highest (year), to the smallest 
+     * Returns all units from the highest (year), to the smallest
      * (milliseconds).
      * @return duration units
      */
@@ -186,7 +187,7 @@ public enum DurationUnit {
         return REVERSE_VALUES;
     }
     /**
-     * Gets ordinal value in reverse order. 
+     * Gets ordinal value in reverse order.
      * @return ordinal value
      */
     public int reverseOrdinal() {

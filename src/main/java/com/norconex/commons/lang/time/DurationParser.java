@@ -1,4 +1,4 @@
-/* Copyright 2017-2018 Norconex Inc.
+/* Copyright 2017-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,13 +21,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 /**
  * <p>
@@ -95,6 +94,8 @@ import org.slf4j.LoggerFactory;
  * @author Pascal Essiembre
  * @since 1.13.0
  */
+@ToString
+@EqualsAndHashCode
 public class DurationParser {
 
     private static final Logger LOG =
@@ -104,7 +105,7 @@ public class DurationParser {
 
 
     private static final Pattern PATTERN =
-            Pattern.compile("(\\d+([\\.,]\\d+){0,1})(\\D+)");
+            Pattern.compile("(\\d+([\\.,]\\d+)?)(\\D+)");
 
     private Locale locale;
 
@@ -229,8 +230,7 @@ public class DurationParser {
 
     private void parseError(boolean throwException, String message,
             String duration, Object... args) {
-        String msg = String.format(
-                "Could not parse duration: \"%s\". ", duration, args);
+        String msg = String.format(message, duration, args);
 
         if (throwException) {
             throw new DurationParserException(msg);
@@ -238,7 +238,7 @@ public class DurationParser {
         LOG.error(msg);
     }
 
-    //TODO if performance is a concern, consider weak-caching most
+    //MAYBE: if performance becomes a concern, consider weak-caching most
     //frequently used.
     private DurationUnit getUnit(String label) {
         if (StringUtils.isBlank(label)) {
@@ -264,19 +264,5 @@ public class DurationParser {
         DurationParser dp = new DurationParser();
         dp.locale = locale;
         return dp;
-    }
-
-    @Override
-    public boolean equals(final Object other) {
-        return EqualsBuilder.reflectionEquals(this, other);
-    }
-    @Override
-    public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this);
-    }
-    @Override
-    public String toString() {
-        return new ReflectionToStringBuilder(this,
-                ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

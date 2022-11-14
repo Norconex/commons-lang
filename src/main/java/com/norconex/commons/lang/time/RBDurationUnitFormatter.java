@@ -17,10 +17,9 @@ package com.norconex.commons.lang.time;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 
 /**
  * <p>
@@ -56,6 +55,9 @@ import org.apache.commons.lang3.builder.ToStringStyle;
  * @author Pascal Essiembre
  * @since 2.0.0
  */
+@ToString
+@EqualsAndHashCode
+@Getter
 public class RBDurationUnitFormatter implements IDurationUnitFormatter {
 
     public static final IDurationUnitFormatter FULL =
@@ -75,7 +77,6 @@ public class RBDurationUnitFormatter implements IDurationUnitFormatter {
         this(baseName, null);
     }
     public RBDurationUnitFormatter(String baseName, ClassLoader classLoader) {
-        super();
         this.baseName = baseName;
         this.classLoader = classLoader == null
                 ? getClass().getClassLoader() : classLoader;
@@ -100,29 +101,8 @@ public class RBDurationUnitFormatter implements IDurationUnitFormatter {
         return unit.toString();
     }
 
-    public ClassLoader getClassLoader() {
-        return classLoader;
-    }
-    public String getBaseName() {
-        return baseName;
-    }
-
     protected ResourceBundle getResourceBundle(Locale locale) {
         return ResourceBundle.getBundle(
                 getBaseName(), locale, getClassLoader());
-    }
-
-    @Override
-    public boolean equals(final Object other) {
-        return EqualsBuilder.reflectionEquals(this, other);
-    }
-    @Override
-    public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this);
-    }
-    @Override
-    public String toString() {
-        return new ReflectionToStringBuilder(this,
-                ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

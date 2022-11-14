@@ -14,7 +14,10 @@
  */
 package com.norconex.commons.lang.time;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.text.NumberFormat;
+import java.time.Duration;
 import java.util.Locale;
 
 import org.junit.jupiter.api.Assertions;
@@ -50,6 +53,33 @@ class DurationFormatterTest {
         compact = DurationFormatter.COMPACT;
         abbr = new DurationFormatter().withUnitFormatter(
                 RBDurationUnitFormatter.ABBREVIATED);
+    }
+
+    @Test
+    void testGetters() {
+        IDurationUnitFormatter duf = (unit, locale, plural) -> "blah";
+        assertThat(
+            new DurationFormatter()
+                .withHighestUnit(DurationUnit.MONTH)
+                .withInnerSeparator("|")
+                .withLocale(Locale.CANADA_FRENCH)
+                .withLowestUnit(DurationUnit.MINUTE)
+                .withNumberFormat(NumberFormat.getIntegerInstance())
+                .withOuterLastSeparator("-")
+                .withOuterSeparator("_")
+                .withUnitFormatter(duf)
+                .withUnitPrecision(66))
+            .returns(DurationUnit.MONTH, DurationFormatter::getHighestUnit)
+            .returns("|", DurationFormatter::getInnerSeparator)
+            .returns(Locale.CANADA_FRENCH, DurationFormatter::getLocale)
+            .returns(DurationUnit.MINUTE, DurationFormatter::getLowestUnit)
+            .returns(NumberFormat.getIntegerInstance(),
+                    DurationFormatter::getNumberFormat)
+            .returns("-", DurationFormatter::getOuterLastSeparator)
+            .returns("_", DurationFormatter::getOuterSeparator)
+            .returns(duf, DurationFormatter::getUnitFormatter)
+            .returns(66, DurationFormatter::getUnitPrecision)
+            ;
     }
 
     @Test
@@ -94,7 +124,6 @@ class DurationFormatterTest {
                 .withHighestUnit(DurationUnit.DAY)
                 .withLowestUnit(DurationUnit.SECOND)
                 .format(TEST_DAYTIME_DURATION));
-
     }
     @Test
     void testFullDaysToSecondsFormat() {
@@ -172,5 +201,11 @@ class DurationFormatterTest {
                 .withOuterLastSeparator(" et ")
                 .withLocale(Locale.FRENCH)
                 .format(TEST_DATETIME_DURATION));
+    }
+
+    @Test
+    void testFormatDuration() {
+        assertThat(compact.format(Duration.ofDays(3))).isEqualTo("3D");
+        assertThat(compact.format((Duration) null)).isNull();
     }
 }

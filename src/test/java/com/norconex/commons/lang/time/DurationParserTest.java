@@ -14,6 +14,9 @@
  */
 package com.norconex.commons.lang.time;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+
 import java.time.Duration;
 import java.util.Locale;
 
@@ -46,6 +49,14 @@ class DurationParserTest {
 
         Assertions.assertEquals(TEST_DURATION, frenchParser.parseToMillis(
                 "54 jours, 18 heures, 1m et 23 secondes"));
+
+        assertThat(frenchParser.parseToMillis("12345678", -1L))
+            .isEqualTo(12345678L);
+
+
+        assertThatExceptionOfType(DurationParserException.class).isThrownBy(
+                () -> frenchParser.parseToMillis("wwwww"));
+        assertThat(frenchParser.parseToMillis("wwwww", 123)).isEqualTo(123);
     }
 
     @Test
@@ -61,11 +72,20 @@ class DurationParserTest {
 
         Assertions.assertEquals(duration, frenchParser.parse(
                 "54 jours, 18 heures, 1m et 23 secondes"));
+
+        assertThat(frenchParser.parse(null, Duration.ofDays(3)))
+            .isEqualTo(Duration.ofDays(3));
+        assertThat(frenchParser.parse(null, null))
+            .isEqualTo(Duration.ofDays(0));
+        assertThat(frenchParser.getLocale()).isEqualTo(Locale.FRENCH);
     }
 
 
     @Test
-    void testDefaultValue() {
+    void testMisc() {
+
+
+        // test default value
         Assertions.assertEquals(2, englishParser.parseToMillis("-5", 2));
         try {
             englishParser.parse("-5");

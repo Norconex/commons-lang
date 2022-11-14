@@ -1,4 +1,4 @@
-/* Copyright 2018 Norconex Inc.
+/* Copyright 2018-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,10 +22,9 @@ import java.util.Locale;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
+
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 /**
  * Formats a duration to a string.
@@ -33,6 +32,8 @@ import org.apache.commons.lang3.builder.ToStringStyle;
  * @author Pascal Essiembre
  * @since 2.0.0
  */
+@ToString
+@EqualsAndHashCode
 public final class DurationFormatter {
 
     /** Example: 5D18h1m23s */
@@ -62,9 +63,7 @@ public final class DurationFormatter {
      * Creates a duration with the default locale and full words for
      * duration units.
      */
-    public DurationFormatter() {
-        super();
-    }
+    public DurationFormatter() {} //NOSONAR Exists for javadoc
 
     /**
      * Creates a copy if this formatter with the given locale.  Default
@@ -333,19 +332,5 @@ public final class DurationFormatter {
         df.outerSeparator = outerSeparator;
         df.outerLastSeparator = outerLastSeparator;
         return df;
-    }
-
-    @Override
-    public boolean equals(final Object other) {
-        return EqualsBuilder.reflectionEquals(this, other);
-    }
-    @Override
-    public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this);
-    }
-    @Override
-    public String toString() {
-        return new ReflectionToStringBuilder(this,
-                ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

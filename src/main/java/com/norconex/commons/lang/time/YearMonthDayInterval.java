@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,19 +15,22 @@
 package com.norconex.commons.lang.time;
 
 import java.io.Serializable;
+import java.time.Period;
+import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.Date;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DateUtils;
 
 /**
- * An immutable date interval where both the start and end are inclusive, unless
- * stated otherwise.  Start and end YearMonthDay instances cannot be
- * <code>null</code> and start date must be before or the same date as 
+ * An immutable date interval where both the start and end are inclusive.
+ * The start YearMonthDay instance must be before or the same date as
+ * as the end YearMonthDay. Start and end YearMonthDay instances cannot be
+ * <code>null</code> and start date must be before or the same date as
  * the end date.
  * @author Pascal Essiembre
  * @since 1.3.0
+ * @see Period
  */
 public final class YearMonthDayInterval implements Serializable {
 
@@ -35,8 +38,7 @@ public final class YearMonthDayInterval implements Serializable {
 
     private final YearMonthDay start;
     private final YearMonthDay end;
-    
-    
+
     public YearMonthDayInterval(YearMonthDay start, YearMonthDay end) {
         if (start == null || end == null) {
             throw new IllegalArgumentException(
@@ -49,11 +51,11 @@ public final class YearMonthDayInterval implements Serializable {
         this.start = start;
         this.end = end;
     }
-    
+
     /**
      * Constructs a YearMonthDayInterval out of a string.  The recommended
-     * string format is <code>yyyy-MM-dd - yyyy-MM-dd</code>, but any 
-     * characters in between the start and end are accepted as long as there 
+     * string format is <code>yyyy-MM-dd - yyyy-MM-dd</code>, but any
+     * characters in between the start and end are accepted as long as there
      * is a space after the start YearMontDay and before the end YearMonthDay.
      * @param interval the interval to parse
      */
@@ -65,8 +67,8 @@ public final class YearMonthDayInterval implements Serializable {
             throw new IllegalArgumentException(
                     "String YearMonthDay interval cannot be null or empty.");
         }
-        this.start = new YearMonthDay(startStr);
-        this.end = new YearMonthDay(endStr);
+        start = new YearMonthDay(startStr);
+        end = new YearMonthDay(endStr);
     }
     public YearMonthDayInterval(Date start, Date end) {
         if (start == null || end == null) {
@@ -83,7 +85,7 @@ public final class YearMonthDayInterval implements Serializable {
         }
         this.start = new YearMonthDay(start);
         this.end = new YearMonthDay(end);
-    }    
+    }
     public YearMonthDay getStart() {
         return start;
     }
@@ -98,46 +100,34 @@ public final class YearMonthDayInterval implements Serializable {
     }
     /**
      * Gets the end date as midnight the day after to ensure all dates on the
-     * same day as this YearMonthDay are smaller than this returned 
+     * same day as this YearMonthDay are smaller than this returned
      * exclusive date.  Useful for date range comparisons where typically
      * the end date is exclusive.
-     * @return midnight past the end date 
+     * @return midnight past the end date
      */
     public Date getEndDateEndOfDay() {
         return end.toEndOfDayDate();
     }
 
     /**
-     * Whether the YearMonthDay falls between this interval 
+     * Whether the YearMonthDay falls between this interval
      * (inclusive endpoints).
      * @param ymd the YearMonthDay
      * @return <code>true</code> if YearMonthDay is included in this interval
      */
     public boolean contains(YearMonthDay ymd) {
-        if (start.isAfter(ymd)) {
-            return false;
-        }
-        if (end.isBefore(ymd)) {
-            return false;
-        }
-        return true;
+        long millis = ymd.toMillis();
+        return millis >= start.toMillis() && millis <= end.toMillis();
     }
     /**
-     * Whether the date falls between this interval 
+     * Whether the date falls between this interval
      * (inclusive endpoints).
      * @param date a date
      * @return <code>true</code> if the date is included in this interval
      */
     public boolean contains(Date date) {
-        Date startDate = start.toDate();
-        Date endDate = end.toDate();
-        if (startDate.after(date)) {
-            return false;
-        }
-        if (endDate.before(date)) {
-            return false;
-        }
-        return true;
+        long millis = date.getTime();
+        return millis >= start.toMillis() && millis <= end.toMillis();
     }
 
     /**
@@ -145,40 +135,33 @@ public final class YearMonthDayInterval implements Serializable {
      * @return number of years
      */
     public int getYears() {
-        int years = end.getYear() - start.getYear();
-        if (end.getMonth() < start.getMonth()) {
-            return years - 1;
-        }
-        if (end.getMonth() == start.getMonth()
-                && end.getDay() < start.getDay()) {
-            return years - 1;
-        }
-        return years;
+        return toPeriod().getYears();
     }
     /**
      * Gets the number of months between start and end dates, rounded down.
      * @return number of months
      */
     public int getMonths() {
-        int months = 0;
-        Calendar cal = start.toCalendar();
-        Calendar endCal = end.toCalendar();
-        cal.add(Calendar.MONTH, 1);
-        while (!cal.after(endCal)) {
-            months++;
-            cal.add(Calendar.MONTH, 1);
-        }
-        return months;
+        return (int) toPeriod().toTotalMonths();
     }
     /**
      * Gets the number of days between start and end dates, rounded down.
      * @return number of days
      */
     public int getDays() {
-        return (int) ((end.toMillis() - start.toMillis()) 
-                / DateUtils.MILLIS_PER_DAY);
+        return (int) ChronoUnit.DAYS.between(
+                start.toLocalDate(), end.toLocalDate());
     }
-    
+
+    /**
+     * Get a period equivalent to this YearMonthDay.
+     * @return period
+     * @since 3.0.0
+     */
+    public Period toPeriod() {
+        return Period.between(start.toLocalDate(), end.toLocalDate());
+    }
+
     /**
      * Gets the interval as a string of this format:
      *  <code>yyyy-MM-dd - yyyy-MM-dd</code>;
@@ -188,6 +171,4 @@ public final class YearMonthDayInterval implements Serializable {
     public String toString() {
         return start + " - " + end;
     }
-    
-    
 }

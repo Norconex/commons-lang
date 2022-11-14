@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,24 +15,33 @@
 package com.norconex.commons.lang.time;
 
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Objects;
+import java.util.TimeZone;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.lang3.time.DateUtils;
 
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+
 /**
- * Immutable class holding a specific date made only of the 
- * year, month, and day.  Unlike Java {@link Calendar}, the months are starting
- * at 1 (January).
+ * Immutable class holding a specific date made only of the
+ * year, month, and day.  The months are starting
+ * at 1 (January).  Similar to {@link LocalDate}, but build around {@link Date}.
+ * Operations involving time (e.g. {@link #toDate()}) use UTC.
  * @author Pascal Essiembre
  * @since 1.3.0
+ * @see LocalDate
  */
-//TODO check if Java LocalDate offers the same now.
-public final class YearMonthDay 
+@EqualsAndHashCode
+public final class YearMonthDay
         implements Comparable<YearMonthDay>, Serializable {
 
     private static final long serialVersionUID = -2844519358776099395L;
@@ -40,12 +49,12 @@ public final class YearMonthDay
     private final int year;
     private final int month;
     private final int day;
-    
+
     /**
-     * Constructs a YearMonthDay with the current date.
+     * Constructs a YearMonthDay with the current date (UTC).
      */
     public YearMonthDay() {
-        this(Calendar.getInstance());
+        this(Calendar.getInstance(TimeZone.getTimeZone(ZoneOffset.UTC)));
     }
     /**
      * Constructs a YearMonthDay with the specified values.
@@ -54,7 +63,6 @@ public final class YearMonthDay
      * @param day the day
      */
     public YearMonthDay(int year, int month, int day) {
-        super();
         this.year = year;
         this.month = month;
         this.day = day;
@@ -77,32 +85,44 @@ public final class YearMonthDay
         this(year, 1, 1);
     }
     /**
-     * Constructs a YearMonthDay from a {@link Date}.
+     * Constructs a YearMonthDay from a {@link Date} (UTC).
      * @param date a date
      */
-    public YearMonthDay(Date date) {
-        this(DateUtils.toCalendar(date));
+    public YearMonthDay(@NonNull Date date) {
+        this(DateUtils.toCalendar(date, TimeZone.getTimeZone(ZoneOffset.UTC)));
     }
     /**
      * Constructs a YearMonthDay from a {@link Calendar}.
      * @param calendar a calendar instant
      */
-    public YearMonthDay(Calendar calendar) {
+    public YearMonthDay(@NonNull Calendar calendar) {
         year = calendar.get(Calendar.YEAR);
         month = calendar.get(Calendar.MONTH) + 1;
         day = calendar.get(Calendar.DAY_OF_MONTH);
     }
     /**
-     * Constructs a YearMonthDay from a string of this format: 
+     * Constructs a YearMonthDay from a string of this format:
      * <code>yyyy-MM-dd</code>.
      * @param date a date string
      */
-    public YearMonthDay(String date) {
-        this(Integer.valueOf(StringUtils.substringBefore(date, "-")),
-             Integer.valueOf(StringUtils.substringBetween(date, "-")),
-             Integer.valueOf(StringUtils.substringAfterLast(date, "-")));
+    public YearMonthDay(@NonNull String date) {
+        this(Integer.parseInt(StringUtils.substringBefore(
+                // lombok non null did not generate corresponding code.
+                Objects.requireNonNull(date), "-")),
+             Integer.parseInt(StringUtils.substringBetween(date, "-")),
+             Integer.parseInt(StringUtils.substringAfterLast(date, "-")));
     }
-    
+    /**
+     * Constructs a YearMonthDay from a {@link LocalDate}.
+     * @param localDate a local date
+     * @since 3.0.0
+     */
+    public YearMonthDay(@NonNull LocalDate localDate) {
+        year = localDate.getYear();
+        month = localDate.getMonthValue();
+        day = localDate.getDayOfMonth();
+    }
+
     /**
      * Gets the year.
      * @return the year
@@ -143,7 +163,7 @@ public final class YearMonthDay
     public boolean isBeforeDate(Date date) {
         return isBefore(new YearMonthDay(date));
     }
-    
+
     /**
      * Whether this YearMonthDay represents a date after the given
      * YearMonthDay.
@@ -162,25 +182,25 @@ public final class YearMonthDay
     public boolean isAfterDate(Date date) {
         return isAfter(new YearMonthDay(date));
     }
-    
+
     /**
-     * Whether this YearmMonthDay contains the given {@link Date} (i.e. same 
-     * year, month, and day).
+     * Whether this YearmMonthDay contains the given {@link Date} (i.e. same
+     * year, month, and day, regardless of time).
      * @param date date to evaluate
      * @return <code>true</code> if date is contained
      */
     public boolean contains(Date date) {
         return equals(new YearMonthDay(date));
-    }    
+    }
     /**
-     * Converts this YearMonthDay to a {@link Date} at midnight.
+     * Converts this YearMonthDay to a {@link Date} at midnight (00:00) UTC.
      * @return a date
      */
     public Date toDate() {
         return toCalendar().getTime();
     }
     /**
-     * Converts this YearMonthDay to the current time as 
+     * Converts this YearMonthDay to the current time as
      * UTC milliseconds from the epoch.
      * @return milliseconds
      */
@@ -188,19 +208,19 @@ public final class YearMonthDay
         return toCalendar().getTimeInMillis();
     }
     /**
-     * Gets the date as midnight the day after to represent the end of the 
+     * Gets the date as midnight the day after to represent the end of the
      * day. This ensures all dates on the
-     * same day as this YearMonthDay are smaller than this returned 
+     * same day as this YearMonthDay are smaller than this returned
      * exclusive date.  Useful for date range comparisons where typically
      * the end date is exclusive.
-     * @return midnight past the end date 
+     * @return midnight past the end date
      */
     public Date toEndOfDayDate() {
         Calendar cal = toCalendar();
         cal.add(Calendar.DAY_OF_MONTH, 1);
         return cal.getTime();
     }
-    
+
     /**
      * Adds a number of days to a new created YearMonthDay.  For subtractions,
      * user a negative integer.
@@ -234,16 +254,34 @@ public final class YearMonthDay
         cal.add(Calendar.YEAR, numOfYears);
         return new YearMonthDay(cal.getTime());
     }
-    
+
     /**
      * Converts this YearMonthDay to a {@link Calendar} at midnight.
      * @return a calendar
      */
     public Calendar toCalendar() {
-        Calendar cal = Calendar.getInstance();
+        Calendar cal = Calendar.getInstance(
+                TimeZone.getTimeZone(ZoneOffset.UTC));
         cal.set(year, month -1, day);
-        cal = DateUtils.truncate(cal, Calendar.DAY_OF_MONTH);
-        return cal;
+        return DateUtils.truncate(cal, Calendar.DAY_OF_MONTH);
+    }
+
+    /**
+     * Gets this YearMonthDay as a {@link LocalDate}.
+     * @return the local date
+     * @since 3.0.0
+     */
+    public LocalDate toLocalDate() {
+        return LocalDate.of(year, month, day);
+    }
+
+    /**
+     * Gets this YearMonthDay as a {@link LocalDateTime} at midnight (00:00).
+     * @return the local date time
+     * @since 3.0.0
+     */
+    public LocalDateTime toLocalDateTime() {
+        return LocalDateTime.of(year, month, day, 0, 0);
     }
 
     @Override
@@ -251,27 +289,18 @@ public final class YearMonthDay
         if (ymd == null) {
             return -1;
         }
-        int val = Integer.valueOf(year).compareTo(ymd.year);
+        int val = Integer.compare(year, ymd.year);
         if (val == 0) {
-            val = Integer.valueOf(month).compareTo(ymd.month);
+            val = Integer.compare(month, ymd.month);
         }
         if (val == 0) {
-            val = Integer.valueOf(day).compareTo(ymd.day);
+            val = Integer.compare(day, ymd.day);
         }
         return val;
     }
-    
-    @Override
-    public boolean equals(final Object other) {
-        return EqualsBuilder.reflectionEquals(this, other);
-    }
-    @Override
-    public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this);
-    }
 
     /**
-     * Converts the YearMonthDay to a string of this format: 
+     * Converts the YearMonthDay to a string of this format:
      * <code>yyyy-MM-dd</code>.
      */
     @Override
@@ -284,6 +313,14 @@ public final class YearMonthDay
                 .append(StringUtils.leftPad(Integer.toString(day), 2, '0'))
                 .toString();
     }
+
+    /**
+     * Formats this YeamMonthDay using pattern build from
+     * {@link SimpleDateFormat} syntax, after first converting it to
+     * {@link Date}.
+     * @param pattern the pattern used for formatting
+     * @return the formatted string
+     */
     public String toString(String pattern) {
         return DateFormatUtils.formatUTC(toDate(), pattern);
     }

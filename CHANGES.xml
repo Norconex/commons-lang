@@ -75,6 +75,10 @@
       <action dev="essiembre" type="add">
         New DateUtil date conversion methods using UTC.
       </action>
+      <action dev="essiembre" type="add">
+        New YearMonthDay LocalDate constructor plus new #toLocalDate and 
+        #toLocalDateTime methods.
+      </action>
       <action dev="essiembre" type="update">
         Now require Java 11+. 
       </action>
@@ -176,6 +180,12 @@
       <action dev="essiembre" type="update">
         Regex#setFlags now returns itself.
       </action>
+      <action dev="essiembre" type="update">
+        YearMonthDay methods affected by time-zone now always use UTC.
+      </action>
+      <action dev="essiembre" type="update">
+        YearMonthDayInterval now supports null values to represent infinity.
+      </action>
       <action dev="essiembre" type="add">
         TextMatcher now considers null values as non-matching by defualt.
       </action>
@@ -218,7 +228,8 @@
         Removed a number of deprecated classes and methods:
         *.lang.config.IXMLConfigurable, *.lang.encrypt.EncryptionXMLUtil, 
         *.lang.StringUtil, *.lang.map.Properties#set[...], 
-        *.lang.map.PropertyMatcher#[...], ProxySettings get|setProxy[...]
+        *.lang.map.PropertyMatcher#[...], ProxySettings get|setProxy[...],
+        DurationUtil
       </action>
       <action dev="essiembre" type="remove">
         Removed #finalize method from CachedInputStream and CachedOutputStream
