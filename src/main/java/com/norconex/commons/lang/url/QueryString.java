@@ -1,4 +1,4 @@
-/* Copyright 2010-2017 Norconex Inc.
+/* Copyright 2010-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,12 +20,13 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 
 import org.apache.commons.collections4.map.ListOrderedMap;
 import org.apache.commons.lang3.StringUtils;
 
 import com.norconex.commons.lang.map.Properties;
+
+import lombok.EqualsAndHashCode;
 
 
 /**
@@ -36,6 +37,7 @@ import com.norconex.commons.lang.map.Properties;
  * order they were provided.
  * @author Pascal Essiembre
  */
+@EqualsAndHashCode(callSuper = true)
 public class QueryString extends Properties {
 
     private static final long serialVersionUID = 1744232652147275170L;
@@ -86,7 +88,7 @@ public class QueryString extends Properties {
      * @param encoding character encoding
      */
     public QueryString(String urlWithQueryString, String encoding) {
-        super(new ListOrderedMap<String, List<String>>());
+        super(new ListOrderedMap<>());
         if (StringUtils.isBlank(encoding)) {
             this.encoding = StandardCharsets.UTF_8.toString();
         } else {
@@ -98,8 +100,7 @@ public class QueryString extends Properties {
             paramString = paramString.replaceAll("(.*?)(\\?)(.*)", "$3");
         }
         String[] paramParts = paramString.split("\\&");
-        for (int i = 0; i < paramParts.length; i++) {
-            String paramPart = paramParts[i];
+        for (String paramPart : paramParts) {
             if (StringUtils.isBlank(paramPart)) {
                 continue;
             }
@@ -163,7 +164,8 @@ public class QueryString extends Properties {
 
     /**
      * Apply this url QueryString on the given URL. If a query string already
-     * exists, it is replaced by this one.
+     * exists, it is replaced by this one. Existing fragments are
+     * removed.
      * @param url the URL to apply this query string.
      * @return url with query string added
      */

@@ -1,4 +1,4 @@
-/* Copyright 2010-2020 Norconex Inc.
+/* Copyright 2010-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -145,8 +145,8 @@ public final class URLStreamer {
             URLConnection conn;
             if (proxy != null) {
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("Streaming with proxy: "
-                            + proxy.getHostName() + ":" + proxy.getPort());
+                    LOG.debug("Streaming with proxy: {}:{}",
+                            proxy.getHostName(), proxy.getPort());
                 }
                 Proxy p = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(
                         proxy.getHostName(), proxy.getPort()));
@@ -230,7 +230,7 @@ public final class URLStreamer {
         if (LOG.isDebugEnabled()) {
             watch = new StopWatch();
             watch.start();
-            LOG.debug("Streaming URL:" + url);
+            LOG.debug("Streaming URL: {}", url);
         }
         String out;
         try {
@@ -240,7 +240,7 @@ public final class URLStreamer {
         }
         if (LOG.isDebugEnabled() && watch != null) {
             watch.stop();
-            LOG.debug("Streaming elapsed time: " + watch.toString());
+            LOG.debug("Streaming elapsed time: {}", watch);
         }
         return out;
     }
@@ -298,7 +298,7 @@ public final class URLStreamer {
         if (LOG.isDebugEnabled()) {
             watch = new StopWatch();
             watch.start();
-            LOG.debug("Streaming URL:" + url);
+            LOG.debug("Streaming URL: {}", url);
         }
         String out;
         try {
@@ -309,7 +309,7 @@ public final class URLStreamer {
         }
         if (LOG.isDebugEnabled() && watch != null) {
             watch.stop();
-            LOG.debug("Streaming elapsed time: " + watch.toString());
+            LOG.debug("Streaming elapsed time: {}", watch);
         }
         return out;
     }

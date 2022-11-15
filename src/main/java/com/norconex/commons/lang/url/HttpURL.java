@@ -25,10 +25,11 @@ import java.util.Locale;
 import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import com.norconex.commons.lang.collection.CollectionUtil;
+
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 
 /**
  * This class act as a mutable URL, which could be a replacement
@@ -38,7 +39,8 @@ import com.norconex.commons.lang.collection.CollectionUtil;
  *
  * @author Pascal Essiembre
  */
-//TODO rename MutableURL (really? what about the static methods?  Maybe "Url"?)
+//MAYBE: rename MutableURL (really? what about the static methods?  Maybe "Url"?)
+@EqualsAndHashCode
 public class HttpURL implements Serializable {
 
     private static final long serialVersionUID = -8886393027925815099L;
@@ -72,7 +74,7 @@ public class HttpURL implements Serializable {
      * Creates a new HttpURL from the URL object using UTF-8 for URL encoding.
      * @param url a URL
      */
-    public HttpURL(URL url) {
+    public HttpURL(@NonNull URL url) {
         this(url.toString());
     }
     /**
@@ -90,7 +92,7 @@ public class HttpURL implements Serializable {
      * @param encoding character encoding
      * @since 1.7.0
      */
-    public HttpURL(URL url, String encoding) {
+    public HttpURL(@NonNull URL url, String encoding) {
         this(url.toString(), encoding);
     }
     /**
@@ -258,7 +260,7 @@ public class HttpURL implements Serializable {
 
     /**
      * Gets the last URL path segment without the query string.
-     * If there are segment to return,
+     * If there are no segment to return,
      * an empty string will be returned instead.
      * @return the last URL path segment
      */
@@ -286,9 +288,10 @@ public class HttpURL implements Serializable {
 
     /**
      * Gets the root of this HttpUrl. That is the left part of a URL up to
-     * and including the host name. A <code>null</code> or empty string returns
-     * a <code>null</code> document root.
-     * @return left part of a URL up to (and including the host name
+     * and including the host name. If there are no root, <code>null</code>
+     * is returned.
+     * @return left part of a URL up to (and including the host name) or
+     *     <code>null</code>
      * @throws URLException when URL is malformed
      * @since 1.8.0
      */
@@ -527,14 +530,5 @@ public class HttpURL implements Serializable {
 
         // Not detected as relative. Not sure what it is, so return as is
         return relURL;
-    }
-
-    @Override
-    public boolean equals(final Object other) {
-        return EqualsBuilder.reflectionEquals(this, other);
-    }
-    @Override
-    public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this);
     }
 }

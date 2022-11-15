@@ -1,4 +1,4 @@
-/* Copyright 2010-2016 Norconex Inc.
+/* Copyright 2010-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,40 +14,13 @@
  */
 package com.norconex.commons.lang.url;
 
+import lombok.experimental.StandardException;
+
 /**
  * Runtime exception thrown when dealing with URL failures.
  * @author Pascal Essiembre
  */
+@StandardException
 public class URLException extends RuntimeException {
-
     private static final long serialVersionUID = 8484839654375152232L;
-
-    /**
-     * Constructor.
-     */
-    public URLException() {
-        super();
-    }
-    /**
-     * Constructor.
-     * @param message exception message
-     */
-    public URLException(String message) {
-        super(message);
-    }
-    /**
-     * Constructor.
-     * @param cause exception cause
-     */
-    public URLException(Throwable cause) {
-        super(cause);
-    }
-    /**
-     * Constructor.
-     * @param message exception message
-     * @param cause exception cause
-     */
-    public URLException(String message, Throwable cause) {
-        super(message, cause);
-    }
 }

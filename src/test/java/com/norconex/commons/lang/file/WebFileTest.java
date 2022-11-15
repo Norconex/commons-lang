@@ -76,11 +76,6 @@ class WebFileTest {
             .isEqualTo(webFile.getResolvedFile());
     }
 
-//    @Test
-//    void testNullErrors() {
-//        assertThat(WebFile.create("http://example.com", "")).isNull();
-//    }
-
     enum WebFileCreator {
         CREATE_STRING_PATH(dir -> WebFile.create(URLSTR, dir)),
         CREATE_STRING_PATH_STRING(dir -> WebFile.create(URLSTR, dir, FILENAME)),

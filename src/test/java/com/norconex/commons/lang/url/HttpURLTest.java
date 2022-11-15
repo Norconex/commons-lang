@@ -14,10 +14,18 @@
  */
 package com.norconex.commons.lang.url;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 class HttpURLTest {
 
@@ -32,59 +40,90 @@ class HttpURLTest {
         t = null;
     }
 
-    @Test
-    void testKeepProtocolUpperCase() {
-        s = "HTTP://www.example.com";
-        t = "HTTP://www.example.com";
-        assertEquals(t, new HttpURL(s).toString());
+    @ParameterizedTest
+    @CsvSource(
+        value = {
+            "Keep protocol character case,"
+                    + "HTTP://www.example.com,"
+                    + "HTTP://www.example.com",
+            "'http' protocol without port,"
+                    + "http://www.example.com/blah,"
+                    + "http://www.example.com/blah",
+            "'http' protocol with default port,"
+                    + "http://www.example.com:80/blah,"
+                    + "http://www.example.com/blah",
+            "'http' protocol with non-default port,"
+                    + "http://www.example.com:81/blah,"
+                    + "http://www.example.com:81/blah",
+            "'https' protocol without port,"
+                    + "https://www.example.com/blah,"
+                    + "https://www.example.com/blah",
+            "'https' protocol with default port,"
+                    + "https://www.example.com:443/blah,"
+                    + "https://www.example.com/blah",
+            "'https' protocol with non-default port,"
+                    + "https://www.example.com:444/blah,"
+                    + "https://www.example.com:444/blah",
+            "Non 'http(s)' protocol without port,"
+                    + "ftp://ftp.example.com/dir,"
+                    + "ftp://ftp.example.com/dir",
+            "Non 'http(s)' protocol with port,"
+                    + "ftp://ftp.example.com:20/dir,"
+                    + "ftp://ftp.example.com:20/dir",
+            "Invalid URL,"
+                    + "http://www.example.com/\"path\","
+                    + "http://www.example.com/%22path%22",
+            "URL with leading or trailing spaces,"
+                    + "  http://www.example.com/path  ,"
+                    + "http://www.example.com/path",
+        },
+        ignoreLeadingAndTrailingWhitespace = false
+    )
+    void testURLToStringEquals(
+            String desc, String actual, String expected) {
+        assertThat(new HttpURL(actual))
+            .describedAs("Test: %s (actual: \"%s\", expected: \"%s\")",
+                    desc, actual, expected)
+            .hasToString(expected);
     }
 
-    @Test
-    void testToAbsoluteRelativeToProtocol() {
-        s = "//www.relative.com/e/f.html";
-        t = "https://www.relative.com/e/f.html";
-        assertEquals(t, HttpURL.toAbsolute(absURL, s));
-    }
-    @Test
-    void testToAbsoluteRelativeToDomainName() {
-        s = "/e/f.html";
-        t = "https://www.example.com/e/f.html";
-        assertEquals(t, HttpURL.toAbsolute(absURL, s));
-    }
-    @Test
-    void testToAbsoluteRelativeToFullPageURL() {
-        s = "?name=john";
-        t = "https://www.example.com/a/b/c.html?name=john";
-        assertEquals(t, HttpURL.toAbsolute(absURL, s));
-    }
-    @Test
-    void testToAbsoluteRelativeToLastDirectory() {
-        s = "g.html";
-        t = "https://www.example.com/a/b/g.html";
-        assertEquals(t, HttpURL.toAbsolute(absURL, s));
-    }
-    @Test
-    void testToAbsoluteAbsoluteURL() {
-        s = "http://www.sample.com/xyz.html";
-        t = "http://www.sample.com/xyz.html";
-        assertEquals(t, HttpURL.toAbsolute(absURL, s));
-    }
-
-    //Test for issue https://github.com/Norconex/collector-http/issues/788
-    @Test
-    void testToAbsoluteRelativeWithColon() {
-        s = "h/i.html?param=1:2";
-        t = "https://www.example.com/a/b/h/i.html?param=1:2";
-        assertEquals(t, HttpURL.toAbsolute(absURL, s));
-    }
-    @Test
-    void testToAbsoluteStartsWithScheme() {
-        s = "x1+2-3.4:yz";
-        t = "x1+2-3.4:yz";
-        assertEquals(t, HttpURL.toAbsolute(absURL, s));
-        s = "1+2-3.4x:yz";
-        t = "https://www.example.com/a/b/1+2-3.4x:yz";
-        assertEquals(t, HttpURL.toAbsolute(absURL, s));
+    @ParameterizedTest
+    @CsvSource(
+        value = {
+            "Relative to protocol,"
+                    + "//www.relative.com/e/f.html,"
+                    + "https://www.relative.com/e/f.html",
+            "Relative to domain name,"
+                    + "/e/f.html,"
+                    + "https://www.example.com/e/f.html",
+            "Relative to full page URL,"
+                    + "?name=john,"
+                    + "https://www.example.com/a/b/c.html?name=john",
+            "Relative to last directory,"
+                    + "g.html,"
+                    + "https://www.example.com/a/b/g.html",
+            "Absolute URL,"
+                    + "http://www.sample.com/xyz.html,"
+                    + "http://www.sample.com/xyz.html",
+            //Test for https://github.com/Norconex/collector-http/issues/788
+            "Relative with colon in parameter,"
+                    + "h/i.html?param=1:2,"
+                    + "https://www.example.com/a/b/h/i.html?param=1:2",
+            "Starts with valid odd scheme,"
+                    + "x1+2-3.4:yz,"
+                    + "x1+2-3.4:yz",
+            "Starts with invalid odd scheme,"
+                    + "1+2-3.4x:yz,"
+                    + "https://www.example.com/a/b/1+2-3.4x:yz",
+        },
+        ignoreLeadingAndTrailingWhitespace = false
+    )
+    void testURLToAbsoluteEquals(
+            String desc, String actual, String expected) {
+        assertThat(HttpURL.toAbsolute(absURL, actual))
+            .describedAs("Test absolute: %s (actual: \"%s\", expected: \"%s\")",
+                    desc, actual, expected)
+            .isEqualTo(expected);
     }
 
     //Test for issue https://github.com/Norconex/collector-http/issues/225
@@ -93,72 +132,6 @@ class HttpURLTest {
         s = "http://www.sample.com";
         t = "http://www.sample.com/xyz.html";
         assertEquals(t, HttpURL.toAbsolute(s, "xyz.html"));
-    }
-
-    @Test
-    void testHttpProtocolNoPort() {
-        s = "http://www.example.com/blah";
-        t = "http://www.example.com/blah";
-        assertEquals(t, new HttpURL(s).toString());
-    }
-    @Test
-    void testHttpProtocolDefaultPort() {
-        s = "http://www.example.com:80/blah";
-        t = "http://www.example.com/blah";
-        assertEquals(t, new HttpURL(s).toString());
-    }
-    @Test
-    void testHttpProtocolNonDefaultPort() {
-        s = "http://www.example.com:81/blah";
-        t = "http://www.example.com:81/blah";
-        assertEquals(t, new HttpURL(s).toString());
-    }
-
-    @Test
-    void testHttpsProtocolNoPort() {
-        s = "https://www.example.com/blah";
-        t = "https://www.example.com/blah";
-        assertEquals(t, new HttpURL(s).toString());
-    }
-    @Test
-    void testHttpsProtocolDefaultPort() {
-        s = "https://www.example.com:443/blah";
-        t = "https://www.example.com/blah";
-        assertEquals(t, new HttpURL(s).toString());
-    }
-    @Test
-    void testHttpsProtocolNonDefaultPort() {
-        s = "https://www.example.com:444/blah";
-        t = "https://www.example.com:444/blah";
-        assertEquals(t, new HttpURL(s).toString());
-    }
-
-    @Test
-    void testNonHttpProtocolNoPort() {
-        s = "ftp://ftp.example.com/dir";
-        t = "ftp://ftp.example.com/dir";
-        assertEquals(t, new HttpURL(s).toString());
-    }
-
-    @Test
-    void testNonHttpProtocolWithPort() {
-        s = "ftp://ftp.example.com:20/dir";
-        t = "ftp://ftp.example.com:20/dir";
-        assertEquals(t, new HttpURL(s).toString());
-    }
-
-    @Test
-    void testInvalidURL() {
-        s = "http://www.example.com/\"path\"";
-        t = "http://www.example.com/%22path%22";
-        assertEquals(t, new HttpURL(s).toString());
-    }
-
-    @Test
-    void testURLWithLeadingTrailingSpaces() {
-        s = "  http://www.example.com/path  ";
-        t = "http://www.example.com/path";
-        assertEquals(t, new HttpURL(s).toString());
     }
 
     @Test
@@ -209,5 +182,46 @@ class HttpURLTest {
         s = "file:/c:/WINDOWS/file.txt";
         t = "file:///c:/WINDOWS/file.txt";
         assertEquals(t, new HttpURL(s).toString());
+    }
+
+    @Test
+    void testMisc() throws MalformedURLException, URISyntaxException {
+        assertThat(new HttpURL().getHost()).isNull();
+        URL url = new URL("http://example.com/some/path.html?param1=value1#A1");
+        assertThat(new HttpURL(url).toURL()).isEqualTo(url);
+        assertThat(new HttpURL(url, "UTF-8").toURL()).isEqualTo(url);
+
+        assertThatExceptionOfType(URLException.class).isThrownBy(
+                () -> new HttpURL("blah:I am invalid"));
+
+        HttpURL httpUrl = new HttpURL(url, "UTF-8");
+        assertThat(httpUrl)
+            .returns("UTF-8", HttpURL::getEncoding)
+            .returns("/some/path.html", HttpURL::getPath)
+            .returns(new QueryString(url), HttpURL::getQueryString)
+            .returns("http", HttpURL::getProtocol)
+            .returns(false, HttpURL::isSecure)
+            .returns(80, HttpURL::getPort)
+            .returns("A1", HttpURL::getFragment)
+            .returns("path.html", HttpURL::getLastPathSegment)
+            .returns("http://example.com", HttpURL::getRoot)
+            .returns(url.toURI(), HttpURL::toURI)
+            ;
+
+        httpUrl = new HttpURL();
+        httpUrl.setPath("/some/path.html");
+        httpUrl.setHost("example.com");
+        httpUrl.setProtocol("https");
+        httpUrl.setPort(443);
+        httpUrl.setFragment("A1");
+        assertThat(httpUrl).hasToString(
+                "https://example.com/some/path.html#A1");
+
+        assertThat(HttpURL.toURL("http://example.com/some path"))
+            .hasToString("http://example.com/some%20path");
+        assertThat(HttpURL.toURI("http://example.com/some path"))
+            .hasToString("http://example.com/some%20path");
+
+        assertThat(HttpURL.getRoot(null)).isNull();
     }
 }
