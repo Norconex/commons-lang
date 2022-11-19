@@ -186,6 +186,16 @@
       <action dev="essiembre" type="update">
         YearMonthDayInterval now supports null values to represent infinity.
       </action>
+      <action dev="essiembre" type="update">
+        XML now implements #equals and #hashCode.
+      </action>
+      <action dev="essiembre" type="update">
+        XML#populate and XML#validate methods no longer return
+        a list of errors. Relies on ErrorHandler instead.
+      </action>
+      <action dev="essiembre" type="update">
+        XML#join has been deprecated.
+      </action>
       <action dev="essiembre" type="add">
         TextMatcher now considers null values as non-matching by defualt.
       </action>

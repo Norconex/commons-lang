@@ -1,4 +1,4 @@
-/* Copyright 2018 Norconex Inc.
+/* Copyright 2018-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,44 +14,13 @@
  */
 package com.norconex.commons.lang.xml;
 
+import lombok.experimental.StandardException;
+
 /**
  * Runtime exception for XML-related issues.
  * @author Pascal Essiembre
  */
+@StandardException
 public class XMLException extends RuntimeException {
-
     private static final long serialVersionUID = 8484839654375152232L;
-
-    /**
-     * Constructor.
-     */
-    public XMLException() {
-        super();
-    }
-
-    /**
-     * Constructor.
-     * @param message exception message
-     */
-    public XMLException(String message) {
-        super(message);
-    }
-
-    /**
-     * Constructor.
-     * @param cause exception root cause
-     */
-    public XMLException(Throwable cause) {
-        super(cause);
-    }
-
-    /**
-     * Constructor.
-     * @param message exception message
-     * @param cause exception root cause
-     */
-    public XMLException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
 }

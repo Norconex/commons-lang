@@ -1,4 +1,4 @@
-/* Copyright 2010-2021 Norconex Inc.
+/* Copyright 2010-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,8 +80,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -112,18 +110,18 @@ import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.Marshaller;
 import jakarta.xml.bind.Unmarshaller;
 import jakarta.xml.bind.annotation.XmlRootElement;
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
-//TODO consider checking for a "disable=false|true" and setting it on
+//MAYBE: consider checking for a "disable=false|true" and setting it on
 //a method if this method exists, and/or do not load if set to true.
 
-//TODO add "addStringMap"
+//MAYBE: add "addStringMap"
 
-//TODO have a look at Collections.emptyList() and do similar to have
-// getObject return any type instead of having tons of get methods.
+//MAYBE: have a <generic> getObject to reduce the number of get methods.
 
-//TODO getElement(s) and getAttribute(s) which are direct references to
+//MAYBE getElement(s) and getAttribute(s) which are direct references to
 // elements attributes (not xpath)
-
 
 /**
  * <p>
@@ -153,9 +151,8 @@ import jakarta.xml.bind.annotation.XmlRootElement;
  * @author Pascal Essiembre
  * @since 2.0.0
  */
+@Slf4j
 public class XML implements Iterable<XMLCursor> {
-
-    private static final Logger LOG = LoggerFactory.getLogger(XML.class);
 
     private static final String DEFAULT_DELIM_REGEX = "(\\s*,\\s*)+";
     private static final String NULL_XML_VALUE = "\u0000";
@@ -167,6 +164,7 @@ public class XML implements Iterable<XMLCursor> {
     private final ErrorHandler errorHandler;
     private final DocumentBuilderFactory documentBuilderFactory;
 
+    //--- Constructors ---------------------------------------------------------
 
     /**
      * <p>Parse an XML file into an XML document, without consideration
@@ -203,7 +201,7 @@ public class XML implements Iterable<XMLCursor> {
      * <p>
      * The supplied "xml" string can either be a well-formed XML or
      * a string without angle brackets. When the later is supplied,
-     * it is assumed to be the XML root element name (for a fresh XML).
+     * it is interpreted as the XML root element name (for a fresh XML).
      * </p>
      * @param xml the XML string to parse
      * @see #of(String)
@@ -212,12 +210,19 @@ public class XML implements Iterable<XMLCursor> {
         this(XML.of(xml).create().node);
     }
 
+    /**
+     * Creates a new XML with the supplied root element (i.e., tag name),
+     * and populate it with the supplied object.
+     * @param rootElement XML root element name
+     * @param obj the object to populate this XML with.
+     * @see #of(String, Object)
+     */
     public XML(String rootElement, Object obj) {
         this(XML.of(rootElement, obj).create().node);
     }
 
     /**
-     * <p>Creates an XML with the given node.</p>
+     * <p>Creates an XML with the given DOM node.</p>
      * @param node the node representing the XML
      */
     public XML(Node node) {
@@ -255,75 +260,186 @@ public class XML implements Iterable<XMLCursor> {
         }
     }
 
-    private static DocumentBuilderFactory defaultIfNull(
-            DocumentBuilderFactory dbf) {
-        return Optional.ofNullable(dbf).orElseGet(() -> {
-            DocumentBuilderFactory factory =
-                    XMLUtil.createDocumentBuilderFactory();
-            factory.setNamespaceAware(false);
-            factory.setIgnoringElementContentWhitespace(false);
-            return factory;
-        });
+    //--- Builders -------------------------------------------------------------
+
+    public static Builder of(File file) {
+        return new Builder(file);
     }
-    private static ErrorHandler defaultIfNull(ErrorHandler eh) {
-        return Optional.ofNullable(eh).orElseGet(
-                    () -> new ErrorHandlerFailer(XML.class));
+    public static Builder of(Path path) {
+        return new Builder(path);
+    }
+    public static Builder of(Node node) {
+        return new Builder(node);
+    }
+    public static Builder of(InputStream is) {
+        return new Builder(is);
+    }
+    public static Builder of(Reader reader) {
+        return new Builder(reader);
+    }
+    public static Builder of(String xml) {
+        return new Builder(xml);
+    }
+    public static Builder of(String rootElementName, Object object) {
+        return new Builder(object, rootElementName);
     }
 
-    private void jaxbMarshall(Object obj) {
-        try {
-            String name = node.getNodeName();
-            List<Attr> attributes = new ArrayList<>();
-            NamedNodeMap nattributes = node.getAttributes();
-            for (int i = 0; i < nattributes.getLength(); i++) {
-                attributes.add((Attr) nattributes.item(i));
+    public static class Builder {
+        private DocumentBuilderFactory documentBuilderFactory;
+        private ErrorHandler errorHandler;
+
+        private final Object source;
+        // if root element is set, it means it came "fromObject".
+        private final String rootElementName;
+
+        private Builder(Object source) {
+            this(source, null);
+        }
+        private Builder(Object source, String rootElementName) {
+            this.source = source;
+            this.rootElementName = rootElementName;
+        }
+        public Builder setDocumentBuilderFactory(
+                DocumentBuilderFactory documentBuilderFactory) {
+            this.documentBuilderFactory = documentBuilderFactory;
+            return this;
+        }
+        public Builder setErrorHandler(ErrorHandler errorHandler) {
+            this.errorHandler = errorHandler;
+            return this;
+        }
+        public XML create() {
+            errorHandler = defaultIfNull(errorHandler);
+            documentBuilderFactory = defaultIfNull(documentBuilderFactory);
+
+            if (source instanceof Node) {
+                return new XML((Node) source,
+                        null, errorHandler, documentBuilderFactory);
             }
 
-            JAXBContext contextObj = JAXBContext.newInstance(obj.getClass());
-            Marshaller marshallerObj = contextObj.createMarshaller();
-            marshallerObj.marshal(obj, node);
-
-            unwrap();
-
-            Element el = ((Element) node);
-            for (Attr at : attributes) {
-                el.setAttributeNS(
-                        at.getNamespaceURI(), at.getName(), at.getValue());
+            String xmlStr = null;
+            if (StringUtils.isNotBlank(rootElementName)) {
+                xmlStr = "<" + rootElementName + "/>";
+            } else if (source instanceof Path) {
+                xmlStr = fileToString(((Path) source).toFile());
+            } else if (source instanceof File) {
+                xmlStr = fileToString((File) source);
+            } else if (source instanceof InputStream) {
+                xmlStr = readerToString(
+                        new InputStreamReader((InputStream) source));
+            } else if (source instanceof Reader) {
+                xmlStr = readerToString((Reader) source);
+            } else if (source instanceof String) {
+                xmlStr = (String) source;
             }
-            rename(name);
-        } catch (Exception e) {
-            throw new XMLException(
-                    "This object could not be JAXB-marshalled: " + obj, e);
+
+            if (StringUtils.isBlank(xmlStr)) {
+                return new XML((Node) null,
+                        null, errorHandler, documentBuilderFactory);
+            }
+
+            xmlStr = xmlStr.trim();
+
+            if (!xmlStr.contains("<")) {
+                xmlStr = "<" + xmlStr + "/>";
+            }
+
+            //--- Ensure proper reading of null and empty values ---
+
+            // Add xml:space="empty" to empty tags.
+            xmlStr = xmlStr.replaceAll(
+                    "(<\\s*)([^\\s>]+)([^>]*)(\\s*><\\s*\\/\\s*\\2\\s*>)",
+                    "$1$2 xml:space=\"empty\" $3$4");
+            Element node = null;
+            try {
+                documentBuilderFactory.setNamespaceAware(false);
+                node = documentBuilderFactory.newDocumentBuilder()
+                        .parse(new InputSource(new StringReader(xmlStr)))
+                            .getDocumentElement();
+            } catch (ParserConfigurationException
+                    | SAXException | IOException e) {
+                throw new XMLException("Could not parse XML.", e);
+            }
+
+            Object sourceObject = null;
+            if (rootElementName != null && source != null) {
+                sourceObject = source;
+            }
+            return new XML(
+                    node, sourceObject, errorHandler, documentBuilderFactory);
+        }
+        private static String readerToString(Reader reader) {
+            try {
+                return IOUtils.toString(reader);
+            } catch (IOException e) {
+                throw new XMLException("Could not read XML.", e);
+            }
+        }
+        private static String fileToString(File file) {
+            try {
+                return FileUtils.readFileToString(file, StandardCharsets.UTF_8);
+            } catch (IOException e) {
+                throw new XMLException("Could not read XML file: "
+                        + file.getAbsolutePath(), e);
+            }
         }
     }
 
-    private boolean isDefined() {
-        return node != null;
+    //--- Populate Object ------------------------------------------------------
+
+    /**
+     * <p>
+     * Populates supplied object with the XML matching the given expression.
+     * If there is no match, the object does not get populated.
+     * Takes into consideration whether the target object implements
+     * {@link IXMLConfigurable} or JAXB.
+     * </p>
+     * <p>
+     * Performs XML validation if the target object has an associated schema.
+     * </p>
+     * @param xpathExpression XPath expression
+     * @param targetObject object to populate with this XML
+     */
+    public void populate(Object targetObject, String xpathExpression) {
+        ifXML(xpathExpression, x -> x.populate(targetObject));
     }
 
-    // "enabled" should by default always be false, so it has to be enabled
-    // explicitly.  Then it must be defined and "true".
-    public boolean isEnabled() {
-        return isDefined() && getBoolean("@enabled", false);
+    /**
+     * <p>
+     * Populates supplied object with this XML. Takes into consideration
+     * whether the target object implements {@link IXMLConfigurable} or
+     * JAXB.
+     * </p>
+     * <p>
+     * Performs XML validation if the target object has an associated schema.
+     * </p>
+     * <p>
+     * Invoking this method with a <code>null</code> target has no effect
+     * (returns an empty list).
+     * </p>
+     * @param targetObject object to populate with this XML
+     */
+    public void populate(Object targetObject) {
+        if (node == null || targetObject == null) {
+            return;
+        }
+        try {
+            validate(targetObject.getClass());
+            if (isXMLConfigurable(targetObject)) {
+                ((IXMLConfigurable) targetObject).loadFromXML(this);
+            } else if (isJAXB(targetObject)) {
+                jaxbUnmarshall(targetObject);
+            }
+        } catch (XMLException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new XMLException("XML (tag: <" + getName() + ">) "
+                    + "could not be converted to object of type: "
+                            + targetObject.getClass(), e);
+        }
     }
 
-    // "disabled" should by default always be false, so it has to be set
-    // explicitly.  Then it must be defined and "true".
-    public boolean isDisabled() {
-        return isDefined() && getBoolean("@disabled", false);
-    }
-
-    // When calling this method, empty tags would have added a xml:space="empty"
-    // custom attribute. Else, if it has no child nodes
-    // (attributes, text, elements), we consider it as an explicitly
-    // self-closed tag, thus null.
-    private boolean isExplicitNull() {
-        return isDefined() && !node.hasAttributes() && !node.hasChildNodes();
-    }
-
-    public Node toNode() {
-        return node;
-    }
+    //--- To Object ------------------------------------------------------------
 
     /**
      * <p>
@@ -380,7 +496,7 @@ public class XML implements Iterable<XMLCursor> {
         T obj;
         if (objClass != null) {
             try {
-                obj = objClass.newInstance();
+                obj = objClass.getDeclaredConstructor().newInstance();
             } catch (Exception e) {
                 throw new XMLException(
                         "This class could not be instantiated: " + objClass, e);
@@ -479,17 +595,7 @@ public class XML implements Iterable<XMLCursor> {
                         .filter(c -> ((Class<?>) c).getName()
                                 .endsWith("." + partialName))
                         .collect(Collectors.toList());
-                if (filteredResults.size() == 1) {
-                    LOG.debug("{} classes implementing \"{}\" and ending "
-                            + "with \"{}\" were found, but only one "
-                            + "matched an exact class name or class name "
-                            + "and package segment: {}",
-                            results.size(),
-                            type.getName(),
-                            partialName,
-                            ((Class<?>) filteredResults.get(0)).getName());
-                    results.retainAll(filteredResults);
-                } else {
+                if (filteredResults.size() != 1) {
                     throw new XMLException(results.size()
                         + " classes implementing \""
                         + type.getName() + "\" "
@@ -501,6 +607,15 @@ public class XML implements Iterable<XMLCursor> {
                                 .map(c -> ((Class<?>) c).getName())
                                 .collect(Collectors.joining(", ")));
                 }
+                LOG.debug("{} classes implementing \"{}\" and ending "
+                        + "with \"{}\" were found, but only one "
+                        + "matched an exact class name or class name "
+                        + "and package segment: {}",
+                        results.size(),
+                        type.getName(),
+                        partialName,
+                        ((Class<?>) filteredResults.get(0)).getName());
+                results.retainAll(filteredResults);
             }
 
             if (results.isEmpty()) {
@@ -520,77 +635,7 @@ public class XML implements Iterable<XMLCursor> {
         return obj;
     }
 
-    /**
-     * <p>
-     * Populates supplied object with the XML matching the given expression.
-     * If there is no match, the object does not get populated.
-     * Takes into consideration whether the target object implements
-     * {@link IXMLConfigurable} or JAXB.
-     * </p>
-     * <p>
-     * Performs XML validation if the target object has an associated schema.
-     * </p>
-     * @param xpathExpression XPath expression
-     * @param targetObject object to populate with this XML
-     * @return validation errors of an empty list if none
-     *         (never <code>null</code>)
-     */
-    public List<XMLValidationError> populate(
-            Object targetObject, String xpathExpression) {
-        List<XMLValidationError> errs = new ArrayList<>();
-        ifXML(xpathExpression, x -> errs.addAll(x.populate(targetObject)));
-        return errs;
-    }
-
-    /**
-     * <p>
-     * Populates supplied object with this XML. Takes into consideration
-     * whether the target object implements {@link IXMLConfigurable} or
-     * JAXB.
-     * </p>
-     * <p>
-     * Performs XML validation if the target object has an associated schema.
-     * </p>
-     * <p>
-     * Invoking this method with a <code>null</code> target has no effect
-     * (returns an empty list).
-     * </p>
-     * @param targetObject object to populate with this XML
-     * @return validation errors or an empty list if none
-     *         (never <code>null</code>)
-     */
-    public List<XMLValidationError> populate(Object targetObject) {
-        if (node == null || targetObject == null) {
-            return Collections.emptyList();
-        }
-        try {
-            List<XMLValidationError> errs = validate(targetObject.getClass());
-            if (isXMLConfigurable(targetObject)) {
-                ((IXMLConfigurable) targetObject).loadFromXML(this);
-            } else if (isJAXB(targetObject)) {
-                jaxbUnmarshall(targetObject);
-            }
-            return errs;
-        } catch (XMLException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new XMLException("XML (tag: <" + getName() + ">) "
-                    + "could not be converted to object of type: "
-                            + targetObject.getClass(), e);
-        }
-    }
-
-    private void jaxbUnmarshall(Object obj) {
-        try {
-            JAXBContext jaxbContext = JAXBContext.newInstance(obj.getClass());
-            Unmarshaller unmarsh = jaxbContext.createUnmarshaller();
-            JAXBElement<?> newObj = unmarsh.unmarshal(node, obj.getClass());
-            BeanUtil.copyProperties(obj, newObj.getValue());
-        } catch (Exception e) {
-            throw new XMLException("XML (tag: <" + getName() + ">) "
-                    + " could not be JAXB-unmarshalled: " + this, e);
-        }
-    }
+    //--- Get: Object ----------------------------------------------------------
 
     /**
      * <p>Creates a new instance of the class represented by the "class"
@@ -647,8 +692,7 @@ public class XML implements Iterable<XMLCursor> {
             }
             return xml.toObject(defaultObject);
         } catch (Exception e) {
-            handleException(
-                    node.getNodeName(), xpathExpression, e);
+            handleException(node.getNodeName(), xpathExpression, e);
             return defaultObject;
         }
     }
@@ -900,6 +944,89 @@ public class XML implements Iterable<XMLCursor> {
     }
 
     /**
+     * Gets a list of the given type after splitting the matching node value(s)
+     * on commas (CSV).
+     * Values are trimmed and blank entries removed before attempting
+     * to convert them to given type.
+     * Commas can have any spaces before or after.
+     * @param xpathExpression XPath expression to the node value(s) to split
+     * @param type target list type
+     * @param <T> returned list type
+     * @return list of given type, never <code>null</code>
+     */
+    public <T> List<T> getDelimitedList(
+            String xpathExpression, Class<T> type) {
+        return getDelimitedList(xpathExpression, type, Collections.emptyList());
+    }
+    /**
+     * Gets a list of given type after splitting the matching node value(s)
+     * on commas (CSV).
+     * Values are trimmed and blank entries removed before attempting
+     * to convert them to given type.
+     * Commas can have any spaces before or after.
+     * @param xpathExpression XPath expression to the node value(s) to split
+     * @param type target list type
+     * @param defaultValues default values if the split returns
+     *        <code>null</code> or an empty list
+     * @param <T> returned list type
+     * @return list of strings
+     */
+    public <T> List<T> getDelimitedList(
+            String xpathExpression, Class<T> type, List<T> defaultValues) {
+        return getDelimitedList(
+                xpathExpression, type, DEFAULT_DELIM_REGEX, defaultValues);
+    }
+    /**
+     * Gets a list of given type after splitting the matching node value(s) with
+     * the given delimiter regular expression.
+     * Values are trimmed and blank entries removed before attempting
+     * to convert them to given type.
+     * @param xpathExpression XPath expression to the node value(s) to split
+     * @param type target list type
+     * @param delimRegex regular expression matching split delimiter
+     * @param <T> returned list type
+     * @return list of strings, never <code>null</code>
+     */
+    public <T> List<T> getDelimitedList(
+            String xpathExpression, Class<T> type, String delimRegex) {
+        return getDelimitedList(
+                xpathExpression, type, delimRegex, Collections.emptyList());
+    }
+    /**
+     * Gets a list of given type after splitting the matching node value(s) with
+     * the given delimiter regular expression.
+     * Values are trimmed and blank entries removed before attempting
+     * to convert them to given type.
+     * @param xpathExpression XPath expression to the node value(s) to split
+     * @param type target list type
+     * @param delimRegex regular expression matching split delimiter
+     * @param defaultValues default values if the split returns
+     *        <code>null</code> or an empty list
+     * @param <T> returned list type
+     * @return list of strings
+     */
+    @SuppressWarnings("unchecked")
+    public <T> List<T> getDelimitedList(String xpathExpression, Class<T> type,
+            String delimRegex, List<? extends T> defaultValues) {
+        if (!contains(xpathExpression)) {
+            return (List<T>) defaultValues;
+        }
+
+        List<String> values = getDelimitedStringList(
+                xpathExpression, delimRegex, NULL_XML_LIST);
+        if (values == null) {
+            return (List<T>) defaultValues;
+        }
+        if (values.isEmpty() || values == NULL_XML_LIST) {
+            return Collections.emptyList();
+        }
+        return CollectionUtil.toTypeList(values, type);
+
+    }
+
+    //--- Get: XML -------------------------------------------------------------
+
+    /**
      * Gets the xml subset matching the xpath expression.
      * @param xpathExpression expression to match
      * @return XML or <code>null</code> is xpath has no match
@@ -910,42 +1037,6 @@ public class XML implements Iterable<XMLCursor> {
             return null;
         }
         return createAndInitXML(XML.of(xmlNode));
-    }
-    /**
-     * If the given expression matches an element, consume that
-     * element.
-     * @param xpathExpression expression
-     * @param then XML consumer
-     */
-    public void ifXML(String xpathExpression, Consumer<XML> then) {
-        XML xml = getXML(xpathExpression);
-        if (xml != null && xml.isDefined() && then != null) {
-            then.accept(xml);
-        }
-    }
-
-
-
-    /**
-     * If the given expression matches one or more elements, consume those
-     * element one by one.
-     * @param xpathExpression expression
-     * @param action The action to be performed for each element
-     */
-    public void forEach(String xpathExpression, Consumer<XML> action) {
-        List<XML> xmlList = getXMLList(xpathExpression);
-        xmlList.forEach(x -> {
-            if (x != null && x.isDefined() && action != null) {
-                action.accept(x);
-            }
-        });
-    }
-
-    private XML createAndInitXML(Builder builder) {
-        return builder
-                .setDocumentBuilderFactory(documentBuilderFactory)
-                .setErrorHandler(errorHandler)
-                .create();
     }
 
     /**
@@ -980,241 +1071,107 @@ public class XML implements Iterable<XMLCursor> {
         return Optional.of(list);
     }
 
-    private static void handleException(
-            String rootNode, String key, Exception e) {
-        // Throw exception
-        if (e instanceof XMLException) {
-            throw (XMLException) e;
-        }
-        throw new XMLException(
-                "Could not instantiate object from configuration "
-              + "for \"" + rootNode + " -> " + key + "\".", e);
-    }
+    //--- Get: Node ------------------------------------------------------------
 
-    /**
-     * Creates a new {@link Reader} from a {@link Node}.
-     * Do not forget to close the reader instance when you are done with it.
-     * @return reader
-     * @throws XMLException cannot read configuration
-     */
-    public Reader toReader() {
-        return new StringReader(toString());
+    public Node getNode(String xpathExpression) {
+        return getNode(xpathExpression, node);
     }
-
-    /**
-     * Gets a string representation of this XML.
-     * @return XML string
-     * @throws XMLException cannot read configuration
-     */
-    @Override
-    public String toString() {
-        return toString(0);
+    public Node getNode() {
+        return node;
     }
-    /**
-     * Gets a string representation of this XML.
-     * @param indent whether to indent the XML
-     * @return XML string
-     * @throws XMLException cannot read configuration
-     */
-    public String toString(int indent) {
+    public Node toNode() {
+        return node;
+    }
+    private Node getNode(String xpathExpression, Node parentNode) {
         try {
-            node.normalize();
-
-            fixIndent(indent);
-
-            StringWriter w = new StringWriter();
-            Result outputTarget = new StreamResult(w);
-
-            TransformerFactory factory = TransformerFactory.newInstance();
-            factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
-            factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
-
-            Transformer t = factory.newTransformer();
-            t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-            t.setOutputProperty(OutputKeys.INDENT, indent > 0 ? "yes" : "no");
-            t.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-            if (indent > 0) {
-                t.setOutputProperty(
-                        "{http://xml.apache.org/xslt}indent-amount",
-                        Integer.toString(indent));
-            }
-            t.transform(new DOMSource(node), outputTarget);
-
-            String xmlStr = w.toString();
-            // convert self-closing tags with "empty" attribute to empty tags
-            // instead
-            return xmlStr.replaceAll(
-                    "<\\s*([^\\s>]+)([^>]*) xml:space=\"empty\"([^>]*)/\\s*>",
-                    "<$1$2></$1>");
-        } catch (TransformerFactoryConfigurationError
-                | TransformerException e) {
-            throw new XMLException(
-                    "Could not convert node to reader "
-                  + "for node \"" + node.getNodeName() + "\".", e);
-        }
-    }
-    // For some reason, the following is required as a workaround
-    // to indentation not working properly. Taken from:
-    // https://myshittycode.com/2014/02/10/
-    //         java-properly-indenting-xml-string/
-    private void fixIndent(int indent) {
-        if (indent > 0) {
-            XPath xPath = XPathFactory.newInstance().newXPath();
-            try {
-                NodeList nodeList = (NodeList) xPath.evaluate(
-                        "//text()[normalize-space()='']",
-                        node, XPathConstants.NODESET);
-                for (int i = 0; i < nodeList.getLength(); ++i) {
-                    Node n = nodeList.item(i);
-                    n.getParentNode().removeChild(n);
-                }
-            } catch (XPathExpressionException e) {
-                LOG.error("Could not indent XML.", e);
-            }
-        }
-    }
-
-    /**
-     * <p>
-     * Validates this XML against an XSD schema attached to the class
-     * represented in this XML root tag "class" attribute.
-     * In addition to being returned, some validation errors/warnings may be
-     * logged.
-     * The schema is expected to be found at the same classpath location and
-     * have the same name as the object class, but with the ".xsd" extension.
-     * </p>
-     * <p>
-     * This method is the same as invoking
-     * <code>validate(getClass("@class"))</code>
-     * </p>
-     * @return list of errors/warnings or empty (never <code>null</code>)
-     */
-    public List<XMLValidationError> validate() {
-        return validate(getClass(XPATH_ATT_CLASS));
-    }
-
-    /**
-     * <p>
-     * Validates this XML for objects having an XSD schema attached,
-     * and logs any error/warnings.
-     * The schema expected to be found at the same classpath location and have
-     * the same name as the object class, but with the ".xsd" extension.
-     * </p>
-     * <p>
-     * This method is the same as invoking <code>validate(obj.getClass())</code>
-     * </p>
-     * @param obj the object to validate the XML for
-     * @return list of errors/warnings or empty (never <code>null</code>)
-     */
-    public List<XMLValidationError> validate(Object obj) {
-        if (obj == null) {
-            return validate(null);
-        }
-        return validate(obj.getClass());
-    }
-
-    /**
-     * Validates this XML for classes having an XSD schema attached,
-     * and logs any error/warnings.
-     * The schema expected to be found at the same classpath location and have
-     * the same name as the object class, but with the ".xsd" extension.
-     * @param clazz the class to validate the XML for
-     * @return unmodifiable list of errors/warnings or empty
-     *         (never <code>null</code>)
-     */
-    public List<XMLValidationError> validate(Class<?> clazz) {
-        if (clazz == null) {
-            return Collections.emptyList();
-        }
-
-        // Only validate if .xsd file exist in classpath for class
-        String xsdResource = ClassUtils.getSimpleName(clazz) + ".xsd";
-        LOG.debug("Validating XML for class {}",
-                ClassUtils.getSimpleName(clazz));
-        if (clazz.getResource(xsdResource) == null) {
-            LOG.debug("XSD schema not found for validation: {}", xsdResource);
-            return Collections.emptyList();
-        }
-
-        try (InputStream xsdStream = clazz.getResourceAsStream(xsdResource);
-                Reader xmlReader = toReader()) {
-            return validate(clazz, xsdStream, xmlReader);
-        } catch (SAXException | IOException e) {
-            throw new XMLException("Could not validate class: " + clazz, e);
-        }
-    }
-    private List<XMLValidationError> validate(
-            Class<?> clazz,
-            InputStream xsdStream,
-            Reader reader) throws SAXException, IOException {
-
-        // See also: https://github.com/OWASP/CheatSheetSeries/blob/master/
-        // cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.md
-
-        List<XMLValidationError> errors = new ArrayList<>();
-
-        SchemaFactory schemaFactory = XMLUtil.createSchemaFactory();
-        schemaFactory.setResourceResolver(new ClasspathResourceResolver(clazz));
-
-        Schema schema = schemaFactory.newSchema(
-                new StreamSource(xsdStream, getXSDResourcePath(clazz)));
-        Validator validator = XMLUtil.createSchemaValidator(schema);
-
-        validator.setErrorHandler(errorHandler);
-        XMLReader xmlReader = XMLUtil.createXMLReader();
-
-        SAXSource saxSource = new SAXSource(
-                new W3XMLNamespaceFilter(xmlReader), new InputSource(reader));
-        validator.validate(saxSource);
-        return Collections.unmodifiableList(errors);
-    }
-
-    /**
-     * Convenience class for testing that a {@link IXMLConfigurable} instance
-     * can be written, and read into an new instance that is equal as per
-     * {@link #equals(Object)}.
-     * @param xmlConfigurable the instance to test if it writes/read properly
-     * @param elementName the tag name of the root element being written
-     * @throws XMLException Cannot save/load configuration
-     */
-    public static void assertWriteRead(
-            IXMLConfigurable xmlConfigurable, String elementName) {
-
-        LOG.debug("Writing/Reading this: {}", xmlConfigurable);
-
-        // Write
-        String xmlStr;
-        try (StringWriter out = new StringWriter()) {
-            XML xml = XML.of(elementName, xmlConfigurable).create();
-            xml.write(out);
-            xmlStr = out.toString();
-        } catch (IOException e) {
-            throw new XMLException("Could not save XML.", e);
-        }
-        LOG.trace(xmlStr);
-
-        // Read
-        XML xml = XML.of(xmlStr).create();
-        IXMLConfigurable readConfigurable = xml.toObject();
-        if (!xmlConfigurable.equals(readConfigurable)) {
-            if (LOG.isErrorEnabled()) {
-                LOG.error(" SAVED: {}", xmlConfigurable);
-                LOG.error("LOADED: {}", readConfigurable);
-                LOG.error("  DIFF: \n{}\n",
-                        BeanUtil.diff(xmlConfigurable, readConfigurable));
-            }
-            throw new XMLException("Saved and loaded XML are not the same.");
-        }
-    }
-
-    public boolean contains(String xpathExpression) {
-        try {
-            return newXPathExpression(xpathExpression).evaluate(
-                    node, XPathConstants.NODE) != null;
+            return (Node) newXPathExpression(xpathExpression).evaluate(
+                    parentNode, XPathConstants.NODE);
         } catch (XPathExpressionException e) {
             throw new XMLException(
-                    "Could not evaluate expression: " + xpathExpression, e) ;
+                    "Could not evaluate XPath expression.", e);
         }
+    }
+    private Optional<NodeArrayList> getNodeList(String xpathExpression) {
+        try {
+            NodeList nodeList = (NodeList) newXPathExpression(xpathExpression)
+                    .evaluate(node, XPathConstants.NODESET);
+
+            if (nodeList != null && nodeList.getLength() > 0) {
+                return Optional.of(new NodeArrayList(nodeList));
+            }
+            // When there are no node list returned, we check if it is because
+            // the xpath expression did not match anything (in which case
+            // it may suggest to use a default value) or it did match
+            // a tag but it was empty (indicating wanting to clear any
+            // existing list).
+            String xpath = substringBeforeLast(xpathExpression, "/");
+            XML xmlTag = getXML(xpath);
+            if (xmlTag == null || StringUtils.isBlank(xmlTag.toString())) {
+                return Optional.of(new NodeArrayList((NodeList) null));
+            }
+            // If we get this far, there was a tag declared, so we treat
+            // it as an explicit request to clear so we do not return anything
+            // as a way to communicate that.
+            return Optional.empty();
+        } catch (XPathExpressionException e) {
+            throw new XMLException(
+                    "Could not evaluate XPath expression: '"
+                            + xpathExpression + "'.", e);
+        }
+    }
+
+    //--- Get: String ----------------------------------------------------------
+
+    public String getString(String xpathExpression) {
+        return getString(xpathExpression, null);
+    }
+    public String getString(String xpathExpression, String defaultValue) {
+        Node n = getNode(xpathExpression);
+        if (n == null) {
+            return defaultValue;
+        }
+        return getNodeString(n);
+    }
+    /**
+     * Gets the matching list of elements/attributes as strings.
+     * @param xpathExpression XPath expression to the node values
+     * @return list of strings, never <code>null</code>
+     */
+    public List<String> getStringList(String xpathExpression) {
+        List<String> list = getStringList(xpathExpression, null);
+        if (CollectionUtils.isEmpty(list)) {
+            return Collections.emptyList();
+        }
+        return list;
+    }
+    /**
+     * Gets the matching list of elements/attributes as strings.
+     * @param xpathExpression XPath expression to the node values
+     * @param defaultValues default values if the expression does not match
+     *        anything.
+     * @return list of strings
+     */
+    public List<String> getStringList(
+            String xpathExpression, List<String> defaultValues) {
+        Optional<NodeArrayList> nodeList = getNodeList(xpathExpression);
+        // We return:
+        //   - an empty list if optional is empty.
+        //   - the default list if optional is not emtpy but node list is
+        //   - otherwise return the matching list
+        if (!nodeList.isPresent()) {
+            return Collections.emptyList();
+        }
+        if (nodeList.get().isEmpty()) {
+            return defaultValues;
+        }
+        List<String> list = new ArrayList<>();
+        for (Node n : nodeList.get()) {
+            String str = getNodeString(n);
+            if (str != null) {
+                list.add(str);
+            }
+        }
+        return list;
     }
 
     /**
@@ -1315,359 +1272,188 @@ public class XML implements Iterable<XMLCursor> {
         return Arrays.asList(str.trim().split(delimRegex));
     }
 
-    public String join(String delim, List<?> values) {
-        String sep = Objects.toString(delim, ",");
-        StringBuilder b = new StringBuilder();
-        for (Object obj : values) {
-            String str = Objects.toString(obj, "").trim();
-            if (StringUtils.isNotEmpty(str)) {
-                if (b.length() > 0) {
-                    b.append(sep);
-                }
-                b.append(str);
-            }
-        }
-        return b.toString();
+    //--- Get: Enum ------------------------------------------------------------
+
+    /**
+     * Gets an Enum constant matching one of the constants in the provided
+     * Enum class, ignoring case.
+     * @param xpathExpression XPath expression to the enum value.
+     * @param enumClass target enum class
+     * @param <E> enum type
+     * @return an enum value or <code>null</code> if no values are matching.
+     */
+    public final <E extends Enum<E>> E getEnum(
+            String xpathExpression, Class<E> enumClass) {
+        return get(xpathExpression, enumClass);
+    }
+    /**
+     * Gets an Enum constant matching one of the constants in the provided
+     * Enum class, ignoring case.
+     * @param xpathExpression XPath expression to the enum value.
+     * @param enumClass target enum class
+     * @param defaultValue defaultValue
+     * @param <E> enum type
+     * @return an enum value or default value if no values are matching.
+     */
+    public final <E extends Enum<E>> E getEnum(
+            String xpathExpression, Class<E> enumClass, E defaultValue) {
+        return get(xpathExpression, enumClass, defaultValue);
     }
 
     /**
-     * Gets a list of the given type after splitting the matching node value(s)
-     * on commas (CSV).
+     * Gets a list of enum constants.
      * Values are trimmed and blank entries removed before attempting
-     * to convert them to given type.
-     * Commas can have any spaces before or after.
-     * @param xpathExpression XPath expression to the node value(s) to split
-     * @param type target list type
-     * @param <T> returned list type
-     * @return list of given type, never <code>null</code>
+     * to convert them to the given enum type.
+     * @param xpathExpression XPath expression
+     * @param enumClass target enum class
+     * @param defaultValues default values
+     * @param <E> enum type
+     * @return list of enums
      */
-    public <T> List<T> getDelimitedList(
-            String xpathExpression, Class<T> type) {
-        return getDelimitedList(xpathExpression, type, Collections.emptyList());
+    public <E extends Enum<E>> List<E> getEnumList(
+            String xpathExpression, Class<E> enumClass, List<E> defaultValues) {
+        return getDelimitedList(xpathExpression, enumClass);
     }
+
     /**
-     * Gets a list of given type after splitting the matching node value(s)
+     * Gets a list of enum constants after splitting the matching node value(s)
      * on commas (CSV).
      * Values are trimmed and blank entries removed before attempting
-     * to convert them to given type.
-     * Commas can have any spaces before or after.
+     * to convert them to the given enum type.
      * @param xpathExpression XPath expression to the node value(s) to split
-     * @param type target list type
+     * @param enumClass target enum class
      * @param defaultValues default values if the split returns
      *        <code>null</code> or an empty list
-     * @param <T> returned list type
-     * @return list of strings
+     * @param <E> enum type
+     * @return list of enums
      */
-    public <T> List<T> getDelimitedList(
-            String xpathExpression, Class<T> type, List<T> defaultValues) {
+    public <E extends Enum<E>> List<E> getDelimitedEnumList(
+            String xpathExpression, Class<E> enumClass, List<E> defaultValues) {
         return getDelimitedList(
-                xpathExpression, type, DEFAULT_DELIM_REGEX, defaultValues);
+                xpathExpression, enumClass, defaultValues);
     }
+
     /**
-     * Gets a list of given type after splitting the matching node value(s) with
-     * the given delimiter regular expression.
+     * Gets a list of enum constants after splitting the matching node
+     * value(s) with the given delimiter regular expression.
      * Values are trimmed and blank entries removed before attempting
-     * to convert them to given type.
+     * to convert them to given enum type.
      * @param xpathExpression XPath expression to the node value(s) to split
-     * @param type target list type
-     * @param delimRegex regular expression matching split delimiter
-     * @param <T> returned list type
-     * @return list of strings, never <code>null</code>
-     */
-    public <T> List<T> getDelimitedList(
-            String xpathExpression, Class<T> type, String delimRegex) {
-        return getDelimitedList(
-                xpathExpression, type, delimRegex, Collections.emptyList());
-    }
-    /**
-     * Gets a list of given type after splitting the matching node value(s) with
-     * the given delimiter regular expression.
-     * Values are trimmed and blank entries removed before attempting
-     * to convert them to given type.
-     * @param xpathExpression XPath expression to the node value(s) to split
-     * @param type target list type
+     * @param enumClass target enum class
      * @param delimRegex regular expression matching split delimiter
      * @param defaultValues default values if the split returns
      *        <code>null</code> or an empty list
-     * @param <T> returned list type
-     * @return list of strings
+     * @param <E> enum type
+     * @return list of enums
+     */
+    public <E extends Enum<E>> List<E> getDelimitedEnumList(
+            String xpathExpression, Class<E> enumClass,
+            String delimRegex, List<E> defaultValues) {
+        return getDelimitedList(
+                xpathExpression, enumClass, delimRegex, defaultValues);
+    }
+
+    //--- Get: Path ------------------------------------------------------------
+
+    /**
+     * Gets a path, assuming the node value is a file system path.
+     * @param xpathExpression XPath expression to the node containing the path
+     * @return a path
+     */
+    public final Path getPath(String xpathExpression) {
+        return get(xpathExpression, Path.class);
+    }
+    /**
+     * Gets a path, assuming the node value is a file system path.
+     * @param xpathExpression XPath expression to the node containing the path
+     * @param defaultValue default path being returned if no path has been
+     *        defined for the given expression.
+     * @return a path
+     */
+    public final Path getPath(String xpathExpression, Path defaultValue) {
+        return get(xpathExpression, Path.class, defaultValue);
+    }
+    /**
+     * Gets values as a list of paths.
+     * @param xpathExpression XPath expression
+     * @return the values
      */
     @SuppressWarnings("unchecked")
-    public <T> List<T> getDelimitedList(String xpathExpression, Class<T> type,
-            String delimRegex, List<? extends T> defaultValues) {
-        if (!contains(xpathExpression)) {
-            return (List<T>) defaultValues;
-        }
-
-        List<String> values = getDelimitedStringList(
-                xpathExpression, delimRegex, NULL_XML_LIST);
-        if (values == null) {
-            return (List<T>) defaultValues;
-        }
-        if (values.isEmpty() || values == NULL_XML_LIST) {
-            return Collections.emptyList();
-        }
-        return CollectionUtil.toTypeList(values, type);
-
-    }
-
-    private static String getXSDResourcePath(Class<?> clazz) {
-        if (clazz == null) {
-            return null;
-        }
-        return "/" + clazz.getCanonicalName().replace('.', '/') + ".xsd";
-    }
-
-    // Filter out "xml:" name space so attributes like xml:space="preserve"
-    // are validated OK even if name space not declared in a schema.
-    private static class W3XMLNamespaceFilter extends XMLFilterImpl {
-        public W3XMLNamespaceFilter(XMLReader parent) {
-            super(parent);
-        }
-        @Override
-        public void startElement(
-                String uri, String localName, String qName, Attributes atts)
-                        throws SAXException {
-            for (int i = 0; i < atts.getLength(); i++) {
-                if (XMLConstants.XML_NS_URI.equals(atts.getURI(i))) {
-                    AttributesImpl modifiedAtts = new AttributesImpl(atts);
-                    modifiedAtts.removeAttribute(i);
-                    super.startElement(uri, localName, qName, modifiedAtts);
-                    return;
-                }
-            }
-            super.startElement(uri, localName, qName, atts);
-        }
-    }
-
-    public static XPath newXPath() {
-        // Consider caching w/ ThreadLocal if performance becomes a concern
-        XPathFactory xpathFactory = XPathFactory.newInstance();
-        return xpathFactory.newXPath();
-    }
-    public static XPathExpression newXPathExpression(String expression) {
-        try {
-            return newXPath().compile(expression);
-        } catch (XPathExpressionException e) {
-            throw new XMLException(
-                    "Could not create XPath expression.", e);
-        }
-    }
-
-    private Optional<NodeArrayList> getNodeList(String xpathExpression) {
-        try {
-            NodeList nodeList = (NodeList) newXPathExpression(xpathExpression)
-                    .evaluate(node, XPathConstants.NODESET);
-
-            if (nodeList != null && nodeList.getLength() > 0) {
-                return Optional.of(new NodeArrayList(nodeList));
-            }
-            // When there are no node list returned, we check if it is because
-            // the xpath expression did not match anything (in which case
-            // it may suggest to use a default value) or it did match
-            // a tag but it was empty (indicating wanting to clear any
-            // existing list).
-            String xpath = substringBeforeLast(xpathExpression, "/");
-            XML xmlTag = getXML(xpath);
-            if (xmlTag == null || StringUtils.isBlank(xmlTag.toString())) {
-                return Optional.of(new NodeArrayList((NodeList) null));
-            }
-            // If we get this far, there was a tag declared, so we treat
-            // it as an explicit request to clear so we do not return anything
-            // as a way to communicate that.
-            return Optional.empty();
-        } catch (XPathExpressionException e) {
-            throw new XMLException(
-                    "Could not evaluate XPath expression: '"
-                            + xpathExpression + "'.", e);
-        }
-    }
-    public Node getNode(String xpathExpression) {
-        return getNode(xpathExpression, node);
-    }
-    public Node getNode() {
-        return node;
-    }
-    private Node getNode(String xpathExpression, Node parentNode) {
-        try {
-            return (Node) newXPathExpression(xpathExpression).evaluate(
-                    parentNode, XPathConstants.NODE);
-        } catch (XPathExpressionException e) {
-            throw new XMLException(
-                    "Could not evaluate XPath expression.", e);
-        }
-    }
-
-    public String getString(String xpathExpression) {
-        return getString(xpathExpression, null);
-    }
-    public String getString(String xpathExpression, String defaultValue) {
-        Node n = getNode(xpathExpression);
-        if (n == null) {
-            return defaultValue;
-        }
-        return getNodeString(n);
+    public final List<Path> getPathList(String xpathExpression) {
+        return (List<Path>) getList(xpathExpression, Path.class);
     }
     /**
-     * Gets the matching list of elements/attributes as strings.
-     * @param xpathExpression XPath expression to the node values
-     * @return list of strings, never <code>null</code>
+     * Gets values as a list of paths.
+     * @param xpathExpression XPath expression
+     * @param defaultValue default value
+     * @return the values
      */
-    public List<String> getStringList(String xpathExpression) {
-        List<String> list = getStringList(xpathExpression, null);
-        if (CollectionUtils.isEmpty(list)) {
-            return Collections.emptyList();
-        }
-        return list;
-    }
-    /**
-     * Gets the matching list of elements/attributes as strings.
-     * @param xpathExpression XPath expression to the node values
-     * @param defaultValues default values if the expression does not match
-     *        anything.
-     * @return list of strings
-     */
-    public List<String> getStringList(
-            String xpathExpression, List<String> defaultValues) {
-        Optional<NodeArrayList> nodeList = getNodeList(xpathExpression);
-        // We return:
-        //   - an empty list if optional is empty.
-        //   - the default list if optional is not emtpy but node list is
-        //   - otherwise return the matching list
-        if (!nodeList.isPresent()) {
-            return Collections.emptyList();
-        }
-        if (nodeList.get().isEmpty()) {
-            return defaultValues;
-        }
-        List<String> list = new ArrayList<>();
-        for (Node n : nodeList.get()) {
-            String str = getNodeString(n);
-            if (str != null) {
-                list.add(str);
-            }
-        }
-        return list;
+    @SuppressWarnings("unchecked")
+    public final List<Path> getPathList(
+            String xpathExpression, List<Path> defaultValue) {
+        return (List<Path>) getList(xpathExpression, Path.class, defaultValue);
     }
 
-    /**
-     * Gets the matching element/attribute, converted from
-     * string to the given type.
-     * @param xpathExpression XPath expression to the node value
-     * @param type target class type of returned value
-     * @param <T> target type
-     * @return object of given type
-     */
-    public <T> T get(String xpathExpression, Class<T> type) {
-        return get(xpathExpression, type, null);
-    }
-    /**
-     * Gets the matching element/attribute, converted from
-     * string to the given type.
-     * @param xpathExpression XPath expression to the node value
-     * @param type target class type of returned value
-     * @param defaultValue default value if the expression returns
-     *        <code>null</code>
-     * @param <T> target type
-     * @return object of given type
-     */
-    public <T> T get(String xpathExpression, Class<T> type, T defaultValue) {
-        String value = getString(xpathExpression, NULL_XML_VALUE);
-        if (value == null) {
-            return null;
-        }
-        if (NULL_XML_VALUE.equals(value)) {
-            return defaultValue;
-        }
-        return Converter.convert(value, type, defaultValue);
-    }
+    //--- Get: File ------------------------------------------------------------
 
     /**
-     * Gets the matching list of elements/attributes, converted from
-     * string to the given type.
-     * @param xpathExpression XPath expression to the node values
-     * @param type target class type of returned list
-     * @param <T> returned list type
-     * @return list of given type, never <code>null</code>
+     * Gets a file, assuming the node value is a file system path.
+     * @param xpathExpression XPath expression to the node containing the path
+     * @return a File
      */
-    public <T> List<? extends T> getList(
-            String xpathExpression, Class<T> type) {
-        return getList(xpathExpression, type, Collections.emptyList());
+    public final File getFile(String xpathExpression) {
+        return get(xpathExpression, File.class);
     }
     /**
-     * Gets the matching list of elements/attributes, converted from
-     * string to the given type.
-     * @param xpathExpression XPath expression to the node values
-     * @param type target class type of returned list
-     * @param defaultValues default values if the expression returns
-     *        <code>null</code> or an empty list
-     * @param <T> returned list type
-     * @return list of given type
+     * Gets a file, assuming the node value is a file system path.
+     * @param xpathExpression XPath expression to the node containing the path
+     * @param defaultValue default file being returned if no file has been
+     *        defined for the given expression.
+     * @return a File
      */
-    public <T> List<? extends T> getList(String xpathExpression,
-            Class<T> type, List<? extends T> defaultValues) {
-        List<String> list = getStringList(xpathExpression, null);
-        if (list == null) {
-            return defaultValues;
-        }
-        if (list.isEmpty()) {
-            return Collections.emptyList();
-        }
-        return CollectionUtil.toTypeList(list, type);
-    }
-
-    /**
-     * Gets the matching map of elements/attributes as strings.
-     * @param xpathList XPath expression to the node list representing the map
-     * @param xpathKey XPath expression to a node key
-     * @param xpathValue XPath expression to a node value
-     * @return map of strings, never <code>null</code>
-     */
-    public Map<String, String> getStringMap(
-            String xpathList, String xpathKey, String xpathValue) {
-        Map<String, String> map = getStringMap(
-                xpathList, xpathKey, xpathValue, null);
-        if (MapUtils.isEmpty(map)) {
-            return Collections.emptyMap();
-        }
-        return map;
+    public final File getFile(String xpathExpression, File defaultValue) {
+        return get(xpathExpression, File.class, defaultValue);
     }
     /**
-     * Gets the matching map of elements/attributes as strings.
-     * @param xpathList XPath expression to the node list representing the map
-     * @param xpathKey XPath expression to a node key
-     * @param xpathValue XPath expression to a node value
-     * @param defaultValues default values if the expressions return
-     *        <code>null</code> or an empty map
-     * @return map of strings, never <code>null</code> unless default value
-     *         is returned and is <code>null</code>
+     * Gets values as a list of files.
+     * @param xpathExpression XPath expression
+     * @return the values
      */
-    public Map<String, String> getStringMap(String xpathList, String xpathKey,
-            String xpathValue, Map<String, String> defaultValues) {
-
-        Optional<List<XML>> xmls = getXMLListOptional(xpathList);
-        // We return:
-        //   - an empty map if optional is empty.
-        //   - the default map if optional is not empty but node list is
-        //   - otherwise return the matching map
-        if (!xmls.isPresent()) {
-            return Collections.emptyMap();
-        }
-        if (xmls.get().isEmpty()) {
-            return defaultValues;
-        }
-
-        Map<String, String> map = new HashMap<>();
-        for (XML xml : xmls.get()) {
-            if (xml != null) {
-                map.put(xml.getString(xpathKey), xml.getString(xpathValue));
-            }
-        }
-        if (map.isEmpty()) {
-            return defaultValues;
-        }
-        return map;
+    @SuppressWarnings("unchecked")
+    public final List<File> getFileList(String xpathExpression) {
+        return (List<File>) getList(xpathExpression, File.class);
     }
+    /**
+     * Gets values as a list of files.
+     * @param xpathExpression XPath expression
+     * @param defaultValue default value
+     * @return the values
+     */
+    @SuppressWarnings("unchecked")
+    public final List<File> getFileList(
+            String xpathExpression, List<File> defaultValue) {
+        return (List<File>) getList(xpathExpression, File.class, defaultValue);
+    }
+
+    //--- Get: URL -------------------------------------------------------------
+
+    public final URL getURL(String xpathExpression) {
+        return get(xpathExpression, URL.class);
+    }
+    public final URL getURL(String xpathExpression, URL defaultValue) {
+        return get(xpathExpression, URL.class, defaultValue);
+    }
+    @SuppressWarnings("unchecked")
+    public final List<URL> getURLList(String xpathExpression) {
+        return (List<URL>) getList(xpathExpression, URL.class);
+    }
+    @SuppressWarnings("unchecked")
+    public final List<URL> getURLList(
+            String xpathExpression, List<URL> defaultValue) {
+        return (List<URL>) getList(xpathExpression, URL.class, defaultValue);
+    }
+
+    //--- Get: Integer ---------------------------------------------------------
 
     public Integer getInteger(String xpathExpression) {
         return get(xpathExpression, Integer.class);
@@ -1676,6 +1462,8 @@ public class XML implements Iterable<XMLCursor> {
         return get(xpathExpression, Integer.class, defaultValue);
     }
 
+    //--- Get: Long ------------------------------------------------------------
+
     public Long getLong(String xpathExpression) {
         return get(xpathExpression, Long.class);
     }
@@ -1683,12 +1471,16 @@ public class XML implements Iterable<XMLCursor> {
         return get(xpathExpression, Long.class, defaultValue);
     }
 
+    //--- Get: Float -----------------------------------------------------------
+
     public Float getFloat(String xpathExpression) {
         return get(xpathExpression, Float.class);
     }
     public Float getFloat(String xpathExpression, Float defaultValue) {
         return get(xpathExpression, Float.class, defaultValue);
     }
+
+    //--- Get: Dimension -------------------------------------------------------
 
     public Dimension getDimension(String xpathExpression) {
         return get(xpathExpression, Dimension.class);
@@ -1698,12 +1490,16 @@ public class XML implements Iterable<XMLCursor> {
         return get(xpathExpression, Dimension.class, defaultValue);
     }
 
+    //--- Get: Double ----------------------------------------------------------
+
     public Double getDouble(String xpathExpression) {
         return get(xpathExpression, Double.class);
     }
     public Double getDouble(String xpathExpression, Double defaultValue) {
         return get(xpathExpression, Double.class, defaultValue);
     }
+
+    //--- Get: Boolean ---------------------------------------------------------
 
     public Boolean getBoolean(String xpathExpression) {
         return get(xpathExpression, Boolean.class);
@@ -1712,6 +1508,8 @@ public class XML implements Iterable<XMLCursor> {
         return get(xpathExpression, Boolean.class, defaultValue);
     }
 
+    //--- Get: Locale ----------------------------------------------------------
+
     public Locale getLocale(String xpathExpression) {
         return get(xpathExpression, Locale.class);
     }
@@ -1719,12 +1517,16 @@ public class XML implements Iterable<XMLCursor> {
         return get(xpathExpression, Locale.class, defaultValue);
     }
 
+    //--- Get: Charset ---------------------------------------------------------
+
     public Charset getCharset(String xpathExpression) {
         return get(xpathExpression, Charset.class);
     }
     public Charset getCharset(String xpathExpression, Charset defaultValue) {
         return get(xpathExpression, Charset.class, defaultValue);
     }
+
+    //--- Get: Data Size -------------------------------------------------------
 
     /**
      * Gets the size of a data expression, in bytes (e.g., 2KB, 1GiB,
@@ -1769,6 +1571,8 @@ public class XML implements Iterable<XMLCursor> {
         }
         return sz.longValue();
     }
+
+    //--- Get: Duration --------------------------------------------------------
 
     /**
      * Gets a duration in milliseconds which can exists as a numerical
@@ -1833,15 +1637,488 @@ public class XML implements Iterable<XMLCursor> {
         return get(xpathExpression, Duration.class, defaultValue);
     }
 
+    //--- Jaxb -----------------------------------------------------------------
+
+    private void jaxbMarshall(Object obj) {
+        try {
+            String name = node.getNodeName();
+            List<Attr> attributes = new ArrayList<>();
+            NamedNodeMap nattributes = node.getAttributes();
+            for (int i = 0; i < nattributes.getLength(); i++) {
+                attributes.add((Attr) nattributes.item(i));
+            }
+
+            JAXBContext contextObj = JAXBContext.newInstance(obj.getClass());
+            Marshaller marshallerObj = contextObj.createMarshaller();
+            marshallerObj.marshal(obj, node);
+
+            unwrap();
+
+            Element el = ((Element) node);
+            for (Attr at : attributes) {
+                el.setAttributeNS(
+                        at.getNamespaceURI(), at.getName(), at.getValue());
+            }
+            rename(name);
+        } catch (Exception e) {
+            throw new XMLException(
+                    "This object could not be JAXB-marshalled: " + obj, e);
+        }
+    }
+
+    private void jaxbUnmarshall(Object obj) {
+        try {
+            JAXBContext jaxbContext = JAXBContext.newInstance(obj.getClass());
+            Unmarshaller unmarsh = jaxbContext.createUnmarshaller();
+            JAXBElement<?> newObj = unmarsh.unmarshal(node, obj.getClass());
+            BeanUtil.copyProperties(obj, newObj.getValue());
+        } catch (Exception e) {
+            throw new XMLException("XML (tag: <" + getName() + ">) "
+                    + " could not be JAXB-unmarshalled: " + this, e);
+        }
+    }
+
+    //--- Validate -------------------------------------------------------------
+
+    /**
+     * <p>
+     * Validates this XML against an XSD schema attached to the class
+     * represented in this XML root tag "class" attribute.
+     * </p>
+     * <h3>Error handling</h3>
+     * <p>
+     * The expected behavior when encountering validation errors is tied
+     * to the registered {@link ErrorHandler}. When no error handler is
+     * specified, the default is {@link ErrorHandlerFailer} (which
+     * throws {@link XMLValidationException}). Error handlers can be
+     * specified when using the builder obtained with one of the
+     * <code>XML.of(...)</code>) methods.
+     * </p>
+     * <p>
+     * The XSD schema used for validation is expected to be found at the
+     * same classpath location and have the same name as the object class,
+     * but with the ".xsd" extension.
+     * </p>
+     * <p>
+     * This method is the same as invoking
+     * <code>validate(getClass("@class"))</code>
+     * </p>
+     * @see ErrorHandlerFailer
+     * @see ErrorHandlerCapturer
+     * @see ErrorHandlerLogger
+     */
+    public void validate() {
+        validate(getClass(XPATH_ATT_CLASS));
+    }
+
+    /**
+     * <p>
+     * Validates this XML against an XSD schema attached to the class
+     * represented in this XML root tag "class" attribute.
+     * </p>
+     * <h3>Error handling</h3>
+     * <p>
+     * The expected behavior when encountering validation errors is tied
+     * to the registered {@link ErrorHandler}. When no error handler is
+     * specified, the default is {@link ErrorHandlerFailer} (which
+     * throws {@link XMLValidationException}). Error handlers can be
+     * specified when using the builder obtained with one of the
+     * <code>XML.of(...)</code>) methods..
+     * </p>
+     * <p>
+     * The XSD schema used for validation is expected to be found at the
+     * same classpath location and have the same name as the object class,
+     * but with the ".xsd" extension.
+     * </p>
+     * <p>
+     * This method is the same as invoking <code>validate(obj.getClass())</code>
+     * </p>
+     * @param obj the object used to locate the XML schema used for validation
+     * @see ErrorHandlerFailer
+     * @see ErrorHandlerCapturer
+     * @see ErrorHandlerLogger
+     */
+    public void validate(Object obj) {
+        if (obj == null) {
+            validate((Class<?>) null);
+            return;
+        }
+        validate(obj.getClass());
+    }
+
+    /**
+     * <p>
+     * Validates this XML against an XSD schema attached to the class
+     * represented in this XML root tag "class" attribute.
+     * </p>
+     * <h3>Error handling</h3>
+     * <p>
+     * The expected behavior when encountering validation errors is tied
+     * to the registered {@link ErrorHandler}. When no error handler is
+     * specified, the default is {@link ErrorHandlerFailer} (which
+     * throws {@link XMLValidationException}). Error handlers can be
+     * specified when using the builder obtained with one of the
+     * <code>XML.of(...)</code>) methods..
+     * </p>
+     * <p>
+     * The XSD schema used for validation is expected to be found at the
+     * same classpath location and have the same name as the object class,
+     * but with the ".xsd" extension.
+     * </p>
+     * @param clazz the class with XSD schema attached, used for validation
+     * @see ErrorHandlerFailer
+     * @see ErrorHandlerCapturer
+     * @see ErrorHandlerLogger
+     */
+    public void validate(Class<?> clazz) {
+        if (clazz == null) {
+            return;
+        }
+
+        // Only validate if .xsd file exist in classpath for class
+        String xsdResource = ClassUtils.getSimpleName(clazz) + ".xsd";
+        LOG.debug("Validating XML for class {}",
+                ClassUtils.getSimpleName(clazz));
+        if (clazz.getResource(xsdResource) == null) {
+            LOG.debug("XSD schema not found for validation: {}", xsdResource);
+            return;
+        }
+
+        try (InputStream xsdStream = clazz.getResourceAsStream(xsdResource);
+                Reader xmlReader = toReader()) {
+            validate(clazz, xsdStream, xmlReader);
+        } catch (SAXException | IOException e) {
+            throw new XMLException("Could not validate class: " + clazz, e);
+        }
+    }
+    private void validate(
+            Class<?> clazz,
+            InputStream xsdStream,
+            Reader reader) throws SAXException, IOException {
+
+        // See also: https://github.com/OWASP/CheatSheetSeries/blob/master/
+        // cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.md
+
+        new ArrayList<>();
+
+        SchemaFactory schemaFactory = XMLUtil.createSchemaFactory();
+        schemaFactory.setResourceResolver(new ClasspathResourceResolver(clazz));
+
+        Schema schema = schemaFactory.newSchema(
+                new StreamSource(xsdStream, getXSDResourcePath(clazz)));
+        Validator validator = XMLUtil.createSchemaValidator(schema);
+
+        validator.setErrorHandler(errorHandler);
+        XMLReader xmlReader = XMLUtil.createXMLReader();
+
+        SAXSource saxSource = new SAXSource(
+                new W3XMLNamespaceFilter(xmlReader), new InputSource(reader));
+        validator.validate(saxSource);
+    }
+
+    //--- Enabled/Disabled -----------------------------------------------------
+
+    // "enabled" should by default always be false, so it has to be enabled
+    // explicitly.  Then it must be defined and "true".
+    public boolean isEnabled() {
+        return isDefined() && getBoolean("@enabled", false);
+    }
+
+    // "disabled" should by default always be false, so it has to be set
+    // explicitly.  Then it must be defined and "true".
+    public boolean isDisabled() {
+        return isDefined() && getBoolean("@disabled", false);
+    }
+
+    //--- Misc. Public Methods -------------------------------------------------
+
+    /**
+     * If the given expression matches an element, consume that
+     * element.
+     * @param xpathExpression expression
+     * @param then XML consumer
+     */
+    public void ifXML(String xpathExpression, Consumer<XML> then) {
+        XML xml = getXML(xpathExpression);
+        if (xml != null && xml.isDefined() && then != null) {
+            then.accept(xml);
+        }
+    }
+
+    /**
+     * Creates a new {@link Reader} from a {@link Node}.
+     * Do not forget to close the reader instance when you are done with it.
+     * @return reader
+     * @throws XMLException cannot read configuration
+     */
+    public Reader toReader() {
+        return new StringReader(toString());
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return toString().equals(Objects.toString(obj, null));
+    }
+    @Override
+    public int hashCode() {
+        return toString().hashCode();
+    }
+
+    /**
+     * Gets a string representation of this XML.
+     * @return XML string
+     * @throws XMLException cannot read configuration
+     */
+    @Override
+    public String toString() {
+        return toString(0);
+    }
+    /**
+     * Gets a string representation of this XML.
+     * @param indent whether to indent the XML
+     * @return XML string
+     * @throws XMLException cannot read configuration
+     */
+    public String toString(int indent) {
+        try {
+            node.normalize();
+
+            fixIndent(indent);
+
+            StringWriter w = new StringWriter();
+            Result outputTarget = new StreamResult(w);
+
+            TransformerFactory factory = TransformerFactory.newInstance();
+            factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+            factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
+
+            Transformer t = factory.newTransformer();
+            t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+            t.setOutputProperty(OutputKeys.INDENT, indent > 0 ? "yes" : "no");
+            t.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+            if (indent > 0) {
+                t.setOutputProperty(
+                        "{http://xml.apache.org/xslt}indent-amount",
+                        Integer.toString(indent));
+            }
+            t.transform(new DOMSource(node), outputTarget);
+
+            String xmlStr = w.toString();
+            // convert self-closing tags with "empty" attribute to empty tags
+            // instead
+            return xmlStr.replaceAll(
+                    "<\\s*([^\\s>]+)([^>]*) xml:space=\"empty\"([^>]*)/\\s*>",
+                    "<$1$2></$1>");
+        } catch (TransformerFactoryConfigurationError
+                | TransformerException e) {
+            throw new XMLException(
+                    "Could not convert node to reader "
+                  + "for node \"" + node.getNodeName() + "\".", e);
+        }
+    }
+
+    /**
+     * If the given expression matches one or more elements, consume those
+     * element one by one.
+     * @param xpathExpression expression
+     * @param action The action to be performed for each element
+     */
+    public void forEach(String xpathExpression, Consumer<XML> action) {
+        List<XML> xmlList = getXMLList(xpathExpression);
+        xmlList.forEach(x -> {
+            if (x != null && x.isDefined() && action != null) {
+                action.accept(x);
+            }
+        });
+    }
+
+    /**
+     * Convenience class for testing that a {@link IXMLConfigurable} instance
+     * can be written, and read into an new instance that is equal as per
+     * {@link #equals(Object)}.
+     * @param xmlConfigurable the instance to test if it writes/read properly
+     * @param elementName the tag name of the root element being written
+     * @throws XMLException Cannot save/load configuration
+     */
+    public static void assertWriteRead(
+            IXMLConfigurable xmlConfigurable, String elementName) {
+
+        LOG.debug("Writing/Reading this: {}", xmlConfigurable);
+
+        // Write
+        String xmlStr;
+        try (StringWriter out = new StringWriter()) {
+            XML xml = XML.of(elementName, xmlConfigurable).create();
+            xml.write(out);
+            xmlStr = out.toString();
+        } catch (IOException e) {
+            throw new XMLException("Could not save XML.", e);
+        }
+        LOG.trace(xmlStr);
+
+        // Read
+        XML xml = XML.of(xmlStr).create();
+        IXMLConfigurable readConfigurable = xml.toObject();
+        if (!xmlConfigurable.equals(readConfigurable)) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error(" SAVED: {}", xmlConfigurable);
+                LOG.error("LOADED: {}", readConfigurable);
+                LOG.error("  DIFF: \n{}\n",
+                        BeanUtil.diff(xmlConfigurable, readConfigurable));
+            }
+            throw new XMLException("Saved and loaded XML are not the same.");
+        }
+    }
+
+    public boolean contains(String xpathExpression) {
+        try {
+            return newXPathExpression(xpathExpression).evaluate(
+                    node, XPathConstants.NODE) != null;
+        } catch (XPathExpressionException e) {
+            throw new XMLException(
+                    "Could not evaluate expression: " + xpathExpression, e) ;
+        }
+    }
+
+    public static XPath newXPath() {
+        // Consider caching w/ ThreadLocal if performance becomes a concern
+        XPathFactory xpathFactory = XPathFactory.newInstance();
+        return xpathFactory.newXPath();
+    }
+    public static XPathExpression newXPathExpression(String expression) {
+        try {
+            return newXPath().compile(expression);
+        } catch (XPathExpressionException e) {
+            throw new XMLException(
+                    "Could not create XPath expression.", e);
+        }
+    }
+
+    /**
+     * Gets the matching element/attribute, converted from
+     * string to the given type.
+     * @param xpathExpression XPath expression to the node value
+     * @param type target class type of returned value
+     * @param <T> target type
+     * @return object of given type
+     */
+    public <T> T get(String xpathExpression, Class<T> type) {
+        return get(xpathExpression, type, null);
+    }
+    /**
+     * Gets the matching element/attribute, converted from
+     * string to the given type.
+     * @param xpathExpression XPath expression to the node value
+     * @param type target class type of returned value
+     * @param defaultValue default value if the expression returns
+     *        <code>null</code>
+     * @param <T> target type
+     * @return object of given type
+     */
+    public <T> T get(String xpathExpression, Class<T> type, T defaultValue) {
+        String value = getString(xpathExpression, NULL_XML_VALUE);
+        if (value == null) {
+            return null;
+        }
+        if (NULL_XML_VALUE.equals(value)) {
+            return defaultValue;
+        }
+        return Converter.convert(value, type, defaultValue);
+    }
+
+    /**
+     * Gets the matching list of elements/attributes, converted from
+     * string to the given type.
+     * @param xpathExpression XPath expression to the node values
+     * @param type target class type of returned list
+     * @param <T> returned list type
+     * @return list of given type, never <code>null</code>
+     */
+    public <T> List<? extends T> getList( //NOSONAR
+            String xpathExpression, Class<T> type) {
+        return getList(xpathExpression, type, Collections.emptyList());
+    }
+    /**
+     * Gets the matching list of elements/attributes, converted from
+     * string to the given type.
+     * @param xpathExpression XPath expression to the node values
+     * @param type target class type of returned list
+     * @param defaultValues default values if the expression returns
+     *        <code>null</code> or an empty list
+     * @param <T> returned list type
+     * @return list of given type
+     */
+    public <T> List<? extends T> getList(String xpathExpression, //NOSONAR
+            Class<T> type, List<? extends T> defaultValues) {
+        List<String> list = getStringList(xpathExpression, null);
+        if (list == null) {
+            return defaultValues;
+        }
+        if (list.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return CollectionUtil.toTypeList(list, type);
+    }
+
+    /**
+     * Gets the matching map of elements/attributes as strings.
+     * @param xpathList XPath expression to the node list representing the map
+     * @param xpathKey XPath expression to a node key
+     * @param xpathValue XPath expression to a node value
+     * @return map of strings, never <code>null</code>
+     */
+    public Map<String, String> getStringMap(
+            String xpathList, String xpathKey, String xpathValue) {
+        Map<String, String> map = getStringMap(
+                xpathList, xpathKey, xpathValue, null);
+        if (MapUtils.isEmpty(map)) {
+            return Collections.emptyMap();
+        }
+        return map;
+    }
+    /**
+     * Gets the matching map of elements/attributes as strings.
+     * @param xpathList XPath expression to the node list representing the map
+     * @param xpathKey XPath expression to a node key
+     * @param xpathValue XPath expression to a node value
+     * @param defaultValues default values if the expressions return
+     *        <code>null</code> or an empty map
+     * @return map of strings, never <code>null</code> unless default value
+     *         is returned and is <code>null</code>
+     */
+    public Map<String, String> getStringMap(String xpathList, String xpathKey,
+            String xpathValue, Map<String, String> defaultValues) {
+
+        Optional<List<XML>> xmls = getXMLListOptional(xpathList);
+        // We return:
+        //   - an empty map if optional is empty.
+        //   - the default map if optional is not empty but node list is
+        //   - otherwise return the matching map
+        if (!xmls.isPresent()) {
+            return Collections.emptyMap();
+        }
+        if (xmls.get().isEmpty()) {
+            return defaultValues;
+        }
+
+        Map<String, String> map = new HashMap<>();
+        for (XML xml : xmls.get()) {
+            if (xml != null) {
+                map.put(xml.getString(xpathKey), xml.getString(xpathValue));
+            }
+        }
+        if (map.isEmpty()) {
+            return defaultValues;
+        }
+        return map;
+    }
+
     public String getName() {
         if (node == null) {
             return null;
         }
         return node.getNodeName();
     }
-
-    //TODO addElementFirst
-    //TODO addElementLast
 
     /**
      * Adds an empty child element to this XML root element.
@@ -1869,6 +2146,14 @@ public class XML implements Iterable<XMLCursor> {
         return createAndInitXML(XML.of(node.appendChild(newNode)));
     }
 
+    /**
+     * Adds a list of values to the current XML and return the added list.
+     * There will be one element added for each entry of the supplied list,
+     * all with the tag name supplied.
+     * @param tagName the tag name for each values added
+     * @param values values to add
+     * @return the added list as a list of XML instances
+     */
     public List<XML> addElementList(String tagName, List<?> values) {
         if (CollectionUtils.isEmpty(values)) {
             return Collections.emptyList();
@@ -1879,10 +2164,20 @@ public class XML implements Iterable<XMLCursor> {
         }
         return Collections.unmodifiableList(xmlList);
     }
+    /**
+     * Adds a list of values under a new parent tag name to the current XML
+     * and return the added list.
+     * There will be one element added for each entry of the supplied list,
+     * all with the tag name supplied, all grouped under the parent tag
+     * supplied.
+     * @param parentTagName the name of the new parent tag that will hold
+     *    all added values.
+     * @param tagName the tag name for each values added
+     * @param values values to add
+     * @return the XML for the parent tag
+     */
     public XML addElementList(
-            String parentTagName, String tagName, List<?> values) {
-        Objects.requireNonNull(
-                parentTagName, "'parentTagName' must not be null");
+            @NonNull String parentTagName, String tagName, List<?> values) {
         XML parentXml = addElement(parentTagName);
         parentXml.addElementList(tagName, values);
         return parentXml;
@@ -1915,7 +2210,7 @@ public class XML implements Iterable<XMLCursor> {
         if (values.isEmpty()) {
             return addElement(name, "");
         }
-        return addElement(name, join(delim, values));
+        return addElement(name, join(delim, values)); //NOSONAR
     }
 
     /**
@@ -2064,7 +2359,7 @@ public class XML implements Iterable<XMLCursor> {
      * @return this element
      */
     public XML setAttribute(String name, Object value) {
-        //TODO check if not a node, throw exception
+        //MAYBE: check if not a node, throw exception
         Element el = (Element) node;
         if (value == null) {
             el.removeAttribute(name);
@@ -2082,7 +2377,7 @@ public class XML implements Iterable<XMLCursor> {
      * @return this element
      */
     public XML setAttributes(Map<String, ?> attribs) {
-        //TODO check if not a node, throw exception
+        //MAYBE: check if not a node, throw exception
         if (MapUtils.isNotEmpty(attribs)) {
             for (Entry<String, ?> en : attribs.entrySet()) {
                 setAttribute(en.getKey(), en.getValue());
@@ -2117,7 +2412,7 @@ public class XML implements Iterable<XMLCursor> {
         if (values.isEmpty()) {
             return this;
         }
-        setAttribute(name, join(delim, values));
+        setAttribute(name, join(delim, values));  //NOSONAR
         return this;
     }
 
@@ -2238,7 +2533,7 @@ public class XML implements Iterable<XMLCursor> {
 
         // If multiple children, throw exception
         if (children.getLength() > 1) {
-            //TODO maybe support XML made of lists?
+            //MAYBE: do not throw to support XML without a parent?
             throw new XMLException("Cannot unwrap " + getName()
                     + " element as it contains multiple child elements.");
         }
@@ -2315,223 +2610,6 @@ public class XML implements Iterable<XMLCursor> {
         return this;
     }
 
-    //--- Enum -----------------------------------------------------------------
-    /**
-     * Gets an Enum constant matching one of the constants in the provided
-     * Enum class, ignoring case.
-     * @param xpathExpression XPath expression to the enum value.
-     * @param enumClass target enum class
-     * @param <E> enum type
-     * @return an enum value or <code>null</code> if no values are matching.
-     */
-    public final <E extends Enum<E>> E getEnum(
-            String xpathExpression, Class<E> enumClass) {
-        return get(xpathExpression, enumClass);
-    }
-    /**
-     * Gets an Enum constant matching one of the constants in the provided
-     * Enum class, ignoring case.
-     * @param xpathExpression XPath expression to the enum value.
-     * @param enumClass target enum class
-     * @param defaultValue defaultValue
-     * @param <E> enum type
-     * @return an enum value or default value if no values are matching.
-     */
-    public final <E extends Enum<E>> E getEnum(
-            String xpathExpression, Class<E> enumClass, E defaultValue) {
-        return get(xpathExpression, enumClass, defaultValue);
-    }
-
-    /**
-     * Gets a list of enum constants.
-     * Values are trimmed and blank entries removed before attempting
-     * to convert them to the given enum type.
-     * @param xpathExpression XPath expression
-     * @param enumClass target enum class
-     * @param defaultValues default values
-     * @param <E> enum type
-     * @return list of enums
-     */
-    public <E extends Enum<E>> List<E> getEnumList(
-            String xpathExpression, Class<E> enumClass, List<E> defaultValues) {
-        return getDelimitedList(xpathExpression, enumClass);
-    }
-
-    /**
-     * Gets a list of enum constants after splitting the matching node value(s)
-     * on commas (CSV).
-     * Values are trimmed and blank entries removed before attempting
-     * to convert them to the given enum type.
-     * @param xpathExpression XPath expression to the node value(s) to split
-     * @param enumClass target enum class
-     * @param defaultValues default values if the split returns
-     *        <code>null</code> or an empty list
-     * @param <E> enum type
-     * @return list of enums
-     */
-    public <E extends Enum<E>> List<E> getDelimitedEnumList(
-            String xpathExpression, Class<E> enumClass, List<E> defaultValues) {
-        return getDelimitedList(
-                xpathExpression, enumClass, defaultValues);
-    }
-
-    /**
-     * Gets a list of enum constants after splitting the matching node
-     * value(s) with the given delimiter regular expression.
-     * Values are trimmed and blank entries removed before attempting
-     * to convert them to given enum type.
-     * @param xpathExpression XPath expression to the node value(s) to split
-     * @param enumClass target enum class
-     * @param delimRegex regular expression matching split delimiter
-     * @param defaultValues default values if the split returns
-     *        <code>null</code> or an empty list
-     * @param <E> enum type
-     * @return list of enums
-     */
-    public <E extends Enum<E>> List<E> getDelimitedEnumList(
-            String xpathExpression, Class<E> enumClass,
-            String delimRegex, List<E> defaultValues) {
-        return getDelimitedList(
-                xpathExpression, enumClass, delimRegex, defaultValues);
-    }
-
-    //--- Path -----------------------------------------------------------------
-    /**
-     * Gets a path, assuming the node value is a file system path.
-     * @param xpathExpression XPath expression to the node containing the path
-     * @return a path
-     */
-    public final Path getPath(String xpathExpression) {
-        return get(xpathExpression, Path.class);
-    }
-    /**
-     * Gets a path, assuming the node value is a file system path.
-     * @param xpathExpression XPath expression to the node containing the path
-     * @param defaultValue default path being returned if no path has been
-     *        defined for the given expression.
-     * @return a path
-     */
-    public final Path getPath(String xpathExpression, Path defaultValue) {
-        return get(xpathExpression, Path.class, defaultValue);
-    }
-    /**
-     * Gets values as a list of paths.
-     * @param xpathExpression XPath expression
-     * @return the values
-     */
-    @SuppressWarnings("unchecked")
-    public final List<Path> getPathList(String xpathExpression) {
-        return (List<Path>) getList(xpathExpression, Path.class);
-    }
-    /**
-     * Gets values as a list of paths.
-     * @param xpathExpression XPath expression
-     * @param defaultValue default value
-     * @return the values
-     */
-    @SuppressWarnings("unchecked")
-    public final List<Path> getPathList(
-            String xpathExpression, List<Path> defaultValue) {
-        return (List<Path>) getList(xpathExpression, Path.class, defaultValue);
-    }
-
-
-    //--- File -----------------------------------------------------------------
-    /**
-     * Gets a file, assuming the node value is a file system path.
-     * @param xpathExpression XPath expression to the node containing the path
-     * @return a File
-     */
-    public final File getFile(String xpathExpression) {
-        return get(xpathExpression, File.class);
-    }
-    /**
-     * Gets a file, assuming the node value is a file system path.
-     * @param xpathExpression XPath expression to the node containing the path
-     * @param defaultValue default file being returned if no file has been
-     *        defined for the given expression.
-     * @return a File
-     */
-    public final File getFile(String xpathExpression, File defaultValue) {
-        return get(xpathExpression, File.class, defaultValue);
-    }
-    /**
-     * Gets values as a list of files.
-     * @param xpathExpression XPath expression
-     * @return the values
-     */
-    @SuppressWarnings("unchecked")
-    public final List<File> getFileList(String xpathExpression) {
-        return (List<File>) getList(xpathExpression, File.class);
-    }
-    /**
-     * Gets values as a list of files.
-     * @param xpathExpression XPath expression
-     * @param defaultValue default value
-     * @return the values
-     */
-    @SuppressWarnings("unchecked")
-    public final List<File> getFileList(
-            String xpathExpression, List<File> defaultValue) {
-        return (List<File>) getList(xpathExpression, File.class, defaultValue);
-    }
-
-    //--- URL ------------------------------------------------------------------
-    public final URL getURL(String xpathExpression) {
-        return get(xpathExpression, URL.class);
-    }
-    public final URL getURL(String xpathExpression, URL defaultValue) {
-        return get(xpathExpression, URL.class, defaultValue);
-    }
-    @SuppressWarnings("unchecked")
-    public final List<URL> getURLList(String xpathExpression) {
-        return (List<URL>) getList(xpathExpression, URL.class);
-    }
-    @SuppressWarnings("unchecked")
-    public final List<URL> getURLList(
-            String xpathExpression, List<URL> defaultValue) {
-        return (List<URL>) getList(xpathExpression, URL.class, defaultValue);
-    }
-
-    //--------------------------------------------------------------------------
-
-    private String getNodeString(Node n) {
-        if (n.getNodeType() == Node.ATTRIBUTE_NODE) {
-            return n.getNodeValue();
-        }
-
-        // Unlike standard XML parsing, we distinguish between
-        // self-closed tags (null) and empty/blank ones (non-null).
-        // To do so, we need to check if empty tags were detected
-        // BEFORE parsing the XML. Those would have been are identified
-        // with an extra attribute xml:space="empty" by Builder#create.
-        // Those containing white spaces cannot be confused with self-closed
-        // so we do not rely on xml:space="empty", but we check if they
-        // have the standard xml:space="preserve" to decide if we trim them
-        // or not.
-
-        String str = n.getTextContent();
-
-        Optional<String> xmlSpace = Optional
-            .ofNullable(n.getAttributes().getNamedItem(ATT_XML_SPACE))
-            .map(Node::getNodeValue);
-
-        // Empty tags are converted to "" while self-closed to null:
-        if (StringUtils.isEmpty(str)) {
-            return xmlSpace.filter("empty"::equals).isPresent() ? "" : null;
-        }
-
-        // Other values are trimmed unless xml:space is "preserve":
-        if (!xmlSpace.filter("preserve"::equals).isPresent()) {
-            str = str.trim();
-        }
-        return str;
-    }
-
-    //TODO isDisabled (which also reads disable, ignore, ignored
-    // and give warnings when not "disabled" (or rely on validation,
-    // changing all ignore to "disabled"
-
     public Class<?> getClass(String xpathExpression) {
         return get(xpathExpression, Class.class);
     }
@@ -2565,14 +2643,13 @@ public class XML implements Iterable<XMLCursor> {
     }
 
     public <T> T parseXML(
-            String xpathExpression, Function<XML, T> parser) {
+            String xpathExpression, @NonNull Function<XML, T> parser) {
         return parseXML(xpathExpression, parser, null);
     }
     public <T> T parseXML(
             String xpathExpression,
-            Function<XML, T> parser,
+            @NonNull Function<XML, T> parser,
             T defaultValue) {
-        Objects.requireNonNull(parser, "Parser argument cannot be null.");
         XML xml = getXML(xpathExpression);
         if (xml == null) {
             return defaultValue;
@@ -2580,16 +2657,15 @@ public class XML implements Iterable<XMLCursor> {
         return parser.apply(xml);
     }
 
-    //TODO allow to specify collection implementation?
+    //MAYBE: allow to specify collection implementation?
     public <T> List<T> parseXMLList(
-            String xpathExpression, Function<XML, T> parser) {
+            String xpathExpression, @NonNull Function<XML, T> parser) {
         return parseXMLList(xpathExpression, parser, null);
     }
     public <T> List<T> parseXMLList(
             String xpathExpression,
-            Function<XML, T> parser,
+            @NonNull Function<XML, T> parser,
             List<T> defaultValue) {
-        Objects.requireNonNull(parser, "Parser argument cannot be null.");
 
         Optional<List<XML>> xmls = getXMLListOptional(xpathExpression);
         // We return:
@@ -2618,9 +2694,8 @@ public class XML implements Iterable<XMLCursor> {
         return list;
     }
 
-
-    //TODO have a formatXMLMap and others
-    //TODO allow to specify map implementation?
+    //MAYBE: have a formatXMLMap and others
+    //MAYBE: allow to specify map implementation?
     public <K,V> Map<K,V> parseXMLMap(
             String xpathExpression, Function<XML, Entry<K, V>> parser) {
         return parseXMLMap(xpathExpression, parser, null);
@@ -2799,126 +2874,158 @@ public class XML implements Iterable<XMLCursor> {
                 Spliterator.ORDERED | Spliterator.IMMUTABLE), false);
     }
 
-    public static Builder of(File file) {
-        return new Builder(file);
-    }
-    public static Builder of(Path path) {
-        return new Builder(path);
-    }
-    public static Builder of(Node node) {
-        return new Builder(node);
-    }
-    public static Builder of(InputStream is) {
-        return new Builder(is);
-    }
-    public static Builder of(Reader reader) {
-        return new Builder(reader);
-    }
-    public static Builder of(String xml) {
-        return new Builder(xml);
-    }
-    public static Builder of(String rootElementName, Object object) {
-        return new Builder(object, rootElementName);
-    }
-
-    public static class Builder {
-        private DocumentBuilderFactory documentBuilderFactory;
-        private ErrorHandler errorHandler;
-
-        private final Object source;
-        // if root element is set, it means it came "fromObject".
-        private final String rootElementName;
-
-        private Builder(Object source) {
-            this(source, null);
-        }
-        private Builder(Object source, String rootElementName) {
-            this.source = source;
-            this.rootElementName = rootElementName;
-        }
-        public Builder setDocumentBuilderFactory(
-                DocumentBuilderFactory documentBuilderFactory) {
-            this.documentBuilderFactory = documentBuilderFactory;
-            return this;
-        }
-        public Builder setErrorHandler(ErrorHandler errorHandler) {
-            this.errorHandler = errorHandler;
-            return this;
-        }
-        public XML create() {
-            errorHandler = defaultIfNull(errorHandler);
-            documentBuilderFactory = defaultIfNull(documentBuilderFactory);
-
-            if (source instanceof Node) {
-                return new XML((Node) source,
-                        null, errorHandler, documentBuilderFactory);
+    /**
+     * Joins multiple values using the supplied delimiter or a comma
+     * if the delimiter is <code>null</code>.
+     * @param delim delimiter
+     * @param values the values to join
+     * @return joined values, as a string
+     * @deprecated Will be removed or visibility reduced in a future release.
+     */
+    @Deprecated(since="3.0.0")
+    public String join(String delim, List<?> values) {  //NOSONAR
+        String sep = Objects.toString(delim, ",");
+        StringBuilder b = new StringBuilder();
+        for (Object obj : values) {
+            String str = Objects.toString(obj, "").trim();
+            if (StringUtils.isNotEmpty(str)) {
+                if (b.length() > 0) {
+                    b.append(sep);
+                }
+                b.append(str);
             }
+        }
+        return b.toString();
+    }
 
-            String xmlStr = null;
-            if (StringUtils.isNotBlank(rootElementName)) {
-                xmlStr = "<" + rootElementName + "/>";
-            } else if (source instanceof Path) {
-                xmlStr = fileToString(((Path) source).toFile());
-            } else if (source instanceof File) {
-                xmlStr = fileToString((File) source);
-            } else if (source instanceof InputStream) {
-                xmlStr = readerToString(
-                        new InputStreamReader((InputStream) source));
-            } else if (source instanceof Reader) {
-                xmlStr = readerToString((Reader) source);
-            } else if (source instanceof String) {
-                xmlStr = (String) source;
-            }
+    //--- Misc. Private Methods ------------------------------------------------
 
-            if (StringUtils.isBlank(xmlStr)) {
-                return new XML((Node) null,
-                        null, errorHandler, documentBuilderFactory);
-            }
+    private static DocumentBuilderFactory defaultIfNull(
+            DocumentBuilderFactory dbf) {
+        return Optional.ofNullable(dbf).orElseGet(() -> {
+            DocumentBuilderFactory factory =
+                    XMLUtil.createDocumentBuilderFactory();
+            factory.setNamespaceAware(false);
+            factory.setIgnoringElementContentWhitespace(false);
+            return factory;
+        });
+    }
 
-            xmlStr = xmlStr.trim();
+    private static ErrorHandler defaultIfNull(ErrorHandler eh) {
+        return Optional.ofNullable(eh).orElseGet(
+                    () -> new ErrorHandlerFailer(XML.class));
+    }
 
-            if (!xmlStr.contains("<")) {
-                xmlStr = "<" + xmlStr + "/>";
-            }
+    private boolean isDefined() {
+        return node != null;
+    }
 
-            //--- Ensure proper reading of null and empty values ---
+    // When calling this method, empty tags would have added a xml:space="empty"
+    // custom attribute. Else, if it has no child nodes
+    // (attributes, text, elements), we consider it as an explicitly
+    // self-closed tag, thus null.
+    private boolean isExplicitNull() {
+        return isDefined() && !node.hasAttributes() && !node.hasChildNodes();
+    }
 
-            // Add xml:space="empty" to empty tags.
-            xmlStr = xmlStr.replaceAll(
-                    "(<\\s*)([^\\s>]+)([^>]*)(\\s*><\\s*\\/\\s*\\2\\s*>)",
-                    "$1$2 xml:space=\"empty\" $3$4");
-            Element node = null;
+    private XML createAndInitXML(Builder builder) {
+        return builder
+                .setDocumentBuilderFactory(documentBuilderFactory)
+                .setErrorHandler(errorHandler)
+                .create();
+    }
+
+    private static void handleException(
+            String rootNode, String key, Exception e) {
+        // Throw exception
+        if (e instanceof XMLException) {
+            throw (XMLException) e;
+        }
+        throw new XMLException(
+                "Could not instantiate object from configuration "
+              + "for \"" + rootNode + " -> " + key + "\".", e);
+    }
+
+    // For some reason, the following is required as a workaround
+    // to indentation not working properly. Taken from:
+    // https://myshittycode.com/2014/02/10/
+    //         java-properly-indenting-xml-string/
+    private void fixIndent(int indent) {
+        if (indent > 0) {
+            XPath xPath = XPathFactory.newInstance().newXPath();
             try {
-                documentBuilderFactory.setNamespaceAware(false);
-                node = documentBuilderFactory.newDocumentBuilder()
-                        .parse(new InputSource(new StringReader(xmlStr)))
-                            .getDocumentElement();
-            } catch (ParserConfigurationException
-                    | SAXException | IOException e) {
-                throw new XMLException("Could not parse XML.", e);
+                NodeList nodeList = (NodeList) xPath.evaluate(
+                        "//text()[normalize-space()='']",
+                        node, XPathConstants.NODESET);
+                for (int i = 0; i < nodeList.getLength(); ++i) {
+                    Node n = nodeList.item(i);
+                    n.getParentNode().removeChild(n);
+                }
+            } catch (XPathExpressionException e) {
+                LOG.error("Could not indent XML.", e);
             }
+        }
+    }
 
-            Object sourceObject = null;
-            if (rootElementName != null && source != null) {
-                sourceObject = source;
-            }
-            return new XML(
-                    node, sourceObject, errorHandler, documentBuilderFactory);
+    private static String getXSDResourcePath(Class<?> clazz) {
+        if (clazz == null) {
+            return null;
         }
-        private static String readerToString(Reader reader) {
-            try {
-                return IOUtils.toString(reader);
-            } catch (IOException e) {
-                throw new XMLException("Could not read XML.", e);
-            }
+        return "/" + clazz.getCanonicalName().replace('.', '/') + ".xsd";
+    }
+
+    // Filter out "xml:" name space so attributes like xml:space="preserve"
+    // are validated OK even if name space not declared in a schema.
+    private static class W3XMLNamespaceFilter extends XMLFilterImpl {
+        public W3XMLNamespaceFilter(XMLReader parent) {
+            super(parent);
         }
-        private static String fileToString(File file) {
-            try {
-                return FileUtils.readFileToString(file, StandardCharsets.UTF_8);
-            } catch (IOException e) {
-                throw new XMLException("Could not read XML file: "
-                        + file.getAbsolutePath(), e);
+        @Override
+        public void startElement(
+                String uri, String localName, String qName, Attributes atts)
+                        throws SAXException {
+            for (int i = 0; i < atts.getLength(); i++) {
+                if (XMLConstants.XML_NS_URI.equals(atts.getURI(i))) {
+                    AttributesImpl modifiedAtts = new AttributesImpl(atts);
+                    modifiedAtts.removeAttribute(i);
+                    super.startElement(uri, localName, qName, modifiedAtts);
+                    return;
+                }
             }
+            super.startElement(uri, localName, qName, atts);
         }
+    }
+
+    private String getNodeString(Node n) {
+        if (n.getNodeType() == Node.ATTRIBUTE_NODE) {
+            return n.getNodeValue();
+        }
+
+        // Unlike standard XML parsing, we distinguish between
+        // self-closed tags (null) and empty/blank ones (non-null).
+        // To do so, we need to check if empty tags were detected
+        // BEFORE parsing the XML. Those would have been are identified
+        // with an extra attribute xml:space="empty" by Builder#create.
+        // Those containing white spaces cannot be confused with self-closed
+        // so we do not rely on xml:space="empty", but we check if they
+        // have the standard xml:space="preserve" to decide if we trim them
+        // or not.
+
+        String str = n.getTextContent();
+
+        Optional<String> xmlSpace = Optional
+            .ofNullable(n.getAttributes().getNamedItem(ATT_XML_SPACE))
+            .map(Node::getNodeValue);
+
+        // Empty tags are converted to "" while self-closed to null:
+        if (StringUtils.isEmpty(str)) {
+            return xmlSpace.filter("empty"::equals).isPresent() ? "" : null;
+        }
+
+        // Other values are trimmed unless xml:space is "preserve":
+        if (!xmlSpace.filter("preserve"::equals).isPresent()) {
+            str = str.trim();
+        }
+        return str;
     }
 }
