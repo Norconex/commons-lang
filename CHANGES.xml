@@ -196,6 +196,9 @@
       <action dev="essiembre" type="update">
         XML#join has been deprecated.
       </action>
+      <action dev="essiembre" type="update">
+        Added extra safety checks in XMLUtil to prevent XXE attacks.
+      </action>
       <action dev="essiembre" type="add">
         TextMatcher now considers null values as non-matching by defualt.
       </action>

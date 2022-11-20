@@ -65,8 +65,7 @@ public class ClasspathResourceResolver implements LSResourceResolver {
      * @param relativeTo package path to use as base for resolution
      */
     public ClasspathResourceResolver(String relativeTo) {
-        super();
-        this.rootPath = relativeTo;
+        rootPath = relativeTo;
     }
 
     @Override

@@ -16,6 +16,7 @@ package com.norconex.commons.lang.xml;
 
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.NoSuchElementException;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;
@@ -60,6 +61,9 @@ class XMLIterator implements Iterator<XMLCursor> {
     }
     @Override
     public XMLCursor next() {
+        if(!hasNext()){
+            throw new NoSuchElementException();
+        }
         try {
             while (reader.hasNext()) {
                 XMLEvent nextEvent = reader.nextEvent();

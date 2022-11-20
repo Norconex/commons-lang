@@ -564,7 +564,6 @@ class XMLTest {
     void testToObject() {
         ProxySettings proxy = new XML(SAMPLE_PROXYSETTINGS_XML).toObject();
         assertThat(proxy).isEqualTo(SAMPLE_PROXY_OBJECT);
-
         assertThatExceptionOfType(XMLException.class).isThrownBy( //NOSONAR
                 () -> new XML(SAMPLE_XML).toObject(SAMPLE_PROXY_OBJECT));
 
@@ -806,7 +805,6 @@ class XMLTest {
 
         xml.addElement("pojo", pojo);
 
-        //System.out.println(xml.toString(4));
         Assertions.assertEquals(7, xml.getInteger("pojo/@luckyNumber"));
         Assertions.assertEquals("John", xml.getString("pojo/firstName"));
         Assertions.assertEquals("Smith", xml.getString("pojo/lastName"));

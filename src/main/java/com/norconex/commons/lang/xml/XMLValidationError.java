@@ -1,4 +1,4 @@
-/* Copyright 2018 Norconex Inc.
+/* Copyright 2018-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,8 @@ package com.norconex.commons.lang.xml;
 
 import java.io.Serializable;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
+import lombok.Data;
+import lombok.Getter;
 
 /**
  * A configuration error resulting from validation.  A configuration error
@@ -29,40 +27,20 @@ import org.apache.commons.lang3.builder.ToStringStyle;
  * @since 2.0.0
  * @see XML#validate(Class)
  */
-//TODO rename to ValidationError and maybe add source + generic as well? (XML)
+//MAYBE: rename to ValidationError and maybe add source + generic as well? (XML)
+@Data
+@Getter
 public class XMLValidationError implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    public enum Severity { WARNING, ERROR, FATAL };
+    public enum Severity { WARNING, ERROR, FATAL }
 
     private final Severity severity;
     private final String message;
 
     public XMLValidationError(Severity severity, String message) {
-        super();
         this.severity = severity;
         this.message = message;
-    }
-
-    public Severity getSeverity() {
-        return severity;
-    }
-    public String getMessage() {
-        return message;
-    }
-
-    @Override
-    public boolean equals(final Object other) {
-        return EqualsBuilder.reflectionEquals(this, other);
-    }
-    @Override
-    public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this);
-    }
-    @Override
-    public String toString() {
-        return new ReflectionToStringBuilder(
-                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

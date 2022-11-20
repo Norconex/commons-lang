@@ -1,4 +1,4 @@
-/* Copyright 2019-2021 Norconex Inc.
+/* Copyright 2019-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,10 @@
  */
 package com.norconex.commons.lang.xml;
 
+import static javax.xml.XMLConstants.ACCESS_EXTERNAL_DTD;
+import static javax.xml.XMLConstants.ACCESS_EXTERNAL_SCHEMA;
+import static javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -23,11 +27,13 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.HashSet;
+import java.util.Set;
 
-import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
@@ -38,22 +44,21 @@ import javax.xml.validation.Validator;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.function.FailableConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLReaderFactory;
 
 /**
  * <p>
  * Utility XML-related methods. When applicable:
  * </p>
  * <ul>
- *   <li>Uses XML Schema version 1.1</li>
- *   <li>Addresses XML security vulnerabilities (XXE)</li>
+ *   <li>Uses XML Schema version 1.1.</li>
+ *   <li>Addresses XML security vulnerabilities (XXE).</li>
+ *   <li>Wraps checked exceptions in a runtime {@link XMLException}.</li>
  * </ul>
  *
  * @author Pascal Essiembre
@@ -66,77 +71,78 @@ public final class XMLUtil {
     public static final String W3C_XML_SCHEMA_NS_URI_1_1 =
             "http://www.w3.org/XML/XMLSchema/v1.1";
 
-    private static boolean featureErrorsLogged;
-    private static boolean propertyErrorsLogged;
+    private static final String LOAD_EXTERNAL_DTD =
+            "http://apache.org/xml/features/nonvalidating/load-external-dtd";
+    private static final String EXTERNAL_GENERAL_ENTITIES =
+            "http://xml.org/sax/features/external-general-entities";
+    private static final String EXTERNAL_PARAMETER_ENTITIES =
+            "http://xml.org/sax/features/external-parameter-entities";
+    private static final String NAMESPACES =
+            "http://xml.org/sax/features/namespaces";
 
-    private XMLUtil() {
-        super();
-    }
+    private static final Set<String> alreadyLogged = new HashSet<>();
+
+
+    private XMLUtil() {}
 
     public static Validator createSchemaValidator(Schema schema) {
         Validator validator = schema.newValidator();
-        try {
-            validator.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            validator.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
-            validator.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
-        } catch (SAXException e) {
-            if (propertyErrorsLogged) {
-                LOG.debug(e.getMessage());
-            }
-            propertyErrorsLogged = false;
-        }
+        set(validator, v -> v.setFeature(FEATURE_SECURE_PROCESSING, true));
+        set(validator, v -> v.setProperty(ACCESS_EXTERNAL_DTD, ""));
+        set(validator, v -> v.setProperty(ACCESS_EXTERNAL_SCHEMA, ""));
         return validator;
     }
 
     public static SchemaFactory createSchemaFactory() {
-        return SchemaFactory.newInstance(W3C_XML_SCHEMA_NS_URI_1_1);
-    }
+      return SchemaFactory.newInstance( //NOSONAR handled
+              W3C_XML_SCHEMA_NS_URI_1_1);
+  }
 
-    public static XMLReader createXMLReader() throws SAXException {
-        XMLReader xmlReader = XMLReaderFactory.createXMLReader();
+    public static XMLReader createXMLReader() {
+        SAXParserFactory parserFactory = createSaxParserFactory();
+        SAXParser parser;
+        XMLReader xmlReader;
         try {
-            xmlReader.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            xmlReader.setFeature("http://apache.org/xml/features/"
-                    + "nonvalidating/load-external-dtd", false);
-            xmlReader.setFeature("http://xml.org/sax/features/"
-                    + "external-general-entities", false);
-            xmlReader.setFeature("http://xml.org/sax/features/"
-                    + "external-parameter-entities", false);
-            xmlReader.setEntityResolver((publicId, systemId) -> null);
-        } catch (SAXException e) {
-            if (featureErrorsLogged) {
-                LOG.debug(e.getMessage());
-            }
-            featureErrorsLogged = false;
+            parser = parserFactory.newSAXParser();
+            xmlReader = parser.getXMLReader();
+        } catch (ParserConfigurationException | SAXException e) {
+            throw new XMLException("could not create SAX Parser.", e);
         }
+        set(xmlReader, r -> r.setFeature(NAMESPACES, true));
+        set(xmlReader, r -> r.setFeature(FEATURE_SECURE_PROCESSING, true));
+        set(xmlReader, r -> r.setFeature(LOAD_EXTERNAL_DTD, false));
+        set(xmlReader, r -> r.setFeature(EXTERNAL_GENERAL_ENTITIES, false));
+        set(xmlReader, r -> r.setFeature(EXTERNAL_PARAMETER_ENTITIES, false));
+        set(xmlReader, r -> r.setEntityResolver((publicId, systemId) -> null));
         return xmlReader;
     }
 
     public static DocumentBuilderFactory createDocumentBuilderFactory() {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        try {
-            factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-        } catch (ParserConfigurationException e) {
-            LOG.debug(e.getMessage());
-        }
+        DocumentBuilderFactory factory =
+                DocumentBuilderFactory.newInstance(); //NOSONAR handled
+        set(factory, f -> f.setFeature(FEATURE_SECURE_PROCESSING, true));
+        set(factory, f -> f.setFeature(EXTERNAL_GENERAL_ENTITIES, false));
+        set(factory, f -> f.setFeature(EXTERNAL_PARAMETER_ENTITIES, false));
+        set(factory, f -> f.setAttribute(ACCESS_EXTERNAL_DTD, ""));
+        set(factory, f -> f.setAttribute(ACCESS_EXTERNAL_SCHEMA, ""));
+        set(factory, f -> f.setExpandEntityReferences(false));
         return factory;
     }
 
     public static SAXParserFactory createSaxParserFactory() {
-        SAXParserFactory factory = SAXParserFactory.newInstance();
-        try {
-            factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-        } catch (SAXNotRecognizedException | SAXNotSupportedException
-                | ParserConfigurationException e) {
-            LOG.debug(e.getMessage());
-        }
+        SAXParserFactory factory =
+                SAXParserFactory.newInstance(); //NOSONAR handled
+        set(factory, f -> f.setFeature(FEATURE_SECURE_PROCESSING, true));
+        set(factory, f -> f.setFeature(EXTERNAL_GENERAL_ENTITIES, false));
+        set(factory, f -> f.setFeature(EXTERNAL_PARAMETER_ENTITIES, false));
         return factory;
     }
 
     public static XMLInputFactory createXMLInputFactory() {
         XMLInputFactory factory = XMLInputFactory.newInstance();
         factory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
-        factory.setProperty("javax.xml.stream.isSupportingExternalEntities", false);
+        factory.setProperty(
+                "javax.xml.stream.isSupportingExternalEntities", false);
         return factory;
     }
 
@@ -186,6 +192,25 @@ public final class XMLUtil {
         throw new XMLException("Unsupported object type. Must be one of "
                 + "Path, File, Node, XML, String, Reader, or XMLEventReader.");
     }
+
+    // When a tag is prefixed with no namespace defined for it,
+    // it is possible that the prefix is returned part of the local name.
+    // We account for that in the next two methods, as we always want the
+    // local name to be // the part after ":" when present.
+    static String toLocalName(QName qname) {
+        String name = toName(qname);
+        String localName = StringUtils.substringAfterLast(name, ":");
+        if (StringUtils.isBlank(localName)) {
+            return name;
+        }
+        return localName;
+    }
+    static String toName(QName qname) {
+        return StringUtils.isBlank(qname.getPrefix())
+                ? qname.getLocalPart()
+                : qname.getPrefix() + ":" + qname.getLocalPart();
+    }
+
     private static XMLEventReader createXMLEventReader(Path path) {
         return createXMLEventReader(path.toFile());
     }
@@ -220,21 +245,15 @@ public final class XMLUtil {
         }
     }
 
-    // When a tag is prefixed with no namespace defined for it,
-    // it is possible that the prefix is returned part of the local name.
-    // We account for that in the next two methods, as we always want the
-    // local name to be // the part after ":" when present.
-    protected static String toLocalName(QName qname) {
-        String name = toName(qname);
-        String localName = StringUtils.substringAfterLast(name, ":");
-        if (StringUtils.isBlank(localName)) {
-            return name;
+    private static <T> void set(T t, FailableConsumer<T, Exception> c) {
+        try {
+            c.accept(t);
+        } catch (Exception e) {
+            String clsMsg = t.getClass() + e.getMessage();
+            if (!alreadyLogged.contains(clsMsg)) {
+                LOG.debug(e.getMessage());
+                alreadyLogged.add(clsMsg);
+            }
         }
-        return localName;
-    }
-    protected static String toName(QName qname) {
-        return StringUtils.isBlank(qname.getPrefix())
-                ? qname.getLocalPart()
-                : qname.getPrefix() + ":" + qname.getLocalPart();
     }
 }
