@@ -1,4 +1,4 @@
-/* Copyright 2017 Norconex Inc.
+/* Copyright 2017-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,30 +19,28 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 
-import org.slf4j.LoggerFactory;
-import org.slf4j.Logger;
 import org.w3c.dom.ls.LSInput;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Load XML Schema resources input from Classpath.
  * @author Pascal Essiembre
  * @since 1.13.0
  */
+@Slf4j
 public class ClasspathInput implements LSInput {
 
-    private static final Logger LOG = 
-            LoggerFactory.getLogger(ClasspathInput.class);
-    
     private String publicId;
     private String systemId;
     private BufferedInputStream inputStream;
 
     public ClasspathInput(String publicId, String sysId, InputStream input) {
         this.publicId = publicId;
-        this.systemId = sysId;
-        this.inputStream = new BufferedInputStream(input);
+        systemId = sysId;
+        inputStream = new BufferedInputStream(input);
     }
-    
+
     @Override
     public String getPublicId() {
         return publicId;
@@ -83,7 +81,7 @@ public class ClasspathInput implements LSInput {
         synchronized (inputStream) {
             try {
                 byte[] input = new byte[inputStream.available()];
-                inputStream.read(input);
+                inputStream.read(input); //NOSONAR
                 return new String(input);
             } catch (IOException e) {
                 LOG.error("Could not get string data.", e);

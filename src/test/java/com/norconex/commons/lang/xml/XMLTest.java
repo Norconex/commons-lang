@@ -81,7 +81,7 @@ class XMLTest {
               + "<nestedC/>"
           + "</sampleTag>";
 
-    private static final String SAMPLE_PROXYSETTINGS_XML =
+    static final String SAMPLE_PROXYSETTINGS_XML =
             "<proxySettings "
               + "class=\"com.norconex.commons.lang.net.ProxySettings\">"
               + "<host>"

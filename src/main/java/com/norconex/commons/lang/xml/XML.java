@@ -1810,18 +1810,6 @@ public class XML implements Iterable<XMLCursor> {
 
         validator.setErrorHandler(errorHandler);
 
-        //test start
-//        SAXParserFactory parserFactory = XMLUtil.createSaxParserFactory();
-//        parserFactory.setSchema(schema);
-//        XMLReader xmlReader = null;
-//        try {
-//            xmlReader = parserFactory.newSAXParser().getXMLReader();
-//        } catch (SAXException | ParserConfigurationException e) {
-//            // TODO Auto-generated catch block
-//            e.printStackTrace();
-//        }
-
-        //test end
         XMLReader xmlReader = XMLUtil.createXMLReader();
 
         SAXSource saxSource = new SAXSource(

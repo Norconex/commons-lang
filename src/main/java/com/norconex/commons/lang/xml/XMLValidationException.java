@@ -1,4 +1,4 @@
-/* Copyright 2018-2019 Norconex Inc.
+/* Copyright 2018-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,13 +25,12 @@ import org.apache.commons.collections4.CollectionUtils;
  * @since 2.0.0
  * @see XML#validate(Class)
  */
-//TODO rename to ValidationException?
 public class XMLValidationException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
     private final List<XMLValidationError> errors = new ArrayList<>();
-    private final XML xml;
+    private final transient XML xml;
 
     /**
      * Constructor.

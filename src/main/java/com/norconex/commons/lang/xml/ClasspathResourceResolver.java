@@ -1,4 +1,4 @@
-/* Copyright 2017 Norconex Inc.
+/* Copyright 2017-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,10 @@ import java.io.InputStream;
 import javax.xml.validation.SchemaFactory;
 
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.w3c.dom.ls.LSInput;
 import org.w3c.dom.ls.LSResourceResolver;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * <p>
@@ -42,10 +42,8 @@ import org.w3c.dom.ls.LSResourceResolver;
  * @author Pascal Essiembre
  * @since 1.13.0
  */
+@Slf4j
 public class ClasspathResourceResolver implements LSResourceResolver {
-
-    private static final Logger LOG =
-            LoggerFactory.getLogger(ClasspathResourceResolver.class);
 
     private final String rootPath;
 

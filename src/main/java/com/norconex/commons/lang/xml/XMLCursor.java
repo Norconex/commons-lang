@@ -1,4 +1,4 @@
-/* Copyright 2021 Norconex Inc.
+/* Copyright 2021-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,7 +57,6 @@ public class XMLCursor {
             XMLEventReader reader,
             StartElement element,
             LinkedList<String> pathSegments) {
-        super();
         this.reader = reader;
         this.element = element;
         this.pathSegments = pathSegments;
@@ -81,14 +80,13 @@ public class XMLCursor {
     }
 
     public Properties getAttributes() {
-        return doGetAttributes(q -> XMLUtil.toName(q));
+        return doGetAttributes(XMLUtil::toName);
     }
     public Properties getLocalAttributes() {
-        return doGetAttributes(q -> XMLUtil.toLocalName(q));
+        return doGetAttributes(XMLUtil::toLocalName);
     }
     private Properties doGetAttributes(Function<QName, String> f) {
         Properties props = new Properties();
-        @SuppressWarnings("unchecked")
         Iterator<Attribute> attrs = element.getAttributes();
         while (attrs.hasNext()) {
             Attribute a = attrs.next();

@@ -1,4 +1,4 @@
-/* Copyright 2019 Norconex Inc.
+/* Copyright 2019-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,11 @@
  */
 package com.norconex.commons.lang.xml;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Logs XML validation warnings and errors. XML "fatal" errors are logged
@@ -26,27 +26,30 @@ import org.xml.sax.SAXParseException;
  * @author Pascal Essiembre
  * @since 2.0.0
  */
+@Slf4j
 public class ErrorHandlerLogger implements ErrorHandler {
-
-    private static final Logger LOG =
-            LoggerFactory.getLogger(ErrorHandlerLogger.class);
 
     private final Class<?> clazz;
     public ErrorHandlerLogger(Class<?> clazz) {
-        super();
         this.clazz = clazz;
     }
     @Override
     public void warning(SAXParseException e) throws SAXException {
-        LOG.warn(msg(e));
+        if (LOG.isWarnEnabled()) {
+            LOG.warn(msg(e));
+        }
     }
     @Override
     public void error(SAXParseException e) throws SAXException {
-        LOG.error(msg(e));
+        if (LOG.isErrorEnabled()) {
+            LOG.error(msg(e));
+        }
     }
     @Override
     public void fatalError(SAXParseException e) throws SAXException {
-        LOG.error(msg(e));
+        if (LOG.isErrorEnabled()) {
+            LOG.error(msg(e));
+        }
     }
     private String msg(SAXParseException e) {
         if (clazz == null) {

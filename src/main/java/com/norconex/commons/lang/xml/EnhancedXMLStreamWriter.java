@@ -1,4 +1,4 @@
-/* Copyright 2010-2018 Norconex Inc.
+/* Copyright 2010-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,8 +28,10 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * <p>
@@ -45,20 +47,21 @@ import org.slf4j.LoggerFactory;
  * @author Pascal Essiembre
  * @since 1.5.0
  */
-//TODO rename XMLWriter?  Or XmlStreamWriter?
-//TODO rename writeAttributeXXX to writeAttrXXX ?
-//TODO rename writeElementXXX to writeElemXXX ?
-//TODO have XMLIn/XMLOut or XMLReader/XMLWriter instead?
+@Slf4j
 public class EnhancedXMLStreamWriter implements XMLStreamWriter {
 
-    private static final Logger LOG =
-            LoggerFactory.getLogger(EnhancedXMLStreamWriter.class);
+    private static final String ATTR_DISABLED = "disabled";
+    private static final String ERR_START_ELEM =
+            "Could not write start element.";
+    private static final String ERR_EMPTY_ELEM =
+            "Could not write empty element.";
+    private static final String ERR_ATTR = "Could not write XML attribute.";
+    private static final String ERR_START_DOC =
+            "Could not write start document.";
 
     private final XMLStreamWriter streamWriter;
     private final Writer writer;
 
-    //TODO consider constructor with new EnhancedXMLStreamWriterConfig instead
-    //TODO blanks should always be written???
     private final boolean defaultWriteBlanks;
     // -1 = no indent, 0 = new lines only, 1+ = new lines + num of spaces,
     private final int indent;
@@ -92,12 +95,11 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
      */
     public EnhancedXMLStreamWriter(
             Writer writer, boolean writeBlanks, int indent) {
-        super();
         try {
             XMLOutputFactory factory = createXMLOutputFactory();
             this.writer = writer;
-            this.streamWriter = factory.createXMLStreamWriter(writer);
-            this.defaultWriteBlanks = writeBlanks;
+            streamWriter = factory.createXMLStreamWriter(writer);
+            defaultWriteBlanks = writeBlanks;
             this.indent = indent;
         } catch (XMLStreamException e) {
             throw new XMLException(
@@ -113,45 +115,6 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
     public Writer getWriter() {
         flush();
         return writer;
-    }
-
-    private void indent() {
-        try {
-            indentEnd = true;
-            if (indent > -1) {
-                streamWriter.writeCharacters("\n");
-                if (indent > 0) {
-                    streamWriter.writeCharacters(
-                            StringUtils.repeat(' ', depth * indent));
-                }
-            }
-        } catch (XMLStreamException e) {
-            throw new XMLException("Could not write indent.", e);
-        }
-    }
-
-    private static XMLOutputFactory createXMLOutputFactory() {
-        XMLOutputFactory factory = XMLOutputFactory.newFactory();
-        // If using Woodstox factory, disable structure validation
-        // which can cause issues when you want to use the xml writer on
-        // a stream that already has XML written to it (could cause
-        // "multiple roots" error).
-        if ("com.ctc.wstx.stax.WstxOutputFactory".equals(
-                factory.getClass().getName())) {
-            try {
-                Object config = factory.getClass().getMethod(
-                        "getConfig").invoke(factory);
-                config.getClass().getMethod(
-                        "doValidateStructure", boolean.class).invoke(
-                                config, false);
-            } catch (Exception e) {
-                LOG.warn("Could not disable structure validation on "
-                        + "WstxOutputFactory. This can cause issues when "
-                        + "using EnhancedXMLStreamWriter on an partially "
-                        + "written XML stream (\"multiple roots\" error).");
-            }
-        }
-        return factory;
     }
 
     //--- Attribute methods ----------------------------------------------------
@@ -302,7 +265,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
      * @since 2.0.0
      */
     public void writeAttributeDisabled(Boolean value, boolean writeBlanks) {
-        writeAttributeBoolean("disabled", value, writeBlanks);
+        writeAttributeBoolean(ATTR_DISABLED, value, writeBlanks);
     }
     /**
      * Write a "disabled" attribute.
@@ -310,14 +273,14 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
      * @since 2.0.0
      */
     public void writeAttributeDisabled(boolean value) {
-        writeAttributeBoolean("disabled", value, defaultWriteBlanks);
+        writeAttributeBoolean(ATTR_DISABLED, value, defaultWriteBlanks);
     }
     /**
      * Write a "disabled" attribute set to <code>true</code>.
      * @since 2.0.0
      */
     public void writeAttributeDisabled() {
-        writeAttributeBoolean("disabled", true, defaultWriteBlanks);
+        writeAttributeBoolean(ATTR_DISABLED, true, defaultWriteBlanks);
     }
 
 
@@ -385,7 +348,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
      */
     public void writeElementDisabled(String localName) {
         writeStartElement(localName);
-        writeAttributeBoolean("disabled", true);
+        writeAttributeBoolean(ATTR_DISABLED, true);
         writeEndElement();
     }
 
@@ -399,7 +362,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
     public void writeElementDisabled(String localName, Class<?> clazz) {
         writeStartElement(localName);
         writeAttributeClass(clazz);
-        writeAttributeBoolean("disabled", true);
+        writeAttributeBoolean(ATTR_DISABLED, true);
         writeEndElement();
     }
 
@@ -595,15 +558,16 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
         boolean hasParent = StringUtils.isNotBlank(parentLocalName);
         if (CollectionUtils.isEmpty(values) && hasParent) {
             writeElementObject(parentLocalName, null, writeBlanks);
-        }
-        if (hasParent) {
-            writeStartElement(parentLocalName);
-        }
-        for (Object value : values) {
-            writeElementObject(localName, value, writeBlanks);
-        }
-        if (hasParent) {
-            writeEndElement();
+        } else {
+            if (hasParent) {
+                writeStartElement(parentLocalName);
+            }
+            for (Object value : values) {
+                writeElementObject(localName, value, writeBlanks);
+            }
+            if (hasParent) {
+                writeEndElement();
+            }
         }
     }
     /**
@@ -714,18 +678,21 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
         }
         if (value instanceof IXMLConfigurable) {
             flush();
-            try {
-                XML xml = XML.of(localName, value).create();
-                if (disabled) {
-                    xml.setAttribute("disabled", disabled);
-                }
-                xml.write(writer);
-                writer.flush();
-            } catch (IOException e) {
-                throw new XMLException(
-                        "Could not save XML-configurable class for \""
-                        + localName + "\".", e);
+            writeStartElement(localName);
+            if (disabled) {
+                writeAttributeBoolean(ATTR_DISABLED, disabled);
             }
+            XML xml = XML.of(localName, value).create();
+            setAttributesFromNode(xml.getNode());
+            writeCharacters("");
+            flush();
+            List<XML> xmlList = xml.getXMLList("*");
+            if (xmlList.isEmpty()) {
+                write(xml.getString("."), localName);
+            } else {
+                xmlList.forEach(x -> write(x.toString(indent), localName));
+            }
+            writeEndElement();
             flush();
         } else {
             writeStartElement(localName);
@@ -733,6 +700,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
             writeEndElement();
         }
     }
+
     /**
      * Writes a list of objects.
      * If an object implements {@link IXMLConfigurable},
@@ -753,6 +721,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
         boolean hasParent = StringUtils.isNotBlank(parentLocalName);
         if (CollectionUtils.isEmpty(values) && hasParent) {
             writeElementObject(parentLocalName, null, defaultWriteBlanks);
+            return;
         }
         if (hasParent) {
             writeStartElement(parentLocalName);
@@ -775,7 +744,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
         try {
             streamWriter.writeStartElement(localName);
         } catch (XMLStreamException e) {
-            throw new XMLException("Could not write start element.", e);
+            throw new XMLException(ERR_START_ELEM, e);
         }
     }
 
@@ -813,7 +782,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
         try {
             streamWriter.writeStartElement(namespaceURI, localName);
         } catch (XMLStreamException e) {
-            throw new XMLException("Could not write start element.", e);
+            throw new XMLException(ERR_START_ELEM, e);
         }
     }
 
@@ -825,7 +794,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
         try {
             streamWriter.writeStartElement(prefix, localName, namespaceURI);
         } catch (XMLStreamException e) {
-            throw new XMLException("Could not write start element.", e);
+            throw new XMLException(ERR_START_ELEM, e);
         }
     }
 
@@ -835,7 +804,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
         try {
             streamWriter.writeEmptyElement(namespaceURI, localName);
         } catch (XMLStreamException e) {
-            throw new XMLException("Could not write empty element.", e);
+            throw new XMLException(ERR_EMPTY_ELEM, e);
         }
     }
 
@@ -846,7 +815,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
         try {
             streamWriter.writeEmptyElement(prefix, localName, namespaceURI);
         } catch (XMLStreamException e) {
-            throw new XMLException("Could not write empty element.", e);
+            throw new XMLException(ERR_EMPTY_ELEM, e);
         }
     }
 
@@ -856,7 +825,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
         try {
             streamWriter.writeEmptyElement(localName);
         } catch (XMLStreamException e) {
-            throw new XMLException("Could not write empty element.", e);
+            throw new XMLException(ERR_EMPTY_ELEM, e);
         }
     }
 
@@ -870,7 +839,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
         try {
             streamWriter.writeEndElement();
         } catch (XMLStreamException e) {
-            throw new XMLException("Could not write end attribute.", e);
+            throw new XMLException("Could not write end element.", e);
         }
     }
 
@@ -906,7 +875,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
         try {
             streamWriter.writeAttribute(localName, value);
         } catch (XMLStreamException e) {
-            throw new XMLException("Could not write XML attribute.", e);
+            throw new XMLException(ERR_ATTR, e);
         }
     }
     @Override
@@ -915,7 +884,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
         try {
             streamWriter.writeAttribute(prefix, namespaceURI, localName, value);
         } catch (XMLStreamException e) {
-            throw new XMLException("Could not write XML attribute.", e);
+            throw new XMLException(ERR_ATTR, e);
         }
     }
     @Override
@@ -924,7 +893,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
         try {
             streamWriter.writeAttribute(namespaceURI, localName, value);
         } catch (XMLStreamException e) {
-            throw new XMLException("Could not write XML attribute.", e);
+            throw new XMLException(ERR_ATTR, e);
         }
     }
 
@@ -1011,7 +980,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
         try {
             streamWriter.writeStartDocument();
         } catch (XMLStreamException e) {
-            throw new XMLException("Could not write start document.", e);
+            throw new XMLException(ERR_START_DOC, e);
         }
     }
 
@@ -1020,7 +989,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
         try {
             streamWriter.writeStartDocument(version);
         } catch (XMLStreamException e) {
-            throw new XMLException("Could not write start document.", e);
+            throw new XMLException(ERR_START_DOC, e);
         }
     }
 
@@ -1029,7 +998,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
         try {
             streamWriter.writeStartDocument(encoding, version);
         } catch (XMLStreamException e) {
-            throw new XMLException("Could not write start document.", e);
+            throw new XMLException(ERR_START_DOC, e);
         }
     }
 
@@ -1114,5 +1083,68 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
     @Override
     public Object getProperty(String name) {
         return streamWriter.getProperty(name);
+    }
+
+    //--- Private methods ------------------------------------------------------
+
+    private void indent() {
+        try {
+            indentEnd = true;
+            if (indent > -1) {
+                streamWriter.writeCharacters("\n");
+                if (indent > 0) {
+                    streamWriter.writeCharacters(
+                            StringUtils.repeat(' ', depth * indent));
+                }
+            }
+        } catch (XMLStreamException e) {
+            throw new XMLException("Could not write indent.", e);
+        }
+    }
+
+    private static XMLOutputFactory createXMLOutputFactory() {
+        XMLOutputFactory factory = XMLOutputFactory.newFactory();
+        // If using Woodstox factory, disable structure validation
+        // which can cause issues when you want to use the xml writer on
+        // a stream that already has XML written to it (could cause
+        // "multiple roots" error).
+        if ("com.ctc.wstx.stax.WstxOutputFactory".equals( //NOSONAR
+                factory.getClass().getName())) { //NOSONAR
+            try {
+                Object config = factory.getClass().getMethod(
+                        "getConfig").invoke(factory);
+                config.getClass().getMethod(
+                        "doValidateStructure", boolean.class).invoke(
+                                config, false);
+            } catch (Exception e) {
+                LOG.warn("Could not disable structure validation on "
+                        + "WstxOutputFactory. This can cause issues when "
+                        + "using EnhancedXMLStreamWriter on an partially "
+                        + "written XML stream (\"multiple roots\" error).");
+            }
+        }
+        return factory;
+    }
+
+    private void setAttributesFromNode(Node node) {
+        if (node == null) {
+            return;
+        }
+        NamedNodeMap attrs = node.getAttributes();
+        for (int i = 0; i < attrs.getLength(); i++) {
+            Node item = attrs.item(i);
+            if (!ATTR_DISABLED.equals(item.getNodeName())) {
+                writeAttribute(item.getNodeName(), item.getNodeValue());
+            }
+        }
+    }
+
+    private void write(String str, String context) {
+        try {
+            writer.write(str);
+        } catch (IOException e) {
+            throw new XMLException(String.format(
+                    "Could not write to XML stream (\"%s\").", context), e);
+        }
     }
 }
