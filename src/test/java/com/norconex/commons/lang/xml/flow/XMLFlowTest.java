@@ -1,4 +1,4 @@
-/* Copyright 2021 Norconex Inc.
+/* Copyright 2021-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,26 +14,58 @@
  */
 package com.norconex.commons.lang.xml.flow;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.assertThatNoException;
+
 import java.io.IOException;
 import java.io.Reader;
 import java.util.function.Consumer;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.ResourceLoader;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.XML;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * @author Pascal Essiembre
  */
+@Slf4j
 class XMLFlowTest {
 
-    private static final Logger LOG =
-            LoggerFactory.getLogger(XMLFlowTest.class);
+    @Test
+    void testEmptyNullError() throws IOException {
+        assertThatNoException().isThrownBy(() -> {
+            new XMLFlow<>();
+        });
+    }
+
+    @Test
+    void testCondition() {
+        XMLCondition<Integer> cnd1 = new XMLCondition<>(new XMLFlow<>());
+        assertThat(cnd1.test(null)).isFalse(); // nothing to test, false
+        assertThat(cnd1.test(123)).isTrue();   // no predicate, always true
+    }
+
+    @Test
+    void testMisc() {
+        XMLFlow<Properties> flow = createXMLFlow();
+        assertThat(flow.getConsumerAdapter()).isEqualTo(
+                MockXMLFlowConsumerAdapter.class);
+        assertThat(flow.getPredicateAdapter()).isEqualTo(
+                MockXMLFlowPredicateAdapter.class);
+        assertThat(flow.parse(new XML("test"))).isNull();
+
+        XMLFlow<Properties> flow2 = new XMLFlow<>();
+        assertThatExceptionOfType(XMLFlowException.class)
+            .isThrownBy(() -> flow2.parse( //NOSONAR
+                    new XML("<test><value>1</value></test>")))
+            .withStackTraceContaining("does not resolve to ");
+    }
 
     @Test
     void testFlow() throws IOException {
@@ -88,7 +120,8 @@ class XMLFlowTest {
             return new XML(r);
         }
     }
-    private XMLFlow<Properties> createXMLFlow() {
+
+    static XMLFlow<Properties> createXMLFlow() {
         return new XMLFlow<>(
                 MockXMLFlowConsumerAdapter.class,
                 MockXMLFlowPredicateAdapter.class);

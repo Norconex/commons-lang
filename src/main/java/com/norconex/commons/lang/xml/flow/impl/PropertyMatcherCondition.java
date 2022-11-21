@@ -1,4 +1,4 @@
-/* Copyright 2021 Norconex Inc.
+/* Copyright 2021-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,21 +16,21 @@ package com.norconex.commons.lang.xml.flow.impl;
 
 import java.util.function.Predicate;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
-
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertyMatcher;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
+
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 /**
  * A simple XML condition matching {@link Properties} keys and values.
  * @author Pascal Essiembre
  * @since 2.0.0
  */
+@ToString
+@EqualsAndHashCode
 public class PropertyMatcherCondition
         implements Predicate<Properties>, IXMLConfigurable {
 
@@ -48,19 +48,5 @@ public class PropertyMatcherCondition
     @Override
     public void saveToXML(XML xml) {
         PropertyMatcher.saveToXML(xml, matcher);
-    }
-
-    @Override
-    public boolean equals(final Object other) {
-        return EqualsBuilder.reflectionEquals(this, other);
-    }
-    @Override
-    public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this);
-    }
-    @Override
-    public String toString() {
-        return new ReflectionToStringBuilder(
-                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

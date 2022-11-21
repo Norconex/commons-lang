@@ -1,4 +1,4 @@
-/* Copyright 2021 Norconex Inc.
+/* Copyright 2021-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,16 +19,15 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.EqualsExclude;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.HashCodeExclude;
-import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringExclude;
-import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
+
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 /**
  * <p>
@@ -86,6 +85,8 @@ import com.norconex.commons.lang.xml.XML;
  * @since 2.0.0
  * @see XMLIfNot
  */
+@ToString
+@EqualsAndHashCode
 class XMLIf<T> implements Consumer<T>, IXMLConfigurable {
 
     @ToStringExclude @EqualsExclude @HashCodeExclude
@@ -114,10 +115,8 @@ class XMLIf<T> implements Consumer<T>, IXMLConfigurable {
             if (thenConsumer != null) {
                 thenConsumer.accept(t);
             }
-        } else {
-            if (elseConsumer != null) {
-                elseConsumer.accept(t);
-            }
+        } else if (elseConsumer != null) {
+            elseConsumer.accept(t);
         }
     }
 
@@ -143,7 +142,7 @@ class XMLIf<T> implements Consumer<T>, IXMLConfigurable {
 
         // There must be exactly one top-level child named "then"
         // and one optional "else".
-        // TODO enforce in schema that there must be one "then".
+        //MAYBE enforce in schema that there must be one "then".
         this.thenConsumer = flow.parse(xml.getXML(Tag.THEN.toString()));
         this.elseConsumer = flow.parse(xml.getXML(Tag.ELSE.toString()));
     }
@@ -158,19 +157,5 @@ class XMLIf<T> implements Consumer<T>, IXMLConfigurable {
         if (elseConsumer != null) {
             flow.write(xml.addElement("else"), elseConsumer);
         }
-    }
-
-    @Override
-    public boolean equals(final Object other) {
-        return EqualsBuilder.reflectionEquals(this, other);
-    }
-    @Override
-    public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this);
-    }
-    @Override
-    public String toString() {
-        return new ReflectionToStringBuilder(
-                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

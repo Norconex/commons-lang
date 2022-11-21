@@ -1,4 +1,4 @@
-/* Copyright 2021 Norconex Inc.
+/* Copyright 2021-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,17 +20,16 @@ import java.util.List;
 import java.util.function.Predicate;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.EqualsExclude;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.HashCodeExclude;
-import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringExclude;
-import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.function.Predicates;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
+
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 /**
  * Represents a single "condition" tag or a "conditions" tag with nested
@@ -38,6 +37,8 @@ import com.norconex.commons.lang.xml.XML;
  * @author Pascal Essiembre
  * @since 2.0.0
  */
+@ToString
+@EqualsAndHashCode
 class XMLCondition<T> implements IXMLConfigurable, Predicate<T> {
 
     enum Operator {
@@ -135,9 +136,7 @@ class XMLCondition<T> implements IXMLConfigurable, Predicate<T> {
     Predicate<T> parseConditionGroup(XML xml) {
         List<Predicate<T>> predicateList = new ArrayList<>();
         Operator operator = Operator.of(xml.getString("operator"));
-        xml.forEach("*", x -> {
-            predicateList.add(loadConditionFromXML(x));
-        });
+        xml.forEach("*", x -> predicateList.add(loadConditionFromXML(x)));
         if (predicateList.size() == 1) {
             return predicateList.get(0);
         }
@@ -149,12 +148,14 @@ class XMLCondition<T> implements IXMLConfigurable, Predicate<T> {
         if (flow.getPredicateAdapter() != null) {
             // If a predicate adapter is set, use it to parse the XML
             try {
-                //TODO throw XMLValidationException if there are any errors?
+                //MAYBE: throw XMLValidationException if there are any errors?
                 IXMLFlowPredicateAdapter<T> adapter =
-                        flow.getPredicateAdapter().newInstance();
+                        flow.getPredicateAdapter()
+                            .getDeclaredConstructor()
+                            .newInstance();
                 adapter.loadFromXML(predicateXML);
                 p = adapter;
-            } catch (InstantiationException | IllegalAccessException e) {
+            } catch (Exception e) {
                 throw new XMLFlowException("Predicate adapter "
                         + flow.getPredicateAdapter().getName() + " could not "
                         + "resolve this XML: " + predicateXML, e);
@@ -172,19 +173,5 @@ class XMLCondition<T> implements IXMLConfigurable, Predicate<T> {
             + "XMLFlow with an IXMLFlowPredicateAdapter.");
         }
         return p;
-    }
-
-    @Override
-    public boolean equals(final Object other) {
-        return EqualsBuilder.reflectionEquals(this, other);
-    }
-    @Override
-    public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this);
-    }
-    @Override
-    public String toString() {
-        return new ReflectionToStringBuilder(
-                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

@@ -1,4 +1,4 @@
-/* Copyright 2021-2022 Norconex Inc.
+/* Copyright 2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,27 +14,20 @@
  */
 package com.norconex.commons.lang.xml.flow;
 
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * <p>
- * Behaves the same as {@link XMLIf}, reversing matching logic.
- * </p>
- * @author Pascal Essiembre
- * @since 2.0.0
- * @see XMLIfNot
- */
-@ToString
-@EqualsAndHashCode
-class XMLIfNot<T> extends XMLIf<T> {
+import org.junit.jupiter.api.Test;
 
-    XMLIfNot(XMLFlow<T> flow) {
-        super(flow);
-    }
+class TagTest {
+    @Test
+    void testTag() {
+        assertThat(Tag.IF.isAny(Tag.IFNOT, Tag.CONDITION)).isFalse();
+        assertThat(Tag.IF.isAny(Tag.ELSE, Tag.IF)).isTrue();
 
-    @Override
-    protected boolean conditionPasses(T t) {
-        return !super.conditionPasses(t);
+        assertThat(Tag.isAny("if", Tag.IFNOT, Tag.CONDITION)).isFalse();
+        assertThat(Tag.isAny("if", Tag.ELSE, Tag.IF)).isTrue();
+
+        assertThat(Tag.of("then")).isSameAs(Tag.THEN);
+        assertThat(Tag.ELSE).hasToString("else");
     }
 }

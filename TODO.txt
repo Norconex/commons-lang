@@ -22,15 +22,11 @@ TODO:
 
 - XSD: Always have a type and an element extending it to improve reuse.
 
-- Replace/refactor process execution to use new process features of Java 8+.
-
 - Modify Jar copier to handle cases where snapshot are timestamped instead and
   not being considered the latest when they should.  Like:
   norconex-commons-lang-1.13.0-20170328.184247-17.jar vs 
   norconex-commons-lang-1.13.0-SNAPSHOT.jar
   https://github.com/Norconex/collector-http/issues/331#issuecomment-290196986
-
-- Is Pipeline really needed since Java 8. Could functional interfaces do it?
 
 - Deploy javadoc for each version but have latest also accessible as "current"
 
@@ -45,9 +41,6 @@ LOWER:
 
 - Have loadFromXML return validationError list.
 
-- Do download page so more than one snapshot can be shown for different
-  major versions.
-
 - DONE? Add feature and tests for when parent element is specified but has no
   value, which means blanking a list 
   (e.g. HTTP Collector: StandardSitemapResolverTest).
@@ -61,8 +54,8 @@ LOWER:
 
 - Remove all classes that are already part of Apache Commons.
 
-- Consider using Apache Commons Exec to replace SystemCommand if Java 8 features
-  are not enough.
+- Consider using Apache Commons Exec to replace SystemCommand if latest Java
+  features are not enough.
 
 - Allows to specify a velocity-tools.properties or equivalent in classpath
   root (e.g. classes/ folder) to define custom classes/tools to be used 
@@ -72,7 +65,7 @@ LOWER:
 MAYBE/IDEAS:
 --------------
 
-- Make deployment part of CID tool. 
+- Make deployment part of CICD tool. 
 
 - MAYBE modify assembly to use licenses.xml instead of THIRD-PARTY?
   (the second is easier to read for non-techies)  

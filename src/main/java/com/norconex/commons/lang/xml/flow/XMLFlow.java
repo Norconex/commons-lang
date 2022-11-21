@@ -1,4 +1,4 @@
-/* Copyright 2021 Norconex Inc.
+/* Copyright 2021-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,14 +19,12 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
-
 import com.norconex.commons.lang.function.Consumers;
 import com.norconex.commons.lang.function.FunctionUtil;
 import com.norconex.commons.lang.xml.XML;
+
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 /**
  * <p>
@@ -77,6 +75,8 @@ import com.norconex.commons.lang.xml.XML;
  * @param <T> type of the object to be submitted to the flow.
  * @since 2.0.0
  */
+@ToString
+@EqualsAndHashCode
 public final class XMLFlow<T> {
 
     public static final String DEFAULT_CONSUMERS_WRITE_TAG_NAME = "consumer";
@@ -140,11 +140,12 @@ public final class XMLFlow<T> {
         if (consumerAdapter != null) {
             // If a consumer adapter is set, use it to parse the XML
             try {
-                //TODO throw XMLValidationException if there are any errors?
-                IXMLFlowConsumerAdapter<T> c = consumerAdapter.newInstance();
+                //MAYBE: throw XMLValidationException if there are any errors?
+                IXMLFlowConsumerAdapter<T> c =
+                        consumerAdapter.getDeclaredConstructor().newInstance();
                 c.loadFromXML(consumerXML);
                 consumer = c;
-            } catch (InstantiationException | IllegalAccessException e) {
+            } catch (Exception e) {
                 throw new XMLFlowException("Consumer adapter "
                         + consumerAdapter.getName() + " could not resolve "
                         + "this XML: " + consumerXML, e);
@@ -190,19 +191,5 @@ public final class XMLFlow<T> {
         } else {
             xml.addElement(DEFAULT_CONSUMERS_WRITE_TAG_NAME, consumer);
         }
-    }
-
-    @Override
-    public boolean equals(final Object other) {
-        return EqualsBuilder.reflectionEquals(this, other);
-    }
-    @Override
-    public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this);
-    }
-    @Override
-    public String toString() {
-        return new ReflectionToStringBuilder(
-                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }
