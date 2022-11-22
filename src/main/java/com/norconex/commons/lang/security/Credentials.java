@@ -111,8 +111,27 @@ public class Credentials implements IXMLConfigurable, Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Credential user name.
+     * @param username user name
+     * @return {@code this}.
+     */
+    @SuppressWarnings("javadoc")
     private String username;
+    /**
+     * Credential password.
+     * @param password password
+     * @return {@code this}.
+     */
+    @SuppressWarnings("javadoc")
     private String password;
+    /**
+     * Credential password encryption key pointer (provided the password is
+     * encrypted).
+     * @param passwordKey password key
+     * @return {@code this}.
+     */
+    @SuppressWarnings("javadoc")
     private EncryptionKey passwordKey;
 
     public Credentials() {

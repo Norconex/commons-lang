@@ -149,7 +149,7 @@ public class JarFile implements Comparable<JarFile> {
      * @param jarFile jar file
      * @return <code>true</code> if the jar names and versions are the same.
      * @since 1.13.0
-     * @deprecated
+     * @deprecated Use {@link #isEquivalentTo(JarFile)} instead.
      */
     @Deprecated(since="3.0.0")
     public boolean isSameVersion(JarFile jarFile) { //NOSONAR
@@ -183,7 +183,7 @@ public class JarFile implements Comparable<JarFile> {
      * @return <code>true</code> if the jar names, versions and last modified
      *         dates are the same.
      * @since 1.13.0
-     * @deprecated
+     * @deprecated Use {@link #isEquivalentTo(JarFile)} instead.
      */
     @Deprecated(since="3.0.0")
     public boolean isSameVersionAndTime(JarFile jarFile) { //NOSONAR

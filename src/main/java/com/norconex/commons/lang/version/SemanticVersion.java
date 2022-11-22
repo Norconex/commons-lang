@@ -93,10 +93,40 @@ public class SemanticVersion implements Comparable<SemanticVersion> {
 
     private static final Pattern numberPattern = Pattern.compile("\\d+");
 
+    /**
+     * Major version number. The first number of a semantic version.
+     * @param major major number
+     * @return {@code this}.
+     */
+    @SuppressWarnings("javadoc")
     private final int major;
+    /**
+     * Minor version number. The second number of a semantic version.
+     * @param minor minor number
+     * @return {@code this}.
+     */
+    @SuppressWarnings("javadoc")
     private final int minor;
+    /**
+     * Patch version number. The third number of a semantic version.
+     * @param patch patch number
+     * @return {@code this}.
+     */
+    @SuppressWarnings("javadoc")
     private final int patch;
+    /**
+     * Optional pre-release indicator (M1, RC1, etc.).
+     * @param preRelease pre-release indicator
+     * @return {@code this}.
+     */
+    @SuppressWarnings("javadoc")
     private final String preRelease;
+    /**
+     * Optional metadata associated with a build.
+     * @param buildMetadata build metadata
+     * @return {@code this}.
+     */
+    @SuppressWarnings("javadoc")
     private final String buildMetadata;
 
     /**

@@ -106,8 +106,12 @@ public class SemanticVersionParser {
      * <ul>
      *   <li><code>1.2</code> is interpreted as <code>1.2.0</code></li>
      *   <li><code>3</code> is interpreted as <code>3.0.0</code></li>
-     * <ul>
+     * </ul>
+     * @param optionalMinorAndPatch <code>true</code> if minor and patch
+     *     numbers are optional
+     * @return {@code this}.
      */
+    @SuppressWarnings("javadoc")
     private final boolean optionalMinorAndPatch;
     /**
      * <p>
@@ -118,8 +122,12 @@ public class SemanticVersionParser {
      * <ul>
      *   <li><code>1.2.3RC1</code> is interpreted as <code>1.2.3-RC1</code></li>
      *   <li><code>1.2.3_M3</code> is interpreted as <code>1.2.3-M3</code></li>
-     * <ul>
+     * </ul>
+     * @param optionalPreReleasePrefix <code>true</code> if pre-release prefix
+     *     presence is optional
+     * @return {@code this}.
      */
+    @SuppressWarnings("javadoc")
     private final boolean optionalPreReleasePrefix;
     /**
      * <p>
@@ -130,8 +138,12 @@ public class SemanticVersionParser {
      * <ul>
      *   <li><code>v1.2.3</code> is interpreted as <code>1.2.3</code></li>
      *   <li><code>some-library-1.2.3</code> is interpreted as <code>1.2.3</code></li>
-     * <ul>
+     * </ul>
+     * @param ignoreLeadingCharacters <code>true</code> if ignoring leading
+     *     characters
+     * @return {@code this}.
      */
+    @SuppressWarnings("javadoc")
     private final boolean ignoreLeadingCharacters;
     /**
      * <p>
@@ -142,8 +154,11 @@ public class SemanticVersionParser {
      * </p>
      * <ul>
      *   <li><code>1.2.3.jar</code> is interpreted as <code>1.2.3</code></li>
-     * <ul>
+     * </ul>
+     * @param ignoreSuffixes suffixes to be ignored when extracting version
+     * @return {@code this}.
      */
+    @SuppressWarnings("javadoc")
     @Singular(ignoreNullCollections = true, value = "ignoreSuffix")
     private List<String> ignoreSuffixes;
 
@@ -151,7 +166,7 @@ public class SemanticVersionParser {
      * Parses a semantic version string.
      * @param version the string to parse
      * @return a semantic version instance
-     * @throws SemanticVersionParserException
+     * @throws SemanticVersionParserException if the version can't be parsed.
      */
     public SemanticVersion parse(String version) {
         String v = StringUtils.trimToNull(version);

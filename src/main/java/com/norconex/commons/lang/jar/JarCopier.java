@@ -510,7 +510,19 @@ public class JarCopier {
             }
         }
 
+        /**
+         * Action to perform (or not) on source file.
+         * @param sourceAction source action
+         * @return {@code this}.
+         */
+        @SuppressWarnings("javadoc")
         private final SourceAction sourceAction;
+        /**
+         * Action to perform (or not) on target file.
+         * @param targetAction target action
+         * @return {@code this}.
+         */
+        @SuppressWarnings("javadoc")
         private final TargetAction targetAction;
 
         public OnJarConflict() {
@@ -568,7 +580,7 @@ public class JarCopier {
     public static final int STRATEGY_PLAIN_COPY = 4; //NOSONAR
     /**
      * Interactive, let the user chose (requires execution on command prompt).
-     * @deprecated
+     * @deprecated Use {@link JarCopier#JarCopier(OnJarConflict)} instead.
      */
     @Deprecated(since = "3.0.0")
     public static final int STRATEGY_INTERACTIVE = 5; //NOSONAR
@@ -577,7 +589,7 @@ public class JarCopier {
      * Constructor.
      * @param strategy the strategy to use when encountering
      *                 duplicates/conflicts
-     * @deprecated
+     * @deprecated Use {@link JarCopier#JarCopier(OnJarConflict)} instead.
      */
     @Deprecated(since = "3.0.0")
     public JarCopier(int strategy) { //NOSONAR
@@ -606,7 +618,7 @@ public class JarCopier {
     /**
      * Gets the strategy used when encountering duplicates or version conflicts.
      * @return <code>-1</code>.
-     * @deprecated
+     * @deprecated See {@link JarCopier#JarCopier(OnJarConflict)}.
      */
     @Deprecated(since = "3.0.0")
     public int getStrategy() { //NOSONAR

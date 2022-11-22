@@ -380,20 +380,35 @@
         <groupId>org.projectlombok</groupId>
         <artifactId>lombok-maven-plugin</artifactId>
         <version>1.18.20.0</version>
-        <configuration>
-          <sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
-          <outputDirectory>${delombok.output}</outputDirectory>
-          <addOutputDirectory>false</addOutputDirectory>
-        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+          </dependency>
+        </dependencies>
         <executions>
           <execution>
-<!--
-            <phase>process-sources</phase>
-  -->
+            <id>delombok</id>
             <phase>generate-sources</phase>
             <goals>
               <goal>delombok</goal>
             </goals>
+            <configuration>
+              <addOutputDirectory>false</addOutputDirectory>
+              <sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
+            </configuration>
+          </execution>
+          <execution>
+            <id>test-delombok</id>
+            <phase>generate-test-sources</phase>
+            <goals>
+              <goal>testDelombok</goal>
+            </goals>
+            <configuration>
+              <addOutputDirectory>false</addOutputDirectory>
+              <sourceDirectory>${project.basedir}/src/test/java</sourceDirectory>
+            </configuration>
           </execution>
         </executions>
       </plugin>
@@ -553,7 +568,7 @@
           <source>${maven.compiler.source}</source>
           <sourcepath>${delombok.output}</sourcepath>
           -->
-          <sourcepath>target/generated-sources/delombok</sourcepath>
+          <sourcepath>${project.build.directory}/generated-sources/delombok</sourcepath>
           <detectLinks>false</detectLinks>
           <links>
             <!-- All above dependencies are referenced here. 
