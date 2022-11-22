@@ -9,7 +9,7 @@ Minimum java version by branches:
 
 ```
 master:      Java 11+.
-2.x branch:  Java 1.8
-1.x branch:  Java 1.7
+2.x-branch:  Java 1.8
+1.x-branch:  Java 1.7
 ```
 
