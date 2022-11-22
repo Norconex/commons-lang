@@ -32,7 +32,8 @@ class OSResourceTest {
                 .linux("linux")
                 .mac("mac");
         assertThat("win".equals(res.get())).isEqualTo(IS_OS_WINDOWS);
-        assertThat("unix".equals(res.get())).isEqualTo(IS_OS_UNIX);
+        assertThat("unix".equals(res.get())).isEqualTo(
+                IS_OS_UNIX && !IS_OS_LINUX && !IS_OS_MAC);
         assertThat("linux".equals(res.get())).isEqualTo(IS_OS_LINUX);
         assertThat("mac".equals(res.get())).isEqualTo(IS_OS_MAC);
         assertThat(new OSResource<>().get()).isNull();
