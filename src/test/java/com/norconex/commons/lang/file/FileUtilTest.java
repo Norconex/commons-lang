@@ -220,7 +220,7 @@ class FileUtilTest {
                 parentDir, DateUtil.toDate(LocalDate.of(2000, 1, 1)));
         FileUtil.visitAllDirs(parentDir, f -> dirs.add(f.getName()));
         assertThat(deletedCount).isZero();
-        assertThat(dirs).containsExactly(
+        assertThat(dirs).containsExactlyInAnyOrder(
                 "deleteEmptyDirs", "child1", "child1subA", "child1subB",
                 "child1subBsubBB", "child2", "child3");
 
@@ -229,7 +229,7 @@ class FileUtilTest {
         deletedCount = FileUtil.deleteEmptyDirs(parentDir);
         FileUtil.visitAllDirs(parentDir, f -> dirs.add(f.getName()));
         assertThat(deletedCount).isEqualTo(3);
-        assertThat(dirs).containsExactly(
+        assertThat(dirs).containsExactlyInAnyOrder(
                 "deleteEmptyDirs", "child1", "child1subA", "child3");
 
         // null and non-dir test
@@ -270,7 +270,7 @@ class FileUtilTest {
         // visitAllDirsAndFiles - no filter
         lines.clear();
         FileUtil.visitAllDirsAndFiles(parentDir, f -> lines.add(f.getName()));
-        assertThat(lines).containsExactly(
+        assertThat(lines).containsExactlyInAnyOrder(
                 "parentDir", "a-parentFile.txt",
                 "childDir1", "b-childFile1.txt",
                 "childDir2", "c-childFile2.txt",
@@ -282,7 +282,7 @@ class FileUtilTest {
                 parentDir,
                 f -> lines.add(f.getName()),
                 f -> !f.toString().endsWith("childDir1"));
-        assertThat(lines).containsExactly(
+        assertThat(lines).containsExactlyInAnyOrder(
                 "parentDir", "a-parentFile.txt",
                 "childDir2", "c-childFile2.txt",
                 "childDir3");
@@ -303,7 +303,7 @@ class FileUtilTest {
         // visitAllDirs - no filter
         lines.clear();
         FileUtil.visitAllDirs(parentDir, f -> lines.add(f.getName()));
-        assertThat(lines).containsExactly(
+        assertThat(lines).containsExactlyInAnyOrder(
                 "parentDir", "childDir1", "childDir2", "childDir3");
 
         // visitAllDirs - filter
@@ -312,13 +312,14 @@ class FileUtilTest {
                 parentDir,
                 f -> lines.add(f.getName()),
                 f -> !f.toString().endsWith("childDir1"));
-        assertThat(lines).containsExactly(
+        assertThat(lines).containsExactlyInAnyOrder(
                 "parentDir", "childDir2", "childDir3");
 
         // visitAllFiles - no filter
         lines.clear();
         FileUtil.visitAllFiles(parentDir, f -> lines.add(readFile(f)));
-        assertThat(lines).containsExactly("parent", "child1", "child2");
+        assertThat(lines).containsExactlyInAnyOrder(
+                "parent", "child1", "child2");
 
         // visitAllFiles - filter
         lines.clear();
@@ -326,7 +327,7 @@ class FileUtilTest {
                 parentDir,
                 f -> lines.add(readFile(f)),
                 f -> !f.toString().endsWith("childFile1.txt"));
-        assertThat(lines).containsExactly("parent", "child2");
+        assertThat(lines).containsExactlyInAnyOrder("parent", "child2");
     }
 
     @Test
