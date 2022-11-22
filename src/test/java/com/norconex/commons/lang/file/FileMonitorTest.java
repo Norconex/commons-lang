@@ -23,11 +23,13 @@ import java.io.UncheckedIOException;
 import java.nio.file.Path;
 
 import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import com.norconex.commons.lang.Sleeper;
 
+@Disabled
 class FileMonitorTest {
 
     @TempDir
@@ -36,7 +38,7 @@ class FileMonitorTest {
     @Test
     void testFileMonitor() throws IOException {
         StringBuilder b = new StringBuilder();
-        IFileChangeListener l = f -> {
+        IFileChangeListener listener = f -> {
             try {
                 b.append(FileUtils.readFileToString(f, UTF_8));
             } catch (IOException e) {
@@ -46,17 +48,17 @@ class FileMonitorTest {
         File file = tempDir.resolve("file.txt").toFile();
         FileUtils.touch(file);
         FileMonitor.getInstance().addFileChangeListener(
-                l,  file.getAbsolutePath(), 50L);
+                listener,  file.getAbsolutePath(), 50L);
 
         FileUtils.writeStringToFile(file, "one", UTF_8);
-        Sleeper.sleepMillis(500);
+        Sleeper.sleepMillis(100);
         FileUtils.writeStringToFile(file, "two", UTF_8);
-        Sleeper.sleepMillis(500);
+        Sleeper.sleepMillis(100);
         FileUtils.writeStringToFile(file, "three", UTF_8);
         Sleeper.sleepMillis(500);
 
         FileMonitor.getInstance().removeFileChangeListener(
-                l, file.getAbsolutePath());
+                listener, file.getAbsolutePath());
 
         assertThat(b).contains("onetwothree");
     }
