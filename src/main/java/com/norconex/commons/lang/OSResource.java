@@ -19,10 +19,19 @@ import org.apache.commons.lang3.SystemUtils;
 import lombok.extern.slf4j.Slf4j;
 
 /**
+ * <p>
  * Provides an abstraction over operating-system specific resources
  * (e.g. paths).
  * Simply a convenience class saving you from checking for the OS yourself
  * to figure out which resource to use, for major OSes.
+ * </p>
+ * <p>
+ * A different resource can be specified for all OSes but only one
+ * will actually get set, based on the currently detected OS.
+ * OSes are mutually exclusive. For instance, Unix does not include Linux
+ * or Mac operating systems.
+ * </p>
+ *
  * @author Pascal Essiembre
  * @param <T> resource type
  * @since 2.0.0
@@ -39,7 +48,9 @@ public class OSResource<T> {
         return this;
     }
     public OSResource<T> unix(T resource) {
-        if (SystemUtils.IS_OS_UNIX) {
+        if (SystemUtils.IS_OS_UNIX
+                && !SystemUtils.IS_OS_LINUX
+                && !SystemUtils.IS_OS_MAC) {
             this.resource = resource;
         }
         return this;
