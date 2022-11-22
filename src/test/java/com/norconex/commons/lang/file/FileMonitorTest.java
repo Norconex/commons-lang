@@ -49,11 +49,11 @@ class FileMonitorTest {
                 l,  file.getAbsolutePath(), 50L);
 
         FileUtils.writeStringToFile(file, "one", UTF_8);
-        Sleeper.sleepMillis(101);
+        Sleeper.sleepMillis(500);
         FileUtils.writeStringToFile(file, "two", UTF_8);
-        Sleeper.sleepMillis(101);
+        Sleeper.sleepMillis(500);
         FileUtils.writeStringToFile(file, "three", UTF_8);
-        Sleeper.sleepMillis(101);
+        Sleeper.sleepMillis(500);
 
         FileMonitor.getInstance().removeFileChangeListener(
                 l, file.getAbsolutePath());
