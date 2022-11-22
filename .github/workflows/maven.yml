@@ -15,24 +15,41 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    
+    - name: Source checkout
+      uses: actions/checkout@v3
+      
     - name: Set up JDK 11
       uses: actions/setup-java@v3
       with:
         java-version: '11'
         distribution: 'temurin'
+#        server-id: ossrh
+#        cache: maven
+#        server-username: MAVEN_USERNAME
+#        server-password: MAVEN_PASSWORD
+        
+    - name: Build with Maven
+      run: mvn -B clean package --file pom.xml
+      
+    - name: Set up Apache Maven Central
+      uses: actions/setup-java@v3
+      with: # running setup-java again overwrites the settings.xml
+        java-version: '11'
+        distribution: 'temurin'
         server-id: ossrh
-        cache: maven
         server-username: MAVEN_USERNAME
-        server-password: MAVEN_PASSWORD        
-    - name: Publish package
-      run: mvn --batch-mode clean deploy
+        server-password: MAVEN_CENTRAL_TOKEN
+        gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+        gpg-passphrase: MAVEN_GPG_PASSPHRASE
+      
+    - name: Publish to Apache Maven Central
+      run: mvn -B deploy
       env:
         MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-        MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
-#- name: Build with Maven
-#      run: mvn -B package --file pom.xml
-#
+        MAVEN_CENTRAL_TOKEN: ${{ secrets.OSSRH_TOKEN }}
+        MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+        
 #    # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
 #    - name: Update dependency graph
 #      uses: advanced-security/maven-dependency-submission-action@571e99aab1055c2e71a1e2309b9691de18d6b7d6
