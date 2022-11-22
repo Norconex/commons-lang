@@ -1,5 +1,5 @@
 Norconex Commons Lang
-=======
+=============
 
 Generic library complementing the Java APi with useful utilities.
 
