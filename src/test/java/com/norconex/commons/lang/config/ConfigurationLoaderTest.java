@@ -19,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.nio.file.Path;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.ErrorHandler;
@@ -109,7 +110,7 @@ class ConfigurationLoaderTest {
             configLoader.loadString(cfgPath("string.cfg")));
         // "varB" should not be resolved as it comes from an #include
         // directive (as opposed to parse)
-        assertThat(str).isEqualTo(
+        assertThat(StringUtils.remove(str, '\r')).isEqualTo(
                 "Config with coffee in it.\n"
                 + "It includes ${varB}, \n"
                 + "as well as milk, sugar and beans.");
