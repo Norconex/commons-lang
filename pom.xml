@@ -747,7 +747,7 @@
     </repository>
     <site>
       <id>norconex-site-deployment</id>
-      <url>${site.baseurl}/commons/lang/v2</url>
+      <url>${site.baseurl}/commons/lang/v3</url>
     </site>
   </distributionManagement>  
   <organization>
