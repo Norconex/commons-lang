@@ -81,7 +81,7 @@ public final class ContentFamily {
             String familyId = BUNDLE_MAPPINGS.getString(contentType);
             if (contentType.startsWith("DEFAULT")) {
                 String partialContentType =
-                        contentType.replaceFirst("DEFAULT\\.{0,1}", "");
+                        contentType.replaceFirst("DEFAULT\\.?", "");
                 WILD_MAPPINGS.put(partialContentType, familyId);
             }
         }
@@ -97,12 +97,7 @@ public final class ContentFamily {
     }
 
     public static ContentFamily valueOf(String familyId) {
-        ContentFamily family = FAMILIES.get(familyId);
-        if (family == null) {
-            family = new ContentFamily(familyId);
-            FAMILIES.put(familyId, family);
-        }
-        return family;
+        return FAMILIES.computeIfAbsent(familyId, ContentFamily::new);
     }
 
     public static ContentFamily forContentType(ContentType contentType) {

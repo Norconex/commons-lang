@@ -30,5 +30,5 @@ public interface IRetriable<T> {
      * @throws Exception any exception
      * @return optional return value
      */
-    T execute() throws Exception;
+    T execute() throws Exception; //NOSONAR
 }

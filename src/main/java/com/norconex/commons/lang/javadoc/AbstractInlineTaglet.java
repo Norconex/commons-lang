@@ -23,7 +23,7 @@ import javax.lang.model.element.Element;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.sun.source.doctree.DocTree;
+import com.sun.source.doctree.DocTree;  //NOSONAR this com.sun lib is public
 
 import jdk.javadoc.doclet.Doclet;
 import jdk.javadoc.doclet.DocletEnvironment;

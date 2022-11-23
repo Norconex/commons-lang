@@ -88,7 +88,7 @@ public class Event extends EventObject {
     @SuppressWarnings("rawtypes")
     public static Builder builder(
             @NonNull String name, @NonNull Object source) {
-        return new Builder<>(name, source);
+        return new Builder<>(name, source); //NOSONAR
     }
 
     @Override
@@ -157,8 +157,8 @@ public class Event extends EventObject {
          *     in a future release. Since 3.0.0, use
          *     {@link Event#builder(String, Object)} instead.
          */
-        @Deprecated
-        public Builder(String name, Object source) {
+        @Deprecated(since="3.0.0")
+        public Builder(String name, Object source) { //NOSONAR
             this.name = name;
             this.source = source;
         }

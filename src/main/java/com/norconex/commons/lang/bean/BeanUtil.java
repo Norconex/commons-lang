@@ -634,7 +634,8 @@ public final class BeanUtil {
      * @deprecated Use {@link #isReadable(Object, String)} instead
      */
     @Deprecated(since = "3.0.0")
-    public static boolean isGettable(Object bean, String propertyName) {
+    public static boolean isGettable( //NOSONAR
+            Object bean, String propertyName) {
         return isReadable(bean, propertyName);
     }
 
@@ -675,7 +676,8 @@ public final class BeanUtil {
      * @deprecated Use {@link #isWritable(Object, String)} instead.
      */
     @Deprecated(since = "3.0.0")
-    public static boolean isSettable(Object bean, String propertyName) {
+    public static boolean isSettable( //NOSONAR
+            Object bean, String propertyName) {
         return isWritable(bean, propertyName);
     }
 

@@ -246,8 +246,7 @@ public final class ContentType implements Serializable {
             String ext = BUNDLE_EXTENSIONS.getString(toBaseTypeString());
             return StringUtils.split(ext, ',');
         } catch (MissingResourceException e) {
-            LOG.debug("Could not find extension(s) for content type: "
-                    + type);
+            LOG.debug("Could not find extension(s) for content type: {}", type);
         }
         return ArrayUtils.EMPTY_STRING_ARRAY;
     }

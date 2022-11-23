@@ -211,7 +211,7 @@ public final class CollectionUtil {
     @SafeVarargs
     public static <T> List<T> asListOrNull(T... values) {
         if (values == null) {
-            return null;
+            return null; //NOSONAR
         }
         return Arrays.asList(values);
     }
@@ -276,8 +276,6 @@ public final class CollectionUtil {
         if (values == null) {
             return Collections.emptyList();
         }
-        //TODO is this method really working without accepting a type?
-        // If so, modify Properties/XML accordingly
         return values.stream().map(converter).collect(Collectors.toList());
     }
 
