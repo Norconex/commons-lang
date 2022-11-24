@@ -747,7 +747,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-site-plugin</artifactId>
-        <version>3.9.1</version>
+        <version>3.12.1</version>
         <dependencies>
           <dependency>
             <groupId>org.apache.maven.wagon</groupId>
@@ -761,8 +761,6 @@
 
   </build>
   
-  <!-- Only used to publish javadoc with "site:deploy", 
-       after they were generated -->
   <distributionManagement>
     <snapshotRepository>
       <id>ossrh</id>
@@ -772,8 +770,10 @@
       <id>ossrh</id>
       <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
     </repository>
+    <!-- Only used to publish javadoc with "site:deploy", 
+         after they were generated -->
     <site>
-      <id>norconex-site-deployment</id>
+      <id>site-deployment</id>
       <url>${site.baseurl}/commons/lang/v3</url>
     </site>
   </distributionManagement>  
