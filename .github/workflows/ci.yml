@@ -75,5 +75,8 @@ jobs:
             { "site.baseurl": "${{ secrets.SITE_BASEURL }}" }
           ]
 
+    - name: cat settings.xml
+      run: cat ~/.m2/settings.xml
+
     - name: Site deploy - Publish
       run: mvn -B site:deploy
