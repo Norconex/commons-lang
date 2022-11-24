@@ -10,8 +10,16 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 
+env:
+#  BUCKET_NAME : "<example-bucket-name>"
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  SITE_S3_URI: ${{ secrets.SITE_S3_URI }}
+
 jobs:
   build:
+    permissions:
+      id-token: write
+      contents: read
 
     runs-on: ubuntu-latest
 
@@ -54,6 +62,10 @@ jobs:
       uses: aws-actions/configure-aws-credentials@v1
       with:
         role-to-assume: ${{ secrets.AWS_ROLE }}
-        aws-region: ${{ secrets.AWS_REGION }}
-
+        aws-region: ${{ env.AWS_REGION }}
+        
+    - name:  Copy index.html to s3
+      run: |
+        aws s3 cp /home/runner/work/commons-lang/commons-lang/target/site/CHANGES.xml ${{ env.SITE_S3_URI }}
+      
 
