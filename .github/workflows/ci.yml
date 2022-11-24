@@ -72,11 +72,11 @@ jobs:
           }]
         properties: |
           [
-            { "site.baseurl": "${{ secrets.SITE_BASEURL }}" }
+            { "site.baseurl": "${{ secrets.SITE_BASE_URL }}" }
           ]
 
-    - name: cat settings.xml
-      run: cat ~/.m2/settings.xml
+#    - name: cat settings.xml
+#      run: cat ~/.m2/settings.xml
 
     - name: Site deploy - Publish
       run: mvn -B site:deploy
