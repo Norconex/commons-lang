@@ -54,9 +54,9 @@ jobs:
       uses: shimataro/ssh-key-action@v2.4.0
       with:
         key: ${{ secrets.SITE_SSH_KEY }}
-        name: id_rsa # optional
+        name: id_rsa
         known_hosts: ${{ secrets.SITE_KNOWN_HOSTS }}
-        if_key_exists: fail # replace / ignore / fail; optional (defaults to fail)
+        if_key_exists: fail
 
     - name: Site deploy - Prepare Maven settings.xml
       uses: s4u/maven-settings-action@v2.8.0
@@ -65,7 +65,7 @@ jobs:
           [{
             "id": "site-deployment",
             "username": "${{ secrets.SITE_USERNAME }}",
-            "privateKey": "~/.ssh/id_rsa",
+            "privateKey": "/home/runner/.ssh/id_rsa",
             "passphrase": "${{ secrets.SITE_PASSPHRASE }}",
             "directoryPermissions": 775,
             "filePermissions": 664
