@@ -64,8 +64,8 @@ jobs:
         role-to-assume: ${{ secrets.AWS_ROLE }}
         aws-region: ${{ env.AWS_REGION }}
         
-    - name:  Copy index.html to s3
+    - name:  Copy site resources to s3
       run: |
-        aws s3 cp /home/runner/work/commons-lang/commons-lang/target/site/CHANGES.xml ${{ env.SITE_S3_URI }}
+        aws s3 cp /home/runner/work/commons-lang/commons-lang/target/site/CHANGES.xml ${{ env.SITE_S3_URI }}commons/lang/v3/
       
 
