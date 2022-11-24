@@ -64,15 +64,15 @@ jobs:
         servers: |
           [{
             "id": "site-deployment",
-            "username": ${{ secrets.SITE_USERNAME }},
+            "username": "${{ secrets.SITE_USERNAME }}",
             "privateKey": "~/.ssh/id_rsa",
-            "passphrase": ${{ secrets.SITE_PASSPHRASE }},
+            "passphrase": "${{ secrets.SITE_PASSPHRASE }}",
             "directoryPermissions": 775,
             "filePermissions": 664
           }]
         properties: |
           [
-            { "site.baseurl": ${{ secrets.SITE_BASEURL }} }
+            { "site.baseurl": "${{ secrets.SITE_BASEURL }}" }
           ]
 
     - name: Site deploy - Publish
