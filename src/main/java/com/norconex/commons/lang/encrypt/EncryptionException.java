@@ -19,7 +19,6 @@ import lombok.experimental.StandardException;
 /**
  * Runtime exception thrown if there is a problem with the encryption
  * or decryption.
- * @author Pascal Essiembre
  * @since 1.9.0
  */
 @StandardException

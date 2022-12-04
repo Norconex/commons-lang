@@ -19,7 +19,6 @@ import lombok.experimental.StandardException;
 /**
  * Runtime exception when a {@link DataUnitParser} could not parse a string
  * value.
- * @author Pascal Essiembre
  * @since 2.0.0
  */
 @StandardException

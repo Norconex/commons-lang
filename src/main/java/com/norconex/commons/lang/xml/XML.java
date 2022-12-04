@@ -97,7 +97,7 @@ import org.xml.sax.helpers.XMLFilterImpl;
 import com.norconex.commons.lang.ClassFinder;
 import com.norconex.commons.lang.bean.BeanUtil;
 import com.norconex.commons.lang.collection.CollectionUtil;
-import com.norconex.commons.lang.convert.Converter;
+import com.norconex.commons.lang.convert.GenericConverter;
 import com.norconex.commons.lang.convert.ConverterException;
 import com.norconex.commons.lang.time.DurationParser;
 import com.norconex.commons.lang.time.DurationParserException;
@@ -127,7 +127,7 @@ import lombok.extern.slf4j.Slf4j;
  * <p>
  * XML DOM wrapper facilitating node querying and automatically creating,
  * validating, and populating classes from/to XML, with support
- * for {@link IXMLConfigurable} and {@link JAXB}.
+ * for {@link XMLConfigurable} and {@link JAXB}.
  * </p>
  * <h3>XML syntax and white spaces</h3>
  * <p>
@@ -148,7 +148,6 @@ import lombok.extern.slf4j.Slf4j;
  * <p>
  * Checked exceptions are wrapped into an {@link XMLException}.
  * </p>
- * @author Pascal Essiembre
  * @since 2.0.0
  */
 @Slf4j
@@ -245,14 +244,14 @@ public class XML implements Iterable<XMLCursor> {
             if (sourceObject instanceof Class) {
                 setAttribute(
                         "class", ((Class<?>) sourceObject).getCanonicalName());
-            } else if (Converter.defaultInstance().isConvertible(
+            } else if (GenericConverter.defaultInstance().isConvertible(
                     sourceObject.getClass())) {
-                setTextContent(Converter.convert(sourceObject));
+                setTextContent(GenericConverter.convert(sourceObject));
             } else {
                 setAttribute("class",
                         sourceObject.getClass().getCanonicalName());
                 if (isXMLConfigurable(sourceObject)) {
-                    ((IXMLConfigurable) sourceObject).saveToXML(this);
+                    ((XMLConfigurable) sourceObject).saveToXML(this);
                 } else if (isJAXB(sourceObject)) {
                     jaxbMarshall(sourceObject);
                 }
@@ -392,7 +391,7 @@ public class XML implements Iterable<XMLCursor> {
      * Populates supplied object with the XML matching the given expression.
      * If there is no match, the object does not get populated.
      * Takes into consideration whether the target object implements
-     * {@link IXMLConfigurable} or JAXB.
+     * {@link XMLConfigurable} or JAXB.
      * </p>
      * <p>
      * Performs XML validation if the target object has an associated schema.
@@ -407,7 +406,7 @@ public class XML implements Iterable<XMLCursor> {
     /**
      * <p>
      * Populates supplied object with this XML. Takes into consideration
-     * whether the target object implements {@link IXMLConfigurable} or
+     * whether the target object implements {@link XMLConfigurable} or
      * JAXB.
      * </p>
      * <p>
@@ -426,7 +425,7 @@ public class XML implements Iterable<XMLCursor> {
         try {
             validate(targetObject.getClass());
             if (isXMLConfigurable(targetObject)) {
-                ((IXMLConfigurable) targetObject).loadFromXML(this);
+                ((XMLConfigurable) targetObject).loadFromXML(this);
             } else if (isJAXB(targetObject)) {
                 jaxbUnmarshall(targetObject);
             }
@@ -445,9 +444,9 @@ public class XML implements Iterable<XMLCursor> {
      * <p>
      * Creates a new instance of the class represented by the "class" attribute
      * on this XML root node.  The class must have an empty constructor.
-     * If the class is an instance of {@link IXMLConfigurable}, the object
+     * If the class is an instance of {@link XMLConfigurable}, the object
      * created will be automatically populated by invoking the
-     * {@link IXMLConfigurable#loadFromXML(XML)} method,
+     * {@link XMLConfigurable#loadFromXML(XML)} method,
      * passing it the node XML.
      * If the class is annotated with an
      * {@link XmlRootElement}, it will use JAXB to unmarshall it to an object.
@@ -467,9 +466,9 @@ public class XML implements Iterable<XMLCursor> {
      * <p>
      * Creates a new instance of the class represented by the "class" attribute
      * on the given node.  The class must have an empty constructor.
-     * If the class is an instance of {@link IXMLConfigurable}, the object
+     * If the class is an instance of {@link XMLConfigurable}, the object
      * created will be automatically populated by invoking the
-     * {@link IXMLConfigurable#loadFromXML(XML)} method,
+     * {@link XMLConfigurable#loadFromXML(XML)} method,
      * passing it the node XML.
      * If the class is annotated with an
      * {@link XmlRootElement}, it will use JAXB to unmarshall it to an object.
@@ -519,9 +518,9 @@ public class XML implements Iterable<XMLCursor> {
      * <p>
      * Creates a new instance of the class represented by the "class" attribute
      * on this XML root node.  The class must have an empty constructor.
-     * If the class is an instance of {@link IXMLConfigurable}, the object
+     * If the class is an instance of {@link XMLConfigurable}, the object
      * created will be automatically populated by invoking the
-     * {@link IXMLConfigurable#loadFromXML(XML)} method,
+     * {@link XMLConfigurable#loadFromXML(XML)} method,
      * passing it the node XML.
      * If the class is annotated with an
      * {@link XmlRootElement}, it will use JAXB to unmarshall it to an object.
@@ -549,9 +548,9 @@ public class XML implements Iterable<XMLCursor> {
      * <p>
      * Creates a new instance of the class represented by the "class" attribute
      * on the given node.  The class must have an empty constructor.
-     * If the class is an instance of {@link IXMLConfigurable}, the object
+     * If the class is an instance of {@link XMLConfigurable}, the object
      * created will be automatically populated by invoking the
-     * {@link IXMLConfigurable#loadFromXML(XML)} method,
+     * {@link XMLConfigurable#loadFromXML(XML)} method,
      * passing it the node XML.
      * If the class is annotated with an
      * {@link XmlRootElement}, it will use JAXB to unmarshall it to an object.
@@ -641,9 +640,9 @@ public class XML implements Iterable<XMLCursor> {
      * <p>Creates a new instance of the class represented by the "class"
      * attribute on the node matching the expression.
      * The class must have an empty constructor.
-     * If the class is an instance of {@link IXMLConfigurable}, the object
+     * If the class is an instance of {@link XMLConfigurable}, the object
      * created will be automatically populated by invoking the
-     * {@link IXMLConfigurable#loadFromXML(XML)} method,
+     * {@link XMLConfigurable#loadFromXML(XML)} method,
      * passing it the node XML.</p>
      *
      * <p>This method should throw a
@@ -661,9 +660,9 @@ public class XML implements Iterable<XMLCursor> {
      * <p>Creates a new instance of the class represented by the "class"
      * attribute on the node matching the expression.
      * The class must have an empty constructor.
-     * If the class is an instance of {@link IXMLConfigurable}, the object
+     * If the class is an instance of {@link XMLConfigurable}, the object
      * created will be automatically populated by invoking the
-     * {@link IXMLConfigurable#loadFromXML(XML)} method,
+     * {@link XMLConfigurable#loadFromXML(XML)} method,
      * passing it the node XML.</p>
      *
      * <p>This method should not throw exception upon errors, but will return
@@ -700,9 +699,9 @@ public class XML implements Iterable<XMLCursor> {
      * <p>Creates an instance list from classes represented by the "class"
      * attribute on the nodes matching the expression.
      * The classes must have an empty constructor.
-     * If a class is an instance of {@link IXMLConfigurable}, the object
+     * If a class is an instance of {@link XMLConfigurable}, the object
      * created will be automatically populated by invoking the
-     * {@link IXMLConfigurable#loadFromXML(XML)} method,
+     * {@link XMLConfigurable#loadFromXML(XML)} method,
      * passing it the node XML.</p>
      *
      * <p>This method should not throw exception upon errors, but will return
@@ -748,9 +747,9 @@ public class XML implements Iterable<XMLCursor> {
      * <p>Creates an instance list from classes represented by the "class"
      * attribute on the nodes matching the expression.
      * The classes must have an empty constructor.
-     * If a class is an instance of {@link IXMLConfigurable}, the object
+     * If a class is an instance of {@link XMLConfigurable}, the object
      * created will be automatically populated by invoking the
-     * {@link IXMLConfigurable#loadFromXML(XML)} method,
+     * {@link XMLConfigurable#loadFromXML(XML)} method,
      * passing it the node XML.</p>
      *
      * <p>This method should throw a
@@ -770,9 +769,9 @@ public class XML implements Iterable<XMLCursor> {
      * <p>Creates a new instance of the class represented by the "class"
      * attribute on the node matching the expression.
      * The class must have an empty constructor.
-     * If the class is an instance of {@link IXMLConfigurable}, the object
+     * If the class is an instance of {@link XMLConfigurable}, the object
      * created will be automatically populated by invoking the
-     * {@link IXMLConfigurable#loadFromXML(XML)} method,
+     * {@link XMLConfigurable#loadFromXML(XML)} method,
      * passing it the node XML.</p>
      *
      * <p>This method should throw a
@@ -801,9 +800,9 @@ public class XML implements Iterable<XMLCursor> {
      * <p>Creates a new instance of the class represented by the "class"
      * attribute on the node matching the expression.
      * The class must have an empty constructor.
-     * If the class is an instance of {@link IXMLConfigurable}, the object
+     * If the class is an instance of {@link XMLConfigurable}, the object
      * created will be automatically populated by invoking the
-     * {@link IXMLConfigurable#loadFromXML(XML)} method,
+     * {@link XMLConfigurable#loadFromXML(XML)} method,
      * passing it the node XML.</p>
      *
      * <p>This method should not throw exception upon errors, but will return
@@ -852,9 +851,9 @@ public class XML implements Iterable<XMLCursor> {
      * <p>Creates an instance list from classes represented by the "class"
      * attribute on the nodes matching the expression.
      * The classes must have an empty constructor.
-     * If a class is an instance of {@link IXMLConfigurable}, the object
+     * If a class is an instance of {@link XMLConfigurable}, the object
      * created will be automatically populated by invoking the
-     * {@link IXMLConfigurable#loadFromXML(XML)} method,
+     * {@link XMLConfigurable#loadFromXML(XML)} method,
      * passing it the node XML.</p>
      *
      * <p>This method should not throw exception upon errors, but will return
@@ -912,9 +911,9 @@ public class XML implements Iterable<XMLCursor> {
      * <p>Creates an instance list from classes represented by the "class"
      * attribute on the nodes matching the expression.
      * The classes must have an empty constructor.
-     * If a class is an instance of {@link IXMLConfigurable}, the object
+     * If a class is an instance of {@link XMLConfigurable}, the object
      * created will be automatically populated by invoking the
-     * {@link IXMLConfigurable#loadFromXML(XML)} method,
+     * {@link XMLConfigurable#loadFromXML(XML)} method,
      * passing it the node XML.</p>
      *
      * <p>This method should throw a
@@ -1934,7 +1933,7 @@ public class XML implements Iterable<XMLCursor> {
     }
 
     /**
-     * Convenience class for testing that a {@link IXMLConfigurable} instance
+     * Convenience class for testing that a {@link XMLConfigurable} instance
      * can be written, and read into an new instance that is equal as per
      * {@link #equals(Object)}.
      * @param xmlConfigurable the instance to test if it writes/read properly
@@ -1942,7 +1941,7 @@ public class XML implements Iterable<XMLCursor> {
      * @throws XMLException Cannot save/load configuration
      */
     public static void assertWriteRead(
-            IXMLConfigurable xmlConfigurable, String elementName) {
+            XMLConfigurable xmlConfigurable, String elementName) {
 
         LOG.debug("Writing/Reading this: {}", xmlConfigurable);
 
@@ -1959,7 +1958,7 @@ public class XML implements Iterable<XMLCursor> {
 
         // Read
         XML xml = XML.of(xmlStr).create();
-        IXMLConfigurable readConfigurable = xml.toObject();
+        XMLConfigurable readConfigurable = xml.toObject();
         if (!xmlConfigurable.equals(readConfigurable)) {
             if (LOG.isErrorEnabled()) {
                 LOG.error(" SAVED: {}", xmlConfigurable);
@@ -2024,7 +2023,7 @@ public class XML implements Iterable<XMLCursor> {
         if (NULL_XML_VALUE.equals(value)) {
             return defaultValue;
         }
-        return Converter.convert(value, type, defaultValue);
+        return GenericConverter.convert(value, type, defaultValue);
     }
 
     /**
@@ -2228,7 +2227,7 @@ public class XML implements Iterable<XMLCursor> {
      * </pre>
      * <p>
      * Map keys are assumed to be strings or single objects with supported
-     * conversion to string (see {@link Converter}).
+     * conversion to string (see {@link GenericConverter}).
      * Map values can be single values or multi-values.  Arrays or collections
      * will have their values be treated as individual elements with the same
      * key name. In any case, single or multiple values are otherwise converted
@@ -2247,7 +2246,7 @@ public class XML implements Iterable<XMLCursor> {
         }
         List<XML> xmlList = new ArrayList<>();
         for (Entry<?, ?> en: map.entrySet()) {
-            String name = Converter.convert(en.getKey());
+            String name = GenericConverter.convert(en.getKey());
             CollectionUtil.toStringList(
                     CollectionUtil.adaptedList(en.getValue())).forEach(
                             v -> xmlList.add(addXML(tagName).setAttribute(
@@ -2271,7 +2270,7 @@ public class XML implements Iterable<XMLCursor> {
      * </pre>
      * <p>
      * Map keys are assumed to be strings or single objects with supported
-     * conversion to string (see {@link Converter}).
+     * conversion to string (see {@link GenericConverter}).
      * Map values can be single values or multi-values.  Arrays or collections
      * will have their values be treated as individual elements with the same
      * key name. In any case, single or multiple values are otherwise converted
@@ -2364,9 +2363,9 @@ public class XML implements Iterable<XMLCursor> {
         Element el = (Element) node;
         if (value == null) {
             el.removeAttribute(name);
-        } else if (Converter.defaultInstance().isConvertible(
+        } else if (GenericConverter.defaultInstance().isConvertible(
                 value.getClass())) {
-            el.setAttribute(name, Converter.convert(value));
+            el.setAttribute(name, GenericConverter.convert(value));
         } else {
             el.setAttribute(name, value.toString());
         }
@@ -2786,7 +2785,7 @@ public class XML implements Iterable<XMLCursor> {
     }
 
     public static boolean isXMLConfigurable(Object obj) {
-        return obj instanceof IXMLConfigurable;
+        return obj instanceof XMLConfigurable;
     }
     public static boolean isJAXB(Object obj) {
         return obj != null && obj.getClass().isAnnotationPresent(

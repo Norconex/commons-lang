@@ -23,7 +23,6 @@ import java.util.Map;
  * (must be synchronized externally).
  * @param <K> the type of keys maintained by this map
  * @param <V> the type of mapped values
- * @author Pascal Essiembre
  * @see Collections#synchronizedMap(Map)
  * @since 2.0.0
  */

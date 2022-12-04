@@ -50,7 +50,6 @@ import com.norconex.commons.lang.text.StringUtil;
  * tag content only).
  * It is intended for formatting simple XML for human consumption. It supports
  * XML with no root or the formatting of attributes only.
- * @author Pascal Essiembre
  * @since 2.0.0
  */
 public class XMLFormatter {

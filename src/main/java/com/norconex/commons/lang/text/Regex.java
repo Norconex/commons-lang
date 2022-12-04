@@ -27,7 +27,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import com.norconex.commons.lang.xml.IXMLConfigurable;
+import com.norconex.commons.lang.xml.XMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 
 import lombok.EqualsAndHashCode;
@@ -82,13 +82,12 @@ import lombok.ToString;
  * regardless if there are new line characters in between.
  * </p>
  *
- * @author Pascal Essiembre
  * @since 2.0.0
  * @see Pattern
  */
 @ToString
 @EqualsAndHashCode
-public class Regex implements IXMLConfigurable {
+public class Regex implements XMLConfigurable {
 
     /**
      * Flag that ignores diacritical marks when matching or replacing

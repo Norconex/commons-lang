@@ -19,7 +19,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
- * Converter supporting both {@link File} and {@link Path}.
+ * GenericConverter supporting both {@link File} and {@link Path}.
  * @since 2.0.0
  */
 public class FileConverter extends AbstractConverter {

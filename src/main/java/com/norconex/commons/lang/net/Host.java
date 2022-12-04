@@ -29,7 +29,6 @@ import lombok.EqualsAndHashCode;
  * <name>(host name)</name>
  * <port>(host port)</port>
  * }
- * @author Pascal Essiembre
  * @since 2.0.0
  */
 @EqualsAndHashCode

@@ -1,4 +1,4 @@
-/* Copyright 2021 Norconex Inc.
+/* Copyright 2021-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,14 @@ package com.norconex.commons.lang.xml.flow;
 
 import java.util.function.Predicate;
 
-import com.norconex.commons.lang.xml.IXMLConfigurable;
-
 /**
  * Adapts flow &lt;condition&gt; elements so they can be treated as
  * {@link Predicate}.
- * @author Pascal Essiembre
  * @param <T> type of the object to be submitted to the flow.
  * @since 2.0.0
+ * @deprecated Use {@link XMLFlowPredicateAdapter} instead.
  */
-public interface IXMLFlowPredicateAdapter<T>
-        extends Predicate<T>, IXMLConfigurable {
+@Deprecated(since="3.0.0")
+public interface IXMLFlowPredicateAdapter<T>  //NOSONAR
+        extends XMLFlowPredicateAdapter<T> {
 }

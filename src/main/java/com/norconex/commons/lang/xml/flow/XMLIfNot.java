@@ -21,7 +21,6 @@ import lombok.ToString;
  * <p>
  * Behaves the same as {@link XMLIf}, reversing matching logic.
  * </p>
- * @author Pascal Essiembre
  * @since 2.0.0
  * @see XMLIfNot
  */

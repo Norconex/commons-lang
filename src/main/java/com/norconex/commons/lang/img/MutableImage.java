@@ -47,7 +47,6 @@ import lombok.ToString;
 
 /**
  * Holds an image in memory and offers simple ways to do common operations.
- * @author Pascal Essiembre
  * @since 2.0.0
  */
 @EqualsAndHashCode

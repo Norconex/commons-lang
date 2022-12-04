@@ -49,7 +49,6 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Simple Jar file representation holding name and version information.
- * @author Pascal Essiembre
  * @since 1.10.0
  */
 @Slf4j

@@ -43,7 +43,7 @@ import org.junit.jupiter.api.Test;
 import com.ibm.icu.math.BigDecimal;
 import com.norconex.commons.lang.bean.MiscAccessorsBean.Fields;
 import com.norconex.commons.lang.event.Event;
-import com.norconex.commons.lang.event.IEventListener;
+import com.norconex.commons.lang.event.EventListener;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -314,8 +314,8 @@ class BeanUtilTest {
                 bean, "primitiveInt")).isEqualTo(123);
         assertThat((Integer) BeanUtil.getValue(
                 bean, "objectInteger")).isEqualTo(Integer.valueOf(456));
-        assertThat((Event) BeanUtil.getValue(bean, "event"))
-                .isEqualTo(Event.builder("testEvent", "test").build());
+        assertThat((Event) BeanUtil.getValue(bean, "event")).isEqualTo(
+                Event.builder().name("testEvent").source("test").build());
 
         assertThat((List<?>) BeanUtil.getValue(null, "doubles")).isNull();
         assertThat((String) BeanUtil.getValue(
@@ -368,13 +368,15 @@ class BeanUtilTest {
         BeanUtil.setValue(bean, "string", "carrot");
         BeanUtil.setValue(bean, "primitiveInt", 777);
         BeanUtil.setValue(bean, "objectInteger", Integer.valueOf(888));
-        BeanUtil.setValue(bean, "event", Event.builder("blah", "x").build());
+        BeanUtil.setValue(bean, "event",
+                Event.builder().name("blah").source("x").build());
 
         Assertions.assertEquals("carrot", bean.getString());
         Assertions.assertEquals(777, bean.getPrimitiveInt());
         Assertions.assertEquals(Integer.valueOf(888), bean.getObjectInteger());
         Assertions.assertEquals(
-                Event.builder("blah", "x").build(), bean.getEvent());
+                Event.builder().name("blah").source("x").build(),
+                bean.getEvent());
 
         // Nested values
 
@@ -428,8 +430,9 @@ class BeanUtilTest {
         Assertions.assertEquals("potato", map.get("string"));
         Assertions.assertEquals(123, map.get("primitiveInt"));
         Assertions.assertEquals(Integer.valueOf(456), map.get("objectInteger"));
-        Assertions.assertEquals(Event.builder(
-                "testEvent", "test").build(), map.get("event"));
+        Assertions.assertEquals(
+                Event.builder().name("testEvent").source("test").build(),
+                map.get("event"));
         Assertions.assertEquals(Arrays.asList(0.5d, 1.0d), map.get("doubles"));
         Assertions.assertEquals(5, map.size());
 
@@ -451,7 +454,7 @@ class BeanUtilTest {
 
     @Test
     void testFind() {
-        assertThat(BeanUtil.find(new Root(), IEventListener.class)).hasSize(3);
+        assertThat(BeanUtil.find(new Root(), EventListener.class)).hasSize(3);
     }
 
     @Test
@@ -485,7 +488,7 @@ class BeanUtilTest {
         BeanUtil.visitAll(
                 new Root(),
                 o -> names.add(o.getClass().getSimpleName()),
-                IEventListener.class);
+                EventListener.class);
         assertThat(names).containsExactly("Sub1Yes", "Sub3Yes", "Sub3_1Yes");
     }
 
@@ -510,7 +513,7 @@ class BeanUtilTest {
                     names.add(o.getClass().getSimpleName());
                     return !"Sub3Yes".equals(o.getClass().getSimpleName());
                 },
-                IEventListener.class);
+                EventListener.class);
         assertThat(names).containsExactly("Sub1Yes", "Sub3Yes");
     }
 
@@ -530,8 +533,8 @@ class BeanUtilTest {
         BeanUtil.visitAllProperties(
                 new Root(),
                 (o, pd) -> names.add(pd.getName()),
-                IEventListener.class);
-        // Only Sub3Yes qualifies (IEventListener) AND has any properties to
+                EventListener.class);
+        // Only Sub3Yes qualifies (EventListener) AND has any properties to
         // return, so returned property can only be from that class.
         assertThat(names).containsExactly("sub1Yes", "sub3_1Yes");
     }
@@ -562,7 +565,7 @@ class BeanUtilTest {
 
     @Test
     void testVisitPropertiesObjectBiPredicateClass() {
-        // Only Sub3Yes qualifies (IEventListener) AND has any properties to
+        // Only Sub3Yes qualifies (EventListener) AND has any properties to
         // return, so returned property can only be from that class.
         List<String> names = new ArrayList<>();
         BeanUtil.visitProperties(
@@ -572,7 +575,7 @@ class BeanUtilTest {
                     // "sub3yes" should never be encountered, so it continues..
                     return !"sub3yes".equals(pd.getName());
                 },
-                IEventListener.class);
+                EventListener.class);
         assertThat(names).containsExactly("sub1Yes", "sub3_1Yes");
 
 
@@ -584,7 +587,7 @@ class BeanUtilTest {
                     // "sub1Yes" is encountered, so we stop there
                     return !"sub1Yes".equals(pd.getName());
                 },
-                IEventListener.class);
+                EventListener.class);
         assertThat(names).containsExactly("sub1Yes");
     }
 
@@ -616,7 +619,7 @@ class BeanUtilTest {
         }
     }
 
-    public static class Sub1Yes implements IEventListener<Event>, Serializable {
+    public static class Sub1Yes implements EventListener<Event>, Serializable {
         private static final long serialVersionUID = 1L;
         @Override
         public void accept(Event t) {
@@ -625,7 +628,7 @@ class BeanUtilTest {
     public static class Sub2No implements Serializable {
         private static final long serialVersionUID = 1L;
     }
-    public static class Sub3Yes implements IEventListener<Event>, Serializable {
+    public static class Sub3Yes implements EventListener<Event>, Serializable {
         private static final long serialVersionUID = 1L;
         private Sub1Yes sub1Yes;
         private Sub3_1Yes sub3_1Yes = new Sub3_1Yes();
@@ -651,7 +654,7 @@ class BeanUtilTest {
     }
 
     public static class Sub3_1Yes
-            implements IEventListener<Event>, Serializable {
+            implements EventListener<Event>, Serializable {
         private static final long serialVersionUID = 1L;
         @Override
         public void accept(Event t) {
@@ -664,7 +667,8 @@ class BeanUtilTest {
         private String string = "potato";
         private int primitiveInt = 123;
         private Integer objectInteger = 456;
-        private Event event = Event.builder("testEvent", "test").build();
+        private Event event =
+                Event.builder().name("testEvent").source("test").build();
         private List<Double> doubles = Arrays.asList(0.5d, 1.0d);
     }
 

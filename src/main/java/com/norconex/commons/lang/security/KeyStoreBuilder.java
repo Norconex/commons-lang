@@ -36,7 +36,6 @@ import com.norconex.commons.lang.encrypt.EncryptionUtil;
 
 /**
  * Builder for creating a KeyStore.
- * @author Pascal Essiembre
  * @since 2.0.0
  */
 public final class KeyStoreBuilder {

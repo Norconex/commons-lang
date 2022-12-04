@@ -29,11 +29,11 @@ import lombok.ToString;
  * public class MyMap extends Map {
  *     private final MapChangeSupport mcs = new MapChangeSupport(this);
  *
- *     public void addMapChangeListener(IMapChangeListener listener) {
+ *     public void addMapChangeListener(MapChangeListener listener) {
  *         this.mcs.addMapChangeListener(listener);
  *     }
  *
- *     public void removeMapChangeListener(IMapChangeListener listener) {
+ *     public void removeMapChangeListener(MapChangeListener listener) {
  *         this.mcs.removeMapChangeListener(listener);
  *     }
  *
@@ -47,7 +47,6 @@ import lombok.ToString;
  * }
  * </pre>
  *
- * @author Pascal Essiembre
  * @since 1.4
  *
  * @param <K> the type of keys maintained by the map we are observing
@@ -57,7 +56,7 @@ import lombok.ToString;
 @EqualsAndHashCode
 public class MapChangeSupport<K,V> {
 
-    private final List<IMapChangeListener<K,V>> listeners = new ArrayList<>();
+    private final List<MapChangeListener<K,V>> listeners = new ArrayList<>();
     private final Map<K, V> source;
 
     public MapChangeSupport(Map<K, V> source) {
@@ -65,26 +64,26 @@ public class MapChangeSupport<K,V> {
     }
 
     /**
-     * Add a {@link IMapChangeListener} to the listener list.
+     * Add a {@link MapChangeListener} to the listener list.
      * If <code>listener</code> is null, no exception is thrown and no action
      * is taken.
      *
-     * @param listener  The {@link IMapChangeListener}    to be added
+     * @param listener  The {@link MapChangeListener}    to be added
      */
-    public void addMapChangeListener(IMapChangeListener<K, V> listener) {
+    public void addMapChangeListener(MapChangeListener<K, V> listener) {
         if (listener == null) {
             return;
         }
         this.listeners.add(listener);
     }
     /**
-     * Removes a {@link IMapChangeListener} from the listener list.
+     * Removes a {@link MapChangeListener} from the listener list.
      * If <code>listener</code> is null, no exception is thrown and no action
      * is taken.
      *
-     * @param listener  The {@link IMapChangeListener}    to be removed
+     * @param listener  The {@link MapChangeListener}    to be removed
      */
-    public void removeMapChangeListener(IMapChangeListener<K,V> listener) {
+    public void removeMapChangeListener(MapChangeListener<K,V> listener) {
         if (listener == null) {
             return;
         }
@@ -96,7 +95,7 @@ public class MapChangeSupport<K,V> {
      * @return listeners
      * @since 3.0.0
      */
-    public List<IMapChangeListener<K, V>> getMapChangeListeners() {
+    public List<MapChangeListener<K, V>> getMapChangeListeners() {
         return Collections.unmodifiableList(listeners);
     }
 
@@ -120,7 +119,7 @@ public class MapChangeSupport<K,V> {
         }
         MapChangeEvent<K, V> event =
                 new MapChangeEvent<>(source, key, oldValue, newValue);
-        for (IMapChangeListener<K, V> l : listeners) {
+        for (MapChangeListener<K, V> l : listeners) {
             l.mapChanged(event);
         }
     }

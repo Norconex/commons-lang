@@ -51,7 +51,6 @@ import org.slf4j.LoggerFactory;
  *     <td>ContentFamily-custom-name[_locale].properties</td>
  *   </tr>
  * </table>
- * @author Pascal Essiembre
  * @since 1.4.0
  */
 public final class ContentFamily {

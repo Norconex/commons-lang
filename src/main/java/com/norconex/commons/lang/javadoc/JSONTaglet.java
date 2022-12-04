@@ -37,7 +37,6 @@ import lombok.AllArgsConstructor;
  * </p>
  *
  *
- * @author Pascal Essiembre
  * @since 2.0.0
  */
 public class JSONTaglet extends AbstractInlineTaglet {

@@ -20,13 +20,12 @@ import java.io.OutputStream;
 
 import org.apache.commons.io.IOUtils;
 
-import com.norconex.commons.lang.io.IInputStreamListener;
+import com.norconex.commons.lang.io.InputStreamListener;
 import com.norconex.commons.lang.io.InputStreamConsumer;
 
 /**
  * Utility methods related to process execution. Checked exceptions
  * are wrapped in a runtime {@link ExecException}.
- * @author Pascal Essiembre
  * @since 1.13.0 (previously part of now deprecated JEF API)
  */
 public final class ExecUtil {
@@ -52,7 +51,7 @@ public final class ExecUtil {
      */
     public static int watchProcess(Process process) {
         return watchProcess(process,
-                new IInputStreamListener[] {}, new IInputStreamListener[] {});
+                new InputStreamListener[] {}, new InputStreamListener[] {});
     }
     /**
      * Watches a running process.  This method will wait until the process
@@ -68,10 +67,10 @@ public final class ExecUtil {
      */
     public static int watchProcess(
             Process process,
-            IInputStreamListener listener) {
+            InputStreamListener listener) {
         return watchProcess(process,
-                new IInputStreamListener[] {listener},
-                new IInputStreamListener[] {listener});
+                new InputStreamListener[] {listener},
+                new InputStreamListener[] {listener});
     }
     /**
      * Watches a running process.  This method will wait until the process
@@ -87,7 +86,7 @@ public final class ExecUtil {
      */
     public static int watchProcess(
             Process process,
-            IInputStreamListener[] listeners) {
+            InputStreamListener[] listeners) {
         return watchProcess(process, listeners, listeners);
     }
 
@@ -106,11 +105,11 @@ public final class ExecUtil {
      */
     public static int watchProcess(
             Process process,
-            IInputStreamListener outputListener,
-            IInputStreamListener errorListener) {
+            InputStreamListener outputListener,
+            InputStreamListener errorListener) {
         return watchProcess(process,
-                new IInputStreamListener[] {outputListener},
-                new IInputStreamListener[] {errorListener});
+                new InputStreamListener[] {outputListener},
+                new InputStreamListener[] {errorListener});
     }
     /**
      * Watches a running process.  This method will wait until the process
@@ -127,8 +126,8 @@ public final class ExecUtil {
      */
     public static int watchProcess(
             Process process,
-            IInputStreamListener[] outputListeners,
-            IInputStreamListener[] errorListeners) {
+            InputStreamListener[] outputListeners,
+            InputStreamListener[] errorListeners) {
         return watchProcess(process, null, outputListeners, errorListeners);
     }
     /**
@@ -149,8 +148,8 @@ public final class ExecUtil {
     public static int watchProcess(
             Process process,
             InputStream input,
-            IInputStreamListener[] outputListeners,
-            IInputStreamListener[] errorListeners) {
+            InputStreamListener[] outputListeners,
+            InputStreamListener[] errorListeners) {
         watchProcessAsync(process, input, outputListeners, errorListeners);
         try {
             return process.waitFor();
@@ -164,7 +163,7 @@ public final class ExecUtil {
     /**
      * Watches process output.  This method is the same as
      * {@link #watchProcess(
-     *            Process, IInputStreamListener, IInputStreamListener)}
+     *            Process, InputStreamListener, InputStreamListener)}
      * with the exception of not waiting for the process to complete before
      * returning.
      * @param process the process on which to watch outputs
@@ -173,18 +172,18 @@ public final class ExecUtil {
      */
     public static void watchProcessAsync(
             Process process,
-            IInputStreamListener outputListener,
-            IInputStreamListener errorListener) {
+            InputStreamListener outputListener,
+            InputStreamListener errorListener) {
         watchProcessAsync(process,
-                new IInputStreamListener[] {outputListener},
-                new IInputStreamListener[] {errorListener});
+                new InputStreamListener[] {outputListener},
+                new InputStreamListener[] {errorListener});
     }
 
 
     /**
      * Watches process output.  This method is the same as
      * {@link #watchProcess(
-     *            Process, IInputStreamListener[], IInputStreamListener[])}
+     *            Process, InputStreamListener[], InputStreamListener[])}
      * with the exception of not waiting for the process to complete before
      * returning.
      * @param process the process on which to watch outputs
@@ -193,8 +192,8 @@ public final class ExecUtil {
      */
     public static void watchProcessAsync(
             Process process,
-            IInputStreamListener[] outputListeners,
-            IInputStreamListener[] errorListeners) {
+            InputStreamListener[] outputListeners,
+            InputStreamListener[] errorListeners) {
         watchProcessAsync(process, null, outputListeners, errorListeners);
     }
 
@@ -202,7 +201,7 @@ public final class ExecUtil {
      * Watches process output while sending data to its STDIN.
      * This method is the same as
      * {@link #watchProcess(Process, InputStream,
-     *            IInputStreamListener[], IInputStreamListener[])}
+     *            InputStreamListener[], InputStreamListener[])}
      * with the exception of not waiting for the process to complete before
      * returning.
      * @param process the process on which to watch outputs
@@ -213,8 +212,8 @@ public final class ExecUtil {
     public static void watchProcessAsync(
             final Process process,
             final InputStream input,
-            final IInputStreamListener[] outputListeners,
-            final IInputStreamListener[] errorListeners) {
+            final InputStreamListener[] outputListeners,
+            final InputStreamListener[] errorListeners) {
         // listen for output
         InputStreamConsumer output = new InputStreamConsumer(
                 process.getInputStream(), STDOUT, outputListeners);

@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertySetter;
-import com.norconex.commons.lang.xml.IXMLConfigurable;
+import com.norconex.commons.lang.xml.XMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 
 /**
@@ -82,11 +82,10 @@ import com.norconex.commons.lang.xml.XML;
  * numeric characters will make up the value.
  * </p>
  *
- * @author Pascal Essiembre
  * @since 2.0.0 (moved from Norconex Importer RegexKeyValueExtractor)
  */
 @SuppressWarnings("javadoc")
-public class RegexFieldValueExtractor implements IXMLConfigurable {
+public class RegexFieldValueExtractor implements XMLConfigurable {
 
     private static final Logger LOG =
             LoggerFactory.getLogger(RegexFieldValueExtractor.class);

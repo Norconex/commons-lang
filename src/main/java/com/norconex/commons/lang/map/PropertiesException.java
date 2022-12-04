@@ -19,7 +19,6 @@ import lombok.experimental.StandardException;
 /**
  * <code>Properties</code> exception.  Typically thrown when
  * setting/getting invalid property values.
- * @author Pascal Essiembre
  * @see Properties
  */
 @StandardException

@@ -368,7 +368,7 @@ class EnhancedXMLStreamWriterTest {
 
     @Data
     @AllArgsConstructor
-    private static class Configurable implements IXMLConfigurable {
+    private static class Configurable implements XMLConfigurable {
         private String value;
         @Override
         public void loadFromXML(XML xml) {

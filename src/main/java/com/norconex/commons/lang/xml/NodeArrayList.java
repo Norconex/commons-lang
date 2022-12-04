@@ -23,7 +23,6 @@ import org.w3c.dom.NodeList;
  * A null-safe wrapper around {@link NodeList} that is also
  * an {@link ArrayList}.
  *
- * @author Pascal Essiembre
  * @since 2.0.0
  */
 public class NodeArrayList extends ArrayList<Node> implements NodeList {

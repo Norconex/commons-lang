@@ -28,7 +28,6 @@ import org.junit.jupiter.api.Test;
 import com.norconex.commons.lang.xml.XML;
 
 /**
- * @author Pascal Essiembre
  */
 class RegexTest {
 

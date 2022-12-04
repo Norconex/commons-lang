@@ -91,7 +91,6 @@ import lombok.ToString;
  * </ul>
  * <p>This class is thread-safe and immutable.</p>
  *
- * @author Pascal Essiembre
  * @since 1.13.0
  */
 @ToString

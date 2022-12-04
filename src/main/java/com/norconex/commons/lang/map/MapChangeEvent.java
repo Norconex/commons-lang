@@ -22,7 +22,6 @@ import lombok.ToString;
 /**
  * A event representing a change of values in an {@link Map}.
  *
- * @author Pascal Essiembre
  * @since 1.4
  *
  * @param <K> the type of keys maintained by the map we are observing

@@ -17,12 +17,12 @@ package com.norconex.commons.lang.xml.flow;
 import java.util.Map;
 import java.util.function.Predicate;
 
-import com.norconex.commons.lang.xml.IXMLConfigurable;
+import com.norconex.commons.lang.xml.XMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 
 // number of map entries must match given size
 public class MockMapSizeEqualsCondition
-        implements Predicate<Map<?, ?>>, IXMLConfigurable {
+        implements Predicate<Map<?, ?>>, XMLConfigurable {
 
     private int size;
 

@@ -47,7 +47,6 @@ import lombok.NonNull;
  * <p>The higher the initial capacity, the faster it should be to write
  * large streams, but the more initial memory it will take.</p>
  *
- * @author Pascal Essiembre
  * @since 2.1.0
  */
 public class ByteArrayOutputStream extends OutputStream {

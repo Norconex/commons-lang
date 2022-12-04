@@ -41,7 +41,6 @@ import jdk.javadoc.doclet.Taglet;
  * }
  * </pre>
  *
- * @author Pascal Essiembre
  * @since 2.0.0
  */
 public abstract class AbstractInlineTaglet implements Taglet {

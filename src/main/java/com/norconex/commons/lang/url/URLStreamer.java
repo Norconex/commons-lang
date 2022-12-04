@@ -34,7 +34,6 @@ import jakarta.xml.bind.DatatypeConverter;
 
 /**
  * Provides a quick and easy way to stream a URL.
- * @author Pascal Essiembre
  */
 public final class URLStreamer {
 

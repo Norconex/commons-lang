@@ -28,7 +28,6 @@ import org.apache.commons.lang3.StringUtils;
  * as the end YearMonthDay. Start and end YearMonthDay instances cannot be
  * <code>null</code> and start date must be before or the same date as
  * the end date.
- * @author Pascal Essiembre
  * @since 1.3.0
  * @see Period
  */

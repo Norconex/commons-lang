@@ -19,7 +19,6 @@ import java.util.function.Predicate;
 /**
  * Filters lines of text read from an InputStream decorated with
  * {@link FilteredInputStream}.
- * @author Pascal Essiembre
  * @deprecated use a String {@link Predicate} instead
  */
 @Deprecated(since = "3.0.0")

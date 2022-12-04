@@ -38,7 +38,6 @@ import org.apache.tools.ant.types.Path;
 /**
  * Sample external app that reverse word order in lines.
  * Also prints specific environment variables to STDOUT or STDERR.
- * @author Pascal Essiembre
  */
 public class ExternalApp {
 

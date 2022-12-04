@@ -18,7 +18,6 @@ import lombok.experimental.StandardException;
 
 /**
  * Runtime exception thrown when dealing with URL failures.
- * @author Pascal Essiembre
  */
 @StandardException
 public class URLException extends RuntimeException {

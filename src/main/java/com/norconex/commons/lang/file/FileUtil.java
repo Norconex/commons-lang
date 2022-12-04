@@ -53,7 +53,6 @@ import lombok.NonNull;
 
 /**
  * Utility methods when dealing with files and directories.
- * @author Pascal Essiembre
  */
 public final class FileUtil {
 
@@ -473,7 +472,7 @@ public final class FileUtil {
      * @param dir the directory
      * @param visitor the visitor
      */
-    public static void visitAllDirsAndFiles(File dir, IFileVisitor visitor) {
+    public static void visitAllDirsAndFiles(File dir, FileVisitor visitor) {
         visitAllDirsAndFiles(dir, visitor, null);
     }
     /**
@@ -483,7 +482,7 @@ public final class FileUtil {
      * @param filter an optional filter to restrict the files being visited
      */
     public static void visitAllDirsAndFiles(
-            File dir, IFileVisitor visitor, FileFilter filter) {
+            File dir, FileVisitor visitor, FileFilter filter) {
         visitor.visit(dir);
         if (dir.exists() && dir.isDirectory()) {
             File[] children = dir.listFiles(filter);
@@ -501,7 +500,7 @@ public final class FileUtil {
      * @param visitor the visitor
      * @since 1.3.0
      */
-    public static void visitEmptyDirs(File dir, IFileVisitor visitor) {
+    public static void visitEmptyDirs(File dir, FileVisitor visitor) {
         if (!dir.exists()) {
             return;
         }
@@ -524,7 +523,7 @@ public final class FileUtil {
      * @since 1.3.0
      */
     public static void visitEmptyDirs(
-            File dir, IFileVisitor visitor, FileFilter filter) {
+            File dir, FileVisitor visitor, FileFilter filter) {
         if (!dir.exists()) {
             return;
         }
@@ -545,7 +544,7 @@ public final class FileUtil {
      * @param dir the directory
      * @param visitor the visitor
      */
-    public static void visitAllDirs(File dir, IFileVisitor visitor) {
+    public static void visitAllDirs(File dir, FileVisitor visitor) {
         if (!dir.exists()) {
             return;
         }
@@ -567,7 +566,7 @@ public final class FileUtil {
      * @since 1.3.0
      */
     public static void visitAllDirs(
-            File dir, IFileVisitor visitor, FileFilter filter) {
+            File dir, FileVisitor visitor, FileFilter filter) {
         if (!dir.exists()) {
             return;
         }
@@ -588,7 +587,7 @@ public final class FileUtil {
      * @param dir the directory
      * @param visitor the visitor
      */
-    public static void visitAllFiles(File dir, IFileVisitor visitor) {
+    public static void visitAllFiles(File dir, FileVisitor visitor) {
         visitAllFiles(dir, visitor, null);
     }
     /**
@@ -599,7 +598,7 @@ public final class FileUtil {
      * @param filter an optional filter to restrict the files being visited
      */
     public static void visitAllFiles(
-            File dir, IFileVisitor visitor, FileFilter filter) {
+            File dir, FileVisitor visitor, FileFilter filter) {
         if (!dir.exists()) {
             return;
         }

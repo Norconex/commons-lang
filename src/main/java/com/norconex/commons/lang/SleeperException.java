@@ -17,7 +17,6 @@ package com.norconex.commons.lang;
 /**
  * Runtime <code>Sleep</code> exception wrapping any 
  * {@link InterruptedException} thrown.
- * @author Pascal Essiembre
  * @see Sleeper
  */
 public class SleeperException extends RuntimeException {

@@ -1,4 +1,4 @@
-/* Copyright 2010-2020 Norconex Inc.
+/* Copyright 2010-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,16 +19,18 @@ package com.norconex.commons.lang.exec;
  * re-executed by a {@link Retrier} until successful or fails according
  * to the {@link Retrier} conditions.
  * @param <T> type of optional return value
- * @author Pascal Essiembre
  * @see Retrier
  * @since 1.13.0
+ * @deprecated Use {@link Retriable} instead
  */
+@Deprecated(since="3.0.0")
 @FunctionalInterface
-public interface IRetriable<T> {
+public interface IRetriable<T> extends Retriable<T> { //NOSONAR
     /**
      * Code to be executed until successful (no exception thrown).
      * @throws Exception any exception
      * @return optional return value
      */
+    @Override
     T execute() throws Exception; //NOSONAR
 }

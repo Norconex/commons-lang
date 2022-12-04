@@ -51,7 +51,7 @@ import com.norconex.commons.lang.convert.ConverterException;
 import com.norconex.commons.lang.convert.DateConverter;
 import com.norconex.commons.lang.convert.DurationConverter;
 import com.norconex.commons.lang.convert.EnumConverter;
-import com.norconex.commons.lang.convert.IConverter;
+import com.norconex.commons.lang.convert.Converter;
 import com.norconex.commons.lang.encrypt.EncryptionKey.Source;
 import com.norconex.commons.lang.map.MapUtil;
 import com.norconex.commons.lang.net.Host;
@@ -65,7 +65,6 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 /**
- * @author Pascal Essiembre
  */
 class XMLTest {
 
@@ -525,7 +524,7 @@ class XMLTest {
               + "</test>"
         ).create();
         assertThat(xmlImpl.getObjectListImpl(
-                IConverter.class, "converters/converter"))
+                Converter.class, "converters/converter"))
             .containsExactly(expectedList);
         assertThat(xml.getObjectListImpl(DurationConverter.class,
                 "presentButEmpty/converters/converter",
@@ -601,12 +600,12 @@ class XMLTest {
             .withStackTraceContaining("is not an instance of");
 
         xml = XML.of("<test class=\"DurationConverter\"></test>").create();
-        DurationConverter c = xml.toObjectImpl(IConverter.class);
+        DurationConverter c = xml.toObjectImpl(Converter.class);
         Assertions.assertNotNull(c);
 
         XML xmlMany = XML.of("<test class=\"erConverter\"></test>").create();
         assertThatExceptionOfType(XMLException.class)
-            .isThrownBy(() -> xmlMany.toObjectImpl(IConverter.class))
+            .isThrownBy(() -> xmlMany.toObjectImpl(Converter.class))
             .withStackTraceContaining(
                     "Consider using fully qualified class name.");
     }
@@ -1092,7 +1091,7 @@ class XMLTest {
 
     @ToString
     @EqualsAndHashCode
-    static class ClassWithDefaultLists implements IXMLConfigurable {
+    static class ClassWithDefaultLists implements XMLConfigurable {
 
         private final List<DataUnit> enums =
                 new ArrayList<>(Arrays.asList(DataUnit.KB));

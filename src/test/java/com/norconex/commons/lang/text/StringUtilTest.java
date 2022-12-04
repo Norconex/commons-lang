@@ -25,7 +25,6 @@ import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Test;
 
 /**
- * @author Pascal Essiembre
  * @since 1.14.0
  */
 class StringUtilTest {

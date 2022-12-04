@@ -18,8 +18,7 @@ import lombok.experimental.StandardException;
 
 /**
  * Runtime exception indicating a conversion error.
- * @author Pascal Essiembre
- * @see Converter
+ * @see GenericConverter
  * @since 2.0.0
  */
 @StandardException

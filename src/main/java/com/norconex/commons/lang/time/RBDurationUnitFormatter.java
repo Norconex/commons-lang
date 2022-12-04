@@ -52,21 +52,20 @@ import lombok.ToString;
  *   <li>millisecond</li>
  *   <li>milliseconds</li>
  * </ul>
- * @author Pascal Essiembre
  * @since 2.0.0
  */
 @ToString
 @EqualsAndHashCode
 @Getter
-public class RBDurationUnitFormatter implements IDurationUnitFormatter {
+public class RBDurationUnitFormatter implements DurationUnitFormatter {
 
-    public static final IDurationUnitFormatter FULL =
+    public static final DurationUnitFormatter FULL =
             new RBDurationUnitFormatter(RBDurationUnitFormatter
                     .class.getCanonicalName() + "-full");
-    public static final IDurationUnitFormatter COMPACT =
+    public static final DurationUnitFormatter COMPACT =
             new RBDurationUnitFormatter(RBDurationUnitFormatter
                     .class.getCanonicalName() + "-compact");
-    public static final IDurationUnitFormatter ABBREVIATED =
+    public static final DurationUnitFormatter ABBREVIATED =
             new RBDurationUnitFormatter(RBDurationUnitFormatter
                     .class.getCanonicalName() + "-abbr");
 

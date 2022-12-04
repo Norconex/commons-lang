@@ -18,7 +18,6 @@ import lombok.experimental.StandardException;
 
 /**
  * Exception thrown when pipeline could not be executed properly.
- * @author Pascal Essiembre
  * @since 1.5.0
  */
 @StandardException

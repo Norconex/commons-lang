@@ -18,7 +18,6 @@ import lombok.experimental.StandardException;
 
 /**
  * An exception thrown by a executing {@link SystemCommand}.
- * @author Pascal Essiembre
  * @see SystemCommand
  * @since 1.13.0
  */

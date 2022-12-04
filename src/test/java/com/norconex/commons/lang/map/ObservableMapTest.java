@@ -37,7 +37,8 @@ class ObservableMapTest {
         MutableObject<String> newValue = new MutableObject<>();
         MutableObject<String> oldValue = new MutableObject<>();
 
-        IMapChangeListener<String, String> listener =
+        @SuppressWarnings("deprecation")
+        IMapChangeListener<String, String> listener = //NOSONAR
                 event -> {
             key.setValue(event.getKey());
             newValue.setValue(event.getNewValue());

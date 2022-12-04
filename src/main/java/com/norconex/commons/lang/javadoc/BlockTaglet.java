@@ -20,7 +20,6 @@ import org.apache.commons.lang3.StringUtils;
  * <p>{&#64;nx.block} A wrapper around any JavaDoc text for
  * inclusion in other classes.</p>
  *
- * @author Pascal Essiembre
  * @since 2.0.0
  */
 public class BlockTaglet extends AbstractInlineTaglet {

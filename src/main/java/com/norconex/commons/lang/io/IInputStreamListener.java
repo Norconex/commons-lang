@@ -26,20 +26,11 @@ package com.norconex.commons.lang.io;
  * <p>
  * Should not be considered thread safe.
  * </p>
- * @author Pascal Essiembre
  * @see InputStreamConsumer
  * @see InputStreamLineListener
+ * @deprecated Use {@link InputStreamListener} instead.
  */
+@Deprecated(since="3.0.0")
 @FunctionalInterface
-public interface IInputStreamListener {
-
-    /**
-     * Invoked when a chunk of bytes is streamed.
-     * @param type type of what is being streamed, as defined by the class
-     *        using this listener
-     * @param bytes chunk of bytes streamed
-     * @param length length of valid bytes to read or -1 if no more bytes to
-     *        read
-     */
-    void streamed(String type, byte[] bytes, int length);
+public interface IInputStreamListener extends InputStreamListener { //NOSONAR
 }

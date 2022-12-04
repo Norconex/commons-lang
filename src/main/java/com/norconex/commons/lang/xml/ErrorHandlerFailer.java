@@ -26,7 +26,6 @@ import com.norconex.commons.lang.xml.XMLValidationError.Severity;
  * Fails upon encountering first XML validation errors by throwing an
  * {@link XMLValidationException}.
  * as error.
- * @author Pascal Essiembre
  * @since 2.0.0
  */
 public class ErrorHandlerFailer implements ErrorHandler {

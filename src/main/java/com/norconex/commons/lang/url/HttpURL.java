@@ -37,7 +37,6 @@ import lombok.NonNull;
  * to build a {@link URL} or a {@link URI} instance as it will properly escape
  * appropriate characters before creating those.
  *
- * @author Pascal Essiembre
  */
 //MAYBE: rename MutableURL (really? what about the static methods?  Maybe "Url"?)
 @EqualsAndHashCode

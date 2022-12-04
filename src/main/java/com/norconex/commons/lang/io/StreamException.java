@@ -18,7 +18,6 @@ import lombok.experimental.StandardException;
 
 /**
  * Runtime exception when dealing with I/O streams.
- * @author Pascal Essiembre
  */
 @StandardException
 public class StreamException extends RuntimeException {

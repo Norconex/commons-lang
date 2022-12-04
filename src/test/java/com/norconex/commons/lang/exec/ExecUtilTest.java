@@ -23,7 +23,7 @@ import java.io.IOException;
 import org.apache.commons.io.input.CharSequenceInputStream;
 import org.junit.jupiter.api.Test;
 
-import com.norconex.commons.lang.io.IInputStreamListener;
+import com.norconex.commons.lang.io.InputStreamListener;
 
 class ExecUtilTest {
 
@@ -34,7 +34,7 @@ class ExecUtilTest {
     }
 
     @Test
-    void testWatchProcessProcessIInputStreamListener() throws IOException {
+    void testWatchProcessProcessInputStreamListener() throws IOException {
         StringBuilder stdout = new StringBuilder();
         Process process = Runtime.getRuntime().exec("java -help");
         assertThat(ExecUtil.watchProcess(process,
@@ -45,13 +45,13 @@ class ExecUtilTest {
     }
 
     @Test
-    void testWatchProcessProcessIInputStreamListenerArray() throws IOException {
+    void testWatchProcessProcessInputStreamListenerArray() throws IOException {
         StringBuilder stdout1 = new StringBuilder();
         StringBuilder stdout2 = new StringBuilder();
         Process process = Runtime.getRuntime().exec("java -help");
         assertThat(ExecUtil.watchProcess(
                 process,
-                new IInputStreamListener[] {
+                new InputStreamListener[] {
                     (t, b, l) -> stdout1.append(new String(b)),
                     (t, b, l) -> stdout2.append(new String(b))
                 }))
@@ -63,7 +63,7 @@ class ExecUtilTest {
     }
 
     @Test
-    void testWatchProcessProcessIInputStreamListenerIInputStreamListener()
+    void testWatchProcessProcessInputStreamListenerInputStreamListener()
             throws IOException {
         StringBuilder stdout = new StringBuilder();
         StringBuilder stderr = new StringBuilder();
@@ -80,17 +80,17 @@ class ExecUtilTest {
     }
 
 //    @Test
-//    void testWatchProcessProcessIInputStreamListenerArrayIInputStreamListenerArray() {
+//    void testWatchProcessProcessInputStreamListenerArrayInputStreamListenerArray() {
 //        throw new RuntimeException("not yet implemented");
 //    }
 //
 //    @Test
-//    void testWatchProcessProcessInputStreamIInputStreamListenerArrayIInputStreamListenerArray() {
+//    void testWatchProcessProcessInputStreamInputStreamListenerArrayInputStreamListenerArray() {
 //        throw new RuntimeException("not yet implemented");
 //    }
 //
     @Test
-    void testWatchProcessAsyncProcessIInputStreamListenerIInputStreamListener()
+    void testWatchProcessAsyncProcessInputStreamListenerInputStreamListener()
             throws IOException {
         StringBuilder stdout = new StringBuilder();
         StringBuilder stderr = new StringBuilder();
@@ -102,7 +102,7 @@ class ExecUtilTest {
     }
 //
 //    @Test
-//    void testWatchProcessAsyncProcessIInputStreamListenerArrayIInputStreamListenerArray() {
+//    void testWatchProcessAsyncProcessInputStreamListenerArrayInputStreamListenerArray() {
 //        throw new RuntimeException("not yet implemented");
 //    }
 //
@@ -114,10 +114,10 @@ class ExecUtilTest {
         assertDoesNotThrow(() -> ExecUtil.watchProcessAsync(
                 process,
                 new CharSequenceInputStream("java -h\n", UTF_8),
-                new IInputStreamListener[] {
+                new InputStreamListener[] {
                         (t, b, l) -> stdout.append(new String(b))
                 },
-                new IInputStreamListener[] {
+                new InputStreamListener[] {
                         (t, b, l) -> stderr.append(new String(b))
                 }));
     }

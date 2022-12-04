@@ -66,7 +66,6 @@ import org.apache.commons.lang3.reflect.MethodUtils;
  * </ul>
  * }
  *
- * @author Pascal Essiembre
  * @version 2.0.0
  */
 public class FluentPropertyDescriptor extends PropertyDescriptor {

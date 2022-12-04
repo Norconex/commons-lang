@@ -21,7 +21,6 @@ import lombok.experimental.StandardException;
 /**
  * Checked exception thrown by {@link FileLocker} when trying to create a
  * lock on an on an already locked file.
- * @author Pascal Essiembre
  * @see FileLocker
  * @since 2.0.0
  */

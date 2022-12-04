@@ -28,7 +28,9 @@ class EventTest {
     void testEvent() {
         var name = "MY_EVENT_NAME";
 
-        var event1 = Event.builder(name, "A source")
+        var event1 = Event.builder()
+                .name(name)
+                .source("A source")
                 .exception(new RuntimeException("Error message."))
                 .message("Regular message")
                 .build();
@@ -41,20 +43,25 @@ class EventTest {
                 + "java.lang.RuntimeException: Error message.",
                 event1.toString());
 
-        var event2 = Event.builder(name, "Another source").build();
+        var event2 = Event.builder()
+                .name(name)
+                .source("Another source")
+                .build();
 
         assertTrue(event1.is(event2));
         assertTrue(event2.is(event1));
         assertTrue(event1.is("different name", name, "another"));
         assertFalse(event1.is((Event) null));
 
-        assertThrows(NullPointerException.class,
-                () -> Event.builder(null, "not null"));
-        assertThrows(NullPointerException.class,
-                () -> Event.builder("not null", null));
+        assertThrows(NullPointerException.class, //NOSONAR
+                () -> Event.builder().source("not null").build());
+        assertThrows(NullPointerException.class, //NOSONAR
+                () -> Event.builder().name("not null").build());
         assertEquals(name + " - Another source", event2.toString());
 
-        var event3 = Event.builder(name, "No exception message")
+        var event3 = Event.builder()
+                .name(name)
+                .source("No exception message")
                 .exception(new RuntimeException())
                 .build();
         assertEquals(name + " - No exception message - "
@@ -64,12 +71,16 @@ class EventTest {
 
     @Test
     void testEquality() {
-        Event event1 = Event.builder("blah", "sourceBlah").build();
-        Event event2 = Event.builder("blah", "sourceBlah").build();
-        Event event3 = Event.builder("nope", "sourceNope").build();
-        assertThat(event1).isEqualTo(event2);
-        assertThat(event1.hashCode()).isEqualTo(event2.hashCode());
-        assertThat(event1).isNotEqualTo(event3);
-        assertThat(event1.hashCode()).isNotEqualTo(event3.hashCode());
+        Event event1 =
+                Event.builder().name("blah").source("sourceBlah").build();
+        Event event2 =
+                Event.builder().name("blah").source("sourceBlah").build();
+        Event event3 =
+                Event.builder().name("nope").source("sourceNope").build();
+        assertThat(event1)
+            .isEqualTo(event2)
+            .hasSameHashCodeAs(event2)
+            .isNotEqualTo(event3)
+            .doesNotHaveSameHashCodeAs(event3);
     }
 }

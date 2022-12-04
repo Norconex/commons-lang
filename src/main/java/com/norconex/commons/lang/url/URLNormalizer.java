@@ -142,7 +142,6 @@ import com.norconex.commons.lang.EqualsUtil;
  * Refer to each methods below for description and examples (or click on a
  * normalization name above).
  * </p>
- * @author Pascal Essiembre
  */
 public class URLNormalizer implements Serializable {
 

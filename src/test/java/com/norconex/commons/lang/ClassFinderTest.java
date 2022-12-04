@@ -24,19 +24,18 @@ import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.convert.CharsetConverter;
 import com.norconex.commons.lang.convert.DurationConverter;
-import com.norconex.commons.lang.convert.IConverter;
+import com.norconex.commons.lang.convert.Converter;
 import com.norconex.commons.lang.convert.LocaleConverter;
 
 /**
  * Class-scanning tests
- * @author Pascal Essiembre
  */
 class ClassFinderTest {
 
     @Test
     void testFindSubTypesClass() {
-        List<Class<? extends IConverter>> types =
-                ClassFinder.findSubTypes(IConverter.class);
+        List<Class<? extends Converter>> types =
+                ClassFinder.findSubTypes(Converter.class);
         assertThat(types).contains(
                 DurationConverter.class,
                 CharsetConverter.class,
@@ -46,16 +45,16 @@ class ClassFinderTest {
     @Test
     void testSubTypesClassPredicate() {
         String toFind = ".DurationConverter";
-        List<Class<? extends IConverter>> types = ClassFinder.findSubTypes(
-                IConverter.class, s -> s.endsWith(toFind));
+        List<Class<? extends Converter>> types = ClassFinder.findSubTypes(
+                Converter.class, s -> s.endsWith(toFind));
         assertThat(types).hasSize(1);
         assertThat(types.get(0)).isEqualTo(DurationConverter.class);
     }
 
     @Test
     void testFindSubTypesListClass() {
-        List<Class<? extends IConverter>> types = ClassFinder.findSubTypes(
-                Arrays.asList(new File("target/classes")), IConverter.class);
+        List<Class<? extends Converter>> types = ClassFinder.findSubTypes(
+                Arrays.asList(new File("target/classes")), Converter.class);
         assertThat(types).contains(
                 DurationConverter.class,
                 CharsetConverter.class,
@@ -65,23 +64,23 @@ class ClassFinderTest {
     @Test
     void testFindSubTypesListClassPredicate() {
         String toFind = ".DurationConverter";
-        List<Class<? extends IConverter>> types = ClassFinder.findSubTypes(
+        List<Class<? extends Converter>> types = ClassFinder.findSubTypes(
                 Arrays.asList(new File("target/classes")),
-                IConverter.class,
+                Converter.class,
                 s -> s.endsWith(toFind));
         assertThat(types).hasSize(1);
         assertThat(types.get(0)).isEqualTo(DurationConverter.class);
 
         assertThat(ClassFinder.findSubTypes(
-                (List<File>) null, IConverter.class)).isEmpty();
+                (List<File>) null, Converter.class)).isEmpty();
         assertThat(ClassFinder.findSubTypes(
                 Arrays.asList(new File("target/classes")), null)).isEmpty();
     }
 
     @Test
     void testFindSubTypesFileClass() {
-        List<Class<? extends IConverter>> types = ClassFinder.findSubTypes(
-                new File("target/classes"), IConverter.class);
+        List<Class<? extends Converter>> types = ClassFinder.findSubTypes(
+                new File("target/classes"), Converter.class);
         assertThat(types).contains(
                 DurationConverter.class,
                 CharsetConverter.class,
@@ -91,15 +90,15 @@ class ClassFinderTest {
     @Test
     void testFindSubTypesFileClassPredicate() {
         String toFind = ".DurationConverter";
-        List<Class<? extends IConverter>> types = ClassFinder.findSubTypes(
+        List<Class<? extends Converter>> types = ClassFinder.findSubTypes(
                 new File("target/classes"),
-                IConverter.class,
+                Converter.class,
                 s -> s.endsWith(toFind));
         assertThat(types).hasSize(1);
         assertThat(types.get(0)).isEqualTo(DurationConverter.class);
 
         assertThat(ClassFinder.findSubTypes(
-                (File) null, IConverter.class)).isEmpty();
+                (File) null, Converter.class)).isEmpty();
         assertThat(ClassFinder.findSubTypes(
                 new File("target/classes"), null)).isEmpty();
     }

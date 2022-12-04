@@ -36,7 +36,6 @@ import lombok.NonNull;
  * year, month, and day.  The months are starting
  * at 1 (January).  Similar to {@link LocalDate}, but build around {@link Date}.
  * Operations involving time (e.g. {@link #toDate()}) use UTC.
- * @author Pascal Essiembre
  * @since 1.3.0
  * @see LocalDate
  */

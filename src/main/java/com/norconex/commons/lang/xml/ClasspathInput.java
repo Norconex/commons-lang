@@ -25,7 +25,6 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Load XML Schema resources input from Classpath.
- * @author Pascal Essiembre
  * @since 1.13.0
  */
 @Slf4j

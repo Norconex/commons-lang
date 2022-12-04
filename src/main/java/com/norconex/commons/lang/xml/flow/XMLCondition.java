@@ -25,7 +25,7 @@ import org.apache.commons.lang3.builder.HashCodeExclude;
 import org.apache.commons.lang3.builder.ToStringExclude;
 
 import com.norconex.commons.lang.function.Predicates;
-import com.norconex.commons.lang.xml.IXMLConfigurable;
+import com.norconex.commons.lang.xml.XMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 
 import lombok.EqualsAndHashCode;
@@ -34,12 +34,11 @@ import lombok.ToString;
 /**
  * Represents a single "condition" tag or a "conditions" tag with nested
  * "condition" and/or "conditions".
- * @author Pascal Essiembre
  * @since 2.0.0
  */
 @ToString
 @EqualsAndHashCode
-class XMLCondition<T> implements IXMLConfigurable, Predicate<T> {
+class XMLCondition<T> implements XMLConfigurable, Predicate<T> {
 
     enum Operator {
         AND("AND", "ALL", "&&"),
@@ -149,7 +148,7 @@ class XMLCondition<T> implements IXMLConfigurable, Predicate<T> {
             // If a predicate adapter is set, use it to parse the XML
             try {
                 //MAYBE: throw XMLValidationException if there are any errors?
-                IXMLFlowPredicateAdapter<T> adapter =
+                XMLFlowPredicateAdapter<T> adapter =
                         flow.getPredicateAdapter()
                             .getDeclaredConstructor()
                             .newInstance();
@@ -170,7 +169,7 @@ class XMLCondition<T> implements IXMLConfigurable, Predicate<T> {
             + "' does not resolve to an implementation of "
             + "java.util.function.Predicate. Add a class=\"\" attribute "
             + "pointing to your predicate implementation, or initialize "
-            + "XMLFlow with an IXMLFlowPredicateAdapter.");
+            + "XMLFlow with an XMLFlowPredicateAdapter.");
         }
         return p;
     }

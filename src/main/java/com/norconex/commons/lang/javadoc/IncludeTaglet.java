@@ -149,7 +149,6 @@ import jdk.javadoc.doclet.Taglet;
  * Includes can be nested in any other <code>@nx.*</code> taglets.
  * </p>
  *
- * @author Pascal Essiembre
  * @since 2.0.0
  */
 public class IncludeTaglet implements Taglet {

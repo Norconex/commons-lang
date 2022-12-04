@@ -37,7 +37,6 @@ import lombok.NonNull;
  * or same name but different versions.  This class will consider Jar as
  * being duplicates based on their base name, not their content or any
  * other indicator.
- * @author Pascal Essiembre
  * @since 1.10.0
  */
 public final class JarDuplicateFinder {

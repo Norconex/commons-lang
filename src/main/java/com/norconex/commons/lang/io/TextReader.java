@@ -34,7 +34,6 @@ import org.slf4j.LoggerFactory;
  * The default maximum number of characters to be read before splitting
  * is 10 millions. Passing <code>-1</code> as the <code>maxReadSize</code>
  * will disable reading in batch and will read the entire text all at once.
- * @author Pascal Essiembre
  * @since 1.6.0
  */
 public class TextReader extends Reader {

@@ -52,7 +52,6 @@ import lombok.extern.slf4j.Slf4j;
  * files over to another directory.  When in interactive mode, the user will be
  * prompted to decide how to handle duplicate Jars. Interactive mode requires
  * this application to be run from a command prompt.
- * @author Pascal Essiembre
  * @since 1.10.0
  */
 @Slf4j
@@ -465,8 +464,7 @@ public class JarCopier {
 
     /**
      * Encapsulate target jar conflict resolution options.
-     * @author Pascal Essiembre
-     * @since 3.0.0
+         * @since 3.0.0
      */
     @Data
     @Getter

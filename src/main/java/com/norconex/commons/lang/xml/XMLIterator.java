@@ -24,7 +24,6 @@ import javax.xml.stream.events.XMLEvent;
 
 /**
  * XML cursor referencing the current position or element in XML traversal.
- * @author Pascal Essiembre
  * @since 2.0.0
  */
 class XMLIterator implements Iterator<XMLCursor> {

@@ -44,7 +44,6 @@ import com.norconex.commons.lang.url.URLStreamer;
  * Use this class for simple scenarios. If more complex ones are required
  * (e.g., authentication, proxy, etc), use a different approach.
  * All this {@link Path} methods are applied on the downloaded file.
- * @author Pascal Essiembre
  * @since 2.0.0
  */
 public class WebFile implements Path {

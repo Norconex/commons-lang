@@ -57,7 +57,7 @@ class DurationFormatterTest {
 
     @Test
     void testGetters() {
-        IDurationUnitFormatter duf = (unit, locale, plural) -> "blah";
+        DurationUnitFormatter duf = (unit, locale, plural) -> "blah";
         assertThat(
             new DurationFormatter()
                 .withHighestUnit(DurationUnit.MONTH)

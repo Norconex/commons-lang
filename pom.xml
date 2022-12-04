@@ -771,7 +771,14 @@
       <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
     </repository>
     <!-- Only used to publish javadoc with "site:deploy", 
-         after they were generated -->
+         after they were generated 
+         
+         
+         TODO: remove references to site when ready.
+         
+         
+         
+         -->
     <site>
       <id>site-deployment</id>
       <url>${site.baseurl}/commons/lang/v3</url>

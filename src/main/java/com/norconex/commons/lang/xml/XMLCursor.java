@@ -38,7 +38,6 @@ import com.norconex.commons.lang.map.Properties;
 
 /**
  * XML cursor referencing the current position or element in XML traversal.
- * @author Pascal Essiembre
  * @since 2.0.0
  * @see XML#iterator()
  * @see XML#iterator(Object)

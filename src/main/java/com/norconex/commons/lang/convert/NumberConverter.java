@@ -39,7 +39,6 @@ import com.norconex.commons.lang.EqualsUtil;
  *   <li>BigInteger</li>
  *   <li>BigDecimal</li>
  * </ul>
- * @author Pascal Essiembre
  * @since 2.0.0
  */
 public class NumberConverter extends AbstractConverter {

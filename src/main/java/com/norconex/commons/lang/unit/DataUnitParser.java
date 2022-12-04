@@ -103,7 +103,6 @@ import lombok.extern.slf4j.Slf4j;
  * </ul>
  * <p>This class is thread-safe and immutable.</p>
  *
- * @author Pascal Essiembre
  * @since 2.0.0
  */
 @Slf4j

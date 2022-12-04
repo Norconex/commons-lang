@@ -18,7 +18,6 @@ import lombok.experimental.StandardException;
 
 /**
  * Runtime exception indicating a bean-operation error.
- * @author Pascal Essiembre
  * @see BeanUtil
  * @since 2.0.0
  */

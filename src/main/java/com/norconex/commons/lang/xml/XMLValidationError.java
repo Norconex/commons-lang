@@ -23,7 +23,6 @@ import lombok.Getter;
  * A configuration error resulting from validation.  A configuration error
  * may or may not prevent some parts of a configuration to be loaded.
  * The severity is only used as indicator.
- * @author Pascal Essiembre
  * @since 2.0.0
  * @see XML#validate(Class)
  */

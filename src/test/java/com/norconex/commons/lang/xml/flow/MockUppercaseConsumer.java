@@ -17,11 +17,11 @@ package com.norconex.commons.lang.xml.flow;
 import java.util.function.Consumer;
 
 import com.norconex.commons.lang.map.Properties;
-import com.norconex.commons.lang.xml.IXMLConfigurable;
+import com.norconex.commons.lang.xml.XMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 
 public class MockUppercaseConsumer
-        implements Consumer<Properties>, IXMLConfigurable {
+        implements Consumer<Properties>, XMLConfigurable {
     private String field;
     @Override
     public void accept(Properties p) {

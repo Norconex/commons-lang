@@ -126,7 +126,6 @@ import com.norconex.commons.lang.xml.XML;
  * <a href="https://velocity.apache.org/engine/2.0/user-guide.html">
  * Velocity User Guide</a> for complete syntax and template documentation.
  * </p>
- * @author Pascal Essiembre
  */
 public final class ConfigurationLoader {
 

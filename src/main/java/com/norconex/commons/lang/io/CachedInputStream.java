@@ -74,11 +74,10 @@ import com.norconex.commons.lang.io.CachedStreamFactory.MemoryTracker;
  * <b>Starting with 1.6.0</b>, <code>mark(int)</code> is supported. The mark
  * limit is always unlimited so the method argument is ignored.
  * </p>
- * @author Pascal Essiembre
  * @since 1.5.0
  * @see CachedStreamFactory
  */
-public class CachedInputStream extends InputStream implements ICachedStream {
+public class CachedInputStream extends InputStream implements CachedStream {
 
     private static final Logger LOG =
             LoggerFactory.getLogger(CachedInputStream.class);

@@ -21,7 +21,6 @@ import org.apache.commons.lang3.StringUtils;
 
 /**
  * Convenience methods related to object equality.
- * @author Pascal Essiembre
  */
 public final class EqualsUtil {
 

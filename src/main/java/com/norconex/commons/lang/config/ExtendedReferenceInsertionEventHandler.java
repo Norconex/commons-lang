@@ -25,7 +25,6 @@ import com.norconex.commons.lang.SystemUtil;
  * will try to resolve the reference against system properties or
  * environment variables (in that order) if it could not resolved the normal
  * way (before returning default value, if one was specified in the reference).
- * @author Pascal Essiembre
  * @since 2.0.0
  */
 public class ExtendedReferenceInsertionEventHandler

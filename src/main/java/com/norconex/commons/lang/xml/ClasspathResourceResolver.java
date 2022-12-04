@@ -39,7 +39,6 @@ import lombok.extern.slf4j.Slf4j;
  *         new ClasspathResourceResolver(MyClass.class));
  * </pre>
  *
- * @author Pascal Essiembre
  * @since 1.13.0
  */
 @Slf4j

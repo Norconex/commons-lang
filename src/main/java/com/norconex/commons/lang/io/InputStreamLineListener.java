@@ -28,10 +28,9 @@ import org.apache.commons.lang3.StringUtils;
  * given stream.  Not thread-safe. Use a new instance for each thread or at
  * a minimum, make sure to give a unique type argument to
  * each {@link InputStreamConsumer} to prevent lines content being mixed up.
- * @author Pascal Essiembre
  * @see InputStreamConsumer
  */
-public abstract class InputStreamLineListener implements IInputStreamListener {
+public abstract class InputStreamLineListener implements InputStreamListener {
 
     private static final byte NL = (byte) '\n';
     private static final byte CR = (byte) '\r';

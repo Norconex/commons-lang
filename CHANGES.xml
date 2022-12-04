@@ -199,6 +199,19 @@
       <action dev="essiembre" type="update">
         Added extra safety checks in XMLUtil to prevent XXE attacks.
       </action>
+      <action dev="essiembre" type="update">
+        Converter class renamed to GenericConverter.
+      </action>
+      <action dev="essiembre" type="update">
+        IConverter interface renamed to Converter. 
+      </action>
+      <action dev="essiembre" type="update">
+        These interfaces were rename to the same name minus the "I":
+        IEventListener, IExceptionFilter, IRetriable, IFileChangeListener,
+        IFileVisitor, ICachedStream, IInputStreamFilter, IInputStreamListener,
+        IMapChangeListener, IDurationUnitFormatter, IXMLFlowConsumerAdapter,
+        IXMLFlowPredicateAdapter, IXMLConfigurable. 
+      </action>
       <action dev="essiembre" type="add">
         TextMatcher now considers null values as non-matching by defualt.
       </action>

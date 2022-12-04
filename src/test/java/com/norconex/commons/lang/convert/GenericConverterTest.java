@@ -48,7 +48,7 @@ import com.norconex.commons.lang.file.ContentType;
 import com.norconex.commons.lang.unit.DataUnit;
 
 
-class ConverterTest {
+class GenericConverterTest {
 
     @Test
     void testNumberConverter() {
@@ -134,23 +134,23 @@ class ConverterTest {
         Dimension d = new Dimension(640, 480);
 
         //to string
-        Assertions.assertEquals("640x480", Converter.convert(d));
+        Assertions.assertEquals("640x480", GenericConverter.convert(d));
 
         //from string
-        Assertions.assertEquals(d, Converter.convert("640x480", Dimension.class));
-        Assertions.assertEquals(d, Converter.convert("640 480", Dimension.class));
+        Assertions.assertEquals(d, GenericConverter.convert("640x480", Dimension.class));
+        Assertions.assertEquals(d, GenericConverter.convert("640 480", Dimension.class));
         Assertions.assertEquals(
-                d, Converter.convert("width:640, h:480", Dimension.class));
+                d, GenericConverter.convert("width:640, h:480", Dimension.class));
         Assertions.assertEquals(
-                d, Converter.convert("aaa640b480cc10", Dimension.class));
+                d, GenericConverter.convert("aaa640b480cc10", Dimension.class));
 
         d = new Dimension(1200, 1200);
-        Assertions.assertEquals(d, Converter.convert("1200", Dimension.class));
+        Assertions.assertEquals(d, GenericConverter.convert("1200", Dimension.class));
         Assertions.assertEquals(
-                d, Converter.convert("size:1200px", Dimension.class));
+                d, GenericConverter.convert("size:1200px", Dimension.class));
 
         assertThrows(ConverterException.class,
-                () -> Converter.convert("badOne", Dimension.class));
+                () -> GenericConverter.convert("badOne", Dimension.class));
 
         DimensionConverter c = new DimensionConverter();
         assertThrows(ConverterException.class, () -> c.toString("badOne"));
@@ -165,7 +165,7 @@ class ConverterTest {
         assertToType(true, "yes", boolean.class);
         assertToType(Boolean.FALSE, "no", Boolean.class);
         assertThrows(ConverterException.class,
-                () -> Converter.convert("badOne", Boolean.class));
+                () -> GenericConverter.convert("badOne", Boolean.class));
     }
 
     @Test
@@ -173,7 +173,7 @@ class ConverterTest {
         assertConvert("a", 'a', char.class);
         assertConvert("b", 'b', Character.class);
         assertThrows(ConverterException.class,
-                () -> Converter.convert("badOne", Character.class));
+                () -> GenericConverter.convert("badOne", Character.class));
 
         CharacterConverter c = new CharacterConverter();
         assertThrows(ConverterException.class, () -> c.toString("badOne"));
@@ -184,7 +184,7 @@ class ConverterTest {
         assertConvert("com.norconex.commons.lang.EqualsUtil",
                 EqualsUtil.class, Class.class);
         assertThrows(ConverterException.class,
-                () -> Converter.convert("badOne", Class.class));
+                () -> GenericConverter.convert("badOne", Class.class));
     }
 
     @Test
@@ -223,7 +223,7 @@ class ConverterTest {
         assertConvert("UTF-8", StandardCharsets.UTF_8, Charset.class);
         assertConvert("ISO-8859-1", StandardCharsets.ISO_8859_1, Charset.class);
         assertThrows(ConverterException.class,
-                () -> Converter.convert("badOne", Charset.class));
+                () -> GenericConverter.convert("badOne", Charset.class));
     }
 
     @Test
@@ -239,22 +239,22 @@ class ConverterTest {
         assertThat(c.toType("", String.class, "default")).isEqualTo("default");
         assertThat(c.toType("blah", String.class, "default")).isEqualTo("blah");
 
-        assertThat(Converter.convert("blah", String.class, "default"))
+        assertThat(GenericConverter.convert("blah", String.class, "default"))
             .isEqualTo("blah");
 
-        assertThat(Converter.convert("blah", "default")).isEqualTo("blah");
+        assertThat(GenericConverter.convert("blah", "default")).isEqualTo("blah");
     }
 
     @Test
     void testGetConverters() {
-        assertThat(Converter.defaultInstance().getConverters())
+        assertThat(GenericConverter.defaultInstance().getConverters())
             .containsEntry(Locale.class, new LocaleConverter());
     }
 
     @Test
     void testConvertListClass() {
         List<String> source = Arrays.asList("en_CA", "fr_CA", "it");
-        List<Locale> result = Converter.convert(source, Locale.class);
+        List<Locale> result = GenericConverter.convert(source, Locale.class);
         assertThat(result).containsExactly(
                 new Locale("en",  "CA"),
                 new Locale("fr",  "CA"),
@@ -267,7 +267,7 @@ class ConverterTest {
                 new Locale("en",  "CA"),
                 new Locale("fr",  "CA"),
                 new Locale("it"));
-        List<String> result = Converter.convert(source);
+        List<String> result = GenericConverter.convert(source);
         assertThat(result).containsExactly("en_CA", "fr_CA", "it");
     }
 
@@ -277,44 +277,44 @@ class ConverterTest {
                 new Locale("en",  "CA"),
                 new Locale("fr",  "CA"),
                 new Locale("it"));
-        List<String> result = Converter.defaultInstance().toString(source);
+        List<String> result = GenericConverter.defaultInstance().toString(source);
         assertThat(result).containsExactly("en_CA", "fr_CA", "it");
 
-        assertThat(Converter.defaultInstance().toString((List<?>) null))
+        assertThat(GenericConverter.defaultInstance().toString((List<?>) null))
             .isEmpty();
     }
 
     @Test
     void testToStringObject() {
-        assertThat(Converter.defaultInstance().toString(
+        assertThat(GenericConverter.defaultInstance().toString(
                 (String) null)).isNull();
-        assertThat(Converter.defaultInstance().toString(
+        assertThat(GenericConverter.defaultInstance().toString(
                 Integer.valueOf(42))).isEqualTo("42");
 
-        Converter c = Converter.defaultInstance();
+        GenericConverter c = GenericConverter.defaultInstance();
         Pattern p = Pattern.compile(".*");
         assertThrows(ConverterException.class, () -> c.toString(p));
     }
 
     @Test
     void testToStringObjectString() {
-        assertThat(Converter.defaultInstance().toString(null, "42"))
+        assertThat(GenericConverter.defaultInstance().toString(null, "42"))
             .isEqualTo("42");
-        assertThat(Converter.defaultInstance().toString("7", "42"))
+        assertThat(GenericConverter.defaultInstance().toString("7", "42"))
             .isEqualTo("7");
     }
 
     @Test
     void testIsConvertible() {
-        assertThat(Converter.defaultInstance().isConvertible(String.class))
+        assertThat(GenericConverter.defaultInstance().isConvertible(String.class))
             .isTrue();
-        assertThat(Converter.defaultInstance().isConvertible(Void.class))
+        assertThat(GenericConverter.defaultInstance().isConvertible(Void.class))
             .isFalse();
     }
 
     @Test
     void testNullsAndErrors() {
-        IConverter c = new AbstractConverter() {
+        Converter c = new AbstractConverter() {
             @Override
             protected <T> T nullSafeToType(String value, Class<T> type)
                     throws Exception {
@@ -328,7 +328,7 @@ class ConverterTest {
         assertThat(c.toType((String) null, String.class)).isNull();
         assertThat(c.toString((Object) null)).isNull();
 
-        IConverter badC = new AbstractConverter() {
+        Converter badC = new AbstractConverter() {
             @Override
             protected <T> T nullSafeToType(String value, Class<T> type)
                     throws Exception {
@@ -352,13 +352,13 @@ class ConverterTest {
         assertToType(objValue, strValue, type);
     }
     private <T> void assertToType(T expected, String value, Class<T> type) {
-        Assertions.assertEquals(expected, Converter.convert(value, type));
+        Assertions.assertEquals(expected, GenericConverter.convert(value, type));
     }
     private <T> void assertToString(String expected, Object obj) {
-        Assertions.assertEquals(expected, Converter.convert(obj));
+        Assertions.assertEquals(expected, GenericConverter.convert(obj));
     }
 
-    private static class TestStringConverter implements IConverter {
+    private static class TestStringConverter implements Converter {
         @Override
         public String toString(Object object) {
             return StringUtils.trimToNull(Objects.toString(object, null));

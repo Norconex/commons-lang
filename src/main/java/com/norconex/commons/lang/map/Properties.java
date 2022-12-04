@@ -67,7 +67,7 @@ import com.norconex.commons.lang.EqualsUtil;
 import com.norconex.commons.lang.bean.BeanException;
 import com.norconex.commons.lang.bean.BeanUtil;
 import com.norconex.commons.lang.collection.CollectionUtil;
-import com.norconex.commons.lang.convert.Converter;
+import com.norconex.commons.lang.convert.GenericConverter;
 import com.norconex.commons.lang.convert.ConverterException;
 import com.norconex.commons.lang.text.TextMatcher;
 
@@ -100,7 +100,6 @@ import com.norconex.commons.lang.text.TextMatcher;
  *
  * <p>Upon encountering a problem in parsing a value to
  * its desired type, a {@link PropertiesException} is thrown.</p>
- * @author Pascal Essiembre
  */
 public class Properties extends ObservableMap<String, List<String>>
         implements Serializable {
@@ -500,7 +499,7 @@ public class Properties extends ObservableMap<String, List<String>>
             // Array
             if (targetType.isArray()) {
                 Class<?> arrayType = targetType.getComponentType();
-                List<?> listType = Converter.convert(values, arrayType);
+                List<?> listType = GenericConverter.convert(values, arrayType);
                 arg = CollectionUtil.toArray(listType, arrayType);
             } else if (List.class.isAssignableFrom(targetType)) {
                 Class<?> listType =
@@ -512,7 +511,7 @@ public class Properties extends ObservableMap<String, List<String>>
                 arg = ListOrderedSet.listOrderedSet(
                         CollectionUtil.toTypeList(values, listType));
             } else {
-                arg = Converter.convert(values.get(0), targetType);
+                arg = GenericConverter.convert(values.get(0), targetType);
             }
             BeanUtil.setValue(bean, property, arg);
         }
@@ -821,7 +820,7 @@ public class Properties extends ObservableMap<String, List<String>>
             if (StringUtils.isEmpty(value)) {
                 return defaultValue;
             }
-            return Converter.convert(value, type, defaultValue);
+            return GenericConverter.convert(value, type, defaultValue);
         } catch (ConverterException e) {
             throw new PropertiesException("Could not convert '"
                     + key + "' value to " + type.getSimpleName(), e);
@@ -1446,6 +1445,6 @@ public class Properties extends ObservableMap<String, List<String>>
     // implications of EMPTY vs null. (why have empty for elements in in array,
     // and null otherwise?) Should always be null or not kept in array.
     private String toString(Object obj) {
-        return Converter.convert(obj);
+        return GenericConverter.convert(obj);
     }
 }

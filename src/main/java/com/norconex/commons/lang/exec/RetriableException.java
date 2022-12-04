@@ -22,7 +22,6 @@ import org.apache.commons.lang3.ArrayUtils;
  * {@link #getCause()} will return the last exception captured.
  * You can get all exceptions captured by {@link Retrier}
  * with {@link #getAllCauses()} (up to a maximum specified by {@link Retrier}).
- * @author Pascal Essiembre
  * @see Retrier
  * @since 1.13.0
  */

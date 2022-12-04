@@ -33,7 +33,6 @@ import lombok.extern.slf4j.Slf4j;
  * puts an end to the pipeline execution.
  * For more sophisticated workflow needs, consider using a more advanced
  * framework.
- * @author Pascal Essiembre
  * @param <T> pipeline context type
  * @since 1.5.0
  * @deprecated Use {@link Predicates} or {@link Predicate} chaining instead

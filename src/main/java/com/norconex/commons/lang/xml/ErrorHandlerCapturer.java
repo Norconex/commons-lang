@@ -25,7 +25,6 @@ import com.norconex.commons.lang.xml.XMLValidationError.Severity;
 
 /**
  * Collects XML validation errors.
- * @author Pascal Essiembre
  * @since 2.0.0
  */
 public class ErrorHandlerCapturer implements ErrorHandler {

@@ -27,7 +27,6 @@ import com.norconex.commons.lang.ResourceLoader;
 import com.norconex.commons.lang.xml.XMLFormatter.Builder.AttributeWrap;
 
 /**
- * @author Pascal Essiembre
  */
 public class XMLFormatterTest {
 

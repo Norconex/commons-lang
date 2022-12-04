@@ -20,7 +20,7 @@ import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.XML;
 
 final class MockXMLFlowConsumerAdapter
-        implements IXMLFlowConsumerAdapter<Properties> {
+        implements XMLFlowConsumerAdapter<Properties> {
 
     private Consumer<Properties> consumer;
 

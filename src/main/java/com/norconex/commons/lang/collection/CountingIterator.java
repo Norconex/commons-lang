@@ -20,7 +20,6 @@ import org.apache.commons.collections4.iterators.AbstractIteratorDecorator;
 
 /**
  * Counts the number of time {@link #next()} was invoked.
- * @author Pascal Essiembre
  * @param <T> iterator type
  * @since 2.0.0
  */

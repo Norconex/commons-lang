@@ -36,7 +36,6 @@ import com.norconex.commons.lang.jar.JarCopier.OnJarConflict.TargetAction;
 
 /**
  * On jar conflict command-line supplier with interactive prompts.
- * @author Pascal Essiembre
  * @since 3.0.0
  */
 class JarCopierCmdPrompts

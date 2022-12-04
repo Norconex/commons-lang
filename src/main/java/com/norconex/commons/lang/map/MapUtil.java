@@ -20,7 +20,6 @@ import java.util.Objects;
 
 /**
  * Map-related utility methods.
- * @author Pascal Essiembre
  * @since 2.0.0
  */
 public final class MapUtil {

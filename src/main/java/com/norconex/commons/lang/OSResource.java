@@ -32,7 +32,6 @@ import lombok.extern.slf4j.Slf4j;
  * or Mac operating systems.
  * </p>
  *
- * @author Pascal Essiembre
  * @param <T> resource type
  * @since 2.0.0
  */

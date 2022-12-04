@@ -24,7 +24,6 @@ import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.XML;
 
 /**
- * @author Pascal Essiembre
  */
 class RegexFieldValueExtractorTest {
 

@@ -39,7 +39,6 @@ import lombok.ToString;
  * </p>
  *
  * @param <T> type being predicated and consumed
- * @author Pascal Essiembre
  * @since 2.0.0
  */
 @EqualsAndHashCode

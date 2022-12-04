@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.ObjectUtils;
 
-import com.norconex.commons.lang.xml.IXMLConfigurable;
+import com.norconex.commons.lang.xml.XMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 
 import lombok.EqualsAndHashCode;
@@ -111,13 +111,12 @@ import lombok.ToString;
  * "they", the above will result in "It seems they are friends.".
  * </p>
  *
- * @author Pascal Essiembre
  * @since 2.0.0
  */
 @ToString
 @EqualsAndHashCode
 public class TextMatcher implements
-        Predicate<CharSequence>, BinaryOperator<String>, IXMLConfigurable {
+        Predicate<CharSequence>, BinaryOperator<String>, XMLConfigurable {
 
     public enum Method {
         BASIC(new MethodStrategy() {

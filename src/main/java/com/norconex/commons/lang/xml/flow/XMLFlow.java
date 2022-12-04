@@ -71,7 +71,6 @@ import lombok.ToString;
  *   <!-- Same as "if" tag -->
  * </ifNot>
  * }
- * @author Pascal Essiembre
  * @param <T> type of the object to be submitted to the flow.
  * @since 2.0.0
  */
@@ -81,23 +80,23 @@ public final class XMLFlow<T> {
 
     public static final String DEFAULT_CONSUMERS_WRITE_TAG_NAME = "consumer";
 
-    private final Class<? extends IXMLFlowPredicateAdapter<T>> predicateAdapter;
-    private final Class<? extends IXMLFlowConsumerAdapter<T>> consumerAdapter;
+    private final Class<? extends XMLFlowPredicateAdapter<T>> predicateAdapter;
+    private final Class<? extends XMLFlowConsumerAdapter<T>> consumerAdapter;
 
     public XMLFlow() {
         this(null, null);
     }
     public XMLFlow(
-            Class<? extends IXMLFlowConsumerAdapter<T>> consumerAdapter,
-            Class<? extends IXMLFlowPredicateAdapter<T>> predicateAdapter) {
+            Class<? extends XMLFlowConsumerAdapter<T>> consumerAdapter,
+            Class<? extends XMLFlowPredicateAdapter<T>> predicateAdapter) {
         this.consumerAdapter = consumerAdapter;
         this.predicateAdapter = predicateAdapter;
     }
 
-    public Class<? extends IXMLFlowConsumerAdapter<T>> getConsumerAdapter() {
+    public Class<? extends XMLFlowConsumerAdapter<T>> getConsumerAdapter() {
         return consumerAdapter;
     }
-    public Class<? extends IXMLFlowPredicateAdapter<T>> getPredicateAdapter() {
+    public Class<? extends XMLFlowPredicateAdapter<T>> getPredicateAdapter() {
         return predicateAdapter;
     }
 
@@ -141,7 +140,7 @@ public final class XMLFlow<T> {
             // If a consumer adapter is set, use it to parse the XML
             try {
                 //MAYBE: throw XMLValidationException if there are any errors?
-                IXMLFlowConsumerAdapter<T> c =
+                XMLFlowConsumerAdapter<T> c =
                         consumerAdapter.getDeclaredConstructor().newInstance();
                 c.loadFromXML(consumerXML);
                 consumer = c;
@@ -161,7 +160,7 @@ public final class XMLFlow<T> {
             + "' does not resolve to an implementation of "
             + "java.util.function.Consumer. Add a class=\"\" attribute "
             + "pointing to your predicate implementation, or initialize "
-            + "XMLFlow with an IXMLFlowConsumerAdapter.");
+            + "XMLFlow with an XMLFlowConsumerAdapter.");
         }
         return consumer;
     }

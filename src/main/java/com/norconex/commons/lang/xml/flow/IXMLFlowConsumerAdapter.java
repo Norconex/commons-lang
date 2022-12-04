@@ -1,4 +1,4 @@
-/* Copyright 2021 Norconex Inc.
+/* Copyright 2021-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,13 @@ package com.norconex.commons.lang.xml.flow;
 
 import java.util.function.Consumer;
 
-import com.norconex.commons.lang.xml.IXMLConfigurable;
-
 /**
  * Adapts flow consuming elements so they can be treated as {@link Consumer}.
- * @author Pascal Essiembre
  * @param <T> type of the object to be submitted to the flow.
  * @since 2.0.0
+ * @deprecated Use {@link XMLFlowConsumerAdapter} instead.
  */
-public interface IXMLFlowConsumerAdapter<T>
-        extends Consumer<T>, IXMLConfigurable {
+@Deprecated(since="3.0.0")
+public interface IXMLFlowConsumerAdapter<T> //NOSONAR
+        extends XMLFlowConsumerAdapter<T> {
 }

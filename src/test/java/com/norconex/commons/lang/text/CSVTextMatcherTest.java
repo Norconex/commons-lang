@@ -20,7 +20,6 @@ import org.junit.jupiter.api.Test;
 import com.norconex.commons.lang.text.TextMatcher.Method;
 
 /**
- * @author Pascal Essiembre
  * @since 2.0.0
  */
 public class CSVTextMatcherTest {

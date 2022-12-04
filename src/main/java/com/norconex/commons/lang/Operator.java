@@ -42,7 +42,6 @@ import org.apache.commons.lang3.compare.ComparableUtils;
  * </table>
  * }
  *
- * @author Pascal Essiembre
  * @since 2.0.0
  */
 public enum Operator {

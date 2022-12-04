@@ -28,7 +28,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * String-related utility methods not found in popular libraries.
- * @author Pascal Essiembre
  * @since 1.14.0
  */
 public final class StringUtil {

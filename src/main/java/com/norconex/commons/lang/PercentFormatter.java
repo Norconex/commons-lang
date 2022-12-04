@@ -24,7 +24,6 @@ import java.util.Locale;
  * Formats percentage as string.  This class is thread-safe.
  * Methods expecting a denominator will always return zero percent if said
  * denominator is zero.
- * @author Pascal Essiembre
  * @since 1.4.0
  */
 public class PercentFormatter implements Serializable {

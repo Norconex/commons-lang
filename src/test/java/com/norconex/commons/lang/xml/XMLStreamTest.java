@@ -26,7 +26,6 @@ import org.junit.jupiter.api.Test;
 import com.norconex.commons.lang.ResourceLoader;
 
 /**
- * @author Pascal Essiembre
  */
 class XMLStreamTest {
 

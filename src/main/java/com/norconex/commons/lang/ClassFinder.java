@@ -45,7 +45,6 @@ import lombok.extern.slf4j.Slf4j;
  * Utility class for finding names of classes implementing an interface or class
  * in directories or JAR files.
  *
- * @author Pascal Essiembre
  */
 @Slf4j
 public final class ClassFinder {

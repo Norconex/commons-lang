@@ -31,13 +31,12 @@ import java.util.stream.Collectors;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import com.norconex.commons.lang.convert.Converter;
+import com.norconex.commons.lang.convert.GenericConverter;
 
 import lombok.NonNull;
 
 /**
  * Collection-related utility methods.
- * @author Pascal Essiembre
  * @since 2.0.0
  */
 public final class CollectionUtil {
@@ -218,7 +217,7 @@ public final class CollectionUtil {
 
     /**
      * Converts a list of objects to a list of strings using
-     * default {@link Converter} instance.
+     * default {@link GenericConverter} instance.
      * If the supplied list is <code>null</code>, an empty string list
      * is returned.
      * @param values list to convert to a list of strings
@@ -229,7 +228,7 @@ public final class CollectionUtil {
     }
     /**
      * Converts a list of objects to a list of strings using
-     * default {@link Converter} instance.
+     * default {@link GenericConverter} instance.
      * If the supplied list is <code>null</code>, an empty string list
      * is returned.
      * @param values list to convert to a list of strings
@@ -240,7 +239,7 @@ public final class CollectionUtil {
             return Collections.emptyList();
         }
         return values.stream().map(
-                Converter::convert).collect(Collectors.toList());
+                GenericConverter::convert).collect(Collectors.toList());
     }
     /**
      * Converts a list of strings to a list of objects matching
@@ -257,7 +256,7 @@ public final class CollectionUtil {
         if (values == null) {
             return Collections.emptyList();
         }
-        return values.stream().map(str -> Converter.convert(
+        return values.stream().map(str -> GenericConverter.convert(
                 str, targetClass)).collect(Collectors.toList());
     }
 

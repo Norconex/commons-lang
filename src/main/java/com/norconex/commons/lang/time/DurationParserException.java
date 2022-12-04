@@ -19,7 +19,6 @@ import lombok.experimental.StandardException;
 /**
  * Runtime exception when a {@link DurationParser} could not parse a string
  * value.
- * @author Pascal Essiembre
  * @since 1.13.0
  */
 @StandardException

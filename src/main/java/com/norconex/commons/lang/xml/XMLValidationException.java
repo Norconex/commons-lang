@@ -21,7 +21,6 @@ import org.apache.commons.collections4.CollectionUtils;
 
 /**
  * Runtime exception for configuration related issues.
- * @author Pascal Essiembre
  * @since 2.0.0
  * @see XML#validate(Class)
  */

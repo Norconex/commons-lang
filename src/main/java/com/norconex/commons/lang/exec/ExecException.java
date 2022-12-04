@@ -18,7 +18,6 @@ import lombok.experimental.StandardException;
 
 /**
  * An exception thrown by {@link ExecUtil}.
- * @author Pascal Essiembre
  * @see ExecUtil
  * @since 1.13.0
  */

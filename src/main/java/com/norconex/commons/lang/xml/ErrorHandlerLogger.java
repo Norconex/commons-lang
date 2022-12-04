@@ -23,7 +23,6 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * Logs XML validation warnings and errors. XML "fatal" errors are logged
  * as error.
- * @author Pascal Essiembre
  * @since 2.0.0
  */
 @Slf4j

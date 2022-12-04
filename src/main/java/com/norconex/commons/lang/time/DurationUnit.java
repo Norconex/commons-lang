@@ -28,7 +28,6 @@ import org.apache.commons.lang3.ArrayUtils;
  * according to a specific era or moment in time.  For instance a year is
  * a fixed average of approximately 365.2425 days.
  *
- * @author Pascal Essiembre
  * @since 2.0.0
  */
 public enum DurationUnit {

@@ -50,12 +50,10 @@ import com.norconex.commons.lang.io.CachedStreamFactory.MemoryTracker;
  * the cache limit, the cache transforms itself into a file-based cache
  * of unlimited size. Default memory cache size is 128 KB.
  * <br><br>
- * @author Pascal Essiembre
  * @since 1.5
  * @see CachedStreamFactory
  */
-public class CachedOutputStream extends OutputStream
-        implements ICachedStream {
+public class CachedOutputStream extends OutputStream implements CachedStream {
 
     private static final Logger LOG =
             LoggerFactory.getLogger(CachedOutputStream.class);

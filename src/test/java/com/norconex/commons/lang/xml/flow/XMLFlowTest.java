@@ -32,7 +32,6 @@ import com.norconex.commons.lang.xml.XML;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * @author Pascal Essiembre
  */
 @Slf4j
 class XMLFlowTest {

@@ -41,7 +41,6 @@ import com.norconex.commons.lang.xml.XMLFormatter.Builder.AttributeWrap;
  * </test>
  * }
  *
- * @author Pascal Essiembre
  * @since 2.0.0
  */
 public class XMLTaglet extends AbstractInlineTaglet {

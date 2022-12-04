@@ -20,7 +20,6 @@ import java.nio.ByteBuffer;
 
 /**
  * Wraps a {@link ByteBuffer} in an {@link InputStream}.
- * @author Pascal Essiembre
  * @since 1.5
  */
 public class ByteBufferInputStream extends InputStream {

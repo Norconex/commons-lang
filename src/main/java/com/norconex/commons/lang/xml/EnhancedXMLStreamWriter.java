@@ -44,7 +44,6 @@ import lombok.extern.slf4j.Slf4j;
  * Since 2.0.0 checked exceptions are wrapped in an {@link XMLException}.
  * </p>
  *
- * @author Pascal Essiembre
  * @since 1.5.0
  */
 @Slf4j
@@ -644,9 +643,9 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
     }
 
     /**
-     * Writes an object. If the object implements {@link IXMLConfigurable},
+     * Writes an object. If the object implements {@link XMLConfigurable},
      * its is responsible for creating its own XML through its
-     * {@link IXMLConfigurable#saveToXML(XML)} method.
+     * {@link XMLConfigurable#saveToXML(XML)} method.
      * Otherwise, an empty element is created with the "class" attribute
      * matching the object class canonical name.
      * @param localName element (tag) name
@@ -658,9 +657,9 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
         writeObject(localName, value, false);
     }
     /**
-     * Writes an object. If the object implements {@link IXMLConfigurable},
+     * Writes an object. If the object implements {@link XMLConfigurable},
      * its is responsible for creating its own XML through its
-     * {@link IXMLConfigurable#saveToXML(XML)} method.
+     * {@link XMLConfigurable#saveToXML(XML)} method.
      * Otherwise, an empty element is created with the "class" attribute
      * matching the object class canonical name.
      * @param localName element (tag) name
@@ -676,7 +675,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
             }
             return;
         }
-        if (value instanceof IXMLConfigurable) {
+        if (value instanceof XMLConfigurable) {
             flush();
             writeStartElement(localName);
             if (disabled) {
@@ -703,9 +702,9 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
 
     /**
      * Writes a list of objects.
-     * If an object implements {@link IXMLConfigurable},
+     * If an object implements {@link XMLConfigurable},
      * its is responsible for creating its own XML through its
-     * {@link IXMLConfigurable#saveToXML(XML)} method.
+     * {@link XMLConfigurable#saveToXML(XML)} method.
      * Otherwise, an empty element is created with the "class" attribute
      * matching the object class canonical name.
      * @param parentLocalName parent tag wrapping child elements

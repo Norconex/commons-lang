@@ -66,7 +66,6 @@ import jakarta.xml.bind.DatatypeConverter;
  * <code>decrypt.[sh|bat]</code> files distributed with this library.
  * </p>
  *
- * @author Pascal Essiembre
  * @since 1.9.0
  */
 public class EncryptionUtil {

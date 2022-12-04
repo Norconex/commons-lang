@@ -1,4 +1,4 @@
-/* Copyright 2018 Norconex Inc.
+/* Copyright 2018-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,23 +14,15 @@
  */
 package com.norconex.commons.lang.time;
 
-import java.util.Locale;
-
 /**
- * Formats a single duration unit according to supplied locale 
- * and plurality flag. 
- * @author Pascal Essiembre
+ * Formats a single duration unit according to supplied locale
+ * and plurality flag.
  * @since 2.0.0
  * @see DurationFormatter
+ * @deprecated Use {@link DurationUnitFormatter} instead.
  */
+@Deprecated(since="3.0.0")
 @FunctionalInterface
-public interface IDurationUnitFormatter {
-    /**
-     * Format a duration unit
-     * @param unit duration unit
-     * @param locale locale
-     * @param plural <code>true</code> if plural
-     * @return formatted unit
-     */
-    String format(DurationUnit unit, Locale locale, boolean plural);
+public interface IDurationUnitFormatter //NOSONAR
+        extends DurationUnitFormatter {
 }

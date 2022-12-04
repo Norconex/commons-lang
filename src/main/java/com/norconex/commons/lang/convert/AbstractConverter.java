@@ -25,13 +25,12 @@ import lombok.ToString;
  * in {@link ConverterException}.
  * </p>
  *
- * @author Pascal Essiembre
  * @see ConverterException
  * @since 2.0.0
  */
 @EqualsAndHashCode
 @ToString
-public abstract class AbstractConverter implements IConverter {
+public abstract class AbstractConverter implements Converter {
 
     @Override
     public final <T> T toType(String value, @NonNull Class<T> type) {

@@ -40,7 +40,6 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * A package manifest containing project or library identifying information.
- * @author Pascal Essiembre
  * @since 3.0.0
  */
 @Slf4j

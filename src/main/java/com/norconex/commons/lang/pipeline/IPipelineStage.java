@@ -18,7 +18,6 @@ import java.util.function.Predicate;
 
 /**
  * A logical step in the pipepline.  Typically an action to be executed.
- * @author Pascal Essiembre
  * @param <T> pipeline context type
  * @since 1.5.0
  * @deprecated Use {@link Predicate} instead.

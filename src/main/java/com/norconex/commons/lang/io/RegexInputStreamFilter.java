@@ -20,7 +20,6 @@ import java.util.regex.Pattern;
 /**
  * Filters lines of text read from an InputStream decorated with
  * {@link FilteredInputStream}, based on a given regular expression.
- * @author Pascal Essiembre
  * @see Pattern
  */
 public class RegexInputStreamFilter implements Predicate<String> {

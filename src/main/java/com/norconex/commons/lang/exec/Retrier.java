@@ -25,11 +25,10 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 /**
- * This class is responsible for executing {@link IRetriable}
+ * This class is responsible for executing {@link Retriable}
  * instances.  Upon reaching the maximum number of retries allowed, it
  * will throw a {@link RetriableException}, wrapping the last exceptions
  * encountered, if any, to a configurable maximum.
- * @author Pascal Essiembre
  * @since 1.13.0
  */
 @EqualsAndHashCode
@@ -49,7 +48,7 @@ public class Retrier {
 
     private int maxRetries = DEFAULT_MAX_RETRIES;
     private long retryDelay = DEFAULT_RETRY_DELAY;
-    private IExceptionFilter exceptionFilter;
+    private ExceptionFilter exceptionFilter;
     private int maxCauses = DEFAULT_MAX_CAUSES_KEPT;
 
     /**
@@ -68,21 +67,21 @@ public class Retrier {
     /**
      * Creates a new instance which will retry execution
      * only if the exception thrown by an attempt is accepted by
-     * the {@link IExceptionFilter} (up to <code>maxRetries</code>).
+     * the {@link ExceptionFilter} (up to <code>maxRetries</code>).
      * Uses the default maximum retries and default retry delay.
      * @param exceptionFilter exception filter
      */
-    public Retrier(IExceptionFilter exceptionFilter) {
+    public Retrier(ExceptionFilter exceptionFilter) {
         this.exceptionFilter = exceptionFilter;
     }
     /**
      * Creates a new instance which will retry execution
      * only if the exception thrown by an attempt is accepted by
-     * the {@link IExceptionFilter} (up to <code>maxRetries</code>).
+     * the {@link ExceptionFilter} (up to <code>maxRetries</code>).
      * @param exceptionFilter exception filter
      * @param maxRetries maximum number of retries
      */
-    public Retrier(IExceptionFilter exceptionFilter, int maxRetries) {
+    public Retrier(ExceptionFilter exceptionFilter, int maxRetries) {
         this.maxRetries = maxRetries;
         this.exceptionFilter = exceptionFilter;
     }
@@ -125,7 +124,7 @@ public class Retrier {
      * Sets an exception filter that limits the exceptions eligible for retry.
      * @return exception filter
      */
-    public IExceptionFilter getExceptionFilter() {
+    public ExceptionFilter getExceptionFilter() {
         return exceptionFilter;
     }
     /**
@@ -133,7 +132,7 @@ public class Retrier {
      * @param exceptionFilter exception filter
      * @return this instance
      */
-    public Retrier setExceptionFilter(IExceptionFilter exceptionFilter) {
+    public Retrier setExceptionFilter(ExceptionFilter exceptionFilter) {
         this.exceptionFilter = exceptionFilter;
         return this;
     }
@@ -156,7 +155,7 @@ public class Retrier {
         return this;
     }
     /**
-     * Runs the {@link IRetriable} instance.  This method is only
+     * Runs the {@link Retriable} instance.  This method is only
      * thread-safe if not modified after being used for the first time,
      * and the exception filter is thread-safe (or <code>null</code>).
      * @param retriable the code to run
@@ -165,7 +164,7 @@ public class Retrier {
      * @throws RetriableException wrapper around last exception encountered
      * or exception thrown when max rerun attempts is reached.
      */
-    public <T> T execute(IRetriable<T> retriable) throws RetriableException {
+    public <T> T execute(Retriable<T> retriable) throws RetriableException {
         int retryCount = 0;
         CircularFifoQueue<Exception> exceptions =
                 new CircularFifoQueue<>(maxCauses);

@@ -38,7 +38,6 @@ import lombok.NonNull;
 
 /**
  * I/O related utility methods.
- * @author Pascal Essiembre
  */
 public final class IOUtil {
 

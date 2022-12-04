@@ -34,7 +34,6 @@ import lombok.EqualsAndHashCode;
  * make sure supplied arguments are serializable.
  * </p>
  * @param <T> the range type
- * @author Pascal Essiembre
  * @since 1.14.0
  */
 @EqualsAndHashCode

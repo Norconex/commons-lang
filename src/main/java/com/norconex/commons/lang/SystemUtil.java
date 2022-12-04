@@ -20,7 +20,6 @@ import java.util.concurrent.Callable;
 
 /**
  * System-related convenience methods.
- * @author Pascal Essiembre
  * @since 2.0.0
  */
 public final class SystemUtil {

@@ -18,7 +18,6 @@ import java.lang.annotation.Annotation;
 
 /**
  * Class-related utility methods.
- * @author Pascal Essiembre
  * @since 2.0.0
  */
 public final class ClassUtil {

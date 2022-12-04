@@ -26,7 +26,6 @@ import org.apache.commons.lang3.StringUtils;
  * </test>
  * }
  *
- * @author Pascal Essiembre
  * @since 2.0.0
  */
 public class XMLExampleTaglet extends XMLTaglet {

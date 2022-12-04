@@ -22,7 +22,6 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * Exception-related utility methods.
- * @author Pascal Essiembre
  * @since 2.0.0
  */
 public final class ExceptionUtil {

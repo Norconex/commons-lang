@@ -1,4 +1,4 @@
-/* Copyright 2010-2017 Norconex Inc.
+/* Copyright 2010-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,9 @@
  */
 package com.norconex.commons.lang.io;
 
-import java.nio.file.Path;
-
 /**
- * @author Pascal Essiembre
+ * @deprecated Use {@link CachedStream} instead.
  */
-public interface ICachedStream {
-
-    long getMemCacheSize();
-
-    /**
-     * Gets the cache directory where temporary cache files are created.
-     * @return the cache directory
-     * @since 1.14.0
-     */
-    Path getCacheDirectory();
+@Deprecated(since="3.0.0")
+public interface ICachedStream extends CachedStream { //NOSONAR
 }

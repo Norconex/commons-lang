@@ -26,7 +26,7 @@ import org.xml.sax.ErrorHandler;
 
 import com.norconex.commons.lang.SystemUtil;
 import com.norconex.commons.lang.security.Credentials;
-import com.norconex.commons.lang.xml.IXMLConfigurable;
+import com.norconex.commons.lang.xml.XMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 
 import lombok.Data;
@@ -133,7 +133,7 @@ class ConfigurationLoaderTest {
     }
 
     @Data
-    static class TestConfig implements IXMLConfigurable {
+    static class TestConfig implements XMLConfigurable {
         private String username;
         private String password;
         @Override

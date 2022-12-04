@@ -37,7 +37,6 @@ import com.norconex.commons.lang.xml.XML;
  * in XML configuration.
  * </p>
  *
- * @author Pascal Essiembre
  * @since 2.0.0
  */
 public enum PropertySetter {

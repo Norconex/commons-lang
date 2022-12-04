@@ -63,7 +63,7 @@ class InputStreamConsumerTest {
     @Test
     void testInputStreamConsumerWithListener() throws IOException {
         StringBuilder b = new StringBuilder();
-        IInputStreamListener listener = (type, bytes, len) -> {
+        InputStreamListener listener = (type, bytes, len) -> {
             String str =
                     new String(ArrayUtils.subarray(bytes, 0, len));
             if (StringUtils.isNotBlank(str)) {

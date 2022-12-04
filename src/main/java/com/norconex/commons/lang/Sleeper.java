@@ -21,7 +21,6 @@ import java.util.concurrent.TimeUnit;
  * If sleeping fails, it throws a runtime exception of type
  * {@link SleeperException}
  * 
- * @author Pascal Essiembre
  */
 public final class Sleeper {
 

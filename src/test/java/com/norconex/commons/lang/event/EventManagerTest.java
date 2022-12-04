@@ -76,7 +76,7 @@ class EventManagerTest {
 
         EventManager em = new EventManager();
         em.addListener(tel);
-        em.fire(Event.builder("eventTest", "someSource").build());
+        em.fire(Event.builder().name("eventTest").source("someSource").build());
 
         assertThat(tel.getEvent().getName()).isEqualTo("eventTest");
     }
@@ -93,7 +93,8 @@ class EventManagerTest {
         childEM.addListener(childListener);
 
         // should be in both child and parent
-        childEM.fire(Event.builder("inBoth", "someSource").build());
+        childEM.fire(Event.builder()
+                .name("inBoth").source("someSource").build());
         assertThat(parentListener.getEvent().getName()).isEqualTo("inBoth");
         assertThat(childListener.getEvent().getName()).isEqualTo("inBoth");
     }
@@ -110,7 +111,8 @@ class EventManagerTest {
         childEM.bindParent(parentEM);
         childEM.addListener(childListener);
 
-        parentEM.fire(Event.builder("parentOnly", "someSource").build());
+        parentEM.fire(Event.builder()
+                .name("parentOnly").source("someSource").build());
         assertThat(parentListener.getEvent().getName()).isEqualTo("parentOnly");
         assertThat(childListener.getEvent()).isNull();
     }
@@ -120,12 +122,12 @@ class EventManagerTest {
         EventManager parentEM = new EventManager();
         EventManager childEM = new EventManager(parentEM);
         assertDoesNotThrow(() -> childEM.bindParent(parentEM));
-        assertThrows(IllegalStateException.class,
+        assertThrows(IllegalStateException.class, //NOSONAR
                 () -> childEM.bindParent(new EventManager()));
     }
 
     @Data
-    static class TestEventListener implements IEventListener<Event> {
+    static class TestEventListener implements EventListener<Event> {
         private String salt;
         private Event event;
 

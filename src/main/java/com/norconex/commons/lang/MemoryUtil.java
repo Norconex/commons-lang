@@ -16,7 +16,6 @@ package com.norconex.commons.lang;
 
 /**
  * Memory-related utility methods.
- * @author Pascal Essiembre
  * @since 1.5.0
  */
 public final class MemoryUtil {

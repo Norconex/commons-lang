@@ -34,7 +34,6 @@ import lombok.ToString;
  * </p>
  *
  * @param <T> type being consumed by all consumers
- * @author Pascal Essiembre
  * @since 2.0.0
  */
 @EqualsAndHashCode(callSuper = true)

@@ -24,9 +24,8 @@ import java.util.TimerTask;
 
 /**
  * Class monitoring a {@link File} for changes and notifying all registered
- * {@link IFileChangeListener}.
+ * {@link FileChangeListener}.
  *
- * @author Pascal Essiembre
  * @since 1.3.0
  */
 public final class FileMonitor {
@@ -55,14 +54,14 @@ public final class FileMonitor {
     }
 
     /**
-     * Adds a monitored file with a {@link IFileChangeListener}.
+     * Adds a monitored file with a {@link FileChangeListener}.
      *
      * @param listener listener to notify when the file changed.
      * @param fileName name of the file to monitor.
      * @param period   polling period in milliseconds.
      * @throws FileNotFoundException error with the file
      */
-    public void addFileChangeListener(IFileChangeListener listener,
+    public void addFileChangeListener(FileChangeListener listener,
             String fileName, long period) throws FileNotFoundException {
         addFileChangeListener(listener, new File(fileName), period);
     }
@@ -75,7 +74,7 @@ public final class FileMonitor {
      * @param period   polling period in milliseconds.
      * @throws FileNotFoundException error with the file
      */
-    public void addFileChangeListener(IFileChangeListener listener, File file,
+    public void addFileChangeListener(FileChangeListener listener, File file,
             long period) throws FileNotFoundException {
         removeFileChangeListener(listener, file);
         FileMonitorTask task = new FileMonitorTask(listener, file);
@@ -89,7 +88,7 @@ public final class FileMonitor {
      * @param listener the listener to be removed.
      * @param fileName name of the file for which to remove the listener
      */
-    public void removeFileChangeListener(IFileChangeListener listener,
+    public void removeFileChangeListener(FileChangeListener listener,
             String fileName) {
         removeFileChangeListener(listener, new File(fileName));
     }
@@ -101,7 +100,7 @@ public final class FileMonitor {
      * @param file     the file for which to remove the listener
      */
     public void removeFileChangeListener(
-            IFileChangeListener listener, File file) {
+            FileChangeListener listener, File file) {
         FileMonitorTask task = timerEntries.remove(file.toString()
                 + listener.hashCode());
         if (task != null) {
@@ -118,7 +117,7 @@ public final class FileMonitor {
      *            the file that changed
      */
     protected void fireFileChangeEvent(
-            IFileChangeListener listener, File file) {
+            FileChangeListener listener, File file) {
         listener.fileChanged(file);
     }
 
@@ -126,11 +125,11 @@ public final class FileMonitor {
      * File monitoring task.
      */
     class FileMonitorTask extends TimerTask {
-        private IFileChangeListener listener;
+        private FileChangeListener listener;
         private File monitoredFile;
         private long lastModified;
 
-        public FileMonitorTask(IFileChangeListener listener, File file)
+        public FileMonitorTask(FileChangeListener listener, File file)
                 throws FileNotFoundException {
             this.listener = listener;
             this.lastModified = 0;

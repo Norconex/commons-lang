@@ -26,7 +26,6 @@ import org.slf4j.event.Level;
 
 /**
  * Provides convenience methods complementing the SLF4J offerings.
- * @author Pascal Essiembre
  * @since 2.0.0
  */
 public final class SLF4JUtil {

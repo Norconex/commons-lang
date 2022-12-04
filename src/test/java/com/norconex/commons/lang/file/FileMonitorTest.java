@@ -38,7 +38,7 @@ class FileMonitorTest {
     @Test
     void testFileMonitor() throws IOException {
         StringBuilder b = new StringBuilder();
-        IFileChangeListener listener = f -> {
+        FileChangeListener listener = f -> {
             try {
                 b.append(FileUtils.readFileToString(f, UTF_8));
             } catch (IOException e) {

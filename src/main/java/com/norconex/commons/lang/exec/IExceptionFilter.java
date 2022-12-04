@@ -1,4 +1,4 @@
-/* Copyright 2010-2017 Norconex Inc.
+/* Copyright 2010-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,12 @@ package com.norconex.commons.lang.exec;
 
 /**
  * Filter for limiting the exceptions to be eligible for retry.
- * @author Pascal Essiembre
  * @see Retrier
- * @since 1.13.0 (previously part of now deprecated JEF API)
+ * @since 1.13.0
+ * @deprecated Use {@link ExceptionFilter} isntead.
  */
-public interface IExceptionFilter {
+@Deprecated(since="3.0.0")
+public interface IExceptionFilter extends ExceptionFilter { //NOSONAR
 
     /**
      * Filters an exception. Runtime exceptions can be of any type,
@@ -30,5 +31,6 @@ public interface IExceptionFilter {
      * @return <code>true</code> if the exception should trigger a retry,
      *         <code>false</code> to abort execution
      */
+    @Override
     boolean retry(Exception e);
 }

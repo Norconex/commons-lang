@@ -18,7 +18,6 @@ import lombok.experimental.StandardException;
 
 /**
  * Runtime exception for XML-related issues.
- * @author Pascal Essiembre
  */
 @StandardException
 public class XMLFlowException extends RuntimeException {

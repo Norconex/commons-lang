@@ -18,7 +18,7 @@ import java.io.Serializable;
 
 import com.norconex.commons.lang.bean.BeanUtil;
 import com.norconex.commons.lang.security.Credentials;
-import com.norconex.commons.lang.xml.IXMLConfigurable;
+import com.norconex.commons.lang.xml.XMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 
 import lombok.AccessLevel;
@@ -46,14 +46,13 @@ import lombok.experimental.FieldNameConstants;
  * <p>The above can be found under any parent tag. See consuming class
  * documentation for exact usage.</p>
  *
- * @author Pascal Essiembre
  * @since 1.14.0
  */
 @SuppressWarnings("javadoc")
 @ToString
 @EqualsAndHashCode
 @FieldNameConstants(level = AccessLevel.PRIVATE)
-public class ProxySettings implements IXMLConfigurable, Serializable {
+public class ProxySettings implements XMLConfigurable, Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -163,7 +162,7 @@ public class ProxySettings implements IXMLConfigurable, Serializable {
             xml.checkDeprecated("proxyPort", Fields.host, true);
             xml.checkDeprecated("proxyScheme", Fields.scheme, true);
             xml.checkDeprecated("proxyRealm", Fields.realm, true);
-            //MAYBE: make host IXMLConfigurable and use populate() ?
+            //MAYBE: make host XMLConfigurable and use populate() ?
             host = Host.loadFromXML(xml.getXML(Fields.host), host);
             scheme = xml.getString(Fields.scheme, scheme);
             realm = xml.getString(Fields.realm, realm);

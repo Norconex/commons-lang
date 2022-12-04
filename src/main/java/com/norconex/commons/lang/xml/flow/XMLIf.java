@@ -23,7 +23,7 @@ import org.apache.commons.lang3.builder.EqualsExclude;
 import org.apache.commons.lang3.builder.HashCodeExclude;
 import org.apache.commons.lang3.builder.ToStringExclude;
 
-import com.norconex.commons.lang.xml.IXMLConfigurable;
+import com.norconex.commons.lang.xml.XMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 
 import lombok.EqualsAndHashCode;
@@ -81,13 +81,12 @@ import lombok.ToString;
  *   </else>
  * </if>
  * }
- * @author Pascal Essiembre
  * @since 2.0.0
  * @see XMLIfNot
  */
 @ToString
 @EqualsAndHashCode
-class XMLIf<T> implements Consumer<T>, IXMLConfigurable {
+class XMLIf<T> implements Consumer<T>, XMLConfigurable {
 
     @ToStringExclude @EqualsExclude @HashCodeExclude
     private final XMLFlow<T> flow;

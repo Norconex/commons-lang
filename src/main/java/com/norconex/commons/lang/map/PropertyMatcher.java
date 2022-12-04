@@ -30,7 +30,6 @@ import lombok.ToString;
  * <p>Convenient way of matching values and/or fields (key)
  * in a given {@link Properties}.
  * </p>
- * @author Pascal Essiembre
  * @since 1.8.0
  * @see TextMatcher
  */

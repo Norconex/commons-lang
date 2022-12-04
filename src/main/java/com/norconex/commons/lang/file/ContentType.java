@@ -59,7 +59,6 @@ import lombok.EqualsAndHashCode;
  *   </tr>
  * </table>
  *
- * @author Pascal Essiembre
  * @since 1.4.0
  */
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)

@@ -18,7 +18,6 @@ import lombok.experimental.StandardException;
 
 /**
  * Runtime exception for configuration related issues.
- * @author Pascal Essiembre
  */
 @StandardException
 public class ConfigurationException extends RuntimeException {

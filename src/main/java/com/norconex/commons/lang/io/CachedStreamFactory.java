@@ -58,7 +58,6 @@ import com.norconex.commons.lang.unit.DataUnit;
  * Initialization values passed in constructor always take precedence.
  * </p>
  *
- * @author Pascal Essiembre
  */
 public class CachedStreamFactory {
 
@@ -76,8 +75,8 @@ public class CachedStreamFactory {
     private final int maxMemoryInstance;
     private final Path cacheDirectory;
 
-    private final Map<ICachedStream, Void> streams =
-            Collections.synchronizedMap(new WeakHashMap<ICachedStream, Void>());
+    private final Map<CachedStream, Void> streams =
+            Collections.synchronizedMap(new WeakHashMap<CachedStream, Void>());
 
     /**
      * Constructor.
@@ -119,8 +118,8 @@ public class CachedStreamFactory {
     public CachedStreamFactory(Path cacheDirectory) {
         Objects.requireNonNull(
                 cacheDirectory, "'cacheDirectory' must not be null");
-        this.maxMemoryPool = getDefaultMaxMemoryPool();
-        this.maxMemoryInstance = getDefaultMaxMemoryInstance();
+        maxMemoryPool = getDefaultMaxMemoryPool();
+        maxMemoryInstance = getDefaultMaxMemoryInstance();
         this.cacheDirectory = cacheDirectory;
     }
     /**
@@ -158,7 +157,7 @@ public class CachedStreamFactory {
     /*default*/ int getPoolCurrentMemory() {
         int byteSize = 0;
         synchronized (streams) {
-            for (ICachedStream stream : streams.keySet()) {
+            for (CachedStream stream : streams.keySet()) {
                 if (stream != null) {
                     byteSize += stream.getMemCacheSize();
                 }
@@ -218,7 +217,7 @@ public class CachedStreamFactory {
                 new CachedOutputStream(this, cacheDirectory, null));
     }
 
-    private <T extends ICachedStream> T registerStream(T s) {
+    private <T extends CachedStream> T registerStream(T s) {
         synchronized (streams) {
             streams.put(s, null);
         }

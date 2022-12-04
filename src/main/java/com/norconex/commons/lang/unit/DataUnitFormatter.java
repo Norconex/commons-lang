@@ -36,7 +36,6 @@ import lombok.ToString;
  * or yobi (1024<sup>8</sup>).
  * </p>
  *
- * @author Pascal Essiembre
  * @since 1.4.0
  */
 @ToString

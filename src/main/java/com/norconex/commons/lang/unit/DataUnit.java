@@ -81,7 +81,6 @@ import org.apache.commons.lang3.StringUtils;
  * </pre>
  *
  * @since 1.4.0
- * @author Pascal Essiembre
  * @see DataUnitFormatter
  */
 public enum DataUnit {

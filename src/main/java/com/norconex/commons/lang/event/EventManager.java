@@ -40,7 +40,6 @@ import lombok.Setter;
  * event on a particular event manager are bubbled up to the parents but
  * never down to children. Events are logged by the manager in the chain that
  * first fires the event.
- * @author Pascal Essiembre
  * @since 2.0.0
  */
 public class EventManager {
@@ -50,7 +49,7 @@ public class EventManager {
 
     private EventManager parentEventManager;
 
-    private final CopyOnWriteArrayList<IEventListener<Event>> listeners =
+    private final CopyOnWriteArrayList<EventListener<Event>> listeners =
             new CopyOnWriteArrayList<>();
 
     @Setter
@@ -79,10 +78,10 @@ public class EventManager {
      * Adding a <code>null</code> event listener has no effect.
      * @param listener an event listener
      */
-    public void addListener(IEventListener<Event> listener) {
+    public void addListener(EventListener<Event> listener) {
         if (listener != null) {
             // Purposely compare listeners by identity, not equality/hash.
-            for (IEventListener<Event> l : listeners) {
+            for (EventListener<Event> l : listeners) {
                 if (listener == l) {
                     return;
                 }
@@ -97,9 +96,9 @@ public class EventManager {
      * Adding a <code>null</code> collection has no effect.
      * @param listeners event listeners
      */
-    public void addListeners(Collection<IEventListener<Event>> listeners) {
+    public void addListeners(Collection<EventListener<Event>> listeners) {
         if (listeners != null) {
-            for (IEventListener<Event> l : listeners) {
+            for (EventListener<Event> l : listeners) {
                 addListener(l);
             }
         }
@@ -108,18 +107,18 @@ public class EventManager {
     /**
      * Adds listeners found in an object graph. Recursively
      * queries the object bean properties for non <code>null</code>
-     * objects implementing {@link IEventListener}.
+     * objects implementing {@link EventListener}.
      * @param obj the object to retrive listeners from
      */
     public void addListenersFromScan(Object obj) {
-        BeanUtil.visitAll(obj, this::addListener, IEventListener.class);
+        BeanUtil.visitAll(obj, this::addListener, EventListener.class);
     }
 
     /**
      * Returns an unmodifiable list of event listeners in this event manager.
      * @return list of listeners
      */
-    public List<IEventListener<Event>> getListeners() {
+    public List<EventListener<Event>> getListeners() {
         return Collections.unmodifiableList(listeners);
     }
 
@@ -131,7 +130,7 @@ public class EventManager {
      * @param listener the listener instance to remove
      * @return <code>true</code> if a matching instance was removed
      */
-    public boolean removeListener(IEventListener<Event> listener) {
+    public boolean removeListener(EventListener<Event> listener) {
         if (listener == null) {
             return false;
         }
@@ -146,12 +145,12 @@ public class EventManager {
      * @return <code>true</code> if one or more listeners were removed
      */
     public boolean removeListeners(
-            Collection<IEventListener<Event>> listeners) {
+            Collection<EventListener<Event>> listeners) {
         if (listeners == null) {
             return false;
         }
         boolean anyRemoved = false;
-        for (IEventListener<Event> l : listeners) {
+        for (EventListener<Event> l : listeners) {
             if (removeListener(l)) {
                 anyRemoved = true;
             }
@@ -197,7 +196,7 @@ public class EventManager {
     }
 
     private void doFire(Event event) {
-        for (IEventListener<Event> listener : listeners) {
+        for (EventListener<Event> listener : listeners) {
             Method method = MethodUtils.getMatchingAccessibleMethod(
                     listener.getClass(), "accept", event.getClass());
             if (method != null) {

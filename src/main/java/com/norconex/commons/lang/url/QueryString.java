@@ -35,7 +35,6 @@ import lombok.EqualsAndHashCode;
  * <br><br>
  * <b>Since 1.4</b>, query string parameters are stored and returned in the
  * order they were provided.
- * @author Pascal Essiembre
  */
 @EqualsAndHashCode(callSuper = true)
 public class QueryString extends Properties {

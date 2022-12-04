@@ -29,7 +29,6 @@ import com.norconex.commons.lang.text.TextMatcher.Method;
 import com.norconex.commons.lang.xml.XML;
 
 /**
- * @author Pascal Essiembre
  * @since 2.0.0
  */
 class TextMatcherTest {

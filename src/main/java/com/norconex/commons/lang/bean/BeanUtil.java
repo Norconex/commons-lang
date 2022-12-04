@@ -58,7 +58,7 @@ import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
 
 import com.norconex.commons.lang.collection.CollectionUtil;
-import com.norconex.commons.lang.convert.Converter;
+import com.norconex.commons.lang.convert.GenericConverter;
 import com.norconex.commons.lang.map.Properties;
 
 import lombok.AccessLevel;
@@ -786,7 +786,7 @@ public final class BeanUtil {
                 props.put(key,
                         CollectionUtil.toStringList((Collection<?>) value));
             } else {
-                props.add(key, Converter.convert(value));
+                props.add(key, GenericConverter.convert(value));
             }
         }
         return props;

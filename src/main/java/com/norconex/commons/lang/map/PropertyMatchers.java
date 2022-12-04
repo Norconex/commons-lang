@@ -26,7 +26,6 @@ import com.norconex.commons.lang.collection.CollectionUtil;
 /**
  * Holds a collection of {@link PropertyMatcher} to perform multiple matches
  * or replacements at once.
- * @author Pascal Essiembre
  * @since 2.0.0
  */
 public class PropertyMatchers extends ArrayList<PropertyMatcher>

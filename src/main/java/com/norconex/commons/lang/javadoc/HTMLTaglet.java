@@ -23,7 +23,6 @@ import com.norconex.commons.lang.xml.XMLFormatter.Builder.AttributeWrap;
  * <p>{&#64;nx.html} HTML beautifier with enhanced functionality.
  * HTML has to follow basic XML syntax.</p>
  *
- * @author Pascal Essiembre
  * @since 2.0.0
  */
 public class HTMLTaglet extends AbstractInlineTaglet {

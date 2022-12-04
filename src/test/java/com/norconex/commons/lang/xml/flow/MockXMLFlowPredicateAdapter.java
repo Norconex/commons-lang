@@ -21,7 +21,7 @@ import com.norconex.commons.lang.xml.XML;
 import com.norconex.commons.lang.xml.flow.impl.PropertyMatcherCondition;
 
 final class MockXMLFlowPredicateAdapter
-        implements IXMLFlowPredicateAdapter<Properties> {
+        implements XMLFlowPredicateAdapter<Properties> {
 
     private Predicate<Properties> predicate;
 

@@ -18,7 +18,7 @@ import java.util.function.Predicate;
 
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertyMatcher;
-import com.norconex.commons.lang.xml.IXMLConfigurable;
+import com.norconex.commons.lang.xml.XMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 
 import lombok.EqualsAndHashCode;
@@ -26,13 +26,12 @@ import lombok.ToString;
 
 /**
  * A simple XML condition matching {@link Properties} keys and values.
- * @author Pascal Essiembre
  * @since 2.0.0
  */
 @ToString
 @EqualsAndHashCode
 public class PropertyMatcherCondition
-        implements Predicate<Properties>, IXMLConfigurable {
+        implements Predicate<Properties>, XMLConfigurable {
 
     private PropertyMatcher matcher;
 

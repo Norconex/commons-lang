@@ -61,7 +61,6 @@ import org.xml.sax.XMLReader;
  *   <li>Wraps checked exceptions in a runtime {@link XMLException}.</li>
  * </ul>
  *
- * @author Pascal Essiembre
  * @since 2.0.0
  */
 public final class XMLUtil {

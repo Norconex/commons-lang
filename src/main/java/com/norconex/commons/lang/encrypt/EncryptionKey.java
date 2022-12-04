@@ -22,7 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 import com.norconex.commons.lang.security.Credentials;
-import com.norconex.commons.lang.xml.IXMLConfigurable;
+import com.norconex.commons.lang.xml.XMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 
 import lombok.EqualsAndHashCode;
@@ -34,7 +34,7 @@ import lombok.EqualsAndHashCode;
  *
  * <p>
  * Because this class is immutable, it does not implement
- * {@link IXMLConfigurable} directly, but static methods
+ * {@link XMLConfigurable} directly, but static methods
  * {@link #saveToXML(XML, EncryptionKey)} and
  * {@link #loadFromXML(XML, EncryptionKey)} can be used instead.
  * The usage example below is for when used embedded in a parent configuration.
@@ -61,7 +61,6 @@ import lombok.EqualsAndHashCode;
  * <code>&lt;passwordKey&gt;</code> tag. It uses a key stored in a file to
  * decrypt a password for user credentials. </p>
  *
- * @author Pascal Essiembre
  * @since 1.9.0
  * @see EncryptionUtil
  * @see Credentials

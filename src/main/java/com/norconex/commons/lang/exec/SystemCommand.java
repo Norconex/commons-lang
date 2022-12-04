@@ -29,7 +29,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 
-import com.norconex.commons.lang.io.IInputStreamListener;
+import com.norconex.commons.lang.io.InputStreamListener;
 import com.norconex.commons.lang.io.InputStreamLineListener;
 
 import lombok.extern.slf4j.Slf4j;
@@ -42,7 +42,6 @@ import lombok.extern.slf4j.Slf4j;
  * specific commands as well as preventing process hanging on some OS when
  * there is nowhere to display the output).
  *
- * @author Pascal Essiembre
  * @since 1.13.0 (previously part of now deprecated JEF API)
  */
 @Slf4j
@@ -53,17 +52,17 @@ public class SystemCommand {
     private static final String[] CMD_PREFIXES_WIN_CURRENT =
             { "cmd.exe", "/C" };
 
-    private static final IInputStreamListener[] EMPTY_LISTENERS = {};
+    private static final InputStreamListener[] EMPTY_LISTENERS = {};
 
     private final String[] command;
     private final File workdir;
     // Null means inherit from those of java process
     private Map<String, String> environmentVariables = null;
 
-    private final List<IInputStreamListener> errorListeners =
-            Collections.synchronizedList(new ArrayList<IInputStreamListener>());
-    private final List<IInputStreamListener> outputListeners =
-            Collections.synchronizedList(new ArrayList<IInputStreamListener>());
+    private final List<InputStreamListener> errorListeners =
+            Collections.synchronizedList(new ArrayList<InputStreamListener>());
+    private final List<InputStreamListener> outputListeners =
+            Collections.synchronizedList(new ArrayList<InputStreamListener>());
 
     private Process process;
 
@@ -118,7 +117,7 @@ public class SystemCommand {
      * @param listener command error listener
      */
     public void addErrorListener(
-            final IInputStreamListener listener) {
+            final InputStreamListener listener) {
         synchronized (errorListeners) {
         	errorListeners.add(0, listener);
         }
@@ -128,7 +127,7 @@ public class SystemCommand {
      * @param listener command error listener
      */
     public void removeErrorListener(
-            final IInputStreamListener listener) {
+            final InputStreamListener listener) {
         synchronized (errorListeners) {
         	errorListeners.remove(listener);
         }
@@ -138,7 +137,7 @@ public class SystemCommand {
      * @return error listeners
      * @since 3.0.0
      */
-    public List<IInputStreamListener> getErrorListeners() {
+    public List<InputStreamListener> getErrorListeners() {
         return Collections.unmodifiableList(errorListeners);
     }
 
@@ -147,7 +146,7 @@ public class SystemCommand {
      * @param listener command output listener
      */
     public void addOutputListener(
-            final IInputStreamListener listener) {
+            final InputStreamListener listener) {
         synchronized (outputListeners) {
         	outputListeners.add(0, listener);
         }
@@ -157,7 +156,7 @@ public class SystemCommand {
      * @param listener command output listener
      */
     public void removeOutputListener(
-            final IInputStreamListener listener) {
+            final InputStreamListener listener) {
         synchronized (outputListeners) {
         	outputListeners.remove(listener);
         }
@@ -167,7 +166,7 @@ public class SystemCommand {
      * @return output listeners
      * @since 3.0.0
      */
-    public List<IInputStreamListener> getOutputListeners() {
+    public List<InputStreamListener> getOutputListeners() {
         return Collections.unmodifiableList(outputListeners);
     }
 
@@ -290,10 +289,10 @@ public class SystemCommand {
                     + toString(), e);
         }
 
-        IInputStreamListener[] outListeners =
+        InputStreamListener[] outListeners =
                 outputListeners.toArray(EMPTY_LISTENERS);
 
-        IInputStreamListener[] errListeners =
+        InputStreamListener[] errListeners =
                 errorListeners.toArray(EMPTY_LISTENERS);
         ErrorTracker errorTracker = new ErrorTracker();
         errListeners = ArrayUtils.add(errListeners, errorTracker);

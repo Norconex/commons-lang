@@ -40,7 +40,6 @@ import java.util.Objects;
  * to the corresponding method documentation for more detail.
  * </p>
  *
- * @author Pascal Essiembre
  * @since 2.0.0
  */
 public class FileLocker {

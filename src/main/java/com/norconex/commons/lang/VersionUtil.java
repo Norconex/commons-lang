@@ -22,7 +22,6 @@ import lombok.NonNull;
 
 /**
  * Version-related convenience methods.
- * @author Pascal Essiembre
  * @since 2.0.0
  * @see PackageManifest
  * @see SemanticVersion

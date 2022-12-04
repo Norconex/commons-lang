@@ -1,4 +1,4 @@
-/* Copyright 2018-2021 Norconex Inc.
+/* Copyright 2018-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,14 @@
  */
 package com.norconex.commons.lang.event;
 
-import java.util.EventListener;
-import java.util.function.Consumer;
-
 /**
  * Version of {@link EventListener} that can be used as a lambda consumer.
  * @param <T> the type of events being listened to
- * @author Pascal Essiembre
  * @since 2.0.0
+ * @deprecated Use {@link com.norconex.commons.lang.event.EventListener} instead
  */
+@Deprecated(since="3.0.0")
 @FunctionalInterface
-public interface IEventListener<T extends Event>
-        extends Consumer<T>, EventListener {
+public interface IEventListener<T extends Event> //NOSONAR
+        extends EventListener<T> {
 }

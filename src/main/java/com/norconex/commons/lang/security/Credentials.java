@@ -23,7 +23,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import com.norconex.commons.lang.bean.BeanUtil;
 import com.norconex.commons.lang.encrypt.EncryptionKey;
 import com.norconex.commons.lang.encrypt.EncryptionUtil;
-import com.norconex.commons.lang.xml.IXMLConfigurable;
+import com.norconex.commons.lang.xml.XMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 
 import lombok.AccessLevel;
@@ -99,7 +99,6 @@ import lombok.experimental.FieldNameConstants;
  * key is stored in a file (required to decrypt the password).
  * </p>
  *
- * @author Pascal Essiembre
  * @since 2.0.0
  * @see EncryptionKey
  * @see EncryptionUtil
@@ -107,7 +106,7 @@ import lombok.experimental.FieldNameConstants;
 @FieldNameConstants(level = AccessLevel.PRIVATE)
 @Data
 @Accessors(chain = true)
-public class Credentials implements IXMLConfigurable, Serializable {
+public class Credentials implements XMLConfigurable, Serializable {
 
     private static final long serialVersionUID = 1L;
 

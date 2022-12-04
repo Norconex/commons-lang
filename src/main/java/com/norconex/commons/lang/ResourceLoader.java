@@ -28,7 +28,6 @@ import org.slf4j.LoggerFactory;
  * Utility class for loading resource from class loader, relative to
  * a given class.
  *
- * @author Pascal Essiembre
  * @since 1.14.0
  */
 public final class ResourceLoader {

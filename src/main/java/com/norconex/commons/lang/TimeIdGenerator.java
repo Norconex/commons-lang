@@ -116,7 +116,6 @@ import org.slf4j.LoggerFactory;
  * you have been generating IDs using this class for close to 300 years or more.
  * </p>
  *
- * @author Pascal Essiembre
  * @since 1.6.0
  */
 public final class TimeIdGenerator {

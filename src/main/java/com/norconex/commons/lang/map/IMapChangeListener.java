@@ -18,20 +18,16 @@ import java.util.Map;
 
 /**
  * Listener for {@link Map} changes.
- * @author Pascal Essiembre
  * @since 1.4
  * @see ObservableMap
  * @see MapChangeSupport
  *
  * @param <K> the type of keys maintained by the map we are observing
  * @param <V> the type of mapped values
+ * @deprecated Use {@link MapChangeListener} instead.
  */
+@Deprecated(since="3.0.0")
 @FunctionalInterface
-public interface IMapChangeListener<K, V> {
-
-    /**
-     * The observed map has changed.
-     * @param event change event
-     */
-    void mapChanged(MapChangeEvent<K, V> event);
+public interface IMapChangeListener<K, V> //NOSONAR
+        extends MapChangeListener<K, V> {
 }

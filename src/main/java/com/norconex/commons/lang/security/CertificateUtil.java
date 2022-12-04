@@ -41,7 +41,6 @@ import lombok.NonNull;
 
 /**
  * Certificate-related (e.g., SSL) utility methods.
- * @author Pascal Essiembre
  * @since 2.0.0
  */
 public final class CertificateUtil {

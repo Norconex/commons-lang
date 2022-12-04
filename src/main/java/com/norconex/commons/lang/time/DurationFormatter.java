@@ -29,7 +29,6 @@ import lombok.ToString;
 /**
  * Formats a duration to a string.
  * This class is thread-safe and immutable.
- * @author Pascal Essiembre
  * @since 2.0.0
  */
 @ToString
@@ -46,14 +45,14 @@ public final class DurationFormatter {
     public static final DurationFormatter FULL = new DurationFormatter();
 
     private static final Locale DEFAULT_LOCALE = Locale.ENGLISH;
-    private static final IDurationUnitFormatter DEFAULT_UNIT_FORMATTER =
+    private static final DurationUnitFormatter DEFAULT_UNIT_FORMATTER =
             RBDurationUnitFormatter.FULL;
 
     private Locale locale;
     private int unitPrecision;
     private DurationUnit highestUnit;
     private DurationUnit lowestUnit;
-    private IDurationUnitFormatter unitFormatter;
+    private DurationUnitFormatter unitFormatter;
     private NumberFormat numberFormat;
     private String innerSeparator = " ";
     private String outerSeparator = " ";
@@ -143,12 +142,12 @@ public final class DurationFormatter {
      * @return duration formatter copy
      */
     public DurationFormatter withUnitFormatter(
-            IDurationUnitFormatter unitFormatter) {
+            DurationUnitFormatter unitFormatter) {
         DurationFormatter df = copy();
         df.unitFormatter = unitFormatter;
         return df;
     }
-    public IDurationUnitFormatter getUnitFormatter() {
+    public DurationUnitFormatter getUnitFormatter() {
         return unitFormatter;
     }
 
@@ -313,7 +312,7 @@ public final class DurationFormatter {
         b.append(StringUtils.defaultString(innerSeparator));
 
         // Textual value
-        IDurationUnitFormatter duf =
+        DurationUnitFormatter duf =
                 unitFormatter == null ? DEFAULT_UNIT_FORMATTER : unitFormatter;
         Locale safeLocale = locale == null ? DEFAULT_LOCALE : locale;
         b.append(duf.format(unit, safeLocale, factor > 1));

@@ -16,29 +16,29 @@ package com.norconex.commons.lang.event;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
-import java.util.EventObject;
 import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import com.norconex.commons.lang.EqualsUtil;
 
 import lombok.AccessLevel;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 /**
  * An immutable event.
- * @author Pascal Essiembre
  * @since 2.0.0
- * @see IEventListener
+ * @see EventListener
  */
 @Data
 @Setter(value = AccessLevel.NONE)
-public class Event extends EventObject {
+@SuperBuilder
+@EqualsAndHashCode(callSuper = true)
+public class Event extends EventObjectAdapter {
 
     private static final long serialVersionUID = 1L;
     /**
@@ -46,6 +46,7 @@ public class Event extends EventObject {
      * @return event name
      */
     @SuppressWarnings("javadoc")
+    @NonNull
     private final String name;
     /**
      * Gets a message describing the event or giving precision,
@@ -61,58 +62,25 @@ public class Event extends EventObject {
     @SuppressWarnings("javadoc")
     private final transient Throwable exception;
 
-    protected Event(Builder<?> b) {
-        super(b.source);
-        name = b.name;
-        message = b.message;
-        exception = b.exception;
-    }
-
+    /**
+     * Gets whether the supplied event has the same name as this event.
+     * Equivalent to invoking <code>thisEvent.is(thatEvent.getName())</code>.
+     * @param event event to compare
+     * @return <code>true</code> if events share the same name.
+     */
     public boolean is(Event event) {
         if (event == null) {
             return false;
         }
         return is(event.getName());
     }
+    /**
+     * Gets whether this event has the same name as any of the supplied names.
+     * @param eventName event names
+     * @return <code>true</code> if this event name matches one of supplied ones
+     */
     public boolean is(String... eventName) {
         return EqualsUtil.equalsAny(name, (Object[]) eventName);
-    }
-
-    /**
-     * New event builder. Name and source cannot be <code>null</code>.
-     * @param name event name
-     * @param source object on which the event initially occurred
-     * @return event builder
-     * @since 3.0.0
-     */
-    @SuppressWarnings("rawtypes")
-    public static Builder builder(
-            @NonNull String name, @NonNull Object source) {
-        return new Builder<>(name, source); //NOSONAR
-    }
-
-    @Override
-    public boolean equals(final Object other) {
-        if (other == null) { return false; }
-        if (other == this) { return true; }
-        if (other.getClass() != getClass()) { return false; }
-        var event = (Event) other;
-        return new EqualsBuilder()
-                .append(name, event.name)
-                .append(message, event.message)
-                .append(exception, event.exception)
-                .append(source, event.source)
-                .isEquals();
-    }
-    @Override
-    public int hashCode() {
-        // Need to build manually as parent does not implement hashCode
-        return new HashCodeBuilder()
-                .append(name)
-                .append(message)
-                .append(exception)
-                .append(source)
-                .build();
     }
 
     /**
@@ -136,61 +104,5 @@ public class Event extends EventObject {
             msg += ": " + exception.getMessage();
         }
         return msg;
-    }
-
-    /**
-     * Event builder.
-     * @param <B> generic self referencing to allow sub-classing.
-     */
-    public static class Builder<B extends Builder<B>> {
-
-        private final String name;
-        private final Object source;
-        private String message;
-        private Throwable exception;
-
-        /**
-         * New event builder. Name and source cannot be <code>null</code>.
-         * @param name event name
-         * @param source object on which the event initially occurred
-         * @deprecated The visibility of this constructor will be reduced
-         *     in a future release. Since 3.0.0, use
-         *     {@link Event#builder(String, Object)} instead.
-         */
-        @Deprecated(since="3.0.0")
-        public Builder(String name, Object source) { //NOSONAR
-            this.name = name;
-            this.source = source;
-        }
-        /**
-         * Sets a message describing the event or giving precision.
-         * @param message event message
-         * @return this builder
-         */
-        public B message(String message) {
-            this.message = message;
-            return self();
-        }
-        /**
-         * Sets an exception associated with this event.
-         * @param exception the exception
-         * @return this builder
-         */
-        public B exception(Throwable exception) {
-            this.exception = exception;
-            return self();
-        }
-        /**
-         * Builds the event.
-         * @return the event
-         */
-        public Event build() {
-            return new Event(this);
-        }
-
-        @SuppressWarnings("unchecked")
-        private B self() {
-            return (B) this;
-        }
     }
 }

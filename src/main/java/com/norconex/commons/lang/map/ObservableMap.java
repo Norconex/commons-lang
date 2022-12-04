@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * A map implementation that reports changes to added {@link IMapChangeListener}
+ * A map implementation that reports changes to added {@link MapChangeListener}
  * instance.  Changes are triggered when a value change is detected
  * in the following method calls: {@link #put(Object, Object)},
  * {@link #putAll(Map)}, {@link #remove(Object)}, and {@link #clear()}.
@@ -30,7 +30,6 @@ import java.util.Set;
  * outside this class.
  * This class can be used as a decorator to other {@link Map} implementations.
  *
- * @author Pascal Essiembre
  * @since 1.4
  *
  * @param <K> the type of keys maintained by the map we are observing
@@ -60,14 +59,14 @@ public class ObservableMap<K,V> implements Map<K,V> {
      * Adds a map change listener.
      * @param listener change listener
      */
-    public void addMapChangeListener(IMapChangeListener<K,V> listener) {
+    public void addMapChangeListener(MapChangeListener<K,V> listener) {
         this.mcs.addMapChangeListener(listener);
     }
     /**
      * Removes a map change listener.
      * @param listener change listener
      */
-    public void removeMapChangeListener(IMapChangeListener<K,V> listener) {
+    public void removeMapChangeListener(MapChangeListener<K,V> listener) {
         this.mcs.removeMapChangeListener(listener);
     }
 
@@ -76,7 +75,7 @@ public class ObservableMap<K,V> implements Map<K,V> {
      * @return listeners
      * @since 3.0.0
      */
-    public List<IMapChangeListener<K, V>> getMapChangeListeners() {
+    public List<MapChangeListener<K, V>> getMapChangeListeners() {
         return mcs.getMapChangeListeners();
     }
 

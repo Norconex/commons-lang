@@ -33,14 +33,13 @@ import org.apache.commons.lang3.ArrayUtils;
  * have unique types to identify each one or the content being streamed
  * from different threads can easily be mixed up in the order sent and is
  * likely not a desired behavior.
- * @author Pascal Essiembre
  * @since 1.13.0
  */
 public class InputStreamConsumer extends Thread {
 
     public static final int DEFAULT_CHUNK_SIZE = 1024;
-    private final List<IInputStreamListener> listeners =
-            Collections.synchronizedList(new ArrayList<IInputStreamListener>());
+    private final List<InputStreamListener> listeners =
+            Collections.synchronizedList(new ArrayList<InputStreamListener>());
     /** The input stream we are reading. */
     private final InputStream input;
     private final String type;
@@ -63,7 +62,7 @@ public class InputStreamConsumer extends Thread {
      */
     public InputStreamConsumer(
             InputStream input, String type,
-            IInputStreamListener... listeners) {
+            InputStreamListener... listeners) {
         this(input, DEFAULT_CHUNK_SIZE, type, listeners);
     }
     /**
@@ -78,7 +77,7 @@ public class InputStreamConsumer extends Thread {
      */
     public InputStreamConsumer(
             InputStream input, int chunkSize, String type,
-            IInputStreamListener... listeners) {
+            InputStreamListener... listeners) {
         super("StreamConsumer" + (type == null ? "": "-" + type));
         this.input = input;
         this.type = type;
@@ -107,8 +106,8 @@ public class InputStreamConsumer extends Thread {
      * Returns stream listeners.
      * @return the listeners
      */
-    public IInputStreamListener[] getStreamListeners() {
-        return listeners.toArray(new IInputStreamListener[] {});
+    public InputStreamListener[] getStreamListeners() {
+        return listeners.toArray(new InputStreamListener[] {});
     }
     /**
      * Gets the stream type or <code>null</code> if no type was set.
@@ -147,7 +146,7 @@ public class InputStreamConsumer extends Thread {
     }
 
     private synchronized void fireStreamed(byte[] bytes, int length) {
-        for (IInputStreamListener listener : listeners) {
+        for (InputStreamListener listener : listeners) {
             listener.streamed(type, bytes, length);
         }
     }
@@ -168,7 +167,7 @@ public class InputStreamConsumer extends Thread {
      * @param listeners input stream listeners
      */
     public static void consume(InputStream input, String type,
-            IInputStreamListener... listeners) {
+            InputStreamListener... listeners) {
         consume(input, DEFAULT_CHUNK_SIZE, type, listeners);
     }
     /**
@@ -183,7 +182,7 @@ public class InputStreamConsumer extends Thread {
      * @param listeners input stream listeners
      */
     public static void consume(InputStream input, int chunkSize, String type,
-            IInputStreamListener... listeners) {
+            InputStreamListener... listeners) {
         new InputStreamConsumer(input, chunkSize, type, listeners).start();
     }
     /**
@@ -203,7 +202,7 @@ public class InputStreamConsumer extends Thread {
      * @param listeners input stream listeners
      */
     public static void consumeAndWait(InputStream input, String type,
-            IInputStreamListener... listeners) {
+            InputStreamListener... listeners) {
         consumeAndWait(input, DEFAULT_CHUNK_SIZE, type, listeners);
     }
     /**
@@ -219,7 +218,7 @@ public class InputStreamConsumer extends Thread {
      */
     public static void consumeAndWait(
             InputStream input, int chunkSize, String type,
-            IInputStreamListener... listeners) {
+            InputStreamListener... listeners) {
         new InputStreamConsumer(
                 input, chunkSize, type, listeners).startAndWait();
     }

@@ -38,7 +38,6 @@ import lombok.ToString;
  * Holds jar files that are considered duplicates. Jar duplicates are defined
  * as having the same base name, which is the regular file name, minus the
  * version information.
- * @author Pascal Essiembre
  * @since 1.10.0
  */
 @ToString
