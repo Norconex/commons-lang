@@ -97,8 +97,8 @@ import org.xml.sax.helpers.XMLFilterImpl;
 import com.norconex.commons.lang.ClassFinder;
 import com.norconex.commons.lang.bean.BeanUtil;
 import com.norconex.commons.lang.collection.CollectionUtil;
-import com.norconex.commons.lang.convert.GenericConverter;
 import com.norconex.commons.lang.convert.ConverterException;
+import com.norconex.commons.lang.convert.GenericConverter;
 import com.norconex.commons.lang.time.DurationParser;
 import com.norconex.commons.lang.time.DurationParserException;
 import com.norconex.commons.lang.unit.DataUnit;
@@ -1938,7 +1938,8 @@ public class XML implements Iterable<XMLCursor> {
      * {@link #equals(Object)}.
      * @param xmlConfigurable the instance to test if it writes/read properly
      * @param elementName the tag name of the root element being written
-     * @throws XMLException Cannot save/load configuration
+     * @throws XMLException Cannot write/read configuration or the read
+     *     object is not equal to the original one that was written.
      */
     public static void assertWriteRead(
             XMLConfigurable xmlConfigurable, String elementName) {
