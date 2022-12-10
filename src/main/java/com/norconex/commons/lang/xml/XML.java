@@ -56,7 +56,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Result;
-import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
@@ -64,14 +63,10 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
-import javax.xml.validation.Validator;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -81,9 +76,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Attr;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.Attributes;
@@ -107,8 +100,6 @@ import com.norconex.commons.lang.unit.DataUnitParser;
 import jakarta.xml.bind.JAXB;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBElement;
-import jakarta.xml.bind.Marshaller;
-import jakarta.xml.bind.Unmarshaller;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -585,7 +576,7 @@ public class XML implements Iterable<XMLCursor> {
             if (!(e.getCause() instanceof ClassNotFoundException)) {
                 throw e;
             }
-            String partialName = getString(XPATH_ATT_CLASS);
+            var partialName = getString(XPATH_ATT_CLASS);
             List<?> results = ClassFinder.findSubTypes(
                     type, s -> s.endsWith(partialName));
             if (results.size() > 1) {
@@ -685,7 +676,7 @@ public class XML implements Iterable<XMLCursor> {
             if (xpathExpression == null && defaultObject == null) {
                 return toObject((T) null);
             }
-            XML xml = getXML(xpathExpression);
+            var xml = getXML(xpathExpression);
             if (xml == null) {
                 return defaultObject;
             }
@@ -717,7 +708,7 @@ public class XML implements Iterable<XMLCursor> {
      */
     public <T> List<T> getObjectList(
             String xpathExpression, List<T> defaultObjects) {
-        Optional<List<XML>> xmls = getXMLListOptional(xpathExpression);
+        var xmls = getXMLListOptional(xpathExpression);
         // We return:
         //   - an empty list if optional is empty.
         //   - the default list if optional is not emtpy but node list is
@@ -732,7 +723,7 @@ public class XML implements Iterable<XMLCursor> {
         List<T> list = new ArrayList<>();
         for (XML xml : xmls.get()) {
             if (xml != null) {
-                T obj = xml.toObject();
+                var obj = xml.<T>toObject();
                 if (obj != null) {
                     list.add(obj);
                 }
@@ -836,7 +827,7 @@ public class XML implements Iterable<XMLCursor> {
             if (xpathExpression == null && defaultObject == null) {
                 return toObjectImpl(type, (T) null);
             }
-            XML xml = getXML(xpathExpression);
+            var xml = getXML(xpathExpression);
             if (xml == null) {
                 return defaultObject;
             }
@@ -881,7 +872,7 @@ public class XML implements Iterable<XMLCursor> {
     public <T> List<T> getObjectListImpl(
             Class<?> type, String xpathExpression, List<T> defaultObjects) {
 
-        Optional<List<XML>> xmls = getXMLListOptional(xpathExpression);
+        var xmls = getXMLListOptional(xpathExpression);
         // We return:
         //   - an empty list if optional is empty.
         //   - the default list if optional is not emtpy but node list is
@@ -896,7 +887,7 @@ public class XML implements Iterable<XMLCursor> {
         List<T> list = new ArrayList<>();
         for (XML xml : xmls.get()) {
             if (xml != null) {
-                T obj = xml.toObjectImpl(type);
+                var obj = xml.<T>toObjectImpl(type);
                 if (obj != null) {
                     list.add(obj);
                 }
@@ -1011,7 +1002,7 @@ public class XML implements Iterable<XMLCursor> {
             return (List<T>) defaultValues;
         }
 
-        List<String> values = getDelimitedStringList(
+        var values = getDelimitedStringList(
                 xpathExpression, delimRegex, NULL_XML_LIST);
         if (values == null) {
             return (List<T>) defaultValues;
@@ -1031,7 +1022,7 @@ public class XML implements Iterable<XMLCursor> {
      * @return XML or <code>null</code> is xpath has no match
      */
     public XML getXML(String xpathExpression) {
-        Node xmlNode = getNode(xpathExpression);
+        var xmlNode = getNode(xpathExpression);
         if (xmlNode == null) {
             return null;
         }
@@ -1044,7 +1035,7 @@ public class XML implements Iterable<XMLCursor> {
      * @return XML list, never <code>null</code>
      */
     public List<XML> getXMLList(String xpathExpression) {
-        Optional<List<XML>> xmls = getXMLListOptional(xpathExpression);
+        var xmls = getXMLListOptional(xpathExpression);
         // We return:
         //   - an empty list if optional is empty.
         //   - otherwise return the matching list
@@ -1056,7 +1047,7 @@ public class XML implements Iterable<XMLCursor> {
 
     private Optional<List<XML>> getXMLListOptional(String xpathExpression) {
 
-        Optional<NodeArrayList> nodeList = getNodeList(xpathExpression);
+        var nodeList = getNodeList(xpathExpression);
         // We return:
         //   - an empty Optional if nodeList Optional is empty.
         //   - otherwise return the matching list
@@ -1083,8 +1074,8 @@ public class XML implements Iterable<XMLCursor> {
     }
     private Node getNode(String xpathExpression, Node parentNode) {
         try {
-            return (Node) newXPathExpression(xpathExpression).evaluate(
-                    parentNode, XPathConstants.NODE);
+            return (Node) XPathUtil.newXPathExpression(
+                    xpathExpression).evaluate(parentNode, XPathConstants.NODE);
         } catch (XPathExpressionException e) {
             throw new XMLException(
                     "Could not evaluate XPath expression.", e);
@@ -1092,8 +1083,8 @@ public class XML implements Iterable<XMLCursor> {
     }
     private Optional<NodeArrayList> getNodeList(String xpathExpression) {
         try {
-            NodeList nodeList = (NodeList) newXPathExpression(xpathExpression)
-                    .evaluate(node, XPathConstants.NODESET);
+            var nodeList = (NodeList) XPathUtil.newXPathExpression(
+                    xpathExpression).evaluate(node, XPathConstants.NODESET);
 
             if (nodeList != null && nodeList.getLength() > 0) {
                 return Optional.of(new NodeArrayList(nodeList));
@@ -1103,8 +1094,8 @@ public class XML implements Iterable<XMLCursor> {
             // it may suggest to use a default value) or it did match
             // a tag but it was empty (indicating wanting to clear any
             // existing list).
-            String xpath = substringBeforeLast(xpathExpression, "/");
-            XML xmlTag = getXML(xpath);
+            var xpath = substringBeforeLast(xpathExpression, "/");
+            var xmlTag = getXML(xpath);
             if (xmlTag == null || StringUtils.isBlank(xmlTag.toString())) {
                 return Optional.of(new NodeArrayList((NodeList) null));
             }
@@ -1125,7 +1116,7 @@ public class XML implements Iterable<XMLCursor> {
         return getString(xpathExpression, null);
     }
     public String getString(String xpathExpression, String defaultValue) {
-        Node n = getNode(xpathExpression);
+        var n = getNode(xpathExpression);
         if (n == null) {
             return defaultValue;
         }
@@ -1137,7 +1128,7 @@ public class XML implements Iterable<XMLCursor> {
      * @return list of strings, never <code>null</code>
      */
     public List<String> getStringList(String xpathExpression) {
-        List<String> list = getStringList(xpathExpression, null);
+        var list = getStringList(xpathExpression, null);
         if (CollectionUtils.isEmpty(list)) {
             return Collections.emptyList();
         }
@@ -1152,7 +1143,7 @@ public class XML implements Iterable<XMLCursor> {
      */
     public List<String> getStringList(
             String xpathExpression, List<String> defaultValues) {
-        Optional<NodeArrayList> nodeList = getNodeList(xpathExpression);
+        var nodeList = getNodeList(xpathExpression);
         // We return:
         //   - an empty list if optional is empty.
         //   - the default list if optional is not emtpy but node list is
@@ -1165,7 +1156,7 @@ public class XML implements Iterable<XMLCursor> {
         }
         List<String> list = new ArrayList<>();
         for (Node n : nodeList.get()) {
-            String str = getNodeString(n);
+            var str = getNodeString(n);
             if (str != null) {
                 list.add(str);
             }
@@ -1182,7 +1173,7 @@ public class XML implements Iterable<XMLCursor> {
      * @return list of strings, never <code>null</code>
      */
     public List<String> getDelimitedStringList(String xpathExpression) {
-        List<String> values =
+        var values =
                 getDelimitedStringList(xpathExpression, (List<String>) null);
         if (values == null) {
             return Collections.emptyList();
@@ -1214,7 +1205,7 @@ public class XML implements Iterable<XMLCursor> {
      */
     public List<String> getDelimitedStringList(
             String xpathExpression, String delimRegex) {
-        List<String> values =
+        var values =
                 getDelimitedStringList(xpathExpression, delimRegex, null);
         if (values == null) {
             return Collections.emptyList();
@@ -1238,7 +1229,7 @@ public class XML implements Iterable<XMLCursor> {
             return defaultValues;
         }
 
-        List<String> delimList = getStringList(xpathExpression, NULL_XML_LIST);
+        var delimList = getStringList(xpathExpression, NULL_XML_LIST);
         if (delimList == null) {
             return defaultValues;
         }
@@ -1248,12 +1239,12 @@ public class XML implements Iterable<XMLCursor> {
 
         List<String> splitList = new ArrayList<>();
         for (String str : delimList) {
-            List<String> values = split(str, delimRegex);
+            var values = split(str, delimRegex);
             if (CollectionUtils.isEmpty(values)) {
                 continue;
             }
             for (String val : values) {
-                String trimmed = StringUtils.trimToNull(val);
+                var trimmed = StringUtils.trimToNull(val);
                 if (trimmed != null) {
                     splitList.add(trimmed);
                 }
@@ -1563,7 +1554,7 @@ public class XML implements Iterable<XMLCursor> {
      */
     public Long getDataSize(
             String xpathExpression, DataUnit targetUnit, Long defaultValue) {
-        BigDecimal sz = DataUnitParser.parse(getString(
+        var sz = DataUnitParser.parse(getString(
                 xpathExpression, null), targetUnit, BigDecimal.valueOf(-1));
         if (sz.longValue() == -1) {
             return defaultValue;
@@ -1598,7 +1589,7 @@ public class XML implements Iterable<XMLCursor> {
      * @return duration in milliseconds
      */
     public Long getDurationMillis(String xpathExpression, Long defaultValue) {
-        Duration d = getDuration(xpathExpression);
+        var d = getDuration(xpathExpression);
         if (d == null) {
             return defaultValue;
         }
@@ -1640,20 +1631,20 @@ public class XML implements Iterable<XMLCursor> {
 
     private void jaxbMarshall(Object obj) {
         try {
-            String name = node.getNodeName();
+            var name = node.getNodeName();
             List<Attr> attributes = new ArrayList<>();
-            NamedNodeMap nattributes = node.getAttributes();
-            for (int i = 0; i < nattributes.getLength(); i++) {
+            var nattributes = node.getAttributes();
+            for (var i = 0; i < nattributes.getLength(); i++) {
                 attributes.add((Attr) nattributes.item(i));
             }
 
-            JAXBContext contextObj = JAXBContext.newInstance(obj.getClass());
-            Marshaller marshallerObj = contextObj.createMarshaller();
+            var contextObj = JAXBContext.newInstance(obj.getClass());
+            var marshallerObj = contextObj.createMarshaller();
             marshallerObj.marshal(obj, node);
 
             unwrap();
 
-            Element el = ((Element) node);
+            var el = ((Element) node);
             for (Attr at : attributes) {
                 el.setAttributeNS(
                         at.getNamespaceURI(), at.getName(), at.getValue());
@@ -1667,8 +1658,8 @@ public class XML implements Iterable<XMLCursor> {
 
     private void jaxbUnmarshall(Object obj) {
         try {
-            JAXBContext jaxbContext = JAXBContext.newInstance(obj.getClass());
-            Unmarshaller unmarsh = jaxbContext.createUnmarshaller();
+            var jaxbContext = JAXBContext.newInstance(obj.getClass());
+            var unmarsh = jaxbContext.createUnmarshaller();
             JAXBElement<?> newObj = unmarsh.unmarshal(node, obj.getClass());
             BeanUtil.copyProperties(obj, newObj.getValue());
         } catch (Exception e) {
@@ -1775,7 +1766,7 @@ public class XML implements Iterable<XMLCursor> {
         }
 
         // Only validate if .xsd file exist in classpath for class
-        String xsdResource = ClassUtils.getSimpleName(clazz) + ".xsd";
+        var xsdResource = ClassUtils.getSimpleName(clazz) + ".xsd";
         LOG.debug("Validating XML for class {}",
                 ClassUtils.getSimpleName(clazz));
         if (clazz.getResource(xsdResource) == null) {
@@ -1783,8 +1774,8 @@ public class XML implements Iterable<XMLCursor> {
             return;
         }
 
-        try (InputStream xsdStream = clazz.getResourceAsStream(xsdResource);
-                Reader xmlReader = toReader()) {
+        try (var xsdStream = clazz.getResourceAsStream(xsdResource);
+                var xmlReader = toReader()) {
             validate(clazz, xsdStream, xmlReader);
         } catch (SAXException | IOException e) {
             throw new XMLException("Could not validate class: " + clazz, e);
@@ -1800,18 +1791,18 @@ public class XML implements Iterable<XMLCursor> {
 
         new ArrayList<>();
 
-        SchemaFactory schemaFactory = XMLUtil.createSchemaFactory();
+        var schemaFactory = XMLUtil.createSchemaFactory();
         schemaFactory.setResourceResolver(new ClasspathResourceResolver(clazz));
 
-        Schema schema = schemaFactory.newSchema(
+        var schema = schemaFactory.newSchema(
                 new StreamSource(xsdStream, getXSDResourcePath(clazz)));
-        Validator validator = XMLUtil.createSchemaValidator(schema);
+        var validator = XMLUtil.createSchemaValidator(schema);
 
         validator.setErrorHandler(errorHandler);
 
-        XMLReader xmlReader = XMLUtil.createXMLReader();
+        var xmlReader = XMLUtil.createXMLReader();
 
-        SAXSource saxSource = new SAXSource(
+        var saxSource = new SAXSource(
                 new W3XMLNamespaceFilter(xmlReader), new InputSource(reader));
         validator.validate(saxSource);
     }
@@ -1839,7 +1830,7 @@ public class XML implements Iterable<XMLCursor> {
      * @param then XML consumer
      */
     public void ifXML(String xpathExpression, Consumer<XML> then) {
-        XML xml = getXML(xpathExpression);
+        var xml = getXML(xpathExpression);
         if (xml != null && xml.isDefined() && then != null) {
             then.accept(xml);
         }
@@ -1885,14 +1876,14 @@ public class XML implements Iterable<XMLCursor> {
 
             fixIndent(indent);
 
-            StringWriter w = new StringWriter();
+            var w = new StringWriter();
             Result outputTarget = new StreamResult(w);
 
-            TransformerFactory factory = TransformerFactory.newInstance();
+            var factory = TransformerFactory.newInstance();
             factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
             factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
 
-            Transformer t = factory.newTransformer();
+            var t = factory.newTransformer();
             t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
             t.setOutputProperty(OutputKeys.INDENT, indent > 0 ? "yes" : "no");
             t.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
@@ -1903,7 +1894,7 @@ public class XML implements Iterable<XMLCursor> {
             }
             t.transform(new DOMSource(node), outputTarget);
 
-            String xmlStr = w.toString();
+            var xmlStr = w.toString();
             // convert self-closing tags with "empty" attribute to empty tags
             // instead
             return xmlStr.replaceAll(
@@ -1924,7 +1915,7 @@ public class XML implements Iterable<XMLCursor> {
      * @param action The action to be performed for each element
      */
     public void forEach(String xpathExpression, Consumer<XML> action) {
-        List<XML> xmlList = getXMLList(xpathExpression);
+        var xmlList = getXMLList(xpathExpression);
         xmlList.forEach(x -> {
             if (x != null && x.isDefined() && action != null) {
                 action.accept(x);
@@ -1948,8 +1939,8 @@ public class XML implements Iterable<XMLCursor> {
 
         // Write
         String xmlStr;
-        try (StringWriter out = new StringWriter()) {
-            XML xml = XML.of(elementName, xmlConfigurable).create();
+        try (var out = new StringWriter()) {
+            var xml = XML.of(elementName, xmlConfigurable).create();
             xml.write(out);
             xmlStr = out.toString();
         } catch (IOException e) {
@@ -1958,8 +1949,8 @@ public class XML implements Iterable<XMLCursor> {
         LOG.trace(xmlStr);
 
         // Read
-        XML xml = XML.of(xmlStr).create();
-        XMLConfigurable readConfigurable = xml.toObject();
+        var xml = XML.of(xmlStr).create();
+        var readConfigurable = xml.toObject();
         if (!xmlConfigurable.equals(readConfigurable)) {
             if (LOG.isErrorEnabled()) {
                 LOG.error(" SAVED: {}", xmlConfigurable);
@@ -1973,7 +1964,7 @@ public class XML implements Iterable<XMLCursor> {
 
     public boolean contains(String xpathExpression) {
         try {
-            return newXPathExpression(xpathExpression).evaluate(
+            return XPathUtil.newXPathExpression(xpathExpression).evaluate(
                     node, XPathConstants.NODE) != null;
         } catch (XPathExpressionException e) {
             throw new XMLException(
@@ -1981,18 +1972,25 @@ public class XML implements Iterable<XMLCursor> {
         }
     }
 
-    public static XPath newXPath() {
-        // Consider caching w/ ThreadLocal if performance becomes a concern
-        XPathFactory xpathFactory = XPathFactory.newInstance();
-        return xpathFactory.newXPath();
+    /**
+     * Gets a new XPath instance from the default object model.
+     * @return new XPath instance
+     * @deprecated Use {@link XPathUtil#newXPath()} instead
+     */
+    @Deprecated(since="3.0.0")
+    public static XPath newXPath() { //NOSONAR
+        return XPathUtil.newXPath();
     }
-    public static XPathExpression newXPathExpression(String expression) {
-        try {
-            return newXPath().compile(expression);
-        } catch (XPathExpressionException e) {
-            throw new XMLException(
-                    "Could not create XPath expression.", e);
-        }
+    /**
+     * Gets a new compiled {@link XPathExpression} from the given string.
+     * @param expression the XPath string
+     * @return compiled XPath expression
+     * @deprecated Use {@link XPathUtil#newXPathExpression(String)} instead
+     */
+    @Deprecated(since="3.0.0")
+    public static XPathExpression newXPathExpression( //NOSONAR
+            String expression) {
+        return XPathUtil.newXPathExpression(expression);
     }
 
     /**
@@ -2017,7 +2015,7 @@ public class XML implements Iterable<XMLCursor> {
      * @return object of given type
      */
     public <T> T get(String xpathExpression, Class<T> type, T defaultValue) {
-        String value = getString(xpathExpression, NULL_XML_VALUE);
+        var value = getString(xpathExpression, NULL_XML_VALUE);
         if (value == null) {
             return null;
         }
@@ -2051,7 +2049,7 @@ public class XML implements Iterable<XMLCursor> {
      */
     public <T> List<? extends T> getList(String xpathExpression, //NOSONAR
             Class<T> type, List<? extends T> defaultValues) {
-        List<String> list = getStringList(xpathExpression, null);
+        var list = getStringList(xpathExpression, null);
         if (list == null) {
             return defaultValues;
         }
@@ -2070,7 +2068,7 @@ public class XML implements Iterable<XMLCursor> {
      */
     public Map<String, String> getStringMap(
             String xpathList, String xpathKey, String xpathValue) {
-        Map<String, String> map = getStringMap(
+        var map = getStringMap(
                 xpathList, xpathKey, xpathValue, null);
         if (MapUtils.isEmpty(map)) {
             return Collections.emptyMap();
@@ -2090,7 +2088,7 @@ public class XML implements Iterable<XMLCursor> {
     public Map<String, String> getStringMap(String xpathList, String xpathKey,
             String xpathValue, Map<String, String> defaultValues) {
 
-        Optional<List<XML>> xmls = getXMLListOptional(xpathList);
+        var xmls = getXMLListOptional(xpathList);
         // We return:
         //   - an empty map if optional is empty.
         //   - the default map if optional is not empty but node list is
@@ -2142,8 +2140,8 @@ public class XML implements Iterable<XMLCursor> {
      *         <code>null</code>
      */
     public XML addElement(String tagName, Object value) {
-        XML xml = createAndInitXML(XML.of(tagName, value));
-        Node newNode = node.getOwnerDocument().importNode(xml.node, true);
+        var xml = createAndInitXML(XML.of(tagName, value));
+        var newNode = node.getOwnerDocument().importNode(xml.node, true);
         return createAndInitXML(XML.of(node.appendChild(newNode)));
     }
 
@@ -2179,7 +2177,7 @@ public class XML implements Iterable<XMLCursor> {
      */
     public XML addElementList(
             @NonNull String parentTagName, String tagName, List<?> values) {
-        XML parentXml = addElement(parentTagName);
+        var parentXml = addElement(parentTagName);
         parentXml.addElementList(tagName, values);
         return parentXml;
     }
@@ -2247,7 +2245,7 @@ public class XML implements Iterable<XMLCursor> {
         }
         List<XML> xmlList = new ArrayList<>();
         for (Entry<?, ?> en: map.entrySet()) {
-            String name = GenericConverter.convert(en.getKey());
+            var name = GenericConverter.convert(en.getKey());
             CollectionUtil.toStringList(
                     CollectionUtil.adaptedList(en.getValue())).forEach(
                             v -> xmlList.add(addXML(tagName).setAttribute(
@@ -2288,7 +2286,7 @@ public class XML implements Iterable<XMLCursor> {
             String tagName, String attributeName, Map<?, ?> map) {
         Objects.requireNonNull(
                 parentTagName, "'parentTagName' must not be null");
-        XML parentXml = addElement(parentTagName);
+        var parentXml = addElement(parentTagName);
         parentXml.addElementMap(tagName, attributeName, map);
         return parentXml;
     }
@@ -2299,7 +2297,7 @@ public class XML implements Iterable<XMLCursor> {
      * @return XML of the removed element
      */
     public XML removeElement(String tagName) {
-        Element el = (Element) node;
+        var el = (Element) node;
         return new XML(el.removeChild(getNode(tagName)));
     }
 
@@ -2309,7 +2307,7 @@ public class XML implements Iterable<XMLCursor> {
      * it is not attached to any parent
      */
     public XML remove() {
-        Node parentNode = getNode().getParentNode();
+        var parentNode = getNode().getParentNode();
         if (parentNode != null) {
             return new XML(parentNode.removeChild(getNode()));
         }
@@ -2324,9 +2322,9 @@ public class XML implements Iterable<XMLCursor> {
      * if this node is not attached to any parent.
      */
     public XML insertBefore(XML newXML) {
-        Node parentNode = getNode().getParentNode();
+        var parentNode = getNode().getParentNode();
         if (parentNode != null) {
-            Node newNode = parentNode.getOwnerDocument().importNode(
+            var newNode = parentNode.getOwnerDocument().importNode(
                     newXML.getNode(), true);
             return new XML(parentNode.insertBefore(newNode, getNode()));
         }
@@ -2340,9 +2338,9 @@ public class XML implements Iterable<XMLCursor> {
      * if this node is not attached to any parent.
      */
     public XML insertAfter(XML newXML) {
-        Node parentNode = getNode().getParentNode();
+        var parentNode = getNode().getParentNode();
         if (parentNode != null) {
-            Node newNode = parentNode.getOwnerDocument().importNode(
+            var newNode = parentNode.getOwnerDocument().importNode(
                     newXML.getNode(), true);
             return new XML(parentNode.insertBefore(
                     newNode, getNode().getNextSibling()));
@@ -2361,7 +2359,7 @@ public class XML implements Iterable<XMLCursor> {
      */
     public XML setAttribute(String name, Object value) {
         //MAYBE: check if not a node, throw exception
-        Element el = (Element) node;
+        var el = (Element) node;
         if (value == null) {
             el.removeAttribute(name);
         } else if (GenericConverter.defaultInstance().isConvertible(
@@ -2423,7 +2421,7 @@ public class XML implements Iterable<XMLCursor> {
      * @return this element
      */
     public XML removeAttribute(String name) {
-        Element el = (Element) node;
+        var el = (Element) node;
         el.removeAttribute(name);
         return this;
     }
@@ -2434,7 +2432,7 @@ public class XML implements Iterable<XMLCursor> {
      * @return this element
      */
     public XML setTextContent(Object textContent) {
-        String content = Objects.toString(textContent, null);
+        var content = Objects.toString(textContent, null);
 
         // When no content to set, return write away
         if (content == null) {
@@ -2442,7 +2440,7 @@ public class XML implements Iterable<XMLCursor> {
         }
 
         // Writing element text:
-        Element el = (Element) node;
+        var el = (Element) node;
         // remove existing xml:space=... attributes so set appropriate
         // ones based on the nature of the content.
         el.removeAttribute(ATT_XML_SPACE);
@@ -2471,7 +2469,7 @@ public class XML implements Iterable<XMLCursor> {
     }
     // returns the newly added XML
     public XML addXML(XML xml) {
-        Node childNode = node.getOwnerDocument().importNode(xml.node, true);
+        var childNode = node.getOwnerDocument().importNode(xml.node, true);
         node.appendChild(childNode);
         return createAndInitXML(XML.of(childNode));
     }
@@ -2480,7 +2478,7 @@ public class XML implements Iterable<XMLCursor> {
         return new StringWriter() {
             @Override
             public void close() throws IOException {
-                String s = this.toString();
+                var s = this.toString();
                 if (StringUtils.isNotBlank(s)) {
                     addXML(s);
                 }
@@ -2525,7 +2523,7 @@ public class XML implements Iterable<XMLCursor> {
      * @return this XML, unwrapped
      */
     public XML unwrap() {
-        NodeList children = node.getChildNodes();
+        var children = node.getChildNodes();
 
         // If no child, end here
         if (children == null || children.getLength() == 0) {
@@ -2550,7 +2548,7 @@ public class XML implements Iterable<XMLCursor> {
      * @return this XML, renamed
      */
     public XML rename(String newName) {
-        Document doc = node.getOwnerDocument();
+        var doc = node.getOwnerDocument();
         doc.renameNode(node, null, newName);
         return this;
     }
@@ -2561,8 +2559,8 @@ public class XML implements Iterable<XMLCursor> {
      * @return this XML, wrapped
      */
     public XML wrap(String parentName) {
-        Document doc = node.getOwnerDocument();
-        Node childNode = node.cloneNode(true);
+        var doc = node.getOwnerDocument();
+        var childNode = node.cloneNode(true);
         clear();
         doc.renameNode(node, null, parentName);
         node.appendChild(childNode);
@@ -2581,7 +2579,7 @@ public class XML implements Iterable<XMLCursor> {
         }
         // clear attributes
         while (node.getAttributes().getLength() > 0) {
-            Node att = node.getAttributes().item(0);
+            var att = node.getAttributes().item(0);
             node.getAttributes().removeNamedItem(att.getNodeName());
         }
         return this;
@@ -2594,16 +2592,16 @@ public class XML implements Iterable<XMLCursor> {
      */
     public XML replace(XML replacement) {
         clear();
-        Document doc = node.getOwnerDocument();
+        var doc = node.getOwnerDocument();
 
         // overwrite parent node with child one
-        NamedNodeMap attrs = replacement.node.getAttributes();
-        for (int i=0; i < attrs.getLength(); i++) {
+        var attrs = replacement.node.getAttributes();
+        for (var i=0; i < attrs.getLength(); i++) {
             node.getAttributes().setNamedItem(
                     doc.importNode(attrs.item(i), true));
         }
         while (replacement.node.hasChildNodes()) {
-            Node childNode = replacement.node.removeChild(
+            var childNode = replacement.node.removeChild(
                     replacement.node.getFirstChild());
             node.appendChild(doc.importNode(childNode, true));
         }
@@ -2651,7 +2649,7 @@ public class XML implements Iterable<XMLCursor> {
             String xpathExpression,
             @NonNull Function<XML, T> parser,
             T defaultValue) {
-        XML xml = getXML(xpathExpression);
+        var xml = getXML(xpathExpression);
         if (xml == null) {
             return defaultValue;
         }
@@ -2668,7 +2666,7 @@ public class XML implements Iterable<XMLCursor> {
             @NonNull Function<XML, T> parser,
             List<T> defaultValue) {
 
-        Optional<List<XML>> xmls = getXMLListOptional(xpathExpression);
+        var xmls = getXMLListOptional(xpathExpression);
         // We return:
         //   - an empty list if optional is empty.
         //   - the default list if optional is not emtpy but node list is
@@ -2683,7 +2681,7 @@ public class XML implements Iterable<XMLCursor> {
         List<T> list = new ArrayList<>();
         for (XML xml : xmls.get()) {
             if (xml != null) {
-                T obj = parser.apply(xml);
+                var obj = parser.apply(xml);
                 if (obj != null) {
                     list.add(obj);
                 }
@@ -2707,7 +2705,7 @@ public class XML implements Iterable<XMLCursor> {
             Map<K,V> defaultValue) {
         Objects.requireNonNull(parser, "Parser argument cannot be null.");
 
-        Optional<List<XML>> xmls = getXMLListOptional(xpathExpression);
+        var xmls = getXMLListOptional(xpathExpression);
         // We return:
         //   - an empty map if optional is empty.
         //   - otherwise return the parsed map
@@ -2718,7 +2716,7 @@ public class XML implements Iterable<XMLCursor> {
         Map<K,V> map = new ListOrderedMap<>();
         for (XML xml : xmls.get()) {
             if (xml != null) {
-                Entry<K,V> entry = parser.apply(xml);
+                var entry = parser.apply(xml);
                 if (entry != null) {
                     map.put(entry.getKey(), entry.getValue());
                 }
@@ -2741,7 +2739,7 @@ public class XML implements Iterable<XMLCursor> {
     public void checkDeprecated(String deprecatedXPath,
             String replacement, boolean throwException) {
         if (contains(deprecatedXPath)) {
-            StringBuilder b = new StringBuilder();
+            var b = new StringBuilder();
             b.append('"');
             if (deprecatedXPath.contains("@")) {
                 b.append(StringUtils.substringAfterLast(deprecatedXPath, "@"));
@@ -2885,10 +2883,10 @@ public class XML implements Iterable<XMLCursor> {
      */
     @Deprecated(since="3.0.0")
     public String join(String delim, List<?> values) {  //NOSONAR
-        String sep = Objects.toString(delim, ",");
-        StringBuilder b = new StringBuilder();
+        var sep = Objects.toString(delim, ",");
+        var b = new StringBuilder();
         for (Object obj : values) {
-            String str = Objects.toString(obj, "").trim();
+            var str = Objects.toString(obj, "").trim();
             if (StringUtils.isNotEmpty(str)) {
                 if (b.length() > 0) {
                     b.append(sep);
@@ -2904,7 +2902,7 @@ public class XML implements Iterable<XMLCursor> {
     private static DocumentBuilderFactory defaultIfNull(
             DocumentBuilderFactory dbf) {
         return Optional.ofNullable(dbf).orElseGet(() -> {
-            DocumentBuilderFactory factory =
+            var factory =
                     XMLUtil.createDocumentBuilderFactory();
             factory.setNamespaceAware(false);
             factory.setIgnoringElementContentWhitespace(false);
@@ -2953,13 +2951,13 @@ public class XML implements Iterable<XMLCursor> {
     //         java-properly-indenting-xml-string/
     private void fixIndent(int indent) {
         if (indent > 0) {
-            XPath xPath = XPathFactory.newInstance().newXPath();
+            var xPath = XPathUtil.newXPath();
             try {
-                NodeList nodeList = (NodeList) xPath.evaluate(
+                var nodeList = (NodeList) xPath.evaluate(
                         "//text()[normalize-space()='']",
                         node, XPathConstants.NODESET);
-                for (int i = 0; i < nodeList.getLength(); ++i) {
-                    Node n = nodeList.item(i);
+                for (var i = 0; i < nodeList.getLength(); ++i) {
+                    var n = nodeList.item(i);
                     n.getParentNode().removeChild(n);
                 }
             } catch (XPathExpressionException e) {
@@ -2985,9 +2983,9 @@ public class XML implements Iterable<XMLCursor> {
         public void startElement(
                 String uri, String localName, String qName, Attributes atts)
                         throws SAXException {
-            for (int i = 0; i < atts.getLength(); i++) {
+            for (var i = 0; i < atts.getLength(); i++) {
                 if (XMLConstants.XML_NS_URI.equals(atts.getURI(i))) {
-                    AttributesImpl modifiedAtts = new AttributesImpl(atts);
+                    var modifiedAtts = new AttributesImpl(atts);
                     modifiedAtts.removeAttribute(i);
                     super.startElement(uri, localName, qName, modifiedAtts);
                     return;
@@ -3012,7 +3010,7 @@ public class XML implements Iterable<XMLCursor> {
         // have the standard xml:space="preserve" to decide if we trim them
         // or not.
 
-        String str = n.getTextContent();
+        var str = n.getTextContent();
 
         Optional<String> xmlSpace = Optional
             .ofNullable(n.getAttributes().getNamedItem(ATT_XML_SPACE))

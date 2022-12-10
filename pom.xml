@@ -39,14 +39,12 @@
     <commons-lang3.version>3.12.0</commons-lang3.version>
     <commons-text.version>1.10.0</commons-text.version>
     <java-cup.version>10k</java-cup.version>
-    <!--<jaxb-runtime.version>2.3.5</jaxb-runtime.version>-->
     <json.version>1.8</json.version>
     <log4j.version>2.17.1</log4j.version>
     <okhttp3.version>4.10.0</okhttp3.version>
     <slf4j.version>1.7.32</slf4j.version>
     <velocity-engine.version>2.3</velocity-engine.version>
     <xerces.version>2.12.2</xerces.version>
-    <!--<xml-bind-api.version>2.3.3</xml-bind-api.version>-->
     <xml-bind-api.version>4.0.0</xml-bind-api.version>
     <xpath2.version>2.1.100</xpath2.version>
 
@@ -54,9 +52,6 @@
     <ant.version>1.10.11</ant.version>
     <assertj.version>3.23.1</assertj.version>
     <junit-jupiter.version>5.8.1</junit-jupiter.version>
-<!--
-    <mockito.version>4.8.0</mockito.version>
--->
     <testcontainers.version>1.16.0</testcontainers.version>
 
     <!-- Test and provided -->      
@@ -154,20 +149,13 @@
       <artifactId>jakarta.xml.bind-api</artifactId>
       <version>${xml-bind-api.version}</version>
     </dependency>
+    <!-- That's OK, it's a "public" SUN API: -->
     <dependency>
       <groupId>com.sun.xml.bind</groupId>
       <artifactId>jaxb-impl</artifactId>
       <version>${xml-bind-api.version}</version>
       <scope>runtime</scope>
     </dependency>
-    <!--
-    <dependency>
-      <groupId>org.glassfish.jaxb</groupId>
-      <artifactId>jaxb-runtime</artifactId>
-      <version>${jaxb-runtime.version}</version>
-    </dependency>
-    -->
-
 
     <dependency>
       <groupId>edu.princeton.cup</groupId>
@@ -218,14 +206,7 @@
       <version>${slf4j.version}</version>
       <scope>test</scope>
     </dependency>
-<!--
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-junit-jupiter</artifactId>
-      <version>${mockito.version}</version>
-      <scope>test</scope>
-    </dependency>
--->
+
     <!-- okhttp/mockwebserver used to test Certificateutil -->
     <dependency>
       <groupId>com.squareup.okhttp3</groupId>
@@ -253,28 +234,6 @@
       <version>${lombok.version}</version>
       <scope>provided</scope>
     </dependency>
-
-
-    <!--
-      NOTE: 
-      For optional ProxySettings class features used only by some 
-      implementations, you may need to include a version of the following:
-      -->
-    <!-- 
-    <dependency>
-        <groupId>org.apache.httpcomponents</groupId>
-        <artifactId>httpclient</artifactId>
-    </dependency>
-     -->
-
-    <!-- For Javadoc Custom Taglets
-    Should no longer be needed with Java 11+?? 
-    <dependency>
-      <groupId>com.github.olivergondza</groupId>
-      <artifactId>maven-jdk-tools-wrapper</artifactId>
-      <version>0.1</version>
-    </dependency>
-    -->
 
   </dependencies>
 

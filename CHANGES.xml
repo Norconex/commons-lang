@@ -79,6 +79,9 @@
         New YearMonthDay LocalDate constructor plus new #toLocalDate and 
         #toLocalDateTime methods.
       </action>
+      <action dev="essiembre" type="add">
+        New XPathUtil class.
+      </action>
       <action dev="essiembre" type="update">
         Now require Java 11+. 
       </action>
@@ -211,6 +214,10 @@
         IFileVisitor, ICachedStream, IInputStreamFilter, IInputStreamListener,
         IMapChangeListener, IDurationUnitFormatter, IXMLFlowConsumerAdapter,
         IXMLFlowPredicateAdapter, IXMLConfigurable. 
+      </action>
+      <action dev="essiembre" type="update">
+        XML#newXPath and XML#newXPathExpression are now deprecated in favor
+        of XPathUtil#newXPath and XPathUtil#newXPathExpression.
       </action>
       <action dev="essiembre" type="add">
         TextMatcher now considers null values as non-matching by defualt.

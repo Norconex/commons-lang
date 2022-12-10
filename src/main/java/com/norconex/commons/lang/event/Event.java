@@ -22,11 +22,9 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.norconex.commons.lang.EqualsUtil;
 
-import lombok.AccessLevel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 /**
@@ -35,7 +33,6 @@ import lombok.experimental.SuperBuilder;
  * @see EventListener
  */
 @Data
-@Setter(value = AccessLevel.NONE)
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
 public class Event extends EventObjectAdapter {
@@ -43,6 +40,7 @@ public class Event extends EventObjectAdapter {
     private static final long serialVersionUID = 1L;
     /**
      * Gets the event name (never <code>null</code>).
+     * @param name the event name
      * @return event name
      */
     @SuppressWarnings("javadoc")
@@ -51,12 +49,14 @@ public class Event extends EventObjectAdapter {
     /**
      * Gets a message describing the event or giving precision,
      * or <code>null</code> if the event has no message.
+     * @param message the event message
      * @return event message
      */
     @SuppressWarnings("javadoc")
     private final String message;
     /**
      * Gets the exception associated with this event, or <code>null</code>.
+     * @param exception an exception
      * @return event message
      */
     @SuppressWarnings("javadoc")
