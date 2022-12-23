@@ -41,7 +41,7 @@ abstract class EventObjectAdapter extends EventObject {
     // This builder allows subclasses to use Lombok @SuperBuilder
     // even if EventObject is not annotated with @SuperBuilder
     @Generated
-    abstract static class EventObjectAdapterBuilder<
+    public abstract static class EventObjectAdapterBuilder<
             C extends EventObjectAdapter,
             B extends EventObjectAdapter.EventObjectAdapterBuilder<C, B>> {
         @Generated
