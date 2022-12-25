@@ -36,7 +36,7 @@ public final class XPathUtil {
      * @return the attribute name, prefixed with {@literal @}, or an
      *     empty string (never null)
      */
-    public static String att(String attributeName) {
+    public static String attr(String attributeName) {
         if (StringUtils.isNotBlank(attributeName)) {
             return "@" + attributeName;
         }

@@ -22,11 +22,11 @@ import org.junit.jupiter.api.Test;
 class XPathUtilTest {
 
     @Test
-    void testAtt() {
-        assertThat(XPathUtil.att("test")).isEqualTo("@test");
-        assertThat(XPathUtil.att("   ")).isEmpty();
-        assertThat(XPathUtil.att(null)).isEmpty();
-    }
+        void testAttr() {
+            assertThat(XPathUtil.attr("test")).isEqualTo("@test");
+            assertThat(XPathUtil.attr("   ")).isEmpty();
+            assertThat(XPathUtil.attr(null)).isEmpty();
+        }
 
     @Test
     void testNewXPath() {
