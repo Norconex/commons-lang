@@ -1,4 +1,4 @@
-/* Copyright 2022 Norconex Inc.
+/* Copyright 2022-2023 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,38 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.SystemUtil.Captured;
+
 class SystemUtilTest {
 
     @Test
+    void testCallAndCaptureOutput() throws Exception {
+        Captured<Integer> captured = SystemUtil.callAndCaptureOutput(() -> {
+            System.out.print("out-test");
+            System.err.print("err-test");
+            return 123;
+        });
+
+        assertThat(captured.getReturnValue()).isEqualTo(123);
+        assertThat(captured.getStdOut()).isEqualTo("out-test");
+        assertThat(captured.getStdErr()).isEqualTo("err-test");
+    }
+
+    @Test
+    void testRunAndCaptureOutput() throws Exception {
+        var captured = SystemUtil.runAndCaptureOutput(() -> {
+            System.out.print("out-test");
+            System.err.print("err-test");
+        });
+
+        assertThat(captured.getReturnValue()).isNull();
+        assertThat(captured.getStdOut()).isEqualTo("out-test");
+        assertThat(captured.getStdErr()).isEqualTo("err-test");
+    }
+
+    @Test
     void testRunWithProperty() {
-        MutableObject<String> prop = new MutableObject<>();
+        var prop = new MutableObject<String>();
         SystemUtil.runWithProperty("fruit", "apple", () -> {
             prop.setValue(System.getProperty("fruit"));
         });
@@ -40,7 +67,7 @@ class SystemUtilTest {
 
     @Test
     void testCallWithProperty() throws Exception {
-        String prop = SystemUtil.callWithProperty("fruit", "apple",
+        var prop = SystemUtil.callWithProperty("fruit", "apple",
                 () -> System.getProperty("fruit"));
         assertThat(prop).isEqualTo("apple");
         assertThat(System.getProperty("fruit")).isNull();

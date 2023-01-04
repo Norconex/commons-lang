@@ -1,4 +1,4 @@
-/* Copyright 2020 Norconex Inc.
+/* Copyright 2020-2023 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,16 @@
  */
 package com.norconex.commons.lang;
 
+import java.io.PrintStream;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.concurrent.Callable;
+
+import com.norconex.commons.lang.io.ByteArrayOutputStream;
+
+import lombok.AccessLevel;
+import lombok.Data;
+import lombok.Setter;
 
 /**
  * System-related convenience methods.
@@ -24,7 +31,82 @@ import java.util.concurrent.Callable;
  */
 public final class SystemUtil {
 
-    private SystemUtil() {
+    private SystemUtil() {}
+
+    /**
+     * Holds possible return value and standard output/error when
+     * invoking {@link SystemUtil#callAndCaptureOutput(Callable)}
+     * or {@link SystemUtil#runAndCaptureOutput(Runnable)}.
+     *
+     * @param <T> the type of the return value for
+     *     {@link SystemUtil#callAndCaptureOutput(Callable)} or {@link Void}
+     *     for
+     *     {@link SystemUtil#runAndCaptureOutput(Runnable)}
+     * @since 3.0.0
+     */
+    @Data
+    @Setter(value = AccessLevel.NONE)
+    public static class Captured<T> {
+        private T returnValue;
+        private String stdOut;
+        private String stdErr;
+    }
+
+    /**
+     * Executes a {@link Callable} and return its value along with
+     * any standard output or error (i.e., STDOUT/STDERR).
+     * While this method is synchronized, nothing prevent other threads
+     * from also writing to {@link System#out} or {@link System#err}. For this
+     * reason this method should not be considered thread-safe.
+     * @param <T> the type of the return value
+     * @param callable the code to execute
+     * @return captured return value and standard output/error
+     * @throws Exception any {@link Callable} exception
+     * @since 3.0.0
+     */
+    public static synchronized <T> Captured<T> callAndCaptureOutput(
+            Callable<T> callable) throws Exception {
+        var captured = new Captured<T>();
+        var originalOut = System.out; //NOSONAR
+        var originalErr = System.err; //NOSONAR
+        try (   var out = new ByteArrayOutputStream();
+                var outPs = new PrintStream(out);
+                var err = new ByteArrayOutputStream();
+                var errPs = new PrintStream(err)) {
+            System.setOut(outPs);
+            System.setErr(errPs);
+            captured.returnValue = callable.call();
+            outPs.flush();
+            errPs.flush();
+            captured.stdOut = out.toString();
+            captured.stdErr = err.toString();
+            return captured;
+        } finally {
+            System.setOut(originalOut);
+            System.setErr(originalErr);
+        }
+    }
+
+    /**
+     * Executes a {@link Runnable} and return any standard output or error
+     * (i.e., STDOUT/STDERR).
+     * While this method is synchronized, nothing prevent other threads
+     * from also writing to {@link System#out} or {@link System#err}. For this
+     * reason this method should not be considered thread-safe.
+     * @param runnable the code to execute
+     * @return captured standard output/error
+     * @since 3.0.0
+     */
+    public static synchronized Captured<Void> runAndCaptureOutput(
+            Runnable runnable)  {
+        try {
+            return callAndCaptureOutput(() -> {
+                runnable.run();
+                return null;
+            });
+        } catch (Exception e) {
+            throw (RuntimeException) e;
+        }
     }
 
     /**
@@ -60,7 +142,7 @@ public final class SystemUtil {
             runnable.run();
             return;
         }
-        String original = value == null
+        var original = value == null
                 ? System.clearProperty(name)
                 : System.setProperty(name, value);
         try {
@@ -109,7 +191,7 @@ public final class SystemUtil {
         if (name == null) {
             return callable.call();
         }
-        String original = value == null
+        var original = value == null
                 ? System.clearProperty(name)
                 : System.setProperty(name, value);
         try {
@@ -132,7 +214,7 @@ public final class SystemUtil {
      * @return property or environment value
      */
     public static String getEnvironmentOrProperty(String name) {
-        String value = getEnvironment(name);
+        var value = getEnvironment(name);
         if (value != null) {
             return value;
         }
@@ -147,7 +229,7 @@ public final class SystemUtil {
      * @return environment or property value
      */
     public static String getPropertyOrEnvironment(String name) {
-        String value = getProperty(name);
+        var value = getProperty(name);
         if (value != null) {
             return value;
         }
@@ -167,15 +249,15 @@ public final class SystemUtil {
      */
     public static String getEnvironment(String name) {
         // 1. As-is environment variable
-        String value = System.getenv(name);
+        var value = System.getenv(name);
         if (value != null) {
             return value;
         }
 
         // 2. Compact-insensitive matching environment variable
-        String compactName = toAlphaNum(name);
+        var compactName = toAlphaNum(name);
         for (Entry<String, String> en : System.getenv().entrySet()) {
-            String key = toAlphaNum(en.getKey());
+            var key = toAlphaNum(en.getKey());
             if (key.equalsIgnoreCase(compactName)) {
                 return en.getValue();
             }
@@ -196,15 +278,15 @@ public final class SystemUtil {
      */
     public static String getProperty(String name) {
         // 1. As-is system property
-        String value = System.getProperty(name);
+        var value = System.getProperty(name);
         if (value != null) {
             return value;
         }
 
         // 2. Compact-insensitive matching system property
-        String compactName = toAlphaNum(name);
+        var compactName = toAlphaNum(name);
         for (Entry<Object, Object> en : System.getProperties().entrySet()) {
-            String key = toAlphaNum(Objects.toString(en.getKey()));
+            var key = toAlphaNum(Objects.toString(en.getKey()));
             if (key.equalsIgnoreCase(compactName)) {
                 return Objects.toString(en.getValue());
             }

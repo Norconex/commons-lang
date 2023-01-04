@@ -16,6 +16,10 @@
         New PackageManifest class. 
       </action>
       <action dev="essiembre" type="add">
+        New #runAndCaptureOutput and #callAndCaptureOutput methods on
+        SystemUtil. 
+      </action>
+      <action dev="essiembre" type="add">
         New JarDuplicates#get(File) method and collection based constructor. 
       </action>
       <action dev="essiembre" type="add">
@@ -83,7 +87,7 @@
         New XPathUtil class.
       </action>
       <action dev="essiembre" type="update">
-        Now require Java 11+. 
+        Now require Java 17+. 
       </action>
       <action dev="essiembre" type="update">
         Taglets rewritten to use the new jdk.javadoc.doclet.* API.
