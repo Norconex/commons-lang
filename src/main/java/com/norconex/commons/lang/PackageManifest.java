@@ -126,6 +126,9 @@ public final class PackageManifest {
 
     private static void fromClassloaderManifest(
             PackageManifestBuilder pmb, Class<?> cls) {
+        if (cls.getClassLoader() == null) {
+            return;
+        }
         try (var is = cls.getClassLoader().getResourceAsStream(
                 "META-INF/MANIFEST.MF")) {
             if (is != null) {

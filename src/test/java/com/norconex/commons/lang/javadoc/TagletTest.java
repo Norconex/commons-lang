@@ -1,4 +1,4 @@
-/* Copyright 2022 Norconex Inc.
+/* Copyright 2022-2023 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,13 +47,13 @@ import jdk.javadoc.doclet.Taglet.Location;
 
 class TagletTest {
 
-    private static String TEST_XML = escapeHtml4(
-            "<a>\n"
-          + "  <b\n"
-          + "      attr=\"xyz\">\n"
-          + "    123\n"
-          + "  </b>\n"
-          + "</a>"
+    private static String TEST_XML = escapeHtml4("""
+    	<a>
+    	  <b
+    	      attr="xyz">
+    	    123
+    	  </b>
+    	</a>"""
     );
 
     @TempDir
@@ -61,6 +61,45 @@ class TagletTest {
 
     // method name -> javadoc
     static Map<String, String> methodJavadocs = new HashMap<>();
+
+    //--- Life-cycle methods ---------------------------------------------------
+
+    @BeforeAll
+    static void beforeAll() throws IOException {
+        var classAsPath = MockJavadoc.class.getName().replace('.', '/');
+
+        var javadocDir =
+            tempDir.toString();
+            //"./target/temp-javadocs";
+
+        var src = "./src/test/java/" + classAsPath + ".java";
+        ToolProvider.getSystemDocumentationTool().run(null, null, null,
+                "-d", javadocDir,
+                "-taglet", BlockTaglet.class.getName(),
+                "-taglet", HTMLTaglet.class.getName(),
+                "-taglet", IncludeTaglet.class.getName(),
+                "-taglet", JSONTaglet.class.getName(),
+                "-taglet", XMLTaglet.class.getName(),
+                "-taglet", XMLExampleTaglet.class.getName(),
+                "-taglet", XMLUsageTaglet.class.getName(),
+                "-nohelp",
+                "-noindex",
+                "-nonavbar",
+                "-notree",
+                "-linksource",
+                "--allow-script-in-comments",
+                src);
+
+        var html = Files.readString(
+                Path.of(javadocDir + "/" + classAsPath + ".html"));
+        html = StringUtils.substringAfterLast(html, "=== METHOD DETAIL ===");
+        var m = Pattern.compile(
+                "<h3>(.*?)</h3>.*?<div class=\"block\">(.*?)</div>",
+                Pattern.DOTALL).matcher(html);
+        while (m.find()) {
+            methodJavadocs.put(m.group(1), m.group(2).replaceAll("\r", ""));
+        }
+    }
 
     //--- XML* -----------------------------------------------------------------
 
@@ -197,20 +236,22 @@ class TagletTest {
     @Test
     void testInclude() {
         // XML in this case is not formatted since we are simply including it
-        var expected = "XML include:\n"
-                + " <xml>\n"
-                + "   <testValue>Space + ID</testValue>\n"
-                + " </xml>";
+        var expected = """
+        	XML include:
+        	 <xml>
+        	   <testValue>Space + ID</testValue>
+        	 </xml>""";
         assertEquals(expected, methodJavadocs.get("include"));
     }
 
     @Test
     void testNestedInclude() {
-        var expected = "Before block include.\n"
-              + " Before include.\n"
-              + "   Inside NO include.\n"
-              + " After include.\n"
-              + " After block include.";
+        var expected = """
+        	Before block include.
+        	 Before include.
+        	   Inside NO include.
+        	 After include.
+        	 After block include.""";
         assertEquals(expected, methodJavadocs.get("includeNested"));
     }
 
@@ -321,44 +362,5 @@ class TagletTest {
         assertEquals("someref", tagContent.getReference());
         assertEquals("somebody", tagContent.getContent());
         assertTrue(tagContent.toString().startsWith("Tag [name=SOMENAME, "));
-    }
-
-    //--- Life-cycle methods ---------------------------------------------------
-
-    @BeforeAll
-    static void beforeAll() throws IOException {
-        var classAsPath = MockJavadoc.class.getName().replace('.', '/');
-
-        var javadocDir =
-            tempDir.toString();
-            //"./target/temp-javadocs";
-
-        var src = "./src/test/java/" + classAsPath + ".java";
-        ToolProvider.getSystemDocumentationTool().run(null, null, null,
-                "-d", javadocDir,
-                "-taglet", BlockTaglet.class.getName(),
-                "-taglet", HTMLTaglet.class.getName(),
-                "-taglet", IncludeTaglet.class.getName(),
-                "-taglet", JSONTaglet.class.getName(),
-                "-taglet", XMLTaglet.class.getName(),
-                "-taglet", XMLExampleTaglet.class.getName(),
-                "-taglet", XMLUsageTaglet.class.getName(),
-                "-nohelp",
-                "-noindex",
-                "-nonavbar",
-                "-notree",
-                "-linksource",
-                "--allow-script-in-comments",
-                src);
-
-        var html = Files.readString(
-                Path.of(javadocDir + "/" + classAsPath + ".html"));
-        html = StringUtils.substringAfterLast(html, "<h3>Method Detail</h3>");
-        var m = Pattern.compile(
-                "<a id=\"(.*?)\\(\\)\">.*?<div class=\"block\">(.*?)</div>",
-                Pattern.DOTALL).matcher(html);
-        while (m.find()) {
-            methodJavadocs.put(m.group(1), m.group(2).replaceAll("\r", ""));
-        }
     }
 }
