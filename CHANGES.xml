@@ -96,6 +96,10 @@
         Taglets rewritten to use the new jdk.javadoc.doclet.* API.
       </action>
       <action dev="essiembre" type="update">
+        SystemUtil method invoking Callable now throws an 
+        UncheckedCallableException.  
+      </action>
+      <action dev="essiembre" type="update">
         Event name now included in generated string from Event#toString(). 
       </action>
       <action dev="essiembre" type="update">

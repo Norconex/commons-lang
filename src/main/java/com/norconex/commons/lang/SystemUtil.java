@@ -24,6 +24,7 @@ import com.norconex.commons.lang.io.ByteArrayOutputStream;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Setter;
+import lombok.experimental.StandardException;
 
 /**
  * System-related convenience methods.
@@ -51,6 +52,14 @@ public final class SystemUtil {
         private String stdOut;
         private String stdErr;
     }
+    /**
+     * Runtime exception wrapping possible exceptions thrown by invoking
+     * {@link Callable} by one of {@link SystemUtil} methods.
+     */
+    @StandardException
+    public static class UncheckedCallableException extends RuntimeException {
+        private static final long serialVersionUID = 1L;
+    }
 
     /**
      * Executes a {@link Callable} and return its value along with
@@ -61,11 +70,12 @@ public final class SystemUtil {
      * @param <T> the type of the return value
      * @param callable the code to execute
      * @return captured return value and standard output/error
-     * @throws Exception any {@link Callable} exception
+     * @throws UncheckedCallableException wrapper around
+     *     any {@link Callable} exception
      * @since 3.0.0
      */
     public static synchronized <T> Captured<T> callAndCaptureOutput(
-            Callable<T> callable) throws Exception {
+            Callable<T> callable) {
         var captured = new Captured<T>();
         var originalOut = System.out; //NOSONAR
         var originalErr = System.err; //NOSONAR
@@ -81,6 +91,9 @@ public final class SystemUtil {
             captured.stdOut = out.toString();
             captured.stdErr = err.toString();
             return captured;
+        } catch (Exception e) {
+            throw new UncheckedCallableException(
+                    "Could not invoke Callable and capture its output.", e);
         } finally {
             System.setOut(originalOut);
             System.setErr(originalErr);
@@ -181,21 +194,30 @@ public final class SystemUtil {
      * @param callable code to run with the system property set
      * @param <T> class type of return value
      * @return the callable return value
-     * @throws Exception any exception the callable may throw
+     * @throws UncheckedCallableException wrapper around
+     *     any {@link Callable} exception
      */
     public static synchronized <T> T callWithProperty(
-            String name, String value, Callable<T> callable) throws Exception {
+            String name, String value, Callable<T> callable) {
         if (callable == null) {
             return null;
         }
         if (name == null) {
-            return callable.call();
+            try {
+                return callable.call();
+            } catch (Exception e) {
+                throw new UncheckedCallableException("Could not invoke "
+                        + "Callable with unspecified property", e);
+            }
         }
         var original = value == null
                 ? System.clearProperty(name)
                 : System.setProperty(name, value);
         try {
             return callable.call();
+        } catch (Exception e) {
+            throw new UncheckedCallableException("Could not invoke "
+                    + "Callable with property: " + name + " -> " + value, e);
         } finally {
             if (original == null) {
                 System.clearProperty(name);
