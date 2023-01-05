@@ -18,10 +18,12 @@ import static com.norconex.commons.lang.text.StringUtil.ifBlank;
 import static com.norconex.commons.lang.text.StringUtil.ifNotBlank;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.CodeSource;
 import java.util.Optional;
+import java.util.jar.Manifest;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.function.Failable;
@@ -60,8 +62,11 @@ public final class PackageManifest {
      * @return package manifest, never <code>null</code>
      */
     public static PackageManifest of(@NonNull Class<?> cls) {
-        PackageManifestBuilder pmb = new PackageManifestBuilder();
+        var pmb = new PackageManifestBuilder();
         fromJarManifest(pmb, cls);
+        if (isIncomplete(pmb)) {
+            fromClassloaderManifest(pmb, cls);
+        }
         if (isIncomplete(pmb)) {
             fromUnpackedPomXml(pmb, cls);
         }
@@ -100,7 +105,7 @@ public final class PackageManifest {
      */
     @Override
     public String toString() {
-        StringBuilder b = new StringBuilder();
+        var b = new StringBuilder();
         ifNotBlank(title, t -> b.append(t).append(' '));
         ifNotBlank(version, v -> b.append(v).append(' '));
         ifNotBlank(vendor, v -> b.append('(').append(v).append(')'));
@@ -113,11 +118,30 @@ public final class PackageManifest {
     // addDefaultImplementationEntries = true
     private static void fromJarManifest(
             PackageManifestBuilder pmb, Class<?> cls) {
-        Package p = cls.getPackage();
+        var p = cls.getPackage();
         pmb.version(p.getImplementationVersion());
         pmb.vendor(p.getImplementationVendor());
         pmb.title(p.getImplementationTitle());
     }
+
+    private static void fromClassloaderManifest(
+            PackageManifestBuilder pmb, Class<?> cls) {
+        try (var is = cls.getClassLoader().getResourceAsStream(
+                "META-INF/MANIFEST.MF")) {
+            if (is != null) {
+                var attrs = new Manifest(is).getMainAttributes();
+                ifBlank(pmb.version,
+                        () -> attrs.getValue("Implementation-Version"));
+                ifBlank(pmb.title,
+                        () -> attrs.getValue("Implementation-Title"));
+                ifBlank(pmb.vendor,
+                        () -> attrs.getValue("Implementation-Vendor"));
+            }
+        } catch (IOException e) {
+            LOG.trace("Could not obtain manifest from class loader.", e);
+        }
+    }
+
 
     // When unpacked, if Maven structure is respected, the pom.xml location
     // should be found at: ../../pom.xml
@@ -132,8 +156,10 @@ public final class PackageManifest {
                 .map(uri -> new File(uri.getPath()))
                 .map(pomFile -> XML.of(pomFile).create())
                 .ifPresent(xml -> {
-                    ifBlank(pmb.version, () ->
-                            pmb.version(xml.getString("version")));
+                    ifBlank(pmb.version,
+                            () -> pmb.version(xml.getString("version")));
+                    ifBlank(pmb.version,
+                            () -> pmb.version(xml.getString("parent/version")));
                     ifBlank(pmb.title, () -> pmb.title(xml.getString("name")));
                     ifBlank(pmb.vendor, () ->
                             pmb.vendor(xml.getString("organization/name")));

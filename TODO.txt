@@ -2,6 +2,8 @@
 TODO:
 ==============
 
+- Maybe: replace json with jackson?
+
 - Consider integration with GitHub Actions and deploy zips there?
 
 - Add {@nx.block.hidden that would hide in javadoc, but eligible for includes 

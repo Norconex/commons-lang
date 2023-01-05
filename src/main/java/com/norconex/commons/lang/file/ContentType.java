@@ -22,13 +22,17 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
-import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
 
 import lombok.EqualsAndHashCode;
 
@@ -62,6 +66,10 @@ import lombok.EqualsAndHashCode;
  * @since 1.4.0
  */
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@JsonAutoDetect(
+    getterVisibility = JsonAutoDetect.Visibility.NONE,
+    isGetterVisibility = JsonAutoDetect.Visibility.NONE
+)
 public final class ContentType implements Serializable {
 
     private static final long serialVersionUID = 6416074869536512030L;
@@ -104,6 +112,8 @@ public final class ContentType implements Serializable {
     public static final ContentType PNG = new ContentType("image/png");
 
     @EqualsAndHashCode.Include
+    @JsonProperty
+    @JsonValue
     private final String type;
 
     /**
@@ -122,12 +132,14 @@ public final class ContentType implements Serializable {
      * @return content type instance or {@code null} if content type string is
      *         {@code null} or blank.
      */
-    public static ContentType valueOf(String contentType) {
-        String trimmedType = StringUtils.trim(contentType);
+    @JsonCreator
+    public static ContentType valueOf(
+            @JsonProperty("type") String contentType) {
+        var trimmedType = StringUtils.trim(contentType);
         if (StringUtils.isBlank(trimmedType)) {
             return null;
         }
-        ContentType type = REGISTRY.get(trimmedType);
+        var type = REGISTRY.get(trimmedType);
         if (type != null) {
             return type;
         }
@@ -144,9 +156,9 @@ public final class ContentType implements Serializable {
      */
     public static ContentType[] valuesOf(String... contentTypes) {
         if (!ArrayUtils.isEmpty(contentTypes)) {
-            ContentType[] cts = new ContentType[contentTypes.length];
-            for (int i = 0; i < contentTypes.length; i++) {
-                String ctString = contentTypes[i];
+            var cts = new ContentType[contentTypes.length];
+            for (var i = 0; i < contentTypes.length; i++) {
+                var ctString = contentTypes[i];
                 cts[i] = ContentType.valueOf(ctString);
             }
             return cts;
@@ -164,8 +176,7 @@ public final class ContentType implements Serializable {
      */
     public static List<ContentType> valuesOf(List<String> contentTypes) {
         if (CollectionUtils.isNotEmpty(contentTypes)) {
-            return contentTypes.stream().map(
-                    ContentType::valueOf).collect(Collectors.toList());
+            return contentTypes.stream().map(ContentType::valueOf).toList();
         }
         return Collections.emptyList();
     }
@@ -191,7 +202,7 @@ public final class ContentType implements Serializable {
      * @return display name
      */
     public String getDisplayName(Locale locale) {
-        Locale safeLocale = locale;
+        var safeLocale = locale;
         if (safeLocale == null) {
             safeLocale = Locale.getDefault();
         }
@@ -203,7 +214,7 @@ public final class ContentType implements Serializable {
         return "[" + type + "]";
     }
     private ResourceBundle getDisplayBundle(Locale locale) {
-        ResourceBundle bundle = BUNDLE_DISPLAYNAMES.get(locale);
+        var bundle = BUNDLE_DISPLAYNAMES.get(locale);
         if (bundle != null) {
             return bundle;
         }
@@ -229,7 +240,7 @@ public final class ContentType implements Serializable {
      * @return file extension or empty string if no extension is defined
      */
     public String getExtension() {
-        String[] exts = getExtensions();
+        var exts = getExtensions();
         if (exts == null || exts.length == 0) {
             return StringUtils.EMPTY;
         }
@@ -242,7 +253,7 @@ public final class ContentType implements Serializable {
      */
     public String[] getExtensions() {
         try {
-            String ext = BUNDLE_EXTENSIONS.getString(toBaseTypeString());
+            var ext = BUNDLE_EXTENSIONS.getString(toBaseTypeString());
             return StringUtils.split(ext, ',');
         } catch (MissingResourceException e) {
             LOG.debug("Could not find extension(s) for content type: {}", type);

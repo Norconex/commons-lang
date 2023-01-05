@@ -18,7 +18,7 @@ import java.util.function.Consumer;
 
 /**
  * Listener of {@link Event}s.
- * Also an implementation of <code>java.util.{@link EventListener}</code>,
+ * Also an implementation of <code>{@link java.util.EventListener}</code>,
  * offering a lambda consumer.
  * @param <T> the type of events being listened to
  * @since 3.0.0 (renamed from <code>IEventListener</code>)
