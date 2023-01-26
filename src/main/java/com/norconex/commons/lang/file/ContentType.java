@@ -22,6 +22,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -77,7 +78,8 @@ public final class ContentType implements Serializable {
     private static final Logger LOG =
             LoggerFactory.getLogger(ContentType.class);
 
-    private static final Map<String, ContentType> REGISTRY = new HashMap<>();
+    private static final Map<String, ContentType> REGISTRY =
+            new ConcurrentHashMap<>();
 
     private static final ResourceBundle BUNDLE_EXTENSIONS;
     static {
@@ -213,7 +215,7 @@ public final class ContentType implements Serializable {
         }
         return "[" + type + "]";
     }
-    private ResourceBundle getDisplayBundle(Locale locale) {
+    private synchronized ResourceBundle getDisplayBundle(Locale locale) {
         var bundle = BUNDLE_DISPLAYNAMES.get(locale);
         if (bundle != null) {
             return bundle;

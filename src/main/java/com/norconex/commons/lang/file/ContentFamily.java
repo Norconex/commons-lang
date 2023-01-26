@@ -21,6 +21,7 @@ import java.util.Map.Entry;
 import java.util.MissingResourceException;
 import java.util.Objects;
 import java.util.ResourceBundle;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.collections4.map.ListOrderedMap;
 import org.apache.commons.lang3.StringUtils;
@@ -74,12 +75,13 @@ public final class ContentFamily {
     private static final Map<String, String> WILD_MAPPINGS =
             new ListOrderedMap<>();
 
-    private static final Map<String, ContentFamily> FAMILIES = new HashMap<>();
+    private static final Map<String, ContentFamily> FAMILIES =
+            new ConcurrentHashMap<>();
     static {
         for (String contentType : BUNDLE_MAPPINGS.keySet()) {
-            String familyId = BUNDLE_MAPPINGS.getString(contentType);
+            var familyId = BUNDLE_MAPPINGS.getString(contentType);
             if (contentType.startsWith("DEFAULT")) {
-                String partialContentType =
+                var partialContentType =
                         contentType.replaceFirst("DEFAULT\\.?", "");
                 WILD_MAPPINGS.put(partialContentType, familyId);
             }
@@ -110,13 +112,13 @@ public final class ContentFamily {
             return null;
         }
         String familyId = null;
-        String cleanType = StringUtils.substringBefore(contentType, ";");
+        var cleanType = StringUtils.substringBefore(contentType, ";");
         if (BUNDLE_MAPPINGS.containsKey(cleanType)) {
             familyId = BUNDLE_MAPPINGS.getString(cleanType);
         }
         if (familyId == null) {
             for (Entry<String, String> entry : WILD_MAPPINGS.entrySet()) {
-                String partialContentType = entry.getKey();
+                var partialContentType = entry.getKey();
                 if (cleanType.startsWith(partialContentType)) {
                     familyId = entry.getValue();
                     break;
@@ -134,7 +136,7 @@ public final class ContentFamily {
         return getDisplayName(Locale.getDefault());
     }
     public String getDisplayName(Locale locale) {
-        Locale safeLocale = locale;
+        var safeLocale = locale;
         if (safeLocale == null) {
             safeLocale = Locale.getDefault();
         }
@@ -145,8 +147,8 @@ public final class ContentFamily {
         }
         return "[" + id + "]";
     }
-    private ResourceBundle getDisplayBundle(Locale locale) {
-        ResourceBundle bundle = BUNDLE_DISPLAYNAMES.get(locale);
+    private synchronized ResourceBundle getDisplayBundle(Locale locale) {
+        var bundle = BUNDLE_DISPLAYNAMES.get(locale);
         if (bundle != null) {
             return bundle;
         }
@@ -170,7 +172,7 @@ public final class ContentFamily {
         return contains(contentType.toString());
     }
     public boolean contains(String contentType) {
-        ContentFamily family = forContentType(contentType);
+        var family = forContentType(contentType);
         return family == this;
     }
 
@@ -187,7 +189,7 @@ public final class ContentFamily {
         if ((obj == null) || (getClass() != obj.getClass())) {
             return false;
         }
-        ContentFamily other = (ContentFamily) obj;
+        var other = (ContentFamily) obj;
         return Objects.equals(id, other.id);
     }
 

@@ -230,8 +230,11 @@
         XML#newXPath and XML#newXPathExpression are now deprecated in favor
         of XPathUtil#newXPath and XPathUtil#newXPathExpression.
       </action>
-      <action dev="essiembre" type="add">
+      <action dev="essiembre" type="update">
         TextMatcher now considers null values as non-matching by defualt.
+      </action>
+      <action dev="essiembre" type="update">
+        ContentFamily and ContentType are now thread-safe.
       </action>
       <action dev="essiembre" type="fix">
         Properties#loadFromXML is now null-safe.
