@@ -209,6 +209,10 @@ public final class VersionUtil {
     // Maven Jar plugin with addDefaultImplementationEntries = true
     private static DetailedVersion fromJarManifest(Class<?> cls) {
         Package p = cls.getPackage();
+        if(p == null) {
+        	return null;
+        }
+        
         String version = p.getImplementationVersion();
         if (StringUtils.isBlank(version)) {
             return null;
