@@ -7,6 +7,14 @@
   </properties>
   <body>
 
+    <release version="2.0.2-SNAPSHOT" date="2023-??-??" 
+        description="Maintenance release.">
+      <action dev="ohtwadi" type="fix">
+        Fixed NullPointerException when obtaining library version
+        without a Jar manifest. 
+      </action>
+    </release>
+
     <release version="2.0.1" date="2022-08-29" 
         description="Maintenance release.">
       <action dev="essiembre" type="update">
