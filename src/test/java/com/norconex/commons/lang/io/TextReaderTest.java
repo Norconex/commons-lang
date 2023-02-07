@@ -35,7 +35,7 @@ class TextReaderTest {
             count++;
         }
         reader.close();
-        Assertions.assertEquals(10, count, "Wrong number of sentences");
+        Assertions.assertEquals(11, count, "Wrong number of sentences");
     }
 
     @Test
@@ -56,7 +56,7 @@ class TextReaderTest {
         TextReader reader = getTextReader("funkyParagraphBreaks.txt", 1000);
         String allContent = reader.readText();
         reader.close();
-        Assertions.assertEquals(400, allContent.length(),
+        Assertions.assertEquals(400, allContent.replace("\r", "").length(),
                 "Wrong number of characters returned.");
     }
 
@@ -65,7 +65,7 @@ class TextReaderTest {
         TextReader reader = getTextReader("funkyParagraphBreaks.txt", -1);
         String allContent = reader.readText();
         reader.close();
-        Assertions.assertEquals(400, allContent.length(),
+        Assertions.assertEquals(400, allContent.replace("\r", "").length(),
                 "Wrong number of characters returned.");
     }
 

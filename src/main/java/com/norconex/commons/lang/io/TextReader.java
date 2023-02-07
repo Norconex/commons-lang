@@ -84,7 +84,6 @@ public class TextReader extends Reader {
      */
     public TextReader(Reader reader, int maxReadSize,
             boolean removeTrailingDelimiter) {
-        super();
         this.maxReadSize = maxReadSize;
         this.reader = IOUtil.toBufferedReader(reader);
         this.removeTrailingDelimiter = removeTrailingDelimiter;
