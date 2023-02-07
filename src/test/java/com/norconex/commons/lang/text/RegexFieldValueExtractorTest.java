@@ -107,7 +107,8 @@ public class RegexFieldValueExtractorTest {
         Assertions.assertEquals(
                 "<div class=\"field\">Last Name</div>\n  "
               + "<div class=\"value\">Dalton</div>",
-                fields.getString("Last Name"), "Wrong test6 value.");
+                fields.getString("Last Name").replace("\r", ""),
+                        "Wrong test6 value.");
 
         //Test 7) No value or field group
         try {

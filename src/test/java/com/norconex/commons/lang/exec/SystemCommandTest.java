@@ -109,11 +109,13 @@ public class SystemCommandTest {
         return getClass().getResourceAsStream(IN_FILE_PATH);
     }
     private String fileAsString(File file) throws IOException {
-        return FileUtils.readFileToString(file, StandardCharsets.UTF_8).trim();
+        return FileUtils.readFileToString(file, StandardCharsets.UTF_8).trim()
+                .replace("\r", "");
     }
     private String expectedOutputAsString() throws IOException {
         return IOUtils.toString(getClass().getResourceAsStream(
-                EXPECTED_OUT_FILE_PATH), StandardCharsets.UTF_8);
+                EXPECTED_OUT_FILE_PATH), StandardCharsets.UTF_8)
+                        .replace("\r", "");
     }
     private File newTempFile() throws IOException {
         File file = Files.createTempFile(
