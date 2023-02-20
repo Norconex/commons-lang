@@ -1,4 +1,4 @@
-/* Copyright 2019-2021 Norconex Inc.
+/* Copyright 2019-2023 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,9 @@ package com.norconex.commons.lang;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.security.CodeSource;
+import java.security.ProtectionDomain;
 import java.util.Objects;
+import java.util.Optional;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -25,7 +27,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.commons.lang.xml.XMLException;
 
 /**
  * Version-related convenience methods.
@@ -37,9 +38,7 @@ public final class VersionUtil {
     private static final Logger LOG =
             LoggerFactory.getLogger(VersionUtil.class);
 
-    private VersionUtil() {
-        super();
-    }
+    private VersionUtil() {}
 
     //TODO Extract from pom if not found in manifest?
     //TODO Create a Version class that breaks the parts and use it in JarFile
@@ -184,35 +183,47 @@ public final class VersionUtil {
     // When unpacked, if Maven structure is respected, the pom.xml location
     // should be found at: ../../pom.xml
     // (from current directory: [...]/target/classes/).
-    private static DetailedVersion fromUnpackedMavenPomXml(Class<?> cls) {
+    static DetailedVersion fromUnpackedMavenPomXml(Class<?> cls) {
         try {
-            CodeSource source = cls.getProtectionDomain().getCodeSource();
-            if (source != null) {
-                File pom = new File(source.getLocation().toURI().resolve(
-                        "../../pom.xml").getPath());
-                XML xml = XML.of(pom).create();
-                String version = xml.getString("version");
-                if (StringUtils.isBlank(version)) {
-                    return null;
-                }
-                return new DetailedVersion(
-                        version,
-                        xml.getString("name"),
-                        xml.getString("organization/name"));
-            }
-        } catch (XMLException | URISyntaxException | SecurityException e) {
-            LOG.trace("Could not obtain pom.xml from source.", e);
+            return Optional
+                .ofNullable(cls.getProtectionDomain())
+                .map(ProtectionDomain::getCodeSource)
+                .map(CodeSource::getLocation)
+                .map(url -> {
+                    try {
+                        return url.toURI();
+                    } catch (URISyntaxException e) {
+                        LOG.error("Could not resolve source URI location.", e);
+                        return null;
+                    }
+                })
+                .map(uri -> uri.resolve("../../pom.xml").getPath())
+                .map(File::new)
+                .map(pom -> XML.of(pom).create())
+                .map(xml -> {
+                    String version = xml.getString("version");
+                    if (StringUtils.isBlank(version)) {
+                        return null;
+                    }
+                    return new DetailedVersion(
+                            version,
+                            xml.getString("name"),
+                            xml.getString("organization/name"));
+                })
+                .orElse(null);
+        } catch (Exception e) {
+            LOG.error("Could not obtain pom.xml from source.", e);
         }
         return null;
     }
 
     // Maven Jar plugin with addDefaultImplementationEntries = true
-    private static DetailedVersion fromJarManifest(Class<?> cls) {
+    static DetailedVersion fromJarManifest(Class<?> cls) {
         Package p = cls.getPackage();
         if(p == null) {
         	return null;
         }
-        
+
         String version = p.getImplementationVersion();
         if (StringUtils.isBlank(version)) {
             return null;
@@ -223,12 +234,11 @@ public final class VersionUtil {
                 p.getImplementationVendor());
     }
 
-    private static class DetailedVersion {
-        final private String version;
-        final private String title;
-        final private String vendor;
+    static class DetailedVersion {
+        private final String version;
+        private final String title;
+        private final String vendor;
         public DetailedVersion(String version, String title, String vendor) {
-            super();
             this.version = version;
             this.title = title;
             this.vendor = vendor;
