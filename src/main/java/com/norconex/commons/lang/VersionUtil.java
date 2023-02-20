@@ -193,7 +193,7 @@ public final class VersionUtil {
                     try {
                         return url.toURI();
                     } catch (URISyntaxException e) {
-                        LOG.error("Could not resolve source URI location.", e);
+                        LOG.trace("Could not resolve source URI location.", e);
                         return null;
                     }
                 })
@@ -212,7 +212,7 @@ public final class VersionUtil {
                 })
                 .orElse(null);
         } catch (Exception e) {
-            LOG.error("Could not obtain pom.xml from source.", e);
+            LOG.trace("Could not obtain pom.xml from source.", e);
         }
         return null;
     }
