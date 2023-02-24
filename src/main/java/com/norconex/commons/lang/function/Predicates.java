@@ -1,4 +1,4 @@
-/* Copyright 2021-2022 Norconex Inc.
+/* Copyright 2021-2023 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,18 +19,27 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 /**
  * <p>
- * A list of {@link Predicate} instances, matched as a group.
- * All supplied predicates must return <code>true</code> for this one to return
- * <code>true</code>, unless the constructor is invoked with a
- * <code>true</code> <code>any</code> argument. In such case, any
- * of the predicates must match to return <code>true</code>.
+ * A list of {@link Predicate} instances, matched as a group. This class
+ * is an alternative to chaining multiple {@link Predicate#and(Predicate)} or
+ * {@link Predicate#or(Predicate)}.
+ * </p>
+ * <p>
+ * By default predicates are tested in order and testing stops after the first
+ * one that returned <code>false</code>. Only if all predicates return
+ * <code>true</code> that this predicate list will return <code>true</code>.
+ * </p>
+ * <p>
+ * The behavior is the opposite if the "any" constructor argument is
+ * <code>true</code>.  That is, all predicates are tested in order and
+ * stop after the first one returning <code>true</code>. Only if all
+ * predicates return <code>false</code> that this predicate list will return
+ * <code>false</code>.
  * </p>
  * <p>
  * Any <code>null</code> predicates are simply ignored.
@@ -70,7 +79,7 @@ public class Predicates<T> extends ArrayList<Predicate<T>>
                 : predicates
                     .stream()
                     .filter(Objects::nonNull)
-                    .collect(Collectors.toList()));
+                    .toList());
         this.any = any;
     }
 
@@ -80,7 +89,7 @@ public class Predicates<T> extends ArrayList<Predicate<T>>
     @Override
     public boolean test(T t) {
         for (Predicate<T> predicate : this) {
-            boolean result = predicate.test(t);
+            var result = predicate.test(t);
             if (!result && !any) {
                 return false;
             }

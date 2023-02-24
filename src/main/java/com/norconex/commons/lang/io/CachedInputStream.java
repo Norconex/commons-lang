@@ -17,13 +17,11 @@ package com.norconex.commons.lang.io;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.Closeable;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.nio.channels.Channels;
-import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
@@ -162,7 +160,7 @@ public class CachedInputStream extends InputStream implements CachedStream {
         this.cacheDirectory = nullSafeCacheDirectory(cacheDirectory);
         firstRead = false;
         needNewStream = true;
-        File file = cacheFile.toFile();
+        var file = cacheFile.toFile();
         if (file != null && file.exists() && file.isFile()) {
             length = (int) file.length();
         }
@@ -257,7 +255,7 @@ public class CachedInputStream extends InputStream implements CachedStream {
      */
     public boolean isEmpty() throws IOException {
         mark(1);
-        boolean empty = read() == -1;
+        var empty = read() == -1;
         reset();
         return empty;
     }
@@ -267,9 +265,9 @@ public class CachedInputStream extends InputStream implements CachedStream {
         if (disposed) {
             throw new IOException("CachedInputStream has been disposed.");
         }
-        int cursor = pos;
+        var cursor = pos;
         if (cursor < count) {
-            int val = -1;
+            var val = -1;
             if (isInMemory()) {
                 // When getting bytes, we add 0xFF to make it a signed int and
                 // avoid incorrect negative values for byte values > 127.
@@ -290,7 +288,7 @@ public class CachedInputStream extends InputStream implements CachedStream {
             return val;
         }
 
-        int b = realRead();
+        var b = realRead();
         if (b != -1) {
             pos++;
             count++;
@@ -303,7 +301,7 @@ public class CachedInputStream extends InputStream implements CachedStream {
             createInputStreamFromCache();
         }
         if (firstRead) {
-            int read = inputStream.read();
+            var read = inputStream.read();
             if (read == -1) {
                 return read;
             }
@@ -321,7 +319,7 @@ public class CachedInputStream extends InputStream implements CachedStream {
             cacheEmpty = false;
             return read;
         }
-        int read = inputStream.read();
+        var read = inputStream.read();
         cacheEmpty = false;
         return read;
     }
@@ -332,15 +330,15 @@ public class CachedInputStream extends InputStream implements CachedStream {
             throw new IOException("CachedInputStream has been disposed.");
         }
 
-        int cursor = pos;
-        int read = 0;
+        var cursor = pos;
+        var read = 0;
         if (cursor < count) {
             read = readFromCursorToEndOfCache(b, off, len, cursor);
         }
 
         if (read != -1 && read < len) {
-            int maxToRead = len - read;
-            int remainingRead = realRead(b, off + read, maxToRead);
+            var maxToRead = len - read;
+            var remainingRead = realRead(b, off + read, maxToRead);
             if (remainingRead != -1) {
                 pos += remainingRead;
                 count += remainingRead;
@@ -355,10 +353,10 @@ public class CachedInputStream extends InputStream implements CachedStream {
     private int readFromCursorToEndOfCache(
             byte[] b, int off, int len, int cursor) throws IOException {
         int read;
-        int toRead = Math.min(len, count - cursor);
+        var toRead = Math.min(len, count - cursor);
         if (isInMemory()) {
             if (memOutputStream != null) {
-                byte[] bytes = new byte[toRead];
+                var bytes = new byte[toRead];
                 read = memOutputStream.getBytes(bytes, cursor);
                 System.arraycopy(bytes, 0, b, off, toRead);
             } else if (cursor >= memCache.length) {
@@ -383,7 +381,7 @@ public class CachedInputStream extends InputStream implements CachedStream {
         if (needNewStream) {
             createInputStreamFromCache();
         }
-        int num = inputStream.read(b, off, len);
+        var num = inputStream.read(b, off, len);
         cacheEmpty = false;
         if (num == -1) {
             return num;
@@ -540,17 +538,18 @@ public class CachedInputStream extends InputStream implements CachedStream {
      */
     public int length() {
         if (length == UNDEFINED_LENGTH) {
-            LOG.debug("Obtaining stream length before a stream "
-                    + "of unknown lenght was fully read. "
-                    + "This forces a full "
-                    + "read just to get the length. To avoid this extra "
-                    + "read cycle, consider calling "
-                    + "the length() method after the stream has been "
-                    + "fully read at least once through regular usage.");
+            LOG.debug("""
+            	Obtaining stream length before a stream\s\
+            	of unknown lenght was fully read.\s\
+            	This forces a full\s\
+            	read just to get the length. To avoid this extra\s\
+            	read cycle, consider calling\s\
+            	the length() method after the stream has been\s\
+            	fully read at least once through regular usage.""");
 
             // Reset marking
-            int savedPos = pos;
-            int savedMarkpos = markpos;
+            var savedPos = pos;
+            var savedMarkpos = markpos;
             try {
                 enforceFullCaching();
                 resetStream();
@@ -589,6 +588,10 @@ public class CachedInputStream extends InputStream implements CachedStream {
         return factory;
     }
 
+    public static CachedInputStream nullInputStream() {
+        return new CachedStreamFactory().newInputStream();
+    }
+
     private void cacheToFile() throws IOException {
         fileCache = Files.createTempFile(
                 cacheDirectory, "CachedInputStream-", "-temp");
@@ -603,7 +606,7 @@ public class CachedInputStream extends InputStream implements CachedStream {
         if (fileCache != null) {
             LOG.trace("Creating new input stream from file cache.");
             randomAccessFile = new RandomAccessFile(fileCache.toFile(), "r");
-            FileChannel channel = randomAccessFile.getChannel();
+            var channel = randomAccessFile.getChannel();
             inputStream = Channels.newInputStream(channel);
         } else {
             LOG.trace("Creating new input stream from memory cache.");

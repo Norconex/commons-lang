@@ -17,7 +17,7 @@ package com.norconex.commons.lang.pipeline;
 import java.util.function.Predicate;
 
 /**
- * A logical step in the pipepline.  Typically an action to be executed.
+ * A logical step in the pipeline.  Typically an action to be executed.
  * @param <T> pipeline context type
  * @since 1.5.0
  * @deprecated Use {@link Predicate} instead.

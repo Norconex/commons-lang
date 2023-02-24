@@ -302,25 +302,23 @@ public class XML implements Iterable<XMLCursor> {
             errorHandler = defaultIfNull(errorHandler);
             documentBuilderFactory = defaultIfNull(documentBuilderFactory);
 
-            if (source instanceof Node) {
-                return new XML((Node) source,
-                        null, errorHandler, documentBuilderFactory);
+            if (source instanceof Node n) {
+                return new XML(n, null, errorHandler, documentBuilderFactory);
             }
 
             String xmlStr = null;
             if (StringUtils.isNotBlank(rootElementName)) {
                 xmlStr = "<" + rootElementName + "/>";
-            } else if (source instanceof Path) {
-                xmlStr = fileToString(((Path) source).toFile());
-            } else if (source instanceof File) {
-                xmlStr = fileToString((File) source);
-            } else if (source instanceof InputStream) {
-                xmlStr = readerToString(
-                        new InputStreamReader((InputStream) source));
-            } else if (source instanceof Reader) {
-                xmlStr = readerToString((Reader) source);
-            } else if (source instanceof String) {
-                xmlStr = (String) source;
+            } else if (source instanceof Path p) {
+                xmlStr = fileToString(p.toFile());
+            } else if (source instanceof File f) {
+                xmlStr = fileToString(f);
+            } else if (source instanceof InputStream is) {
+                xmlStr = readerToString(new InputStreamReader(is));
+            } else if (source instanceof Reader r) {
+                xmlStr = readerToString(r);
+            } else if (source instanceof String s) {
+                xmlStr = s;
             }
 
             if (StringUtils.isBlank(xmlStr)) {
@@ -495,9 +493,10 @@ public class XML implements Iterable<XMLCursor> {
             if (isExplicitNull()) {
                 return null;
             }
-            LOG.debug("A configuration entry was found without a class "
-                   + "attribute where one could have been provided; "
-                   + "using default value: {}", defaultObject);
+            LOG.debug("""
+                A configuration entry was found without a class\s\
+                attribute where one could have been provided;\s\
+                using default value: {}""", defaultObject);
             obj = defaultObject;
         }
 
@@ -584,7 +583,7 @@ public class XML implements Iterable<XMLCursor> {
                 List<?> filteredResults = results.stream()
                         .filter(c -> ((Class<?>) c).getName()
                                 .endsWith("." + partialName))
-                        .collect(Collectors.toList());
+                        .toList();
                 if (filteredResults.size() != 1) {
                     throw new XMLException(results.size()
                         + " classes implementing \""
@@ -597,10 +596,11 @@ public class XML implements Iterable<XMLCursor> {
                                 .map(c -> ((Class<?>) c).getName())
                                 .collect(Collectors.joining(", ")));
                 }
-                LOG.debug("{} classes implementing \"{}\" and ending "
-                        + "with \"{}\" were found, but only one "
-                        + "matched an exact class name or class name "
-                        + "and package segment: {}",
+                LOG.debug("""
+                    {} classes implementing "{}" and ending\s\
+                    with "{}" were found, but only one\s\
+                    matched an exact class name or class name\s\
+                    and package segment: {}""",
                         results.size(),
                         type.getName(),
                         partialName,
@@ -2586,6 +2586,43 @@ public class XML implements Iterable<XMLCursor> {
     }
 
     /**
+     * Gets whether this XML is empty. An XML is considered empty
+     * if all of {@link #hasAttributes()}, {@link #hasChildElements()},
+     * and {@link #hasTextContent()} return <code>false</code>.
+     * @return <code>true</code> if empty
+     * @since 3.0.0
+     */
+    public boolean isEmpty() {
+        return !hasAttributes() && ! hasTextContent() && !hasChildElements();
+    }
+    /**
+     * Gets whether this XML element has any child elements.
+     * @return <code>true</code> if this element has at least one child element
+     * @since 3.0.0
+     */
+    public boolean hasChildElements() {
+        return new NodeArrayList(node.getChildNodes()).stream()
+                .filter(n -> n.getNodeType() == Node.ELEMENT_NODE)
+                .count() > 0;
+    }
+    /**
+     * Gets whether this XML element has any attributes.
+     * @return <code>true</code> if this element has at least one attribute
+     * @since 3.0.0
+     */
+    public boolean hasAttributes() {
+        return node.hasAttributes();
+    }
+    /**
+     * Gets whether this XML has any text content.
+     * @return <code>true</code> if non-<code>null</code> and non-empty.
+     * @since 3.0.0
+     */
+    public boolean hasTextContent() {
+        return StringUtils.isNotEmpty(node.getTextContent());
+    }
+
+    /**
      * Replaces the current XML with the provided one.
      * @param replacement replacing XML
      * @return this XML, replaced
@@ -2937,8 +2974,8 @@ public class XML implements Iterable<XMLCursor> {
     private static void handleException(
             String rootNode, String key, Exception e) {
         // Throw exception
-        if (e instanceof XMLException) {
-            throw (XMLException) e;
+        if (e instanceof XMLException xmlEx) {
+            throw xmlEx;
         }
         throw new XMLException(
                 "Could not instantiate object from configuration "

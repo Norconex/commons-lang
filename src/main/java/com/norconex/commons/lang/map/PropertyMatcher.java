@@ -111,7 +111,7 @@ public final class PropertyMatcher implements Predicate<Properties> {
         }
 
         for (Entry<String, List<String>> en : properties.entrySet()) {
-            String field = en.getKey();
+            var field = en.getKey();
 
             // reject if field pattern is NOT null and does not match
             if (!matches(fieldMatcher, field)) {
@@ -159,7 +159,7 @@ public final class PropertyMatcher implements Predicate<Properties> {
      * @since 2.0.0
      */
     public Properties match(Properties properties) {
-        Properties matches = new Properties();
+        var matches = new Properties();
         if (properties == null) {
             return matches;
         }
@@ -170,7 +170,7 @@ public final class PropertyMatcher implements Predicate<Properties> {
         }
 
         for (Entry<String, List<String>> en : properties.entrySet()) {
-            String field = en.getKey();
+            var field = en.getKey();
 
             // reject if field pattern is NOT null and does not match
             if (!matches(fieldMatcher, field)) {
@@ -178,7 +178,7 @@ public final class PropertyMatcher implements Predicate<Properties> {
             }
 
             // matches if value pattern is null or matches
-            List<String> values = en.getValue();
+            var values = en.getValue();
             for (String value : values) {
                 if (matches(valueMatcher, value)) {
                     matches.add(field, value);
@@ -202,14 +202,14 @@ public final class PropertyMatcher implements Predicate<Properties> {
      * @since 2.0.0
      */
     public Properties replace(Properties properties, String replacement) {
-        Properties replacedValues = new Properties();
+        var replacedValues = new Properties();
         if (properties == null) {
             return replacedValues;
         }
 
-        Properties newValues = new Properties();
+        var newValues = new Properties();
         for (Entry<String, List<String>> en : properties.entrySet()) {
-            String field = en.getKey();
+            var field = en.getKey();
 
             // skip if field pattern is NOT null and does not match
             if (!matches(fieldMatcher, field)) {
@@ -218,7 +218,7 @@ public final class PropertyMatcher implements Predicate<Properties> {
 
             // matches if value pattern is null or matches
             for (String value : en.getValue()) {
-                String newValue = replaceValue(value, replacement);
+                var newValue = replaceValue(value, replacement);
                 if (!Objects.equals(value, newValue)) {
                     replacedValues.add(field, value);
                 }
@@ -234,7 +234,7 @@ public final class PropertyMatcher implements Predicate<Properties> {
 
     // return new value
     private String replaceValue(String value, String replacement) {
-        String newValue = value;
+        var newValue = value;
         if (matches(valueMatcher, value)) {
             newValue = valueMatcher == null
                     ? replacement
@@ -249,18 +249,18 @@ public final class PropertyMatcher implements Predicate<Properties> {
     }
 
     public static PropertyMatcher loadFromXML(XML xml) {
-        if (xml == null) {
+        if (xml == null || xml.isEmpty()) {
             return null;
         }
         TextMatcher fieldMatcher = null;
-        XML fieldMatcherXML = xml.getXML("fieldMatcher");
-        if (fieldMatcherXML != null) {
+        var fieldMatcherXML = xml.getXML("fieldMatcher");
+        if (fieldMatcherXML != null && !fieldMatcherXML.isEmpty()) {
             fieldMatcher = new TextMatcher();
             fieldMatcher.loadFromXML(fieldMatcherXML);
         }
         TextMatcher valueMatcher = null;
-        XML valueMatcherXML = xml.getXML("valueMatcher");
-        if (valueMatcherXML != null) {
+        var valueMatcherXML = xml.getXML("valueMatcher");
+        if (valueMatcherXML != null && !valueMatcherXML.isEmpty()) {
             valueMatcher = new TextMatcher();
             valueMatcher.loadFromXML(valueMatcherXML);
         }
@@ -270,9 +270,12 @@ public final class PropertyMatcher implements Predicate<Properties> {
         if (xml == null || matcher == null) {
             return;
         }
-        Optional.ofNullable(matcher.getFieldMatcher()).ifPresent(
-                m -> m.saveToXML(xml.addElement("fieldMatcher")));
-        Optional.ofNullable(matcher.getValueMatcher()).ifPresent(
-                m -> m.saveToXML(xml.addElement("valueMatcher")));
+
+        var fmXml = xml.addElement("fieldMatcher");
+        Optional.ofNullable(matcher.getFieldMatcher())
+                .ifPresent(m -> m.saveToXML(fmXml));
+        var vmXml = xml.addElement("valueMatcher");
+        Optional.ofNullable(matcher.getValueMatcher())
+                .ifPresent(m -> m.saveToXML(vmXml));
     }
 }

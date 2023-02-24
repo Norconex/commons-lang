@@ -41,11 +41,11 @@ class PropertyMatcherTest {
 
     @Test
     void testReplace() {
-        PropertyMatcher pm = new PropertyMatcher(
+        var pm = new PropertyMatcher(
                 TextMatcher.regex("a|b"),
                 TextMatcher.regex("5|9"));
 
-        Properties replacedOrig = pm.replace(null, "0");
+        var replacedOrig = pm.replace(null, "0");
         assertThat(replacedOrig).isEmpty();
         assertThat(sampleProps).isEqualTo(new Properties(MapUtil.toMap(
                 "a", asList("1", "2", "3"),
@@ -100,7 +100,7 @@ class PropertyMatcherTest {
 
     @Test
     void testMatches() {
-        PropertyMatcher pm = new PropertyMatcher(
+        var pm = new PropertyMatcher(
                 TextMatcher.regex("a|b"),
                 TextMatcher.regex("5|9"));
         assertThat(pm.matches(sampleProps)).isTrue();
@@ -115,7 +115,7 @@ class PropertyMatcherTest {
 
     @Test
     void testWithNullMatchers() {
-        PropertyMatcher pm = new PropertyMatcher(null, null);
+        var pm = new PropertyMatcher(null, null);
         assertThat(pm.matches(sampleProps)).isTrue();
         assertThat(pm.match(sampleProps)).isEqualTo(sampleProps);
         assertThat(pm.getFieldMatcher()).isNull();
@@ -144,12 +144,12 @@ class PropertyMatcherTest {
 
     @Test
     void testXmlSaveLoad() {
-        PropertyMatcher pmBefore = new PropertyMatcher(
+        var pmBefore = new PropertyMatcher(
                 TextMatcher.regex("a|b"),
                 TextMatcher.regex("5|9"));
-        XML xml = new XML("xml");
+        var xml = new XML("xml");
         PropertyMatcher.saveToXML(xml, pmBefore);
-        PropertyMatcher pmAfter = PropertyMatcher.loadFromXML(xml);
+        var pmAfter = PropertyMatcher.loadFromXML(xml);
         assertThat(pmAfter).isEqualTo(pmBefore);
 
         pmBefore = new PropertyMatcher(null, TextMatcher.regex("5|9"));
@@ -169,7 +169,6 @@ class PropertyMatcherTest {
         PropertyMatcher.saveToXML(xml, pmBefore);
         pmAfter = PropertyMatcher.loadFromXML(xml);
         assertThat(pmAfter).isEqualTo(pmBefore);
-
         assertThat(PropertyMatcher.loadFromXML(null)).isNull();
         assertDoesNotThrow(() -> PropertyMatcher.saveToXML(null, null));
     }

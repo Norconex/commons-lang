@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
@@ -34,8 +33,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FileUtils;
@@ -93,7 +90,7 @@ public final class FileUtil {
             throw new NotDirectoryException(
                     "Directory must exist and be valid: " + dir);
         }
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
+        try (var stream = Files.newDirectoryStream(dir)) {
             return !stream.iterator().hasNext();
         }
     }
@@ -127,7 +124,7 @@ public final class FileUtil {
                     "Directory does not exist or is otherwise not valid: "
                             + dir);
         }
-        try (Stream<Path> walk = Files.walk(dir)) {
+        try (var walk = Files.walk(dir)) {
             return walk.filter(Files::isRegularFile)
                     .anyMatch(p -> filter.accept(p.toFile()));
         }
@@ -146,9 +143,9 @@ public final class FileUtil {
         if (unsafeFileName == null) {
             return null;
         }
-        StringBuilder b = new StringBuilder();
-        for (int i = 0; i < unsafeFileName.length(); i++){
-            char ch = unsafeFileName.charAt(i);
+        var b = new StringBuilder();
+        for (var i = 0; i < unsafeFileName.length(); i++){
+            var ch = unsafeFileName.charAt(i);
             if (CharUtils.isAsciiAlphanumeric(ch) || ch == '-' || ch == '.') {
                 b.append(ch);
             } else {
@@ -170,12 +167,12 @@ public final class FileUtil {
         if (safeFileName == null) {
             return null;
         }
-        StringBuilder b = new StringBuilder();
-        int i = 0;
+        var b = new StringBuilder();
+        var i = 0;
         while (i < safeFileName.length()) {
-            char ch = safeFileName.charAt(i);
+            var ch = safeFileName.charAt(i);
             if (ch == '_') {
-                String intVal = StringUtils.substring(safeFileName, i + 1,
+                var intVal = StringUtils.substring(safeFileName, i + 1,
                         StringUtils.indexOf(safeFileName, '_', i + 1));
                 b.append((char) NumberUtils.toInt(intVal));
                 i += intVal.length() + 1;
@@ -233,7 +230,7 @@ public final class FileUtil {
             throw new IOException("Source file does not exist, is not a file, "
                     + "or is otherwise not valid: " + sourceFile);
         }
-        boolean targetDirExists = Files.exists(targetDir);
+        var targetDirExists = Files.exists(targetDir);
         if (targetDirExists && !Files.isDirectory(targetDir)) {
             throw new IOException("Target directory is not valid:" + targetDir);
         }
@@ -241,7 +238,7 @@ public final class FileUtil {
             Files.createDirectories(targetDir);
         }
 
-        Path targetFile = targetDir.resolve(sourceFile.getFileName());
+        var targetFile = targetDir.resolve(sourceFile.getFileName());
         moveFile(sourceFile, targetFile);
         return targetFile;
     }
@@ -294,7 +291,7 @@ public final class FileUtil {
             throw new IOException("Source file does not exist, is not a file, "
                     + "or is otherwise not valid: " + sourceFile);
         }
-        int failure = 0;
+        var failure = 0;
         Exception ex = null;
         while (failure < MAX_FILE_OPERATION_ATTEMPTS) {
             try {
@@ -340,8 +337,8 @@ public final class FileUtil {
         if (file == null || !file.exists()) {
             return;
         }
-        boolean success = false;
-        int failure = 0;
+        var success = false;
+        var failure = 0;
         while (!success && failure < MAX_FILE_OPERATION_ATTEMPTS) {
             if (file.exists() && !FileUtils.deleteQuietly(file)) {
                 failure++;
@@ -427,13 +424,13 @@ public final class FileUtil {
      */
     public static int deleteEmptyDirs(Path parentDir, final Date date)
             throws IOException {
-        int deletedCount = 0;
+        var deletedCount = 0;
         if (parentDir == null || !Files.isDirectory(parentDir)) {
             return deletedCount;
         }
 
         // take care of child directories first
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(
+        try (var stream = Files.newDirectoryStream(
                 parentDir, Files::isDirectory)) {
             for (Path childDir : stream) {
                 deletedCount += deleteEmptyDirs(childDir, date);
@@ -459,7 +456,7 @@ public final class FileUtil {
      * directories
      */
     public static File createDirsForFile(File file) throws IOException {
-        File parent = file.getParentFile();
+        var parent = file.getParentFile();
         if (parent != null) {
             FileUtils.forceMkdir(parent);
             return parent;
@@ -485,7 +482,7 @@ public final class FileUtil {
             File dir, FileVisitor visitor, FileFilter filter) {
         visitor.visit(dir);
         if (dir.exists() && dir.isDirectory()) {
-            File[] children = dir.listFiles(filter);
+            var children = dir.listFiles(filter);
             if (children != null) {
                 for (File child : children) {
                     visitAllDirsAndFiles(child, visitor, filter);
@@ -505,7 +502,7 @@ public final class FileUtil {
             return;
         }
         if (dir.isDirectory()) {
-            String[] children = dir.list();
+            var children = dir.list();
             if (ArrayUtils.isEmpty(children)) {
                 visitor.visit(dir);
             } else {
@@ -528,7 +525,7 @@ public final class FileUtil {
             return;
         }
         if (dir.isDirectory()) {
-            File[] children = dir.listFiles(filter);
+            var children = dir.listFiles(filter);
             if (children == null || children.length == 0) {
                 visitor.visit(dir);
             } else {
@@ -550,7 +547,7 @@ public final class FileUtil {
         }
         if (dir.isDirectory()) {
             visitor.visit(dir);
-            String[] children = dir.list();
+            var children = dir.list();
             if (children != null) {
                 for (String child : children) {
                     visitAllDirs(new File(dir, child), visitor);
@@ -572,7 +569,7 @@ public final class FileUtil {
         }
         if (dir.isDirectory()) {
             visitor.visit(dir);
-            File[] children = dir.listFiles(filter);
+            var children = dir.listFiles(filter);
             if (children != null) {
                 for (File child : children) {
                     visitAllDirs(child, visitor, filter);
@@ -603,7 +600,7 @@ public final class FileUtil {
             return;
         }
         if (dir.isDirectory()) {
-            String[] children = dir.list();
+            var children = dir.list();
             if (children != null) {
                 for (String child : children) {
                     visitAllFiles(new File(dir, child), visitor, filter);
@@ -674,11 +671,11 @@ public final class FileUtil {
             throws IOException {
         assertFile(file);
         assertNumOfLinesToRead(numberOfLinesToRead);
-        LinkedList<String> lines = new LinkedList<>();
-        try (BufferedReader reader = new BufferedReader(
+        var lines = new LinkedList<String>();
+        try (var reader = new BufferedReader(
                 new InputStreamReader(new FileInputStream(file), encoding))) {
-            int remainingLinesToRead = numberOfLinesToRead;
-            String line = StringUtils.EMPTY;
+            var remainingLinesToRead = numberOfLinesToRead;
+            var line = StringUtils.EMPTY;
             while(line != null && remainingLinesToRead-- > 0){
                  line = reader.readLine();
                  if ((!stripBlankLines || StringUtils.isNotBlank(line))
@@ -754,17 +751,17 @@ public final class FileUtil {
             throws IOException {
         assertFile(file);
         assertNumOfLinesToRead(numberOfLinesToRead);
-        LinkedList<String> lines = new LinkedList<>();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
+        var lines = new LinkedList<String>();
+        try (var reader = new BufferedReader(new InputStreamReader(
                 new ReverseFileInputStream(file), encoding))) {
-            int remainingLinesToRead = numberOfLinesToRead;
+            var remainingLinesToRead = numberOfLinesToRead;
 
             String line;
             while ((line = reader.readLine()) != null) {
                 if (remainingLinesToRead-- <= 0) {
                     break;
                 }
-                String newLine = StringUtils.reverse(line);
+                var newLine = StringUtils.reverse(line);
                 if ((!stripBlankLines || StringUtils.isNotBlank(line))
                         && (filter == null || filter.test(newLine))) {
                     lines.addFirst(newLine);
@@ -870,7 +867,7 @@ public final class FileUtil {
             throw new IOException(String.format("Parent directory \"%s\" "
                     + "already exists and is not a directory.", parentDir));
         }
-        File dir = toDateFormattedDir(parentDir, dateTime, format);
+        var dir = toDateFormattedDir(parentDir, dateTime, format);
         FileUtils.forceMkdir(dir);
         return dir;
     }
@@ -995,7 +992,7 @@ public final class FileUtil {
             throw new IOException(String.format("Parent directory \"%s\" "
                     + "already exists and is not a directory.", parentDir));
         }
-        File dir = toURLDir(parentDir, url, truncate);
+        var dir = toURLDir(parentDir, url, truncate);
         createDirsForFile(dir);
         return dir;
     }
@@ -1153,7 +1150,7 @@ public final class FileUtil {
         return CollectionUtils.emptyIfNull(files).stream()
             .filter(Objects::nonNull)
             .map(File::toPath)
-            .collect(Collectors.toList());
+            .toList();
     }
 
     /**
@@ -1181,12 +1178,12 @@ public final class FileUtil {
                     "Parent directory \"%s\" is too long (must be 200 "
                     + "characters or less).", parentDir));
         }
-        StringBuilder b = new StringBuilder(parentDir.getAbsolutePath());
-        String[] segs = url.replaceFirst("://", "/") .split("/");
+        var b = new StringBuilder(parentDir.getAbsolutePath());
+        var segs = url.replaceFirst("://", "/") .split("/");
         for (String seg : segs) {
             b.append("/").append(toSafeFileName(seg));
         }
-        String path = b.toString();
+        var path = b.toString();
         if (truncate) {
             path = StringUtil.truncateWithHash(path, 255, "_");
         }

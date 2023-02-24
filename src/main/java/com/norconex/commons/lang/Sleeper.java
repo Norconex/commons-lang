@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
  * Convenience class to put to sleep the currently running thread.
  * If sleeping fails, it throws a runtime exception of type
  * {@link SleeperException}
- * 
+ *
  */
 public final class Sleeper {
 
@@ -30,9 +30,8 @@ public final class Sleeper {
     public static final long ONE_MINUTE = 60 * ONE_SECOND;
     /** Number of milliseconds representing 1 hour. */
     public static final long ONE_HOUR = 60 * ONE_MINUTE;
-    
+
     private Sleeper() {
-        super();
     }
 
     /**
@@ -52,8 +51,8 @@ public final class Sleeper {
      * @param nanoSeconds nanoseconds
      */
     public static void sleepNanos(long nanoSeconds) {
-        long milis = TimeUnit.NANOSECONDS.toMillis(nanoSeconds);
-        int nanoRemains = (int) (nanoSeconds 
+        var milis = TimeUnit.NANOSECONDS.toMillis(nanoSeconds);
+        var nanoRemains = (int) (nanoSeconds
                 - TimeUnit.MILLISECONDS.toNanos(milis));
         try {
             Thread.sleep(milis, nanoRemains);
