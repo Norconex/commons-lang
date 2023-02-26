@@ -107,6 +107,10 @@
         Taglets rewritten to use the new jdk.javadoc.doclet.* API.
       </action>
       <action dev="essiembre" type="update">
+        EncryptionUtil now uses more secure cypher "AES/GCM/NoPadding" with 
+        EncryptionKey default key size now being 256.
+      </action>
+      <action dev="essiembre" type="update">
         SystemUtil method invoking Callable now throws an 
         UncheckedCallableException.  
       </action>

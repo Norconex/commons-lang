@@ -22,8 +22,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 import com.norconex.commons.lang.security.Credentials;
-import com.norconex.commons.lang.xml.XMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.commons.lang.xml.XMLConfigurable;
 
 import lombok.EqualsAndHashCode;
 
@@ -43,7 +43,7 @@ import lombok.EqualsAndHashCode;
  * {@nx.xml.usage
  * <value>(The actual key or reference to it.)</value>
  * <source>[key|file|environment|property]</source>
- * <size>(Size in bits of encryption key. Default is 128.)</size>
+ * <size>(Size in bits of encryption key. Default is 256.)</size>
  * }
  * <p>
  * These XML configurable options can be nested in a parent tag of any name.
@@ -70,7 +70,7 @@ public final class EncryptionKey implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    public static final int DEFAULT_KEY_SIZE = 128;
+    public static final int DEFAULT_KEY_SIZE = 256;
 
     public enum Source {
         /** Value is the actual key. */
@@ -161,18 +161,13 @@ public final class EncryptionKey implements Serializable {
         if (source == null) {
             return value;
         }
-        switch (source) {
-        case KEY:
-            return value;
-        case FILE:
-            return fromFile();
-        case ENVIRONMENT:
-            return fromEnv();
-        case PROPERTY:
-            return fromProperty();
-        default:
-            return null;
-        }
+        return switch (source) {
+        case KEY -> value;
+        case FILE -> fromFile();
+        case ENVIRONMENT -> fromEnv();
+        case PROPERTY -> fromProperty();
+        default -> null;
+        };
     }
 
     private String fromEnv() {
@@ -186,7 +181,7 @@ public final class EncryptionKey implements Serializable {
     }
 
     private String fromFile() {
-        File file = new File(value);
+        var file = new File(value);
         if (!file.isFile()) {
             throw new EncryptionException(
                     "Key file is not a file or does not exists: "
@@ -214,10 +209,10 @@ public final class EncryptionKey implements Serializable {
             return defaultKey;
         }
 
-        String value = xml.getString("value");
+        var value = xml.getString("value");
         if (value != null && value.trim().length() > 0) {
-            String source = xml.getString("source");
-            Integer size = xml.getInteger("size", DEFAULT_KEY_SIZE);
+            var source = xml.getString("source");
+            var size = xml.getInteger("size", DEFAULT_KEY_SIZE);
             EncryptionKey.Source enumSource = null;
             if (source != null && source.trim().length() > 0) {
                 enumSource = EncryptionKey.Source.valueOf(source.toUpperCase());

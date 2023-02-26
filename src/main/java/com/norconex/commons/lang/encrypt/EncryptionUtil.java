@@ -1,4 +1,4 @@
-/* Copyright 2015-2022 Norconex Inc.
+/* Copyright 2015-2023 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,27 +14,22 @@
  */
 package com.norconex.commons.lang.encrypt;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import java.nio.charset.StandardCharsets;
-import java.security.AlgorithmParameters;
-import java.security.GeneralSecurityException;
-import java.security.spec.AlgorithmParameterSpec;
+import static java.nio.charset.StandardCharsets.UTF_8;
+
+import java.nio.ByteBuffer;
+import java.security.SecureRandom;
 import java.security.spec.KeySpec;
-import java.util.Arrays;
+import java.util.Base64;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
-import javax.crypto.spec.PBEParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import com.norconex.commons.lang.encrypt.EncryptionKey.Source;
 import com.norconex.commons.lang.security.Credentials;
-
-import jakarta.xml.bind.DatatypeConverter;
 
 /**
  * <p>Simplified encryption and decryption methods using the
@@ -70,18 +65,24 @@ import jakarta.xml.bind.DatatypeConverter;
  */
 public class EncryptionUtil {
 
-    private EncryptionUtil() {
-    }
+    private static final int ITER_CNT = 65536;
+    private static final int TAG_LENGTH_BIT = 128;
+    private static final int IV_LENGTH_BYTE = 12;
+    private static final int SALT_LENGTH_BYTE = 16;
+    private static final String CIPHER_ALGO = "AES/GCM/NoPadding";
+    private static final String SECRET_ALGO = "PBKDF2WithHmacSHA256";
+
+    private EncryptionUtil() {}
 
     public static void main(String[] args) {
         if (args.length != 4) {
             printUsage();
             return;
         }
-        String cmdArg = args[0];
-        String typeArg = args[1];
-        String keyArg = args[2];
-        String textArg = args[3];
+        var cmdArg = args[0];
+        var typeArg = args[1];
+        var keyArg = args[2];
+        var textArg = args[3];
 
         Source type = null;
         if ("-k".equalsIgnoreCase(typeArg)) {
@@ -98,7 +99,7 @@ public class EncryptionUtil {
             return;
         }
 
-        EncryptionKey key = new EncryptionKey(keyArg, type);
+        var key = new EncryptionKey(keyArg, type);
         if ("encrypt".equalsIgnoreCase(cmdArg)) {
             System.out.println(encrypt(textArg, key)); //NOSONAR
         } else if ("decrypt".equalsIgnoreCase(cmdArg)) {
@@ -109,7 +110,7 @@ public class EncryptionUtil {
         }
     }
     private static void printUsage() {
-        PrintStream out = System.out; //NOSONAR
+        var out = System.out; //NOSONAR
         out.println("<appName> encrypt|decrypt -k|-f|-e|-p key text");
         out.println();
         out.println("Where:");
@@ -144,46 +145,52 @@ public class EncryptionUtil {
         if (encryptionKey == null) {
             return textToEncrypt;
         }
-        String key = encryptionKey.resolve();
-        if (key == null) {
+        var encKey = encryptionKey.resolve();
+        if (encKey == null) {
             return textToEncrypt;
         }
 
-        // 8-byte Salt
-        byte[] salt = {
-            (byte)0xE3, (byte)0x03, (byte)0x9B, (byte)0xA9,
-            (byte)0xC8, (byte)0x16, (byte)0x35, (byte)0x56
-        };
-        // Iteration count
-        int iterationCount = 1000;
-        int keySize = encryptionKey.getSize();
-        Cipher ecipher;
-
         try {
-            // Create the key
-            KeySpec keySpec = new PBEKeySpec(
-                    key.trim().toCharArray(), salt, iterationCount, keySize);
-            SecretKeyFactory factory =
-                    SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+            // 16 bytes salt
+            var salt = new byte[SALT_LENGTH_BYTE];
+            new SecureRandom().nextBytes(salt);
 
-            SecretKey secretKeyTemp = factory.generateSecret(keySpec);
-            SecretKey secretKey =
-                    new SecretKeySpec(secretKeyTemp.getEncoded(), "AES");
 
-            ecipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-            ecipher.init(Cipher.ENCRYPT_MODE, secretKey);
+            // GCM recommended 12 bytes iv?
+            var iv = new byte[IV_LENGTH_BYTE];
+            new SecureRandom().nextBytes(salt);
 
-            AlgorithmParameters params = ecipher.getParameters();
+            // secret key from password
+            var factory = SecretKeyFactory.getInstance(SECRET_ALGO);
+            // iterationCount = 65536
+            // keyLength = 256
+            KeySpec spec = new PBEKeySpec(encKey.toCharArray(),
+                    salt, ITER_CNT, encryptionKey.getSize());
+            SecretKey secretKey = new SecretKeySpec(
+                    factory.generateSecret(spec).getEncoded(), "AES");
 
-            byte[] iv = params.getParameterSpec(IvParameterSpec.class).getIV();
-            byte[] utf8 = textToEncrypt.trim().getBytes(StandardCharsets.UTF_8);
-            byte[] cipherBytes = ecipher.doFinal(utf8);
 
-            try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
-                bos.write(iv);
-                bos.write(cipherBytes);
-                return DatatypeConverter.printBase64Binary(bos.toByteArray());
-            }
+            var cipher = Cipher.getInstance(CIPHER_ALGO);
+
+            // ASE-GCM needs GCMParameterSpec
+            cipher.init(
+                    Cipher.ENCRYPT_MODE,
+                    secretKey,
+                    new GCMParameterSpec(TAG_LENGTH_BIT, iv));
+
+            var cipherText = cipher.doFinal(textToEncrypt.getBytes(UTF_8));
+
+            // prefix IV and Salt to cipher text
+            var cipherTextWithIvSalt = ByteBuffer.allocate(
+                    iv.length + salt.length + cipherText.length)
+                        .put(iv)
+                        .put(salt)
+                        .put(cipherText)
+                        .array();
+
+            // string representation, base64, send this string to other
+            // for decryption.
+            return Base64.getEncoder().encodeToString(cipherTextWithIvSalt);
         } catch (Exception e) {
             throw new EncryptionException("Encryption failed.", e);
         }
@@ -218,82 +225,46 @@ public class EncryptionUtil {
         if (encryptionKey == null) {
             return encryptedText;
         }
-        String key = encryptionKey.resolve();
-        if (key == null) {
+        var encKey = encryptionKey.resolve();
+        if (encKey == null) {
             return encryptedText;
         }
 
-        // 8-byte Salt
-        byte[] salt = {
-            (byte)0xE3, (byte)0x03, (byte)0x9B, (byte)0xA9,
-            (byte)0xC8, (byte)0x16, (byte)0x35, (byte)0x56
-        };
-        // Iteration count
-        int iterationCount = 1000;
-        int keySize = encryptionKey.getSize();
-        Cipher dcipher;
-
         try {
-            // Separate the encrypted data into the salt and the
-            // encrypted message
-            byte[] cryptMessage =
-                    DatatypeConverter.parseBase64Binary(encryptedText.trim());
-            byte[] iv = Arrays.copyOf(cryptMessage, 16);
-            byte[] cryptBytes = Arrays.copyOfRange(
-                    cryptMessage, 16, cryptMessage.length);
+            var decode = Base64.getDecoder().decode(
+                    encryptedText.getBytes(UTF_8));
 
-            // Create the key
-            KeySpec keySpec = new PBEKeySpec(
-                    key.trim().toCharArray(), salt, iterationCount, keySize);
-            SecretKeyFactory factory =
-                    SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
-            SecretKey secretKeyTemp = factory.generateSecret(keySpec);
-            SecretKey secretKey =
-                    new SecretKeySpec(secretKeyTemp.getEncoded(), "AES");
+            // get back the iv and salt from the cipher text
+            var bb = ByteBuffer.wrap(decode);
 
-            IvParameterSpec ivParamSpec = new IvParameterSpec(iv);
+            var iv = new byte[IV_LENGTH_BYTE];
+            bb.get(iv);
 
-            dcipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-            dcipher.init(Cipher.DECRYPT_MODE, secretKey, ivParamSpec);
+            var salt = new byte[SALT_LENGTH_BYTE];
+            bb.get(salt);
 
-            byte[] utf8 = dcipher.doFinal(cryptBytes);
-            return new String(utf8, StandardCharsets.UTF_8);
+            var cipherText = new byte[bb.remaining()];
+            bb.get(cipherText);
+
+            // get back the aes key from the same password and salt
+            var factory = SecretKeyFactory.getInstance(SECRET_ALGO);
+            // iterationCount = 65536
+            // keyLength = 256
+            KeySpec spec = new PBEKeySpec(encKey.toCharArray(),
+                    salt, ITER_CNT, encryptionKey.getSize());
+            SecretKey secretKey = new SecretKeySpec(
+                    factory.generateSecret(spec).getEncoded(), "AES");
+            var cipher = Cipher.getInstance(CIPHER_ALGO);
+
+            cipher.init(Cipher.DECRYPT_MODE, secretKey,
+                    new GCMParameterSpec(TAG_LENGTH_BIT, iv));
+
+            var plainText = cipher.doFinal(cipherText);
+
+            return new String(plainText, UTF_8);
+
         } catch (Exception original) {
-            try {
-                // Support for text encrypted before version 1.15.0.
-                return decryptLegacy(encryptedText, key);
-            } catch (GeneralSecurityException subsequent) {
-                throw new EncryptionException("Decryption failed.", original);
-            }
+            throw new EncryptionException("Decryption failed.", original);
         }
-    }
-
-    private static String decryptLegacy(String encryptedText, String key)
-            throws GeneralSecurityException {
-        // 8-byte Salt
-        byte[] salt = {
-            (byte)0xE3, (byte)0x03, (byte)0x9B, (byte)0xA9,
-            (byte)0xC8, (byte)0x16, (byte)0x35, (byte)0x56
-        };
-        // Iteration count
-        int iterationCount = 19;
-        Cipher dcipher;
-
-        // Create the key
-        KeySpec keySpec = new PBEKeySpec(
-                key.trim().toCharArray(), salt, iterationCount);
-        SecretKey secretKey = SecretKeyFactory.getInstance(
-            "PBEWithMD5AndDES").generateSecret(keySpec);
-        dcipher = Cipher.getInstance(secretKey.getAlgorithm());
-
-        // Prepare the parameter to the ciphers
-        AlgorithmParameterSpec paramSpec =
-                new PBEParameterSpec(salt, iterationCount);
-
-        // Create the ciphers
-        dcipher.init(Cipher.DECRYPT_MODE, secretKey, paramSpec);
-
-        byte[] dec = DatatypeConverter.parseBase64Binary(encryptedText.trim());
-        return new String(dcipher.doFinal(dec), StandardCharsets.UTF_8);
     }
 }

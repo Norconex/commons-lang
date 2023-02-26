@@ -15,7 +15,6 @@
 package com.norconex.commons.lang.encrypt;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
@@ -47,10 +46,10 @@ class EncryptionTest {
 
     @Test
     void testEncryptTwice() {
-        EncryptionKey key = new EncryptionKey("this is my secret key.");
-        String text = "please encrypt this text.";
-        String encryptedText1 = EncryptionUtil.encrypt(text, key);
-        String encryptedText2 = EncryptionUtil.encrypt(text, key);
+        var key = new EncryptionKey("this is my secret key.");
+        var text = "please encrypt this text.";
+        var encryptedText1 = EncryptionUtil.encrypt(text, key);
+        var encryptedText2 = EncryptionUtil.encrypt(text, key);
         Assertions.assertNotEquals(encryptedText1, encryptedText2);
     }
 
@@ -62,10 +61,10 @@ class EncryptionTest {
         Assumptions.assumeTrue(Cipher.getMaxAllowedKeyLength("AES") >= 256);
 
         // Create round-trip encryption key
-        EncryptionKey key = new EncryptionKey("This as an encryption key", 256);
-        String text = "please encrypt this text";
-        String encryptedText = EncryptionUtil.encrypt(text, key);
-        String decryptedText = EncryptionUtil.decrypt(encryptedText, key);
+        var key = new EncryptionKey("This as an encryption key", 256);
+        var text = "please encrypt this text";
+        var encryptedText = EncryptionUtil.encrypt(text, key);
+        var decryptedText = EncryptionUtil.decrypt(encryptedText, key);
 
         Assertions.assertEquals(text, decryptedText);
     }
@@ -78,7 +77,7 @@ class EncryptionTest {
 
     @Test
     void testFileKey() throws IOException {
-        Path keyFile = tempDir.resolve("keyFile").toAbsolutePath();
+        var keyFile = tempDir.resolve("keyFile").toAbsolutePath();
         Files.writeString(keyFile, KEY);
 
         assertThat(EncryptionUtil.decrypt(
@@ -133,11 +132,15 @@ class EncryptionTest {
         assertThrows(EncryptionException.class, //NOSONAR
                 () -> new EncryptionKey(
                         "I/SHOULD/NOT/EXIST", Source.FILE).resolve());
+        var captured = SystemUtil.runAndCaptureOutput(
+                () -> EncryptionUtil.main(new String[] {}));
+        assertThat(captured.getStdOut()).contains("<appName> encrypt|decrypt");
+        assertThat(captured.getStdErr()).isBlank();
 
-        assertDoesNotThrow(() -> EncryptionUtil.main(new String[] {}));
-        assertDoesNotThrow(() -> EncryptionUtil.main(new String[] {
-                "", "", "", ""
-        }));
+        captured = SystemUtil.runAndCaptureOutput(
+                () -> EncryptionUtil.main(new String[] {"", "", "", ""}));
+        assertThat(captured.getStdOut()).contains("<appName> encrypt|decrypt");
+        assertThat(captured.getStdErr()).contains("Unsupported type of key");
     }
 
     @Test
@@ -163,8 +166,8 @@ class EncryptionTest {
     void testLoadSaveXML() {
         assertThat(EncryptionKey.loadFromXML(null, null)).isNull();
 
-        EncryptionKey key = new EncryptionKey(KEY, Source.PROPERTY, 256);
-        XML xml = new XML("test");
+        var key = new EncryptionKey(KEY, Source.PROPERTY, 256);
+        var xml = new XML("test");
         EncryptionKey.saveToXML(xml, key);
         assertThat(EncryptionKey.loadFromXML(xml, null)).isEqualTo(key);
     }
