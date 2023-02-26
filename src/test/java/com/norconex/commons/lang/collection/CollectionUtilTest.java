@@ -18,6 +18,8 @@ import static com.norconex.commons.lang.collection.CollectionUtil.adaptedList;
 import static com.norconex.commons.lang.collection.CollectionUtil.adaptedSet;
 import static com.norconex.commons.lang.collection.CollectionUtil.toArray;
 import static com.norconex.commons.lang.collection.CollectionUtil.toTypeList;
+import static com.norconex.commons.lang.collection.CollectionUtil.unionList;
+import static com.norconex.commons.lang.collection.CollectionUtil.unionSet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -32,6 +34,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.junit.jupiter.api.Test;
 
@@ -297,6 +300,42 @@ class CollectionUtilTest {
         assertThat(list).containsExactly("1", null, null, null, null);
 
         assertDoesNotThrow(() -> CollectionUtil.blanksToNulls(null));
+    }
+
+    @Test
+    void testUnionList() {
+        assertThat(unionList((String) null)).isEmpty();
+        assertThat(unionList("   ")).containsExactly("   ");
+        assertThat(unionList(List.of("1", "2"))).hasSize(2);
+        assertThat(unionList("1", "2", "3")).hasSize(3);
+        assertThat(unionList(BigDecimal.valueOf(4))).hasSize(1);
+
+        assertThat(unionList(
+                "smallest",
+                List.of("smaller",
+                        Arrays.asList("medium1", null, "medium2")
+                ),
+                new TreeSet<>(List.of("larger", "largest"))))
+            .containsExactly("smallest", "smaller", "medium1", "medium2",
+                    "larger", "largest");
+    }
+
+    @Test
+    void testUnionSet() {
+        assertThat(unionSet((String) null)).isEmpty();
+        assertThat(unionSet("   ")).containsExactly("   ");
+        assertThat(unionSet(List.of("1", "2"))).hasSize(2);
+        assertThat(unionSet("1", "2", "3")).hasSize(3);
+        assertThat(unionSet(BigDecimal.valueOf(4))).hasSize(1);
+
+        assertThat(unionSet(
+                "smallest",
+                List.of("smaller",
+                        Arrays.asList("medium1", null, "medium2")
+                ),
+                new TreeSet<>(List.of("larger", "largest"))))
+            .containsExactlyInAnyOrder("smallest", "smaller", "medium1",
+                    "medium2", "larger", "largest");
     }
 
 }

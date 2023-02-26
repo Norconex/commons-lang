@@ -94,6 +94,9 @@
         New XPathUtil class.
       </action>
       <action dev="essiembre" type="add">
+        New CollectionUtil#unionList and CollectionUtil#unionSet methods. 
+      </action>
+      <action dev="essiembre" type="add">
         CachedInputStream#nullInputStream() now returns a CachedInputStream 
         instance. 
       </action>

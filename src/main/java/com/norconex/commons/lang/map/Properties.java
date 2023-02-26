@@ -898,7 +898,7 @@ public class Properties extends ObservableMap<String, List<String>>
             remove(key);
             return;
         }
-        var list = CollectionUtil.toStringList(values);
+        var list = new ArrayList<>(CollectionUtil.toStringList(values));
         //MAYBE benchmark if an issue with long lists to do a separate
         //iteration for converting nulls
         CollectionUtil.nullsToEmpties(list);
@@ -921,7 +921,7 @@ public class Properties extends ObservableMap<String, List<String>>
         // obtained list could be immutable so we wrap it in a mutable one
         List<String> list = new ArrayList<>(
                 Optional.ofNullable(get(key)).orElse(Collections.emptyList()));
-        var newList = CollectionUtil.toStringList(values);
+        var newList = new ArrayList<>(CollectionUtil.toStringList(values));
         //MAYBE benchmark if an issue with long lists to do a separate
         //iteration for converting nulls
         CollectionUtil.nullsToEmpties(newList);

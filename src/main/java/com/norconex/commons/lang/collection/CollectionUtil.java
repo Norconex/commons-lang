@@ -26,9 +26,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.norconex.commons.lang.convert.GenericConverter;
@@ -59,8 +59,8 @@ public final class CollectionUtil {
     @SuppressWarnings("unchecked")
     public static <T> List<T> adaptedList(Object object) {
         var list = new ArrayList<T>();
-        if (object == null || (object instanceof String
-                && StringUtils.isBlank((String) object))) {
+        if (object == null ||
+                (object instanceof String s && StringUtils.isBlank(s))) {
             return list;
         }
         if (object instanceof Collection) {
@@ -216,7 +216,7 @@ public final class CollectionUtil {
     }
 
     /**
-     * Converts a list of objects to a list of strings using
+     * Converts a list of objects to an unmodifiable list of strings using
      * default {@link GenericConverter} instance.
      * If the supplied list is <code>null</code>, an empty string list
      * is returned.
@@ -227,7 +227,7 @@ public final class CollectionUtil {
         return toStringList(asListOrNull(values));
     }
     /**
-     * Converts a list of objects to a list of strings using
+     * Converts a list of objects to an unmodifiable list of strings using
      * default {@link GenericConverter} instance.
      * If the supplied list is <code>null</code>, an empty string list
      * is returned.
@@ -238,11 +238,10 @@ public final class CollectionUtil {
         if (values == null) {
             return Collections.emptyList();
         }
-        return values.stream().map(
-                GenericConverter::convert).collect(Collectors.toList());
+        return values.stream().map(GenericConverter::convert).toList();
     }
     /**
-     * Converts a list of strings to a list of objects matching
+     * Converts a list of strings to an unmodifiable list of objects matching
      * the return type.
      * If the supplied list is <code>null</code>, an empty list
      * is returned.
@@ -256,12 +255,13 @@ public final class CollectionUtil {
         if (values == null) {
             return Collections.emptyList();
         }
-        return values.stream().map(str -> GenericConverter.convert(
-                str, targetClass)).collect(Collectors.toList());
+        return values.stream()
+                .map(str -> GenericConverter.convert(str, targetClass))
+                .toList();
     }
 
     /**
-     * Converts a list of strings to a list of objects matching
+     * Converts a list of strings to an unmodifiable list of objects matching
      * the return type.
      * If the supplied list is <code>null</code>, an empty list
      * is returned.
@@ -275,7 +275,7 @@ public final class CollectionUtil {
         if (values == null) {
             return Collections.emptyList();
         }
-        return values.stream().map(converter).collect(Collectors.toList());
+        return values.stream().map(converter).toList();
     }
 
     /**
@@ -393,4 +393,53 @@ public final class CollectionUtil {
         }
         CollectionUtils.transform(c, e -> StringUtils.isBlank(e) ? null : e);
     }
+
+    /**
+     * Create a non-null mutable list containing the combination of supplied
+     * objects of the specified type. If the object is a Collection or array,
+     * it will be iterated over to populate the new list (recursively).
+     * Any <code>null</code> objects are ignored (not added to the returned
+     * list).
+     * Objects are returned in the order supplied.
+     * @param objects objects to combine into a new list
+     * @return a new non-null, mutable list
+     * @since 3.0.0
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> List<T> unionList(Object... objects) {
+        var list = new ArrayList<T>();
+        if (ArrayUtils.isEmpty(objects)) {
+            return list;
+        }
+        for (Object obj : objects) {
+            if (obj == null) {
+                continue;
+            }
+            if (obj instanceof Collection) {
+                list.addAll(unionList(((Collection<?>) obj).toArray()));
+            } else if (obj.getClass().isArray()) {
+                list.addAll(unionList((Object[]) obj));
+            } else {
+                list.add((T) obj);
+            }
+        }
+        return list;
+    }
+
+    /**
+     * Create a non-null mutable set containing the combination of supplied
+     * objects of the specified type (minus duplicates). If the object is a
+     * Collection or array, it will be iterated over to populate the new
+     * set (recursively).
+     * Any <code>null</code> objects are ignored (not added to the returned
+     * set).
+     * There are no guarantee on the order in which objects are returned.
+     * @param objects objects to combine into a new set
+     * @return a new non-null, mutable set
+     * @since 3.0.0
+     */
+    public static <T> Set<T> unionSet(Object... objects) {
+        return new HashSet<>(unionList(objects));
+    }
+
 }
