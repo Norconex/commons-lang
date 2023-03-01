@@ -205,11 +205,13 @@ class BeanUtilTest {
         bean2.setPrimitiveInt(321);
         bean2.setObjectInteger(654);
 
-        var expected =
-                "< Bean.objectInteger = 456\n"
-              + "> Bean.objectInteger = 654\n"
-              + "< Bean.primitiveInt = 123\n"
-              + "> Bean.primitiveInt = 321";
+        var expected = """
+            < Bean#hashCode:2077742948
+            > Bean#hashCode:222678172
+            < Bean.objectInteger = 456#hashCode:456
+            > Bean.objectInteger = 654#hashCode:654
+            < Bean.primitiveInt = 123#hashCode:123
+            > Bean.primitiveInt = 321#hashCode:321""";
         assertThat(BeanUtil.diff(bean1, bean2)).isEqualTo(expected);
     }
 
