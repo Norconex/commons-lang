@@ -1072,7 +1072,12 @@ public final class BeanUtil {
     }
 
     private static Bag<String> graphLeavesAsBag(Object bean) {
+        var hashCode = "#hashCode:";
         Bag<String> bag = new HashBag<>();
+        if (bean != null) {
+            bag.add(bean.getClass().getSimpleName()
+                    + hashCode + bean.hashCode());
+        }
         visitAllProperties(bean, (o, p) -> {
             var key = o.getClass().getSimpleName()
                     + "." + p.getName() + " = ";
@@ -1080,6 +1085,9 @@ public final class BeanUtil {
             var line = key;
             if (!hasChildren(value)) {
                 line += Objects.toString(value);
+                if (value != null) {
+                    line += hashCode + value.hashCode();
+                }
             } else if (value == null) {
                 line += "<null>";
             } else {
@@ -1092,7 +1100,7 @@ public final class BeanUtil {
                 } else {
                     line += "<Object";
                 }
-                line += "#hashCode:" + value.hashCode() + ">";
+                line += hashCode + value.hashCode() + ">";
             }
             bag.add(line);
         });
@@ -1146,9 +1154,10 @@ public final class BeanUtil {
             var writeMethod = getWriteMethod(
                     beanClass, field.getName(), field.getType());
             if (ObjectUtils.allNull(readMethod, writeMethod)) {
-                LOG.debug("Cannot get descriptor for property \"{}\" of bean "
-                        + "class \"{}\". Property has no read or "
-                        + "write methods.",
+                LOG.debug("""
+                	Cannot get descriptor for property "{}" of bean\s\
+                	class "{}". Property has no read or\s\
+                	write methods.""",
                         field.getName(), beanClass.getName());
                 return null;
             }

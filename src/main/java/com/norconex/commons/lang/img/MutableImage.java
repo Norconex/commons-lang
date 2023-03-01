@@ -14,8 +14,8 @@
  */
 package com.norconex.commons.lang.img;
 
+import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
+import java.util.Base64;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -38,9 +39,9 @@ import org.imgscalr.Scalr;
 import org.imgscalr.Scalr.Method;
 import org.imgscalr.Scalr.Mode;
 
+import com.norconex.commons.lang.EqualsUtil;
 import com.norconex.commons.lang.io.ByteArrayOutputStream;
 
-import jakarta.xml.bind.DatatypeConverter;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
@@ -78,14 +79,14 @@ public class MutableImage {
         image = ImageIO.read(imageStream);
     }
     public MutableImage(@NonNull Image image) {
-        if (image instanceof BufferedImage) {
-            this.image = (BufferedImage) image;
+        if (image instanceof BufferedImage bufImg) {
+            this.image = bufImg;
         } else {
-            BufferedImage bimage = new BufferedImage(
+            var bimage = new BufferedImage(
                     image.getWidth(null), image.getHeight(null),
                     BufferedImage.TYPE_INT_ARGB);
             // Draw the image on to the buffered image
-            Graphics2D bGr = bimage.createGraphics();
+            var bGr = bimage.createGraphics();
             bGr.drawImage(image, 0, 0, null);
             bGr.dispose();
             this.image = bimage;
@@ -104,14 +105,33 @@ public class MutableImage {
         return image;
     }
     public String toBase64String(String format) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ImageIO.write(image, format, baos);
+        var baos = new ByteArrayOutputStream();
+        ImageIO.write(deAlpha(image, format), format, baos);
         return "data:image/" + format + ";base64,"
-                + DatatypeConverter.printBase64Binary(baos.toByteArray());
+                + Base64.getMimeEncoder().encodeToString(baos.toByteArray());
+    }
+    /**
+     * Decodes a Base64 image string.
+     * @param base64Image Base64 encoded image
+     * @return a new mutable image or <code>null</code> if Base64 image is
+     *     <code>null</code>
+     * @throws IOException problem decoding the image
+     * @since 3.0.0
+     */
+    public static MutableImage fromBase64String(String base64Image)
+            throws IOException {
+        if (base64Image == null) {
+            return null;
+        }
+
+        var base64 = base64Image.replaceFirst("(?i)^.*?base64,(.*)$", "$1");
+        var bais = new ByteArrayInputStream(
+                Base64.getMimeDecoder().decode(base64));
+        return new MutableImage(ImageIO.read(bais));
     }
     public InputStream toInputStream(String format) throws IOException {
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        ImageIO.write(image, format, os);
+        var os = new ByteArrayOutputStream();
+        ImageIO.write(deAlpha(image, format), format, os);
         return new ByteArrayInputStream(os.toByteArray());
     }
 
@@ -119,15 +139,15 @@ public class MutableImage {
         write(file, null);
     }
     public void write(@NonNull Path file, String format) throws IOException {
-        String f = format;
+        var f = format;
         if (StringUtils.isBlank(format)) {
             f = FilenameUtils.getExtension(file.toString());
         }
-        ImageIO.write(image, f, file.toFile());
+        ImageIO.write(deAlpha(image, format), f, file.toFile());
     }
     public void write(@NonNull OutputStream out, @NonNull String format)
             throws IOException {
-        ImageIO.write(image, format, out);
+        ImageIO.write(deAlpha(image, format), format, out);
     }
 
     public Dimension getDimension() {
@@ -163,16 +183,16 @@ public class MutableImage {
      */
     public MutableImage rotate(double degrees) {
         return apply(t -> {
-            int w = image.getWidth();
-            int h = image.getHeight();
-            double rads = Math.toRadians(degrees);
-            double sin = Math.abs(Math.sin(rads));
-            double cos = Math.abs(Math.cos(rads));
-            int newWidth = (int) Math.floor(w * cos + h * sin);
-            int newHeight = (int) Math.floor(h * cos + w * sin);
+            var w = image.getWidth();
+            var h = image.getHeight();
+            var rads = Math.toRadians(degrees);
+            var sin = Math.abs(Math.sin(rads));
+            var cos = Math.abs(Math.cos(rads));
+            var newWidth = (int) Math.floor(w * cos + h * sin);
+            var newHeight = (int) Math.floor(h * cos + w * sin);
             t.translate((newWidth - w) / 2d, (newHeight - h) / 2d);
-            int x = w / 2;
-            int y = h / 2;
+            var x = w / 2;
+            var y = h / 2;
             t.rotate(rads, x, y);
         });
     }
@@ -355,16 +375,30 @@ public class MutableImage {
     }
 
     private MutableImage apply(Consumer<AffineTransform> c) {
-        AffineTransform tx = new AffineTransform();
+        var tx = new AffineTransform();
         c.accept(tx);
-        AffineTransformOp op =
+        var op =
                 new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
         // using scalr here resolves a lot of potential issues.
-        BufferedImage newImage = Scalr.apply(image, op);
+        var newImage = Scalr.apply(image, op);
         if (newImage != image) {
             image.flush();
         }
         image = newImage;
         return this;
+    }
+
+    private BufferedImage deAlpha(BufferedImage img, String format) {
+        // Remove alpha layer for formats not supporting it. This prevents
+        // some files from having a colored background (instead of transparency)
+        // or to not be saved properly (e.g. png to bmp).
+        if (EqualsUtil.equalsNoneIgnoreCase(format, "png", "gif")) {
+            var fixedImg = new BufferedImage(img.getWidth(), img.getHeight(),
+                    BufferedImage.TYPE_INT_RGB);
+            fixedImg.createGraphics().drawImage(
+                    img, 0, 0, Color.WHITE, null);
+            return fixedImg;
+        }
+        return img;
     }
 }

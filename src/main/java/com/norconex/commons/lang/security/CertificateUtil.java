@@ -26,7 +26,6 @@ import java.util.List;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
@@ -63,7 +62,7 @@ public final class CertificateUtil {
      */
     public static List<X509Certificate> fetchCertificates(@NonNull String url)
             throws GeneralSecurityException, IOException {
-        HttpURL u = new HttpURL(url);
+        var u = new HttpURL(url);
         return fetchCertificates(u.getHost(), u.getPort());
     }
 
@@ -111,7 +110,7 @@ public final class CertificateUtil {
      */
     public static int trustHost(@NonNull String url, KeyStore keyStore)
             throws GeneralSecurityException, IOException {
-        HttpURL u = new HttpURL(url);
+        var u = new HttpURL(url);
         return trustHost(u.getHost(), u.getPort(), keyStore);
     }
 
@@ -131,15 +130,15 @@ public final class CertificateUtil {
             @NonNull String host, int port, KeyStore keyStore)
                     throws GeneralSecurityException, IOException {
         List<X509Certificate> certs = new ArrayList<>();
-        boolean trusted = fetchCertificates(certs, host, port, keyStore);
+        var trusted = fetchCertificates(certs, host, port, keyStore);
         if (LOG.isDebugEnabled()) {
             LOG.debug("Fetched {} certificates: \n{}",
                     certs.size(), toString(certs));
         }
         if (!trusted) {
-            int idx = 0;
+            var idx = 0;
             for (X509Certificate cert : certs) {
-                String alias = host + "-" + ++idx;
+                var alias = host + "-" + ++idx;
                 keyStore.setCertificateEntry(alias, cert);
             }
             return certs.size();
@@ -155,13 +154,14 @@ public final class CertificateUtil {
      */
     public static String toString(@NonNull List<X509Certificate> certificates)
             throws GeneralSecurityException {
-        MessageDigest sha1 = MessageDigest.getInstance("SHA1");
-        MessageDigest md5 = MessageDigest.getInstance("MD5");
-        StringBuilder b = new StringBuilder();
-        for (int i = 0; i < certificates.size(); i++) {
-            X509Certificate cert = certificates.get(i);
-            b.append(" " + (i + 1) + " Subject " + cert.getSubjectDN() + "\n");
-            b.append("   Issuer  " + cert.getIssuerDN() + "\n");
+        var sha1 = MessageDigest.getInstance("SHA1");
+        var md5 = MessageDigest.getInstance("MD5");
+        var b = new StringBuilder();
+        for (var i = 0; i < certificates.size(); i++) {
+            var cert = certificates.get(i);
+            b.append(" " + (i + 1) + " Subject "
+                    + cert.getSubjectX500Principal() + "\n");
+            b.append("   Issuer  " + cert.getIssuerX500Principal() + "\n");
             sha1.update(cert.getEncoded());
             b.append("   sha1    "
                     + DatatypeConverter.printHexBinary(sha1.digest()) + "\n");
@@ -176,20 +176,20 @@ public final class CertificateUtil {
     private static boolean fetchCertificates(List<X509Certificate> certificates,
             String host, int port, KeyStore keyStore)
                     throws GeneralSecurityException, IOException  {
-        SSLContext context = SSLContext.getInstance("TLS");
-        TrustManagerFactory tmf = TrustManagerFactory.getInstance(
+        var context = SSLContext.getInstance("TLS");
+        var tmf = TrustManagerFactory.getInstance(
                 TrustManagerFactory.getDefaultAlgorithm());
         tmf.init(keyStore);
-        X509TrustManager defaultTrustManager =
+        var defaultTrustManager =
                 (X509TrustManager) tmf.getTrustManagers()[0];
-        CertificateInterceptor certInterceptor =
+        var certInterceptor =
                 new CertificateInterceptor(defaultTrustManager);
         context.init(null, new TrustManager[] { certInterceptor }, null);
-        SSLSocketFactory factory = context.getSocketFactory();
+        var factory = context.getSocketFactory();
 
         LOG.debug("Connecting to {}:{}...", host, port);
-        boolean trusted = false;
-        try (SSLSocket socket = (SSLSocket) factory.createSocket(host, port)) {
+        var trusted = false;
+        try (var socket = (SSLSocket) factory.createSocket(host, port)) {
             socket.setSoTimeout(10000);
             LOG.debug("Starting SSL handshake...");
             socket.startHandshake();
@@ -199,7 +199,7 @@ public final class CertificateUtil {
             LOG.debug("Errors. Certificate not trusted.", e);
         }
 
-        X509Certificate[] chain = certInterceptor.getCerts();
+        var chain = certInterceptor.getCerts();
         if (chain != null) {
             certificates.addAll(Arrays.asList(chain));
         } else {

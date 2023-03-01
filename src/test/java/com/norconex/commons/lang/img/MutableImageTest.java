@@ -20,7 +20,6 @@ import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -103,9 +102,9 @@ class MutableImageTest {
 
     @Test
     void testComparisonImage() throws IOException {
-        MutableImage largerImg = new MutableImage(img.toImage()).scaleFactor(2);
-        MutableImage sameImg = new MutableImage(img.toImage());
-        MutableImage smallerImg =
+        var largerImg = new MutableImage(img.toImage()).scaleFactor(2);
+        var sameImg = new MutableImage(img.toImage());
+        var smallerImg =
                 new MutableImage(img.toImage()).scaleFactor(0.5);
         assertThat(img.largerThan(largerImg)).isFalse();
         assertThat(img.largerThan(sameImg)).isFalse();
@@ -135,9 +134,9 @@ class MutableImageTest {
 
     @Test
     void testComparisonDimension() throws IOException {
-        Dimension sameDimension = new Dimension(50, 75);
-        Dimension largerDimension = new Dimension(51, 76);
-        Dimension smallerDimension = new Dimension(49, 74);
+        var sameDimension = new Dimension(50, 75);
+        var largerDimension = new Dimension(51, 76);
+        var smallerDimension = new Dimension(49, 74);
         assertThat(img.largerThan(largerDimension)).isFalse();
         assertThat(img.largerThan(sameDimension)).isFalse();
         assertThat(img.largerThan(smallerDimension)).isTrue();
@@ -216,15 +215,15 @@ class MutableImageTest {
     }
 
     private void test(Consumer<MutableImage> c, String ext) throws IOException {
-        String srcImage = "/img/triangle." + ext;
+        var srcImage = "/img/triangle." + ext;
         new File("target/img-tests").mkdirs();
-        String targetImage = "target/img-tests/" +
+        var targetImage = "target/img-tests/" +
                 Thread.currentThread().getStackTrace()[2].getMethodName()
                         + "." + ext;
         LOG.debug("Writing: " + targetImage);
-        try (InputStream is =
+        try (var is =
                 MutableImageTest.class.getResourceAsStream(srcImage)) {
-            MutableImage imgToWrite = new MutableImage(is);
+            var imgToWrite = new MutableImage(is);
             //img.setResizeQuality(Quality.MAX);
             c.accept(imgToWrite);
             Assertions.assertTrue(ImageIO.write(
