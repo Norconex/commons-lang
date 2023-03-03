@@ -103,6 +103,9 @@
       <action dev="essiembre" type="add">
         New MutableImage#fromBase64String method. 
       </action>
+      <action dev="essiembre" type="add">
+        New PatternConverter class along with XML#getPattern method. 
+      </action>
       <action dev="essiembre" type="update">
         Now require Java 17+. 
       </action>

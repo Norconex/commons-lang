@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 import com.norconex.commons.lang.collection.CollectionUtil;
 import com.norconex.commons.lang.file.ContentType;
@@ -77,6 +78,7 @@ import com.norconex.commons.lang.file.ContentType;
  *   <li>{@link ContentType}</li>
  *   <li>{@link Charset}</li>
  *   <li>{@link URL}</li>
+ *   <li>{@link Pattern}</li>
  * </ul>
  * <p>
  * By default {@link ConverterException} is thrown when conversion fails.
@@ -144,6 +146,7 @@ public final class GenericConverter implements Converter {
         cc.put(Duration.class, new DurationConverter());
         cc.put(ContentType.class, new ContentTypeConverter());
         cc.put(Charset.class, new CharsetConverter());
+        cc.put(Pattern.class, new PatternConverter());
 
         return cc;
     }
@@ -217,7 +220,7 @@ public final class GenericConverter implements Converter {
     }
 
     public Converter getConverter(Class<?> type) {
-        Converter c = converters.get(type);
+        var c = converters.get(type);
         if (c != null) {
             return c;
         }
@@ -236,7 +239,7 @@ public final class GenericConverter implements Converter {
 
     private Converter nullSafeConverter(Class<?> type) {
         Objects.requireNonNull(type, "type must not be null");
-        Converter c = getConverter(type);
+        var c = getConverter(type);
         if (c == null) {
             throw new ConverterException(
                     "No converter found for type " + type.getTypeName());

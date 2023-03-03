@@ -46,6 +46,7 @@ import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -1625,6 +1626,28 @@ public class XML implements Iterable<XMLCursor> {
      */
     public Duration getDuration(String xpathExpression, Duration defaultValue) {
         return get(xpathExpression, Duration.class, defaultValue);
+    }
+
+    //--- Get: Pattern ---------------------------------------------------------
+
+    /**
+     * Gets a regular expression pattern.
+     * @param xpathExpression xpath to the element/attribute with the pattern
+     * @return pattern
+     * @since 3.0.0
+     */
+    public Pattern getPattern(String xpathExpression) {
+        return get(xpathExpression, Pattern.class);
+    }
+    /**
+     * Gets a regular expression pattern.
+     * @param xpathExpression xpath to the element/attribute with the pattern
+     * @param defaultValue default value
+     * @return pattern
+     * @since 3.0.0
+     */
+    public Pattern getPattern(String xpathExpression, Pattern defaultValue) {
+        return get(xpathExpression, Pattern.class, defaultValue);
     }
 
     //--- Jaxb -----------------------------------------------------------------
