@@ -27,6 +27,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.NumberFormat;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -73,7 +74,7 @@ class GenericConverterTest {
         assertConvert("789012", BigInteger.valueOf(789012), BigInteger.class);
         assertConvert("34.6789", BigDecimal.valueOf(34.6789), BigDecimal.class);
 
-        NumberConverter c = new NumberConverter();
+        var c = new NumberConverter();
         assertThrows(ConverterException.class,
                 () -> c.toType("badOne", String.class));
     }
@@ -89,49 +90,49 @@ class GenericConverterTest {
         assertConvert("ge", Operator.GREATER_EQUAL, Operator.class);
         assertToType(Operator.GREATER_EQUAL, "GREATER_EQUAL", Operator.class);
 
-        EnumConverter c = new EnumConverter();
+        var c = new EnumConverter();
         assertThrows(ConverterException.class,
                 () -> c.toType("badOne", Operator.class));
     }
 
     @Test
     void testFileConverter() {
-        String filePath = new File("/tmp/filepath.txt").getAbsolutePath();
+        var filePath = new File("/tmp/filepath.txt").getAbsolutePath();
         assertConvert(filePath, new File(filePath), File.class);
         assertConvert(filePath, Paths.get(filePath), Path.class);
 
-        FileConverter c = new FileConverter();
+        var c = new FileConverter();
         assertThrows(ConverterException.class,
                 () -> c.toType("badOne", String.class));
     }
 
     @Test
     void testInstantConverter() {
-        Instant now = Instant.now();
+        var now = Instant.now();
         assertConvert(now.toString(), now, Instant.class);
     }
 
     @Test
     void testDateConverter() {
-        Date now = new Date();
+        var now = new Date();
         assertConvert(Long.toString(now.getTime()), now, Date.class);
     }
 
     @Test
     void testLocalDateTimeConverter() {
-        LocalDateTime now = LocalDateTime.now();
+        var now = LocalDateTime.now();
         assertConvert(now.toString(), now, LocalDateTime.class);
     }
 
     @Test
     void testZonedDateTimeConverter() {
-        ZonedDateTime now = ZonedDateTime.now();
+        var now = ZonedDateTime.now();
         assertConvert(now.toString(), now, ZonedDateTime.class);
     }
 
     @Test
     void testDimensionConverter() {
-        Dimension d = new Dimension(640, 480);
+        var d = new Dimension(640, 480);
 
         //to string
         Assertions.assertEquals("640x480", GenericConverter.convert(d));
@@ -152,7 +153,7 @@ class GenericConverterTest {
         assertThrows(ConverterException.class,
                 () -> GenericConverter.convert("badOne", Dimension.class));
 
-        DimensionConverter c = new DimensionConverter();
+        var c = new DimensionConverter();
         assertThrows(ConverterException.class, () -> c.toString("badOne"));
     }
 
@@ -175,7 +176,7 @@ class GenericConverterTest {
         assertThrows(ConverterException.class,
                 () -> GenericConverter.convert("badOne", Character.class));
 
-        CharacterConverter c = new CharacterConverter();
+        var c = new CharacterConverter();
         assertThrows(ConverterException.class, () -> c.toString("badOne"));
     }
 
@@ -228,7 +229,7 @@ class GenericConverterTest {
 
     @Test
     void testWithDefaultValue() {
-        TestStringConverter c = new TestStringConverter();
+        var c = new TestStringConverter();
 
         assertThat(c.toString(null, "default")).isEqualTo("default");
         assertThat(c.toString("", "default")).isEqualTo("default");
@@ -267,7 +268,7 @@ class GenericConverterTest {
                 new Locale("en",  "CA"),
                 new Locale("fr",  "CA"),
                 new Locale("it"));
-        List<String> result = GenericConverter.convert(source);
+        var result = GenericConverter.convert(source);
         assertThat(result).containsExactly("en_CA", "fr_CA", "it");
     }
 
@@ -277,11 +278,19 @@ class GenericConverterTest {
                 new Locale("en",  "CA"),
                 new Locale("fr",  "CA"),
                 new Locale("it"));
-        List<String> result = GenericConverter.defaultInstance().toString(source);
+        var result =
+                GenericConverter.defaultInstance().toString(source);
         assertThat(result).containsExactly("en_CA", "fr_CA", "it");
 
         assertThat(GenericConverter.defaultInstance().toString((List<?>) null))
             .isEmpty();
+    }
+
+    @Test
+    void testPatternConverter() {
+        var p = Pattern.compile(".*");
+        assertThat(GenericConverter.defaultInstance().toString(p))
+            .isEqualTo(".*");
     }
 
     @Test
@@ -291,9 +300,9 @@ class GenericConverterTest {
         assertThat(GenericConverter.defaultInstance().toString(
                 Integer.valueOf(42))).isEqualTo("42");
 
-        GenericConverter c = GenericConverter.defaultInstance();
-        Pattern p = Pattern.compile(".*");
-        assertThrows(ConverterException.class, () -> c.toString(p));
+        var c = GenericConverter.defaultInstance();
+        assertThrows(ConverterException.class, () -> c.toString( //NOSONAR
+                NumberFormat.getInstance()));
     }
 
     @Test
