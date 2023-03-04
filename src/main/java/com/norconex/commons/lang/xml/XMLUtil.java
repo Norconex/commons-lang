@@ -85,7 +85,7 @@ public final class XMLUtil {
     private XMLUtil() {}
 
     public static Validator createSchemaValidator(Schema schema) {
-        Validator validator = schema.newValidator();
+        var validator = schema.newValidator();
         set(validator, v -> v.setFeature(FEATURE_SECURE_PROCESSING, true));
         set(validator, v -> v.setProperty(ACCESS_EXTERNAL_DTD, ""));
         set(validator, v -> v.setProperty(ACCESS_EXTERNAL_SCHEMA, ""));
@@ -98,7 +98,7 @@ public final class XMLUtil {
   }
 
     public static XMLReader createXMLReader() {
-        SAXParserFactory parserFactory = createSaxParserFactory();
+        var parserFactory = createSaxParserFactory();
         SAXParser parser;
         XMLReader xmlReader;
         try {
@@ -117,7 +117,7 @@ public final class XMLUtil {
     }
 
     public static DocumentBuilderFactory createDocumentBuilderFactory() {
-        DocumentBuilderFactory factory =
+        var factory =
                 DocumentBuilderFactory.newInstance(); //NOSONAR handled
         set(factory, f -> f.setFeature(FEATURE_SECURE_PROCESSING, true));
         set(factory, f -> f.setFeature(EXTERNAL_GENERAL_ENTITIES, false));
@@ -129,7 +129,7 @@ public final class XMLUtil {
     }
 
     public static SAXParserFactory createSaxParserFactory() {
-        SAXParserFactory factory =
+        var factory =
                 SAXParserFactory.newInstance(); //NOSONAR handled
         set(factory, f -> f.setFeature(FEATURE_SECURE_PROCESSING, true));
         set(factory, f -> f.setFeature(EXTERNAL_GENERAL_ENTITIES, false));
@@ -138,7 +138,7 @@ public final class XMLUtil {
     }
 
     public static XMLInputFactory createXMLInputFactory() {
-        XMLInputFactory factory = XMLInputFactory.newInstance();
+        var factory = XMLInputFactory.newInstance();
         factory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
         factory.setProperty(
                 "javax.xml.stream.isSupportingExternalEntities", false);
@@ -164,29 +164,29 @@ public final class XMLUtil {
      * @return XML event reader
      */
     public static XMLEventReader createXMLEventReader(Object obj) {
-        if (obj instanceof Path) {
-            return createXMLEventReader((Path) obj);
+        if (obj instanceof Path p) {
+            return createXMLEventReader(p);
         }
-        if (obj instanceof File) {
-            return createXMLEventReader((File) obj);
+        if (obj instanceof File f) {
+            return createXMLEventReader(f);
         }
-        if (obj instanceof Node) {
-            return createXMLEventReader((Node) obj);
+        if (obj instanceof Node n) {
+            return createXMLEventReader(n);
         }
-        if (obj instanceof XML) {
-            return createXMLEventReader((XML) obj);
+        if (obj instanceof XML x) {
+            return createXMLEventReader(x);
         }
-        if (obj instanceof String) {
-            return createXMLEventReader((String) obj);
+        if (obj instanceof String s) {
+            return createXMLEventReader(s);
         }
-        if (obj instanceof InputStream) {
-            return createXMLEventReader((InputStream) obj);
+        if (obj instanceof InputStream i) {
+            return createXMLEventReader(i);
         }
-        if (obj instanceof Reader) {
-            return createXMLEventReader((Reader) obj);
+        if (obj instanceof Reader r) {
+            return createXMLEventReader(r);
         }
-        if (obj instanceof XMLEventReader) {
-            return (XMLEventReader) obj;
+        if (obj instanceof XMLEventReader x) {
+            return x;
         }
         throw new XMLException("Unsupported object type. Must be one of "
                 + "Path, File, Node, XML, String, Reader, or XMLEventReader.");
@@ -197,8 +197,8 @@ public final class XMLUtil {
     // We account for that in the next two methods, as we always want the
     // local name to be // the part after ":" when present.
     static String toLocalName(QName qname) {
-        String name = toName(qname);
-        String localName = StringUtils.substringAfterLast(name, ":");
+        var name = toName(qname);
+        var localName = StringUtils.substringAfterLast(name, ":");
         if (StringUtils.isBlank(localName)) {
             return name;
         }
@@ -214,7 +214,7 @@ public final class XMLUtil {
         return createXMLEventReader(path.toFile());
     }
     private static XMLEventReader createXMLEventReader(File file) {
-        try (FileReader r = new FileReader(file)) {
+        try (var r = new FileReader(file)) {
             return createXMLEventReader(r);
         } catch (IOException e) {
             throw new XMLException(
@@ -236,7 +236,7 @@ public final class XMLUtil {
     }
     private static XMLEventReader createXMLEventReader(Reader reader) {
         try {
-            XMLInputFactory factory = XMLUtil.createXMLInputFactory();
+            var factory = XMLUtil.createXMLInputFactory();
             factory.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, false);
             return factory.createXMLEventReader(IOUtils.buffer(reader));
         } catch (XMLStreamException e) {
@@ -248,7 +248,7 @@ public final class XMLUtil {
         try {
             c.accept(t);
         } catch (Exception e) {
-            String clsMsg = t.getClass() + e.getMessage();
+            var clsMsg = t.getClass() + e.getMessage();
             if (!alreadyLogged.contains(clsMsg)) {
                 LOG.debug(e.getMessage());
                 alreadyLogged.add(clsMsg);
