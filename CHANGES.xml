@@ -260,6 +260,10 @@
       <action dev="essiembre" type="update">
         BeanUtil#diff now display hashCode for any non-null values.
       </action>
+      <action dev="essiembre" type="update">
+        EnumConverter will now match values regardless of non-alphanumeric 
+        characters they may contain.
+      </action>
       <action dev="essiembre" type="fix">
         Properties#loadFromXML is now null-safe.
       </action>

@@ -1,4 +1,4 @@
-/* Copyright 2018-2020 Norconex Inc.
+/* Copyright 2018-2023 Norconex Inc.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -14,6 +14,10 @@
 */
 package com.norconex.commons.lang.convert;
 
+import java.util.Optional;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
+
 /**
  * {@link Enum} converter.
  * @since 2.0.0
@@ -27,20 +31,33 @@ public class EnumConverter extends AbstractConverter {
 
     @Override
     protected <T> T nullSafeToType(String value, Class<T> type) {
-        String trimmed = value.trim();
-        // Try to match with "toString()"
-        for (T e : type.getEnumConstants()) {
-            if (((Enum<?>) e).toString().equalsIgnoreCase(trimmed)) {
-                return type.cast(e);
-            }
+        var trimmed = value.trim();
+        return match(type, t -> matchToString(t, trimmed, false))
+            .or(() -> match(type, t -> matchName(t, trimmed, false)))
+            .or(() -> match(type, t -> matchToString(t, trimmed, true)))
+            .or(() -> match(type, t -> matchName(t, trimmed, true)))
+            .orElseThrow(() -> new ConverterException(String.format(
+                "\"%s\" is not an enum value of %s", value, type)));
+    }
+
+    private static <T> boolean matchName(
+            T t, String value, boolean stripNonAlphanum) {
+        return matchToString(((Enum<?>) t).name(), value, stripNonAlphanum);
+    }
+    private static <T> boolean matchToString(
+            T t, String value, boolean stripNonAlphanum) {
+        var typeStr = t.toString();
+        var valStr = value;
+        if (stripNonAlphanum) {
+            typeStr = typeStr.replaceAll("[^a-zA-Z0-9]", "");
+            valStr = valStr.replaceAll("[^a-zA-Z0-9]", "");
         }
-        // Try to match with "name()"
-        for (T e : type.getEnumConstants()) {
-            if (((Enum<?>) e).name().equalsIgnoreCase(trimmed)) {
-                return type.cast(e);
-            }
-        }
-        throw new ConverterException(String.format(
-                "\"%s\" is not an enum value of %s", value, type));
+        return typeStr.equalsIgnoreCase(valStr);
+    }
+
+    private static <T> Optional<T> match(Class<T> type, Predicate<T> p) {
+        return Stream.of(type.getEnumConstants())
+            .filter(p)
+            .findFirst();
     }
 }

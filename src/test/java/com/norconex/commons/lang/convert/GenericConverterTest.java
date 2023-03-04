@@ -93,6 +93,12 @@ class GenericConverterTest {
         var c = new EnumConverter();
         assertThrows(ConverterException.class,
                 () -> c.toType("badOne", Operator.class));
+
+        // test non alphanum
+        assertThat(c.toType("greaterEqual", Operator.class))
+                .isSameAs(Operator.GREATER_EQUAL);
+        assertThat(c.toType("g|e", Operator.class))
+            .isSameAs(Operator.GREATER_EQUAL);
     }
 
     @Test
