@@ -124,7 +124,7 @@ public class MutableImage {
             return null;
         }
 
-        var base64 = base64Image.replaceFirst("(?i)^.*?base64,(.*)$", "$1");
+        var base64 = base64Image.replaceFirst("(?is)^.*?base64,(.*)$", "$1");
         var bais = new ByteArrayInputStream(
                 Base64.getMimeDecoder().decode(base64));
         return new MutableImage(ImageIO.read(bais));
