@@ -250,7 +250,11 @@ public final class XMLUtil {
         } catch (Exception e) {
             var clsMsg = t.getClass() + e.getMessage();
             if (!alreadyLogged.contains(clsMsg)) {
-                LOG.debug(e.getMessage());
+                if (clsMsg.endsWith("is not recognized.")) {
+                    LOG.trace(e.getMessage());
+                } else {
+                    LOG.debug(e.getMessage());
+                }
                 alreadyLogged.add(clsMsg);
             }
         }
