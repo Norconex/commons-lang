@@ -15,16 +15,21 @@
 package com.norconex.commons.lang.net;
 
 import java.io.Serializable;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.norconex.commons.lang.bean.BeanUtil;
 import com.norconex.commons.lang.security.Credentials;
-import com.norconex.commons.lang.xml.XMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.commons.lang.xml.XMLConfigurable;
 
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import lombok.experimental.FieldNameConstants;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * <p>
@@ -52,6 +57,7 @@ import lombok.experimental.FieldNameConstants;
 @ToString
 @EqualsAndHashCode
 @FieldNameConstants(level = AccessLevel.PRIVATE)
+@Slf4j
 public class ProxySettings implements XMLConfigurable, Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -153,6 +159,29 @@ public class ProxySettings implements XMLConfigurable, Serializable {
     }
     public void copyFrom(ProxySettings another) {
         BeanUtil.copyProperties(this, another);
+    }
+
+    /**
+     * Converts this proxy settings to a {@link Proxy}. The scheme is used
+     * to establish the proxy type.  If {@link #isSet()} returns false,
+     * {@link Proxy#NO_PROXY} is returned.
+     * @return proxy
+     * @since 3.0.0
+     */
+    public Proxy toProxy() {
+        if (!isSet()) {
+            return Proxy.NO_PROXY;
+        }
+        var type = Proxy.Type.HTTP;
+        if (StringUtils.startsWithIgnoreCase(scheme, "socks")) {
+            type = Proxy.Type.SOCKS;
+        } else if (StringUtils.isNotBlank(scheme)
+                && !StringUtils.startsWithIgnoreCase(scheme, "http")) {
+            LOG.warn("Unsupported proxy scheme: '{}'. Defaulting to HTTP.",
+                    scheme);
+        }
+        var address = new InetSocketAddress(host.getName(), host.getPort());
+        return new Proxy(type, address);
     }
 
     @Override

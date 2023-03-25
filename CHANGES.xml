@@ -106,6 +106,9 @@
       <action dev="essiembre" type="add">
         New PatternConverter class along with XML#getPattern method. 
       </action>
+      <action dev="essiembre" type="add">
+        New ProxySettings#toProxy method (java.net.Proxy). 
+      </action>
       <action dev="essiembre" type="update">
         New XMLAdapters class to add JAXB support for the same type offered
         by GenericConverter.
