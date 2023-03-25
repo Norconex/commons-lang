@@ -1,0 +1,35 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="jaxbComplexTypes">
+    <xs:complexType>
+      <xs:all>
+        <xs:element name="charset" type="xs:string" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="contentType" type="xs:string" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="dimension" type="xs:string" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="duration" type="xs:string" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="file" type="xs:string" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="instant" type="xs:string" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="localDateTime" type="xs:string" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="locale"  type="xs:string" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="path"  type="xs:string" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="pattern"  type="xs:string" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="zonedDateTime"  type="xs:string" minOccurs="0" maxOccurs="1"/>
+
+        <xs:element name="booleanValue"  type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="character"  type="xs:string" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="classObj"  type="xs:string" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="date"  type="xs:string" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="enumObj"  type="xs:string" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="intValue"  type="xs:int" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="floatValue"  type="xs:float" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="byteValue"  type="xs:byte" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="bigDecimal"  type="xs:decimal" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="string"  type="xs:string" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="url"  type="xs:string" minOccurs="0" maxOccurs="1"/>
+
+        <xs:element name="fromXMLConfig" type="xs:string" minOccurs="0" maxOccurs="1"/>
+
+      </xs:all>
+      <xs:attribute name="class" type="xs:string" use="optional"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

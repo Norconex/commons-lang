@@ -242,10 +242,11 @@ public class XML implements Iterable<XMLCursor> {
             } else {
                 setAttribute("class",
                         sourceObject.getClass().getCanonicalName());
+                if (isJAXB(sourceObject)) {
+                    jaxbMarshall(sourceObject);
+                }
                 if (isXMLConfigurable(sourceObject)) {
                     ((XMLConfigurable) sourceObject).saveToXML(this);
-                } else if (isJAXB(sourceObject)) {
-                    jaxbMarshall(sourceObject);
                 }
             }
         }
@@ -414,10 +415,11 @@ public class XML implements Iterable<XMLCursor> {
         }
         try {
             validate(targetObject.getClass());
+            if (isJAXB(targetObject)) {
+                jaxbUnmarshall(targetObject);
+            }
             if (isXMLConfigurable(targetObject)) {
                 ((XMLConfigurable) targetObject).loadFromXML(this);
-            } else if (isJAXB(targetObject)) {
-                jaxbUnmarshall(targetObject);
             }
         } catch (XMLException e) {
             throw e;
@@ -1662,8 +1664,8 @@ public class XML implements Iterable<XMLCursor> {
             }
 
             var contextObj = JAXBContext.newInstance(obj.getClass());
-            var marshallerObj = contextObj.createMarshaller();
-            marshallerObj.marshal(obj, node);
+            var marshaller = contextObj.createMarshaller();
+            marshaller.marshal(obj, node);
 
             unwrap();
 
@@ -1679,9 +1681,11 @@ public class XML implements Iterable<XMLCursor> {
         }
     }
 
+    // Object is never null
     private void jaxbUnmarshall(Object obj) {
         try {
-            var jaxbContext = JAXBContext.newInstance(obj.getClass());
+            Class<?> clas = obj.getClass();
+            var jaxbContext = JAXBContext.newInstance(clas);
             var unmarsh = jaxbContext.createUnmarshaller();
             JAXBElement<?> newObj = unmarsh.unmarshal(node, obj.getClass());
             BeanUtil.copyProperties(obj, newObj.getValue());
@@ -1789,7 +1793,7 @@ public class XML implements Iterable<XMLCursor> {
         }
 
         // Only validate if .xsd file exist in classpath for class
-        var xsdResource = ClassUtils.getSimpleName(clazz) + ".xsd";
+        var xsdResource = ClassUtils.getShortCanonicalName(clazz) + ".xsd";
         LOG.debug("Validating XML for class {}",
                 ClassUtils.getSimpleName(clazz));
         if (clazz.getResource(xsdResource) == null) {
@@ -1947,23 +1951,22 @@ public class XML implements Iterable<XMLCursor> {
     }
 
     /**
-     * Convenience class for testing that a {@link XMLConfigurable} instance
-     * can be written, and read into an new instance that is equal as per
-     * {@link #equals(Object)}.
-     * @param xmlConfigurable the instance to test if it writes/read properly
+     * Convenience class for testing that an object annotated with JAXB
+     * {@link XmlRootElement} or implementing {@link XMLConfigurable}
+     * (or both) can be written, and read back into an new instance
+     * that is equal as per {@link #equals(Object)}.
+     * @param object the instance object to test if it written/read properly
      * @param elementName the tag name of the root element being written
      * @throws XMLException Cannot write/read configuration or the read
      *     object is not equal to the original one that was written.
      */
-    public static void assertWriteRead(
-            XMLConfigurable xmlConfigurable, String elementName) {
-
-        LOG.debug("Writing/Reading this: {}", xmlConfigurable);
+    public static void assertWriteRead(Object object, String elementName) {
+        LOG.debug("Writing/Reading this: {}", object);
 
         // Write
         String xmlStr;
         try (var out = new StringWriter()) {
-            var xml = XML.of(elementName, xmlConfigurable).create();
+            var xml = XML.of(elementName, object).create();
             xml.write(out);
             xmlStr = out.toString();
         } catch (IOException e) {
@@ -1974,12 +1977,12 @@ public class XML implements Iterable<XMLCursor> {
         // Read
         var xml = XML.of(xmlStr).create();
         var readConfigurable = xml.toObject();
-        if (!xmlConfigurable.equals(readConfigurable)) {
+        if (!object.equals(readConfigurable)) {
             if (LOG.isErrorEnabled()) {
-                LOG.error(" SAVED: {}", xmlConfigurable);
+                LOG.error(" SAVED: {}", object);
                 LOG.error("LOADED: {}", readConfigurable);
                 LOG.error("  DIFF: \n{}\n",
-                        BeanUtil.diff(xmlConfigurable, readConfigurable));
+                        BeanUtil.diff(object, readConfigurable));
             }
             throw new XMLException("Saved and loaded XML are not the same.");
         }

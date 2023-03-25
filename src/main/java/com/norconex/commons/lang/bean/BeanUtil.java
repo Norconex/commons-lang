@@ -1,4 +1,4 @@
-/* Copyright 2018-2022 Norconex Inc.
+/* Copyright 2018-2023 Norconex Inc.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -42,7 +42,6 @@ import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.collections4.Bag;
@@ -177,7 +176,7 @@ public final class BeanUtil {
                     && !Modifier.isStatic(f.getModifiers()))
             .map(f -> doGetFluentPropertyDescriptor(beanClass, f))
             .filter(Objects::nonNull)
-            .collect(Collectors.toList());
+            .toList();
     }
 
     /**
@@ -1155,9 +1154,9 @@ public final class BeanUtil {
                     beanClass, field.getName(), field.getType());
             if (ObjectUtils.allNull(readMethod, writeMethod)) {
                 LOG.debug("""
-                	Cannot get descriptor for property "{}" of bean\s\
-                	class "{}". Property has no read or\s\
-                	write methods.""",
+                    Cannot get descriptor for property "{}" of bean\s\
+                    class "{}". Property has no read or\s\
+                    write methods.""",
                         field.getName(), beanClass.getName());
                 return null;
             }

@@ -1,4 +1,4 @@
-/* Copyright 2018-2021 Norconex Inc.
+/* Copyright 2018-2023 Norconex Inc.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 package com.norconex.commons.lang.convert;
 
 import java.awt.Dimension;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -40,9 +39,8 @@ public class DimensionConverter extends AbstractConverter {
 
     @Override
     protected String nullSafeToString(Object object) {
-        if (object instanceof Dimension) {
-            Dimension d = (Dimension) object;
-            return d.width + "x" + d.height;
+        if (object instanceof Dimension dim) {
+            return dim.width + "x" + dim.height;
         }
         throw toUnsupportedTypeException(object);
     }
@@ -50,9 +48,9 @@ public class DimensionConverter extends AbstractConverter {
     @Override
     protected <T> T nullSafeToType(String value, Class<T> type) {
         Dimension d = null;
-        Matcher m = Pattern.compile("\\d+").matcher(value);
+        var m = Pattern.compile("\\d+").matcher(value);
         if (m.find()) {
-            int width = Integer.parseInt(m.group());
+            var width = Integer.parseInt(m.group());
             if (m.find()) {
                 d = new Dimension(width, Integer.parseInt(m.group()));
             } else {

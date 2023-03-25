@@ -107,6 +107,10 @@
         New PatternConverter class along with XML#getPattern method. 
       </action>
       <action dev="essiembre" type="update">
+        New XMLAdapters class to add JAXB support for the same type offered
+        by GenericConverter.
+      </action>
+      <action dev="essiembre" type="update">
         Now require Java 17+. 
       </action>
       <action dev="essiembre" type="update">
@@ -230,6 +234,16 @@
       </action>
       <action dev="essiembre" type="update">
         XML#join has been deprecated.
+      </action>
+      <action dev="essiembre" type="update">
+        XML can now be saved and loaded mixing both XMLConfigurable and JAXB
+        on the same class.
+      </action>
+      <action dev="essiembre" type="update">
+        XML#assertWriteRead now supports JAXB.
+      </action>
+      <action dev="essiembre" type="update">
+        XML now recognizes schemas for inner classes.
       </action>
       <action dev="essiembre" type="update">
         Added extra safety checks in XMLUtil to prevent XXE attacks.

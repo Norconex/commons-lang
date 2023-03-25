@@ -23,7 +23,6 @@ import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -47,11 +46,11 @@ import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.ResourceLoader;
 import com.norconex.commons.lang.collection.CollectionUtil;
+import com.norconex.commons.lang.convert.Converter;
 import com.norconex.commons.lang.convert.ConverterException;
 import com.norconex.commons.lang.convert.DateConverter;
 import com.norconex.commons.lang.convert.DurationConverter;
 import com.norconex.commons.lang.convert.EnumConverter;
-import com.norconex.commons.lang.convert.Converter;
 import com.norconex.commons.lang.encrypt.EncryptionKey.Source;
 import com.norconex.commons.lang.map.MapUtil;
 import com.norconex.commons.lang.net.Host;
@@ -72,29 +71,31 @@ class XMLTest {
             LoggerFactory.getLogger(XMLTest.class);
 
     public static final String SAMPLE_XML =
-            "<sampleTag add=\"juice\" id=\"orange\">"
-              + "<nestedA id=\"na\" type=\"ta\">"
-              + "Blah"
-              + "</nestedA>"
-              + "<nestedB id=\"nb\"/>"
-              + "<nestedC/>"
-          + "</sampleTag>";
+            """
+    	<sampleTag add="juice" id="orange">\
+    	<nestedA id="na" type="ta">\
+    	Blah\
+    	</nestedA>\
+    	<nestedB id="nb"/>\
+    	<nestedC/>\
+    	</sampleTag>""";
 
     static final String SAMPLE_PROXYSETTINGS_XML =
-            "<proxySettings "
-              + "class=\"com.norconex.commons.lang.net.ProxySettings\">"
-              + "<host>"
-              +   "<name>example.com</name>"
-              +   "<port>123</port>"
-              + "</host>"
-              + "<scheme>https</scheme>"
-              + "<realm>Cinderella</realm>"
-              + "<credentials>"
-              +   "<username>joe</username>"
-              +   "<password>nottelling</password>"
-              +   "<passwordKey/>"
-              + "</credentials>"
-          + "</proxySettings>";
+            """
+    	<proxySettings\s\
+    	class="com.norconex.commons.lang.net.ProxySettings">\
+    	<host>\
+    	<name>example.com</name>\
+    	<port>123</port>\
+    	</host>\
+    	<scheme>https</scheme>\
+    	<realm>Cinderella</realm>\
+    	<credentials>\
+    	<username>joe</username>\
+    	<password>nottelling</password>\
+    	<passwordKey/>\
+    	</credentials>\
+    	</proxySettings>""";
 
     private static final Credentials SAMPLE_CREDS_OBJECT =
             new Credentials("joe", "nottelling");
@@ -110,23 +111,23 @@ class XMLTest {
 
     @Test
     void testWrite(@TempDir File tempDir) throws IOException {
-        File file = new File(tempDir, "file.xml");
+        var file = new File(tempDir, "file.xml");
 
-        XML xml1 = new XML("<test><value>1</value></test>");
+        var xml1 = new XML("<test><value>1</value></test>");
         xml1.write(file);
 
-        XML xml2 = new XML(file);
+        var xml2 = new XML(file);
         assertThat(xml1).isEqualTo(xml2);
 
-        StringWriter w = new StringWriter();
+        var w = new StringWriter();
         xml1.write(w);
         assertThat(w).hasToString(xml1.toString());
     }
 
     @Test
     void testGetXMLWriter() throws IOException {
-        XML xml = new XML("<test/>");
-        Writer writer = xml.getXMLWriter();
+        var xml = new XML("<test/>");
+        var writer = xml.getXMLWriter();
         writer.append("<value>1</value>");
         writer.close();
         assertThat(xml).hasToString("<test><value>1</value></test>");
@@ -134,7 +135,7 @@ class XMLTest {
 
     @Test
     void testSetRemoveAttributes() {
-        XML xml = new XML("<test/>");
+        var xml = new XML("<test/>");
         xml.setAttribute("a1", "v1");
         xml.setAttributes(MapUtil.toMap(
                 "a2", "v2",
@@ -142,60 +143,64 @@ class XMLTest {
         ));
         xml.setDelimitedAttributeList("a4", Arrays.asList("v4-1", "v4-2"));
         xml.setDelimitedAttributeList("a5", "|", Arrays.asList("v5-1", "v5-2"));
-        assertThat(xml).hasToString("<test "
-                + "a1=\"v1\" "
-                + "a2=\"v2\" "
-                + "a3=\"v3\" "
-                + "a4=\"v4-1,v4-2\" "
-                + "a5=\"v5-1|v5-2\""
-                + "/>"
+        assertThat(xml).hasToString("""
+        	<test\s\
+        	a1="v1" \
+        	a2="v2" \
+        	a3="v3" \
+        	a4="v4-1,v4-2" \
+        	a5="v5-1|v5-2"\
+        	/>"""
         );
         xml.removeAttribute("a1");
         xml.removeAttribute("a4");
         xml.removeAttribute("a5");
-        assertThat(xml).hasToString("<test "
-                + "a2=\"v2\" "
-                + "a3=\"v3\""
-                + "/>"
+        assertThat(xml).hasToString("""
+        	<test\s\
+        	a2="v2" \
+        	a3="v3"\
+        	/>"""
         );
     }
 
     @Test
     void testAddElementList() {
-        XML xmlNoParent = new XML("<test/>");
+        var xmlNoParent = new XML("<test/>");
         xmlNoParent.addElementList("value", Arrays.asList(1, 2, 3));
         assertThat(xmlNoParent).hasToString(
-                "<test>"
-              +   "<value>1</value>"
-              +   "<value>2</value>"
-              +   "<value>3</value>"
-              + "</test>"
+                """
+                	<test>\
+                	<value>1</value>\
+                	<value>2</value>\
+                	<value>3</value>\
+                	</test>"""
         );
 
-        XML xmlWithParent = new XML("<test/>");
+        var xmlWithParent = new XML("<test/>");
         xmlWithParent.addElementList("parent", "value", Arrays.asList(1, 2, 3));
         assertThat(xmlWithParent).hasToString(
-                "<test>"
-              +   "<parent>"
-              +     "<value>1</value>"
-              +     "<value>2</value>"
-              +     "<value>3</value>"
-              +   "</parent>"
-              + "</test>"
+                """
+                	<test>\
+                	<parent>\
+                	<value>1</value>\
+                	<value>2</value>\
+                	<value>3</value>\
+                	</parent>\
+                	</test>"""
         );
 
         assertThat(new XML("<test/>").addElementList("value", null)).isEmpty();
 
-        XML xmlDelimComma = new XML("<test/>");
+        var xmlDelimComma = new XML("<test/>");
         xmlDelimComma.addDelimitedElementList("value", Arrays.asList(1, 2, 3));
         assertThat(xmlDelimComma).hasToString(
                 "<test><value>1,2,3</value></test>");
 
-        XML xmlDelimBar = new XML("<test/>");
+        var xmlDelimBar = new XML("<test/>");
         xmlDelimBar.addDelimitedElementList("value", "|", Arrays.asList(5,6));
         assertThat(xmlDelimBar).hasToString("<test><value>5|6</value></test>");
 
-        XML xmlDelimEmpty = new XML("<test/>");
+        var xmlDelimEmpty = new XML("<test/>");
         xmlDelimEmpty.addDelimitedElementList(
                 "value", "|", Collections.emptyList());
         assertThat(xmlDelimEmpty).hasToString("<test><value></value></test>");
@@ -203,7 +208,7 @@ class XMLTest {
 
     @Test
     void testGetName() {
-        XML xml = new XML(
+        var xml = new XML(
                 "<test>"
               +   "<blah>abc</blah>"
               + "</test>"
@@ -215,7 +220,7 @@ class XMLTest {
 
     @Test
     void testGetStringMap() {
-        XML xml = new XML(
+        var xml = new XML(
                 "<test>"
               +   "<map>"
               +     "<entry><key>k1</key><value>v1</value></entry>"
@@ -239,7 +244,7 @@ class XMLTest {
 
     @Test
     void testForEachAndStream() {
-        MutableInt total = new MutableInt();
+        var total = new MutableInt();
         new XML("<test><value>1</value><value>3</value></test>")
                 .forEach("value", x -> total.add(x.getInteger(".")));
         assertThat(total.intValue()).isEqualTo(4);
@@ -271,7 +276,7 @@ class XMLTest {
         assertThat(new XML("<test/>").getNode().getLocalName()).isNull();
         assertThat(new XML("<test/>")
                 .getNode().getNodeName()).isEqualTo("test");
-        XML xml = new XML(
+        var xml = new XML(
                 "<test>"
               +   "<value>abc</value>"
               +   "<parent><value>def</value></parent>"
@@ -281,8 +286,8 @@ class XMLTest {
 
     @Test
     void testValidate() {
-        ErrorHandlerCapturer errors = new ErrorHandlerCapturer();
-        XML xml = XML.of(SAMPLE_PROXYSETTINGS_XML.replace(
+        var errors = new ErrorHandlerCapturer();
+        var xml = XML.of(SAMPLE_PROXYSETTINGS_XML.replace(
                 "class", "invalid=\"invalid\" class"))
             .setErrorHandler(errors)
             .create();
@@ -313,7 +318,7 @@ class XMLTest {
 
     @Test
     void testGetURL() throws MalformedURLException {
-        XML xml = XML.of(
+        var xml = XML.of(
                 "<test>"
               +   "<single>http://example.com</single>"
               +   "<value>http://example.com/1</value>"
@@ -337,7 +342,7 @@ class XMLTest {
 
     @Test
     void testGetPathAndFiles() {
-        XML xml = XML.of(
+        var xml = XML.of(
                 "<test>"
               +   "<single>c:\\file.txt</single>"
               +   "<value>/path/1</value>"
@@ -366,7 +371,7 @@ class XMLTest {
 
     @Test
     void testGetEnum() {
-        XML xml = XML.of(
+        var xml = XML.of(
                 "<test>"
               +   "<single>MINUTE</single>"
               +   "<value>SECOND</value>"
@@ -405,7 +410,7 @@ class XMLTest {
 
     @Test
     void testGetString() {
-        XML xml = XML.of(
+        var xml = XML.of(
                 "<test>"
               +   "<value>aa</value>"
               +   "<value>bb</value>"
@@ -439,7 +444,7 @@ class XMLTest {
 
     @Test
     void testGetXMLList() {
-        XML xml = XML.of(
+        var xml = XML.of(
                 "<test>"
               +   "<values>1, 2, 3</values>"
               +   "<values>4, 5, 6</values>"
@@ -483,8 +488,8 @@ class XMLTest {
         };
 
         // List
-        String pkg = "com.norconex.commons.lang.convert.";
-        XML xml = XML.of(String.format(
+        var pkg = "com.norconex.commons.lang.convert.";
+        var xml = XML.of(String.format(
                 "<test>"
               + "<converters>"
               + "<converter class=\"%1$sDurationConverter\"></converter>"
@@ -513,7 +518,7 @@ class XMLTest {
             .containsExactly(new DurationConverter());
 
         // List Impl
-        XML xmlImpl = XML.of(
+        var xmlImpl = XML.of(
                 "<test>"
               + "<converters>"
               + "<converter class=\"DurationConverter\"></converter>"
@@ -539,7 +544,7 @@ class XMLTest {
 
     @Test
     void testGetDelimitedListObject() {
-        XML xml = XML.of(
+        var xml = XML.of(
                 "<test>"
               + "<values>1, 2, 3, 4, 5</values>"
               + "<converters>"
@@ -561,7 +566,7 @@ class XMLTest {
 
     @Test
     void testToObject() {
-        ProxySettings proxy = new XML(SAMPLE_PROXYSETTINGS_XML).toObject();
+        var proxy = new XML(SAMPLE_PROXYSETTINGS_XML).toObject();
         assertThat(proxy).isEqualTo(SAMPLE_PROXY_OBJECT);
         assertThatExceptionOfType(XMLException.class).isThrownBy( //NOSONAR
                 () -> new XML(SAMPLE_XML).toObject(SAMPLE_PROXY_OBJECT));
@@ -581,29 +586,29 @@ class XMLTest {
             .isEqualTo(new ProxySettings());
 
         // test when class is not in XML
-        XML xml = new XML(SAMPLE_PROXYSETTINGS_XML);
+        var xml = new XML(SAMPLE_PROXYSETTINGS_XML);
         xml.setAttribute("class", "lang.net.ProxySettings");
         proxy = xml.toObjectImpl(ProxySettings.class);
         assertThat(proxy).isEqualTo(SAMPLE_PROXY_OBJECT);
 
         //test errors
-        XML badXml = new XML(SAMPLE_PROXYSETTINGS_XML);
+        var badXml = new XML(SAMPLE_PROXYSETTINGS_XML);
         badXml.setAttribute("class", "blah.blah.IdoNotExist");
         assertThatExceptionOfType(XMLException.class).isThrownBy(
                 () -> badXml.toObjectImpl(ProxySettings.class))
             .withStackTraceContaining("No class implementing");
 
-        XML badXml2 = new XML(SAMPLE_PROXYSETTINGS_XML);
+        var badXml2 = new XML(SAMPLE_PROXYSETTINGS_XML);
         badXml.setAttribute("class", "lang.net.ProxySettings");
         assertThatExceptionOfType(XMLException.class).isThrownBy(
                 () -> badXml2.toObjectImpl(HttpURL.class))
             .withStackTraceContaining("is not an instance of");
 
         xml = XML.of("<test class=\"DurationConverter\"></test>").create();
-        DurationConverter c = xml.toObjectImpl(Converter.class);
+        var c = xml.toObjectImpl(Converter.class);
         Assertions.assertNotNull(c);
 
-        XML xmlMany = XML.of("<test class=\"erConverter\"></test>").create();
+        var xmlMany = XML.of("<test class=\"erConverter\"></test>").create();
         assertThatExceptionOfType(XMLException.class)
             .isThrownBy(() -> xmlMany.toObjectImpl(Converter.class))
             .withStackTraceContaining(
@@ -612,16 +617,16 @@ class XMLTest {
 
     @Test
     void testPopulate() {
-        ProxySettings expectedProxy = SAMPLE_PROXY_OBJECT;
+        var expectedProxy = SAMPLE_PROXY_OBJECT;
 
-        ProxySettings proxy = new ProxySettings();
+        var proxy = new ProxySettings();
         new XML(SAMPLE_PROXYSETTINGS_XML).populate(proxy);
         assertThat(proxy).isEqualTo(expectedProxy);
 
         //test errors
-        XML xml = new XML("proxySettings");
+        var xml = new XML("proxySettings");
         xml.setAttribute("badOne", "IM_BAD");
-        ProxySettings badProxy = new ProxySettings();
+        var badProxy = new ProxySettings();
         assertThatExceptionOfType(XMLException.class).isThrownBy(
                 () -> xml.populate(badProxy)
         )
@@ -629,12 +634,12 @@ class XMLTest {
                 "Attribute 'badOne' is not allowed to appear");
 
         // test with xpath
-        Credentials creds = new Credentials();
+        var creds = new Credentials();
         new XML(SAMPLE_PROXYSETTINGS_XML).populate(creds, "credentials");
         assertThat(creds).isEqualTo(expectedProxy.getCredentials());
 
         // test nulls
-        ProxySettings proxyNull = new ProxySettings();
+        var proxyNull = new ProxySettings();
         assertThatNoException().isThrownBy(
                 () -> new XML((String) null).populate(proxyNull));
         assertThatNoException().isThrownBy(
@@ -643,7 +648,7 @@ class XMLTest {
 
     @Test
     void testEnabledDisabled() {
-        String cls =
+        var cls =
                 "class=\"com.norconex.commons.lang.convert.DateConverter\" ";
         assertThat(new XML("<test " + cls + "/>").isEnabled()).isFalse();
         assertThat(new XML("<test " + cls + "/>").isDisabled()).isFalse();
@@ -666,7 +671,7 @@ class XMLTest {
     @Test
     void testXMLCreation() throws IOException {
         // all these must be equivalent
-        Path xmlFile = tempDir.resolve("sample.xml");
+        var xmlFile = tempDir.resolve("sample.xml");
         Files.writeString(xmlFile, SAMPLE_XML);
 
         assertThat(new XML(xmlFile)).hasToString(SAMPLE_XML);
@@ -674,7 +679,7 @@ class XMLTest {
         assertThat(new XML(Files.newBufferedReader(xmlFile)))
             .hasToString(SAMPLE_XML);
         assertThat(new XML(SAMPLE_XML)).hasToString(SAMPLE_XML);
-        XML freshXML = new XML("test");
+        var freshXML = new XML("test");
         freshXML.addXML(SAMPLE_XML);
         freshXML.unwrap();
         assertThat(freshXML).hasToString(SAMPLE_XML);
@@ -698,20 +703,21 @@ class XMLTest {
 
     @Test
     void testInsertBeforeAfter() {
-        XML xml = new XML(SAMPLE_XML);
-        XML nestedbXml = xml.getXML("nestedB");
+        var xml = new XML(SAMPLE_XML);
+        var nestedbXml = xml.getXML("nestedB");
         nestedbXml.insertBefore(new XML("<nestedA2>A2</nestedA2>"));
         nestedbXml.insertAfter(new XML("<nestedB2>B2</nestedB2>"));
         Assertions.assertEquals(
-                "<sampleTag add=\"juice\" id=\"orange\">"
-                        + "<nestedA id=\"na\" type=\"ta\">"
-                        + "Blah"
-                        + "</nestedA>"
-                        + "<nestedA2>A2</nestedA2>"
-                        + "<nestedB id=\"nb\"/>"
-                        + "<nestedB2>B2</nestedB2>"
-                        + "<nestedC/>"
-                    + "</sampleTag>", xml.toString());
+                """
+                	<sampleTag add="juice" id="orange">\
+                	<nestedA id="na" type="ta">\
+                	Blah\
+                	</nestedA>\
+                	<nestedA2>A2</nestedA2>\
+                	<nestedB id="nb"/>\
+                	<nestedB2>B2</nestedB2>\
+                	<nestedC/>\
+                	</sampleTag>""", xml.toString());
     }
 
     @Test
@@ -721,17 +727,19 @@ class XMLTest {
 
         // Remove child with parent
         xml = new XML(SAMPLE_XML);
-        XML nestedAXML = xml.getXML("nestedA");
+        var nestedAXML = xml.getXML("nestedA");
         removedXML = nestedAXML.remove();
         Assertions.assertEquals(
-                "<sampleTag add=\"juice\" id=\"orange\">"
-                + "<nestedB id=\"nb\"/>"
-                + "<nestedC/>"
-                + "</sampleTag>", xml.toString());
+                """
+                	<sampleTag add="juice" id="orange">\
+                	<nestedB id="nb"/>\
+                	<nestedC/>\
+                	</sampleTag>""", xml.toString());
         Assertions.assertEquals(
-                "<nestedA id=\"na\" type=\"ta\">"
-                + "Blah"
-                + "</nestedA>", removedXML.toString());
+                """
+                	<nestedA id="na" type="ta">\
+                	Blah\
+                	</nestedA>""", removedXML.toString());
 
         // Remove parent
         xml = new XML(SAMPLE_XML);
@@ -739,7 +747,7 @@ class XMLTest {
         Assertions.assertEquals(SAMPLE_XML, xml.toString());
         Assertions.assertEquals(SAMPLE_XML, removedXML.toString());
 
-        XML xmlRemove = new XML(
+        var xmlRemove = new XML(
                 "<test>"
               +   "<one>1</one>"
               +   "<two>2</two>"
@@ -748,25 +756,27 @@ class XMLTest {
         );
         xmlRemove.removeElement("two");
         assertThat(xmlRemove).hasToString(
-                "<test>"
-              +   "<one>1</one>"
-              +   "<three>3</three>"
-              + "</test>"
+                """
+                	<test>\
+                	<one>1</one>\
+                	<three>3</three>\
+                	</test>"""
         );
     }
 
 
     @Test
     void testMap() {
-        String xmlElements =
-                "<myentry mykey=\"f1\">v1</myentry>"
-              + "<myentry mykey=\"2.22\">v2a</myentry>"
-              + "<myentry mykey=\"2.22\">v2b</myentry>"
-              + "<myentry mykey=\"2.22\">v2c</myentry>"
-              + "<myentry mykey=\"f3\">3.3</myentry>"
-              + "<myentry mykey=\"f3\">33333</myentry>";
-        String xmlNoParent = "<test>" + xmlElements + "</test>";
-        String xmlParent = "<test><mymap>" + xmlElements + "</mymap></test>";
+        var xmlElements =
+                """
+        	<myentry mykey="f1">v1</myentry>\
+        	<myentry mykey="2.22">v2a</myentry>\
+        	<myentry mykey="2.22">v2b</myentry>\
+        	<myentry mykey="2.22">v2c</myentry>\
+        	<myentry mykey="f3">3.3</myentry>\
+        	<myentry mykey="f3">33333</myentry>""";
+        var xmlNoParent = "<test>" + xmlElements + "</test>";
+        var xmlParent = "<test><mymap>" + xmlElements + "</mymap></test>";
 
         Map<Object, Object> map = new ListOrderedMap<>();
         // string -> string
@@ -778,7 +788,7 @@ class XMLTest {
                 Double.valueOf(3.3), Duration.ofMillis(33333)));
 
         // Test without parent:
-        XML xml = XML.of("test").create();
+        var xml = XML.of("test").create();
         xml.addElementMap("myentry", "mykey", map);
 
         Assertions.assertEquals(xmlNoParent, xml.toString());
@@ -793,31 +803,8 @@ class XMLTest {
     }
 
     @Test
-    void testJaxb() {
-        JaxbPojo pojo = new JaxbPojo();
-
-        pojo.setFirstName("John");
-        pojo.setLastName("Smith");
-        pojo.setLuckyNumber(7);
-
-        XML xml = XML.of("test").create();
-
-        xml.addElement("pojo", pojo);
-
-        Assertions.assertEquals(7, xml.getInteger("pojo/@luckyNumber"));
-        Assertions.assertEquals("John", xml.getString("pojo/firstName"));
-        Assertions.assertEquals("Smith", xml.getString("pojo/lastName"));
-
-        JaxbPojo newPojo = xml.getObject("pojo");
-        Assertions.assertEquals(7, newPojo.getLuckyNumber());
-        Assertions.assertEquals("John", newPojo.getFirstName());
-        Assertions.assertEquals("Smith", newPojo.getLastName());
-    }
-
-
-    @Test
     void testGetBasicTypes() {
-        XML xml = XML.of(ResourceLoader.getXmlString(XMLTest.class)).create();
+        var xml = XML.of(ResourceLoader.getXmlString(XMLTest.class)).create();
         Assertions.assertEquals("a string", xml.getString("testString"));
         Assertions.assertEquals(
                 (Integer) 123, xml.getInteger("testNumeric/@int"));
@@ -873,7 +860,7 @@ class XMLTest {
 
     @Test
     void testGetNullEmptyBlank() {
-        XML xml = XML.of(ResourceLoader.getXmlString(XMLTest.class)).create();
+        var xml = XML.of(ResourceLoader.getXmlString(XMLTest.class)).create();
 
         // As strings
         Assertions.assertNull(xml.getString("testNull"));
@@ -910,7 +897,7 @@ class XMLTest {
     @Test
     void testAddNullEmptyBlankElements() {
         // Null, empty, and blank strings should all be loaded back as such.
-        XML xml1 = XML.of("test").create();
+        var xml1 = XML.of("test").create();
 
         // As elements with no attribs
         xml1.addElement("elmNull", null);
@@ -923,10 +910,10 @@ class XMLTest {
         xml1.addElement(
                 "elmBlankPreserveAttr", " \n ").setAttribute("attr", "exists");
 
-        String xmlStr = xml1.toString();
+        var xmlStr = xml1.toString();
         LOG.debug("XML is: " + xmlStr);
 
-        XML xml2 = XML.of(xmlStr).create();
+        var xml2 = XML.of(xmlStr).create();
 
         Assertions.assertNull(xml2.getString("elmNull"));
         Assertions.assertEquals("", xml2.getString("elmEmpty"));
@@ -939,15 +926,15 @@ class XMLTest {
 
     @Test
     void testUnwrap() {
-        String wrapped =
+        var wrapped =
                 "<rootTag id=\"banana\" remove=\"me\">"
               + SAMPLE_XML
               + "</rootTag>";
         Assertions.assertEquals(SAMPLE_XML,
                 XML.of(wrapped).create().unwrap().toString());
 
-        String list = SAMPLE_XML + "<sampleTag>Another child</sampleTag>";
-        String wrappedList =
+        var list = SAMPLE_XML + "<sampleTag>Another child</sampleTag>";
+        var wrappedList =
                 "<rootTag id=\"banana\" remove=\"me\">" + list + "</rootTag>";
         try { //NOSONAR
             XML.of(wrappedList).create().unwrap();
@@ -957,7 +944,7 @@ class XMLTest {
 
     @Test
     void testWrap() {
-        String target = "<parentTag>" + SAMPLE_XML + "</parentTag>";
+        var target = "<parentTag>" + SAMPLE_XML + "</parentTag>";
         Assertions.assertEquals(target, XML.of(
                 SAMPLE_XML).create().wrap("parentTag").toString());
     }
@@ -970,7 +957,7 @@ class XMLTest {
 
     @Test
     void testReplace() {
-        String replacement = "<replacementTag>I replace!</replacementTag>";
+        var replacement = "<replacementTag>I replace!</replacementTag>";
         Assertions.assertEquals(replacement, XML.of(
                 SAMPLE_XML).create().replace(XML.of(
                         replacement).create()).toString());
@@ -978,7 +965,7 @@ class XMLTest {
 
     @Test
     void testGetNullMissingDefaultElements() {
-        XML xml = XML.of(ResourceLoader.getXmlString(XMLTest.class)).create();
+        var xml = XML.of(ResourceLoader.getXmlString(XMLTest.class)).create();
 
         //--- Strings ---
 
@@ -1024,7 +1011,7 @@ class XMLTest {
 
     @Test
     void testGetListNullMissingDefaultElements() {
-        XML xml = XML.of(ResourceLoader.getXmlString(XMLTest.class)).create();
+        var xml = XML.of(ResourceLoader.getXmlString(XMLTest.class)).create();
         List<Dimension> defaultList = Arrays.asList(
                 new Dimension(1, 2), new Dimension(3, 4));
 
@@ -1078,7 +1065,7 @@ class XMLTest {
 
     @Test
     void testOverwriteDefaultWithEmptyListReadWrite() {
-        ClassWithDefaultLists c = new ClassWithDefaultLists();
+        var c = new ClassWithDefaultLists();
 
         // Defaults should be loaded back:
        // XML.assertWriteRead(c, "test");
