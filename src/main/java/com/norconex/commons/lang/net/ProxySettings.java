@@ -164,13 +164,13 @@ public class ProxySettings implements XMLConfigurable, Serializable {
     /**
      * Converts this proxy settings to a {@link Proxy}. The scheme is used
      * to establish the proxy type.  If {@link #isSet()} returns false,
-     * {@link Proxy#NO_PROXY} is returned.
-     * @return proxy
+     * this method returns <code>null</code>.
+     * @return proxy or <code>null</code>
      * @since 3.0.0
      */
     public Proxy toProxy() {
         if (!isSet()) {
-            return Proxy.NO_PROXY;
+            return null;
         }
         var type = Proxy.Type.HTTP;
         if (StringUtils.startsWithIgnoreCase(scheme, "socks")) {
