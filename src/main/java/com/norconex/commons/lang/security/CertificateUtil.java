@@ -154,8 +154,8 @@ public final class CertificateUtil {
      */
     public static String toString(@NonNull List<X509Certificate> certificates)
             throws GeneralSecurityException {
-        var sha1 = MessageDigest.getInstance("SHA1");
-        var md5 = MessageDigest.getInstance("MD5");
+        var sha1 = MessageDigest.getInstance("SHA1"); //NOSONAR informational
+        var md5 = MessageDigest.getInstance("MD5"); //NOSONAR informational
         var b = new StringBuilder();
         for (var i = 0; i < certificates.size(); i++) {
             var cert = certificates.get(i);

@@ -495,15 +495,13 @@
                https://github.com/projectlombok/lombok/issues/3147 -->
           <failOnError>false</failOnError>
           
-<!--
           <resourcesArtifacts>
             <resourcesArtifact>
               <groupId>com.norconex.commons</groupId>
               <artifactId>javadoc-resources</artifactId>
-              <version>${project.parent.version}</version>
+              <version>${project.version}</version>
             </resourcesArtifact>
           </resourcesArtifacts>
--->
           
           <additionalDependencies>
 <!--          
