@@ -1851,6 +1851,18 @@ public class XML implements Iterable<XMLCursor> {
     //--- Misc. Public Methods -------------------------------------------------
 
     /**
+     * Gets whether the given expression matches an existing element. A
+     * blank expression always returns <code>false</code>.
+     * @param xpathExpression expression
+     * @return <code>true</code> if the expression matches an element
+     * @since 3.0.0
+     */
+    public boolean isElementPresent(String xpathExpression) {
+        var xml = getXML(xpathExpression);
+        return xml != null && xml.isDefined();
+    }
+
+    /**
      * If the given expression matches an element, consume that
      * element.
      * @param xpathExpression expression
@@ -2146,6 +2158,28 @@ public class XML implements Iterable<XMLCursor> {
     }
 
     /**
+     * Computes and adds the element value returned by the provided function
+     * if an element with the same name is not already present.
+     * A <code>null</code> function or <code>null</code> value returned
+     * by the function will add an empty element.
+     * @param tagName element name
+     * @param function returns the element value
+     * @return XML of the added element, or the already existing element
+     * @since 3.0.0
+     */
+    public XML computeElementIfAbsent(
+            String tagName, Function<String, Object> function) {
+        var xml = getXML(tagName);
+        if (xml != null && xml.isDefined()) {
+            return xml;
+        }
+        if (function == null) {
+            return addElement(tagName);
+        }
+        return addElement(tagName, function.apply(tagName));
+    }
+
+    /**
      * Adds an empty child element to this XML root element.
      * @param tagName element name
      * @return XML of the added element
@@ -2162,8 +2196,7 @@ public class XML implements Iterable<XMLCursor> {
      * {@link XML#of(String, Object)}
      * @param tagName element name
      * @param value element value
-     * @return XML of the added element or <code>null</code> if value is
-     *         <code>null</code>
+     * @return XML of the added element
      */
     public XML addElement(String tagName, Object value) {
         var xml = createAndInitXML(XML.of(tagName, value));

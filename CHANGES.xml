@@ -88,7 +88,7 @@
       </action>
       <action dev="essiembre" type="add">
         New XML methods: isEmpty, hasChildElements, hasAttributes, 
-        hasTextContent.
+        hasTextContent, isElementPresent, computeIfElementAbsent.
       </action>
       <action dev="essiembre" type="add">
         New XPathUtil class.
@@ -109,7 +109,10 @@
       <action dev="essiembre" type="add">
         New ProxySettings#toProxy method (java.net.Proxy). 
       </action>
-      <action dev="essiembre" type="update">
+      <action dev="essiembre" type="add">
+        New ClassUtil#newInstance(Object...) method. 
+      </action>
+      <action dev="essiembre" type="add">
         New XMLAdapters class to add JAXB support for the same type offered
         by GenericConverter.
       </action>

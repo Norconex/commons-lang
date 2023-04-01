@@ -1,4 +1,4 @@
-/* Copyright 2018-2022 Norconex Inc.
+/* Copyright 2018-2023 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,8 +63,6 @@ import com.norconex.commons.lang.url.HttpURL;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-/**
- */
 class XMLTest {
 
     private static final Logger LOG =
@@ -961,6 +959,23 @@ class XMLTest {
         Assertions.assertEquals(replacement, XML.of(
                 SAMPLE_XML).create().replace(XML.of(
                         replacement).create()).toString());
+    }
+
+    @Test
+    void testIsElementPresent() {
+        var xml = XML.of(SAMPLE_XML).create();
+        assertThat(xml.isElementPresent("banana")).isFalse();
+        assertThat(xml.isElementPresent("nestedA")).isTrue();
+    }
+
+    @Test
+    void testComputeElementIfAbsent() {
+        var xml = XML.of(SAMPLE_XML).create();
+        xml.computeElementIfAbsent("banana", name -> "split");
+        assertThat(xml.getStringList("banana")).hasSize(1);
+
+        xml.computeElementIfAbsent("banana", name -> "split more");
+        assertThat(xml.getStringList("banana")).hasSize(1);
     }
 
     @Test
