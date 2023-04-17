@@ -3109,7 +3109,8 @@ public class XML implements Iterable<XMLCursor> {
         var str = n.getTextContent();
 
         Optional<String> xmlSpace = Optional
-            .ofNullable(n.getAttributes().getNamedItem(ATT_XML_SPACE))
+            .ofNullable(n.getAttributes())
+            .map(nnm -> nnm.getNamedItem(ATT_XML_SPACE))
             .map(Node::getNodeValue);
 
         // Empty tags are converted to "" while self-closed to null:
