@@ -24,8 +24,10 @@ import java.util.Date;
 /**
  * Date-related utility methods.
  * @since 2.0.0
+ * @deprecated Use more flexible {@link DateModel} instead.
  */
-public final class DateUtil {
+@Deprecated(since = "3.0.0")
+public final class DateUtil { //NOSONAR
 
     private DateUtil() {}
 

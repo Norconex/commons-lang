@@ -1,4 +1,4 @@
-/* Copyright 2010-2022 Norconex Inc.
+/* Copyright 2010-2023 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,8 +25,7 @@ import java.io.UncheckedIOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,7 +34,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import com.norconex.commons.lang.time.DateUtil;
+import com.norconex.commons.lang.time.DateModel;
 
 class FileUtilTest {
 
@@ -44,14 +43,14 @@ class FileUtilTest {
 
     @Test
     void testDirEmpty() throws IOException {
-        File nonEmptyParentDir = new File(tempDir, "testDirEmptyParent");
+        var nonEmptyParentDir = new File(tempDir, "testDirEmptyParent");
         FileUtils.forceMkdir(nonEmptyParentDir);
-        File childDir = new File(nonEmptyParentDir, "childDir");
+        var childDir = new File(nonEmptyParentDir, "childDir");
         FileUtils.forceMkdir(childDir);
-        File childFile = new File(childDir, "child.txt");
+        var childFile = new File(childDir, "child.txt");
         writeFile(childFile, "child");
 
-        File emptyDir = new File(tempDir, "testDirEmpty");
+        var emptyDir = new File(tempDir, "testDirEmpty");
         FileUtils.forceMkdir(emptyDir);
 
         assertThat(FileUtil.dirEmpty(nonEmptyParentDir)).isFalse();
@@ -63,14 +62,14 @@ class FileUtilTest {
 
     @Test
     void testDirHasFile() throws IOException {
-        File nonEmptyParentDir = new File(tempDir, "testHasFileDirParent");
+        var nonEmptyParentDir = new File(tempDir, "testHasFileDirParent");
         FileUtils.forceMkdir(nonEmptyParentDir);
-        File childDir = new File(nonEmptyParentDir, "childDir");
+        var childDir = new File(nonEmptyParentDir, "childDir");
         FileUtils.forceMkdir(childDir);
-        File childFile = new File(childDir, "child.txt");
+        var childFile = new File(childDir, "child.txt");
         writeFile(childFile, "child");
 
-        File emptyDir = new File(tempDir, "testHasFileDirEmpty");
+        var emptyDir = new File(tempDir, "testHasFileDirEmpty");
         FileUtils.forceMkdir(emptyDir);
 
         assertThat(FileUtil.dirHasFile(nonEmptyParentDir, f -> true)).isTrue();
@@ -90,8 +89,8 @@ class FileUtilTest {
 
     @Test
     void testSafeFileName() {
-        String unsafe = "Voilà, à bientôt! :-)";
-        String safe = FileUtil.toSafeFileName(unsafe);
+        var unsafe = "Voilà, à bientôt! :-)";
+        var safe = FileUtil.toSafeFileName(unsafe);
         Assertions.assertEquals(unsafe, FileUtil.fromSafeFileName(safe));
 
         assertThat(FileUtil.toSafeFileName(null)).isNull();
@@ -100,13 +99,13 @@ class FileUtilTest {
 
     @Test
     void testMoveFileToDir() throws IOException {
-        File sourceDir = new File(tempDir, "moveToDirSourceDir");
+        var sourceDir = new File(tempDir, "moveToDirSourceDir");
         FileUtils.forceMkdir(sourceDir);
-        File sourceFile = new File(sourceDir, "source.txt");
+        var sourceFile = new File(sourceDir, "source.txt");
         writeFile(sourceFile, "source");
 
-        File targetDir = new File(tempDir, "moveToDirTargetDir");
-        File targetFile = FileUtil.moveFileToDir(sourceFile, targetDir);
+        var targetDir = new File(tempDir, "moveToDirTargetDir");
+        var targetFile = FileUtil.moveFileToDir(sourceFile, targetDir);
         assertThat(sourceFile).doesNotExist();
         assertThat(readFile(targetFile)).contains("source");
 
@@ -118,7 +117,7 @@ class FileUtilTest {
                 FileUtil.moveFileToDir(new File(sourceDir, "bad.bad"),
                         targetDir));
         // moving over existing file instead of dir
-        File someFile = new File(tempDir, "someFile.txt");
+        var someFile = new File(tempDir, "someFile.txt");
         writeFile(someFile, "some file");
         assertThrows(IOException.class, () ->  //NOSONAR
                 FileUtil.moveFileToDir(targetFile, someFile));
@@ -126,14 +125,14 @@ class FileUtilTest {
 
     @Test
     void testMoveFile() throws IOException {
-        File sourceDir = new File(tempDir, "moveSourceDir");
+        var sourceDir = new File(tempDir, "moveSourceDir");
         FileUtils.forceMkdir(sourceDir);
-        File sourceFile = new File(sourceDir, "source.txt");
+        var sourceFile = new File(sourceDir, "source.txt");
         writeFile(sourceFile, "source");
 
-        File targetDir = new File(tempDir, "moveTargetDir");
+        var targetDir = new File(tempDir, "moveTargetDir");
         FileUtils.forceMkdir(targetDir);
-        File targetFile = new File(targetDir, "target.txt");
+        var targetFile = new File(targetDir, "target.txt");
         writeFile(targetFile, "target");
 
         // move over existing
@@ -142,7 +141,7 @@ class FileUtilTest {
         assertThat(readFile(targetFile)).contains("source");
 
         // move over new location
-        File fileNewLoc = new File(tempDir, "a/b/c/new.txt");
+        var fileNewLoc = new File(tempDir, "a/b/c/new.txt");
 
         FileUtil.moveFile(targetFile, fileNewLoc);
         assertThat(targetFile).doesNotExist();
@@ -157,7 +156,7 @@ class FileUtilTest {
                 FileUtil.moveFile(new File(sourceDir, "bad.bad"), targetFile));
 
         // Over a non-empty directory
-        File nonEmptyDir = new File(tempDir, "nonEmptyDir");
+        var nonEmptyDir = new File(tempDir, "nonEmptyDir");
         FileUtils.forceMkdir(nonEmptyDir);
         writeFile(new File(nonEmptyDir, "someFile"), "source");
         assertThrows(IOException.class, () ->  //NOSONAR
@@ -166,14 +165,14 @@ class FileUtilTest {
 
     @Test
     void testDelete() throws IOException {
-        File parentDir = new File(tempDir, "deleteTest");
+        var parentDir = new File(tempDir, "deleteTest");
         FileUtils.forceMkdir(parentDir);
-        File parentFile = new File(parentDir, "parent.txt");
+        var parentFile = new File(parentDir, "parent.txt");
         writeFile(parentFile, "parent");
 
-        File childDir = new File(parentDir, "child");
+        var childDir = new File(parentDir, "child");
         FileUtils.forceMkdir(childDir);
-        File childFile = new File(childDir, "child.txt");
+        var childFile = new File(childDir, "child.txt");
         writeFile(childFile, "child");
 
         assertThat(parentFile).isFile();
@@ -192,19 +191,19 @@ class FileUtilTest {
 
     @Test
     void testDeleteEmptyDirs() throws IOException {
-        File parentDir = new File(tempDir, "deleteEmptyDirs");
+        var parentDir = new File(tempDir, "deleteEmptyDirs");
         FileUtils.forceMkdir(parentDir);
-        File child1 = new File(parentDir, "child1");
+        var child1 = new File(parentDir, "child1");
         FileUtils.forceMkdir(child1);
-        File child1subA = new File(child1, "child1subA");
+        var child1subA = new File(child1, "child1subA");
         FileUtils.forceMkdir(child1subA);
-        File child1subB = new File(child1, "child1subB");
+        var child1subB = new File(child1, "child1subB");
         FileUtils.forceMkdir(child1subB);
-        File child1subBsubBB = new File(child1subB, "child1subBsubBB");
+        var child1subBsubBB = new File(child1subB, "child1subBsubBB");
         FileUtils.forceMkdir(child1subBsubBB);
-        File child2 = new File(parentDir, "child2");
+        var child2 = new File(parentDir, "child2");
         FileUtils.forceMkdir(child2);
-        File child3 = new File(parentDir, "child3");
+        var child3 = new File(parentDir, "child3");
         FileUtils.forceMkdir(child3);
 
         // only child1subA and child3 have files
@@ -217,7 +216,7 @@ class FileUtilTest {
         // with date older than folder creation date, no deletion
         dirs.clear();
         deletedCount = FileUtil.deleteEmptyDirs(
-                parentDir, DateUtil.toDate(LocalDate.of(2000, 1, 1)));
+                parentDir, DateModel.of(2000, 1, 1).toDate());
         FileUtil.visitAllDirs(parentDir, f -> dirs.add(f.getName()));
         assertThat(deletedCount).isZero();
         assertThat(dirs).containsExactlyInAnyOrder(
@@ -242,7 +241,7 @@ class FileUtilTest {
 
     @Test
     void testCreateDirsForFile() throws IOException {
-        File file = new File(tempDir, "dirsForFile/deep1/deep2/file.txt");
+        var file = new File(tempDir, "dirsForFile/deep1/deep2/file.txt");
         FileUtil.createDirsForFile(file);
         assertThat(file).doesNotExist();
         assertThat(file.getParentFile()).isDirectory().exists();
@@ -250,19 +249,19 @@ class FileUtilTest {
 
     @Test
     void testVisit() throws IOException {
-        File parentDir = new File(tempDir, "parentDir");
+        var parentDir = new File(tempDir, "parentDir");
         FileUtils.forceMkdir(parentDir);
         writeFile(new File(parentDir, "a-parentFile.txt"), "parent");
 
-        File childDir1 = new File(parentDir, "childDir1");
+        var childDir1 = new File(parentDir, "childDir1");
         FileUtils.forceMkdir(childDir1);
         writeFile(new File(childDir1, "b-childFile1.txt"), "child1");
 
-        File childDir2 = new File(parentDir, "childDir2");
+        var childDir2 = new File(parentDir, "childDir2");
         FileUtils.forceMkdir(childDir2);
         writeFile(new File(childDir2, "c-childFile2.txt"), "child2");
 
-        File childDir3 = new File(parentDir, "childDir3");
+        var childDir3 = new File(parentDir, "childDir3");
         FileUtils.forceMkdir(childDir3); // <-- Empty dir
 
         List<String> lines = new ArrayList<>();
@@ -332,7 +331,7 @@ class FileUtilTest {
 
     @Test
     void testHead() throws IOException {
-        File file = new File(tempDir, "head.txt");
+        var file = new File(tempDir, "head.txt");
         writeFile(file, "one\ntwo\n  \nthree\n\nfour\nfive\n");
         assertThat(file).exists();
 
@@ -344,7 +343,7 @@ class FileUtilTest {
 
     @Test
     void testTail() throws IOException {
-        File file = new File(tempDir, "tail.txt");
+        var file = new File(tempDir, "tail.txt");
         writeFile(file, "one\ntwo\n\nthree\nfour\n   \nfive\n");
         assertThat(file).exists();
 
@@ -356,8 +355,10 @@ class FileUtilTest {
 
     @Test
     void testCreateDateTimeDirs() throws IOException {
-        LocalDateTime date = LocalDateTime.of(2022, 2, 28, 14, 52, 36);
-        File file = FileUtil.createDateTimeDirs(tempDir, DateUtil.toDate(date));
+        var file = FileUtil.createDateTimeDirs(tempDir,
+                DateModel.of(2022, 2, 28, 14, 52, 36)
+                    .withZoneId(ZoneId.systemDefault())
+                    .toDate());
         assertThat(file).exists().isDirectory();
         assertThat(file.getAbsolutePath().replace('\\', '/')).endsWith(
                 "/2022/02/28/14/52/36");
@@ -365,8 +366,10 @@ class FileUtilTest {
 
     @Test
     void testCreateDateDirs() throws IOException {
-        LocalDate date = LocalDate.of(2022, 2, 28);
-        File file = FileUtil.createDateDirs(tempDir, DateUtil.toDate(date));
+        var file = FileUtil.createDateDirs(
+                tempDir, DateModel.of(2022, 2, 28)
+                    .withZoneId(ZoneId.systemDefault())
+                    .toDate());
         assertThat(file).exists().isDirectory();
         assertThat(file.getAbsolutePath().replace('\\', '/')).endsWith(
                 "/2022/02/28");
@@ -374,22 +377,22 @@ class FileUtilTest {
 
     @Test
     void testcreateURLDir() throws IOException {
-        File file1 = FileUtil.createURLDirs(
+        var file1 = FileUtil.createURLDirs(
                 tempDir, new URL("http://norconex.com/some/test/page.html"));
         assertThat(file1).doesNotExist();
         assertThat(file1.getParentFile()).exists();
         assertThat(file1.getAbsolutePath().replace('\\', '/')).endsWith(
                 "/http/norconex.com/some/test/page.html");
-        File file2 = FileUtil.createURLDirs(
+        var file2 = FileUtil.createURLDirs(
                 tempDir, "http://norconex.com/some/test/page.html");
         assertThat(file1).isEqualTo(file2);
     }
 
     @Test
     void testToURLDir() throws MalformedURLException {
-        File file1 = FileUtil.toURLDir(
+        var file1 = FileUtil.toURLDir(
                 tempDir, "http://norconex.com/some/test/page.html");
-        File file2 = FileUtil.toURLDir(
+        var file2 = FileUtil.toURLDir(
                 tempDir, new URL("http://norconex.com/some/test/page.html"));
 
         assertThat(file1)

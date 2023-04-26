@@ -10,6 +10,13 @@
     <release version="3.0.0-SNAPSHOT" date="202?-??-??" 
         description="Feature release.">
       <action dev="essiembre" type="add">
+        New DateModel class for easy transition from one date type to another. 
+      </action>
+      <action dev="essiembre" type="add">
+        New ZonedDateTimeParser for epoch and relative dates parsing in
+        addition to parsing from date formats. 
+      </action>
+      <action dev="essiembre" type="add">
         New Timer class. 
       </action>
       <action dev="essiembre" type="add">
@@ -283,6 +290,9 @@
       <action dev="essiembre" type="update">
         EnumConverter will now match values regardless of non-alphanumeric 
         characters they may contain.
+      </action>
+      <action dev="essiembre" type="update">
+        DateUtil now deprecated in favor of DateModel.
       </action>
       <action dev="essiembre" type="fix">
         Properties#loadFromXML is now null-safe.
