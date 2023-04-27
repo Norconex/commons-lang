@@ -51,11 +51,11 @@ class ZonedDateTimeParserTest {
             .isEqualTo(DateModel.of(Y, M, D, h, m, s).toZonedDateTime());
         assertThat(zdtp.parse("2022-11-10"))
             .isEqualTo(DateModel.of(Y, M, D).toZonedDateTime());
-        assertThat(zdtp.parse("2022-11-10-08:00"))
+        assertThat(zdtp.parse("2022-11-10T00:00:00-08:00"))
             .isEqualTo(DateModel.of(Y, M, D)
                     .withZoneId(vanZoneId).toZonedDateTime());
 
-        assertThatExceptionOfType(DateTimeException.class).isThrownBy(
+        assertThatExceptionOfType(DateTimeException.class).isThrownBy(//NOSONAR
                 () -> zdtp.parse("NOGOOD"));
 
         assertThat(b
@@ -103,7 +103,5 @@ class ZonedDateTimeParserTest {
                 .parse("TODAY+9h");
         // Test within a 2 minute range given we deal with actual time
         assertThat(actualToday.getHour()).isEqualTo(9);
-
-
     }
 }

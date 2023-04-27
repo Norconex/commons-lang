@@ -83,7 +83,7 @@ public enum Operator {
         if (StringUtils.isBlank(op)) {
             return null;
         }
-        String cleanOp = StringUtils.remove(op.toLowerCase().trim(), ' ');
+        var cleanOp = StringUtils.remove(op.toLowerCase().trim(), ' ');
         for (Operator c : Operator.values()) {
             if (ArrayUtils.contains(c.abbr, cleanOp)) {
                 return c;

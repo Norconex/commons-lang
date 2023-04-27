@@ -37,7 +37,6 @@ import org.apache.commons.lang3.math.NumberUtils;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.Data;
-import lombok.NonNull;
 
 /**
  * <p>
@@ -159,7 +158,6 @@ public class ZonedDateTimeParser {
 
     private String format;
     @Default
-    @NonNull
     private Locale locale = Locale.getDefault();
     private ZoneId zoneId;
 
@@ -200,7 +198,8 @@ public class ZonedDateTimeParser {
     private ZonedDateTime ofFormat(String dateStr) {
         var zdt = ofFormat(
                 dateStr,
-                DateTimeFormatter.ofPattern(format, locale),
+                DateTimeFormatter.ofPattern(format,
+                        locale == null ? Locale.ENGLISH : locale),
                 zoneId);
         if (zdt == null) {
             throw new DateTimeException("Could not parse date '" + dateStr
@@ -211,10 +210,21 @@ public class ZonedDateTimeParser {
 
     static ZonedDateTime ofFormat(
             String dateStr, DateTimeFormatter formatter, ZoneId targetZone) {
-
         // direct parsing
         try {
             return formatter.parse(dateStr, ZonedDateTime::from);
+        } catch (DateTimeParseException | IndexOutOfBoundsException e) {
+            // Swallow, we try something else on failure
+        }
+        try {
+            return formatter.parse(dateStr, LocalDateTime::from).atZone(
+                    zoneIdOrUTC(targetZone));
+        } catch (DateTimeParseException | IndexOutOfBoundsException e) {
+            // Swallow, we try something else on failure
+        }
+        try {
+            return formatter.parse(dateStr, LocalDate::from).atStartOfDay(
+                    zoneIdOrUTC(targetZone));
         } catch (DateTimeParseException | IndexOutOfBoundsException e) {
             // Swallow, we try something else on failure
         }

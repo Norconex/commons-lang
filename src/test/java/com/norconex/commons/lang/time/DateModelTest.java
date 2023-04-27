@@ -174,7 +174,7 @@ class DateModelTest {
         assertThat(of("2022-11-10T04:49:51"))
             .isEqualTo(DateModel.of(Y, M, D, h, m, s));
         assertThat(of("2022-11-10")).isEqualTo(DateModel.of(Y, M, D));
-        assertThat(of("2022-11-10-08:00").toZonedDateTime())
+        assertThat(of("2022-11-10T00:00:00-08:00").toZonedDateTime())
             .isEqualTo(DateModel.of(Y, M, D)
                     .withZoneId(vanZoneId).toZonedDateTime());
     }

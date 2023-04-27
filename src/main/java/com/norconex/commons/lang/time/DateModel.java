@@ -22,6 +22,7 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
 import lombok.AccessLevel;
@@ -219,12 +220,18 @@ public final class DateModel {
     }
 
     public ZonedDateTime toZonedDateTime() {
-        if (startOfDay) {
-            return ZonedDateTime.of(
-                    year, month, day, 0, 0, 0, 0, zoneId);
-        }
-        return ZonedDateTime.of(
+//        if (startOfDay) {
+//            return ZonedDateTime.of(
+//                    year, month, day, 0, 0, 0, 0, zoneId);
+//        }
+//        return ZonedDateTime.of(
+//                year, month, day, hour, minute, second, nano, zoneId);
+        var zdt = ZonedDateTime.of(
                 year, month, day, hour, minute, second, nano, zoneId);
+        if (startOfDay) {
+            return zdt.truncatedTo(ChronoUnit.DAYS);
+        }
+        return zdt;
     }
 
     /**
