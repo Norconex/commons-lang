@@ -1,5 +1,5 @@
 <!-- 
-   Copyright 2010-2022 Norconex Inc.
+   Copyright 2010-2023 Norconex Inc.
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -40,8 +40,8 @@
     <commons-text.version>1.10.0</commons-text.version>
     <java-cup.version>10k</java-cup.version>
     <json.version>1.8</json.version>
-    <jackson.version>2.13.0</jackson.version>
-    <log4j.version>2.17.1</log4j.version>
+    <jackson.version>2.15.0</jackson.version>
+    <log4j.version>2.20.0</log4j.version>
     <okhttp3.version>4.10.0</okhttp3.version>
     <slf4j.version>1.7.32</slf4j.version>
     <velocity-engine.version>2.3</velocity-engine.version>
@@ -50,13 +50,13 @@
     <xpath2.version>2.1.100</xpath2.version>
 
     <!-- Test dependencies -->
-    <ant.version>1.10.11</ant.version>
-    <assertj.version>3.23.1</assertj.version>
-    <junit-jupiter.version>5.8.1</junit-jupiter.version>
+    <ant.version>1.10.13</ant.version>
+    <assertj.version>3.24.2</assertj.version>
+    <junit-jupiter.version>5.9.3</junit-jupiter.version>
     <testcontainers.version>1.16.0</testcontainers.version>
 
     <!-- Test and provided -->      
-    <lombok.version>1.18.24</lombok.version>
+    <lombok.version>1.18.26</lombok.version>
     
   </properties>
 
@@ -296,20 +296,9 @@
       <extension>
         <groupId>org.apache.maven.wagon</groupId>
         <artifactId>wagon-ssh</artifactId>
-        <version>3.5.2</version>
+        <version>3.5.3</version>
       </extension>
     </extensions>
-      <!-- 
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>sonar-maven-plugin</artifactId>
-          <version>2.6</version>
-        </plugin>
-      </plugins>
-    </pluginManagement>    
-       -->
 
     <plugins>
 
@@ -347,7 +336,7 @@
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
-        <version>0.8.8</version>
+        <version>0.8.10</version>
         <executions>
           <execution>
             <id>prepare-agent</id>
@@ -468,7 +457,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.8.0</version>
+        <version>3.11.0</version>
         <configuration>
           <source>${maven.compiler.source}</source>
           <target>${maven.compiler.target}</target>
@@ -479,7 +468,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-remote-resources-plugin</artifactId>
-        <version>1.6.0</version>
+        <version>3.0.0</version>
       </plugin>
 
       <plugin>
@@ -633,7 +622,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
-        <version>3.0.1</version>
+        <version>3.2.1</version>
         <executions>
           <execution>
             <id>attach-sources</id>
@@ -647,7 +636,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>3.1.1</version>
+        <version>3.3.0</version>
         <configuration>
           <archive>
             <manifest>
@@ -671,7 +660,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.0.0-M5</version>
+        <version>3.0.0</version>
       </plugin>
 
       <!-- Use VM argument -Dgpg.skip=true to disable GPG signing. -->
@@ -712,13 +701,13 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
-        <version>3.1.1</version>
+        <version>3.5.1</version>
       </plugin>
       
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-site-plugin</artifactId>
-        <version>3.12.1</version>
+        <version>4.0.0-M7</version>
         <dependencies>
           <dependency>
             <groupId>org.apache.maven.wagon</groupId>
@@ -728,6 +717,52 @@
         </dependencies>
       </plugin>        
       
+      <!-- From command-prompt:  
+         mvn versions:display-dependency-updates ^
+             versions:display-plugin-updates ^
+             versions:display-property-updates ^
+             -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+         -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>versions-maven-plugin</artifactId>
+        <version>2.15.0</version>
+        <executions>
+          <execution>
+            <phase>compile</phase>
+            <goals>
+              <goal>display-dependency-updates</goal>
+              <goal>display-plugin-updates</goal>
+              <goal>display-property-updates</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>      
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>3.3.0</version>
+        <executions>
+          <execution>
+            <id>enforce-versions</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requireMavenVersion>
+                  <version>[3.8,)</version>
+                </requireMavenVersion>
+                <requireJavaVersion>
+                  <version>[17,)</version>
+                </requireJavaVersion>
+              </rules>    
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+            
     </plugins>
 
   </build>
