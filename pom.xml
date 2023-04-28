@@ -43,7 +43,7 @@
     <jackson.version>2.15.0</jackson.version>
     <log4j.version>2.20.0</log4j.version>
     <okhttp3.version>4.10.0</okhttp3.version>
-    <slf4j.version>1.7.32</slf4j.version>
+    <slf4j.version>2.0.7</slf4j.version>
     <velocity-engine.version>2.3</velocity-engine.version>
     <xerces.version>2.12.2</xerces.version>
     <xml-bind-api.version>4.0.0</xml-bind-api.version>
@@ -185,15 +185,9 @@
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
-      <artifactId>log4j-slf4j-impl</artifactId>
+      <artifactId>log4j-slf4j2-impl</artifactId>
       <version>${log4j.version}</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.logging.log4j</groupId>
-      <artifactId>log4j-core</artifactId>
-      <version>${log4j.version}</version>
-      <scope>runtime</scope>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.ant</groupId>
