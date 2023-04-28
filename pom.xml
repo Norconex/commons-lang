@@ -46,7 +46,7 @@
     <slf4j.version>1.7.32</slf4j.version>
     <velocity-engine.version>2.3</velocity-engine.version>
     <xerces.version>2.12.2</xerces.version>
-    <xml-bind-api.version>4.0.0</xml-bind-api.version>
+    <xml-bind-api.version>4.0.2</xml-bind-api.version>
     <xpath2.version>2.1.100</xpath2.version>
 
     <!-- Test dependencies -->
@@ -520,7 +520,7 @@
           </additionalDependencies>
           
           <additionalJOptions>
-            <additionalJOption>&#45;&#45;allow-script-in-comments</additionalJOption>
+            <additionalJOption>--allow-script-in-comments</additionalJOption>
             <additionalJOption>-J-Dbasedir=${basedir}</additionalJOption>
           </additionalJOptions>
           <overview>src/main/javadoc/overview.html</overview>
