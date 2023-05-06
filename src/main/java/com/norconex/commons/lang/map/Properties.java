@@ -58,8 +58,6 @@ import org.apache.commons.text.StringEscapeUtils;
 import org.apache.commons.text.translate.UnicodeEscaper;
 import org.json.JSONObject;
 import org.json.JSONTokener;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.EqualsUtil;
 import com.norconex.commons.lang.bean.BeanException;
@@ -68,6 +66,8 @@ import com.norconex.commons.lang.collection.CollectionUtil;
 import com.norconex.commons.lang.convert.ConverterException;
 import com.norconex.commons.lang.convert.GenericConverter;
 import com.norconex.commons.lang.text.TextMatcher;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * <p>This class is a enhanced version of {@link java.util.Properties}
@@ -99,6 +99,7 @@ import com.norconex.commons.lang.text.TextMatcher;
  * <p>Upon encountering a problem in parsing a value to
  * its desired type, a {@link PropertiesException} is thrown.</p>
  */
+@Slf4j
 public class Properties extends ObservableMap<String, List<String>>
         implements Serializable {
 
@@ -114,7 +115,6 @@ public class Properties extends ObservableMap<String, List<String>>
     // entered (to know which case-version to use).
 
     private static final long serialVersionUID = -7215126924574341L;
-    private static final Logger LOG = LoggerFactory.getLogger(Properties.class);
 
     //MAYBE still support this?
     private final boolean caseInsensitiveKeys;
