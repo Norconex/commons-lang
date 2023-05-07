@@ -190,8 +190,8 @@ public class CachedInputStream extends InputStream implements CachedStream {
         if (is == null) {
             return null;
         }
-        if (is instanceof CachedInputStream) {
-            return (CachedInputStream) is;
+        if (is instanceof CachedInputStream cis) {
+            return cis;
         }
         return Optional.ofNullable(streamFactory)
                 .orElseGet(CachedStreamFactory::new).newInputStream(is);
@@ -539,13 +539,13 @@ public class CachedInputStream extends InputStream implements CachedStream {
     public int length() {
         if (length == UNDEFINED_LENGTH) {
             LOG.debug("""
-            	Obtaining stream length before a stream\s\
-            	of unknown lenght was fully read.\s\
-            	This forces a full\s\
-            	read just to get the length. To avoid this extra\s\
-            	read cycle, consider calling\s\
-            	the length() method after the stream has been\s\
-            	fully read at least once through regular usage.""");
+                Obtaining stream length before a stream\s\
+                of unknown lenght was fully read.\s\
+                This forces a full\s\
+                read just to get the length. To avoid this extra\s\
+                read cycle, consider calling\s\
+                the length() method after the stream has been\s\
+                fully read at least once through regular usage.""");
 
             // Reset marking
             var savedPos = pos;

@@ -37,6 +37,7 @@ import org.junit.jupiter.api.Test;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Deprecated(since = "3.0.0")
 class DateUtilTest {
 
     private static final ZonedDateTime utcZonedDateTime = ZonedDateTime.of(
@@ -79,9 +80,9 @@ class DateUtilTest {
 
     @Test
     void testDateToFromLocalDateTime() {
-        Date utcDateTime = new Date(utcDateTimeAsEpoch);
-        Date sysDateTime = new Date(sysDateTimeAsEpoch);
-        Date vanDateTime = new Date(vanDateTimeAsEpoch);
+        var utcDateTime = new Date(utcDateTimeAsEpoch);
+        var sysDateTime = new Date(sysDateTimeAsEpoch);
+        var vanDateTime = new Date(vanDateTimeAsEpoch);
 
         // Date to LocalDateTime
         assertEquals(toLocalDateTimeUTC(utcDateTime), utcLocalDateTime());
@@ -127,9 +128,9 @@ class DateUtilTest {
 
     @Test
     void testDateToFromLocalDate() {
-        Date utcDate = new Date(utcDateAsEpoch);
-        Date sysDate = new Date(sysDateAsEpoch);
-        Date vanDate = new Date(vanDateAsEpoch);
+        var utcDate = new Date(utcDateAsEpoch);
+        var sysDate = new Date(sysDateAsEpoch);
+        var vanDate = new Date(vanDateAsEpoch);
 
         // Date to LocalDateTime
         assertEquals(toLocalDateUTC(utcDate), utcLocalDate());
