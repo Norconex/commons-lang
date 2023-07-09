@@ -7,7 +7,7 @@
   </properties>
   <body>
 
-    <release version="2.0.2-SNAPSHOT" date="2023-??-??" 
+    <release version="2.0.2" date="2023-07-09" 
         description="Maintenance release.">
       <action dev="ohtwadi" type="fix">
         Fixed NullPointerException when obtaining library version
@@ -15,7 +15,7 @@
       </action>
       <action dev="essiembre" type="fix">
         Fixed NullPointerException in VersionUtil when source cannot
-        be resolved. 
+        be resolved.
       </action>
     </release>
 
