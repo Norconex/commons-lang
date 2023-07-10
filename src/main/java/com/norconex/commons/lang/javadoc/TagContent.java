@@ -31,44 +31,44 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-class TagContent {
+public class TagContent {
     @NonNull
     private final UnknownInlineTagTree unknownTag;
     private String reference;
     private String content;
     private boolean parsed;
 
-    String getName() {
+    public String getName() {
         return unknownTag.getTagName();
     }
-    String getReference() {
+    public String getReference() {
         if (!parsed) {
             parse();
         }
         return reference;
     }
-    String getContent() {
+    public String getContent() {
         if (!parsed) {
             parse();
         }
         return content;
     }
 
-    TagContent withReference(String reference) {
+    public TagContent withReference(String reference) {
         return new TagContent(unknownTag, reference, content, parsed);
     }
-    TagContent withContent(String content) {
+    public TagContent withContent(String content) {
         return new TagContent(unknownTag, reference, content, parsed);
     }
 
     // Must have content and be UnknownInlineTag
-    static Optional<TagContent> of(List<? extends DocTree> docTrees) {
+    public static Optional<TagContent> of(List<? extends DocTree> docTrees) {
         if (docTrees.isEmpty()) {
             return Optional.empty();
         }
         return of(docTrees.get(0));
     }
-    static Optional<TagContent> of(DocTree docTree) {
+    public static Optional<TagContent> of(DocTree docTree) {
         if (docTree.getKind() != UNKNOWN_INLINE_TAG) {
             return Optional.empty();
         }
