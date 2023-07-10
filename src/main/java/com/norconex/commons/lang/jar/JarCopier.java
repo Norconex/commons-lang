@@ -148,12 +148,14 @@ public class JarCopier {
         JarDuplicateFinder.findJarDuplicates(sourceFiles).forEach(dups -> {
             resultsBySource.put(
                     dups.getGreatest(),
-                    dups.getAllButGreatest().stream()
-                        .map(jf -> new DupResult(jf, "source ignored"))
-                        .toList());
-            sourceFiles.removeAll(dups.getJarFiles().stream()
+                    new ArrayList<>(
+                        dups.getAllButGreatest().stream()
+                            .map(jf -> new DupResult(jf, "source ignored"))
+                            .toList()));
+            sourceFiles.removeAll(new ArrayList<>(
+                    dups.getJarFiles().stream()
                     .map(JarFile::toFile)
-                    .toList());
+                    .toList()));
         });
         // add remaining sources with no dups
         sourceFiles.stream().forEach(f -> resultsBySource.put(
