@@ -17,7 +17,6 @@ package com.norconex.commons.lang.map;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -62,10 +61,10 @@ public class PropertyMatchers extends ArrayList<PropertyMatcher>
      * @return how many matchers were removed
      */
     public synchronized int remove(String field) {
-        Iterator<PropertyMatcher> it = iterator();
-        int count = 0;
+        var it = iterator();
+        var count = 0;
         while (it.hasNext()) {
-            PropertyMatcher m = it.next();
+            var m = it.next();
             if (m.getFieldMatcher().matches(field)) {
                 it.remove();
                 count++;
@@ -116,12 +115,12 @@ public class PropertyMatchers extends ArrayList<PropertyMatcher>
      * @see #test(Properties)
      */
     public Properties match(Properties properties) {
-        Properties props = new Properties();
+        var props = new Properties();
         if (properties == null) {
             return props;
         }
         for (PropertyMatcher matcher : this) {
-            Properties matches = matcher.match(properties);
+            var matches = matcher.match(properties);
             if (!matches.isEmpty()) {
                 props.putAll(matches);
             }
@@ -139,12 +138,12 @@ public class PropertyMatchers extends ArrayList<PropertyMatcher>
      * @return properties that were replaced with their original values
      */
     public Properties replace(Properties properties, String replacement) {
-        Properties props = new Properties();
+        var props = new Properties();
         if (properties == null) {
             return props;
         }
         for (PropertyMatcher matcher : this) {
-            Properties replaced = matcher.replace(properties, replacement);
+            var replaced = matcher.replace(properties, replacement);
             if (!replaced.isEmpty()) {
                 props.putAll(replaced);
             }

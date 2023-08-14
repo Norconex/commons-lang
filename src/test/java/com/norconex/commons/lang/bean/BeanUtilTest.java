@@ -596,6 +596,7 @@ class BeanUtilTest {
 
     //--- Test classes ---------------------------------------------------------
 
+    @SuppressWarnings("exports")
     public static class Root implements Serializable {
         private static final long serialVersionUID = 1L;
         private Sub1Yes sub1yes = new Sub1Yes();
@@ -630,6 +631,7 @@ class BeanUtilTest {
     public static class Sub2No implements Serializable {
         private static final long serialVersionUID = 1L;
     }
+    @SuppressWarnings("exports")
     public static class Sub3Yes implements EventListener<Event>, Serializable {
         private static final long serialVersionUID = 1L;
         private Sub1Yes sub1Yes;

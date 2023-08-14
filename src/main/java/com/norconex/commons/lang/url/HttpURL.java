@@ -108,7 +108,7 @@ public class HttpURL implements Serializable {
             this.encoding = encoding;
         }
 
-        String u = StringUtils.trimToEmpty(url);
+        var u = StringUtils.trimToEmpty(url);
         if (u.matches("[a-zA-Z][a-zA-Z0-9\\+\\-\\.]*:.*")) {
             URL urlwrap;
             try {
@@ -267,7 +267,7 @@ public class HttpURL implements Serializable {
         if (StringUtils.isBlank(path)) {
             return StringUtils.EMPTY;
         }
-        String segment = path;
+        var segment = path;
         return StringUtils.substringAfterLast(segment, "/");
     }
     /**
@@ -277,7 +277,7 @@ public class HttpURL implements Serializable {
      * @throws URLException when URL is malformed
      */
     public URL toURL() {
-        String url = toString();
+        var url = toString();
         try {
             return new URL(url);
         } catch (MalformedURLException e) {
@@ -286,10 +286,12 @@ public class HttpURL implements Serializable {
     }
 
     /**
-     * Gets the root of this HttpUrl. That is the left part of a URL up to
-     * and including the host name. If there are no root, <code>null</code>
-     * is returned.
-     * @return left part of a URL up to (and including the host name) or
+     * <p>Gets the root of a URL. That is the left part of a URL up to and
+     * including the host name. If a URL is only made of the scheme and
+     * host name, it is returned unchanged.
+     * A <code>null</code> or empty string returns
+     * a <code>null</code> document root.
+     * @return left part of a URL up to (and including) the host name or
      *     <code>null</code>
      * @throws URLException when URL is malformed
      * @since 1.8.0
@@ -306,7 +308,7 @@ public class HttpURL implements Serializable {
      * @throws URLException when URL is malformed
      */
     public URI toURI() {
-        String url = toString();
+        var url = toString();
         try {
             return new URI(url);
         } catch (URISyntaxException e) {
@@ -345,20 +347,22 @@ public class HttpURL implements Serializable {
 
     /**
      * <p>Gets the root of a URL. That is the left part of a URL up to and
-     * including the host name. A <code>null</code> or empty string returns
+     * including the host name. If a URL is only made of the scheme and
+     * host name, it is returned unchanged.
+     * A <code>null</code> or empty string returns
      * a <code>null</code> document root.
      * This method is a short form of:<br>
      * <code>new HttpURL("http://example.com/path").getRoot();</code>
      * </p>
      * @param url a URL string
-     * @return left part of a URL up to (and including the host name
+     * @return left part of a URL up to (and including) the host name
      * @since 1.8.0
      */
     public static String getRoot(String url) {
         if (StringUtils.isBlank(url)) {
             return null;
         }
-        return RegExUtils.replacePattern(url, "(.*?://.*?)([/?#].*)", "$1");
+        return RegExUtils.replacePattern(url, "(.*?://[^/?#]+).*", "$1");
     }
 
     /**
@@ -367,7 +371,7 @@ public class HttpURL implements Serializable {
      */
     @Override
     public String toString() {
-        StringBuilder b = new StringBuilder();
+        var b = new StringBuilder();
         if (StringUtils.isNotBlank(protocol)) {
             b.append(protocol);
             b.append("://");
@@ -440,7 +444,7 @@ public class HttpURL implements Serializable {
         if (StringUtils.isBlank(path)) {
             return path;
         }
-        StringBuilder sb = new StringBuilder();
+        var sb = new StringBuilder();
         for (char ch : path.toCharArray()) {
             // Space to plus sign
             if (ch == ' ') {
@@ -455,10 +459,10 @@ public class HttpURL implements Serializable {
                 bytes = Character.toString(ch).getBytes(StandardCharsets.UTF_8);
                 for (byte b : bytes) {
                     sb.append('%');
-                    int upper = ((b) >> 4) & 0xf;
+                    var upper = ((b) >> 4) & 0xf;
                     sb.append(Integer.toHexString(
                             upper).toUpperCase(Locale.US));
-                    int lower = (b) & 0xf;
+                    var lower = (b) & 0xf;
                     sb.append(Integer.toHexString(
                             lower).toUpperCase(Locale.US));
                 }
@@ -494,7 +498,7 @@ public class HttpURL implements Serializable {
         if (StringUtils.isBlank(relativeURL)) {
             return baseURL;
         }
-        String relURL = relativeURL.trim();
+        var relURL = relativeURL.trim();
 
         // Relative is in fact absolute
         if (relURL.matches("^[A-Za-z][A-Za-z0-9\\+\\-\\.]*:.*$")) {
@@ -516,7 +520,7 @@ public class HttpURL implements Serializable {
         }
 
         // Relative to last directory/segment
-        String base = baseURL.replaceFirst("(.*?)([\\?\\#])(.*)", "$1");
+        var base = baseURL.replaceFirst("(.*?)([\\?\\#])(.*)", "$1");
         if (StringUtils.countMatches(base, '/') > 2) {
             base = base.replaceFirst("(.*/)(.*)", "$1");
         }

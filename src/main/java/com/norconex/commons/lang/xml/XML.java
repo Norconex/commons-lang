@@ -342,7 +342,6 @@ public class XML implements Iterable<XMLCursor> {
                     "$1$2 xml:space=\"empty\" $3$4");
             Element node = null;
             try {
-                documentBuilderFactory.setNamespaceAware(false);
                 node = documentBuilderFactory.newDocumentBuilder()
                         .parse(new InputSource(new StringReader(xmlStr)))
                             .getDocumentElement();

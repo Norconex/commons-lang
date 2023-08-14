@@ -43,39 +43,50 @@ class HttpURLTest {
     @ParameterizedTest
     @CsvSource(
         value = {
-            "Keep protocol character case,"
-                    + "HTTP://www.example.com,"
-                    + "HTTP://www.example.com",
-            "'http' protocol without port,"
-                    + "http://www.example.com/blah,"
-                    + "http://www.example.com/blah",
-            "'http' protocol with default port,"
-                    + "http://www.example.com:80/blah,"
-                    + "http://www.example.com/blah",
-            "'http' protocol with non-default port,"
-                    + "http://www.example.com:81/blah,"
-                    + "http://www.example.com:81/blah",
-            "'https' protocol without port,"
-                    + "https://www.example.com/blah,"
-                    + "https://www.example.com/blah",
-            "'https' protocol with default port,"
-                    + "https://www.example.com:443/blah,"
-                    + "https://www.example.com/blah",
-            "'https' protocol with non-default port,"
-                    + "https://www.example.com:444/blah,"
-                    + "https://www.example.com:444/blah",
-            "Non 'http(s)' protocol without port,"
-                    + "ftp://ftp.example.com/dir,"
-                    + "ftp://ftp.example.com/dir",
-            "Non 'http(s)' protocol with port,"
-                    + "ftp://ftp.example.com:20/dir,"
-                    + "ftp://ftp.example.com:20/dir",
-            "Invalid URL,"
-                    + "http://www.example.com/\"path\","
-                    + "http://www.example.com/%22path%22",
-            "URL with leading or trailing spaces,"
-                    + "  http://www.example.com/path  ,"
-                    + "http://www.example.com/path",
+            """
+            	Keep protocol character case,\
+            	HTTP://www.example.com,\
+            	HTTP://www.example.com""",
+            """
+            	'http' protocol without port,\
+            	http://www.example.com/blah,\
+            	http://www.example.com/blah""",
+            """
+            	'http' protocol with default port,\
+            	http://www.example.com:80/blah,\
+            	http://www.example.com/blah""",
+            """
+            	'http' protocol with non-default port,\
+            	http://www.example.com:81/blah,\
+            	http://www.example.com:81/blah""",
+            """
+            	'https' protocol without port,\
+            	https://www.example.com/blah,\
+            	https://www.example.com/blah""",
+            """
+            	'https' protocol with default port,\
+            	https://www.example.com:443/blah,\
+            	https://www.example.com/blah""",
+            """
+            	'https' protocol with non-default port,\
+            	https://www.example.com:444/blah,\
+            	https://www.example.com:444/blah""",
+            """
+            	Non 'http(s)' protocol without port,\
+            	ftp://ftp.example.com/dir,\
+            	ftp://ftp.example.com/dir""",
+            """
+            	Non 'http(s)' protocol with port,\
+            	ftp://ftp.example.com:20/dir,\
+            	ftp://ftp.example.com:20/dir""",
+            """
+            	Invalid URL,\
+            	http://www.example.com/"path",\
+            	http://www.example.com/%22path%22""",
+            """
+            	URL with leading or trailing spaces,\
+            	  http://www.example.com/path  ,\
+            	http://www.example.com/path""",
         },
         ignoreLeadingAndTrailingWhitespace = false
     )
@@ -90,31 +101,38 @@ class HttpURLTest {
     @ParameterizedTest
     @CsvSource(
         value = {
-            "Relative to protocol,"
-                    + "//www.relative.com/e/f.html,"
-                    + "https://www.relative.com/e/f.html",
-            "Relative to domain name,"
-                    + "/e/f.html,"
-                    + "https://www.example.com/e/f.html",
-            "Relative to full page URL,"
-                    + "?name=john,"
-                    + "https://www.example.com/a/b/c.html?name=john",
-            "Relative to last directory,"
-                    + "g.html,"
-                    + "https://www.example.com/a/b/g.html",
-            "Absolute URL,"
-                    + "http://www.sample.com/xyz.html,"
-                    + "http://www.sample.com/xyz.html",
-            //Test for https://github.com/Norconex/collector-http/issues/788
-            "Relative with colon in parameter,"
-                    + "h/i.html?param=1:2,"
-                    + "https://www.example.com/a/b/h/i.html?param=1:2",
-            "Starts with valid odd scheme,"
-                    + "x1+2-3.4:yz,"
-                    + "x1+2-3.4:yz",
-            "Starts with invalid odd scheme,"
-                    + "1+2-3.4x:yz,"
-                    + "https://www.example.com/a/b/1+2-3.4x:yz",
+            """
+            	Relative to protocol,\
+            	//www.relative.com/e/f.html,\
+            	https://www.relative.com/e/f.html""",
+            """
+            	Relative to domain name,\
+            	/e/f.html,\
+            	https://www.example.com/e/f.html""",
+            """
+            	Relative to full page URL,\
+            	?name=john,\
+            	https://www.example.com/a/b/c.html?name=john""",
+            """
+            	Relative to last directory,\
+            	g.html,\
+            	https://www.example.com/a/b/g.html""",
+            """
+            	Absolute URL,\
+            	http://www.sample.com/xyz.html,\
+            	http://www.sample.com/xyz.html""",
+            """
+            	Relative with colon in parameter,\
+            	h/i.html?param=1:2,\
+            	https://www.example.com/a/b/h/i.html?param=1:2""",
+            """
+            	Starts with valid odd scheme,\
+            	x1+2-3.4:yz,\
+            	x1+2-3.4:yz""",
+            """
+            	Starts with invalid odd scheme,\
+            	1+2-3.4x:yz,\
+            	https://www.example.com/a/b/1+2-3.4x:yz""",
         },
         ignoreLeadingAndTrailingWhitespace = false
     )
@@ -187,14 +205,14 @@ class HttpURLTest {
     @Test
     void testMisc() throws MalformedURLException, URISyntaxException {
         assertThat(new HttpURL().getHost()).isNull();
-        URL url = new URL("http://example.com/some/path.html?param1=value1#A1");
+        var url = new URL("http://example.com/some/path.html?param1=value1#A1");
         assertThat(new HttpURL(url).toURL()).isEqualTo(url);
         assertThat(new HttpURL(url, "UTF-8").toURL()).isEqualTo(url);
 
         assertThatExceptionOfType(URLException.class).isThrownBy(
                 () -> new HttpURL("blah:I am invalid"));
 
-        HttpURL httpUrl = new HttpURL(url, "UTF-8");
+        var httpUrl = new HttpURL(url, "UTF-8");
         assertThat(httpUrl)
             .returns("UTF-8", HttpURL::getEncoding)
             .returns("/some/path.html", HttpURL::getPath)
@@ -224,4 +242,23 @@ class HttpURLTest {
 
         assertThat(HttpURL.getRoot(null)).isNull();
     }
+
+    @Test
+    void testGetRoot() throws MalformedURLException, URISyntaxException {
+        assertThat(HttpURL.getRoot("http://acme.com"))
+            .isEqualTo("http://acme.com");
+        assertThat(HttpURL.getRoot("http://acme.com/"))
+            .isEqualTo("http://acme.com");
+        assertThat(HttpURL.getRoot("http://acme.com/asdf"))
+            .isEqualTo("http://acme.com");
+        assertThat(HttpURL.getRoot("http://acme.com/asdf/"))
+            .isEqualTo("http://acme.com");
+        assertThat(HttpURL.getRoot("http://acme.com?adsf=asdf"))
+            .isEqualTo("http://acme.com");
+        assertThat(HttpURL.getRoot("http://acme.com#asdf"))
+            .isEqualTo("http://acme.com");
+        assertThat(HttpURL.getRoot("http://acme.com%123"))
+            .isEqualTo("http://acme.com%123");
+    }
+
 }

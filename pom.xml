@@ -35,18 +35,18 @@
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
      
     <commons-collections4.version>4.4</commons-collections4.version>
-    <commons-io.version>2.11.0</commons-io.version>
+    <commons-io.version>2.12.0</commons-io.version>
     <commons-lang3.version>3.12.0</commons-lang3.version>
     <commons-text.version>1.10.0</commons-text.version>
     <java-cup.version>10k</java-cup.version>
     <json.version>1.8</json.version>
-    <jackson.version>2.15.0</jackson.version>
+    <jackson.version>2.15.2</jackson.version>
     <log4j.version>2.20.0</log4j.version>
     <okhttp3.version>4.10.0</okhttp3.version>
-    <slf4j.version>1.7.36</slf4j.version>
+    <slf4j.version>2.0.7</slf4j.version>
     <velocity-engine.version>2.3</velocity-engine.version>
     <xerces.version>2.12.2</xerces.version>
-    <xml-bind-api.version>4.0.0</xml-bind-api.version>
+    <xml-bind-api.version>4.0.2</xml-bind-api.version>
     <xpath2.version>2.1.100</xpath2.version>
 
     <!-- Test dependencies -->
@@ -56,7 +56,7 @@
     <testcontainers.version>1.16.0</testcontainers.version>
 
     <!-- Test and provided -->      
-    <lombok.version>1.18.26</lombok.version>
+    <lombok.version>1.18.28</lombok.version>
     
   </properties>
 
@@ -82,6 +82,7 @@
   </repositories>
 
   <dependencies>
+      
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
@@ -185,15 +186,9 @@
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
-      <artifactId>log4j-slf4j-impl</artifactId>
+      <artifactId>log4j-slf4j2-impl</artifactId>
       <version>${log4j.version}</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.logging.log4j</groupId>
-      <artifactId>log4j-core</artifactId>
-      <version>${log4j.version}</version>
-      <scope>runtime</scope>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.ant</groupId>
@@ -207,13 +202,15 @@
       <version>${slf4j.version}</version>
       <scope>test</scope>
     </dependency>
+    
+    <!-- Jackson -->
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-annotations</artifactId>
       <version>${jackson.version}</version>
       <scope>provided</scope>
     </dependency>
-
+    
     <!-- okhttp/mockwebserver used to test Certificateutil -->
     <dependency>
       <groupId>com.squareup.okhttp3</groupId>
