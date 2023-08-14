@@ -408,7 +408,7 @@ public class CachedInputStream extends InputStream implements CachedStream {
      */
     public void enforceFullCaching() throws IOException {
         if (firstRead) {
-            IOUtils.copy(this, NullOutputStream.NULL_OUTPUT_STREAM);
+            IOUtils.copy(this, NullOutputStream.INSTANCE);
             length = count;
             firstRead = false;
         }

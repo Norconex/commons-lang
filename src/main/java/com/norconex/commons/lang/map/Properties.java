@@ -397,8 +397,10 @@ public class Properties extends ObservableMap<String, List<String>>
         // Store it
         if (isXML) {
             if (output instanceof Writer writer) {
-                p.storeToXML(new WriterOutputStream(writer,
-                        StandardCharsets.UTF_8), null);
+                p.storeToXML(WriterOutputStream.builder()
+                        .setCharset(UTF_8)
+                        .setWriter(writer)
+                        .get(), null);
             } else {
                 p.storeToXML((OutputStream) output, null);
             }
