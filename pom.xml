@@ -35,7 +35,7 @@
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
      
     <commons-collections4.version>4.4</commons-collections4.version>
-    <commons-io.version>2.11.0</commons-io.version>
+    <commons-io.version>2.12.0</commons-io.version>
     <commons-lang3.version>3.12.0</commons-lang3.version>
     <commons-text.version>1.10.0</commons-text.version>
     <java-cup.version>10k</java-cup.version>
