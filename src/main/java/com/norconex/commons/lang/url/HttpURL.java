@@ -23,7 +23,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
 import org.apache.commons.lang3.CharUtils;
-import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.norconex.commons.lang.collection.CollectionUtil;
@@ -362,7 +361,7 @@ public class HttpURL implements Serializable {
         if (StringUtils.isBlank(url)) {
             return null;
         }
-        return RegExUtils.replacePattern(url, "(.*?://[^/?#]+).*", "$1");
+        return url.replaceFirst("^(.*?://.+?)([/?#]|$)", "$1");
     }
 
     /**
@@ -520,7 +519,7 @@ public class HttpURL implements Serializable {
         }
 
         // Relative to last directory/segment
-        var base = baseURL.replaceFirst("(.*?)([\\?\\#])(.*)", "$1");
+        var base = baseURL.replaceFirst("^(.*?)([\\?\\#])(.*)", "$1");
         if (StringUtils.countMatches(base, '/') > 2) {
             base = base.replaceFirst("(.*/)(.*)", "$1");
         }
