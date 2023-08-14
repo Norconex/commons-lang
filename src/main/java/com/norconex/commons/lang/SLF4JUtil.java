@@ -33,11 +33,11 @@ public final class SLF4JUtil {
     private static final Map<Level, LevelLogger> LL_MAP =
             new EnumMap<>(Level.class);
     static {
-        LL_MAP.put(Level.TRACE, (l, f, a) -> l.trace(f, a));
-        LL_MAP.put(Level.DEBUG, (l, f, a) -> l.debug(f, a));
-        LL_MAP.put(Level.INFO,  (l, f, a) -> l.info(f, a));
-        LL_MAP.put(Level.WARN,  (l, f, a) -> l.warn(f, a));
-        LL_MAP.put(Level.ERROR, (l, f, a) -> l.error(f, a));
+        LL_MAP.put(Level.TRACE, Logger::trace);
+        LL_MAP.put(Level.DEBUG, Logger::debug);
+        LL_MAP.put(Level.INFO,  Logger::info);
+        LL_MAP.put(Level.WARN,  Logger::warn);
+        LL_MAP.put(Level.ERROR, Logger::error);
     }
 
     private static final Map<Level, Predicate<Logger>> ENABLED_MAP =
@@ -64,7 +64,6 @@ public final class SLF4JUtil {
 
 
     private SLF4JUtil() {
-        super();
     }
 
     /**
@@ -137,6 +136,6 @@ public final class SLF4JUtil {
 
     @FunctionalInterface
     private interface LevelLogger {
-        public void log(Logger logger, String format, Object... args);
+        void log(Logger logger, String format, Object... args);
     }
 }

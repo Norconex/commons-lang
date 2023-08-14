@@ -214,8 +214,7 @@ public class MutableImage {
 
     //--- Crop -----------------------------------------------------------------
 
-    public MutableImage crop(Rectangle rectangle) {
-        Objects.requireNonNull(rectangle, "'rectangle' must not be null.");
+    public MutableImage crop(@NonNull Rectangle rectangle) {
         return apply(Scalr.crop(image,
                 rectangle.x, rectangle.y, rectangle.width, rectangle.height));
     }

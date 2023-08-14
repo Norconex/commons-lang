@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.function.BiFunction;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
@@ -92,7 +91,7 @@ public class JarCopier {
     JarCopier(
             BiFunction<JarFile, JarFile, OnJarConflict> onJarConflictSupplier) {
         if (onJarConflictSupplier == null) {
-            OnJarConflict ojc = new OnJarConflict();
+            var ojc = new OnJarConflict();
             this.onJarConflictSupplier = (s, t) -> ojc;
         } else {
             this.onJarConflictSupplier = onJarConflictSupplier;
@@ -149,12 +148,14 @@ public class JarCopier {
         JarDuplicateFinder.findJarDuplicates(sourceFiles).forEach(dups -> {
             resultsBySource.put(
                     dups.getGreatest(),
-                    dups.getAllButGreatest().stream()
-                        .map(jf -> new DupResult(jf, "source ignored"))
-                        .collect(Collectors.toList()));
-            sourceFiles.removeAll(dups.getJarFiles().stream()
+                    new ArrayList<>(
+                        dups.getAllButGreatest().stream()
+                            .map(jf -> new DupResult(jf, "source ignored"))
+                            .toList()));
+            sourceFiles.removeAll(new ArrayList<>(
+                    dups.getJarFiles().stream()
                     .map(JarFile::toFile)
-                    .collect(Collectors.toList()));
+                    .toList()));
         });
         // add remaining sources with no dups
         sourceFiles.stream().forEach(f -> resultsBySource.put(
@@ -227,7 +228,7 @@ public class JarCopier {
             JarFile sourceJar, File targetDir, List<DupResult> dupResults)
                     throws IOException {
 
-        List<JarFile> targetDups = JarDuplicateFinder.findJarDuplicatesOf(
+        var targetDups = JarDuplicateFinder.findJarDuplicatesOf(
                 sourceJar.toFile(), Arrays.asList(targetDir));
 
 
@@ -238,10 +239,10 @@ public class JarCopier {
             return;
         }
 
-        OnJarConflict onConflict = ofNullable(
+        var onConflict = ofNullable(
                 onJarConflictSupplier.apply(sourceJar, targetDups.get(0)))
                 .orElse(OnJarConflict.DEFAULT);
-        SourceAction sourceAction = onConflict.sourceAction();
+        var sourceAction = onConflict.sourceAction();
 
         // source action: always copy source upon conflict
         if (sourceAction == OnJarConflict.SourceAction.COPY) {
@@ -267,7 +268,7 @@ public class JarCopier {
         }
 
         // source action: copy if greatest, or if greatest or equiv.
-        JarFile greatestTarget = targetDups.get(0);
+        var greatestTarget = targetDups.get(0);
         if (sourceNeedsCopy(sourceAction, sourceJar, greatestTarget)) {
             performTargetAction(
                     onConflict.targetAction(), targetDups, dupResults);
@@ -325,7 +326,7 @@ public class JarCopier {
         FileUtil.delete(file.toFile());
     }
     private static void renameToBackup(JarFile file) throws IOException {
-        File renamedFile = new File(file.toFile().getAbsolutePath()
+        var renamedFile = new File(file.toFile().getAbsolutePath()
                 + ".bak-" + createTimestamp());
         FileUtil.moveFile(file.toFile(), renamedFile);
     }
@@ -357,7 +358,7 @@ public class JarCopier {
                 + res.dup.getFullName() + " " + res.action));
     }
     private static String compareSymbol(JarFile first, JarFile second) {
-        int result = first.compareTo(second);
+        var result = first.compareTo(second);
         if (result < 0) {
             return "  < ";
         }
@@ -380,21 +381,21 @@ public class JarCopier {
 
     static void doMain(String... args) throws IOException {
         commandLine = true;
-        JarCopierCmdPrompts cmdPrompts = new JarCopierCmdPrompts();
+        var cmdPrompts = new JarCopierCmdPrompts();
         if (args.length < 1) {
             cmdPrompts.printUsage();
             throw new IllegalArgumentException();
         }
 
         //--- Resolve source path ---
-        File source = new File(args[0]);
-        boolean isSourceDirectory = source.isDirectory();
+        var source = new File(args[0]);
+        var isSourceDirectory = source.isDirectory();
         if (!isSourceDirectory) {
             validateCommandLineJarPath(source);
         }
 
         //--- Resolve target ---
-        File target = args.length >= 2
+        var target = args.length >= 2
                 ? new File(args[1])
                 : cmdPrompts.promptForTargetDirectory();
         if (!target.exists()) {
@@ -406,7 +407,7 @@ public class JarCopier {
         //--- Source action ---
         SourceAction sourceAction = null;
         if (args.length >= 3) {
-            int choice = parseIntChoiceArg("onCondition", args[2], 1, 5);
+            var choice = parseIntChoiceArg("onCondition", args[2], 1, 5);
             if (choice != 5) {
                 sourceAction = SourceAction.of(choice);
             }
@@ -421,7 +422,7 @@ public class JarCopier {
             //--- Target action ---
             TargetAction targetAction;
             if (args.length >= 4) {
-                int choice = parseIntChoiceArg("onOverwrite", args[3], 1, 3);
+                var choice = parseIntChoiceArg("onOverwrite", args[3], 1, 3);
                 targetAction = TargetAction.of(choice);
             } else {
                 targetAction = cmdPrompts.promptForGlobalTargetAction();
@@ -440,7 +441,7 @@ public class JarCopier {
 
     private static int parseIntChoiceArg(
             String argName, String argValue, int fromIncl, int toIncl) {
-        int choice = NumberUtils.toInt(argValue, -1);
+        var choice = NumberUtils.toInt(argValue, -1);
         if (choice < fromIncl || choice > toIncl) {
             throw new IllegalArgumentException(String.format(
                     "Invalid \"%s\" argument. Must be a number between"
@@ -474,7 +475,7 @@ public class JarCopier {
 
         public static final OnJarConflict DEFAULT = new OnJarConflict();
 
-        enum SourceAction {
+        public enum SourceAction {
             COPY_IF_GREATER_OR_EQUIVALENT,
             COPY_IF_GREATER,
             COPY,
@@ -491,7 +492,7 @@ public class JarCopier {
                     .orElse(null);
             }
         }
-        enum TargetAction {
+        public enum TargetAction {
             RENAME,
             DELETE,
             NOOP
@@ -597,20 +598,20 @@ public class JarCopier {
     }
 
     static OnJarConflict toOnJarConflict(int strategy) {
-        switch (strategy) {
+        return switch (strategy) {
         case STRATEGY_RENAME_COPY: //NOSONAR
-            return new OnJarConflict();
+            yield new OnJarConflict();
         case STRATEGY_DELETE_COPY: //NOSONAR
-            return new OnJarConflict().withTargetAction(TargetAction.DELETE);
+            yield new OnJarConflict().withTargetAction(TargetAction.DELETE);
         case STRATEGY_NO_COPY: //NOSONAR
-            return new OnJarConflict(SourceAction.NOOP, TargetAction.NOOP);
+            yield new OnJarConflict(SourceAction.NOOP, TargetAction.NOOP);
         case STRATEGY_PLAIN_COPY: //NOSONAR
-            return new OnJarConflict(SourceAction.COPY, TargetAction.NOOP);
+            yield new OnJarConflict(SourceAction.COPY, TargetAction.NOOP);
         case STRATEGY_INTERACTIVE: //NOSONAR
-            return null;
+            yield null;
         default:
             throw new IllegalArgumentException("Invalid strategy: " + strategy);
-        }
+        };
     }
 
     /**
