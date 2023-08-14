@@ -56,7 +56,7 @@
     <testcontainers.version>1.16.0</testcontainers.version>
 
     <!-- Test and provided -->      
-    <lombok.version>1.18.26</lombok.version>
+    <lombok.version>1.18.28</lombok.version>
     
   </properties>
 
@@ -517,7 +517,7 @@
           </additionalDependencies>
           
           <additionalJOptions>
-            <additionalJOption>&#45;&#45;allow-script-in-comments</additionalJOption>
+            <additionalJOption>--allow-script-in-comments</additionalJOption>
             <additionalJOption>-J-Dbasedir=${basedir}</additionalJOption>
           </additionalJOptions>
           <overview>src/main/javadoc/overview.html</overview>
