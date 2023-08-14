@@ -123,6 +123,9 @@
         New XMLAdapters class to add JAXB support for the same type offered
         by GenericConverter.
       </action>
+      <action dev="essiembre" type="add">
+        New Configurable interface.
+      </action>
       <action dev="essiembre" type="update">
         Now require Java 17+. 
       </action>

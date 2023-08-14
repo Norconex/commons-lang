@@ -40,7 +40,7 @@
     <commons-text.version>1.10.0</commons-text.version>
     <java-cup.version>10k</java-cup.version>
     <json.version>1.8</json.version>
-    <jackson.version>2.15.0</jackson.version>
+    <jackson.version>2.15.2</jackson.version>
     <log4j.version>2.20.0</log4j.version>
     <okhttp3.version>4.10.0</okhttp3.version>
     <slf4j.version>2.0.7</slf4j.version>
@@ -82,6 +82,7 @@
   </repositories>
 
   <dependencies>
+      
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
@@ -201,13 +202,15 @@
       <version>${slf4j.version}</version>
       <scope>test</scope>
     </dependency>
+    
+    <!-- Jackson -->
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-annotations</artifactId>
       <version>${jackson.version}</version>
       <scope>provided</scope>
     </dependency>
-
+    
     <!-- okhttp/mockwebserver used to test Certificateutil -->
     <dependency>
       <groupId>com.squareup.okhttp3</groupId>
