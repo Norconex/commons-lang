@@ -44,9 +44,10 @@
     <log4j.version>2.20.0</log4j.version>
     <okhttp3.version>4.10.0</okhttp3.version>
     <slf4j.version>2.0.7</slf4j.version>
+    <sun-jaxb-impl.version>4.0.3</sun-jaxb-impl.version>
     <velocity-engine.version>2.3</velocity-engine.version>
     <xerces.version>2.12.2</xerces.version>
-    <xml-bind-api.version>4.0.2</xml-bind-api.version>
+    <xml-bind-api.version>4.0.0</xml-bind-api.version>
     <xpath2.version>2.1.100</xpath2.version>
 
     <!-- Test dependencies -->
@@ -155,7 +156,7 @@
     <dependency>
       <groupId>com.sun.xml.bind</groupId>
       <artifactId>jaxb-impl</artifactId>
-      <version>${xml-bind-api.version}</version>
+      <version>${sun-jaxb-impl.version}</version>
       <scope>runtime</scope>
     </dependency>
 
