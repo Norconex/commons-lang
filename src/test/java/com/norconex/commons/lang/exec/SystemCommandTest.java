@@ -46,12 +46,12 @@ class SystemCommandTest {
 
     @Test
     void testInFileOutFile() throws IOException, SystemCommandException {
-        File inFile = inputAsFile();
-        File outFile = newTempFile();
+        var inFile = inputAsFile();
+        var outFile = newTempFile();
 
-        SystemCommand cmd = ExternalApp.newSystemCommand(
+        var cmd = ExternalApp.newSystemCommand(
                 ExternalApp.TYPE_INFILE_OUTFILE, inFile, outFile);
-        ExternalAppListener l = addEnvAndListener(cmd);
+        var l = addEnvAndListener(cmd);
         cmd.execute();
 
         Assertions.assertEquals(
@@ -63,11 +63,11 @@ class SystemCommandTest {
 
     @Test
     void testInFileStdout() throws IOException, SystemCommandException {
-        File inFile = inputAsFile();
+        var inFile = inputAsFile();
 
-        SystemCommand cmd = ExternalApp.newSystemCommand(
+        var cmd = ExternalApp.newSystemCommand(
                 ExternalApp.TYPE_INFILE_STDOUT, inFile);
-        ExternalAppListener l = addEnvAndListener(cmd);
+        var l = addEnvAndListener(cmd);
         cmd.execute();
         Assertions.assertEquals(expectedOutputAsString(), l.getStdoutContent());
         Assertions.assertTrue(
@@ -76,12 +76,12 @@ class SystemCommandTest {
 
     @Test
     void testStdinOutFile() throws IOException, SystemCommandException {
-        InputStream input = inputAsStream();
-        File outFile = newTempFile();
+        var input = inputAsStream();
+        var outFile = newTempFile();
 
-        SystemCommand cmd = ExternalApp.newSystemCommand(
+        var cmd = ExternalApp.newSystemCommand(
                 ExternalApp.TYPE_STDIN_OUTFILE, outFile);
-        ExternalAppListener l = addEnvAndListener(cmd);
+        var l = addEnvAndListener(cmd);
         cmd.execute(input);
         input.close();
         Assertions.assertEquals(expectedOutputAsString(), fileAsString(outFile));
@@ -91,10 +91,10 @@ class SystemCommandTest {
 
     @Test
     void testStdinStdout() throws IOException, SystemCommandException {
-        InputStream input = inputAsStream();
-        SystemCommand cmd = ExternalApp.newSystemCommand(
+        var input = inputAsStream();
+        var cmd = ExternalApp.newSystemCommand(
                 ExternalApp.TYPE_STDIN_STDOUT);
-        ExternalAppListener l = addEnvAndListener(cmd);
+        var l = addEnvAndListener(cmd);
         cmd.execute(input);
         input.close();
         Assertions.assertEquals(expectedOutputAsString(), l.getStdoutContent());
@@ -104,9 +104,9 @@ class SystemCommandTest {
 
     @Test
     void testDefaultsNullErrors() {
-        SystemCommand cmd = new SystemCommand("blah");
+        var cmd = new SystemCommand("blah");
 
-        ExternalAppListener l = addEnvAndListener(cmd);
+        var l = addEnvAndListener(cmd);
         assertThat(cmd.getOutputListeners()).hasSize(1);
         assertThat(cmd.getErrorListeners()).hasSize(1);
         cmd.removeOutputListener(l);
@@ -134,7 +134,7 @@ class SystemCommandTest {
     }
 
     private File inputAsFile() throws IOException {
-        File inFile = newTempFile();
+        var inFile = newTempFile();
         FileUtils.copyInputStreamToFile(
                 getClass().getResourceAsStream(IN_FILE_PATH), inFile);
         return inFile;
@@ -150,7 +150,7 @@ class SystemCommandTest {
                 EXPECTED_OUT_FILE_PATH), StandardCharsets.UTF_8);
     }
     private File newTempFile() throws IOException {
-        File file = Files.createTempFile(
+        var file = Files.createTempFile(
                 tempFolder, "SystemCommandTest", null).toFile();
         if (!file.exists()) {
             // Just making sure it exists
@@ -167,7 +167,7 @@ class SystemCommandTest {
         envs.put(ExternalApp.ENV_STDERR_AFTER, ExternalApp.ENV_STDERR_AFTER);
         cmd.setEnvironmentVariables(envs);
 
-        ExternalAppListener l = new ExternalAppListener();
+        var l = new ExternalAppListener();
         cmd.addErrorListener(l);
         cmd.addOutputListener(l);
         return l;

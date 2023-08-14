@@ -49,7 +49,6 @@ import java.util.Set;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.set.ListOrderedSet;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -716,7 +715,8 @@ public class Properties extends ObservableMap<String, List<String>>
 
         if (input instanceof Reader reader) {
             if (isXML) {
-                p.loadFromXML(new ReaderInputStream(reader, UTF_8));
+                p.loadFromXML(IOUtils.toInputStream(
+                        IOUtils.toString(reader), UTF_8));
             } else {
                 p.load(reader);
             }
