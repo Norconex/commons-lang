@@ -147,7 +147,7 @@ public final class URLStreamer {
                     LOG.debug("Streaming with proxy: {}:{}",
                             proxy.getHostName(), proxy.getPort());
                 }
-                Proxy p = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(
+                var p = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(
                         proxy.getHostName(), proxy.getPort()));
                 //Authenticator.
                 conn = new URL(url).openConnection(p);
@@ -398,10 +398,12 @@ public final class URLStreamer {
     private static InputStream responseInputStream(
             URLConnection conn) throws IOException {
         conn.connect();
-        return new AutoCloseInputStream(conn.getInputStream());
+        return AutoCloseInputStream.builder()
+                .setInputStream(conn.getInputStream())
+                .get();
     }
     private static String base64BasicAuth(String username, String password) {
-        String userpass = username + ':' + password;
+        var userpass = username + ':' + password;
         return "Basic "
                 + DatatypeConverter.printBase64Binary(userpass.getBytes());
     }
