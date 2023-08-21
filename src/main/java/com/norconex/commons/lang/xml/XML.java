@@ -2157,12 +2157,14 @@ public class XML implements Iterable<XMLCursor> {
     }
 
     /**
-     * Computes and adds the element value returned by the provided function
-     * if an element with the same name is not already present.
-     * A <code>null</code> function or <code>null</code> value returned
-     * by the function will add an empty element.
+     * Computes and adds the element returned by the provided function
+     * if an element with the same name is not already present, else, return
+     * the existing one.
+     * Passing a <code>null</code> function or <code>null</code> value returned
+     * by the function when there are no existing element will add a new empty
+     * element.
      * @param tagName element name
-     * @param function returns the element value
+     * @param function taking the new element name and returning the element
      * @return XML of the added element, or the already existing element
      * @since 3.0.0
      */
