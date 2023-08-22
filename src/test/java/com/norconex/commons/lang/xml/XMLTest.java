@@ -1091,6 +1091,35 @@ class XMLTest {
         XML.assertWriteRead(c, "test");
     }
 
+    @Test
+    void testSetGetRemoveContentText() {
+        var xml = new XML("""
+            <test attr="val">
+              here
+              <child childAttr="childVal">a child</child>
+
+              there
+            </test>
+            """);
+
+        assertThat(xml.getTextContent()).isEqualTo("here there");
+        assertThat(xml.getXML("child").getTextContent()).isEqualTo("a child");
+
+        xml.setTextContent("somewhere");
+        assertThat(xml.getTextContent()).isEqualTo("somewhere");
+        // child elements should not be affected
+        assertThat(xml.getXML("child").getTextContent()).isEqualTo("a child");
+
+
+        xml.removeTextContent();
+        assertThat(xml.getTextContent()).isNull();
+        // child elements should not be affected
+        assertThat(xml.getXML("child").getTextContent()).isEqualTo("a child");
+
+        xml.setTextContent("some value");
+        assertThat(xml.getTextContent()).isEqualTo("some value");
+    }
+
     @ToString
     @EqualsAndHashCode
     static class ClassWithDefaultLists implements XMLConfigurable {

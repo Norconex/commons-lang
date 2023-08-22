@@ -2487,14 +2487,20 @@ public class XML implements Iterable<XMLCursor> {
     }
 
     /**
-     * Sets the text content of an XML element.
+     * Sets the <strong>direct</strong> text content of an XML element.
+     * To replace all child nodes with text, use
+     * <code>xml.getNode().setTextContent("my content")</code>.
+     * Setting <code>null</code> content is effectively the same as
+     * invoking {@link #removeTextContent()}.
      * @param textContent text content
      * @return this element
      */
     public XML setTextContent(Object textContent) {
         var content = Objects.toString(textContent, null);
 
-        // When no content to set, return write away
+        removeTextContent();
+
+        // When no content to set, return right away
         if (content == null) {
             return this;
         }
@@ -2514,7 +2520,42 @@ public class XML implements Iterable<XMLCursor> {
                 // to make sure white spaces are kept when read back.
                 el.setAttribute(ATT_XML_SPACE, "preserve");
             }
-            el.setTextContent(content);
+
+            var document = node.getOwnerDocument();
+            var textNode = document.createTextNode(content);
+            node.appendChild(textNode);
+        }
+        return this;
+    }
+
+    /**
+     * Gets this XML <strong>direct</strong> text content, if any, joining
+     * multiple text nodes by a space separator. To
+     * get all text content, including text content of child elements,
+     * use <code>xml.getNode().getTextContent()</code>.
+     * @return this XML text, or <code>null</code> if no text
+     * @since 3.0.0
+     */
+    public String getTextContent() {
+        var snippets = getStringList("text()");
+        if (snippets.isEmpty()) {
+            return null;
+        }
+        return StringUtils.join(snippets, " ");
+    }
+
+    /**
+     * Removes this XML <strong>direct</strong> text content, without impact on
+     * attributes and child elements and their content.
+     * @return this XML without text content
+     */
+    public XML removeTextContent() {
+        var nodeList = node.getChildNodes();
+        for (var i = 0; i < nodeList.getLength(); ++i) {
+            var childNode = nodeList.item(i);
+            if (childNode.getNodeType() == Node.TEXT_NODE) {
+                node.removeChild(childNode);
+            }
         }
         return this;
     }

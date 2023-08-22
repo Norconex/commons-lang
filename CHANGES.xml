@@ -95,7 +95,8 @@
       </action>
       <action dev="essiembre" type="add">
         New XML methods: isEmpty, hasChildElements, hasAttributes, 
-        hasTextContent, isElementPresent, computeIfElementAbsent.
+        hasTextContent, isElementPresent, computeIfElementAbsent,
+        getTextContent, removeTextContent.
       </action>
       <action dev="essiembre" type="add">
         New XPathUtil class.
@@ -243,6 +244,10 @@
       </action>
       <action dev="essiembre" type="update">
         XML now implements #equals and #hashCode.
+      </action>
+      <action dev="essiembre" type="update">
+        XML#setTextContent now only sets the direct text, and no longer removes
+        other child elements.
       </action>
       <action dev="essiembre" type="update">
         XML#populate and XML#validate methods no longer return
