@@ -20,14 +20,12 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonParser.Feature;
@@ -43,6 +41,7 @@ import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import com.norconex.commons.lang.convert.GenericJsonModule;
 
 import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validation;
 import lombok.Builder;
 import lombok.NonNull;
@@ -112,7 +111,8 @@ public class BeanMapper { //NOSONAR
      * @param reader the source content to read
      * @param format the source format
      * @return populated object (same instance)
-     * @throws BeanException if reading failed (including validation issues)
+     * @throws BeanException if reading failed
+     * @throws ConstraintViolationException on bean validation error
      */
     public <T> T read(
             @NonNull T object,
@@ -136,7 +136,8 @@ public class BeanMapper { //NOSONAR
      * @param reader the source content to read
      * @param format  the source format
      * @return populated object
-     * @throws BeanException if reading failed (including validation issues)
+     * @throws BeanException if reading failed
+     * @throws ConstraintViolationException on bean validation error
      */
     public <T> T read(
             @NonNull Class<T> type,
@@ -205,12 +206,10 @@ public class BeanMapper { //NOSONAR
             Set<ConstraintViolation<Object>> violations =
                     validator.validate(obj);
             if (!violations.isEmpty() ) {
-                throw new BeanException(
+                throw new ConstraintViolationException(
                         "Object validation failed when reading %s: "
-                        .formatted(format)
-                        + StringUtils.join(violations.stream()
-                                .map(Objects::toString)
-                                .toList(), ","));
+                        .formatted(format),
+                        violations);
             }
         }
         return obj;
