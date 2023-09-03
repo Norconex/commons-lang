@@ -44,6 +44,7 @@ import com.norconex.commons.lang.file.ContentType;
 import com.norconex.commons.lang.img.MutableImage;
 import com.norconex.commons.lang.img.MutableImage.Quality;
 
+import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.constraints.Min;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -135,7 +136,8 @@ class BeanMapperTest {
 
         var obj = new MultiTypes();
         obj.setIntValue(-200);
-        assertThatExceptionOfType(BeanException.class).isThrownBy(() ->//NOSONAR
+        assertThatExceptionOfType(
+                ConstraintViolationException.class).isThrownBy(() ->//NOSONAR
             BeanMapper.DEFAULT.assertWriteRead(obj)
         );
 
