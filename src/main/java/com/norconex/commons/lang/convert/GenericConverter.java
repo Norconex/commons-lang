@@ -122,9 +122,8 @@ public final class GenericConverter implements Converter {
         cc.put(BigInteger.class, c);
 
         // files
-        c = new FileConverter();
-        cc.put(File.class, c);
-        cc.put(Path.class, c);
+        cc.put(File.class, new FileConverter());
+        cc.put(Path.class, new PathConverter());
 
         // dates
         cc.put(Date.class, new DateConverter());

@@ -31,4 +31,32 @@ public class PatternConverter extends AbstractConverter {
     protected <T> T nullSafeToType(String value, Class<T> type) {
         return type.cast(Pattern.compile(value));
     }
+
+    /**
+     * JSON (Jackson) serializer using this converter.
+     * @since 3.0.0
+     */
+    public static class JsonSerializer
+            extends GenericJsonSerializer<Pattern>{}
+
+    /**
+     * JSON (Jackson) deserializer using this converter.
+     * @since 3.0.0
+     */
+    public static class JsonDeserializer
+            extends GenericJsonDeserializer<Pattern> {
+        public JsonDeserializer() {
+            super(Pattern.class);
+        }
+    }
+
+    /**
+     * XML (JAXB) adapter using this converter.
+     * @since 3.0.0
+     */
+    public static class XmlAdapter extends GenericXmlAdapter<Pattern> {
+        public XmlAdapter() {
+            super(Pattern.class);
+        }
+    }
 }

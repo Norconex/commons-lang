@@ -31,4 +31,32 @@ public class ContentTypeConverter extends AbstractConverter {
     protected <T> T nullSafeToType(String value, Class<T> type) {
         return type.cast(ContentType.valueOf(value));
     }
+
+    /**
+     * JSON (Jackson) serializer using this converter.
+     * @since 3.0.0
+     */
+    public static class JsonSerializer
+            extends GenericJsonSerializer<ContentType>{}
+
+    /**
+     * JSON (Jackson) deserializer using this converter.
+     * @since 3.0.0
+     */
+    public static class JsonDeserializer
+            extends GenericJsonDeserializer<ContentType> {
+        public JsonDeserializer() {
+            super(ContentType.class);
+        }
+    }
+
+    /**
+     * XML (JAXB) adapter using this converter.
+     * @since 3.0.0
+     */
+    public static class XmlAdapter extends GenericXmlAdapter<ContentType> {
+        public XmlAdapter() {
+            super(ContentType.class);
+        }
+    }
 }

@@ -12,9 +12,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.norconex.commons.lang.xml;
+package com.norconex.commons.lang.bean;
 
 import static java.nio.charset.StandardCharsets.UTF_16BE;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 
 import java.awt.Dimension;
@@ -32,37 +33,26 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
+import org.apache.commons.io.input.BrokenReader;
+import org.apache.commons.io.output.BrokenWriter;
 import org.junit.jupiter.api.Test;
 
-import com.norconex.commons.lang.convert.CharsetConverter;
-import com.norconex.commons.lang.convert.ContentTypeConverter;
-import com.norconex.commons.lang.convert.DimensionConverter;
-import com.norconex.commons.lang.convert.DurationConverter;
-import com.norconex.commons.lang.convert.FileConverter;
-import com.norconex.commons.lang.convert.InstantConverter;
-import com.norconex.commons.lang.convert.LocalDateTimeConverter;
-import com.norconex.commons.lang.convert.LocaleConverter;
-import com.norconex.commons.lang.convert.PathConverter;
-import com.norconex.commons.lang.convert.PatternConverter;
-import com.norconex.commons.lang.convert.ZonedDateTimeConverter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.norconex.commons.lang.Sleeper;
+import com.norconex.commons.lang.bean.BeanMapper.Format;
 import com.norconex.commons.lang.file.ContentType;
 import com.norconex.commons.lang.img.MutableImage;
 import com.norconex.commons.lang.img.MutableImage.Quality;
 
-import jakarta.xml.bind.annotation.XmlAccessType;
-import jakarta.xml.bind.annotation.XmlAccessorType;
-import jakarta.xml.bind.annotation.XmlRootElement;
-import jakarta.xml.bind.annotation.XmlTransient;
-import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import jakarta.validation.constraints.Min;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-class XMLAdaptersTest {
+class BeanMapperTest {
 
     @Test
-    void testXMLAdapters() throws MalformedURLException {
-
-        var obj = new JaxbComplexTypes();
+    void testAssertWriteRead() throws MalformedURLException {
+        var obj = new MultiTypes();
         obj.setPath(Path.of("/tmp/somepath.txt"));
 
         obj.setBigDecimal(BigDecimal.valueOf(123.456));
@@ -88,48 +78,19 @@ class XMLAdaptersTest {
         obj.setUrl(new URL("http://example.com"));
         obj.setZonedDateTime(ZonedDateTime.now());
 
-        obj.setFromXMLConfig("am I here?");
-
         assertThatNoException().isThrownBy(() -> {
-            XML.assertWriteRead(obj, "jaxbComplexTypes");
+            BeanMapper.DEFAULT.assertWriteRead(obj);
         });
     }
 
-
-    @XmlRootElement
-    @XmlAccessorType(XmlAccessType.FIELD)
     @Data
-    public static class JaxbComplexTypes implements XMLConfigurable {
-        @XmlJavaTypeAdapter(CharsetConverter.XmlAdapter.class)
-        private Charset charset;
-        @XmlJavaTypeAdapter(ContentTypeConverter.XmlAdapter.class)
-        private ContentType contentType;
-        @XmlJavaTypeAdapter(DimensionConverter.XmlAdapter.class)
-        private Dimension dimension;
-        @XmlJavaTypeAdapter(DurationConverter.XmlAdapter.class)
-        private Duration duration;
-        @XmlJavaTypeAdapter(FileConverter.XmlAdapter.class)
-        private File file;
-        @XmlJavaTypeAdapter(InstantConverter.XmlAdapter.class)
-        private Instant instant;
-        @XmlJavaTypeAdapter(LocalDateTimeConverter.XmlAdapter.class)
-        private LocalDateTime localDateTime;
-        @XmlJavaTypeAdapter(LocaleConverter.XmlAdapter.class)
-        private Locale locale;
-        @XmlJavaTypeAdapter(PathConverter.XmlAdapter.class)
-        private Path path;
-        @XmlJavaTypeAdapter(PatternConverter.XmlAdapter.class)
-        @EqualsAndHashCode.Exclude
-        private Pattern pattern;
-        @XmlJavaTypeAdapter(ZonedDateTimeConverter.XmlAdapter.class)
-        private ZonedDateTime zonedDateTime;
-
-        // don't need adapters
+    public static class MultiTypes {
         private boolean booleanValue;
         private Character character;
         private Class<?> classObj;
         private Date date;
         private MutableImage.Quality enumObj;
+        @Min(0)
         private int intValue;
         private float floatValue;
         private byte byteValue;
@@ -137,21 +98,59 @@ class XMLAdaptersTest {
         private String string;
         private URL url;
 
-        @XmlTransient
-        private String fromXMLConfig;
+        private Charset charset;
+        private ContentType contentType;
+        private Dimension dimension;
+        private Duration duration;
+        private File file;
+        private Instant instant;
+        private LocalDateTime localDateTime;
+        private Locale locale;
+        private Path path;
+        @EqualsAndHashCode.Exclude
+        private Pattern pattern;
+        private ZonedDateTime zonedDateTime;
 
         @EqualsAndHashCode.Include(replaces = "pattern")
+        @JsonIgnore
         public String getPatternStr() {
             return pattern.toString();
         }
+    }
 
-        @Override
-        public void loadFromXML(XML xml) {
-            setFromXMLConfig(xml.getString("fromXMLConfig", "Not there."));
-        }
-        @Override
-        public void saveToXML(XML xml) {
-            xml.addElement("fromXMLConfig", fromXMLConfig);
+    @Test
+    void testExceptions() {
+        assertThatExceptionOfType(BeanException.class).isThrownBy(() ->//NOSONAR
+            BeanMapper.DEFAULT.write(
+                    new MultiTypes(), BrokenWriter.INSTANCE, Format.XML)
+        );
+        assertThatExceptionOfType(BeanException.class).isThrownBy(() ->
+            BeanMapper.DEFAULT.read(
+                    MultiTypes.class, BrokenReader.INSTANCE, Format.XML)
+        );
+        assertThatExceptionOfType(BeanException.class).isThrownBy(() ->//NOSONAR
+            BeanMapper.DEFAULT.read(
+                    new MultiTypes(), BrokenReader.INSTANCE, Format.XML)
+        );
+
+        var obj = new MultiTypes();
+        obj.setIntValue(-200);
+        assertThatExceptionOfType(BeanException.class).isThrownBy(() ->//NOSONAR
+            BeanMapper.DEFAULT.assertWriteRead(obj)
+        );
+
+        assertThatExceptionOfType(BeanException.class).isThrownBy(() ->//NOSONAR
+            BeanMapper.DEFAULT.assertWriteRead(new NotEqual())
+        );
+
+    }
+
+    @Data
+    public static class NotEqual{
+        long timestamp;
+        public long getTimestamp() {
+            Sleeper.sleepMillis(1);
+            return System.currentTimeMillis();
         }
     }
 }

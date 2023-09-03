@@ -10,6 +10,12 @@
     <release version="3.0.0-SNAPSHOT" date="202?-??-??" 
         description="Feature release.">
       <action dev="essiembre" type="add">
+        New BeanMapper class to write/read objects to/from XML, JSON, Yaml 
+      </action>
+      <action dev="essiembre" type="add">
+        New JSON and Yaml (de)serializers for types covered by GenericConverter.  
+      </action>
+      <action dev="essiembre" type="add">
         New DateModel class for easy transition from one date type to another. 
       </action>
       <action dev="essiembre" type="add">

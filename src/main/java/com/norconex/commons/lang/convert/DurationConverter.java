@@ -39,4 +39,32 @@ public class DurationConverter extends AbstractConverter {
     protected <T> T nullSafeToType(String value, Class<T> type) {
         return type.cast(parser.parse(value.trim()));
     }
+
+    /**
+     * JSON (Jackson) serializer using this converter.
+     * @since 3.0.0
+     */
+    public static class JsonSerializer
+        extends GenericJsonSerializer<Duration>{}
+
+    /**
+     * JSON (Jackson) deserializer using this converter.
+     * @since 3.0.0
+     */
+    public static class JsonDeserializer
+        extends GenericJsonDeserializer<Duration> {
+        public JsonDeserializer() {
+            super(Duration.class);
+        }
+    }
+
+    /**
+     * XML (JAXB) adapter using this converter.
+     * @since 3.0.0
+     */
+    public static class XmlAdapter extends GenericXmlAdapter<Duration> {
+        public XmlAdapter() {
+            super(Duration.class);
+        }
+    }
 }

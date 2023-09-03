@@ -37,13 +37,13 @@ class EnhancedXMLStreamWriterTest {
 
     @Test
     void testMiscAccessors() {
-        EnhancedXMLStreamWriter xml = newXMLWriter();
+        var xml = newXMLWriter();
 
         xml.setPrefix("prefix", "uri");
         assertThat(xml.getPrefix("uri")).isEqualTo("prefix");
 
         assertThatNoException().isThrownBy(() -> {
-            EnhancedXMLStreamWriter x = newXMLWriter();
+            var x = newXMLWriter();
             x.setDefaultNamespace("uri");
             x.setNamespaceContext(null);
             x.getNamespaceContext();
@@ -52,7 +52,7 @@ class EnhancedXMLStreamWriterTest {
 
     @Test
     void testWriteStartDocument() {
-        EnhancedXMLStreamWriter xml = newXMLWriter();
+        var xml = newXMLWriter();
         xml.writeStartDocument();
         xml.writeEndDocument();
         assertThat(xml.getWriter()).hasToString("<?xml version=\"1.0\" ?>");
@@ -96,21 +96,22 @@ class EnhancedXMLStreamWriterTest {
 
     @Test
     void testWriteMisc() {
-        EnhancedXMLStreamWriter xml = newXMLWriter();
+        var xml = newXMLWriter();
         xml.writeComment("A comment");
         xml.writeProcessingInstruction("target");
         xml.writeProcessingInstruction("target", "data");
         xml.writeCData("cdata sample");
 
         assertThat(xml.getWriter()).hasToString(
-                "<!--A comment-->"
-              + "<?target?>"
-              + "<?target data?>"
-              + "<![CDATA[cdata sample]]>"
+                """
+                	<!--A comment-->\
+                	<?target?>\
+                	<?target data?>\
+                	<![CDATA[cdata sample]]>"""
         );
 
         assertThatNoException().isThrownBy(() -> { //NOSONAR
-            EnhancedXMLStreamWriter xml2 = newXMLWriter();
+            var xml2 = newXMLWriter();
             xml2.writeStartDocument();
             xml2.writeStartElement("test");
             xml2.writeAttribute("localName", "value");
@@ -123,7 +124,7 @@ class EnhancedXMLStreamWriterTest {
 
         assertThatExceptionOfType(XMLException.class)
                 .isThrownBy(() -> {//NOSONAR
-            EnhancedXMLStreamWriter xml3 = newXMLWriter();
+            var xml3 = newXMLWriter();
             xml3.writeStartDocument();
             xml3.writeStartElement("test");
             xml3.writeAttribute("nsURI", "localName", "value");
@@ -134,7 +135,7 @@ class EnhancedXMLStreamWriterTest {
 
     @Test
     void testWriteStartElements() {
-        EnhancedXMLStreamWriter xml = newXMLWriter();
+        var xml = newXMLWriter();
         xml.writeStartElement("test");
         xml.writeEndElement();
         xml.writeStartElement("test", Duration.class);
@@ -145,10 +146,11 @@ class EnhancedXMLStreamWriterTest {
         xml.writeEndElement();
 
         assertThat(xml.getWriter()).hasToString(
-                "<test></test>"
-              + "<test class=\"java.time.Duration\"></test>"
-              + "<test class=\"java.time.Duration\" disabled=\"true\"></test>"
-              + "<prefix:test></prefix:test>"
+                """
+                	<test></test>\
+                	<test class="java.time.Duration"></test>\
+                	<test class="java.time.Duration" disabled="true"></test>\
+                	<prefix:test></prefix:test>"""
         );
 
         assertThatException().isThrownBy(
@@ -157,7 +159,7 @@ class EnhancedXMLStreamWriterTest {
 
     @Test
     void testWriteEmptyElements() {
-        EnhancedXMLStreamWriter xml = newXMLWriter();
+        var xml = newXMLWriter();
         xml.writeStartDocument();
         xml.writeEmptyElement("test");
         xml.writeEmptyElement("prefix", "localName", "nsURL");
@@ -165,9 +167,10 @@ class EnhancedXMLStreamWriterTest {
         xml.flush();
 
         assertThat(xml.getWriter()).hasToString(
-                "<?xml version=\"1.0\" ?>"
-              + "<test/>"
-              + "<prefix:localName/>"
+                """
+                	<?xml version="1.0" ?>\
+                	<test/>\
+                	<prefix:localName/>"""
         );
 
         assertThatException().isThrownBy(
@@ -178,7 +181,7 @@ class EnhancedXMLStreamWriterTest {
 
     @Test
     void testWriteObjects() {
-        EnhancedXMLStreamWriter xml = newXMLWriter();
+        var xml = newXMLWriter();
         xml.writeStartDocument();
 
         xml.writeObject("object", new ProxySettings());
@@ -193,17 +196,18 @@ class EnhancedXMLStreamWriterTest {
         xml.writeEndDocument();
         xml.flush();
 
-        String clsConfigurable = "class=\"com.norconex.commons.lang.xml"
+        var clsConfigurable = "class=\"com.norconex.commons.lang.xml"
                 + ".EnhancedXMLStreamWriterTest.Configurable\"";
-        String objProxySettings =
-                "<object class=\"com.norconex.commons.lang.net.ProxySettings\">"
-              +   "<host/>"
-              +   "<scheme/>"
-              +   "<realm/>"
-              +   "<credentials>"
-              +     "<username/><password/><passwordKey/>"
-              +   "</credentials>"
-              + "</object>";
+        var objProxySettings =
+                """
+        	<object class="com.norconex.commons.lang.net.ProxySettings">\
+        	<host/>\
+        	<scheme/>\
+        	<realm/>\
+        	<credentials>\
+        	<username/><password/><passwordKey/>\
+        	</credentials>\
+        	</object>""";
 
         assertThat(xml.getWriter()).hasToString(
                 "<?xml version=\"1.0\" ?>"
@@ -220,7 +224,7 @@ class EnhancedXMLStreamWriterTest {
 
     @Test
     void testEnhancedXMLStreamWriter() {
-        EnhancedXMLStreamWriter xml =
+        var xml =
                 new EnhancedXMLStreamWriter(new StringWriter(), true);
 
         xml.writeStartDocument();
@@ -253,7 +257,7 @@ class EnhancedXMLStreamWriterTest {
 
     @Test
     void testElementTypes() {
-        EnhancedXMLStreamWriter xml = newXMLWriter();
+        var xml = newXMLWriter();
 
         xml.writeStartDocument();
 
@@ -278,30 +282,31 @@ class EnhancedXMLStreamWriterTest {
         xml.writeEndDocument();
 
         assertThat(xml.getWriter()).hasToString(
-                "<?xml version=\"1.0\" ?>"
-              + "<int>1</int>"
-              + "<long>2</long>"
-              + "<float>3.0</float>"
-              + "<double>4.0</double>"
-              + "<boolean>true</boolean>"
-              + "<class>java.time.Duration</class>"
-              + "<file>blah</file>"
-              + "<disabled disabled=\"true\"></disabled>"
-              + "<disabled class=\"java.time.Duration\" "
-              +     "disabled=\"true\"></disabled>"
-              + "<delimited>5,6</delimited>"
-              + "<object>7</object>"
-              + "<objectList>"
-              +   "<object>8</object>"
-              +   "<object>9</object>"
-              + "</objectList>"
-              + "<objectList/>"
+                """
+                	<?xml version="1.0" ?>\
+                	<int>1</int>\
+                	<long>2</long>\
+                	<float>3.0</float>\
+                	<double>4.0</double>\
+                	<boolean>true</boolean>\
+                	<class>java.time.Duration</class>\
+                	<file>blah</file>\
+                	<disabled disabled="true"></disabled>\
+                	<disabled class="java.time.Duration" \
+                	disabled="true"></disabled>\
+                	<delimited>5,6</delimited>\
+                	<object>7</object>\
+                	<objectList>\
+                	<object>8</object>\
+                	<object>9</object>\
+                	</objectList>\
+                	<objectList/>"""
         );
     }
 
     @Test
     void testAttributeTypes() {
-        EnhancedXMLStreamWriter xml = newXMLWriter();
+        var xml = newXMLWriter();
 
         xml.writeStartDocument();
         xml.writeStartElement("test");
@@ -326,28 +331,29 @@ class EnhancedXMLStreamWriterTest {
         xml.flush();
 
         assertThat(xml.getWriter()).hasToString(
-                "<?xml version=\"1.0\" ?>"
-              + "<test "
-              + "int=\"1\" "
-              + "long=\"2\" "
-              + "float=\"3.0\" "
-              + "double=\"4.0\" "
-              + "boolean=\"true\" "
-              + "class=\"java.time.Duration\" "
-              + "string=\"5\" "
-              + "object=\"6\" "
-              + "object=\"\" "
-              + "delimited=\"7,8\" "
-              + "disabled=\"true\" "
-              + "disabled=\"true\" "
-              + "disabled=\"true\""
-              + "></test>"
+                """
+                	<?xml version="1.0" ?>\
+                	<test\s\
+                	int="1" \
+                	long="2" \
+                	float="3.0" \
+                	double="4.0" \
+                	boolean="true" \
+                	class="java.time.Duration" \
+                	string="5" \
+                	object="6" \
+                	object="" \
+                	delimited="7,8" \
+                	disabled="true" \
+                	disabled="true" \
+                	disabled="true"\
+                	></test>"""
         );
     }
 
     @Test
     void testBlanksIndent() {
-        EnhancedXMLStreamWriter xml =
+        var xml =
                 new EnhancedXMLStreamWriter(new StringWriter(), true, 2);
         xml.writeStartDocument();
         xml.writeStartElement("test");
@@ -358,11 +364,12 @@ class EnhancedXMLStreamWriterTest {
         xml.flush();
 
         assertThat(xml.getWriter()).hasToString(
-                "<?xml version=\"1.0\" ?>\n"
-              + "<test>\n"
-              + "  <value1> a </value1>\n"
-              + "  <value2/>\n"
-              + "</test>"
+                """
+                	<?xml version="1.0" ?>
+                	<test>
+                	  <value1> a </value1>
+                	  <value2/>
+                	</test>"""
         );
     }
 

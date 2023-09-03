@@ -31,4 +31,32 @@ public class LocalDateTimeConverter extends AbstractConverter {
     protected <T> T nullSafeToType(String value, Class<T> type) {
         return type.cast(LocalDateTime.parse(value.trim()));
     }
+
+    /**
+     * JSON (Jackson) serializer using this converter.
+     * @since 3.0.0
+     */
+    public static class JsonSerializer
+            extends GenericJsonSerializer<LocalDateTime>{}
+
+    /**
+     * JSON (Jackson) deserializer using this converter.
+     * @since 3.0.0
+     */
+    public static class JsonDeserializer
+            extends GenericJsonDeserializer<LocalDateTime> {
+        public JsonDeserializer() {
+            super(LocalDateTime.class);
+        }
+    }
+
+    /**
+     * XML (JAXB) adapter using this converter.
+     * @since 3.0.0
+     */
+    public static class XmlAdapter extends GenericXmlAdapter<LocalDateTime> {
+        public XmlAdapter() {
+            super(LocalDateTime.class);
+        }
+    }
 }

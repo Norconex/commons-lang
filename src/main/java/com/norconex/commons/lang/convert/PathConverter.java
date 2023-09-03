@@ -1,4 +1,4 @@
-/* Copyright 2018-2022 Norconex Inc.
+/* Copyright 2018 Norconex Inc.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -14,13 +14,14 @@
 */
 package com.norconex.commons.lang.convert;
 
-import java.nio.charset.Charset;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
- * {@link Charset} converter.
+ * GenericConverter for {@link Path}.
  * @since 2.0.0
  */
-public class CharsetConverter extends AbstractConverter {
+public class PathConverter extends AbstractConverter {
 
     @Override
     protected String nullSafeToString(Object object) {
@@ -29,11 +30,11 @@ public class CharsetConverter extends AbstractConverter {
 
     @Override
     protected <T> T nullSafeToType(String value, Class<T> type) {
-        try {
-            return type.cast(Charset.forName(value));
-        } catch (RuntimeException e) {
-            throw toTypeException(value, type, e);
+        if (Path.class.equals(type)) {
+            return type.cast(Paths.get(value));
         }
+        throw new ConverterException(
+                "Type " + type + " is not supported by this converter.");
     }
 
     /**
@@ -41,16 +42,16 @@ public class CharsetConverter extends AbstractConverter {
      * @since 3.0.0
      */
     public static class JsonSerializer
-            extends GenericJsonSerializer<Charset>{}
+            extends GenericJsonSerializer<Path>{}
 
     /**
      * JSON (Jackson) deserializer using this converter.
      * @since 3.0.0
      */
     public static class JsonDeserializer
-        extends GenericJsonDeserializer<Charset> {
+            extends GenericJsonDeserializer<Path> {
         public JsonDeserializer() {
-            super(Charset.class);
+            super(Path.class);
         }
     }
 
@@ -58,9 +59,10 @@ public class CharsetConverter extends AbstractConverter {
      * XML (JAXB) adapter using this converter.
      * @since 3.0.0
      */
-    public static class XmlAdapter extends GenericXmlAdapter<Charset> {
+    public static class XmlAdapter extends GenericXmlAdapter<Path> {
         public XmlAdapter() {
-            super(Charset.class);
+            super(Path.class);
         }
     }
 }
+

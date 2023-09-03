@@ -31,4 +31,32 @@ public class InstantConverter extends AbstractConverter {
     protected <T> T nullSafeToType(String value, Class<T> type) {
         return type.cast(Instant.parse(value.trim()));
     }
+
+    /**
+     * JSON (Jackson) serializer using this converter.
+     * @since 3.0.0
+     */
+    public static class JsonSerializer
+            extends GenericJsonSerializer<Instant>{}
+
+    /**
+     * JSON (Jackson) deserializer using this converter.
+     * @since 3.0.0
+     */
+    public static class JsonDeserializer
+            extends GenericJsonDeserializer<Instant> {
+        public JsonDeserializer() {
+            super(Instant.class);
+        }
+    }
+
+    /**
+     * XML (JAXB) adapter using this converter.
+     * @since 3.0.0
+     */
+    public static class XmlAdapter extends GenericXmlAdapter<Instant> {
+        public XmlAdapter() {
+            super(Instant.class);
+        }
+    }
 }
