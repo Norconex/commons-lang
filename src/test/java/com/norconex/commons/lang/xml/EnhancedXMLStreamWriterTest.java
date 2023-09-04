@@ -33,6 +33,7 @@ import com.norconex.commons.lang.net.ProxySettings;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+@Deprecated
 class EnhancedXMLStreamWriterTest {
 
     @Test
