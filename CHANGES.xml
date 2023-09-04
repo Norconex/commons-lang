@@ -308,6 +308,9 @@
       <action dev="essiembre" type="update">
         DateUtil now deprecated in favor of DateModel.
       </action>
+      <action dev="essiembre" type="update">
+        EnhancedXMLStreamWriter now deprecated.
+      </action>
       <action dev="essiembre" type="fix">
         Properties#loadFromXML is now null-safe.
       </action>

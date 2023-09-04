@@ -239,12 +239,6 @@
       <groupId>com.fasterxml.jackson.dataformat</groupId>
       <artifactId>jackson-dataformat-xml</artifactId>
       <version>${jackson.version}</version>
-      <exclusions>
-      	<exclusion>
-      		<groupId>com.fasterxml.woodstox</groupId>
-      		<artifactId>woodstox-core</artifactId>
-      	</exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.hibernate.validator</groupId>

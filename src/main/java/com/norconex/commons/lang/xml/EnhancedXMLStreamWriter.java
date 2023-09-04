@@ -28,8 +28,9 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
+
+import com.ctc.wstx.util.EmptyNamespaceContext;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -39,13 +40,18 @@ import lombok.extern.slf4j.Slf4j;
  * for adding simple elements and typed attributes, as well as offering
  * pretty-printing.  Can be used on its own with a Writer,
  * or as a wrapper to an existing <code>XMLStreamWriter</code> instance.
+ * Also support XML with no root.
  * </p>
  * <p>
  * Since 2.0.0 checked exceptions are wrapped in an {@link XMLException}.
  * </p>
  *
  * @since 1.5.0
+ * @deprecated Supporting XML with no root is not always stable, to do
+ *   so, consider using {@link XML}. For stream-writing, use regular
+ *   {@link XMLStreamWriter}.
  */
+@Deprecated(since = "3.0.0")
 @Slf4j
 public class EnhancedXMLStreamWriter implements XMLStreamWriter {
 
@@ -95,7 +101,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
     public EnhancedXMLStreamWriter(
             Writer writer, boolean writeBlanks, int indent) {
         try {
-            XMLOutputFactory factory = createXMLOutputFactory();
+            var factory = createXMLOutputFactory();
             this.writer = writer;
             streamWriter = factory.createXMLStreamWriter(writer);
             defaultWriteBlanks = writeBlanks;
@@ -304,7 +310,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
      */
     public void writeAttributeObject(
             String localName, Object value, boolean writeBlanks) {
-        String strValue = Objects.toString(value, null);
+        var strValue = Objects.toString(value, null);
         if (StringUtils.isNotBlank(strValue)) {
             writeAttribute(localName, strValue);
         } else if (writeBlanks) {
@@ -554,7 +560,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
      */
     public void writeElementObjectList(String parentLocalName,
             String localName, List<?> values, boolean writeBlanks) {
-        boolean hasParent = StringUtils.isNotBlank(parentLocalName);
+        var hasParent = StringUtils.isNotBlank(parentLocalName);
         if (CollectionUtils.isEmpty(values) && hasParent) {
             writeElementObject(parentLocalName, null, writeBlanks);
         } else {
@@ -608,7 +614,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
      */
     public void writeElementObject(
             String localName, Object value, boolean writeBlanks) {
-        String strValue = Objects.toString(value, null);
+        var strValue = Objects.toString(value, null);
         if (StringUtils.isNotBlank(strValue)) {
             writeStartElement(localName);
             writeCharacters(strValue);
@@ -681,11 +687,11 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
             if (disabled) {
                 writeAttributeBoolean(ATTR_DISABLED, disabled);
             }
-            XML xml = XML.of(localName, value).create();
+            var xml = XML.of(localName, value).create();
             setAttributesFromNode(xml.getNode());
             writeCharacters("");
             flush();
-            List<XML> xmlList = xml.getXMLList("*");
+            var xmlList = xml.getXMLList("*");
             if (xmlList.isEmpty()) {
                 write(xml.getString("."), localName);
             } else {
@@ -717,7 +723,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
     public void writeObjectList(String parentLocalName,
             String localName, List<? extends Object> values) {
 
-        boolean hasParent = StringUtils.isNotBlank(parentLocalName);
+        var hasParent = StringUtils.isNotBlank(parentLocalName);
         if (CollectionUtils.isEmpty(values) && hasParent) {
             writeElementObject(parentLocalName, null, defaultWriteBlanks);
             return;
@@ -801,7 +807,11 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
     public void writeEmptyElement(String namespaceURI, String localName) {
         indent();
         try {
-            streamWriter.writeEmptyElement(namespaceURI, localName);
+            // Because we support badly structured XML with no parent,
+            // we have to write empty elements this way to avoid issues
+            // in some underlying implementations.
+            streamWriter.writeStartElement(namespaceURI, localName);
+            streamWriter.writeEndElement();
         } catch (XMLStreamException e) {
             throw new XMLException(ERR_EMPTY_ELEM, e);
         }
@@ -812,7 +822,11 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
             String prefix, String localName, String namespaceURI) {
         indent();
         try {
-            streamWriter.writeEmptyElement(prefix, localName, namespaceURI);
+            // Because we support badly structured XML with no parent,
+            // we have to write empty elements this way to avoid issues
+            // in some underlying implementations.
+            streamWriter.writeStartElement(prefix, localName, namespaceURI);
+            streamWriter.writeEndElement();
         } catch (XMLStreamException e) {
             throw new XMLException(ERR_EMPTY_ELEM, e);
         }
@@ -822,7 +836,11 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
     public void writeEmptyElement(String localName) {
         indent();
         try {
-            streamWriter.writeEmptyElement(localName);
+            // Because we support badly structured XML with no parent,
+            // we have to write empty elements this way to avoid issues
+            // in some underlying implementations.
+            streamWriter.writeStartElement(localName);
+            streamWriter.writeEndElement();
         } catch (XMLStreamException e) {
             throw new XMLException(ERR_EMPTY_ELEM, e);
         }
@@ -1011,7 +1029,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
 
             // We are indenting...
             if (StringUtils.isNotBlank(text)) {
-                String[] lines = text.split("\n");
+                var lines = text.split("\n");
                 if (lines.length == 1) {
                     streamWriter.writeCharacters(lines[0]);
                     indentEnd = false;
@@ -1068,7 +1086,9 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
     @Override
     public void setNamespaceContext(NamespaceContext context) {
         try {
-            streamWriter.setNamespaceContext(context);
+
+            streamWriter.setNamespaceContext(context == null
+                    ? EmptyNamespaceContext.getInstance() : context);
         } catch (XMLStreamException e) {
             throw new XMLException("Could not set namespace context.", e);
         }
@@ -1102,7 +1122,8 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
     }
 
     private static XMLOutputFactory createXMLOutputFactory() {
-        XMLOutputFactory factory = XMLOutputFactory.newFactory();
+        var factory = XMLOutputFactory.newFactory();
+
         // If using Woodstox factory, disable structure validation
         // which can cause issues when you want to use the xml writer on
         // a stream that already has XML written to it (could cause
@@ -1110,16 +1131,18 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
         if ("com.ctc.wstx.stax.WstxOutputFactory".equals( //NOSONAR
                 factory.getClass().getName())) { //NOSONAR
             try {
-                Object config = factory.getClass().getMethod(
+
+                var config = factory.getClass().getMethod(
                         "getConfig").invoke(factory);
                 config.getClass().getMethod(
                         "doValidateStructure", boolean.class).invoke(
                                 config, false);
             } catch (Exception e) {
-                LOG.warn("Could not disable structure validation on "
-                        + "WstxOutputFactory. This can cause issues when "
-                        + "using EnhancedXMLStreamWriter on an partially "
-                        + "written XML stream (\"multiple roots\" error).");
+                LOG.warn("""
+                    Could not disable structure validation on\s\
+                    WstxOutputFactory. This can cause issues when\s\
+                    using EnhancedXMLStreamWriter on an partially\s\
+                    written XML stream ("multiple roots" error).""");
             }
         }
         return factory;
@@ -1129,9 +1152,9 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
         if (node == null) {
             return;
         }
-        NamedNodeMap attrs = node.getAttributes();
-        for (int i = 0; i < attrs.getLength(); i++) {
-            Node item = attrs.item(i);
+        var attrs = node.getAttributes();
+        for (var i = 0; i < attrs.getLength(); i++) {
+            var item = attrs.item(i);
             if (!ATTR_DISABLED.equals(item.getNodeName())) {
                 writeAttribute(item.getNodeName(), item.getNodeValue());
             }
