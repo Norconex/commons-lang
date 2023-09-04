@@ -10,7 +10,8 @@
     <release version="3.0.0-SNAPSHOT" date="202?-??-??" 
         description="Feature release.">
       <action dev="essiembre" type="add">
-        New BeanMapper class to write/read objects to/from XML, JSON, Yaml 
+        New BeanMapper class to write/read objects to/from XML, JSON, and Yaml,
+        with support for polymorphism. 
       </action>
       <action dev="essiembre" type="add">
         New JSON and Yaml (de)serializers for types covered by GenericConverter.  

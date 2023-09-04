@@ -15,11 +15,14 @@
 package com.norconex.commons.lang.bean;
 
 import static java.nio.charset.StandardCharsets.UTF_16BE;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 
 import java.awt.Dimension;
 import java.io.File;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -36,10 +39,19 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.input.BrokenReader;
 import org.apache.commons.io.output.BrokenWriter;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.norconex.commons.lang.Sleeper;
 import com.norconex.commons.lang.bean.BeanMapper.Format;
+import com.norconex.commons.lang.bean.stubs.Automobile;
+import com.norconex.commons.lang.bean.stubs.Plane;
+import com.norconex.commons.lang.bean.stubs.PlaneConfig.Type;
+import com.norconex.commons.lang.bean.stubs.TestConfig;
+import com.norconex.commons.lang.bean.stubs.Transportation;
 import com.norconex.commons.lang.file.ContentType;
 import com.norconex.commons.lang.img.MutableImage;
 import com.norconex.commons.lang.img.MutableImage.Quality;
@@ -48,6 +60,7 @@ import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.constraints.Min;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.RequiredArgsConstructor;
 
 class BeanMapperTest {
 
@@ -154,5 +167,124 @@ class BeanMapperTest {
             Sleeper.sleepMillis(1);
             return System.currentTimeMillis();
         }
+    }
+
+    //--- Polymorphic tests ----------------------------------------------------
+
+    @RequiredArgsConstructor
+    enum Source {
+        XML("""
+            <TestConfig id="my config">
+              <transportations>
+                <transportation class="Automobile">
+                  <configuration>
+                    <make>Toyota</make>
+                    <model>Camry</model>
+                    <year>1800</year>
+                  </configuration>
+                </transportation>
+                <transportation class="Plane">
+                  <configuration>
+                    <name>Boeing 737</name>
+                    <type>COMMERCIAL</type>
+                  </configuration>
+                </transportation>
+              </transportations>
+            </TestConfig>
+            """,
+            Format.XML
+        ),
+        JSON("""
+            {
+              "id" : "my config",
+              "transportations" : [ {
+                "class" : "Automobile",
+                "configuration" : {
+                  "make" : "Toyota",
+                  "model" : "Camry",
+                  "year" : 1800
+                }
+              }, {
+                "class" : "Plane",
+                "configuration" : {
+                  "name" : "Boeing 737",
+                  "type" : "COMMERCIAL"
+                }
+              } ]
+            }""",
+            Format.JSON
+        ),
+        YAML("""
+            ---
+            id: "my config"
+            transportations:
+            - class: "Automobile"
+              configuration:
+                make: "Toyota"
+                model: "Camry"
+                year: 1800
+            - class: "Plane"
+              configuration:
+                name: "Boeing 737"
+                type: "COMMERCIAL"
+            """,
+            Format.YAML
+        )
+        ;
+        final String source;
+        final Format format;
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = Source.class)
+    void testPolymorphicTypes(Source source)
+            throws JsonMappingException, JsonProcessingException {
+
+        // Expected
+        var expected = new TestConfig();
+        expected.setId("my config");
+
+        var automobile = new Automobile();
+        automobile.getConfiguration()
+            .setModel("Camry")
+            .setYear(1800)
+            .setBrand("Toyota");
+        expected.getTransportations().add(automobile);
+
+        var plane = new Plane();
+        plane.getConfiguration()
+            .setName("Boeing 737")
+            .setType(Type.COMMERCIAL);
+        expected.getTransportations().add(plane);
+
+        // Mapper
+        var builder = BeanMapper.builder()
+            .skipValidation(true)
+            .polymorphicType(Transportation.class,
+                    name -> name.startsWith("com.norconex."))
+            ;
+        var cfg = builder.build().read(
+                TestConfig.class,
+                new StringReader(source.source),
+                source.format);
+
+        // Test write/read
+        assertThat(cfg).isEqualTo(expected);
+        builder.build().assertWriteRead(cfg, source.format);
+
+        // Test write properly
+        var out = new StringWriter();
+        builder.indent(true).build().write(cfg, out, source.format);
+        assertThat(out.toString()).isEqualToNormalizingNewlines(source.source);
+
+        // Test validates properly
+        builder.skipValidation(false);
+        assertThatExceptionOfType(
+                ConstraintViolationException.class).isThrownBy(() -> {//NOSONAR
+            builder.build().read(
+                    TestConfig.class,
+                    new StringReader(source.source),
+                    source.format);
+        });
     }
 }

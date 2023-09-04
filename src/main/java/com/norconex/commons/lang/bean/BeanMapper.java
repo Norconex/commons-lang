@@ -23,21 +23,30 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
+
+import javax.xml.stream.XMLOutputFactory;
 
 import org.apache.commons.lang3.ArrayUtils;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonParser.Feature;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.cfg.MapperBuilder;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
+import com.norconex.commons.lang.ClassFinder;
 import com.norconex.commons.lang.convert.GenericJsonModule;
 
 import jakarta.validation.ConstraintViolation;
@@ -46,12 +55,28 @@ import jakarta.validation.Validation;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Singular;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Simplified mapping of objects to/from XML, JSON, and Yaml. While this
- * mapper supports a wide variety of use cases, it is recommended
+ * <p>
+ * Simplified mapping of objects to/from XML, JSON, and Yaml.
+ * </p>
+ * <h3>Polymorphism</h3>
+ * <p>
+ * Classes annotated with {@link JsonTypeInfo} and {@link JsonSubTypes}
+ * are handled by this mapper. For cases where no annotations are used,
+ * you can specify one or more classes that can have subclasses with
+ * {@link BeanMapperBuilder#polymorphicType(Class, Predicate)}. When doing
+ * so, the classpath will be scanned for matching implementations and
+ * automatically register them as subtypes.
+ * To speed up the process and avoid possible classloader issues, it is
+ * best that you provide a predicate to help quickly filter discovered subtypes.
+ * </p>
+ * <p>
+ * While this mapper supports a wide variety of use cases, it is recommended
  * to use a more elaborate serialization tool for more complex needs.
+ * </p>
  * @since 3.0.0
  */
 @Builder
@@ -59,12 +84,26 @@ import lombok.extern.slf4j.Slf4j;
 public class BeanMapper { //NOSONAR
     @RequiredArgsConstructor
     public enum Format {
-        XML(XmlMapper::new),
-        JSON(ObjectMapper::new),
-        YAML(() -> new YAMLMapper()
-                .disable(YAMLGenerator.Feature.USE_NATIVE_TYPE_ID))
+        XML(
+                XmlMapper::builder,
+                b -> {
+                    var m = (XmlMapper) b.build();
+                    m.getFactory()
+                        .getXMLOutputFactory()
+                        .setProperty(
+                                XMLOutputFactory.IS_REPAIRING_NAMESPACES, true);
+                    return m;
+                }),
+        JSON(
+                JsonMapper::builder,
+                MapperBuilder::build),
+        YAML(
+                () -> YAMLMapper.builder()
+                    .disable(YAMLGenerator.Feature.USE_NATIVE_TYPE_ID),
+                MapperBuilder::build),
         ;
-        final Supplier<ObjectMapper> mapperSupplier;
+        final Supplier<MapperBuilder<?, ?>> builder;
+        final Function<MapperBuilder<?, ?>, ObjectMapper> mapper;
     }
 
     /**
@@ -80,6 +119,15 @@ public class BeanMapper { //NOSONAR
     private boolean skipValidation;
     /** Whether to indent elements when writing. */
     private boolean indent;
+    /**
+     * Registry of classes which may have subclasses, with optional predicate
+     * to filter said subclasses by their fully qualified name. Not
+     * relevant for beans without polymorphic types, or annotated with
+     * a combination of {@link JsonTypeInfo} and
+     * {@link JsonSubTypes}.
+     */
+    @Singular
+    private Map<Class<?>, Predicate<String>> polymorphicTypes;
 
     // We are caching them on first use
     private final Map<Format, ObjectMapper> cache = new ConcurrentHashMap<>(3);
@@ -95,7 +143,6 @@ public class BeanMapper { //NOSONAR
             @NonNull Object object,
             @NonNull Writer writer,
             @NonNull Format format) {
-
         try {
             getMapper(format).writeValue(writer, object);
         } catch (IOException e) {
@@ -170,7 +217,11 @@ public class BeanMapper { //NOSONAR
 
     private ObjectMapper getMapper(Format format) {
         return cache.computeIfAbsent(format, fmt -> {
-            var mapper = fmt.mapperSupplier.get();
+
+            var builder = format.builder.get();
+            builder.enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY);
+
+            var mapper = format.mapper.apply(builder);
 
             // read:
             mapper.configure(
@@ -191,10 +242,21 @@ public class BeanMapper { //NOSONAR
             mapper.registerModule(new Jdk8Module());
             mapper.registerModule(new JavaTimeModule());
             mapper.registerModule(new GenericJsonModule());
+
+            // register polymorphic types:
+            registerPolymorphicTypes(mapper);
+
             return mapper;
         });
     }
 
+    private void registerPolymorphicTypes(ObjectMapper mapper) {
+        polymorphicTypes.forEach((type, predicate) -> {
+            mapper.addMixIn(type, PolymorphicMixIn.class);
+            mapper.registerSubtypes(ClassFinder.findSubTypes(
+                    type, predicate).toArray(new Class<?>[] {}));
+        });
+    }
 
     private <T> T doRead(
             @NonNull Function<ObjectMapper, T> f,
@@ -218,6 +280,8 @@ public class BeanMapper { //NOSONAR
     private void assertWriteRead(Object object, Format format) {
         var out = new StringWriter();
         write(object, out, format);
+        LOG.info("{} written for object {}:\n{}",
+                format, object.getClass(), out.toString());
         var in = new StringReader(out.toString());
         Object readObject = read(object.getClass(), in, format);
         if (!object.equals(readObject)) {
@@ -230,4 +294,11 @@ public class BeanMapper { //NOSONAR
                     "Saved and loaded " + format + " are not the same.");
         }
     }
+
+
+    @JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        include = JsonTypeInfo.As.PROPERTY,
+        property = "class")
+    abstract static class PolymorphicMixIn {}
 }
