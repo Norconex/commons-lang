@@ -2586,6 +2586,7 @@ public class XML implements Iterable<XMLCursor> {
             }
         };
     }
+    @Deprecated(since="3.0.0")
     public EnhancedXMLStreamWriter getXMLStreamWriter() {
         return new EnhancedXMLStreamWriter(getXMLWriter());
     }

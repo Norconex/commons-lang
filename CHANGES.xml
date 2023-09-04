@@ -134,6 +134,9 @@
       <action dev="essiembre" type="add">
         New Configurable interface.
       </action>
+      <action dev="essiembre" type="add">
+        ConfigurationLoader can now load XML, JSON, and Yaml into objects.
+      </action>
       <action dev="essiembre" type="update">
         Now require Java 17+. 
       </action>
@@ -162,9 +165,9 @@
         when a null collection is supplied.
       </action>
       <action dev="essiembre" type="update">
-        ConfigurationLoader#setVariablesFile now assumes the variables
-        file is of the ".variables" format when its extension is neither
-        ".variables" nor ".properties". 
+        Using a variables file with ConfigurationLoader now assumes the 
+        ".variables" format when its extension is neither ".variables" nor 
+        ".properties". 
       </action>
       <action dev="essiembre" type="update">
         Converter#toString(Object, String) will now return the default value

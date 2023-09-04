@@ -33,12 +33,16 @@ import org.apache.commons.lang3.ArrayUtils;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonParser.Feature;
+import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.cfg.MapperBuilder;
+import com.fasterxml.jackson.databind.deser.DeserializationProblemHandler;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
@@ -190,6 +194,7 @@ public class BeanMapper { //NOSONAR
             @NonNull Class<T> type,
             @NonNull Reader reader,
             @NonNull Format format) {
+
         return doRead(mapper -> {
             try {
                 return mapper.readValue(reader, type);
@@ -220,6 +225,7 @@ public class BeanMapper { //NOSONAR
 
             var builder = format.builder.get();
             builder.enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY);
+            builder.addHandler(new ClassPropertyHandler());
 
             var mapper = format.mapper.apply(builder);
 
@@ -295,10 +301,22 @@ public class BeanMapper { //NOSONAR
         }
     }
 
-
     @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
         include = JsonTypeInfo.As.PROPERTY,
         property = "class")
     abstract static class PolymorphicMixIn {}
+
+    static class ClassPropertyHandler extends DeserializationProblemHandler {
+        @Override
+        public boolean handleUnknownProperty(
+                DeserializationContext ctxt,
+                JsonParser p,
+                JsonDeserializer<?> deserializer,
+                Object beanOrClass,
+                String propertyName) throws IOException {
+
+            return "class".equals(propertyName);
+        }
+    }
 }
