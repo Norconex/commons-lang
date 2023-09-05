@@ -22,6 +22,7 @@ import java.io.Writer;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -37,6 +38,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonParser.Feature;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -44,6 +46,8 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.cfg.MapperBuilder;
 import com.fasterxml.jackson.databind.deser.DeserializationProblemHandler;
 import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
@@ -51,6 +55,7 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import com.norconex.commons.lang.ClassFinder;
+import com.norconex.commons.lang.ClassUtil;
 import com.norconex.commons.lang.convert.GenericJsonModule;
 
 import jakarta.validation.ConstraintViolation;
@@ -68,14 +73,35 @@ import lombok.extern.slf4j.Slf4j;
  * </p>
  * <h3>Polymorphism</h3>
  * <p>
- * Classes annotated with {@link JsonTypeInfo} and {@link JsonSubTypes}
- * are handled by this mapper. For cases where no annotations are used,
- * you can specify one or more classes that can have subclasses with
- * {@link BeanMapperBuilder#polymorphicType(Class, Predicate)}. When doing
- * so, the classpath will be scanned for matching implementations and
- * automatically register them as subtypes.
- * To speed up the process and avoid possible classloader issues, it is
- * best that you provide a predicate to help quickly filter discovered subtypes.
+ * Polymorphism is supported in a few different ways.
+ * </p>
+ * <h3>Via Annotations</h3>
+ * <p>
+ * First, classes annotated with {@link JsonTypeInfo} and {@link JsonSubTypes}
+ * are properly handled by this mapper.
+ * </p>
+ * <h3>Via registration</h3>
+ * <p>
+ * For cases where no annotations are used, you can register one or more
+ * classes (typically interfaces) that can have subclasses with
+ * {@link BeanMapperBuilder#polymorphicType(Class, Predicate)}.
+ * When doing so, the classpath will be scanned for matching implementations
+ * and automatically register them as subtypes using their simple class name.
+ * To speed up the discovery process and avoid possible classloader issues,
+ * it is best that you provide a predicate (over fully qualified class names)
+ * to help quickly filter discovered subtypes.
+ * It relies on the "class" property to find the class reference and
+ * (de)serialize sub-types.
+ * </p>
+ *
+ * <h3>Class mapping</h3>
+ * <p>
+ * When auto-registering subtypes, class short names are used (class name
+ * without package name). You can optionally provide in the source the full
+ * canonical name of a class to have that class recognized at deserialization
+ * time, regardless whether it was registered or not. This can be useful
+ * when dynamically adding classes that could not be previously registered for
+ * some reason.
  * </p>
  * <p>
  * While this mapper supports a wide variety of use cases, it is recommended
@@ -117,12 +143,28 @@ public class BeanMapper { //NOSONAR
 
     /** Whether to silently ignored unknown mapped properties when reading. */
     private boolean ignoreUnknownProperties;
+
     /** Whether to treat empty strings as <code>null</code> when reading. */
     private boolean treatEmptyAsNull;
+
+    /**
+     * Whether to disable resolving of fully qualified class names in source
+     * when reading.
+     */
+    private boolean disableCanonicalNameSupport;
+
     /** Whether to skip validation when reading. */
     private boolean skipValidation;
+
     /** Whether to indent elements when writing. */
     private boolean indent;
+
+    /**
+     * Consumes the internal Jackson {@link MapperBuilder} for custom
+     * initialization.
+     */
+    private Consumer<MapperBuilder<?, ?>> mapperBuilderCustomizer;
+
     /**
      * Registry of classes which may have subclasses, with optional predicate
      * to filter said subclasses by their fully qualified name. Not
@@ -132,6 +174,14 @@ public class BeanMapper { //NOSONAR
      */
     @Singular
     private Map<Class<?>, Predicate<String>> polymorphicTypes;
+
+    /**
+     * Optionally register properties to be (de)serialialized to a class,
+     * when the said property is not bound to a class via regular
+     * JSON mappings.
+     */
+    @Singular
+    private Map<String, Class<?>> unboundPropertyMappings;
 
     // We are caching them on first use
     private final Map<Format, ObjectMapper> cache = new ConcurrentHashMap<>(3);
@@ -225,7 +275,10 @@ public class BeanMapper { //NOSONAR
 
             var builder = format.builder.get();
             builder.enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY);
-            builder.addHandler(new ClassPropertyHandler());
+            builder.addHandler(new BeanMapperPropertyHandler(this));
+            if (mapperBuilderCustomizer != null) {
+                mapperBuilderCustomizer.accept(builder);
+            }
 
             var mapper = format.mapper.apply(builder);
 
@@ -307,7 +360,11 @@ public class BeanMapper { //NOSONAR
         property = "class")
     abstract static class PolymorphicMixIn {}
 
-    static class ClassPropertyHandler extends DeserializationProblemHandler {
+    @RequiredArgsConstructor
+    static class BeanMapperPropertyHandler
+            extends DeserializationProblemHandler {
+        private final BeanMapper beanMapper;
+
         @Override
         public boolean handleUnknownProperty(
                 DeserializationContext ctxt,
@@ -316,7 +373,41 @@ public class BeanMapper { //NOSONAR
                 Object beanOrClass,
                 String propertyName) throws IOException {
 
-            return "class".equals(propertyName);
+            if ("class".equals(propertyName)) {
+                return true;
+            }
+
+            Class<?> cls = beanMapper.unboundPropertyMappings.get(propertyName);
+            if (cls != null) {
+                p.setCurrentValue(ClassUtil.newInstance(cls));
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public JavaType handleUnknownTypeId(DeserializationContext ctxt,
+                JavaType baseType, String subTypeId, TypeIdResolver idResolver,
+                String failureMsg) throws IOException {
+
+            if (beanMapper.disableCanonicalNameSupport) {
+                return null;
+            }
+
+            // if subTypeId is the fully qualified name of a valid sub type,
+            // resolve it.
+            JavaType type;
+            try {
+                type = TypeFactory.defaultInstance()
+                        .constructFromCanonical(subTypeId);
+                if (type.isTypeOrSubTypeOf(baseType.getRawClass())) {
+                    return type;
+                }
+            } catch (IllegalArgumentException e) {
+                // Swallow
+            }
+            // We can't handle it
+            return null;
         }
     }
 }
