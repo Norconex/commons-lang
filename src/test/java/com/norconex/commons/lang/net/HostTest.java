@@ -1,4 +1,4 @@
-/* Copyright 2022 Norconex Inc.
+/* Copyright 2022-2023 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,17 @@
 package com.norconex.commons.lang.net;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 
 import org.junit.jupiter.api.Test;
 
-import com.norconex.commons.lang.xml.XML;
+import com.norconex.commons.lang.bean.BeanMapper;
 
 class HostTest {
 
     @Test
     void testHost() {
-        Host host = new Host("example.com", 80);
+        var host = new Host("example.com", 80);
 
         assertThat(host.getName()).isEqualTo("example.com");
         assertThat(host.getPort()).isEqualTo(80);
@@ -36,16 +37,12 @@ class HostTest {
 
     @Test
     void testSaveLoadXML() {
-        Host host = new Host("example.com", 123);
-        XML xml = new XML("test");
-        Host.saveToXML(xml, host);
+        assertThatNoException().isThrownBy(() -> {
+            var host = new Host("example.com", 123);
+            BeanMapper.DEFAULT.assertWriteRead(host);
 
-        assertThat(Host.loadFromXML(xml, null)).isEqualTo(host);
-        assertThat(Host.loadFromXML(null, host)).isEqualTo(host);
-
-        host = new Host(null, 456);
-        xml = new XML("test");
-        Host.saveToXML(xml, host);
-        assertThat(Host.loadFromXML(xml, host)).isEqualTo(host);
+            host = new Host(null, 456);
+            BeanMapper.DEFAULT.assertWriteRead(host);
+        });
     }
 }

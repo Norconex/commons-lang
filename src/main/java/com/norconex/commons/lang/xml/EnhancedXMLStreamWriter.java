@@ -47,11 +47,7 @@ import lombok.extern.slf4j.Slf4j;
  * </p>
  *
  * @since 1.5.0
- * @deprecated Supporting XML with no root is not always stable, to do
- *   so, consider using {@link XML}. For stream-writing, use regular
- *   {@link XMLStreamWriter}.
  */
-@Deprecated(since = "3.0.0")
 @Slf4j
 public class EnhancedXMLStreamWriter implements XMLStreamWriter {
 

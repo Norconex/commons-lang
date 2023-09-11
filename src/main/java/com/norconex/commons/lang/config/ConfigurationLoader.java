@@ -14,6 +14,7 @@
  */
 package com.norconex.commons.lang.config;
 
+import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -330,9 +331,11 @@ public final class ConfigurationLoader {
      * @param type class of the object to create and populate
      * @param <T> type of returned object
      * @return new object
+     * @throws IOException
      * @since 3.0.0
      */
-    public <T> T toObject(@NonNull Path configFile, Class<T> type) {
+    public <T> T toObject(@NonNull Path configFile, Class<T> type)
+            throws IOException {
         return beanMapper.read(
                 type,
                 new StringReader(toString(configFile)),
@@ -352,9 +355,11 @@ public final class ConfigurationLoader {
      * Loads an XML configuration file and populates a given object.
      * @param configFile XML configuration file
      * @param object object to populate
+     * @throws IOException
      * @since 3.0.0
      */
-    public void toObject(@NonNull Path configFile, @NonNull Object object) {
+    public void toObject(@NonNull Path configFile, @NonNull Object object)
+            throws IOException {
         beanMapper.read(
                 object,
                 new StringReader(toString(configFile)),

@@ -17,6 +17,7 @@ package com.norconex.commons.lang.config;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.io.IOException;
 import java.nio.file.Path;
 
 import org.apache.commons.lang3.StringUtils;
@@ -25,8 +26,6 @@ import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.SystemUtil;
 import com.norconex.commons.lang.security.Credentials;
-import com.norconex.commons.lang.xml.XML;
-import com.norconex.commons.lang.xml.XMLConfigurable;
 
 import lombok.Data;
 
@@ -50,7 +49,7 @@ class ConfigurationLoaderTest {
 
     // when explicit passing a class, should load into that class.
     @Test
-    void testLoadFromXMLPathClass() {
+    void testLoadFromXMLPathClass() throws IOException {
         var creds = configLoader.toObject(
                 cfgPath("xml.xml"), TestConfig.class);
         assertThat(creds.getUsername()).isEqualTo("joe");
@@ -58,7 +57,7 @@ class ConfigurationLoaderTest {
     }
 
     @Test
-    void testLoadWithClassAttribute() {
+    void testLoadWithClassAttribute() throws IOException {
         var testConfig = configLoader.toObject(
                 cfgPath("xml-with-creds.xml"),
                 TestConfigWithCreds.class);
@@ -69,7 +68,7 @@ class ConfigurationLoaderTest {
     }
 
     @Test
-    void testLoadFromXMLPathObject() {
+    void testLoadFromXMLPathObject() throws IOException {
         var creds = new TestConfig();
         configLoader.toObject(cfgPath("xml.xml"), creds);
         assertThat(creds.getUsername()).isEqualTo("joe");
@@ -109,18 +108,9 @@ class ConfigurationLoaderTest {
     }
 
     @Data
-    static class TestConfig implements XMLConfigurable {
+    static class TestConfig {
         private String username;
         private String password;
-        @Override
-        public void loadFromXML(XML xml) {
-            username = xml.getString("username");
-            password = xml.getString("password");
-        }
-        @Override
-        public void saveToXML(XML xml) {
-            //NOOP
-        }
     }
     @Data
     static class TestConfigWithCreds {

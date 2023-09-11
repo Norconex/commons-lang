@@ -1,4 +1,4 @@
-/* Copyright 2017-2020 Norconex Inc.
+/* Copyright 2017-2023 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,17 +23,14 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertySetter;
-import com.norconex.commons.lang.xml.XMLConfigurable;
-import com.norconex.commons.lang.xml.XML;
+
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 /**
  * <p>
@@ -85,13 +82,15 @@ import com.norconex.commons.lang.xml.XML;
  * @since 2.0.0 (moved from Norconex Importer RegexKeyValueExtractor)
  */
 @SuppressWarnings("javadoc")
-public class RegexFieldValueExtractor implements XMLConfigurable {
+@EqualsAndHashCode
+@ToString
+public class RegexFieldValueExtractor {
 
     private static final Logger LOG =
             LoggerFactory.getLogger(RegexFieldValueExtractor.class);
 
     public static final RegexFieldValueExtractor[] EMPTY_ARRAY =
-            new RegexFieldValueExtractor[] {};
+            {};
 
     private Regex regex;
     private String toField;
@@ -100,8 +99,7 @@ public class RegexFieldValueExtractor implements XMLConfigurable {
     private PropertySetter onSet;
 
     public RegexFieldValueExtractor() {
-        super();
-        this.regex = defaultRegex(null);
+        regex = defaultRegex(null);
     }
     public RegexFieldValueExtractor(String pattern) {
         this(defaultRegex(pattern), null);
@@ -125,12 +123,11 @@ public class RegexFieldValueExtractor implements XMLConfigurable {
     }
     public RegexFieldValueExtractor(Regex regex, String field, int valueGroup) {
         this.regex = regex;
-        this.toField = field;
+        toField = field;
         this.valueGroup = valueGroup;
     }
     public RegexFieldValueExtractor(
             Regex regex, int fieldGroup, int valueGroup) {
-        super();
         this.regex = regex;
         this.fieldGroup = fieldGroup;
         this.valueGroup = valueGroup;
@@ -163,7 +160,7 @@ public class RegexFieldValueExtractor implements XMLConfigurable {
         return toField;
     }
     public RegexFieldValueExtractor setToField(String field) {
-        this.toField = field;
+        toField = field;
         return this;
     }
 
@@ -192,11 +189,11 @@ public class RegexFieldValueExtractor implements XMLConfigurable {
                     "At least one of 'toField' or 'fieldGroup' expected.");
         }
 
-        Properties extractedFieldValues = new Properties();
-        Matcher m = matcher(text);
+        var extractedFieldValues = new Properties();
+        var m = matcher(text);
         while (m.find()) {
-            String k = extractField(m);
-            String v = extractValue(m);
+            var k = extractField(m);
+            var v = extractValue(m);
             if (StringUtils.isBlank(k)) {
                 LOG.debug("No toField for value: {}", v);
             } else if (v == null) {
@@ -211,7 +208,7 @@ public class RegexFieldValueExtractor implements XMLConfigurable {
         }
     }
     public Properties extractFieldValues(CharSequence text) {
-        Properties dest = new Properties();
+        var dest = new Properties();
         extractFieldValues(dest, text);
         return dest;
     }
@@ -228,7 +225,7 @@ public class RegexFieldValueExtractor implements XMLConfigurable {
 
     public static Properties extractFieldValues(
             CharSequence text, List<RegexFieldValueExtractor> extractors) {
-        Properties dest = new Properties();
+        var dest = new Properties();
         extractFieldValues(dest, text, extractors);
         return dest;
     }
@@ -243,7 +240,7 @@ public class RegexFieldValueExtractor implements XMLConfigurable {
 
     public static Properties extractFieldValues(
             CharSequence text, RegexFieldValueExtractor... extractors) {
-        Properties dest = new Properties();
+        var dest = new Properties();
         extractFieldValues(dest, text, extractors);
         return dest;
     }
@@ -256,13 +253,14 @@ public class RegexFieldValueExtractor implements XMLConfigurable {
         return regex.matcher(text);
     }
     private String extractField(Matcher m) {
-        String f = StringUtils.isNotBlank(getToField()) ? getToField() : "";
+        var f = StringUtils.isNotBlank(getToField()) ? getToField() : "";
         if (hasFieldGroup()) {
             if (m.groupCount() < getFieldGroup()) {
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("No match group {} for toField in regex \"{}\""
-                            + "for match value \"{}\". Defaulting to toField: "
-                            + "\"{}\".",
+                    LOG.debug("""
+                        No match group {} for toField in regex "{}"\
+                        for match value "{}". Defaulting to toField:\s\
+                        "{}".""",
                             getFieldGroup(), getRegex(), m.group(), toField);
                 }
             } else {
@@ -273,16 +271,16 @@ public class RegexFieldValueExtractor implements XMLConfigurable {
     }
     private String extractValue(Matcher m) {
         if (hasValueGroup()) {
-            if (m.groupCount() < getValueGroup()) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("No match group {} "
-                            + "for value in regex \"{}\" "
-                            + "for match value \"{}\". "
-                            + "Defaulting to entire match.",
-                            getValueGroup(), getRegex(), m.group());
-                }
-            } else {
+            if (m.groupCount() >= getValueGroup()) {
                 return m.group(getValueGroup());
+            }
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("""
+                    No match group {}\s\
+                    for value in regex "{}" \
+                    for match value "{}".\s\
+                    Defaulting to entire match.""",
+                        getValueGroup(), getRegex(), m.group());
             }
         }
         return m.group();
@@ -292,41 +290,5 @@ public class RegexFieldValueExtractor implements XMLConfigurable {
     }
     private boolean hasValueGroup() {
         return getValueGroup() > -1;
-    }
-
-    @Override
-    public void loadFromXML(XML xml) {
-        setToField(xml.getString("@toField", getToField()));
-        setFieldGroup(xml.getInteger("@fieldGroup", getFieldGroup()));
-        setValueGroup(xml.getInteger("@valueGroup", getValueGroup()));
-        if (regex == null) {
-            regex = new Regex();
-        }
-        regex.loadFromXML(xml);
-        setOnSet(PropertySetter.fromXML(xml, getOnSet()));
-    }
-    @Override
-    public void saveToXML(XML xml) {
-        xml.setAttribute("toField", getToField());
-        xml.setAttribute("fieldGroup", getFieldGroup());
-        xml.setAttribute("valueGroup", getValueGroup());
-        if (regex != null) {
-            regex.saveToXML(xml);
-        }
-        PropertySetter.toXML(xml, onSet);
-    }
-
-    @Override
-    public boolean equals(final Object other) {
-        return EqualsBuilder.reflectionEquals(this, other);
-    }
-    @Override
-    public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this);
-    }
-    @Override
-    public String toString() {
-        return new ReflectionToStringBuilder(
-                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

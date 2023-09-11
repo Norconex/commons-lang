@@ -1,4 +1,4 @@
-/* Copyright 2015-2022 Norconex Inc.
+/* Copyright 2015-2023 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,11 @@ package com.norconex.commons.lang.map;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Predicate;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.norconex.commons.lang.text.TextMatcher;
-import com.norconex.commons.lang.xml.XML;
 
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -65,7 +65,10 @@ public final class PropertyMatcher implements Predicate<Properties> {
      * @param valueMatcher value matcher
      * @since 2.0.0
      */
-    public PropertyMatcher(TextMatcher fieldMatcher, TextMatcher valueMatcher) {
+    @JsonCreator
+    public PropertyMatcher(
+            @JsonProperty("fieldMatcher") TextMatcher fieldMatcher,
+            @JsonProperty("valueMatcher") TextMatcher valueMatcher) {
         this.fieldMatcher =
                 fieldMatcher == null ? null : new TextMatcher(fieldMatcher);
         this.valueMatcher =
@@ -246,36 +249,5 @@ public final class PropertyMatcher implements Predicate<Properties> {
     private static boolean matches(TextMatcher matcher, String str) {
         return matcher == null || matcher.getPattern() == null
                 || matcher.matches(str);
-    }
-
-    public static PropertyMatcher loadFromXML(XML xml) {
-        if (xml == null || xml.isEmpty()) {
-            return null;
-        }
-        TextMatcher fieldMatcher = null;
-        var fieldMatcherXML = xml.getXML("fieldMatcher");
-        if (fieldMatcherXML != null && !fieldMatcherXML.isEmpty()) {
-            fieldMatcher = new TextMatcher();
-            fieldMatcher.loadFromXML(fieldMatcherXML);
-        }
-        TextMatcher valueMatcher = null;
-        var valueMatcherXML = xml.getXML("valueMatcher");
-        if (valueMatcherXML != null && !valueMatcherXML.isEmpty()) {
-            valueMatcher = new TextMatcher();
-            valueMatcher.loadFromXML(valueMatcherXML);
-        }
-        return new PropertyMatcher(fieldMatcher, valueMatcher);
-    }
-    public static void saveToXML(XML xml, PropertyMatcher matcher) {
-        if (xml == null || matcher == null) {
-            return;
-        }
-
-        var fmXml = xml.addElement("fieldMatcher");
-        Optional.ofNullable(matcher.getFieldMatcher())
-                .ifPresent(m -> m.saveToXML(fmXml));
-        var vmXml = xml.addElement("valueMatcher");
-        Optional.ofNullable(matcher.getValueMatcher())
-                .ifPresent(m -> m.saveToXML(vmXml));
     }
 }

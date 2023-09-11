@@ -16,11 +16,13 @@ package com.norconex.commons.lang.bean;
 
 import static java.nio.charset.StandardCharsets.UTF_16BE;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatException;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 
 import java.awt.Dimension;
 import java.io.File;
+import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.math.BigDecimal;
@@ -43,8 +45,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.norconex.commons.lang.Sleeper;
 import com.norconex.commons.lang.bean.BeanMapper.Format;
 import com.norconex.commons.lang.bean.stubs.Automobile;
@@ -134,15 +134,15 @@ class BeanMapperTest {
 
     @Test
     void testExceptions() {
-        assertThatExceptionOfType(BeanException.class).isThrownBy(() ->//NOSONAR
+        assertThatException().isThrownBy(() ->//NOSONAR
             BeanMapper.DEFAULT.write(
                     new MultiTypes(), BrokenWriter.INSTANCE, Format.XML)
         );
-        assertThatExceptionOfType(BeanException.class).isThrownBy(() ->
+        assertThatException().isThrownBy(() ->
             BeanMapper.DEFAULT.read(
                     MultiTypes.class, BrokenReader.INSTANCE, Format.XML)
         );
-        assertThatExceptionOfType(BeanException.class).isThrownBy(() ->//NOSONAR
+        assertThatException().isThrownBy(() ->//NOSONAR
             BeanMapper.DEFAULT.read(
                     new MultiTypes(), BrokenReader.INSTANCE, Format.XML)
         );
@@ -154,7 +154,7 @@ class BeanMapperTest {
             BeanMapper.DEFAULT.assertWriteRead(obj)
         );
 
-        assertThatExceptionOfType(BeanException.class).isThrownBy(() ->//NOSONAR
+        assertThatException().isThrownBy(() ->//NOSONAR
             BeanMapper.DEFAULT.assertWriteRead(new NotEqual())
         );
 
@@ -238,7 +238,7 @@ class BeanMapperTest {
     @ParameterizedTest
     @EnumSource(value = Source.class)
     void testPolymorphicTypes(Source source)
-            throws JsonMappingException, JsonProcessingException {
+            throws IOException {
 
         // Expected
         var expected = new TestConfig();
@@ -256,6 +256,7 @@ class BeanMapperTest {
             .setName("Boeing 737")
             .setType(Type.COMMERCIAL);
         expected.getTransportations().add(plane);
+
 
         // Mapper
         var builder = BeanMapper.builder()

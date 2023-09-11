@@ -1,4 +1,4 @@
-/* Copyright 2020-2022 Norconex Inc.
+/* Copyright 2020-2023 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.norconex.commons.lang.bean.BeanUtil;
 import com.norconex.commons.lang.encrypt.EncryptionKey;
 import com.norconex.commons.lang.encrypt.EncryptionUtil;
-import com.norconex.commons.lang.xml.XMLConfigurable;
-import com.norconex.commons.lang.xml.XML;
 
 import lombok.AccessLevel;
 import lombok.Data;
@@ -103,10 +105,15 @@ import lombok.experimental.FieldNameConstants;
  * @see EncryptionKey
  * @see EncryptionUtil
  */
+@SuppressWarnings("javadoc")
 @FieldNameConstants(level = AccessLevel.PRIVATE)
 @Data
 @Accessors(chain = true)
-public class Credentials implements XMLConfigurable, Serializable {
+@JsonAutoDetect(
+        fieldVisibility=Visibility.ANY,
+        getterVisibility=Visibility.NONE,
+        isGetterVisibility=Visibility.NONE)
+public class Credentials implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -115,14 +122,12 @@ public class Credentials implements XMLConfigurable, Serializable {
      * @param username user name
      * @return {@code this}.
      */
-    @SuppressWarnings("javadoc")
     private String username;
     /**
      * Credential password.
      * @param password password
      * @return {@code this}.
      */
-    @SuppressWarnings("javadoc")
     private String password;
     /**
      * Credential password encryption key pointer (provided the password is
@@ -130,7 +135,6 @@ public class Credentials implements XMLConfigurable, Serializable {
      * @param passwordKey password key
      * @return {@code this}.
      */
-    @SuppressWarnings("javadoc")
     private EncryptionKey passwordKey;
 
     public Credentials() {
@@ -154,8 +158,11 @@ public class Credentials implements XMLConfigurable, Serializable {
      * @param passwordKey the password encryption key
      * @since 3.0.0
      */
+    @JsonCreator
     public Credentials(
-            String username, String password, EncryptionKey passwordKey) {
+            @JsonProperty("username") String username,
+            @JsonProperty("password") String password,
+            @JsonProperty("passwordKey") EncryptionKey passwordKey) {
         this.username = username;
         this.password = password;
         this.passwordKey = passwordKey;
@@ -176,25 +183,6 @@ public class Credentials implements XMLConfigurable, Serializable {
     }
     public void copyFrom(Credentials creds) {
         BeanUtil.copyProperties(this, creds);
-    }
-
-    @Override
-    public void loadFromXML(XML xml) {
-        if (xml != null) {
-            setUsername(xml.getString(Fields.username, getUsername()));
-            setPassword(xml.getString(Fields.password, getPassword()));
-            setPasswordKey(EncryptionKey.loadFromXML(
-                    xml.getXML(Fields.passwordKey), passwordKey));
-        }
-    }
-    @Override
-    public void saveToXML(XML xml) {
-        if (xml != null) {
-            xml.addElement(Fields.username, getUsername());
-            xml.addElement(Fields.password, getPassword());
-            EncryptionKey.saveToXML(
-                    xml.addElement(Fields.passwordKey), passwordKey);
-        }
     }
 
     @Override

@@ -1,4 +1,4 @@
-/* Copyright 2018-2022 Norconex Inc.
+/* Copyright 2018-2023 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 package com.norconex.commons.lang.encrypt;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
@@ -30,9 +31,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import com.norconex.commons.lang.SystemUtil;
+import com.norconex.commons.lang.bean.BeanMapper;
 import com.norconex.commons.lang.encrypt.EncryptionKey.Source;
 import com.norconex.commons.lang.security.Credentials;
-import com.norconex.commons.lang.xml.XML;
 
 class EncryptionTest {
 
@@ -164,11 +165,8 @@ class EncryptionTest {
 
     @Test
     void testLoadSaveXML() {
-        assertThat(EncryptionKey.loadFromXML(null, null)).isNull();
-
         var key = new EncryptionKey(KEY, Source.PROPERTY, 256);
-        var xml = new XML("test");
-        EncryptionKey.saveToXML(xml, key);
-        assertThat(EncryptionKey.loadFromXML(xml, null)).isEqualTo(key);
+        assertThatNoException().isThrownBy(
+                () -> BeanMapper.DEFAULT.assertWriteRead(key));
     }
 }

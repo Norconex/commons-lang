@@ -32,6 +32,8 @@ import javax.xml.stream.XMLOutputFactory;
 import org.apache.commons.lang3.ArrayUtils;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonIncludeProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonParser;
@@ -56,10 +58,12 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import com.norconex.commons.lang.ClassFinder;
 import com.norconex.commons.lang.ClassUtil;
+import com.norconex.commons.lang.config.Configurable;
 import com.norconex.commons.lang.convert.GenericJsonModule;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Valid;
 import jakarta.validation.Validation;
 import lombok.Builder;
 import lombok.NonNull;
@@ -107,6 +111,15 @@ import lombok.extern.slf4j.Slf4j;
  * While this mapper supports a wide variety of use cases, it is recommended
  * to use a more elaborate serialization tool for more complex needs.
  * </p>
+ * <h3>Configurable objects</h3>
+ * <p>
+ * Objects implementing {@link Configurable} indicates that a
+ * separate class dedicated to configuration is used for bean-style mapping.
+ * By default, this mapper will ignore all properties of a configurable class
+ * except for its <code>getConfiguration()</code> method which will be
+ * treated as if annotated with <code>{@literal @}valid</code>.
+ * This behavior can be turned off with ..........................................................
+ * </p>
  * @since 3.0.0
  */
 @Builder
@@ -151,7 +164,16 @@ public class BeanMapper { //NOSONAR
      * Whether to disable resolving of fully qualified class names in source
      * when reading.
      */
-    private boolean disableCanonicalNameSupport;
+    private boolean canonicalNameSupportDisabled;
+
+    /**
+     * Whether to disable detecting {@link Configurable} classes, which
+     * when <code>false</code> (i.e., enabled), will automatically mark
+     * the configuration class as <code>{@literal @}valid</code> and ignore
+     * the configurable class properties when writing/reading.
+     */
+    private boolean configurableDetectionDisabled;
+
 
     /** Whether to skip validation when reading. */
     private boolean skipValidation;
@@ -182,6 +204,18 @@ public class BeanMapper { //NOSONAR
      */
     @Singular
     private Map<String, Class<?>> unboundPropertyMappings;
+
+    /**
+     * Optionally register source properties to be ignored when read.
+     */
+    @Singular
+    private Set<String> ignoredProperties;
+
+//    @Singular
+//    private Set<BiConsumer<BeanMapper, JsonNode>> beforeReadHandlers;
+//    @Singular
+//    private Set<Consumer<BeanMapper>> afterReadHandlers;
+
 
     // We are caching them on first use
     private final Map<Format, ObjectMapper> cache = new ConcurrentHashMap<>(3);
@@ -215,18 +249,18 @@ public class BeanMapper { //NOSONAR
      * @throws BeanException if reading failed
      * @throws ConstraintViolationException on bean validation error
      */
+    @SuppressWarnings("unchecked")
     public <T> T read(
             @NonNull T object,
             @NonNull Reader reader,
             @NonNull Format format) {
-        return doRead(mapper -> {
-            try {
-                return mapper.readerForUpdating(object).readValue(reader);
-            } catch (IOException e) {
-                throw new BeanException("Could not read %s for object: %s"
-                        .formatted(format, object), e);
-            }
-        }, format);
+        try {
+            return (T) validate(getMapper(format)
+                    .readerForUpdating(object).readValue(reader));
+        } catch (IOException e) {
+            throw new BeanException(
+                    "Could not read %s source.".formatted(format), e);
+        }
     }
 
     /**
@@ -240,19 +274,34 @@ public class BeanMapper { //NOSONAR
      * @throws BeanException if reading failed
      * @throws ConstraintViolationException on bean validation error
      */
+    @SuppressWarnings("unchecked")
     public <T> T read(
             @NonNull Class<T> type,
             @NonNull Reader reader,
             @NonNull Format format) {
+        try {
+            return (T) validate(
+                    getMapper(format).readerFor(type).readValue(reader));
+        } catch (IOException e) {
+            throw new BeanException(
+                    "Could not read %s source.".formatted(format), e);
+        }
+    }
 
-        return doRead(mapper -> {
-            try {
-                return mapper.readValue(reader, type);
-            } catch (IOException e) {
-                throw new BeanException("Could not read %s for class: %s"
-                        .formatted(format, type), e);
+    private Object validate(Object obj) {
+        if (obj != null && !skipValidation) {
+            var factory = Validation.buildDefaultValidatorFactory();
+            var validator = factory.getValidator();
+            Set<ConstraintViolation<Object>> violations =
+                    validator.validate(obj);
+            if (!violations.isEmpty() ) {
+                throw new ConstraintViolationException(
+                        "Object validation failed for object of type: %s"
+                        .formatted(obj.getClass().getName()),
+                        violations);
             }
-        }, format);
+        }
+        return obj;
     }
 
     /**
@@ -276,6 +325,13 @@ public class BeanMapper { //NOSONAR
             var builder = format.builder.get();
             builder.enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY);
             builder.addHandler(new BeanMapperPropertyHandler(this));
+
+            // modules:
+            builder.addModule(new ParameterNamesModule());
+            builder.addModule(new Jdk8Module());
+            builder.addModule(new JavaTimeModule());
+            builder.addModule(new GenericJsonModule());
+
             if (mapperBuilderCustomizer != null) {
                 mapperBuilderCustomizer.accept(builder);
             }
@@ -296,11 +352,9 @@ public class BeanMapper { //NOSONAR
             mapper.enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
             mapper.setSerializationInclusion(Include.NON_EMPTY);
 
-            // modules:
-            mapper.registerModule(new ParameterNamesModule());
-            mapper.registerModule(new Jdk8Module());
-            mapper.registerModule(new JavaTimeModule());
-            mapper.registerModule(new GenericJsonModule());
+            if (!configurableDetectionDisabled) {
+                mapper.addMixIn(Configurable.class, ConfigurableMixIn.class);
+            }
 
             // register polymorphic types:
             registerPolymorphicTypes(mapper);
@@ -308,6 +362,7 @@ public class BeanMapper { //NOSONAR
             return mapper;
         });
     }
+
 
     private void registerPolymorphicTypes(ObjectMapper mapper) {
         polymorphicTypes.forEach((type, predicate) -> {
@@ -317,24 +372,6 @@ public class BeanMapper { //NOSONAR
         });
     }
 
-    private <T> T doRead(
-            @NonNull Function<ObjectMapper, T> f,
-            @NonNull Format format) {
-        var obj = f.apply(getMapper(format));
-        if (!skipValidation) {
-            var factory = Validation.buildDefaultValidatorFactory();
-            var validator = factory.getValidator();
-            Set<ConstraintViolation<Object>> violations =
-                    validator.validate(obj);
-            if (!violations.isEmpty() ) {
-                throw new ConstraintViolationException(
-                        "Object validation failed when reading %s: "
-                        .formatted(format),
-                        violations);
-            }
-        }
-        return obj;
-    }
 
     private void assertWriteRead(Object object, Format format) {
         var out = new StringWriter();
@@ -345,9 +382,9 @@ public class BeanMapper { //NOSONAR
         Object readObject = read(object.getClass(), in, format);
         if (!object.equals(readObject)) {
             if (LOG.isErrorEnabled()) {
-                LOG.error(" SAVED: {}", object);
-                LOG.error("LOADED: {}", readObject);
-                LOG.error("  DIFF: \n{}\n", BeanUtil.diff(object, readObject));
+                LOG.error(" SAVED ► {}: {}", format, object);
+                LOG.error("LOADED ◄ {}: {}", format, readObject);
+                LOG.error("DIFF: \n{}\n", BeanUtil.diff(object, readObject));
             }
             throw new BeanException(
                     "Saved and loaded " + format + " are not the same.");
@@ -359,6 +396,13 @@ public class BeanMapper { //NOSONAR
         include = JsonTypeInfo.As.PROPERTY,
         property = "class")
     abstract static class PolymorphicMixIn {}
+
+    @JsonIncludeProperties({"configuration"})
+    abstract static class ConfigurableMixIn {
+        @Valid
+        @JsonProperty("configuration")
+        Object configuration;
+    }
 
     @RequiredArgsConstructor
     static class BeanMapperPropertyHandler
@@ -373,10 +417,11 @@ public class BeanMapper { //NOSONAR
                 Object beanOrClass,
                 String propertyName) throws IOException {
 
-            if ("class".equals(propertyName)) {
+            if ("class".equals(propertyName)
+                    || beanMapper.ignoredProperties.contains(propertyName)) {
+                ctxt.readTree(p);
                 return true;
             }
-
             Class<?> cls = beanMapper.unboundPropertyMappings.get(propertyName);
             if (cls != null) {
                 p.setCurrentValue(ClassUtil.newInstance(cls));
@@ -390,7 +435,7 @@ public class BeanMapper { //NOSONAR
                 JavaType baseType, String subTypeId, TypeIdResolver idResolver,
                 String failureMsg) throws IOException {
 
-            if (beanMapper.disableCanonicalNameSupport) {
+            if (beanMapper.canonicalNameSupportDisabled) {
                 return null;
             }
 
