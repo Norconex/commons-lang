@@ -60,15 +60,20 @@ import com.norconex.commons.lang.ClassFinder;
 import com.norconex.commons.lang.ClassUtil;
 import com.norconex.commons.lang.config.Configurable;
 import com.norconex.commons.lang.convert.GenericJsonModule;
+import com.norconex.commons.lang.flow.FlowCondition;
+import com.norconex.commons.lang.flow.FlowInputConsumer;
+import com.norconex.commons.lang.flow.module.FlowModule;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
 import jakarta.validation.Validation;
 import lombok.Builder;
+import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Singular;
+import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -198,12 +203,24 @@ public class BeanMapper { //NOSONAR
     private Map<Class<?>, Predicate<String>> polymorphicTypes;
 
     /**
-     * Optionally register properties to be (de)serialialized to a class,
-     * when the said property is not bound to a class via regular
-     * JSON mappings.
+     * Optionally register properties to be (de)serialialized to a class.
+     * Only applicable when the property is not already bound to a class via
+     * regular JSON mappings.
      */
     @Singular
     private Map<String, Class<?>> unboundPropertyMappings;
+
+//    /**
+//     * Optionally register properties to be handled by associated
+//     * (de)serializers. Only applies the property is not already bound to a
+//     * class via regular JSON mappings.
+//     */
+//    @Singular
+//    private Map<String, Pair<JsonSerializer<?>, JsonDeserializer<?>>>
+//            unboundPropertyHandlers;
+
+    //TODO small we pass a FlowMapperConfig instead?
+    private FlowMapperConfig flowMapperConfig;
 
     /**
      * Optionally register source properties to be ignored when read.
@@ -332,6 +349,19 @@ public class BeanMapper { //NOSONAR
             builder.addModule(new JavaTimeModule());
             builder.addModule(new GenericJsonModule());
 
+            // register flow module
+            builder.addModule(new FlowModule(flowMapperConfig));
+//            Class<?> flowConditionType = flowMapperConfig.conditionType;
+//            if (flowConditionType == null) {
+//                flowConditionType = Condition.class;
+//            }
+//            polymorphicTypes.put(flowConditionType,
+//                    flowMapperConfig.polymorphicConditionsFilter);
+//            builder.addModule(FlowModule.builder()
+//                .consumerAdapter(flowMapperConfig.flowConsumerAdapter)
+//                .predicateAdapter(flowMapperConfig.flowPredicateAdapter)
+//                .build());
+
             if (mapperBuilderCustomizer != null) {
                 mapperBuilderCustomizer.accept(builder);
             }
@@ -365,11 +395,35 @@ public class BeanMapper { //NOSONAR
 
 
     private void registerPolymorphicTypes(ObjectMapper mapper) {
+        // Any
         polymorphicTypes.forEach((type, predicate) -> {
             mapper.addMixIn(type, PolymorphicMixIn.class);
             mapper.registerSubtypes(ClassFinder.findSubTypes(
                     type, predicate).toArray(new Class<?>[] {}));
         });
+
+        //--- Flow-specific ---
+
+        Class<?> conditionType = flowMapperConfig.conditionType;
+//        if (conditionType == null) {
+//            conditionType = Condition.class;
+//        }
+        if (conditionType != null) {
+            mapper.addMixIn(conditionType, PolymorphicMixIn.class);
+            mapper.registerSubtypes(ClassFinder.findSubTypes(
+                    conditionType,
+                    flowMapperConfig.getConditionScanFilter())
+                        .toArray(new Class<?>[] {}));
+        }
+
+        Class<?> consumerType = flowMapperConfig.inputConsumerType;
+        if (consumerType != null) {
+            mapper.addMixIn(consumerType, PolymorphicMixIn.class);
+            mapper.registerSubtypes(ClassFinder.findSubTypes(
+                    consumerType,
+                    flowMapperConfig.getInputConsumerScanFilter())
+                        .toArray(new Class<?>[] {}));
+        }
     }
 
 
@@ -390,6 +444,45 @@ public class BeanMapper { //NOSONAR
                     "Saved and loaded " + format + " are not the same.");
         }
     }
+
+    //TODO Move out.
+    @Data
+    @Accessors(chain = true)
+    public static class FlowMapperConfig {
+//        private boolean enabled;
+        // native condition parent object type, adaptor for the native condtion
+
+
+//TODO Should both conditionType and consumerType be mandatory?
+        // If not, we have to make up a type like Condition to reduce
+        // the matches when we look them up.
+        // If yes (mandatory), maybe we can replace Condition with Predicate?
+
+//VERDICT: conditionType and consumerType should be optional... if not
+// specified, must specify full class name (no polymorphism)
+        private Class<?> conditionType;
+        private Class<? extends FlowConditionAdapter<?>> conditionAdapterType;
+        //TODO rename conditionScanFilter ?
+        private Predicate<String> conditionScanFilter;
+
+        private Class<?> inputConsumerType; // IF not specified, Object witn no scanning?
+        private Class<? extends FlowInputConsumerAdapter<?>> inputConsumerAdapterType;
+        private Predicate<String> inputConsumerScanFilter;
+
+//        private Predicate<?> flowPredicateAdapter;
+//        private Consumer<?> flowConsumerAdapter;
+    }
+    public interface FlowConditionAdapter<T> extends FlowCondition<T> {
+        Object getRawCondition();
+        void setRawCondition(Object nativeCondition);
+    }
+    public interface FlowInputConsumerAdapter<T>
+            extends FlowInputConsumer<T> {
+        Object getRawInputConsumer();
+        void setRawInputConsumer(Object nativeConsumer);
+    }
+
+
 
     @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
@@ -434,7 +527,6 @@ public class BeanMapper { //NOSONAR
         public JavaType handleUnknownTypeId(DeserializationContext ctxt,
                 JavaType baseType, String subTypeId, TypeIdResolver idResolver,
                 String failureMsg) throws IOException {
-
             if (beanMapper.canonicalNameSupportDisabled) {
                 return null;
             }

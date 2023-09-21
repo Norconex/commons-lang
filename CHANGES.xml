@@ -10,6 +10,10 @@
     <release version="3.0.0-SNAPSHOT" date="202?-??-??" 
         description="Feature release.">
       <action dev="essiembre" type="add">
+        New "flow" package to have conditions in XML, JSON, or Yaml 
+        configuration files. A replacement to XMLFlow.
+      </action>
+      <action dev="essiembre" type="add">
         New BeanMapper class to write/read objects to/from XML, JSON, and Yaml,
         with support for polymorphism. 
       </action>

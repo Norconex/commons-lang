@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE xml>
+<!-- 
+   Copyright 2021 Norconex Inc.
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+ -->
+<xml>
+  <!--
+    <condition> tags without "class" attribute are using XMLFlow default 
+    predicate type, which is for this test "PropertyMatcherCondition".
+    -->
+<thisIsTheFlow>
+    
+  <if>
+    <allOf>
+      <condition class="com.norconex.commons.lang.flow.mock.MockPropertyMatcherCondition">
+        <configuration>
+          <propertyMatcher>
+            <fieldMatcher>car</fieldMatcher>
+            <valueMatcher>volvo</valueMatcher>
+          </propertyMatcher>
+        </configuration>
+      </condition>
+      <condition class="MockPropertyMatcherCondition">
+        <configuration>
+          <propertyMatcher>
+            <fieldMatcher>car</fieldMatcher>
+            <valueMatcher>volvo</valueMatcher>
+          </propertyMatcher>
+        </configuration>
+      </condition>
+    </allOf>
+    <then>
+      <handler class="MockUppercaseConsumer">
+        <field>firstName</field>
+      </handler>
+    </then>
+    <else>
+      <handler class="MockUppercaseConsumer">
+        <field>lastName</field>
+      </handler>
+    </else>
+  </if>
+
+<!--  
+  <if>
+    <conditions operator="AND">
+      <condition class="MockMapSizeEqualsCondition">
+        <size>3</size>
+      </condition>
+      <condition>
+        <fieldMatcher>car</fieldMatcher>
+        <valueMatcher>toyota</valueMatcher>
+      </condition>
+    </conditions>
+    <then>
+      <aConsumer class="MockLowercaseConsumer">
+        <field>firstName</field>
+      </aConsumer>
+      <ifNot>
+        <condition>
+          <fieldMatcher>firstName</fieldMatcher>
+          <valueMatcher>john</valueMatcher>
+        </condition>
+        <then>
+          <anotherConsumer class="MockLowercaseConsumer">
+            <field>lastName</field>
+          </anotherConsumer>
+        </then>
+        <else>
+          <noClassConsumer>
+            <field>lastName</field>
+          </noClassConsumer>
+        </else>
+      </ifNot>
+    </then>
+  </if>
+  -->
+</thisIsTheFlow>
+
+</xml>
