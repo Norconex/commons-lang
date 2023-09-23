@@ -16,21 +16,22 @@ package com.norconex.commons.lang.flow.module;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.norconex.commons.lang.ClassUtil;
 import com.norconex.commons.lang.bean.BeanMapper.FlowConditionAdapter;
-import com.norconex.commons.lang.bean.BeanMapper.FlowMapperConfig;
 import com.norconex.commons.lang.flow.FlowCondition;
+import com.norconex.commons.lang.flow.module.FlowDeserializer.FlowDeserContext;
 
 class ConditionHandler<T> implements StatementHandler<FlowCondition<T>> {
 
     @SuppressWarnings("unchecked")
     @Override
-    public FlowCondition<T> read(
-            FlowMapperConfig config, JsonParser p, JsonNode node)
-                    throws IOException {
+    public FlowCondition<T> read(FlowDeserContext ctx) throws IOException {
+
+        var p = ctx.getParser();
+        var config = ctx.getConfig();
+        FlowUtil.logOpen(ctx, p.getCurrentName());
+        p.nextToken(); // <-- START_OBJECT
 
         Class<?> type = config.getConditionType();
         if (type == null) {
@@ -44,14 +45,17 @@ class ConditionHandler<T> implements StatementHandler<FlowCondition<T>> {
         }
 
         var mapper = (ObjectMapper) p.getCodec();
-        var condition = mapper.treeToValue(node, type);
+        var condition = mapper.readValue(p, type);
         if (config.getConditionAdapterType() != null) {
             var adapter = (FlowConditionAdapter<T>)
                     ClassUtil.newInstance(config.getConditionAdapterType());
             adapter.setRawCondition(condition);
-            return adapter;
+            condition = adapter;
         }
         // at this point it has to be a condition or fail.
+        FlowUtil.logBody(ctx, condition);
+        FlowUtil.logClose(ctx, p.getCurrentName());
+
         return (FlowCondition<T>) condition;
     }
 

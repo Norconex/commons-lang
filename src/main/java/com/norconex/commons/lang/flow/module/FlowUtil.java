@@ -14,53 +14,40 @@
  */
 package com.norconex.commons.lang.flow.module;
 
-import java.io.IOException;
+import org.apache.commons.lang3.StringUtils;
 
-import org.apache.commons.lang3.function.FailableBiConsumer;
-import org.apache.commons.lang3.function.FailableConsumer;
+import com.norconex.commons.lang.bean.BeanMapper.FlowConditionAdapter;
+import com.norconex.commons.lang.bean.BeanMapper.FlowInputConsumerAdapter;
+import com.norconex.commons.lang.flow.module.FlowDeserializer.FlowDeserContext;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 final class FlowUtil {
 
     private FlowUtil() {}
 
-    static void forEachFields(
-            JsonNode node, FailableBiConsumer<String, JsonNode, IOException> c)
-                    throws IOException {
-        for(var it = node.fields(); it.hasNext(); ) {
-            var f = it.next();
-            c.accept(f.getKey(), f.getValue());
+    static void logOpen(FlowDeserContext ctx, String nodeName) {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(StringUtils.repeat("  ", ctx.incrementDepth())
+                    + "<" + nodeName + ">");
         }
     }
-
-    static void forEachElements(
-            JsonNode node, FailableConsumer<JsonNode, IOException> c)
-                    throws IOException {
-        for(var it = node.elements(); it.hasNext(); ) {
-            c.accept(it.next());
+    static void logClose(FlowDeserContext ctx, String nodeName) {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(StringUtils.repeat("  ", ctx.decrementDepth())
+                    + "</" + nodeName + ">");
         }
     }
-
-    static void forEachArrayNodes(
-            JsonNode node, FailableConsumer<JsonNode, IOException> c)
-                    throws IOException {
-        if (node.isArray()) {
-            for (JsonNode n : node) {
-                c.accept(n);
+    static void logBody(FlowDeserContext ctx, Object obj) {
+        if (LOG.isDebugEnabled()) {
+            var resolved = obj;
+            if (obj instanceof FlowInputConsumerAdapter<?> fica) {
+                resolved = fica.getRawInputConsumer();
+            } else if (obj instanceof FlowConditionAdapter<?> fca) {
+                resolved = fca.getRawCondition();
             }
-        } else {
-            c.accept(node);
+            LOG.debug(StringUtils.repeat("  ", ctx.getDepth()) + resolved);
         }
     }
-
-    // goes through all fields (like "forEachFeilds") of objects contained
-    // in an array.  Useful also when you have 1-element array like this:
-    // [ { myobj1: {}, myobj2: {}, myobj3: {} } ]
-    static void forEachArrayObjectFields(
-            JsonNode node, FailableBiConsumer<String, JsonNode, IOException> c)
-                    throws IOException {
-        forEachArrayNodes(node, n -> forEachFields(n, c));
-    }
-
 }

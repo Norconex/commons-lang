@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE xml>
 <!-- 
-   Copyright 2021 Norconex Inc.
+   Copyright 2021-2023 Norconex Inc.
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,77 +16,80 @@
    limitations under the License.
  -->
 <xml>
-  <!--
-    <condition> tags without "class" attribute are using XMLFlow default 
-    predicate type, which is for this test "PropertyMatcherCondition".
-    -->
-<thisIsTheFlow>
-    
-  <if>
-    <allOf>
-      <condition class="com.norconex.commons.lang.flow.mock.MockPropertyMatcherCondition">
-        <configuration>
-          <propertyMatcher>
-            <fieldMatcher>car</fieldMatcher>
-            <valueMatcher>volvo</valueMatcher>
-          </propertyMatcher>
-        </configuration>
-      </condition>
-      <condition class="MockPropertyMatcherCondition">
-        <configuration>
-          <propertyMatcher>
-            <fieldMatcher>car</fieldMatcher>
-            <valueMatcher>volvo</valueMatcher>
-          </propertyMatcher>
-        </configuration>
-      </condition>
-    </allOf>
-    <then>
-      <handler class="MockUppercaseConsumer">
-        <field>firstName</field>
-      </handler>
-    </then>
-    <else>
-      <handler class="MockUppercaseConsumer">
-        <field>lastName</field>
-      </handler>
-    </else>
-  </if>
 
-<!--  
-  <if>
-    <conditions operator="AND">
-      <condition class="MockMapSizeEqualsCondition">
-        <size>3</size>
+  <flowTest>
+    <if>
+      <!-- Testing with fully qualified class name -->
+      <condition 
+        class="com.norconex.commons.lang.flow.mock.MockPropertyMatcherCondition">
+        <configuration>
+          <propertyMatcher>
+            <fieldMatcher>car</fieldMatcher>
+            <valueMatcher>volvo</valueMatcher>
+          </propertyMatcher>
+        </configuration>
       </condition>
-      <condition>
-        <fieldMatcher>car</fieldMatcher>
-        <valueMatcher>toyota</valueMatcher>
-      </condition>
-    </conditions>
-    <then>
-      <aConsumer class="MockLowercaseConsumer">
-        <field>firstName</field>
-      </aConsumer>
-      <ifNot>
-        <condition>
-          <fieldMatcher>firstName</fieldMatcher>
-          <valueMatcher>john</valueMatcher>
+      <then>
+        <!-- Testing with short name -->
+        <handler class="MockUppercaseConsumer">
+          <field>firstName</field>
+        </handler>
+      </then>
+      <else>
+        <handler class="MockUppercaseConsumer">
+          <field>lastName</field>
+        </handler>
+      </else>
+    </if>
+    
+    <uselessConsumer class="MockLowercaseConsumer">
+      <field>IdonExist</field>
+    </uselessConsumer>
+    
+    <!--
+      Grouping multiple conditions with AND operator.
+      -->
+    <if>
+      <allOf>
+        <condition class="MockMapSizeEqualsCondition">
+          <size>3</size>
         </condition>
-        <then>
-          <anotherConsumer class="MockLowercaseConsumer">
-            <field>lastName</field>
-          </anotherConsumer>
-        </then>
-        <else>
-          <noClassConsumer>
-            <field>lastName</field>
-          </noClassConsumer>
-        </else>
-      </ifNot>
-    </then>
-  </if>
-  -->
-</thisIsTheFlow>
+        <condition class="MockPropertyMatcherCondition">
+          <configuration>
+            <propertyMatcher>
+              <fieldMatcher>car</fieldMatcher>
+              <valueMatcher>toyota</valueMatcher>
+            </propertyMatcher>
+          </configuration>
+        </condition>
+      </allOf>
+      <then>
+        <aConsumer class="MockLowercaseConsumer">
+          <field>firstName</field>
+        </aConsumer>
+        <!-- Nested ifNot condition -->
+        <ifNot>
+          <condition class="MockPropertyMatcherCondition">
+            <configuration>
+              <propertyMatcher>
+                <fieldMatcher>firstName</fieldMatcher>
+                <valueMatcher>john</valueMatcher>
+              </propertyMatcher>
+            </configuration>
+          </condition>
+          <then>
+            <anotherConsumer class="MockLowercaseConsumer">
+              <field>lastName</field>
+            </anotherConsumer>
+          </then>
+          <else>
+            <noClassConsumer class="MockUppercaseConsumer">
+              <field>lastName</field>
+            </noClassConsumer>
+          </else>
+        </ifNot>
+      </then>
+    </if>
+  </flowTest>
 
 </xml>

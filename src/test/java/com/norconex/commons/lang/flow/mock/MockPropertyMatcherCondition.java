@@ -14,8 +14,6 @@
  */
 package com.norconex.commons.lang.flow.mock;
 
-import java.util.function.Predicate;
-
 import com.norconex.commons.lang.config.Configurable;
 import com.norconex.commons.lang.map.Properties;
 
@@ -26,7 +24,7 @@ import lombok.Data;
  */
 @Data
 public class MockPropertyMatcherCondition
-        implements Predicate<Properties>,
+        implements MockConditionBase,
         Configurable<MockPropertyMatcherConditionConfig> {
 
     private final MockPropertyMatcherConditionConfig configuration =

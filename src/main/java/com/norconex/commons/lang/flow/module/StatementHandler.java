@@ -16,12 +16,9 @@ package com.norconex.commons.lang.flow.module;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.norconex.commons.lang.bean.BeanMapper.FlowMapperConfig;
+import com.norconex.commons.lang.flow.module.FlowDeserializer.FlowDeserContext;
 
 interface StatementHandler<R> {
-    R read(FlowMapperConfig config, JsonParser p, JsonNode node)
-            throws IOException;
+    R read(FlowDeserContext ctx) throws IOException;
     void write() throws IOException;
 }

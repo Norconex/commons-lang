@@ -22,11 +22,11 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.norconex.commons.lang.bean.BeanMapper.FlowMapperConfig;
 import com.norconex.commons.lang.flow.Flow;
 
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class FlowDeserializer<T>
-        extends JsonDeserializer<Flow<T>> {
+public class FlowDeserializer<T> extends JsonDeserializer<Flow<T>> {
     private final FlowMapperConfig config;
 
     @SuppressWarnings("unchecked")
@@ -36,6 +36,19 @@ public class FlowDeserializer<T>
     @Override
     public Flow<T> deserialize(JsonParser p, DeserializationContext ctx)
             throws IOException {
-        return new Flow<>(rootHandler.read(config, p, p.readValueAsTree()));
+        return new Flow<>(rootHandler.read(new FlowDeserContext(config, p)));
+    }
+
+    @Data
+    static class FlowDeserContext {
+        private final FlowMapperConfig config;
+        private final JsonParser parser;
+        private int depth;
+        int incrementDepth() {
+            return depth++;
+        }
+        int decrementDepth() {
+            return --depth;
+        }
     }
 }

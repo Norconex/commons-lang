@@ -34,8 +34,6 @@ public class FlowSerializer<F extends Flow<T>, T> extends JsonSerializer<F> {
             JsonGenerator gen, SerializerProvider sp) throws IOException {
      //   gen.writeString(GenericConverter.convert(value));
 
-
-
         //TODO ensure order is preserved when writing
 
     }

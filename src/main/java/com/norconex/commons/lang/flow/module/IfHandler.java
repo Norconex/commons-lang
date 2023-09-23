@@ -17,43 +17,48 @@ package com.norconex.commons.lang.flow.module;
 import java.io.IOException;
 import java.util.function.Consumer;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.norconex.commons.lang.bean.BeanMapper.FlowMapperConfig;
+import com.fasterxml.jackson.core.JsonToken;
 import com.norconex.commons.lang.flow.FlowCondition;
 import com.norconex.commons.lang.flow.If;
+import com.norconex.commons.lang.flow.module.FlowDeserializer.FlowDeserContext;
 
 class IfHandler<T> implements StatementHandler<If<T>> {
 
     @Override
-    public If<T> read(FlowMapperConfig config, JsonParser p, JsonNode node)
+    public If<T> read(FlowDeserContext ctx)
             throws IOException {
 
+        var p = ctx.getParser();
         var args = new Args<T>();
-        FlowUtil.forEachArrayObjectFields(node, (name, n) -> {
+
+        p.nextToken(); // <-- START_OBJECT
+        while ((p.nextToken()) != JsonToken.END_OBJECT) { // <-- FIELD_NAME
+            var name = p.getCurrentName();
+
             var st = Statement.of(name);
             if (st == null) {
                 badChildren("Invalid element: <%s>".formatted(name));
             }
+
             switch (st) {
                 case CONDITION, ALLOF, ANYOF -> args.setCondition(
-                        st.handler().read(config, p, n), name);
+                        st.handler().read(ctx), name);
                 case THEN -> args.setThenConsumer(
-                        st.handler().read(config, p, n));
+                        st.handler().read(ctx));
                 case ELSE -> args.setElseConsumer(
-                        st.handler().read(config, p, n));
-                default -> badChildren("Invalid element: <%s>".formatted(name));
+                        st.handler().read(ctx));
+                default -> badChildren("Got instead: <%s>".formatted(name));
             }
-        });
+        }
 
-        if (args.flowCondition == null) {
+        if (args.condition == null) {
             badChildren("Missing one of <condition>, <anyOf>, or <allOf>.");
         }
         if (args.thenConsumer == null) {
             badChildren("Missing element: <then>.");
         }
 
-        return new If<>(args.flowCondition, args.thenConsumer, args.elseConsumer);
+        return new If<>(args.condition, args.thenConsumer, args.elseConsumer);
     }
 
     @Override
@@ -63,16 +68,16 @@ class IfHandler<T> implements StatementHandler<If<T>> {
 
     @SuppressWarnings("unchecked")
     static class Args<T> {
-        private FlowCondition<T> flowCondition;
+        private FlowCondition<T> condition;
         private Consumer<T> thenConsumer;
         private Consumer<T> elseConsumer;
         public void setCondition(
                 Object condition, String name) throws IOException {
-            if (flowCondition != null) {
+            if (this.condition != null) {
                 badChildren("Element appearing more than once: <%s>"
                         .formatted(name));
             }
-            flowCondition = (FlowCondition<T>) condition;
+            this.condition = (FlowCondition<T>) condition;
         }
         public void setThenConsumer(Object thenConsumer) throws IOException {
             if (this.thenConsumer != null) {

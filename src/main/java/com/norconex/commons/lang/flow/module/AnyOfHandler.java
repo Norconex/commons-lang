@@ -16,36 +16,37 @@ package com.norconex.commons.lang.flow.module;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.norconex.commons.lang.bean.BeanMapper.FlowMapperConfig;
+import com.fasterxml.jackson.core.JsonToken;
 import com.norconex.commons.lang.flow.AnyOf;
 import com.norconex.commons.lang.flow.FlowCondition;
+import com.norconex.commons.lang.flow.module.FlowDeserializer.FlowDeserContext;
 
 class AnyOfHandler<T> implements StatementHandler<AnyOf<T>> {
 
     @SuppressWarnings("unchecked")
     @Override
-    public AnyOf<T> read(FlowMapperConfig config, JsonParser p, JsonNode node)
-            throws IOException {
+    public AnyOf<T> read(FlowDeserContext ctx) throws IOException {
 
+        var p = ctx.getParser();
         var anyOf = new AnyOf<T>();
-        FlowUtil.forEachArrayObjectFields(node, (propName, propValue) -> {
-            if (!Statement.isAnyOf(propName,
+        FlowUtil.logOpen(ctx, p.getCurrentName());
+        p.nextToken(); // <-- START_OBJECT
+
+        while ((p.nextToken()) != JsonToken.END_OBJECT) { // <-- FIELD_NAME
+            var fieldName = p.getCurrentName();
+            if (!Statement.isAnyOf(fieldName,
                     Statement.CONDITION, Statement.ALLOF, Statement.ANYOF)) {
                 throw new IOException("""
                         Only <condition>, <allOf>, and <anyOf> are \
-                        permitted as direct child elements of <anyOf>. \
-                        Got instead: "%s"
-                        """.formatted(propName));
+                        permitted as direct child elements of <if> and
+                        <ifNot>. Got instead: "%s"
+                        """.formatted(fieldName));
             }
+            anyOf.add((FlowCondition<T>)
+                    Statement.of(fieldName).handler().read(ctx));
+        }
 
-            // propValue is likely an array
-            FlowUtil.forEachArrayNodes(propValue, childNode -> anyOf.add(
-                    (FlowCondition<T>) Statement.of(propName).handler().read(
-                            config, p, childNode))
-            );
-        });
+        FlowUtil.logClose(ctx, p.getCurrentName());
         return anyOf;
     }
 

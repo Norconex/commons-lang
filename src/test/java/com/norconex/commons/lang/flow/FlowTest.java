@@ -14,7 +14,10 @@
  */
 package com.norconex.commons.lang.flow;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.IOException;
+import java.util.function.Consumer;
 
 import org.junit.jupiter.api.Test;
 
@@ -22,9 +25,9 @@ import com.norconex.commons.lang.ResourceLoader;
 import com.norconex.commons.lang.bean.BeanMapper;
 import com.norconex.commons.lang.bean.BeanMapper.FlowMapperConfig;
 import com.norconex.commons.lang.bean.BeanMapper.Format;
+import com.norconex.commons.lang.flow.mock.MockConditionBase;
 import com.norconex.commons.lang.flow.mock.MockFlowConditionAdapter;
 import com.norconex.commons.lang.flow.mock.MockFlowInputConsumerAdapter;
-import com.norconex.commons.lang.flow.mock.MockPropertyMatcherCondition;
 import com.norconex.commons.lang.map.Properties;
 
 import lombok.Data;
@@ -35,12 +38,24 @@ class FlowTest {
 //    @EnumSource(Format.class)
 //    void testFlow(Format format) {
 //    }
+    //TODO make it work with a yaml + json as well
 
     @Test
     void testFlow() throws IOException {
 
+        //TODO move flow mapper config out, and simplify it
+        // with having:
+        //   FlowMapperConfig
+        //      conditionConfig: MapperConfig
+        //      inputConsumerConfig: MapperConfig
+        // ?
+
+        //TODO like XMLFlow, allow for default/fallback types
+        //(so class does not always need to be specified)?
+
         var flowCfg = new FlowMapperConfig();
-        flowCfg.setConditionType(MockPropertyMatcherCondition.class);
+        // testing with a base type not being FlowCondition
+        flowCfg.setConditionType(MockConditionBase.class);
         flowCfg.setConditionAdapterType(MockFlowConditionAdapter.class);
         flowCfg.setConditionScanFilter(c -> c.startsWith("com.norconex."));
 
@@ -53,99 +68,39 @@ class FlowTest {
             .build();
 
         //Flow<Properties> c;
-        TextFlowObject tfo;
+        TestFlowConfig cfg;
         try (var r = ResourceLoader.getXmlReader(getClass())) {
-            tfo = bm.read(TextFlowObject.class, r, Format.XML);
+            cfg = bm.read(TestFlowConfig.class, r, Format.XML);
         }
 
-        System.out.println("FLOW TEST: " + tfo);
+        Consumer<Properties> c = cfg.getFlowTest();
+
+        var data1 = new Properties();
+        data1.add("firstName", "John");
+        data1.add("lastName", "Smith");
+        data1.set("car", "volvo");
+        c.accept(data1);
+
+        // first name uppercase
+        assertThat(data1.getString("firstName")).isEqualTo("JOHN");
+        // last name unchanged
+        assertThat(data1.getString("lastName")).isEqualTo("Smith");
+
+        var data2 = new Properties();
+        data2.add("firstName", "John");
+        data2.add("lastName", "Smith");
+        data2.set("car", "toyota");
+        c.accept(data2);
+
+        // first name lowercase
+        assertThat(data2.getString("firstName")).isEqualTo("john");
+        // last name uppercase
+        assertThat(data2.getString("lastName")).isEqualTo("SMITH");
+
     }
 
     @Data
-    static class TextFlowObject {
-        private Flow<Properties> thisIsTheFlow;
+    static class TestFlowConfig {
+        private Flow<Properties> flowTest;
     }
-//
-//    @ToString
-//    @EqualsAndHashCode
-//    public static class TestPropertiesConditionAdapter
-//            implements FlowConditionAdapter<Properties> {
-//
-//        private MockPropertyMatcherCondition nativeCondition;
-//
-//        @Override
-//        public boolean test(Properties props) {
-//            return nativeCondition.test(props);
-//        }
-//        @Override
-//        public MockPropertyMatcherCondition getNativeCondition() {
-//            return nativeCondition;
-//        }
-//        @Override
-//        public void setNativeCondition(Object nativeCondition) {
-//            this.nativeCondition = (MockPropertyMatcherCondition) nativeCondition;
-//        }
-//    }
-//
-//    @ToString
-//    @EqualsAndHashCode
-//    public static class TestPropertiesConsumerAdapter
-//            implements FlowInputConsumerAdapter<Properties> {
-//
-//        private MockPropertyMatcherCondition nativeCondition;
-//
-//        @Override
-//        public void accept(Properties t) {
-//            // TODO Auto-generated method stub
-//
-//        }
-//
-//        @Override
-//        public boolean test(Properties props) {
-//            return nativeCondition.test(props);
-//        }
-//        @Override
-//        public MockPropertyMatcherCondition getNativeCondition() {
-//            return nativeCondition;
-//        }
-//        @Override
-//        public void setNativeCondition(Object nativeCondition) {
-//            this.nativeCondition = (MockPropertyMatcherCondition) nativeCondition;
-//        }
-//    }
-
-//    private void testFlow(XML xml) throws IOException {
-//        XMLFlow<Properties> flow = createXMLFlow();
-//        Consumer<Properties> c;
-//        try (Reader r = ResourceLoader.getXmlReader(getClass())) {
-//            c = flow.parse(xml);
-//        }
-//
-//        Properties data1 = new Properties();
-//        data1.add("firstName", "John");
-//        data1.add("lastName", "Smith");
-//        data1.set("car", "volvo");
-//        c.accept(data1);
-//
-//        // first name uppercase
-//        Assertions.assertEquals("JOHN", data1.getString("firstName"));
-//        // last name unchanged
-//        Assertions.assertEquals("Smith", data1.getString("lastName"));
-//
-//        Properties data2 = new Properties();
-//        data2.add("firstName", "John");
-//        data2.add("lastName", "Smith");
-//        data2.set("car", "toyota");
-//        c.accept(data2);
-//
-//        // first name lowercase
-//        Assertions.assertEquals("john", data2.getString("firstName"));
-//        // last name uppercase
-//        Assertions.assertEquals("SMITH", data2.getString("lastName"));
-//    }
-//    static XMLFlow<Properties> createXMLFlow() {
-//        return new XMLFlow<>(
-//                MockXMLFlowConsumerAdapter.class,
-//                MockXMLFlowPredicateAdapter.class);
-//    }
 }

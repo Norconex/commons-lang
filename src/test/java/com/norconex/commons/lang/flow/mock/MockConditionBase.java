@@ -12,24 +12,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.norconex.commons.lang.flow.module;
+package com.norconex.commons.lang.flow.mock;
 
-import java.io.IOException;
+import java.util.function.Predicate;
 
-import com.norconex.commons.lang.flow.AllOf;
-import com.norconex.commons.lang.flow.module.FlowDeserializer.FlowDeserContext;
+import com.norconex.commons.lang.map.Properties;
 
-class AllOfHandler<T> implements StatementHandler<AllOf<T>> {
+public interface MockConditionBase extends Predicate<Properties> {
 
-    private final AnyOfHandler<T> anyOfHandler = new AnyOfHandler<>();
-
-    @Override
-    public AllOf<T> read(FlowDeserContext ctx) throws IOException {
-        return new AllOf<>(anyOfHandler.read(ctx));
-    }
-
-    @Override
-    public void write() throws IOException {
-        //TODO
-    }
 }

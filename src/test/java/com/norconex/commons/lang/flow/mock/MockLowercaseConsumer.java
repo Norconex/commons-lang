@@ -20,11 +20,13 @@ import com.norconex.commons.lang.map.Properties;
 import lombok.Data;
 
 @Data
-public class MockLowercaseConsumer
-        implements FlowInputConsumer<Properties> {
+public class MockLowercaseConsumer implements FlowInputConsumer<Properties> {
     private String field;
     @Override
     public void accept(Properties p) {
-        p.set(field, p.getString(field, "").toLowerCase());
+        var value = p.getString(field);
+        if (value != null) {
+            p.set(field, value.toLowerCase());
+        }
     }
 }

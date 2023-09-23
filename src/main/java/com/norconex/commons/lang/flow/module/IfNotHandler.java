@@ -16,19 +16,17 @@ package com.norconex.commons.lang.flow.module;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.norconex.commons.lang.bean.BeanMapper.FlowMapperConfig;
 import com.norconex.commons.lang.flow.IfNot;
+import com.norconex.commons.lang.flow.module.FlowDeserializer.FlowDeserContext;
 
 class IfNotHandler<T> implements StatementHandler<IfNot<T>> {
 
     private final IfHandler<T> ifHandler = new IfHandler<>();
 
     @Override
-    public IfNot<T> read(FlowMapperConfig config, JsonParser p, JsonNode node)
+    public IfNot<T> read(FlowDeserContext ctx)
             throws IOException {
-        var iff = ifHandler.read(config, p, node);
+        var iff = ifHandler.read(ctx);
         return new IfNot<>(
                 iff.getCondition(),
                 iff.getThenConsumer(),

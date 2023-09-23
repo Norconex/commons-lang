@@ -23,18 +23,18 @@ import lombok.Data;
 public final class MockFlowConditionAdapter
         implements FlowConditionAdapter<Properties> {
 
-    private MockPropertyMatcherCondition rawCondition;
+    private MockConditionBase rawCondition;
 
     @Override
     public boolean test(Properties props) {
         return rawCondition.test(props);
     }
     @Override
-    public MockPropertyMatcherCondition getRawCondition() {
+    public MockConditionBase getRawCondition() {
         return rawCondition;
     }
     @Override
     public void setRawCondition(Object rawCondition) {
-        this.rawCondition = (MockPropertyMatcherCondition) rawCondition;
+        this.rawCondition = (MockConditionBase) rawCondition;
     }
 }

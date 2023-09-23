@@ -14,20 +14,18 @@
  */
 package com.norconex.commons.lang.flow.mock;
 
-import java.util.Map;
-import java.util.function.Predicate;
+import com.norconex.commons.lang.map.Properties;
 
 import lombok.Data;
 
 // number of map entries must match given size
 @Data
-public class MockMapSizeEqualsCondition
-        implements Predicate<Map<?, ?>> {
+public class MockMapSizeEqualsCondition implements MockConditionBase {
 
     private int size;
 
     @Override
-    public boolean test(Map<?, ?> map) {
-        return map != null && map.size() == size;
+    public boolean test(Properties props) {
+        return props != null && props.size() == size;
     }
 }

@@ -69,6 +69,7 @@ import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
 import jakarta.validation.Validation;
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -138,8 +139,8 @@ public class BeanMapper { //NOSONAR
                     var m = (XmlMapper) b.build();
                     m.getFactory()
                         .getXMLOutputFactory()
-                        .setProperty(
-                                XMLOutputFactory.IS_REPAIRING_NAMESPACES, true);
+                        .setProperty(XMLOutputFactory.IS_REPAIRING_NAMESPACES,
+                                true);
                     return m;
                 }),
         JSON(
@@ -210,29 +211,20 @@ public class BeanMapper { //NOSONAR
     @Singular
     private Map<String, Class<?>> unboundPropertyMappings;
 
-//    /**
-//     * Optionally register properties to be handled by associated
-//     * (de)serializers. Only applies the property is not already bound to a
-//     * class via regular JSON mappings.
-//     */
-//    @Singular
-//    private Map<String, Pair<JsonSerializer<?>, JsonDeserializer<?>>>
-//            unboundPropertyHandlers;
 
-    //TODO small we pass a FlowMapperConfig instead?
-    private FlowMapperConfig flowMapperConfig;
+    /**
+     * Optionally setup support for using flow/conditions in your
+     * your source.
+     */
+    @Default
+    @NonNull
+    private FlowMapperConfig flowMapperConfig = new FlowMapperConfig();
 
     /**
      * Optionally register source properties to be ignored when read.
      */
     @Singular
     private Set<String> ignoredProperties;
-
-//    @Singular
-//    private Set<BiConsumer<BeanMapper, JsonNode>> beforeReadHandlers;
-//    @Singular
-//    private Set<Consumer<BeanMapper>> afterReadHandlers;
-
 
     // We are caching them on first use
     private final Map<Format, ObjectMapper> cache = new ConcurrentHashMap<>(3);
@@ -340,7 +332,7 @@ public class BeanMapper { //NOSONAR
         return cache.computeIfAbsent(format, fmt -> {
 
             var builder = format.builder.get();
-            builder.enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY);
+            builder.disable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY);
             builder.addHandler(new BeanMapperPropertyHandler(this));
 
             // modules:
@@ -351,16 +343,6 @@ public class BeanMapper { //NOSONAR
 
             // register flow module
             builder.addModule(new FlowModule(flowMapperConfig));
-//            Class<?> flowConditionType = flowMapperConfig.conditionType;
-//            if (flowConditionType == null) {
-//                flowConditionType = Condition.class;
-//            }
-//            polymorphicTypes.put(flowConditionType,
-//                    flowMapperConfig.polymorphicConditionsFilter);
-//            builder.addModule(FlowModule.builder()
-//                .consumerAdapter(flowMapperConfig.flowConsumerAdapter)
-//                .predicateAdapter(flowMapperConfig.flowPredicateAdapter)
-//                .build());
 
             if (mapperBuilderCustomizer != null) {
                 mapperBuilderCustomizer.accept(builder);
@@ -379,7 +361,7 @@ public class BeanMapper { //NOSONAR
 
             // write:
             mapper.configure(SerializationFeature.INDENT_OUTPUT, indent);
-            mapper.enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
+            mapper.disable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
             mapper.setSerializationInclusion(Include.NON_EMPTY);
 
             if (!configurableDetectionDisabled) {
@@ -405,9 +387,6 @@ public class BeanMapper { //NOSONAR
         //--- Flow-specific ---
 
         Class<?> conditionType = flowMapperConfig.conditionType;
-//        if (conditionType == null) {
-//            conditionType = Condition.class;
-//        }
         if (conditionType != null) {
             mapper.addMixIn(conditionType, PolymorphicMixIn.class);
             mapper.registerSubtypes(ClassFinder.findSubTypes(
@@ -465,9 +444,16 @@ public class BeanMapper { //NOSONAR
         //TODO rename conditionScanFilter ?
         private Predicate<String> conditionScanFilter;
 
-        private Class<?> inputConsumerType; // IF not specified, Object witn no scanning?
-        private Class<? extends FlowInputConsumerAdapter<?>> inputConsumerAdapterType;
+        private Class<?> inputConsumerType; // IF not specified, Object with no scanning?
+        private Class<? extends FlowInputConsumerAdapter<?>>
+                inputConsumerAdapterType;
         private Predicate<String> inputConsumerScanFilter;
+
+        //TODO should we have this method, which force to have
+        // types to be setup. We could use default types?
+        public boolean isEnabled() {
+            return conditionType != null && inputConsumerType != null;
+        }
 
 //        private Predicate<?> flowPredicateAdapter;
 //        private Consumer<?> flowConsumerAdapter;
