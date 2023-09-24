@@ -14,17 +14,20 @@
  */
 package com.norconex.commons.lang.flow.mock;
 
-import com.norconex.commons.lang.flow.FlowInputConsumer;
 import com.norconex.commons.lang.map.Properties;
 
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 @Data
-public class MockUppercaseConsumer
-        implements FlowInputConsumer<Properties> {
+@Accessors(chain = true)
+public class MockUppercaseConsumer implements MockConsumerBase {
     private String field;
     @Override
     public void accept(Properties p) {
-        p.set(field, p.getString(field, "").toUpperCase());
+        var value = p.getString(field);
+        if (value != null) {
+            p.set(field, value.toUpperCase());
+        }
     }
 }

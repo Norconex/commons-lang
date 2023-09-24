@@ -12,27 +12,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.norconex.commons.lang.flow;
+package com.norconex.commons.lang.flow.mock;
 
 import java.util.function.Consumer;
 
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-import lombok.ToString;
+import com.norconex.commons.lang.map.Properties;
 
-@ToString
-@EqualsAndHashCode
-public class IfNot<T> extends If<T> {
+public interface MockConsumerBase extends Consumer<Properties> {
 
-    public IfNot(
-            @NonNull FlowCondition<T> condition,
-            @NonNull Consumer<T> thenConsumer,
-            Consumer<T> elseConsumer) {
-        super(condition, thenConsumer, elseConsumer);
-    }
-
-    @Override
-    protected boolean conditionPasses(T t) {
-        return !super.conditionPasses(t);
-    }
 }

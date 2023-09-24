@@ -60,8 +60,6 @@ import com.norconex.commons.lang.ClassFinder;
 import com.norconex.commons.lang.ClassUtil;
 import com.norconex.commons.lang.config.Configurable;
 import com.norconex.commons.lang.convert.GenericJsonModule;
-import com.norconex.commons.lang.flow.FlowCondition;
-import com.norconex.commons.lang.flow.FlowInputConsumer;
 import com.norconex.commons.lang.flow.module.FlowModule;
 
 import jakarta.validation.ConstraintViolation;
@@ -440,12 +438,12 @@ public class BeanMapper { //NOSONAR
 //VERDICT: conditionType and consumerType should be optional... if not
 // specified, must specify full class name (no polymorphism)
         private Class<?> conditionType;
-        private Class<? extends FlowConditionAdapter<?>> conditionAdapterType;
+        private Class<? extends FlowPredicateAdapter<?>> conditionAdapterType;
         //TODO rename conditionScanFilter ?
         private Predicate<String> conditionScanFilter;
 
         private Class<?> inputConsumerType; // IF not specified, Object with no scanning?
-        private Class<? extends FlowInputConsumerAdapter<?>>
+        private Class<? extends FlowConsumerAdapter<?>>
                 inputConsumerAdapterType;
         private Predicate<String> inputConsumerScanFilter;
 
@@ -458,14 +456,13 @@ public class BeanMapper { //NOSONAR
 //        private Predicate<?> flowPredicateAdapter;
 //        private Consumer<?> flowConsumerAdapter;
     }
-    public interface FlowConditionAdapter<T> extends FlowCondition<T> {
-        Object getRawCondition();
-        void setRawCondition(Object nativeCondition);
+    public interface FlowPredicateAdapter<T> extends Predicate<T> {
+        Object getPredicateAdaptee();
+        void setPredicateAdaptee(Object predicateAdaptee);
     }
-    public interface FlowInputConsumerAdapter<T>
-            extends FlowInputConsumer<T> {
-        Object getRawInputConsumer();
-        void setRawInputConsumer(Object nativeConsumer);
+    public interface FlowConsumerAdapter<T> extends Consumer<T> {
+        Object getConsumerAdaptee();
+        void setConsumerAdaptee(Object consumerAdaptee);
     }
 
 

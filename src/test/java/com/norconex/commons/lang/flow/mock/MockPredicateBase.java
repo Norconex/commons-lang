@@ -18,6 +18,6 @@ import java.util.function.Predicate;
 
 import com.norconex.commons.lang.map.Properties;
 
-public interface MockConditionBase extends Predicate<Properties> {
+public interface MockPredicateBase extends Predicate<Properties> {
 
 }

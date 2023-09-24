@@ -16,14 +16,14 @@ package com.norconex.commons.lang.flow.mock;
 
 import java.util.function.Consumer;
 
-import com.norconex.commons.lang.bean.BeanMapper.FlowInputConsumerAdapter;
+import com.norconex.commons.lang.bean.BeanMapper.FlowConsumerAdapter;
 import com.norconex.commons.lang.map.Properties;
 
 import lombok.Data;
 
 @Data
 public final class MockFlowInputConsumerAdapter
-        implements FlowInputConsumerAdapter<Properties> {
+        implements FlowConsumerAdapter<Properties> {
 
     private Consumer<Properties> rawInputConsumer;
 
@@ -33,12 +33,12 @@ public final class MockFlowInputConsumerAdapter
     }
 
     @Override
-    public Object getRawInputConsumer() {
+    public Object getConsumerAdaptee() {
         return rawInputConsumer;
     }
     @SuppressWarnings("unchecked")
     @Override
-    public void setRawInputConsumer(Object rawInputConsumer) {
+    public void setConsumerAdaptee(Object rawInputConsumer) {
         this.rawInputConsumer = (Consumer<Properties>) rawInputConsumer;
 
     }

@@ -16,8 +16,8 @@ package com.norconex.commons.lang.flow.module;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.norconex.commons.lang.bean.BeanMapper.FlowConditionAdapter;
-import com.norconex.commons.lang.bean.BeanMapper.FlowInputConsumerAdapter;
+import com.norconex.commons.lang.bean.BeanMapper.FlowPredicateAdapter;
+import com.norconex.commons.lang.bean.BeanMapper.FlowConsumerAdapter;
 import com.norconex.commons.lang.flow.module.FlowDeserializer.FlowDeserContext;
 
 import lombok.extern.slf4j.Slf4j;
@@ -42,10 +42,10 @@ final class FlowUtil {
     static void logBody(FlowDeserContext ctx, Object obj) {
         if (LOG.isDebugEnabled()) {
             var resolved = obj;
-            if (obj instanceof FlowInputConsumerAdapter<?> fica) {
-                resolved = fica.getRawInputConsumer();
-            } else if (obj instanceof FlowConditionAdapter<?> fca) {
-                resolved = fca.getRawCondition();
+            if (obj instanceof FlowConsumerAdapter<?> fica) {
+                resolved = fica.getConsumerAdaptee();
+            } else if (obj instanceof FlowPredicateAdapter<?> fca) {
+                resolved = fca.getPredicateAdaptee();
             }
             LOG.debug(StringUtils.repeat("  ", ctx.getDepth()) + resolved);
         }

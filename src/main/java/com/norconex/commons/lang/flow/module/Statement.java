@@ -20,10 +20,10 @@ import java.util.Arrays;
  * A control flow statement.
  */
 enum Statement {
-    IF("if", new IfHandler<>()),
-    IFNOT("ifNot", new IfNotHandler<>()),
-    ALLOF("allOf", new AllOfHandler<>()),
-    ANYOF("anyOf", new AnyOfHandler<>()),
+    IF("if", new IfHandler<>(false)),
+    IFNOT("ifNot", new IfHandler<>(true)),
+    ALLOF("allOf", new GroupHandler<>(false)),
+    ANYOF("anyOf", new GroupHandler<>(true)),
     CONDITION("condition", new ConditionHandler<>()),
     THEN("then", new RootHandler<>()),
     ELSE("else", new RootHandler<>());

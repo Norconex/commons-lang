@@ -14,13 +14,20 @@
  */
 package com.norconex.commons.lang.flow;
 
+import java.util.List;
 import java.util.function.Consumer;
+
+import org.apache.commons.lang3.ArrayUtils;
+
+import com.norconex.commons.lang.function.Consumers;
 
 import lombok.Data;
 
-// DELETE ME?  useless except maybe if we need a type to distinguish
-// for (de)serialization?
-// Maybe needed if we need a concrete type for Jackson.
+/**
+ *
+ *
+ * @param <T>
+ */
 @Data
 public class Flow<T> implements Consumer<T> {
 
@@ -33,28 +40,14 @@ public class Flow<T> implements Consumer<T> {
         }
     }
 
-    //TODO consider having a builder where statements and handlers
-    // can be added in a chained manner. That would make it easier on devs.
-
-    // with a "build()" for nested builders that would go back up?
-
-
-
-
-//    private Consumer<T> consumer;
-//
-//    @JsonAnyGetter
-//    @JsonAnySetter
-//    private Map<String, Object> blah = new HashMap<>();
-
-//    public Map<String, Object> getAddress() {
-//        return blah;
-//    }
-//
-//    @Override
-//    public void accept(T t) {
-//        consumer.accept(t);
-//    }
-
-
+    @SuppressWarnings("unchecked")
+    public static <T> Flow<T> of(Consumer<T>... consumers) {
+        if (ArrayUtils.isEmpty(consumers)) {
+            return new Flow<>(null);
+        }
+        if (consumers.length == 1) {
+            return new Flow<>(consumers[0]);
+        }
+        return new Flow<>(new Consumers<>(List.of(consumers)));
+    }
 }

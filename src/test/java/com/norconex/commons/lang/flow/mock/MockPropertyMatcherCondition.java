@@ -24,7 +24,7 @@ import lombok.Data;
  */
 @Data
 public class MockPropertyMatcherCondition
-        implements MockConditionBase,
+        implements MockPredicateBase,
         Configurable<MockPropertyMatcherConditionConfig> {
 
     private final MockPropertyMatcherConditionConfig configuration =

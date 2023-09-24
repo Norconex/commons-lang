@@ -14,27 +14,27 @@
  */
 package com.norconex.commons.lang.flow.mock;
 
-import com.norconex.commons.lang.bean.BeanMapper.FlowConditionAdapter;
+import com.norconex.commons.lang.bean.BeanMapper.FlowPredicateAdapter;
 import com.norconex.commons.lang.map.Properties;
 
 import lombok.Data;
 
 @Data
 public final class MockFlowConditionAdapter
-        implements FlowConditionAdapter<Properties> {
+        implements FlowPredicateAdapter<Properties> {
 
-    private MockConditionBase rawCondition;
+    private MockPredicateBase rawCondition;
 
     @Override
     public boolean test(Properties props) {
         return rawCondition.test(props);
     }
     @Override
-    public MockConditionBase getRawCondition() {
+    public MockPredicateBase getPredicateAdaptee() {
         return rawCondition;
     }
     @Override
-    public void setRawCondition(Object rawCondition) {
-        this.rawCondition = (MockConditionBase) rawCondition;
+    public void setPredicateAdaptee(Object rawCondition) {
+        this.rawCondition = (MockPredicateBase) rawCondition;
     }
 }

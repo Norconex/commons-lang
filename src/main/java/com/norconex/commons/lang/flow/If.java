@@ -15,22 +15,29 @@
 package com.norconex.commons.lang.flow;
 
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
+import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.Accessors;
+
 
 @Data
 @RequiredArgsConstructor
+@Builder
 public class If<T> implements Consumer<T> {
 
-    private final @NonNull FlowCondition<T> condition;
+    private final @NonNull Predicate<T> condition;
     private final @NonNull Consumer<T> thenConsumer;
     private final Consumer<T> elseConsumer;
+    private final boolean negate;
 
     @Override
     public void accept(T t) {
-        if (conditionPasses(t)) {
+        if (condition.test(t) && !negate) {
             if (thenConsumer != null) {
                 thenConsumer.accept(t);
             }
@@ -39,7 +46,27 @@ public class If<T> implements Consumer<T> {
         }
     }
 
-    protected boolean conditionPasses(T t) {
-        return condition.test(t);
+    public static <T> If<T> isTrue(
+            @NonNull Predicate<T> condition,
+            @NonNull Consumer<T> thenConsumer) {
+        return isTrue(condition, thenConsumer, null);
+    }
+    public static <T> If<T> isTrue(
+            @NonNull Predicate<T> condition,
+            @NonNull Consumer<T> thenConsumer,
+            final Consumer<T> elseConsumer) {
+        return new If<>(condition, thenConsumer, elseConsumer, false);
+    }
+
+    public static <T> If<T> isFalse(
+            @NonNull Predicate<T> condition,
+            @NonNull Consumer<T> thenConsumer) {
+        return isFalse(condition, thenConsumer, null);
+    }
+    public static <T> If<T> isFalse(
+            @NonNull Predicate<T> condition,
+            @NonNull Consumer<T> thenConsumer,
+            final Consumer<T> elseConsumer) {
+        return new If<>(condition, thenConsumer, elseConsumer, true);
     }
 }

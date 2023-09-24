@@ -17,10 +17,12 @@ package com.norconex.commons.lang.flow.mock;
 import com.norconex.commons.lang.map.Properties;
 
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 // number of map entries must match given size
 @Data
-public class MockMapSizeEqualsCondition implements MockConditionBase {
+@Accessors(chain = true)
+public class MockMapSizeEqualsCondition implements MockPredicateBase {
 
     private int size;
 

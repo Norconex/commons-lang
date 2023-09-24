@@ -16,13 +16,20 @@ package com.norconex.commons.lang.flow.module;
 
 import java.io.IOException;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import com.fasterxml.jackson.core.JsonToken;
-import com.norconex.commons.lang.flow.FlowCondition;
 import com.norconex.commons.lang.flow.If;
 import com.norconex.commons.lang.flow.module.FlowDeserializer.FlowDeserContext;
 
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
+
+@Data
+@RequiredArgsConstructor
 class IfHandler<T> implements StatementHandler<If<T>> {
+
+    private final boolean negate;
 
     @Override
     public If<T> read(FlowDeserContext ctx)
@@ -58,7 +65,11 @@ class IfHandler<T> implements StatementHandler<If<T>> {
             badChildren("Missing element: <then>.");
         }
 
-        return new If<>(args.condition, args.thenConsumer, args.elseConsumer);
+        return new If<>(
+                args.condition,
+                args.thenConsumer,
+                args.elseConsumer,
+                negate);
     }
 
     @Override
@@ -68,7 +79,7 @@ class IfHandler<T> implements StatementHandler<If<T>> {
 
     @SuppressWarnings("unchecked")
     static class Args<T> {
-        private FlowCondition<T> condition;
+        private Predicate<T> condition;
         private Consumer<T> thenConsumer;
         private Consumer<T> elseConsumer;
         public void setCondition(
@@ -77,7 +88,7 @@ class IfHandler<T> implements StatementHandler<If<T>> {
                 badChildren("Element appearing more than once: <%s>"
                         .formatted(name));
             }
-            this.condition = (FlowCondition<T>) condition;
+            this.condition = (Predicate<T>) condition;
         }
         public void setThenConsumer(Object thenConsumer) throws IOException {
             if (this.thenConsumer != null) {

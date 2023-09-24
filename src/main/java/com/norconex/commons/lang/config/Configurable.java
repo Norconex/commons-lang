@@ -14,6 +14,8 @@
  */
 package com.norconex.commons.lang.config;
 
+import java.util.function.Consumer;
+
 /**
  * The implementing class can be configured via the object returned
  * by {@link #getConfiguration()}.
@@ -25,7 +27,32 @@ package com.norconex.commons.lang.config;
 public interface Configurable<T> {
     /**
      * Gets the configuration for a configurable object.
+     * Implementors are encouraged to ensure it is never <code>null</code>
+     * to facilitate usage.
      * @return configuration
      */
     T getConfiguration();
+
+    /**
+     * <p>
+     * Convenience method to facilitate configuring this instance in method
+     * chaining. E.g.
+     * </p>
+     * <pre>
+     * var myClass = Configurable.configure(
+     *      new MyConfigurableClass(), cfg -> cfg.setSomeValue("my value"));
+     * </pre>
+     * @param configurable the configurable object
+     * @param configurer object configuration consumer (not invoked if
+     *      <code>null</code> or if the configuration is <code>null</code>)
+     * @return this instance
+     */
+    static <T, R extends Configurable<T>> R configure(
+            R configurable, Consumer<T> configurer) {
+        var cfg = configurable.getConfiguration();
+        if (configurer != null && cfg != null) {
+            configurer.accept(cfg);
+        }
+        return configurable;
+    }
 }

@@ -15,18 +15,18 @@
 package com.norconex.commons.lang.flow.module;
 
 import java.io.IOException;
+import java.util.function.Predicate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.norconex.commons.lang.ClassUtil;
-import com.norconex.commons.lang.bean.BeanMapper.FlowConditionAdapter;
-import com.norconex.commons.lang.flow.FlowCondition;
+import com.norconex.commons.lang.bean.BeanMapper.FlowPredicateAdapter;
 import com.norconex.commons.lang.flow.module.FlowDeserializer.FlowDeserContext;
 
-class ConditionHandler<T> implements StatementHandler<FlowCondition<T>> {
+class ConditionHandler<T> implements StatementHandler<Predicate<T>> {
 
     @SuppressWarnings("unchecked")
     @Override
-    public FlowCondition<T> read(FlowDeserContext ctx) throws IOException {
+    public Predicate<T> read(FlowDeserContext ctx) throws IOException {
 
         var p = ctx.getParser();
         var config = ctx.getConfig();
@@ -35,8 +35,8 @@ class ConditionHandler<T> implements StatementHandler<FlowCondition<T>> {
 
         Class<?> type = config.getConditionType();
         if (type == null) {
-            type = FlowCondition.class;
-        } else if (!FlowCondition.class.isAssignableFrom(type)
+            type = Predicate.class;
+        } else if (!Predicate.class.isAssignableFrom(type)
                 && config.getConditionAdapterType() == null) {
             throw new IOException("""
                 Cannot have a flow condition type that\s\
@@ -47,16 +47,16 @@ class ConditionHandler<T> implements StatementHandler<FlowCondition<T>> {
         var mapper = (ObjectMapper) p.getCodec();
         var condition = mapper.readValue(p, type);
         if (config.getConditionAdapterType() != null) {
-            var adapter = (FlowConditionAdapter<T>)
+            var adapter = (FlowPredicateAdapter<T>)
                     ClassUtil.newInstance(config.getConditionAdapterType());
-            adapter.setRawCondition(condition);
+            adapter.setPredicateAdaptee(condition);
             condition = adapter;
         }
         // at this point it has to be a condition or fail.
         FlowUtil.logBody(ctx, condition);
         FlowUtil.logClose(ctx, p.getCurrentName());
 
-        return (FlowCondition<T>) condition;
+        return (Predicate<T>) condition;
     }
 
     @Override

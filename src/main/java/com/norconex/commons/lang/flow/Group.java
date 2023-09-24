@@ -14,14 +14,33 @@
  */
 package com.norconex.commons.lang.flow;
 
+import java.util.List;
+import java.util.function.Predicate;
+
 import com.norconex.commons.lang.function.Predicates;
 
 import lombok.Data;
+import lombok.NonNull;
 
 @Data
-public class AnyOf<T> extends Predicates<T> implements FlowCondition<T> {
+public class Group<T> extends Predicates<T> {
     private static final long serialVersionUID = 1L;
-    public AnyOf() {
-        super(true);
+
+    public Group(boolean any) {
+        super(any);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> Group<T> anyOf(@NonNull Predicate<T>... predicates) {
+        var allOf = new Group<T>(true);
+        allOf.addAll(List.of(predicates));
+        return allOf;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> Group<T> ofAll(@NonNull Predicate<T>... predicates) {
+        var allOf = new Group<T>(false);
+        allOf.addAll(List.of(predicates));
+        return allOf;
     }
 }

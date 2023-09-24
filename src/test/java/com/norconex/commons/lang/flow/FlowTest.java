@@ -14,6 +14,7 @@
  */
 package com.norconex.commons.lang.flow;
 
+import static com.norconex.commons.lang.text.TextMatcher.basic;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
@@ -25,10 +26,17 @@ import com.norconex.commons.lang.ResourceLoader;
 import com.norconex.commons.lang.bean.BeanMapper;
 import com.norconex.commons.lang.bean.BeanMapper.FlowMapperConfig;
 import com.norconex.commons.lang.bean.BeanMapper.Format;
-import com.norconex.commons.lang.flow.mock.MockConditionBase;
+import com.norconex.commons.lang.config.Configurable;
+import com.norconex.commons.lang.flow.mock.MockConsumerBase;
 import com.norconex.commons.lang.flow.mock.MockFlowConditionAdapter;
 import com.norconex.commons.lang.flow.mock.MockFlowInputConsumerAdapter;
+import com.norconex.commons.lang.flow.mock.MockLowercaseConsumer;
+import com.norconex.commons.lang.flow.mock.MockMapSizeEqualsCondition;
+import com.norconex.commons.lang.flow.mock.MockPredicateBase;
+import com.norconex.commons.lang.flow.mock.MockPropertyMatcherCondition;
+import com.norconex.commons.lang.flow.mock.MockUppercaseConsumer;
 import com.norconex.commons.lang.map.Properties;
+import com.norconex.commons.lang.map.PropertyMatcher;
 
 import lombok.Data;
 
@@ -43,23 +51,17 @@ class FlowTest {
     @Test
     void testFlow() throws IOException {
 
-        //TODO move flow mapper config out, and simplify it
-        // with having:
-        //   FlowMapperConfig
-        //      conditionConfig: MapperConfig
-        //      inputConsumerConfig: MapperConfig
-        // ?
 
         //TODO like XMLFlow, allow for default/fallback types
         //(so class does not always need to be specified)?
 
         var flowCfg = new FlowMapperConfig();
         // testing with a base type not being FlowCondition
-        flowCfg.setConditionType(MockConditionBase.class);
+        flowCfg.setConditionType(MockPredicateBase.class);
         flowCfg.setConditionAdapterType(MockFlowConditionAdapter.class);
         flowCfg.setConditionScanFilter(c -> c.startsWith("com.norconex."));
 
-        flowCfg.setInputConsumerType(FlowInputConsumer.class);
+        flowCfg.setInputConsumerType(MockConsumerBase.class);
         flowCfg.setInputConsumerAdapterType(MockFlowInputConsumerAdapter.class);
         flowCfg.setInputConsumerScanFilter(c -> c.startsWith("com.norconex."));
 
@@ -67,14 +69,63 @@ class FlowTest {
             .flowMapperConfig(flowCfg)
             .build();
 
-        //Flow<Properties> c;
         TestFlowConfig cfg;
         try (var r = ResourceLoader.getXmlReader(getClass())) {
             cfg = bm.read(TestFlowConfig.class, r, Format.XML);
         }
 
         Consumer<Properties> c = cfg.getFlowTest();
+        assertFlow(c);
+    }
 
+    @SuppressWarnings("unchecked")
+    @Test
+    void testProgrammaticFlow() throws IOException {
+
+        //TODO assert write/read and compare with XML/Yaml/JSON?
+
+        // Build the same config as XML, programatically and do same tests.
+        Consumer<Properties> c = Flow.<Properties>of(
+
+            If.<Properties>builder()
+                .condition(propertyMatcherCondition("car", "volvo"))
+                .thenConsumer(new MockUppercaseConsumer().setField("firstName"))
+                .elseConsumer(new MockUppercaseConsumer().setField("lastName"))
+                .build(),
+
+            new MockLowercaseConsumer().setField("IdontExist"),
+
+            If.<Properties>builder()
+                .condition(Group.ofAll(
+                        new MockMapSizeEqualsCondition().setSize(3),
+                        propertyMatcherCondition("car", "toyota")))
+                .thenConsumer(Flow.of(
+                        new MockLowercaseConsumer().setField("firstName"),
+                        If.<Properties>builder()
+                            .negate(true)
+                            .condition(propertyMatcherCondition(
+                                    "firstName", "john"))
+                            .thenConsumer(new MockLowercaseConsumer()
+                                    .setField("lastName"))
+                            .elseConsumer(new MockUppercaseConsumer()
+                                    .setField("lastName"))
+                            .build()
+                        ))
+                .build()
+        );
+
+        assertFlow(c);
+    }
+
+    private MockPropertyMatcherCondition propertyMatcherCondition(
+            String name, String value) {
+        return Configurable.configure(
+                new MockPropertyMatcherCondition(),
+                cfg -> cfg.setPropertyMatcher(
+                        new PropertyMatcher(basic(name), basic(value))));
+    }
+
+    void assertFlow(Consumer<Properties>  c) {
         var data1 = new Properties();
         data1.add("firstName", "John");
         data1.add("lastName", "Smith");
@@ -96,7 +147,6 @@ class FlowTest {
         assertThat(data2.getString("firstName")).isEqualTo("john");
         // last name uppercase
         assertThat(data2.getString("lastName")).isEqualTo("SMITH");
-
     }
 
     @Data

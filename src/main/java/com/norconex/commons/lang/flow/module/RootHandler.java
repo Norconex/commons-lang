@@ -22,8 +22,7 @@ import java.util.function.Consumer;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.norconex.commons.lang.ClassUtil;
-import com.norconex.commons.lang.bean.BeanMapper.FlowInputConsumerAdapter;
-import com.norconex.commons.lang.flow.FlowInputConsumer;
+import com.norconex.commons.lang.bean.BeanMapper.FlowConsumerAdapter;
 import com.norconex.commons.lang.flow.module.FlowDeserializer.FlowDeserContext;
 import com.norconex.commons.lang.function.Consumers;
 
@@ -82,8 +81,8 @@ class RootHandler<T> implements StatementHandler<Consumer<T>> {
 
         Class<?> type = config.getInputConsumerType();
         if (type == null) {
-            type = FlowInputConsumer.class;
-        } else if (!FlowInputConsumer.class.isAssignableFrom(type)
+            type = Consumer.class;
+        } else if (!Consumer.class.isAssignableFrom(type)
                 && config.getConditionAdapterType() == null) {
             throw new IOException("""
                 Cannot have a flow consumer type that does not implement \
@@ -93,15 +92,15 @@ class RootHandler<T> implements StatementHandler<Consumer<T>> {
         var mapper = (ObjectMapper) p.getCodec();
         var consumer = mapper.readValue(p, type);
         if (config.getInputConsumerAdapterType() != null) {
-            var adapter = (FlowInputConsumerAdapter<T>)
+            var adapter = (FlowConsumerAdapter<T>)
                     ClassUtil.newInstance(config.getInputConsumerAdapterType());
-            adapter.setRawInputConsumer(consumer);
+            adapter.setConsumerAdaptee(consumer);
             FlowUtil.logBody(ctx, adapter);
             return adapter;
         }
         FlowUtil.logBody(ctx, consumer);
         // at this point it has to be a condition or fail.
-        return (FlowInputConsumer<T>) consumer;
+        return (Consumer<T>) consumer;
     }
 
     @Override
