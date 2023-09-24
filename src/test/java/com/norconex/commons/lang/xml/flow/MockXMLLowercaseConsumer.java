@@ -20,7 +20,7 @@ import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.XMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 
-public class MockLowercaseConsumer
+public class MockXMLLowercaseConsumer
         implements Consumer<Properties>, XMLConfigurable {
     private String field;
     @Override
