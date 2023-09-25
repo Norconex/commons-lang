@@ -39,7 +39,6 @@ class RootHandler<T> implements StatementHandler<Consumer<T>> {
     public Consumer<T> read(
             FlowDeserContext ctx) throws IOException {
         var p = ctx.getParser();
-        ctx.getConfig();
         String parentName = null;
 
         // Ensure current token is START_OBJECT

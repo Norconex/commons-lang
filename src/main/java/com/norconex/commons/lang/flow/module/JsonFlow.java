@@ -14,18 +14,23 @@
  */
 package com.norconex.commons.lang.flow.module;
 
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.norconex.commons.lang.bean.BeanMapper.FlowMapperConfig;
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-import lombok.Getter;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+import java.util.function.Consumer;
 
-@Getter
-public class FlowModule extends SimpleModule {
+import com.norconex.commons.lang.bean.BeanMapper;
 
-    private static final long serialVersionUID = 1L;
+/**
+ * When adding the {@link FlowModule} to Jackson, use this annotation
+ * on {@link Consumer} properties to support flow (de)serialization.
+ * {@link BeanMapper} automatically registers the {@link FlowModule}.
+ */
+@Retention(RUNTIME)
+@Target({ TYPE, FIELD })
+public @interface JsonFlow {
 
-    public FlowModule(FlowMapperConfig config) {
-//TODO        addSerializer(Flow_MAYBE.class, new FlowSerializer<>(config));
-        setDeserializerModifier(new FlowDeserializerModifier(config));
-    }
 }

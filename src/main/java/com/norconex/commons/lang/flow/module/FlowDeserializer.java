@@ -15,12 +15,16 @@
 package com.norconex.commons.lang.flow.module;
 
 import java.io.IOException;
+import java.util.function.Consumer;
 
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.BeanProperty;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
+import com.fasterxml.jackson.databind.deser.ResolvableDeserializer;
 import com.norconex.commons.lang.bean.BeanMapper.FlowMapperConfig;
-import com.norconex.commons.lang.flow.Flow;
 
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -32,17 +36,40 @@ import lombok.RequiredArgsConstructor;
  * @since 3.0.0
  */
 @RequiredArgsConstructor
-public class FlowDeserializer<T> extends JsonDeserializer<Flow<T>> {
+public class FlowDeserializer<T> extends JsonDeserializer<Consumer<T>>
+        implements ContextualDeserializer, ResolvableDeserializer {
+
     private final FlowMapperConfig config;
+    private final JsonDeserializer<?> defaultDeserializer;
 
     @SuppressWarnings("unchecked")
     private RootHandler<T> rootHandler =
             (RootHandler<T>) Statement.THEN.handler();
 
     @Override
-    public Flow<T> deserialize(JsonParser p, DeserializationContext ctx)
+    public Consumer<T> deserialize(JsonParser p, DeserializationContext ctx)
             throws IOException {
-        return new Flow<>(rootHandler.read(new FlowDeserContext(config, p)));
+        return rootHandler.read(new FlowDeserContext(config, p));
+    }
+
+    @Override
+    public JsonDeserializer<?> createContextual(
+            DeserializationContext ctxt, BeanProperty property)
+                    throws JsonMappingException {
+        if (property == null) {
+            return defaultDeserializer;
+        }
+        return property.getAnnotation(JsonFlow.class) == null
+                ? defaultDeserializer : this;
+    }
+
+    @Override
+    public void resolve(DeserializationContext ctxt)
+            throws JsonMappingException {
+        if (defaultDeserializer != null
+                && defaultDeserializer instanceof ResolvableDeserializer rd) {
+            rd.resolve(ctxt);
+        }
     }
 
     @Data

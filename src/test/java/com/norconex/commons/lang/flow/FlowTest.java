@@ -35,6 +35,7 @@ import com.norconex.commons.lang.flow.mock.MockMapSizeEqualsCondition;
 import com.norconex.commons.lang.flow.mock.MockPredicateBase;
 import com.norconex.commons.lang.flow.mock.MockPropertyMatcherCondition;
 import com.norconex.commons.lang.flow.mock.MockUppercaseConsumer;
+import com.norconex.commons.lang.flow.module.JsonFlow;
 import com.norconex.commons.lang.function.Consumers;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertyMatcher;
@@ -75,7 +76,7 @@ class FlowTest {
             cfg = bm.read(TestFlowConfig.class, r, Format.XML);
         }
 
-        Consumer<Properties> c = cfg.getFlowTest();
+        var c = cfg.getFlowTest();
         assertFlow(c);
     }
 
@@ -144,6 +145,7 @@ class FlowTest {
 
     @Data
     static class TestFlowConfig {
-        private Flow<Properties> flowTest;
+        @JsonFlow
+        private Consumer<Properties> flowTest;
     }
 }

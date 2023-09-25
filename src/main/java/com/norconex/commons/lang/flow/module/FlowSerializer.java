@@ -15,12 +15,12 @@
 package com.norconex.commons.lang.flow.module;
 
 import java.io.IOException;
+import java.util.function.Consumer;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.norconex.commons.lang.bean.BeanMapper.FlowMapperConfig;
-import com.norconex.commons.lang.flow.Flow;
 
 import lombok.RequiredArgsConstructor;
 
@@ -31,7 +31,8 @@ import lombok.RequiredArgsConstructor;
  * @since 3.0.0
  */
 @RequiredArgsConstructor
-public class FlowSerializer<F extends Flow<T>, T> extends JsonSerializer<F> {
+public class FlowSerializer<F extends Consumer<T>, T>
+    extends JsonSerializer<F> {
 
     private final FlowMapperConfig config;
 
