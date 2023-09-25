@@ -25,6 +25,12 @@ import com.norconex.commons.lang.flow.Flow;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Flow deserializer.
+ *
+ * @param <T> type type of object being deserialized
+ * @since 3.0.0
+ */
 @RequiredArgsConstructor
 public class FlowDeserializer<T> extends JsonDeserializer<Flow<T>> {
     private final FlowMapperConfig config;

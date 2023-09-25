@@ -18,6 +18,7 @@ import java.util.Arrays;
 
 /**
  * A control flow statement.
+ * @since 3.0.0
  */
 enum Statement {
     IF("if", new IfHandler<>(false)),

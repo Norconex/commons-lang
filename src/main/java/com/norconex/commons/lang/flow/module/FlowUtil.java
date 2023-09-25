@@ -16,12 +16,16 @@ package com.norconex.commons.lang.flow.module;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.norconex.commons.lang.bean.BeanMapper.FlowPredicateAdapter;
 import com.norconex.commons.lang.bean.BeanMapper.FlowConsumerAdapter;
+import com.norconex.commons.lang.bean.BeanMapper.FlowPredicateAdapter;
 import com.norconex.commons.lang.flow.module.FlowDeserializer.FlowDeserContext;
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Flow utility methods.
+ * @since 3.0.0
+ */
 @Slf4j
 final class FlowUtil {
 

@@ -24,6 +24,12 @@ import com.norconex.commons.lang.flow.Flow;
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Flow serializer.
+ *
+ * @param <T> type type of object being serialized
+ * @since 3.0.0
+ */
 @RequiredArgsConstructor
 public class FlowSerializer<F extends Flow<T>, T> extends JsonSerializer<F> {
 

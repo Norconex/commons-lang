@@ -22,6 +22,12 @@ import com.norconex.commons.lang.ClassUtil;
 import com.norconex.commons.lang.bean.BeanMapper.FlowPredicateAdapter;
 import com.norconex.commons.lang.flow.module.FlowDeserializer.FlowDeserContext;
 
+/**
+ * Handles flow conditions.
+ *
+ * @param <T> type object type evaluated by a condition
+ * @since 3.0.0
+ */
 class ConditionHandler<T> implements StatementHandler<Predicate<T>> {
 
     @SuppressWarnings("unchecked")

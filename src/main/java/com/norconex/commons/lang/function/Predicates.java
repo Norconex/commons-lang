@@ -17,10 +17,12 @@ package com.norconex.commons.lang.function;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 
 import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 import lombok.ToString;
 
 /**
@@ -98,5 +100,33 @@ public class Predicates<T> extends ArrayList<Predicate<T>>
             }
         }
         return !any;
+    }
+
+    /**
+     * Group of predicate that returns <code>true</code> if any of them
+     * returns <code>true</code>.
+     * @param <T> the type of object tested
+     * @param predicates a group of predicates
+     * @return a group of predicates
+     * @since 3.0.0
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> Predicates<T> anyOf(
+            @NonNull Predicate<T>... predicates) {
+        return new Predicates<>(List.of(predicates), true);
+    }
+
+    /**
+     * Group of predicate that returns <code>true</code> if all of them
+     * returns <code>true</code>.
+     * @param <T> the type of object tested
+     * @param predicates a group of predicates
+     * @return a group of predicates
+     * @since 3.0.0
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> Predicates<T> allOf(
+            @NonNull Predicate<T>... predicates) {
+        return new Predicates<>(List.of(predicates), false);
     }
 }

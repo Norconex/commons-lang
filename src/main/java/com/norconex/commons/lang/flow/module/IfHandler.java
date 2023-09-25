@@ -19,20 +19,26 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import com.fasterxml.jackson.core.JsonToken;
-import com.norconex.commons.lang.flow.If;
 import com.norconex.commons.lang.flow.module.FlowDeserializer.FlowDeserContext;
+import com.norconex.commons.lang.function.PredicatedConsumer;
 
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Handles flow "if" and "ifNot".
+ *
+ * @param <T> type object type evaluated
+ * @since 3.0.0
+ */
 @Data
 @RequiredArgsConstructor
-class IfHandler<T> implements StatementHandler<If<T>> {
+class IfHandler<T> implements StatementHandler<Consumer<T>> {
 
     private final boolean negate;
 
     @Override
-    public If<T> read(FlowDeserContext ctx)
+    public Consumer<T> read(FlowDeserContext ctx)
             throws IOException {
 
         var p = ctx.getParser();
@@ -65,7 +71,7 @@ class IfHandler<T> implements StatementHandler<If<T>> {
             badChildren("Missing element: <then>.");
         }
 
-        return new If<>(
+        return new PredicatedConsumer<>(
                 args.condition,
                 args.thenConsumer,
                 args.elseConsumer,

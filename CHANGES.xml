@@ -141,6 +141,15 @@
       <action dev="essiembre" type="add">
         ConfigurationLoader can now load XML, JSON, and Yaml into objects.
       </action>
+      <action dev="essiembre" type="add">
+        New PredicatedConsumer #isTrue and #isFalse methods. 
+      </action>
+      <action dev="essiembre" type="add">
+        New Predicates #anyOf and #allOf methods.
+      </action>
+      <action dev="essiembre" type="add">
+        New Consumers #of method.
+      </action>
       <action dev="essiembre" type="update">
         Now require Java 17+. 
       </action>

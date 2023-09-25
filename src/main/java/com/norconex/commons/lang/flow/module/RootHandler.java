@@ -26,6 +26,12 @@ import com.norconex.commons.lang.bean.BeanMapper.FlowConsumerAdapter;
 import com.norconex.commons.lang.flow.module.FlowDeserializer.FlowDeserContext;
 import com.norconex.commons.lang.function.Consumers;
 
+/**
+ * Handles flow conditions and consumers in the order defined.
+ *
+ * @param <T> type object type evaluated or consumed
+ * @since 3.0.0
+ */
 @SuppressWarnings("unchecked")
 class RootHandler<T> implements StatementHandler<Consumer<T>> {
 

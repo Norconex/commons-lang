@@ -18,7 +18,13 @@ import java.io.IOException;
 
 import com.norconex.commons.lang.flow.module.FlowDeserializer.FlowDeserContext;
 
-interface StatementHandler<R> {
-    R read(FlowDeserContext ctx) throws IOException;
+/**
+ * Statement handler
+ *
+ * @param <T> type object type being handled
+ * @since 3.0.0
+ */
+interface StatementHandler<T> {
+    T read(FlowDeserContext ctx) throws IOException;
     void write() throws IOException;
 }

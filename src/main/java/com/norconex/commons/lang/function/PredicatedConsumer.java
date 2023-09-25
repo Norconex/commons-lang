@@ -18,6 +18,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 import lombok.ToString;
 
 /**
@@ -46,16 +47,52 @@ import lombok.ToString;
 public class PredicatedConsumer<T> implements Consumer<T> {
 
     private final Predicate<T> predicate;
-    private final Consumer<T> consumer;
+    private final Consumer<T> thenConsumer;
+    private final Consumer<T> elseConsumer;
     private final boolean negate;
 
-    public PredicatedConsumer(Predicate<T> predicate, Consumer<T> consumer) {
+    /**
+     * Constructor.
+     * @param predicate predicate
+     * @param consumer consumer
+     * @deprecated Since 3.0.0, use
+     *     {@link PredicatedConsumer#ifTrue(Predicate, Consumer)}
+     *     instead.
+     */
+    @Deprecated(since = "3.0.0")
+    public PredicatedConsumer( //NOSONAR
+            Predicate<T> predicate, Consumer<T> consumer) {
         this(predicate, consumer, false);
     }
-    public PredicatedConsumer(
+    /**
+     * Constructor.
+     * @param predicate predicate
+     * @param consumer consumer
+     * @param negate whether to negate the condition
+     * @deprecated Since 3.0.0, use {@link PredicatedConsumer#ifTrue(
+     *         Predicate, Consumer, Consumer)} instead.
+     */
+    @Deprecated(since = "3.0.0")
+    public PredicatedConsumer( //NOSONAR
             Predicate<T> predicate, Consumer<T> consumer, boolean negate) {
+        this(predicate, consumer, null, negate);
+    }
+
+    /**
+     * Constructor.
+     * @param predicate predicate condition
+     * @param thenConsumer consumer invoked when condition is <code>true</code>
+     * @param elseConsumer consumer invoked when condition is <code>false</code>
+     * @param negate whether to negate the condition
+     */
+    public PredicatedConsumer(
+            @NonNull Predicate<T> predicate,
+            @NonNull Consumer<T> thenConsumer,
+            Consumer<T> elseConsumer,
+            boolean negate) {
         this.predicate = predicate;
-        this.consumer = consumer;
+        this.thenConsumer = thenConsumer;
+        this.elseConsumer = elseConsumer;
         this.negate = negate;
     }
 
@@ -63,20 +100,83 @@ public class PredicatedConsumer<T> implements Consumer<T> {
         return predicate;
     }
     public Consumer<T> getConsumer() {
-        return consumer;
+        return thenConsumer;
     }
 
     @Override
     public final void accept(T t) {
-        if (consumer == null) {
-            return;
+        if (predicate.test(t) && !negate) {
+            if (thenConsumer != null) {
+                thenConsumer.accept(t);
+            }
+        } else if (elseConsumer != null) {
+            elseConsumer.accept(t);
         }
-        boolean passed = predicate == null || predicate.test(t);
-        if (negate) {
-            passed = !passed;
-        }
-        if (passed) {
-            consumer.accept(t);
-        }
+    }
+
+    /**
+     * If condition is <code>true</code>, then execute consumer.
+     * @param <T> type of object consumed
+     * @param condition the condition deciding whether to consume
+     * @param thenConsumer the object consumer
+     * @return a predicated consumer
+     * @since 3.0.0
+     */
+    public static <T> Consumer<T> ifTrue(
+            @NonNull Predicate<T> condition,
+            @NonNull Consumer<T> thenConsumer) {
+        return ifTrue(condition, thenConsumer, null);
+    }
+    /**
+     * If condition is <code>true</code>, then execute the "then" consumer,
+     * else,execute the "else" consumer.
+     * @param <T> type of object consumed
+     * @param condition the condition deciding which consumer to use
+     * @param thenConsumer the object consumer when condition is
+     *     <code>true</code>
+     * @param elseConsumer the object consumer when condition is
+     *     <code>false</code>
+     * @return a predicated consumer
+     * @since 3.0.0
+     */
+    public static <T> Consumer<T> ifTrue(
+            @NonNull Predicate<T> condition,
+            @NonNull Consumer<T> thenConsumer,
+            final Consumer<T> elseConsumer) {
+        return new PredicatedConsumer<>(
+                condition, thenConsumer, elseConsumer, false);
+    }
+
+    /**
+     * If condition is <code>false</code>, then execute consumer.
+     * @param <T> type of object consumed
+     * @param condition the condition deciding whether to consume
+     * @param thenConsumer the object consumer
+     * @return a predicated consumer
+     * @since 3.0.0
+     */
+    public static <T> Consumer<T> ifFalse(
+            @NonNull Predicate<T> condition,
+            @NonNull Consumer<T> thenConsumer) {
+        return ifFalse(condition, thenConsumer, null);
+    }
+    /**
+     * If condition is <code>false</code>, then execute the "then" consumer,
+     * else, execute the "else" consumer.
+     * @param <T> type of object consumed
+     * @param condition the condition deciding which consumer to use
+     * @param thenConsumer the object consumer when condition is
+     *     <code>true</code>
+     * @param elseConsumer the object consumer when condition is
+     *     <code>false</code>
+     * @return a predicated consumer
+     * @since 3.0.0
+     */
+    public static <T> Consumer<T> ifFalse(
+            @NonNull Predicate<T> condition,
+            @NonNull Consumer<T> thenConsumer,
+            final Consumer<T> elseConsumer) {
+        return new PredicatedConsumer<>(
+                condition, thenConsumer, elseConsumer, true);
     }
 }

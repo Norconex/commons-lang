@@ -18,23 +18,29 @@ import java.io.IOException;
 import java.util.function.Predicate;
 
 import com.fasterxml.jackson.core.JsonToken;
-import com.norconex.commons.lang.flow.Group;
 import com.norconex.commons.lang.flow.module.FlowDeserializer.FlowDeserContext;
+import com.norconex.commons.lang.function.Predicates;
 
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Handles flow condition group matching either "anyOf" or "allOf".
+ *
+ * @param <T> type object type evaluated by a group of conditions
+ * @since 3.0.0
+ */
 @Data
 @RequiredArgsConstructor
-class GroupHandler<T> implements StatementHandler<Group<T>> {
+class GroupHandler<T> implements StatementHandler<Predicate<T>> {
 
     private final boolean any;
 
     @Override
     @SuppressWarnings("unchecked")
-    public Group<T> read(FlowDeserContext ctx) throws IOException {
+    public Predicate<T> read(FlowDeserContext ctx) throws IOException {
         var p = ctx.getParser();
-        var preds = new Group<T>(any);
+        var preds = new Predicates<T>(any);
         FlowUtil.logOpen(ctx, p.getCurrentName());
         p.nextToken(); // <-- START_OBJECT
 
@@ -61,36 +67,4 @@ class GroupHandler<T> implements StatementHandler<Group<T>> {
         // TODO Auto-generated method stub
 
     }
-
-//    @SuppressWarnings("unchecked")
-//    @Override
-//    public AnyOf<T> read(FlowDeserContext ctx) throws IOException {
-//
-//        var p = ctx.getParser();
-//        var anyOf = new AnyOf<T>();
-//        FlowUtil.logOpen(ctx, p.getCurrentName());
-//        p.nextToken(); // <-- START_OBJECT
-//
-//        while ((p.nextToken()) != JsonToken.END_OBJECT) { // <-- FIELD_NAME
-//            var fieldName = p.getCurrentName();
-//            if (!Statement.isAnyOf(fieldName,
-//                    Statement.CONDITION, Statement.ALLOF, Statement.ANYOF)) {
-//                throw new IOException("""
-//                        Only <condition>, <allOf>, and <anyOf> are \
-//                        permitted as direct child elements of <if> and
-//                        <ifNot>. Got instead: "%s"
-//                        """.formatted(fieldName));
-//            }
-//            anyOf.add(
-//                    (Predicate<T>) Statement.of(fieldName).handler().read(ctx));
-//        }
-//
-//        FlowUtil.logClose(ctx, p.getCurrentName());
-//        return anyOf;
-//    }
-//
-//    @Override
-//    public void write() throws IOException {
-//        //TODO
-//    }
 }

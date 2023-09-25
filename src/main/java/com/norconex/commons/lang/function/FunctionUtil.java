@@ -48,6 +48,6 @@ public final class FunctionUtil {
 
     public static <T> Consumer<T> predicatedConsumer(
             Predicate<T> predicate, Consumer<T> consumer) {
-        return new PredicatedConsumer<>(predicate, consumer);
+        return PredicatedConsumer.ifTrue(predicate, consumer);
     }
 }

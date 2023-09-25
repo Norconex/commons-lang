@@ -35,6 +35,7 @@ import com.norconex.commons.lang.flow.mock.MockMapSizeEqualsCondition;
 import com.norconex.commons.lang.flow.mock.MockPredicateBase;
 import com.norconex.commons.lang.flow.mock.MockPropertyMatcherCondition;
 import com.norconex.commons.lang.flow.mock.MockUppercaseConsumer;
+import com.norconex.commons.lang.function.Consumers;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertyMatcher;
 
@@ -81,40 +82,32 @@ class FlowTest {
     @SuppressWarnings("unchecked")
     @Test
     void testProgrammaticFlow() throws IOException {
-
-        //TODO assert write/read and compare with XML/Yaml/JSON?
-
-        // Build the same config as XML, programatically and do same tests.
-        Consumer<Properties> c = Flow.<Properties>of(
-
-            If.<Properties>builder()
-                .condition(propertyMatcherCondition("car", "volvo"))
-                .thenConsumer(new MockUppercaseConsumer().setField("firstName"))
-                .elseConsumer(new MockUppercaseConsumer().setField("lastName"))
-                .build(),
-
-            new MockLowercaseConsumer().setField("IdontExist"),
-
-            If.<Properties>builder()
-                .condition(Group.ofAll(
-                        new MockMapSizeEqualsCondition().setSize(3),
-                        propertyMatcherCondition("car", "toyota")))
-                .thenConsumer(Flow.of(
-                        new MockLowercaseConsumer().setField("firstName"),
-                        If.<Properties>builder()
-                            .negate(true)
-                            .condition(propertyMatcherCondition(
-                                    "firstName", "john"))
-                            .thenConsumer(new MockLowercaseConsumer()
-                                    .setField("lastName"))
-                            .elseConsumer(new MockUppercaseConsumer()
-                                    .setField("lastName"))
-                            .build()
-                        ))
-                .build()
+        Consumer<Properties> c = Consumers.of(
+            p -> {
+                if (propertyMatcherCondition("car", "volvo").test(p)) {
+                    new MockUppercaseConsumer().setField("firstName").accept(p);
+                } else {
+                    new MockUppercaseConsumer().setField("lastName").accept(p);
+                }
+            },
+            p -> new MockLowercaseConsumer().setField("IdontExist").accept(p),
+            p -> {
+                if (new MockMapSizeEqualsCondition().setSize(3).test(p)
+                        && propertyMatcherCondition("car", "toyota").test(p)) {
+                    new MockLowercaseConsumer().setField("firstName").accept(p);
+                    if (!propertyMatcherCondition(
+                            "firstName", "john").test(p)) {
+                        new MockLowercaseConsumer()
+                            .setField("lastName").accept(p);
+                    } else {
+                        new MockUppercaseConsumer()
+                            .setField("lastName").accept(p);
+                    }
+                }
+            }
         );
-
         assertFlow(c);
+
     }
 
     private MockPropertyMatcherCondition propertyMatcherCondition(
