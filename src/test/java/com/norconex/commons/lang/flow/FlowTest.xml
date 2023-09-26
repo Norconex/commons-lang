@@ -81,11 +81,17 @@
             <anotherConsumer class="MockLowercaseConsumer">
               <field>lastName</field>
             </anotherConsumer>
+            <anotherConsumer class="MockLowercaseConsumer">
+              <field>DoNothing1</field>
+            </anotherConsumer>
           </then>
           <else>
             <noClassConsumer class="MockUppercaseConsumer">
               <field>lastName</field>
             </noClassConsumer>
+            <anotherConsumer class="MockUppercaseConsumer">
+              <field>DoNothing2</field>
+            </anotherConsumer>
           </else>
         </ifNot>
       </then>

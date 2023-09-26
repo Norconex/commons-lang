@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.util.function.Consumer;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 import com.norconex.commons.lang.ResourceLoader;
 import com.norconex.commons.lang.bean.BeanMapper;
@@ -44,15 +46,9 @@ import lombok.Data;
 
 class FlowTest {
 
-//    @ParameterizedTest
-//    @EnumSource(Format.class)
-//    void testFlow(Format format) {
-//    }
-    //TODO make it work with a yaml + json as well
-
-    @Test
-    void testFlow() throws IOException {
-
+    @ParameterizedTest
+    @EnumSource(Format.class)
+    void testFlow(Format format) throws IOException {
 
         //TODO like XMLFlow, allow for default/fallback types
         //(so class does not always need to be specified)?
@@ -72,8 +68,9 @@ class FlowTest {
             .build();
 
         TestFlowConfig cfg;
-        try (var r = ResourceLoader.getXmlReader(getClass())) {
-            cfg = bm.read(TestFlowConfig.class, r, Format.XML);
+        try (var r = ResourceLoader.getReader(
+                getClass(), "." + format.toString().toLowerCase())) {
+            cfg = bm.read(TestFlowConfig.class, r, format);
         }
 
         var c = cfg.getFlowTest();
