@@ -14,6 +14,9 @@
  */
 package com.norconex.commons.lang.flow.module;
 
+import static com.norconex.commons.lang.flow.module.FlowUtil.whileInArrayObjects;
+import static com.norconex.commons.lang.flow.module.FlowUtil.whileInObject;
+
 import java.io.IOException;
 import java.util.function.Predicate;
 
@@ -37,29 +40,39 @@ class GroupHandler<T> implements StatementHandler<Predicate<T>> {
     private final boolean any;
 
     @Override
-    @SuppressWarnings("unchecked")
     public Predicate<T> read(FlowDeserContext ctx) throws IOException {
         var p = ctx.getParser();
         var preds = new Predicates<T>(any);
-        FlowUtil.logOpen(ctx, p.getCurrentName());
-        p.nextToken(); // <-- START_OBJECT
+        p.nextToken(); // START_ARRAY or START_OBJECT
 
-        while ((p.nextToken()) != JsonToken.END_OBJECT) { // <-- FIELD_NAME
-            var fieldName = p.getCurrentName();
-            if (!Statement.isAnyOf(fieldName,
-                    Statement.CONDITION, Statement.ALLOF, Statement.ANYOF)) {
-                throw new IOException("""
-                        Only <condition>, <allOf>, and <anyOf> are \
-                        permitted as direct child elements of <if> and
-                        <ifNot>. Got instead: "%s"
-                        """.formatted(fieldName));
-            }
-            preds.add(
-                    (Predicate<T>) Statement.of(fieldName).handler().read(ctx));
+        if (p.currentToken() == JsonToken.START_ARRAY) {
+            whileInArrayObjects(p, () -> readObject(ctx, preds));
+        } else {
+            whileInObject(p, () -> readObject(ctx, preds));
         }
 
-        FlowUtil.logClose(ctx, p.getCurrentName());
         return preds;
+    }
+
+    @SuppressWarnings("unchecked")
+    private void readObject(FlowDeserContext ctx,  Predicates<T> preds)
+            throws IOException {
+        var p = ctx.getParser();
+        FlowUtil.logOpen(ctx, p.getCurrentName());
+        var fieldName = p.getCurrentName();
+        if (!Statement.isAnyOf(fieldName,
+                Statement.CONDITION,
+                Statement.ALLOF,
+                Statement.ANYOF)) {
+            throw new IOException("""
+                    Only <condition>, <allOf>, and <anyOf> are \
+                    permitted as direct child elements of <if> and
+                    <ifNot>. Got instead: "%s"
+                    """.formatted(fieldName));
+        }
+        preds.add((Predicate<T>) Statement.of(fieldName)
+                .handler().read(ctx));
+        FlowUtil.logClose(ctx, p.getCurrentName());
     }
 
     @Override

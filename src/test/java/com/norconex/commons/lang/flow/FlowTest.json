@@ -1,88 +1,111 @@
 {
-  "flowTest": {
-
-    "if": {
-      "condition": {
-        "class": "com.norconex.commons.lang.flow.mock.MockPropertyMatcherCondition",
-        "configuration": {
-          "propertyMatcher": {
-            "fieldMatcher": "car",
-            "valueMatcher": "volvo"
-          }
-        }
-      },
-      "then": {
-        "handler": {
-          "class": "MockUppercaseConsumer",
-          "field": "firstName"
-        }
-      },
-      "else": {
-        "handler": {
-          "class": "MockUppercaseConsumer",
-          "field": "lastName"
-        }
-      }
-    },
-
-    "uselessConsumer": {
-      "class": "MockLowercaseConsumer",
-      "field": "IdontExist"
-    },
-
-    "if": {
-      "allOf": {
+  "flowTest": [
+    {
+      "if": {
         "condition": {
-          "class": "MockMapSizeEqualsCondition",
-          "size": "3"
-        },
-        "condition": {
-          "class": "MockPropertyMatcherCondition",
+          "class": "com.norconex.commons.lang.flow.mock.MockPropertyMatcherCondition",
           "configuration": {
             "propertyMatcher": {
               "fieldMatcher": "car",
-              "valueMatcher": "toyota"
+              "valueMatcher": "volvo"
             }
           }
-        }
-      },
-      "then": {
-        "aConsumer": {
-          "class": "MockLowercaseConsumer",
-          "field": "firstName"
         },
-        "ifNot": {
-          "condition": {
-            "class": "MockPropertyMatcherCondition",
-            "configuration": {
-              "propertyMatcher": {
-                "fieldMatcher": "firstName",
-                "valueMatcher": "john"
+        "then": [
+          {
+            "handler": {
+              "class": "MockUppercaseConsumer",
+              "field": "firstName"
+            }
+          }
+        ],
+        "else": [
+          {
+            "handler": {
+              "class": "MockUppercaseConsumer",
+              "field": "lastName"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "uselessConsumer": {
+        "class": "MockLowercaseConsumer",
+        "field": "IdontExist"
+      }
+    },
+    {
+      "if": {
+        "allOf": [
+          {
+            "condition": {
+              "class": "MockMapSizeEqualsCondition",
+              "size": "3"
+            } 
+          },
+          {           
+            "condition": {
+              "class": "MockPropertyMatcherCondition",
+              "configuration": {
+                "propertyMatcher": {
+                  "fieldMatcher": "car",
+                  "valueMatcher": "toyota"
+                }
               }
             }
-          },
-          "then": {
-            "anotherConsumer": {
+          }
+        ],
+        "then": [ 
+          {
+            "aConsumer": {
               "class": "MockLowercaseConsumer",
-              "field": "lastName"
-            },
-            "anotherConsumer": {
-              "class": "MockLowercaseConsumer",
-              "field": "DoNothing1"
+              "field": "firstName"
             }
           },
-          "else": {
-            "noClassConsumer": {
-              "class": "MockUppercaseConsumer",
-              "field": "lastName"
-            },
-            "noClassConsumer": {
-              "class": "MockUppercaseConsumer",
-              "field": "DoNothing2"
+          {
+            "ifNot": {
+              "condition": {
+                "class": "MockPropertyMatcherCondition",
+                "configuration": {
+                  "propertyMatcher": {
+                    "fieldMatcher": "firstName",
+                    "valueMatcher": "john"
+                  }
+                }
+              },
+              "then": [
+                {
+                  "anotherConsumer": {
+                    "class": "MockLowercaseConsumer",
+                    "field": "lastName"
+                  }
+                },
+                {                
+                  "anotherConsumer": {
+                    "class": "MockLowercaseConsumer",
+                    "field": "DoNothing1"
+                  }
+                }
+              ],
+              "else": [ 
+                {
+                  "noClassConsumer": {
+                    "class": "MockUppercaseConsumer",
+                    "field": "lastName"
+                  }
+                },
+                {
+                  "noClassConsumer": {
+                    "class": "MockUppercaseConsumer",
+                    "field": "DoNothing2"
+                  }
+                }
+              ]
             }
           }
-        }
+        ]
       }
     }
-  }
+  ]
 }

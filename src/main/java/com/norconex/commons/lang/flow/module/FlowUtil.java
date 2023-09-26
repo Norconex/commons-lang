@@ -14,8 +14,13 @@
  */
 package com.norconex.commons.lang.flow.module;
 
-import org.apache.commons.lang3.StringUtils;
+import java.io.IOException;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.function.FailableRunnable;
+
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
 import com.norconex.commons.lang.bean.BeanMapper.FlowConsumerAdapter;
 import com.norconex.commons.lang.bean.BeanMapper.FlowPredicateAdapter;
 import com.norconex.commons.lang.flow.module.FlowDeserializer.FlowDeserContext;
@@ -30,6 +35,35 @@ import lombok.extern.slf4j.Slf4j;
 final class FlowUtil {
 
     private FlowUtil() {}
+
+    static void whileInArrayObjects(
+            JsonParser p, FailableRunnable<IOException> runnable)
+                    throws IOException {
+        whileInArray(p, () -> whileInObject(p, runnable));
+    }
+
+
+    static void whileInArray(
+            JsonParser p, FailableRunnable<IOException> runnable)
+                    throws IOException {
+        while (nextNotTokenOrNull(p, JsonToken.END_ARRAY)) {
+            runnable.run();
+        }
+    }
+    static void whileInObject(
+            JsonParser p, FailableRunnable<IOException> runnable)
+                    throws IOException {
+        while (nextNotTokenOrNull(p, JsonToken.END_OBJECT)) {
+            runnable.run();
+        }
+    }
+
+
+    static boolean nextNotTokenOrNull(JsonParser p, JsonToken token)
+            throws IOException {
+        var curToken = p.nextToken();
+        return curToken != token && curToken != null;
+    }
 
     static void logOpen(FlowDeserContext ctx, String nodeName) {
         if (LOG.isDebugEnabled()) {

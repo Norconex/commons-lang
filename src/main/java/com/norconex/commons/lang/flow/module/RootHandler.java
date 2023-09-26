@@ -14,9 +14,10 @@
  */
 package com.norconex.commons.lang.flow.module;
 
+import static com.norconex.commons.lang.flow.module.FlowUtil.whileInArrayObjects;
+import static com.norconex.commons.lang.flow.module.FlowUtil.whileInObject;
+
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Consumer;
 
 import com.fasterxml.jackson.core.JsonToken;
@@ -41,48 +42,50 @@ class RootHandler<T> implements StatementHandler<Consumer<T>> {
         var p = ctx.getParser();
         String parentName = null;
 
-        // Ensure current token is START_OBJECT
+
+        // Ensure current token is START_ARRAY or START_OBJECT
         if (p.currentToken() == JsonToken.FIELD_NAME) {
             parentName = p.currentName();
             FlowUtil.logOpen(ctx, parentName);
-            p.nextToken(); // <-- START_OBJECT
+            p.nextToken();
         }
-
-        List<Consumer<T>> consumers = new ArrayList<>();
-        while ((p.nextToken()) != JsonToken.END_OBJECT) { // <-- FIELD_NAME
-            var name = p.getCurrentName();
-            FlowUtil.logOpen(ctx, name);
-            var statement = Statement.of(name);
-            if (statement == null) {
-                consumers.add(readInputConsumer(ctx));
-            } else if (statement.isAnyOf(Statement.IF, Statement.IFNOT)) {
-                consumers.add((Consumer<T>)
-                        statement.handler().read(ctx));
-            } else {
-                throw new IOException("<" + statement + "> is misplaced.");
-            }
-            FlowUtil.logClose(ctx, name);
+        var consumers = new Consumers<T>();
+        if (p.currentToken() == JsonToken.START_ARRAY) {
+            whileInArrayObjects(p, () -> readObject(ctx, consumers));
+        } else {
+            whileInObject(p, () -> readObject(ctx, consumers));
         }
 
         if (parentName != null) {
             FlowUtil.logClose(ctx, parentName);
         }
-
-        if (consumers.isEmpty()) {
-            return null;
-        }
-        if (consumers.size() == 1) {
-            return consumers.get(0);
-        }
-        return new Consumers<>(consumers);
+        return consumers;
     }
+
+    private void readObject(FlowDeserContext ctx, Consumers<T> consumers)
+            throws IOException {
+        var p = ctx.getParser();
+        var name = p.getCurrentName();
+        FlowUtil.logOpen(ctx, name);
+        var statement = Statement.of(name);
+        if (statement == null) {
+            consumers.add(readInputConsumer(ctx));
+        } else if (statement.isAnyOf(Statement.IF, Statement.IFNOT)) {
+            consumers.add((Consumer<T>)
+                    statement.handler().read(ctx));
+        } else {
+            throw new IOException("<" + statement + "> is misplaced.");
+        }
+        FlowUtil.logClose(ctx, name);
+    }
+
 
     private Consumer<T> readInputConsumer(FlowDeserContext ctx)
             throws IOException {
         var p = ctx.getParser();
         var config = ctx.getConfig();
 
-        p.nextToken(); // <-- START_OBJECT
+        p.nextToken(); // START_OBJECT
 
         Class<?> type = config.getInputConsumerType();
         if (type == null) {
