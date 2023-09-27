@@ -18,7 +18,6 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import lombok.EqualsAndHashCode;
-import lombok.NonNull;
 import lombok.ToString;
 
 /**
@@ -27,11 +26,11 @@ import lombok.ToString;
  * <code>true</code>.
  * </p>
  * <p>
- * A <code>null</code> predicate evaluates to <code>true</code> and is the
- * same as using a regular {@link Consumer}.
+ * A <code>null</code> predicate evaluates to <code>true</code> (before
+ * applying negation if "negate" is <code>true</code>).
  * </p>
  * <p>
- * A <code>null</code> consumer has no effect and renders this class useless.
+ * A <code>null</code> consumer is simply ignored.
  * </p>
  * <p>
  * Setting the "negate" constructor argument to <code>true</code> will
@@ -86,8 +85,8 @@ public class PredicatedConsumer<T> implements Consumer<T> {
      * @param negate whether to negate the condition
      */
     public PredicatedConsumer(
-            @NonNull Predicate<T> predicate,
-            @NonNull Consumer<T> thenConsumer,
+            Predicate<T> predicate,
+            Consumer<T> thenConsumer,
             Consumer<T> elseConsumer,
             boolean negate) {
         this.predicate = predicate;
@@ -105,7 +104,11 @@ public class PredicatedConsumer<T> implements Consumer<T> {
 
     @Override
     public final void accept(T t) {
-        if (predicate.test(t) && !negate) {
+        var result = predicate == null || predicate.test(t);
+        if (negate) {
+            result = !result;
+        }
+        if (result) {
             if (thenConsumer != null) {
                 thenConsumer.accept(t);
             }
@@ -122,9 +125,9 @@ public class PredicatedConsumer<T> implements Consumer<T> {
      * @return a predicated consumer
      * @since 3.0.0
      */
-    public static <T> Consumer<T> ifTrue(
-            @NonNull Predicate<T> condition,
-            @NonNull Consumer<T> thenConsumer) {
+    public static <T> PredicatedConsumer<T> ifTrue(
+            Predicate<T> condition,
+            Consumer<T> thenConsumer) {
         return ifTrue(condition, thenConsumer, null);
     }
     /**
@@ -139,9 +142,9 @@ public class PredicatedConsumer<T> implements Consumer<T> {
      * @return a predicated consumer
      * @since 3.0.0
      */
-    public static <T> Consumer<T> ifTrue(
-            @NonNull Predicate<T> condition,
-            @NonNull Consumer<T> thenConsumer,
+    public static <T> PredicatedConsumer<T> ifTrue(
+            Predicate<T> condition,
+            Consumer<T> thenConsumer,
             final Consumer<T> elseConsumer) {
         return new PredicatedConsumer<>(
                 condition, thenConsumer, elseConsumer, false);
@@ -155,9 +158,9 @@ public class PredicatedConsumer<T> implements Consumer<T> {
      * @return a predicated consumer
      * @since 3.0.0
      */
-    public static <T> Consumer<T> ifFalse(
-            @NonNull Predicate<T> condition,
-            @NonNull Consumer<T> thenConsumer) {
+    public static <T> PredicatedConsumer<T> ifFalse(
+            Predicate<T> condition,
+            Consumer<T> thenConsumer) {
         return ifFalse(condition, thenConsumer, null);
     }
     /**
@@ -172,9 +175,9 @@ public class PredicatedConsumer<T> implements Consumer<T> {
      * @return a predicated consumer
      * @since 3.0.0
      */
-    public static <T> Consumer<T> ifFalse(
-            @NonNull Predicate<T> condition,
-            @NonNull Consumer<T> thenConsumer,
+    public static <T> PredicatedConsumer<T> ifFalse(
+            Predicate<T> condition,
+            Consumer<T> thenConsumer,
             final Consumer<T> elseConsumer) {
         return new PredicatedConsumer<>(
                 condition, thenConsumer, elseConsumer, true);

@@ -177,17 +177,13 @@ class BeanMapperTest {
             <TestConfig id="my config">
               <transportations>
                 <transportation class="Automobile">
-                  <configuration>
-                    <make>Toyota</make>
-                    <model>Camry</model>
-                    <year>1800</year>
-                  </configuration>
+                  <make>Toyota</make>
+                  <model>Camry</model>
+                  <year>1800</year>
                 </transportation>
                 <transportation class="Plane">
-                  <configuration>
-                    <name>Boeing 737</name>
-                    <type>COMMERCIAL</type>
-                  </configuration>
+                  <name>Boeing 737</name>
+                  <type>COMMERCIAL</type>
                 </transportation>
               </transportations>
             </TestConfig>
@@ -199,17 +195,13 @@ class BeanMapperTest {
               "id" : "my config",
               "transportations" : [ {
                 "class" : "Automobile",
-                "configuration" : {
-                  "make" : "Toyota",
-                  "model" : "Camry",
-                  "year" : 1800
-                }
+                "make" : "Toyota",
+                "model" : "Camry",
+                "year" : 1800
               }, {
                 "class" : "Plane",
-                "configuration" : {
-                  "name" : "Boeing 737",
-                  "type" : "COMMERCIAL"
-                }
+                "name" : "Boeing 737",
+                "type" : "COMMERCIAL"
               } ]
             }""",
             Format.JSON
@@ -219,14 +211,12 @@ class BeanMapperTest {
             id: "my config"
             transportations:
             - class: "Automobile"
-              configuration:
-                make: "Toyota"
-                model: "Camry"
-                year: 1800
+              make: "Toyota"
+              model: "Camry"
+              year: 1800
             - class: "Plane"
-              configuration:
-                name: "Boeing 737"
-                type: "COMMERCIAL"
+              name: "Boeing 737"
+              type: "COMMERCIAL"
             """,
             Format.YAML
         )
