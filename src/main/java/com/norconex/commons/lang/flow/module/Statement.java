@@ -23,8 +23,8 @@ import java.util.Arrays;
 enum Statement {
     IF("if", new IfHandler<>(false)),
     IFNOT("ifNot", new IfHandler<>(true)),
-    ALLOF("allOf", new GroupHandler<>(false)),
-    ANYOF("anyOf", new GroupHandler<>(true)),
+    ALLOF("allOf", new ConditionGroupHandler<>(false)),
+    ANYOF("anyOf", new ConditionGroupHandler<>(true)),
     CONDITION("condition", new ConditionHandler<>()),
     THEN("then", new RootHandler<>()),
     ELSE("else", new RootHandler<>());

@@ -22,12 +22,10 @@
       <!-- Testing with fully qualified class name -->
       <condition 
         class="com.norconex.commons.lang.flow.mock.MockPropertyMatcherCondition">
-        <configuration>
-          <propertyMatcher>
-            <fieldMatcher>car</fieldMatcher>
-            <valueMatcher>volvo</valueMatcher>
-          </propertyMatcher>
-        </configuration>
+        <propertyMatcher>
+          <fieldMatcher>car</fieldMatcher>
+          <valueMatcher>volvo</valueMatcher>
+        </propertyMatcher>
       </condition>
       <then>
         <!-- Testing with short name -->
@@ -55,12 +53,11 @@
           <size>3</size>
         </condition>
         <condition class="MockPropertyMatcherCondition">
-          <configuration>
-            <propertyMatcher>
-              <fieldMatcher>car</fieldMatcher>
-              <valueMatcher>toyota</valueMatcher>
-            </propertyMatcher>
-          </configuration>
+          <propertyMatcher>
+            <!-- Using aliases for these two ("fieldMatcher"/"valueMatcher") -->
+            <field>car</field>
+            <value>toyota</value>
+          </propertyMatcher>
         </condition>
       </allOf>
       <then>
@@ -70,12 +67,10 @@
         <!-- Nested ifNot condition -->
         <ifNot>
           <condition class="MockPropertyMatcherCondition">
-            <configuration>
-              <propertyMatcher>
-                <fieldMatcher>firstName</fieldMatcher>
-                <valueMatcher>john</valueMatcher>
-              </propertyMatcher>
-            </configuration>
+            <propertyMatcher>
+              <fieldMatcher>firstName</fieldMatcher>
+              <valueMatcher>john</valueMatcher>
+            </propertyMatcher>
           </condition>
           <then>
             <anotherConsumer class="MockLowercaseConsumer">

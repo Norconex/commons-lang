@@ -32,10 +32,9 @@ import javax.xml.stream.XMLOutputFactory;
 import org.apache.commons.lang3.ArrayUtils;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.JsonIncludeProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonParser.Feature;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -121,8 +120,10 @@ import lombok.extern.slf4j.Slf4j;
  * separate class dedicated to configuration is used for bean-style mapping.
  * By default, this mapper will ignore all properties of a configurable class
  * except for its <code>getConfiguration()</code> method which will be
- * treated as if annotated with <code>{@literal @}valid</code>.
- * This behavior can be turned off with ..........................................................
+ * treated as if annotated with <code>{@literal @}valid</code>. That 
+ * configuration class will be populated without the need for "configuration"
+ * wrapper elements (automatically adds <code>{@literal @}JsonUnwrapped</code>
+ * This behavior can be turned off with {@link #configurableDetectionDisabled}
  * </p>
  * @since 3.0.0
  */
@@ -337,9 +338,11 @@ public class BeanMapper { //NOSONAR
             builder.addModule(new ParameterNamesModule());
             builder.addModule(new Jdk8Module());
             builder.addModule(new JavaTimeModule());
+            // Nx modules
             builder.addModule(new GenericJsonModule());
-
-            // register flow module
+            if (!configurableDetectionDisabled) {
+                builder.addMixIn(Configurable.class, ConfigurableMixIn.class);
+            }
             builder.addModule(new FlowModule(flowMapperConfig));
 
             if (mapperBuilderCustomizer != null) {
@@ -362,15 +365,20 @@ public class BeanMapper { //NOSONAR
             mapper.disable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
             mapper.setSerializationInclusion(Include.NON_EMPTY);
 
-            if (!configurableDetectionDisabled) {
-                mapper.addMixIn(Configurable.class, ConfigurableMixIn.class);
-            }
-
             // register polymorphic types:
             registerPolymorphicTypes(mapper);
 
             return mapper;
         });
+    }
+
+    abstract static class ConfigurableMixIn<T> {
+        // @JsonUnwrapped does not work on property here.
+        @JsonUnwrapped
+        @Valid
+        abstract T getConfiguration();
+//        @JsonUnwrapped
+//        void setConfiguration(T configuration) { }
     }
 
 
@@ -402,7 +410,6 @@ public class BeanMapper { //NOSONAR
                         .toArray(new Class<?>[] {}));
         }
     }
-
 
     private void assertWriteRead(Object object, Format format) {
         var out = new StringWriter();
@@ -437,25 +444,35 @@ public class BeanMapper { //NOSONAR
 
 //VERDICT: conditionType and consumerType should be optional... if not
 // specified, must specify full class name (no polymorphism)
-        private Class<?> conditionType;
+
+        //TODO have default condition class? so class element does not have to be specified?
+
+        private Class<?> conditionType;   // RENAME to predicateXXX ?  Does not have to technically implement Predicate if it has an adapter. Also used for polymorphism.
         private Class<? extends FlowPredicateAdapter<?>> conditionAdapterType;
-        //TODO rename conditionScanFilter ?
         private Predicate<String> conditionScanFilter;
 
-        private Class<?> inputConsumerType; // IF not specified, Object with no scanning?
+        //TODO Split in subclasses since we repeat the property trios.
+
+        // IF not specified, Object with no scanning?
+        private Class<?> inputConsumerType; // RENAME to consumerXXX ?
         private Class<? extends FlowConsumerAdapter<?>>
                 inputConsumerAdapterType;
         private Predicate<String> inputConsumerScanFilter;
 
         //TODO should we have this method, which force to have
         // types to be setup. We could use default types?
-        public boolean isEnabled() {
-            return conditionType != null && inputConsumerType != null;
-        }
+//        public boolean isEnabled() {
+//            return conditionType != null && inputConsumerType != null;
+//        }
 
 //        private Predicate<?> flowPredicateAdapter;
 //        private Consumer<?> flowConsumerAdapter;
     }
+
+
+    //TODO do we really need to offer these built-in adapters given
+    // it is probably quite easy to just wrap existing ones in a custom
+    // predicate/consumer type?
     public interface FlowPredicateAdapter<T> extends Predicate<T> {
         Object getPredicateAdaptee();
         void setPredicateAdaptee(Object predicateAdaptee);
@@ -465,20 +482,11 @@ public class BeanMapper { //NOSONAR
         void setConsumerAdaptee(Object consumerAdaptee);
     }
 
-
-
     @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
         include = JsonTypeInfo.As.PROPERTY,
         property = "class")
     abstract static class PolymorphicMixIn {}
-
-    @JsonIncludeProperties({"configuration"})
-    abstract static class ConfigurableMixIn {
-        @Valid
-        @JsonProperty("configuration")
-        Object configuration;
-    }
 
     @RequiredArgsConstructor
     static class BeanMapperPropertyHandler

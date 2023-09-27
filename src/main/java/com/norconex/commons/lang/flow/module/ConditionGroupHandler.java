@@ -35,7 +35,7 @@ import lombok.RequiredArgsConstructor;
  */
 @Data
 @RequiredArgsConstructor
-class GroupHandler<T> implements StatementHandler<Predicate<T>> {
+class ConditionGroupHandler<T> implements StatementHandler<Predicate<T>> {
 
     private final boolean any;
 

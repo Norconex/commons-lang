@@ -19,6 +19,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.function.Predicate;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.norconex.commons.lang.text.TextMatcher;
@@ -36,7 +37,9 @@ import lombok.ToString;
 @ToString
 @EqualsAndHashCode
 public final class PropertyMatcher implements Predicate<Properties> {
+    @JsonAlias(value = "value")
     private final TextMatcher valueMatcher;
+    @JsonAlias(value = "field")
     private final TextMatcher fieldMatcher;
 
     /**

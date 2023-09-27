@@ -3,10 +3,9 @@ flowTest:
   - if:
       condition:
         class: com.norconex.commons.lang.flow.mock.MockPropertyMatcherCondition
-        configuration:
-          propertyMatcher:
-            fieldMatcher: car
-            valueMatcher: volvo
+        propertyMatcher:
+          fieldMatcher: car
+          valueMatcher: volvo
       then:
         - handler:
             class: MockUppercaseConsumer
@@ -27,10 +26,9 @@ flowTest:
             size: 3
         - condition:
             class: MockPropertyMatcherCondition
-            configuration:
-              propertyMatcher:
-                fieldMatcher: car
-                valueMatcher: toyota
+            propertyMatcher:
+              fieldMatcher: car
+              valueMatcher: toyota
       then:
         - aConsumer:
             class: MockLowercaseConsumer
@@ -38,10 +36,9 @@ flowTest:
         - ifNot:
             condition:
               class: MockPropertyMatcherCondition
-              configuration:
-                propertyMatcher:
-                  fieldMatcher: firstName
-                  valueMatcher: john
+              propertyMatcher:
+                fieldMatcher: firstName
+                valueMatcher: john
             then:
               - anotherConsumer:
                   class: MockLowercaseConsumer

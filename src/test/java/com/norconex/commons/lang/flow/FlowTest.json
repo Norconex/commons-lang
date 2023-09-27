@@ -4,11 +4,9 @@
       "if": {
         "condition": {
           "class": "com.norconex.commons.lang.flow.mock.MockPropertyMatcherCondition",
-          "configuration": {
-            "propertyMatcher": {
-              "fieldMatcher": "car",
-              "valueMatcher": "volvo"
-            }
+          "propertyMatcher": {
+            "fieldMatcher": "car",
+            "valueMatcher": "volvo"
           }
         },
         "then": [
@@ -47,11 +45,9 @@
           {           
             "condition": {
               "class": "MockPropertyMatcherCondition",
-              "configuration": {
-                "propertyMatcher": {
-                  "fieldMatcher": "car",
-                  "valueMatcher": "toyota"
-                }
+              "propertyMatcher": {
+                "fieldMatcher": "car",
+                "valueMatcher": "toyota"
               }
             }
           }
@@ -67,11 +63,9 @@
             "ifNot": {
               "condition": {
                 "class": "MockPropertyMatcherCondition",
-                "configuration": {
-                  "propertyMatcher": {
-                    "fieldMatcher": "firstName",
-                    "valueMatcher": "john"
-                  }
+                "propertyMatcher": {
+                  "fieldMatcher": "firstName",
+                  "valueMatcher": "john"
                 }
               },
               "then": [
