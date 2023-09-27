@@ -59,6 +59,7 @@ import com.norconex.commons.lang.ClassFinder;
 import com.norconex.commons.lang.ClassUtil;
 import com.norconex.commons.lang.config.Configurable;
 import com.norconex.commons.lang.convert.GenericJsonModule;
+import com.norconex.commons.lang.flow.FlowMapperConfig;
 import com.norconex.commons.lang.flow.module.FlowModule;
 
 import jakarta.validation.ConstraintViolation;
@@ -67,11 +68,9 @@ import jakarta.validation.Valid;
 import jakarta.validation.Validation;
 import lombok.Builder;
 import lombok.Builder.Default;
-import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Singular;
-import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -120,7 +119,7 @@ import lombok.extern.slf4j.Slf4j;
  * separate class dedicated to configuration is used for bean-style mapping.
  * By default, this mapper will ignore all properties of a configurable class
  * except for its <code>getConfiguration()</code> method which will be
- * treated as if annotated with <code>{@literal @}valid</code>. That 
+ * treated as if annotated with <code>{@literal @}valid</code>. That
  * configuration class will be populated without the need for "configuration"
  * wrapper elements (automatically adds <code>{@literal @}JsonUnwrapped</code>
  * This behavior can be turned off with {@link #configurableDetectionDisabled}
@@ -373,12 +372,11 @@ public class BeanMapper { //NOSONAR
     }
 
     abstract static class ConfigurableMixIn<T> {
-        // @JsonUnwrapped does not work on property here.
         @JsonUnwrapped
         @Valid
         abstract T getConfiguration();
-//        @JsonUnwrapped
-//        void setConfiguration(T configuration) { }
+        @JsonUnwrapped
+        void setConfiguration(T configuration) { }
     }
 
 
@@ -392,21 +390,23 @@ public class BeanMapper { //NOSONAR
 
         //--- Flow-specific ---
 
-        Class<?> conditionType = flowMapperConfig.conditionType;
+        Class<?> conditionType =
+                flowMapperConfig.getPredicateType().getBaseType();
         if (conditionType != null) {
             mapper.addMixIn(conditionType, PolymorphicMixIn.class);
             mapper.registerSubtypes(ClassFinder.findSubTypes(
                     conditionType,
-                    flowMapperConfig.getConditionScanFilter())
+                    flowMapperConfig.getPredicateType().getScanFilter())
                         .toArray(new Class<?>[] {}));
         }
 
-        Class<?> consumerType = flowMapperConfig.inputConsumerType;
+        Class<?> consumerType =
+                flowMapperConfig.getConsumerType().getBaseType();
         if (consumerType != null) {
             mapper.addMixIn(consumerType, PolymorphicMixIn.class);
             mapper.registerSubtypes(ClassFinder.findSubTypes(
                     consumerType,
-                    flowMapperConfig.getInputConsumerScanFilter())
+                    flowMapperConfig.getConsumerType().getScanFilter())
                         .toArray(new Class<?>[] {}));
         }
     }
@@ -427,59 +427,6 @@ public class BeanMapper { //NOSONAR
             throw new BeanException(
                     "Saved and loaded " + format + " are not the same.");
         }
-    }
-
-    //TODO Move out.
-    @Data
-    @Accessors(chain = true)
-    public static class FlowMapperConfig {
-//        private boolean enabled;
-        // native condition parent object type, adaptor for the native condtion
-
-
-//TODO Should both conditionType and consumerType be mandatory?
-        // If not, we have to make up a type like Condition to reduce
-        // the matches when we look them up.
-        // If yes (mandatory), maybe we can replace Condition with Predicate?
-
-//VERDICT: conditionType and consumerType should be optional... if not
-// specified, must specify full class name (no polymorphism)
-
-        //TODO have default condition class? so class element does not have to be specified?
-
-        private Class<?> conditionType;   // RENAME to predicateXXX ?  Does not have to technically implement Predicate if it has an adapter. Also used for polymorphism.
-        private Class<? extends FlowPredicateAdapter<?>> conditionAdapterType;
-        private Predicate<String> conditionScanFilter;
-
-        //TODO Split in subclasses since we repeat the property trios.
-
-        // IF not specified, Object with no scanning?
-        private Class<?> inputConsumerType; // RENAME to consumerXXX ?
-        private Class<? extends FlowConsumerAdapter<?>>
-                inputConsumerAdapterType;
-        private Predicate<String> inputConsumerScanFilter;
-
-        //TODO should we have this method, which force to have
-        // types to be setup. We could use default types?
-//        public boolean isEnabled() {
-//            return conditionType != null && inputConsumerType != null;
-//        }
-
-//        private Predicate<?> flowPredicateAdapter;
-//        private Consumer<?> flowConsumerAdapter;
-    }
-
-
-    //TODO do we really need to offer these built-in adapters given
-    // it is probably quite easy to just wrap existing ones in a custom
-    // predicate/consumer type?
-    public interface FlowPredicateAdapter<T> extends Predicate<T> {
-        Object getPredicateAdaptee();
-        void setPredicateAdaptee(Object predicateAdaptee);
-    }
-    public interface FlowConsumerAdapter<T> extends Consumer<T> {
-        Object getConsumerAdaptee();
-        void setConsumerAdaptee(Object consumerAdaptee);
     }
 
     @JsonTypeInfo(

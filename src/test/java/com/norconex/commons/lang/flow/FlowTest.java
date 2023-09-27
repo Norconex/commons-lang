@@ -26,18 +26,16 @@ import org.junit.jupiter.params.provider.EnumSource;
 
 import com.norconex.commons.lang.ResourceLoader;
 import com.norconex.commons.lang.bean.BeanMapper;
-import com.norconex.commons.lang.bean.BeanMapper.FlowMapperConfig;
 import com.norconex.commons.lang.bean.BeanMapper.Format;
 import com.norconex.commons.lang.config.Configurable;
 import com.norconex.commons.lang.flow.mock.MockConsumerBase;
-import com.norconex.commons.lang.flow.mock.MockFlowConditionAdapter;
-import com.norconex.commons.lang.flow.mock.MockFlowInputConsumerAdapter;
+import com.norconex.commons.lang.flow.mock.MockFlowConsumerAdapter;
+import com.norconex.commons.lang.flow.mock.MockFlowPredicateAdapter;
 import com.norconex.commons.lang.flow.mock.MockLowercaseConsumer;
 import com.norconex.commons.lang.flow.mock.MockMapSizeEqualsCondition;
 import com.norconex.commons.lang.flow.mock.MockPredicateBase;
 import com.norconex.commons.lang.flow.mock.MockPropertyMatcherCondition;
 import com.norconex.commons.lang.flow.mock.MockUppercaseConsumer;
-import com.norconex.commons.lang.flow.module.JsonFlow;
 import com.norconex.commons.lang.function.Consumers;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertyMatcher;
@@ -55,13 +53,16 @@ class FlowTest {
 
         var flowCfg = new FlowMapperConfig();
         // testing with a base type not being FlowCondition
-        flowCfg.setConditionType(MockPredicateBase.class);
-        flowCfg.setConditionAdapterType(MockFlowConditionAdapter.class);
-        flowCfg.setConditionScanFilter(c -> c.startsWith("com.norconex."));
+        flowCfg.getPredicateType().setBaseType(MockPredicateBase.class);
+        flowCfg.getPredicateType().setAdapterType(
+                MockFlowPredicateAdapter.class);
+        flowCfg.getPredicateType().setScanFilter(
+                c -> c.startsWith("com.norconex."));
 
-        flowCfg.setInputConsumerType(MockConsumerBase.class);
-        flowCfg.setInputConsumerAdapterType(MockFlowInputConsumerAdapter.class);
-        flowCfg.setInputConsumerScanFilter(c -> c.startsWith("com.norconex."));
+        flowCfg.getConsumerType().setBaseType(MockConsumerBase.class);
+        flowCfg.getConsumerType().setAdapterType(MockFlowConsumerAdapter.class);
+        flowCfg.getConsumerType().setScanFilter(
+                c -> c.startsWith("com.norconex."));
 
         var bm = BeanMapper.builder()
             .flowMapperConfig(flowCfg)

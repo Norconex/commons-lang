@@ -23,7 +23,7 @@ import java.util.function.Consumer;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.norconex.commons.lang.ClassUtil;
-import com.norconex.commons.lang.bean.BeanMapper.FlowConsumerAdapter;
+import com.norconex.commons.lang.flow.FlowConsumerAdapter;
 import com.norconex.commons.lang.flow.module.FlowDeserializer.FlowDeserContext;
 import com.norconex.commons.lang.function.Consumers;
 
@@ -87,11 +87,11 @@ class RootHandler<T> implements StatementHandler<Consumer<T>> {
 
         p.nextToken(); // START_OBJECT
 
-        Class<?> type = config.getInputConsumerType();
+        Class<?> type = config.getConsumerType().getBaseType();
         if (type == null) {
             type = Consumer.class;
         } else if (!Consumer.class.isAssignableFrom(type)
-                && config.getConditionAdapterType() == null) {
+                && config.getPredicateType().getAdapterType() == null) {
             throw new IOException("""
                 Cannot have a flow consumer type that does not implement \
                 Consumer without a FlowInputConsumerAdapter.""");
@@ -99,9 +99,9 @@ class RootHandler<T> implements StatementHandler<Consumer<T>> {
 
         var mapper = (ObjectMapper) p.getCodec();
         var consumer = mapper.readValue(p, type);
-        if (config.getInputConsumerAdapterType() != null) {
-            var adapter = (FlowConsumerAdapter<T>)
-                    ClassUtil.newInstance(config.getInputConsumerAdapterType());
+        if (config.getConsumerType().getAdapterType() != null) {
+            var adapter = (FlowConsumerAdapter<T>) ClassUtil.newInstance(
+                    config.getConsumerType().getAdapterType());
             adapter.setConsumerAdaptee(consumer);
             FlowUtil.logBody(ctx, adapter);
             return adapter;

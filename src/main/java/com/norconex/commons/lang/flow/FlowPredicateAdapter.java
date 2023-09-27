@@ -12,20 +12,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.norconex.commons.lang.flow.module;
+package com.norconex.commons.lang.flow;
 
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.norconex.commons.lang.flow.FlowMapperConfig;
+import java.util.function.Predicate;
 
-import lombok.Getter;
-
-@Getter
-public class FlowModule extends SimpleModule {
-
-    private static final long serialVersionUID = 1L;
-
-    public FlowModule(FlowMapperConfig config) {
-//TODO        addSerializer(Flow_MAYBE.class, new FlowSerializer<>(config));
-        setDeserializerModifier(new FlowDeserializerModifier(config));
-    }
+//TODO do we really need to offer these built-in adapters given
+// it is probably quite easy to just wrap existing ones in a custom
+// predicate/consumer type?
+public interface FlowPredicateAdapter<T> extends Predicate<T> {
+    Object getPredicateAdaptee();
+    void setPredicateAdaptee(Object predicateAdaptee);
 }

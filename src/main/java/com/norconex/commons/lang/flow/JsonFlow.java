@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.norconex.commons.lang.flow.module;
+package com.norconex.commons.lang.flow;
 
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.TYPE;
@@ -23,6 +23,7 @@ import java.lang.annotation.Target;
 import java.util.function.Consumer;
 
 import com.norconex.commons.lang.bean.BeanMapper;
+import com.norconex.commons.lang.flow.module.FlowModule;
 
 /**
  * When adding the {@link FlowModule} to Jackson, use this annotation

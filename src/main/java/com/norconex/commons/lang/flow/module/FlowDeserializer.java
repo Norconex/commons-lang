@@ -24,7 +24,8 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
 import com.fasterxml.jackson.databind.deser.ResolvableDeserializer;
-import com.norconex.commons.lang.bean.BeanMapper.FlowMapperConfig;
+import com.norconex.commons.lang.flow.FlowMapperConfig;
+import com.norconex.commons.lang.flow.JsonFlow;
 
 import lombok.Data;
 import lombok.RequiredArgsConstructor;

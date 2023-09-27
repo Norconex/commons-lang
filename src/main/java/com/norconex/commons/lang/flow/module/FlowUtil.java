@@ -21,8 +21,8 @@ import org.apache.commons.lang3.function.FailableRunnable;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
-import com.norconex.commons.lang.bean.BeanMapper.FlowConsumerAdapter;
-import com.norconex.commons.lang.bean.BeanMapper.FlowPredicateAdapter;
+import com.norconex.commons.lang.flow.FlowConsumerAdapter;
+import com.norconex.commons.lang.flow.FlowPredicateAdapter;
 import com.norconex.commons.lang.flow.module.FlowDeserializer.FlowDeserContext;
 
 import lombok.extern.slf4j.Slf4j;

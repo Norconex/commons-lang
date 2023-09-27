@@ -20,7 +20,7 @@ import java.util.function.Consumer;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.norconex.commons.lang.bean.BeanMapper.FlowMapperConfig;
+import com.norconex.commons.lang.flow.FlowMapperConfig;
 
 import lombok.RequiredArgsConstructor;
 

@@ -12,20 +12,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.norconex.commons.lang.flow.module;
+package com.norconex.commons.lang.flow;
 
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.norconex.commons.lang.flow.FlowMapperConfig;
+import java.util.function.Predicate;
 
-import lombok.Getter;
+import lombok.Data;
+import lombok.experimental.Accessors;
 
-@Getter
-public class FlowModule extends SimpleModule {
-
-    private static final long serialVersionUID = 1L;
-
-    public FlowModule(FlowMapperConfig config) {
-//TODO        addSerializer(Flow_MAYBE.class, new FlowSerializer<>(config));
-        setDeserializerModifier(new FlowDeserializerModifier(config));
-    }
+@Data
+@Accessors(chain = true)
+public class FlowPolymorphicType<T> {
+    Class<?> baseType;
+    private Class<? extends T> adapterType;
+    private Predicate<String> scanFilter;
 }

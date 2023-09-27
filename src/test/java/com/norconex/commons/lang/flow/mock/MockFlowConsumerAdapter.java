@@ -14,27 +14,32 @@
  */
 package com.norconex.commons.lang.flow.mock;
 
-import com.norconex.commons.lang.bean.BeanMapper.FlowPredicateAdapter;
+import java.util.function.Consumer;
+
+import com.norconex.commons.lang.flow.FlowConsumerAdapter;
 import com.norconex.commons.lang.map.Properties;
 
 import lombok.Data;
 
 @Data
-public final class MockFlowConditionAdapter
-        implements FlowPredicateAdapter<Properties> {
+public final class MockFlowConsumerAdapter
+        implements FlowConsumerAdapter<Properties> {
 
-    private MockPredicateBase rawCondition;
+    private Consumer<Properties> rawInputConsumer;
 
     @Override
-    public boolean test(Properties props) {
-        return rawCondition.test(props);
+    public void accept(Properties t) {
+        rawInputConsumer.accept(t);
     }
+
     @Override
-    public MockPredicateBase getPredicateAdaptee() {
-        return rawCondition;
+    public Object getConsumerAdaptee() {
+        return rawInputConsumer;
     }
+    @SuppressWarnings("unchecked")
     @Override
-    public void setPredicateAdaptee(Object rawCondition) {
-        this.rawCondition = (MockPredicateBase) rawCondition;
+    public void setConsumerAdaptee(Object rawInputConsumer) {
+        this.rawInputConsumer = (Consumer<Properties>) rawInputConsumer;
+
     }
 }

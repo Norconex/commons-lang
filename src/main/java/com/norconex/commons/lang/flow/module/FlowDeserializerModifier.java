@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.deser.BeanDeserializerModifier;
-import com.norconex.commons.lang.bean.BeanMapper.FlowMapperConfig;
+import com.norconex.commons.lang.flow.FlowMapperConfig;
 
 import lombok.RequiredArgsConstructor;
 
@@ -35,7 +35,7 @@ public class FlowDeserializerModifier extends BeanDeserializerModifier {
             BeanDescription beanDesc,
             JsonDeserializer<?> deserializer) {
 
-        Class<?> consumerType = flowMapperConfig.getInputConsumerType();
+        Class<?> consumerType = flowMapperConfig.getConsumerType().getBaseType();
         if (consumerType != null
                 && consumerType.getClass().isAssignableFrom(
                         beanDesc.getBeanClass())

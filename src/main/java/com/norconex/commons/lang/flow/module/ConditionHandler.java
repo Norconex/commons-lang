@@ -19,7 +19,7 @@ import java.util.function.Predicate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.norconex.commons.lang.ClassUtil;
-import com.norconex.commons.lang.bean.BeanMapper.FlowPredicateAdapter;
+import com.norconex.commons.lang.flow.FlowPredicateAdapter;
 import com.norconex.commons.lang.flow.module.FlowDeserializer.FlowDeserContext;
 
 /**
@@ -39,11 +39,11 @@ class ConditionHandler<T> implements StatementHandler<Predicate<T>> {
         FlowUtil.logOpen(ctx, p.getCurrentName());
         p.nextToken(); // <-- START_OBJECT
 
-        Class<?> type = config.getConditionType();
+        Class<?> type = config.getPredicateType().getBaseType();
         if (type == null) {
             type = Predicate.class;
         } else if (!Predicate.class.isAssignableFrom(type)
-                && config.getConditionAdapterType() == null) {
+                && config.getPredicateType().getAdapterType() == null) {
             throw new IOException("""
                 Cannot have a flow condition type that\s\
                 does not implement Condition without a\s\
@@ -52,9 +52,9 @@ class ConditionHandler<T> implements StatementHandler<Predicate<T>> {
 
         var mapper = (ObjectMapper) p.getCodec();
         var condition = mapper.readValue(p, type);
-        if (config.getConditionAdapterType() != null) {
-            var adapter = (FlowPredicateAdapter<T>)
-                    ClassUtil.newInstance(config.getConditionAdapterType());
+        if (config.getPredicateType().getAdapterType() != null) {
+            var adapter = (FlowPredicateAdapter<T>) ClassUtil.newInstance(
+                    config.getPredicateType().getAdapterType());
             adapter.setPredicateAdaptee(condition);
             condition = adapter;
         }
