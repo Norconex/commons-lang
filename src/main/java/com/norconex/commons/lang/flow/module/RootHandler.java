@@ -25,7 +25,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.norconex.commons.lang.ClassUtil;
 import com.norconex.commons.lang.flow.FlowConsumerAdapter;
 import com.norconex.commons.lang.flow.module.FlowDeserializer.FlowDeserContext;
+import com.norconex.commons.lang.flow.module.FlowSerializer.FlowSerContext;
 import com.norconex.commons.lang.function.Consumers;
+import com.norconex.commons.lang.function.PredicatedConsumer;
 
 /**
  * Handles flow conditions and consumers in the order defined.
@@ -112,8 +114,39 @@ class RootHandler<T> implements StatementHandler<Consumer<T>> {
     }
 
     @Override
-    public void write() throws IOException {
-        //TODO
+    public void write(Consumer<T> obj, FlowSerContext ctx) throws IOException {
+
+        var gen = ctx.getGen();
+        gen.getOutputContext().getCurrentName();
+
+        // consumer(s)
+        if (obj instanceof Consumers<T> arr) {
+            for (Consumer<T> c : arr) {
+                writeConsumer(c, ctx);
+            }
+        } else {
+            writeConsumer(obj, ctx);
+        }
+    }
+
+    private void writeConsumer(Consumer<T> obj, FlowSerContext ctx)
+            throws IOException {
+        var gen = ctx.getGen();
+
+        // if / ifNot
+        if (obj instanceof PredicatedConsumer<T> pred) {
+            if (pred.isNegate()) {
+                ((IfHandler<T>) Statement.IFNOT.handler()).write(pred, ctx);
+            } else {
+                ((IfHandler<T>) Statement.IF.handler()).write(pred, ctx);
+            }
+            return;
+        }
+
+        gen.writeStartObject();
+        gen.writeFieldName("consumer");
+        gen.writeObject(obj);
+        gen.writeEndObject();
     }
 }
 

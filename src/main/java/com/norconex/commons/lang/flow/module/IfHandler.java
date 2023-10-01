@@ -20,7 +20,9 @@ import java.util.function.Predicate;
 
 import com.fasterxml.jackson.core.JsonToken;
 import com.norconex.commons.lang.flow.module.FlowDeserializer.FlowDeserContext;
+import com.norconex.commons.lang.flow.module.FlowSerializer.FlowSerContext;
 import com.norconex.commons.lang.function.PredicatedConsumer;
+import com.norconex.commons.lang.function.Predicates;
 
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -78,9 +80,52 @@ class IfHandler<T> implements StatementHandler<Consumer<T>> {
                 negate);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public void write() throws IOException {
-        //TODO
+    public void write(Consumer<T> obj, FlowSerContext ctx) throws IOException {
+
+        var gen = ctx.getGen();
+        gen.writeStartObject();
+        gen.writeFieldName(negate ? "ifNot" : "if");
+        gen.writeStartObject();
+
+        var predicatedConsumer = (PredicatedConsumer<T>) obj;
+        var predicate = predicatedConsumer.getPredicate();
+
+        if (predicate instanceof Predicates<T> predicateGroup) {
+            if (predicateGroup.isAny()) {
+                // anyOf
+                ((ConditionGroupHandler<T>) Statement.ANYOF.handler()).write(
+                        predicateGroup, ctx);
+            } else {
+                // allOf
+                ((ConditionGroupHandler<T>) Statement.ALLOF.handler()).write(
+                        predicateGroup, ctx);
+            }
+        } else {
+            // condition
+            ((ConditionHandler<T>) Statement.CONDITION.handler()).write(
+                    predicatedConsumer.getPredicate(), ctx);
+        }
+
+        // then
+        gen.writeFieldName(Statement.THEN.toString());
+        gen.writeStartArray();
+        ((RootHandler<T>) Statement.THEN.handler()).write(
+                predicatedConsumer.getThenConsumer(), ctx);
+        gen.writeEndArray();
+
+        // else
+        if (predicatedConsumer.getElseConsumer() != null) {
+            gen.writeFieldName(Statement.ELSE.toString());
+            gen.writeStartArray();
+            ((RootHandler<T>) Statement.ELSE.handler()).write(
+                    predicatedConsumer.getElseConsumer(), ctx);
+            gen.writeEndArray();
+        }
+
+        gen.writeEndObject();
+        gen.writeEndObject();
     }
 
     @SuppressWarnings("unchecked")

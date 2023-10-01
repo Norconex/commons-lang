@@ -142,7 +142,7 @@
         ConfigurationLoader can now load XML, JSON, and Yaml into objects.
       </action>
       <action dev="essiembre" type="add">
-        New PredicatedConsumer #isTrue and #isFalse methods. 
+        New PredicatedConsumer #isTrue and #isFalse and #elseConsumer methods. 
       </action>
       <action dev="essiembre" type="add">
         New Predicates #anyOf and #allOf methods.

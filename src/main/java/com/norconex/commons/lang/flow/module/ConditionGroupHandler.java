@@ -22,6 +22,7 @@ import java.util.function.Predicate;
 
 import com.fasterxml.jackson.core.JsonToken;
 import com.norconex.commons.lang.flow.module.FlowDeserializer.FlowDeserContext;
+import com.norconex.commons.lang.flow.module.FlowSerializer.FlowSerContext;
 import com.norconex.commons.lang.function.Predicates;
 
 import lombok.Data;
@@ -75,9 +76,75 @@ class ConditionGroupHandler<T> implements StatementHandler<Predicate<T>> {
         FlowUtil.logClose(ctx, p.getCurrentName());
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public void write() throws IOException {
-        // TODO Auto-generated method stub
+    public void write(Predicate<T> predicate, FlowSerContext ctx)
+            throws IOException {
+        var gen = ctx.getGen();
 
+        gen.writeFieldName(isAny() ? "anyOf" : "allOf");
+//        gen.writeStartObject();
+
+        var predicateGroup = (Predicates<T>) predicate;
+        gen.writeStartArray();
+        for (Predicate<T> pred : predicateGroup) {
+            gen.writeStartObject();
+            if (pred instanceof Predicates<T> chidPredGroup) {
+                if (chidPredGroup.isAny()) {
+                    // anyOf
+                    ((ConditionGroupHandler<T>) Statement.ANYOF.handler())
+                            .write(chidPredGroup, ctx);
+                } else {
+                    // allOf
+                    ((ConditionGroupHandler<T>) Statement.ALLOF.handler())
+                            .write(chidPredGroup, ctx);
+                }
+            } else {
+                // condition
+                ((ConditionHandler<T>) Statement.CONDITION.handler()).write(
+                        pred, ctx);
+            }
+            gen.writeEndObject();
+        }
+        gen.writeEndArray();
+
+
+
+//        if (predicate instanceof Predicates<T> predicateGroup) {
+//            if (predicateGroup.isAny()) {
+//                // anyOf
+//                ((ConditionGroupHandler<T>) Statement.ANYOF.handler()).write(
+//                        predicateGroup, ctx);
+//            } else {
+//                // allOf
+//                ((ConditionGroupHandler<T>) Statement.ALLOF.handler()).write(
+//                        predicateGroup, ctx);
+//            }
+//        } else {
+//            // condition
+//            ((ConditionHandler<T>) Statement.CONDITION.handler()).write(
+//                    predicate, ctx);
+//        }
+
+//        gen.writeEndObject();
+
+//        var preds = (Predicates<T>) obj;
+//        for (Predicate<T> pred : preds) {
+//            if (pred instanceof Predicates<T> pgroup) {
+//                if (pgroup.isAny()) {
+//                    gen.writeFieldName(Statement.ANYOF.toString());
+//                    ((ConditionGroupHandler<T>) Statement.ANYOF.handler()).write(
+//                            pgroup, ctx);
+//                } else {
+//                    gen.writeFieldName(Statement.ALLOF.toString());
+//                    ((ConditionGroupHandler<T>) Statement.ALLOF.handler()).write(
+//                            pgroup, ctx);
+//                }
+//            } else {
+//                gen.writeFieldName(Statement.CONDITION.toString());
+//                ((ConditionHandler<T>) Statement.CONDITION.handler()).write(
+//                        pred, ctx);
+//            }
+//        }
     }
 }

@@ -17,6 +17,7 @@ package com.norconex.commons.lang.flow.module;
 import java.io.IOException;
 
 import com.norconex.commons.lang.flow.module.FlowDeserializer.FlowDeserContext;
+import com.norconex.commons.lang.flow.module.FlowSerializer.FlowSerContext;
 
 /**
  * Statement handler
@@ -26,5 +27,5 @@ import com.norconex.commons.lang.flow.module.FlowDeserializer.FlowDeserContext;
  */
 interface StatementHandler<T> {
     T read(FlowDeserContext ctx) throws IOException;
-    void write() throws IOException;
+    void write(T object, FlowSerContext ctx) throws IOException;
 }

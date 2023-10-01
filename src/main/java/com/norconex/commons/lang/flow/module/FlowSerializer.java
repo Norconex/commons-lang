@@ -18,10 +18,16 @@ import java.io.IOException;
 import java.util.function.Consumer;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.BeanProperty;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.ser.ContextualSerializer;
+import com.fasterxml.jackson.databind.ser.ResolvableSerializer;
 import com.norconex.commons.lang.flow.FlowMapperConfig;
+import com.norconex.commons.lang.flow.JsonFlow;
 
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -31,17 +37,54 @@ import lombok.RequiredArgsConstructor;
  * @since 3.0.0
  */
 @RequiredArgsConstructor
-public class FlowSerializer<F extends Consumer<T>, T>
-    extends JsonSerializer<F> {
+public class FlowSerializer<T> extends JsonSerializer<Consumer<T>>
+        implements ContextualSerializer, ResolvableSerializer {
 
     private final FlowMapperConfig config;
+    private final JsonSerializer<?> defaultSerializer;
+
+    @SuppressWarnings("unchecked")
+    private RootHandler<T> rootHandler =
+            (RootHandler<T>) Statement.THEN.handler();
 
     @Override
-    public void serialize(F value,
-            JsonGenerator gen, SerializerProvider sp) throws IOException {
-     //   gen.writeString(GenericConverter.convert(value));
+    public void serialize(
+            Consumer<T> value,
+            JsonGenerator gen,
+            SerializerProvider sp) throws IOException {
+        rootHandler.write(value, new FlowSerContext(config, gen));
+    }
 
-        //TODO ensure order is preserved when writing
+    @Override
+    public JsonSerializer<?> createContextual(
+            SerializerProvider prov, BeanProperty property)
+                    throws JsonMappingException {
+        if (property == null) {
+            return defaultSerializer;
+        }
+        return property.getAnnotation(JsonFlow.class) == null
+                ? defaultSerializer : this;
+    }
 
+    @Override
+    public void resolve(SerializerProvider provider)
+            throws JsonMappingException {
+        if (defaultSerializer != null
+                && defaultSerializer instanceof ResolvableSerializer rs) {
+            rs.resolve(provider);
+        }
+    }
+
+    @Data
+    static class FlowSerContext {
+        private final FlowMapperConfig config;
+        private final JsonGenerator gen;
+        private int depth;
+        int incrementDepth() {
+            return depth++;
+        }
+        int decrementDepth() {
+            return --depth;
+        }
     }
 }

@@ -18,6 +18,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.ToString;
 
 /**
@@ -35,7 +36,7 @@ import lombok.ToString;
  * <p>
  * Setting the "negate" constructor argument to <code>true</code> will
  * perform the same predicate evaluation, but will only trigger the
- * consumers if it returns <code>false</code>.
+ * "then" consumer if the predicate returns <code>false</code>.
  * </p>
  *
  * @param <T> type being predicated and consumed
@@ -43,6 +44,7 @@ import lombok.ToString;
  */
 @EqualsAndHashCode
 @ToString
+@Getter
 public class PredicatedConsumer<T> implements Consumer<T> {
 
     private final Predicate<T> predicate;
@@ -98,7 +100,13 @@ public class PredicatedConsumer<T> implements Consumer<T> {
     public Predicate<T> getPredicate() {
         return predicate;
     }
-    public Consumer<T> getConsumer() {
+    /**
+     * Gets the "then" consumer.
+     * @return consumer
+     * @deprecated Use {@link #getThenConsumer()} instead.
+     */
+    @Deprecated(since = "3.0.0")
+    public Consumer<T> getConsumer() { //NOSONAR
         return thenConsumer;
     }
 
@@ -145,7 +153,7 @@ public class PredicatedConsumer<T> implements Consumer<T> {
     public static <T> PredicatedConsumer<T> ifTrue(
             Predicate<T> condition,
             Consumer<T> thenConsumer,
-            final Consumer<T> elseConsumer) {
+            Consumer<T> elseConsumer) {
         return new PredicatedConsumer<>(
                 condition, thenConsumer, elseConsumer, false);
     }

@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.norconex.commons.lang.ClassUtil;
 import com.norconex.commons.lang.flow.FlowPredicateAdapter;
 import com.norconex.commons.lang.flow.module.FlowDeserializer.FlowDeserContext;
+import com.norconex.commons.lang.flow.module.FlowSerializer.FlowSerContext;
 
 /**
  * Handles flow conditions.
@@ -66,8 +67,9 @@ class ConditionHandler<T> implements StatementHandler<Predicate<T>> {
     }
 
     @Override
-    public void write() throws IOException {
-        //TODO
+    public void write(Predicate<T> obj, FlowSerContext ctx) throws IOException {
+        var gen = ctx.getGen();
+        gen.writeFieldName(Statement.CONDITION.toString());
+        gen.writeObject(obj);
     }
-
 }

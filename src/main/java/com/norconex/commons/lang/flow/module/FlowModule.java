@@ -25,7 +25,7 @@ public class FlowModule extends SimpleModule {
     private static final long serialVersionUID = 1L;
 
     public FlowModule(FlowMapperConfig config) {
-//TODO        addSerializer(Flow_MAYBE.class, new FlowSerializer<>(config));
+        setSerializerModifier(new FlowSerializerModifier(config));
         setDeserializerModifier(new FlowDeserializerModifier(config));
     }
 }
