@@ -44,6 +44,7 @@ class ConditionGroupHandler<T> implements StatementHandler<Predicate<T>> {
     public Predicate<T> read(FlowDeserContext ctx) throws IOException {
         var p = ctx.getParser();
         var preds = new Predicates<T>(any);
+        FlowUtil.logOpen(ctx, any ? "anyOf" : "allOf");
         p.nextToken(); // START_ARRAY or START_OBJECT
 
         if (p.currentToken() == JsonToken.START_ARRAY) {
@@ -52,6 +53,7 @@ class ConditionGroupHandler<T> implements StatementHandler<Predicate<T>> {
             whileInObject(p, () -> readObject(ctx, preds));
         }
 
+        FlowUtil.logClose(ctx, p.getCurrentName());
         return preds;
     }
 

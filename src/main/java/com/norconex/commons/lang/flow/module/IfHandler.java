@@ -54,7 +54,6 @@ class IfHandler<T> implements StatementHandler<Consumer<T>> {
             if (st == null) {
                 badChildren("Invalid element: <%s>".formatted(name));
             }
-
             switch (st) {
                 case CONDITION, ALLOF, ANYOF -> args.setCondition(
                         st.handler().read(ctx), name);
