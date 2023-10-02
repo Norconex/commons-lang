@@ -14,10 +14,11 @@
  */
 package com.norconex.commons.lang.flow.mock;
 
-import java.util.function.Predicate;
-
 import com.norconex.commons.lang.map.Properties;
 
-public interface MockPredicateBase extends Predicate<Properties> {
+// Does not implement Predicate but should work with adapter.
+public interface MockPredicateBase {
+
+    boolean isPropertiesConditionMet(Properties props);
 
 }

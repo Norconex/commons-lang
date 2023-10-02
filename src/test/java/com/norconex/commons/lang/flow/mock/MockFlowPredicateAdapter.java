@@ -14,6 +14,8 @@
  */
 package com.norconex.commons.lang.flow.mock;
 
+import java.util.function.Predicate;
+
 import com.norconex.commons.lang.flow.FlowPredicateAdapter;
 import com.norconex.commons.lang.map.Properties;
 
@@ -25,9 +27,15 @@ public final class MockFlowPredicateAdapter
 
     private MockPredicateBase rawCondition;
 
+    public static Predicate<Properties> wrap(MockPredicateBase rawCondition) {
+        var adapter = new MockFlowPredicateAdapter();
+        adapter .setPredicateAdaptee(rawCondition);
+        return adapter;
+    }
+
     @Override
     public boolean test(Properties props) {
-        return rawCondition.test(props);
+        return rawCondition.isPropertiesConditionMet(props);
     }
     @Override
     public MockPredicateBase getPredicateAdaptee() {

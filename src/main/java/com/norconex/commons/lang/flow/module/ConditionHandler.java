@@ -70,6 +70,10 @@ class ConditionHandler<T> implements StatementHandler<Predicate<T>> {
     public void write(Predicate<T> obj, FlowSerContext ctx) throws IOException {
         var gen = ctx.getGen();
         gen.writeFieldName(Statement.CONDITION.toString());
-        gen.writeObject(obj);
+        if (obj instanceof FlowPredicateAdapter<?> adapter) {
+            gen.writeObject(adapter.getPredicateAdaptee());
+        } else {
+            gen.writeObject(obj);
+        }
     }
 }

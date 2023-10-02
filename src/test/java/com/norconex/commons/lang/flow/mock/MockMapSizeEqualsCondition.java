@@ -27,7 +27,7 @@ public class MockMapSizeEqualsCondition implements MockPredicateBase {
     private int size;
 
     @Override
-    public boolean test(Properties props) {
+    public boolean isPropertiesConditionMet(Properties props) {
         return props != null && props.size() == size;
     }
 }

@@ -25,21 +25,25 @@ import lombok.Data;
 public final class MockFlowConsumerAdapter
         implements FlowConsumerAdapter<Properties> {
 
-    private Consumer<Properties> rawInputConsumer;
+    private MockConsumerBase rawInputConsumer;
+
+    public static Consumer<Properties> wrap(MockConsumerBase rawConsumer) {
+        var adapter = new MockFlowConsumerAdapter();
+        adapter .setConsumerAdaptee(rawConsumer);
+        return adapter;
+    }
 
     @Override
     public void accept(Properties t) {
-        rawInputConsumer.accept(t);
+        rawInputConsumer.consumeProperties(t);
     }
 
     @Override
     public Object getConsumerAdaptee() {
         return rawInputConsumer;
     }
-    @SuppressWarnings("unchecked")
     @Override
     public void setConsumerAdaptee(Object rawInputConsumer) {
-        this.rawInputConsumer = (Consumer<Properties>) rawInputConsumer;
-
+        this.rawInputConsumer = (MockConsumerBase) rawInputConsumer;
     }
 }

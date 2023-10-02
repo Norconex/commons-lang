@@ -23,11 +23,12 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 public class MockLowercaseConsumer implements MockConsumerBase {
     private String field;
+
     @Override
-    public void accept(Properties p) {
-        var value = p.getString(field);
+    public void consumeProperties(Properties props) {
+        var value = props.getString(field);
         if (value != null) {
-            p.set(field, value.toLowerCase());
+            props.set(field, value.toLowerCase());
         }
     }
 }

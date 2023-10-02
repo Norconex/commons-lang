@@ -88,4 +88,62 @@ final class FlowUtil {
             LOG.debug(StringUtils.repeat("  ", ctx.getDepth()) + resolved);
         }
     }
+
+    //--- Write utilities ------------------------------------------------------
+
+    // Needed to avoid XmlMapper not always writing as it should
+//    static <T> void writeArrrayOfObjects(
+//            Collection<T> collection,
+//            FlowSerContext ctx,
+//            FailableConsumer<T, IOException> c)
+//                    throws IOException {
+//        writeArrayWrap(ctx, () -> {
+//            for (T obj : collection) {
+//                writeArrayObjectWrap(ctx, () -> {
+//                    c.accept(obj);
+//                });
+//            }
+//        });
+//    }
+//
+//    static boolean isXml(FlowSerContext ctx) {
+//        return ctx.getGen() instanceof ToXmlGenerator;
+//    }
+//
+//    static void writeArrayWrap(
+//            FlowSerContext ctx,
+//            FailableRunnable<IOException> r)
+//                    throws IOException {
+//        var gen = ctx.getGen();
+//        var isXml = isXml(ctx);
+//
+//        if (isXml) {
+//            gen.writeStartObject();
+//        } else {
+//            gen.writeStartArray();
+//        }
+//
+//        r.run();
+//
+//        if (isXml) {
+//            gen.writeEndObject();
+//        } else {
+//            gen.writeEndArray();
+//        }
+//    }
+//
+//    static void writeArrayObjectWrap(
+//            FlowSerContext ctx,
+//            FailableRunnable<IOException> r)
+//                    throws IOException {
+//        var gen = ctx.getGen();
+//        var isXml = gen instanceof ToXmlGenerator;
+//        if (!isXml) {
+//            gen.writeStartObject();
+//        }
+//        r.run();
+//        if (!isXml) {
+//            gen.writeEndObject();
+//        }
+//    }
 }

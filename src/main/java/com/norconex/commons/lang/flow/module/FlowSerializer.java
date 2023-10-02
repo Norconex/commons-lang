@@ -79,12 +79,5 @@ public class FlowSerializer<T> extends JsonSerializer<Consumer<T>>
     static class FlowSerContext {
         private final FlowMapperConfig config;
         private final JsonGenerator gen;
-        private int depth;
-        int incrementDepth() {
-            return depth++;
-        }
-        int decrementDepth() {
-            return --depth;
-        }
     }
 }

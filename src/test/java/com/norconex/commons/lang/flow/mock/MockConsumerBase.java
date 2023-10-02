@@ -14,10 +14,11 @@
  */
 package com.norconex.commons.lang.flow.mock;
 
-import java.util.function.Consumer;
-
 import com.norconex.commons.lang.map.Properties;
 
-public interface MockConsumerBase extends Consumer<Properties> {
+//Does not implement Consumer but should work with adapter.
+public interface MockConsumerBase {
+
+    void consumeProperties(Properties props);
 
 }

@@ -145,7 +145,11 @@ class RootHandler<T> implements StatementHandler<Consumer<T>> {
 
         gen.writeStartObject();
         gen.writeFieldName("consumer");
-        gen.writeObject(obj);
+        if (obj instanceof FlowConsumerAdapter<?> adapter) {
+            gen.writeObject(adapter.getConsumerAdaptee());
+        } else {
+            gen.writeObject(obj);
+        }
         gen.writeEndObject();
     }
 }

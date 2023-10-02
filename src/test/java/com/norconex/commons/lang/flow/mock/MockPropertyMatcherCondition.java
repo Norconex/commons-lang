@@ -31,7 +31,7 @@ public class MockPropertyMatcherCondition
             new MockPropertyMatcherConditionConfig();
 
     @Override
-    public boolean test(Properties props) {
+    public boolean isPropertiesConditionMet(Properties props) {
         return configuration.getPropertyMatcher().matches(props);
     }
 }

@@ -23,11 +23,12 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 public class MockUppercaseConsumer implements MockConsumerBase {
     private String field;
+
     @Override
-    public void accept(Properties p) {
-        var value = p.getString(field);
+    public void consumeProperties(Properties props) {
+        var value = props.getString(field);
         if (value != null) {
-            p.set(field, value.toUpperCase());
+            props.set(field, value.toUpperCase());
         }
     }
 }

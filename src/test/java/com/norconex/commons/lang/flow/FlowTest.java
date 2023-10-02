@@ -18,11 +18,10 @@ import static com.norconex.commons.lang.text.TextMatcher.basic;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
@@ -89,52 +88,20 @@ class FlowTest {
         assertFlowConsumed(c);
     }
 
-    @Test
-    void testProgrammaticFlow() throws IOException {
-        assertFlowConsumed(createPropertiesFlow());
-    }
-
     @ParameterizedTest
     @EnumSource(Format.class)
-    void testFlowWrite(Format format) throws IOException {
+    void testFlowWriteRead(Format format) throws IOException {
         var cfg = new TestFlowConfig();
         cfg.setFlowTest(createPropertiesFlowAsRead());
 
-        try (var w = new StringWriter()) {
-            beanMapper.write(cfg, w, format);
+        beanMapper.assertWriteRead(cfg, format);
 
-            //TODO replace with assertion:
-            System.out.println(w);
-        }
-    }
-
-
-    @SuppressWarnings("unchecked")
-    private Consumer<Properties> createPropertiesFlow() {
-        return Consumers.of(
-            p -> {
-                if (propertyMatcherCondition("car", "volvo").test(p)) {
-                    new MockUppercaseConsumer().setField("firstName").accept(p);
-                } else {
-                    new MockUppercaseConsumer().setField("lastName").accept(p);
-                }
-            },
-            p -> new MockLowercaseConsumer().setField("IdontExist").accept(p),
-            p -> {
-                if (new MockMapSizeEqualsCondition().setSize(3).test(p)
-                        && propertyMatcherCondition("car", "toyota").test(p)) {
-                    new MockLowercaseConsumer().setField("firstName").accept(p);
-                    if (!propertyMatcherCondition(
-                            "firstName", "john").test(p)) {
-                        new MockLowercaseConsumer()
-                            .setField("lastName").accept(p);
-                    } else {
-                        new MockUppercaseConsumer()
-                            .setField("lastName").accept(p);
-                    }
-                }
-            }
-        );
+//        try (var w = new StringWriter()) {
+//            beanMapper.write(cfg, w, format);
+//
+//            //TODO replace with assertion:
+//            System.out.println(w);
+//        }
     }
 
     @SuppressWarnings("unchecked")
@@ -146,27 +113,31 @@ class FlowTest {
                 // condition
                 propertyMatcherCondition("car", "volvo"),
                 // then
-                new MockUppercaseConsumer().setField("firstName"),
+                Consumers.of(
+                    adapt(new MockUppercaseConsumer().setField("firstName"))
+                ),
                 // else
-                new MockUppercaseConsumer().setField("lastName")
+                Consumers.of(
+                    adapt(new MockUppercaseConsumer().setField("lastName"))
+                )
             ),
 
             // consumer
-            new MockLowercaseConsumer().setField("IdontExist"),
+            adapt(new MockLowercaseConsumer().setField("IdontExist")),
 
             // if
             PredicatedConsumer.ifTrue(
                 // allOf
                 Predicates.allOf(
                     // condition
-                    new MockMapSizeEqualsCondition().setSize(3),
+                    adapt(new MockMapSizeEqualsCondition().setSize(3)),
                     // condition
                     propertyMatcherCondition("car", "toyota")
                 ),
                 // then
                 Consumers.of(
                     // consumer
-                    new MockLowercaseConsumer().setField("firstName"),
+                    adapt(new MockLowercaseConsumer().setField("firstName")),
                     // ifNot
                     PredicatedConsumer.ifFalse(
                         // condition
@@ -174,16 +145,20 @@ class FlowTest {
                         // then
                         Consumers.of(
                             // consumer
-                            new MockLowercaseConsumer().setField("lastName"),
+                            adapt(new MockLowercaseConsumer()
+                                    .setField("lastName")),
                             // consumer
-                            new MockLowercaseConsumer().setField("DoNothing1")
+                            adapt(new MockLowercaseConsumer()
+                                    .setField("DoNothing1"))
                         ),
                         // else
                         Consumers.of(
                             // consumer
-                            new MockUppercaseConsumer().setField("lastName"),
+                            adapt(new MockUppercaseConsumer()
+                                    .setField("lastName")),
                             // consumer
-                            new MockUppercaseConsumer().setField("DoNothing2")
+                            adapt(new MockUppercaseConsumer()
+                                    .setField("DoNothing2"))
                         )
                     )
                 )
@@ -191,12 +166,19 @@ class FlowTest {
         );
     }
 
-    private MockPropertyMatcherCondition propertyMatcherCondition(
+    private Predicate<Properties> adapt(MockPredicateBase p) {
+        return MockFlowPredicateAdapter.wrap(p);
+    }
+    private Consumer<Properties> adapt(MockConsumerBase p) {
+        return MockFlowConsumerAdapter.wrap(p);
+    }
+
+    private Predicate<Properties> propertyMatcherCondition(
             String name, String value) {
-        return Configurable.configure(
+        return adapt(Configurable.configure(
                 new MockPropertyMatcherCondition(),
                 cfg -> cfg.setPropertyMatcher(
-                        new PropertyMatcher(basic(name), basic(value))));
+                        new PropertyMatcher(basic(name), basic(value)))));
     }
 
     void assertFlowConsumed(Consumer<Properties>  c) {
