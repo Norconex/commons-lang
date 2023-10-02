@@ -14,6 +14,9 @@
  */
 package com.norconex.commons.lang.flow;
 
+import java.util.function.Consumer;
+import java.util.function.Function;
+
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -24,4 +27,13 @@ public class FlowMapperConfig {
             new FlowPolymorphicType<>();
     private final FlowPolymorphicType<FlowConsumerAdapter<?>> consumerType =
             new FlowPolymorphicType<>();
+    /**
+     * Provide a custom name to be used when a consumer is being serialized.
+     * When not specified or returning <code>null</code>, the default is
+     * "consumer".
+     * @param consumerNameProvider name provider
+     * @return consumer name
+     */
+    @SuppressWarnings("javadoc")
+    private Function<Consumer<?>, String> consumerNameProvider;
 }

@@ -22,6 +22,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.util.function.Consumer;
 
+import com.fasterxml.jackson.annotation.JacksonAnnotationsInside;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize.Typing;
 import com.norconex.commons.lang.bean.BeanMapper;
 import com.norconex.commons.lang.flow.module.FlowModule;
 
@@ -32,6 +35,8 @@ import com.norconex.commons.lang.flow.module.FlowModule;
  */
 @Retention(RUNTIME)
 @Target({ TYPE, FIELD })
+@JacksonAnnotationsInside
+@JsonSerialize(typing = Typing.STATIC)
 public @interface JsonFlow {
 
 }

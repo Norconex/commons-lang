@@ -84,47 +84,44 @@ class IfHandler<T> implements StatementHandler<Consumer<T>> {
     public void write(Consumer<T> obj, FlowSerContext ctx) throws IOException {
 
         var gen = ctx.getGen();
-        gen.writeStartObject();
-        gen.writeFieldName(negate ? "ifNot" : "if");
-        gen.writeStartObject();
 
-        var predicatedConsumer = (PredicatedConsumer<T>) obj;
-        var predicate = predicatedConsumer.getPredicate();
+        FlowUtil.writeArrayObjectWrap(ctx, () -> {
+            gen.writeFieldName(negate ? "ifNot" : "if");
+            gen.writeStartObject();
 
-        if (predicate instanceof Predicates<T> predicateGroup) {
-            if (predicateGroup.isAny()) {
-                // anyOf
-                ((ConditionGroupHandler<T>) Statement.ANYOF.handler()).write(
-                        predicateGroup, ctx);
+            var predicatedConsumer = (PredicatedConsumer<T>) obj;
+            var predicate = predicatedConsumer.getPredicate();
+
+            if (predicate instanceof Predicates<T> predicateGroup) {
+                if (predicateGroup.isAny()) {
+                    // anyOf
+                    ((ConditionGroupHandler<T>) Statement.ANYOF
+                            .handler()).write(predicateGroup, ctx);
+                } else {
+                    // allOf
+                    ((ConditionGroupHandler<T>) Statement.ALLOF
+                            .handler()).write(predicateGroup, ctx);
+                }
             } else {
-                // allOf
-                ((ConditionGroupHandler<T>) Statement.ALLOF.handler()).write(
-                        predicateGroup, ctx);
+                // condition
+                ((ConditionHandler<T>) Statement.CONDITION.handler()).write(
+                        predicatedConsumer.getPredicate(), ctx);
             }
-        } else {
-            // condition
-            ((ConditionHandler<T>) Statement.CONDITION.handler()).write(
-                    predicatedConsumer.getPredicate(), ctx);
-        }
 
-        // then
-        gen.writeFieldName(Statement.THEN.toString());
-        gen.writeStartArray();
-        ((RootHandler<T>) Statement.THEN.handler()).write(
-                predicatedConsumer.getThenConsumer(), ctx);
-        gen.writeEndArray();
+            // then
+            gen.writeFieldName(Statement.THEN.toString());
+            ((RootHandler<T>) Statement.THEN.handler()).write(
+                    predicatedConsumer.getThenConsumer(), ctx);
 
-        // else
-        if (predicatedConsumer.getElseConsumer() != null) {
-            gen.writeFieldName(Statement.ELSE.toString());
-            gen.writeStartArray();
-            ((RootHandler<T>) Statement.ELSE.handler()).write(
-                    predicatedConsumer.getElseConsumer(), ctx);
-            gen.writeEndArray();
-        }
+            // else
+            if (predicatedConsumer.getElseConsumer() != null) {
+                gen.writeFieldName(Statement.ELSE.toString());
+                ((RootHandler<T>) Statement.ELSE.handler()).write(
+                        predicatedConsumer.getElseConsumer(), ctx);
+            }
 
-        gen.writeEndObject();
-        gen.writeEndObject();
+            gen.writeEndObject();
+        });
     }
 
     @SuppressWarnings("unchecked")

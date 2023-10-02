@@ -18,6 +18,7 @@ import static com.norconex.commons.lang.flow.module.FlowUtil.whileInArrayObjects
 import static com.norconex.commons.lang.flow.module.FlowUtil.whileInObject;
 
 import java.io.IOException;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import com.fasterxml.jackson.core.JsonToken;
@@ -43,7 +44,6 @@ class RootHandler<T> implements StatementHandler<Consumer<T>> {
             FlowDeserContext ctx) throws IOException {
         var p = ctx.getParser();
         String parentName = null;
-
 
         // Ensure current token is START_ARRAY or START_OBJECT
         if (p.currentToken() == JsonToken.FIELD_NAME) {
@@ -81,7 +81,6 @@ class RootHandler<T> implements StatementHandler<Consumer<T>> {
         FlowUtil.logClose(ctx, name);
     }
 
-
     private Consumer<T> readInputConsumer(FlowDeserContext ctx)
             throws IOException {
         var p = ctx.getParser();
@@ -115,18 +114,16 @@ class RootHandler<T> implements StatementHandler<Consumer<T>> {
 
     @Override
     public void write(Consumer<T> obj, FlowSerContext ctx) throws IOException {
-
-        var gen = ctx.getGen();
-        gen.getOutputContext().getCurrentName();
-
-        // consumer(s)
-        if (obj instanceof Consumers<T> arr) {
-            for (Consumer<T> c : arr) {
-                writeConsumer(c, ctx);
+        FlowUtil.writeArrayWrap(ctx, () -> {
+            // consumer(s)
+            if (obj instanceof Consumers<T> arr) {
+                for (Consumer<T> c : arr) {
+                    writeConsumer(c, ctx);
+                }
+            } else {
+                writeConsumer(obj, ctx);
             }
-        } else {
-            writeConsumer(obj, ctx);
-        }
+        });
     }
 
     private void writeConsumer(Consumer<T> obj, FlowSerContext ctx)
@@ -143,14 +140,20 @@ class RootHandler<T> implements StatementHandler<Consumer<T>> {
             return;
         }
 
-        gen.writeStartObject();
-        gen.writeFieldName("consumer");
-        if (obj instanceof FlowConsumerAdapter<?> adapter) {
-            gen.writeObject(adapter.getConsumerAdaptee());
-        } else {
-            gen.writeObject(obj);
-        }
-        gen.writeEndObject();
+        FlowUtil.writeArrayObjectWrap(ctx, () -> {
+            gen.writeFieldName(consumerName(obj, ctx));
+            if (obj instanceof FlowConsumerAdapter<?> adapter) {
+                gen.writeObject(adapter.getConsumerAdaptee());
+            } else {
+                gen.writeObject(obj);
+            }
+        });
+    }
+
+    private String consumerName(Consumer<T> obj, FlowSerContext ctx) {
+        return Optional.ofNullable(ctx.getConfig().getConsumerNameProvider())
+                .map(f -> f.apply(obj))
+                .orElse("consumer");
     }
 }
 

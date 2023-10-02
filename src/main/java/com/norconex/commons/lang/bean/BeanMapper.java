@@ -362,7 +362,7 @@ public class BeanMapper { //NOSONAR
             // write:
             mapper.configure(SerializationFeature.INDENT_OUTPUT, indent);
             mapper.disable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
-            mapper.setSerializationInclusion(Include.NON_EMPTY);
+            mapper.setSerializationInclusion(Include.NON_DEFAULT);
 
             // register polymorphic types:
             registerPolymorphicTypes(mapper);

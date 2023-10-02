@@ -85,68 +85,24 @@ class ConditionGroupHandler<T> implements StatementHandler<Predicate<T>> {
         var gen = ctx.getGen();
 
         gen.writeFieldName(isAny() ? "anyOf" : "allOf");
-//        gen.writeStartObject();
 
         var predicateGroup = (Predicates<T>) predicate;
-        gen.writeStartArray();
-        for (Predicate<T> pred : predicateGroup) {
-            gen.writeStartObject();
+        FlowUtil.writeArrrayOfObjects(predicateGroup, ctx, pred -> {
             if (pred instanceof Predicates<T> chidPredGroup) {
                 if (chidPredGroup.isAny()) {
                     // anyOf
-                    ((ConditionGroupHandler<T>) Statement.ANYOF.handler())
-                            .write(chidPredGroup, ctx);
+                    ((ConditionGroupHandler<T>) Statement.ANYOF
+                            .handler()).write(chidPredGroup, ctx);
                 } else {
                     // allOf
-                    ((ConditionGroupHandler<T>) Statement.ALLOF.handler())
-                            .write(chidPredGroup, ctx);
+                    ((ConditionGroupHandler<T>) Statement.ALLOF
+                            .handler()).write(chidPredGroup, ctx);
                 }
             } else {
                 // condition
-                ((ConditionHandler<T>) Statement.CONDITION.handler()).write(
-                        pred, ctx);
+                ((ConditionHandler<T>) Statement.CONDITION
+                        .handler()).write(pred, ctx);
             }
-            gen.writeEndObject();
-        }
-        gen.writeEndArray();
-
-
-
-//        if (predicate instanceof Predicates<T> predicateGroup) {
-//            if (predicateGroup.isAny()) {
-//                // anyOf
-//                ((ConditionGroupHandler<T>) Statement.ANYOF.handler()).write(
-//                        predicateGroup, ctx);
-//            } else {
-//                // allOf
-//                ((ConditionGroupHandler<T>) Statement.ALLOF.handler()).write(
-//                        predicateGroup, ctx);
-//            }
-//        } else {
-//            // condition
-//            ((ConditionHandler<T>) Statement.CONDITION.handler()).write(
-//                    predicate, ctx);
-//        }
-
-//        gen.writeEndObject();
-
-//        var preds = (Predicates<T>) obj;
-//        for (Predicate<T> pred : preds) {
-//            if (pred instanceof Predicates<T> pgroup) {
-//                if (pgroup.isAny()) {
-//                    gen.writeFieldName(Statement.ANYOF.toString());
-//                    ((ConditionGroupHandler<T>) Statement.ANYOF.handler()).write(
-//                            pgroup, ctx);
-//                } else {
-//                    gen.writeFieldName(Statement.ALLOF.toString());
-//                    ((ConditionGroupHandler<T>) Statement.ALLOF.handler()).write(
-//                            pgroup, ctx);
-//                }
-//            } else {
-//                gen.writeFieldName(Statement.CONDITION.toString());
-//                ((ConditionHandler<T>) Statement.CONDITION.handler()).write(
-//                        pred, ctx);
-//            }
-//        }
+        });
     }
 }

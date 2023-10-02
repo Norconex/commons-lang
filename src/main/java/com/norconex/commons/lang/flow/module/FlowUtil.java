@@ -15,15 +15,19 @@
 package com.norconex.commons.lang.flow.module;
 
 import java.io.IOException;
+import java.util.Collection;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.function.FailableConsumer;
 import org.apache.commons.lang3.function.FailableRunnable;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
 import com.norconex.commons.lang.flow.FlowConsumerAdapter;
 import com.norconex.commons.lang.flow.FlowPredicateAdapter;
 import com.norconex.commons.lang.flow.module.FlowDeserializer.FlowDeserContext;
+import com.norconex.commons.lang.flow.module.FlowSerializer.FlowSerContext;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -91,59 +95,59 @@ final class FlowUtil {
 
     //--- Write utilities ------------------------------------------------------
 
-    // Needed to avoid XmlMapper not always writing as it should
-//    static <T> void writeArrrayOfObjects(
-//            Collection<T> collection,
-//            FlowSerContext ctx,
-//            FailableConsumer<T, IOException> c)
-//                    throws IOException {
-//        writeArrayWrap(ctx, () -> {
-//            for (T obj : collection) {
-//                writeArrayObjectWrap(ctx, () -> {
-//                    c.accept(obj);
-//                });
-//            }
-//        });
-//    }
-//
-//    static boolean isXml(FlowSerContext ctx) {
-//        return ctx.getGen() instanceof ToXmlGenerator;
-//    }
-//
-//    static void writeArrayWrap(
-//            FlowSerContext ctx,
-//            FailableRunnable<IOException> r)
-//                    throws IOException {
-//        var gen = ctx.getGen();
-//        var isXml = isXml(ctx);
-//
-//        if (isXml) {
-//            gen.writeStartObject();
-//        } else {
-//            gen.writeStartArray();
-//        }
-//
-//        r.run();
-//
-//        if (isXml) {
-//            gen.writeEndObject();
-//        } else {
-//            gen.writeEndArray();
-//        }
-//    }
-//
-//    static void writeArrayObjectWrap(
-//            FlowSerContext ctx,
-//            FailableRunnable<IOException> r)
-//                    throws IOException {
-//        var gen = ctx.getGen();
-//        var isXml = gen instanceof ToXmlGenerator;
-//        if (!isXml) {
-//            gen.writeStartObject();
-//        }
-//        r.run();
-//        if (!isXml) {
-//            gen.writeEndObject();
-//        }
-//    }
+    // Needed to avoid XmlMapper not always writing as expected
+    static <T> void writeArrrayOfObjects(
+            Collection<T> collection,
+            FlowSerContext ctx,
+            FailableConsumer<T, IOException> c)
+                    throws IOException {
+        writeArrayWrap(ctx, () -> {
+            for (T obj : collection) {
+                writeArrayObjectWrap(ctx, () -> {
+                    c.accept(obj);
+                });
+            }
+        });
+    }
+
+    static boolean isXml(FlowSerContext ctx) {
+        return ctx.getGen() instanceof ToXmlGenerator;
+    }
+
+    static void writeArrayWrap(
+            FlowSerContext ctx,
+            FailableRunnable<IOException> r)
+                    throws IOException {
+        var gen = ctx.getGen();
+        var isXml = isXml(ctx);
+
+        if (isXml) {
+            gen.writeStartObject();
+        } else {
+            gen.writeStartArray();
+        }
+
+        r.run();
+
+        if (isXml) {
+            gen.writeEndObject();
+        } else {
+            gen.writeEndArray();
+        }
+    }
+
+    static void writeArrayObjectWrap(
+            FlowSerContext ctx,
+            FailableRunnable<IOException> r)
+                    throws IOException {
+        var gen = ctx.getGen();
+        var isXml = isXml(ctx);
+        if (!isXml) {
+            gen.writeStartObject();
+        }
+        r.run();
+        if (!isXml) {
+            gen.writeEndObject();
+        }
+    }
 }

@@ -67,6 +67,8 @@ class FlowTest {
         flowCfg.getConsumerType().setScanFilter(
                 c -> c.startsWith("com.norconex."));
 
+        flowCfg.setConsumerNameProvider(c -> "testConsumer");
+
         beanMapper = BeanMapper.builder()
             .flowMapperConfig(flowCfg)
             .indent(true)
@@ -93,15 +95,7 @@ class FlowTest {
     void testFlowWriteRead(Format format) throws IOException {
         var cfg = new TestFlowConfig();
         cfg.setFlowTest(createPropertiesFlowAsRead());
-
         beanMapper.assertWriteRead(cfg, format);
-
-//        try (var w = new StringWriter()) {
-//            beanMapper.write(cfg, w, format);
-//
-//            //TODO replace with assertion:
-//            System.out.println(w);
-//        }
     }
 
     @SuppressWarnings("unchecked")

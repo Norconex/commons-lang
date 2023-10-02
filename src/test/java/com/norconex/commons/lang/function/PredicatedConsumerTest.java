@@ -30,7 +30,7 @@ class PredicatedConsumerTest {
 
         pc = PredicatedConsumer.ifTrue("a"::equals, s -> output.add(s));
         assertThat(pc.getPredicate()).isNotNull();
-        assertThat(pc.getConsumer()).isNotNull();
+        assertThat(pc.getThenConsumer()).isNotNull();
 
         pc.accept("a");
         pc.accept("b");
