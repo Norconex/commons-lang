@@ -33,7 +33,7 @@ final class MockXMLFlowConsumerAdapter
         consumer = xml.toObjectImpl(Consumer.class);
         if (consumer == null) {
             // default if not set in XML
-            consumer = new MockUppercaseConsumer();
+            consumer = new MockXMLUppercaseConsumer();
             xml.populate(consumer);
         }
     }

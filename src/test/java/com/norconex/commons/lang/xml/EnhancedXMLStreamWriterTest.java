@@ -1,4 +1,4 @@
-/* Copyright 2022 Norconex Inc.
+/* Copyright 2022-2023 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,12 +28,11 @@ import java.util.Collections;
 
 import org.junit.jupiter.api.Test;
 
-import com.norconex.commons.lang.net.ProxySettings;
+import com.norconex.commons.lang.xml.mock.MockProxySettings;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-@Deprecated
 class EnhancedXMLStreamWriterTest {
 
     @Test
@@ -183,57 +182,13 @@ class EnhancedXMLStreamWriterTest {
         xml.close();
     }
 
-
-    @Test
-    void testWriteObjects() {
-        var xml = newXMLWriter();
-        xml.writeStartDocument();
-
-        xml.writeObject("object", new ProxySettings());
-        xml.writeObject("object", null, true);
-        xml.writeObject("object", new Configurable("1"), true);
-        xml.writeObject("object", "nonConfigurable");
-        xml.writeObjectList("objects", "object", Arrays.asList(
-                new Configurable("2"),
-                new Configurable("3")));
-        xml.writeObjectList("noObjects", "object", Collections.emptyList());
-
-        xml.writeEndDocument();
-        xml.flush();
-
-        var clsConfigurable = "class=\"com.norconex.commons.lang.xml"
-                + ".EnhancedXMLStreamWriterTest.Configurable\"";
-        var objProxySettings =
-                """
-            <object class="com.norconex.commons.lang.net.ProxySettings">\
-            <host/>\
-            <scheme/>\
-            <realm/>\
-            <credentials>\
-            <username/><password/><passwordKey/>\
-            </credentials>\
-            </object>""";
-
-        assertThat(xml.getWriter()).hasToString(
-                "<?xml version='1.0' encoding='UTF-8'?>"
-              + objProxySettings
-              + "<object disabled=\"true\"/>"
-              + "<object disabled=\"true\" " + clsConfigurable + ">1</object>"
-              + "<object class=\"java.lang.String\"/>"
-              + "<objects>"
-              +   "<object " + clsConfigurable + ">2</object>"
-              +   "<object " + clsConfigurable + ">3</object>"
-              + "</objects>"
-        );
-    }
-
     @Test
     void testEnhancedXMLStreamWriter() {
         var xml =
                 new EnhancedXMLStreamWriter(new StringWriter(), true);
 
         xml.writeStartDocument();
-        xml.writeStartElement("proxySettings", ProxySettings.class);
+        xml.writeStartElement("proxySettings", MockProxySettings.class);
 
         xml.writeStartElement("host");
         xml.writeElementString("name", "example.com");

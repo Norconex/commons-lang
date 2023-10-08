@@ -46,4 +46,11 @@
   
   <xs:element name="condition" substitutionGroup="AbstractCondition" type="anyComplexType"/>
 
+  <xs:complexType name="anyComplexType" mixed="true">
+    <xs:all>
+      <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+    </xs:all>
+    <xs:anyAttribute processContents="lax"/>
+  </xs:complexType>
+
 </xs:schema>

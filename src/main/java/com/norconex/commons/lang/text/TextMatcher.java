@@ -1,4 +1,4 @@
-/* Copyright 2019-2021 Norconex Inc.
+/* Copyright 2019-2023 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,9 +23,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.ObjectUtils;
-
-import com.norconex.commons.lang.xml.XMLConfigurable;
-import com.norconex.commons.lang.xml.XML;
 
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -116,7 +113,7 @@ import lombok.ToString;
 @ToString
 @EqualsAndHashCode
 public class TextMatcher implements
-        Predicate<CharSequence>, BinaryOperator<String>, XMLConfigurable {
+        Predicate<CharSequence>, BinaryOperator<String> {
 
     public enum Method {
         BASIC(new MethodStrategy() {
@@ -148,9 +145,9 @@ public class TextMatcher implements
             }
             @Override
             public String toMatchExpression(TextMatcher tm) {
-                Pattern p = Pattern.compile("[^*?]+|(\\*)|(\\?)");
-                Matcher m = p.matcher(Objects.toString(tm.pattern, ""));
-                StringBuilder b = new StringBuilder();
+                var p = Pattern.compile("[^*?]+|(\\*)|(\\?)");
+                var m = p.matcher(Objects.toString(tm.pattern, ""));
+                var b = new StringBuilder();
                 while (m.find()) {
                     if(m.group(1) != null) {
                         b.append(".*");
@@ -495,7 +492,7 @@ public class TextMatcher implements
         if (getPattern() == null) {
             return true;
         }
-        Matcher m = toRegexMatcher(text);
+        var m = toRegexMatcher(text);
         return partial ? m.find() : m.matches();
     }
 
@@ -521,9 +518,9 @@ public class TextMatcher implements
         if (pattern == null || replacement == null) {
             return text;
         }
-        String quotedRepl = safeMethod().ms.toQuotedReplacement(replacement);
+        var quotedRepl = safeMethod().ms.toQuotedReplacement(replacement);
 
-        Matcher m = toRegexMatcher(text);
+        var m = toRegexMatcher(text);
         if (!partial && m.matches()) {
             return m.replaceFirst(quotedRepl);
         }
@@ -567,34 +564,5 @@ public class TextMatcher implements
 
     private Method safeMethod() {
         return ObjectUtils.defaultIfNull(method, Method.BASIC);
-    }
-
-    @Override
-    public void loadFromXML(XML xml) {
-        if (xml == null) {
-            return;
-        }
-        setMethod(xml.getEnum("@method", Method.class, method));
-        setIgnoreCase(xml.getBoolean("@ignoreCase", ignoreCase));
-        setIgnoreDiacritic(xml.getBoolean("@ignoreDiacritic", ignoreDiacritic));
-        setReplaceAll(xml.getBoolean("@replaceAll", replaceAll));
-        setPartial(xml.getBoolean("@partial", partial));
-        setTrim(xml.getBoolean("@trim", trim));
-        setMatchEmpty(xml.getBoolean("@matchEmpty", matchEmpty));
-        setPattern(xml.getString("."));
-    }
-    @Override
-    public void saveToXML(XML xml) {
-        if (xml == null) {
-            return;
-        }
-        xml.setAttribute("method", method);
-        xml.setAttribute("ignoreCase", ignoreCase);
-        xml.setAttribute("ignoreDiacritic", ignoreDiacritic);
-        xml.setAttribute("replaceAll", replaceAll);
-        xml.setAttribute("partial", partial);
-        xml.setAttribute("trim", trim);
-        xml.setAttribute("matchEmpty", matchEmpty);
-        xml.setTextContent(pattern);
     }
 }

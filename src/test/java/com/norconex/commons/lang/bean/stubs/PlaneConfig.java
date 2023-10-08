@@ -14,11 +14,14 @@
  */
 package com.norconex.commons.lang.bean.stubs;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
 import lombok.Data;
 import lombok.experimental.Accessors;
 
 @Data
 @Accessors(chain = true)
+@JsonPropertyOrder({"name", "type"})
 public class PlaneConfig {
 
     public enum Type { COMMERCIAL, PRIVATE }

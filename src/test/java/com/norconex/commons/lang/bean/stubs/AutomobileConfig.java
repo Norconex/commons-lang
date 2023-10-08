@@ -15,6 +15,7 @@
 package com.norconex.commons.lang.bean.stubs;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -24,6 +25,7 @@ import lombok.experimental.Accessors;
 @Data
 @Accessors(chain = true)
 @Valid
+@JsonPropertyOrder({"make", "model", "year"})
 public class AutomobileConfig {
     @JsonProperty("make")
     private String brand;

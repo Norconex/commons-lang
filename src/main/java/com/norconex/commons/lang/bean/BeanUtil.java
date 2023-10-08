@@ -1240,7 +1240,7 @@ public final class BeanUtil {
             if (bean instanceof Collection) {
                 return predicate.test((Collection<Object>) bean, this);
             }
-            // continue if not a map
+            // continue if not a collection
             return true;
         }
     }

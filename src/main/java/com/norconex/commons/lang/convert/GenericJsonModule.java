@@ -30,7 +30,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.norconex.commons.lang.file.ContentType;
 
 /**
- * Jackson module provideing (de)serializers for common types
+ * Jackson module providing (de)serializers for common types
  * not handled natively by Jackson modules, or handled differently.
  */
 public class GenericJsonModule extends SimpleModule {

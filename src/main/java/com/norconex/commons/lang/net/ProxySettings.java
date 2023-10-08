@@ -1,4 +1,4 @@
-/* Copyright 2018-2022 Norconex Inc.
+/* Copyright 2018-2023 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,10 @@ import java.net.Proxy;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.norconex.commons.lang.bean.BeanUtil;
 import com.norconex.commons.lang.security.Credentials;
-import com.norconex.commons.lang.xml.XML;
-import com.norconex.commons.lang.xml.XMLConfigurable;
 
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
@@ -58,7 +58,11 @@ import lombok.extern.slf4j.Slf4j;
 @EqualsAndHashCode
 @FieldNameConstants(level = AccessLevel.PRIVATE)
 @Slf4j
-public class ProxySettings implements XMLConfigurable, Serializable {
+@JsonAutoDetect(
+        fieldVisibility=Visibility.ANY,
+        getterVisibility=Visibility.NONE,
+        isGetterVisibility=Visibility.NONE)
+public class ProxySettings implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -182,30 +186,5 @@ public class ProxySettings implements XMLConfigurable, Serializable {
         }
         var address = new InetSocketAddress(host.getName(), host.getPort());
         return new Proxy(type, address);
-    }
-
-    @Override
-    public void loadFromXML(XML xml) {
-        if (xml != null) {
-            xml.checkDeprecated("proxyHost", Fields.host, true);
-            xml.checkDeprecated("proxyPort", Fields.host, true);
-            xml.checkDeprecated("proxyScheme", Fields.scheme, true);
-            xml.checkDeprecated("proxyRealm", Fields.realm, true);
-            //MAYBE: make host XMLConfigurable and use populate() ?
-            host = Host.loadFromXML(xml.getXML(Fields.host), host);
-            scheme = xml.getString(Fields.scheme, scheme);
-            realm = xml.getString(Fields.realm, realm);
-            xml.ifXML(Fields.credentials, x -> x.populate(credentials));
-        }
-    }
-
-    @Override
-    public void saveToXML(XML xml) {
-        if (xml != null) {
-            Host.saveToXML(xml.addElement(Fields.host), host);
-            xml.addElement(Fields.scheme, scheme);
-            xml.addElement(Fields.realm, realm);
-            credentials.saveToXML(xml.addElement(Fields.credentials));
-        }
     }
 }

@@ -10,6 +10,10 @@
     <release version="3.0.0-SNAPSHOT" date="202?-??-??" 
         description="Feature release.">
       <action dev="essiembre" type="add">
+        New "flow" package to have conditions in XML, JSON, or Yaml 
+        configuration files. A replacement to XMLFlow.
+      </action>
+      <action dev="essiembre" type="add">
         New BeanMapper class to write/read objects to/from XML, JSON, and Yaml,
         with support for polymorphism. 
       </action>
@@ -28,6 +32,9 @@
       </action>
       <action dev="essiembre" type="add">
         New SemanticVersion and SemanticVersionParser classes. 
+      </action>
+      <action dev="essiembre" type="add">
+        New @JsonCollection annotation.
       </action>
       <action dev="essiembre" type="add">
         New PackageManifest class. 
@@ -136,6 +143,15 @@
       </action>
       <action dev="essiembre" type="add">
         ConfigurationLoader can now load XML, JSON, and Yaml into objects.
+      </action>
+      <action dev="essiembre" type="add">
+        New PredicatedConsumer #isTrue and #isFalse and #elseConsumer methods. 
+      </action>
+      <action dev="essiembre" type="add">
+        New Predicates #anyOf and #allOf methods.
+      </action>
+      <action dev="essiembre" type="add">
+        New Consumers #of method.
       </action>
       <action dev="essiembre" type="update">
         Now require Java 17+. 
@@ -313,7 +329,8 @@
         DateUtil now deprecated in favor of DateModel.
       </action>
       <action dev="essiembre" type="update">
-        EnhancedXMLStreamWriter now deprecated.
+        Several classes previously implementing XMLConfigurable are no longer doing
+        so, in favor of Jackson based serialization.
       </action>
       <action dev="essiembre" type="fix">
         Properties#loadFromXML is now null-safe.

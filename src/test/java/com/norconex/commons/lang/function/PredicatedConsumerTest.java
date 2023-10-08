@@ -1,4 +1,4 @@
-/* Copyright 2022 Norconex Inc.
+/* Copyright 2022-2023 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,9 +28,9 @@ class PredicatedConsumerTest {
         List<String> output = new ArrayList<>();
         PredicatedConsumer<String> pc;
 
-        pc = new PredicatedConsumer<>("a"::equals, s -> output.add(s));
+        pc = PredicatedConsumer.ifTrue("a"::equals, s -> output.add(s));
         assertThat(pc.getPredicate()).isNotNull();
-        assertThat(pc.getConsumer()).isNotNull();
+        assertThat(pc.getThenConsumer()).isNotNull();
 
         pc.accept("a");
         pc.accept("b");
@@ -38,19 +38,19 @@ class PredicatedConsumerTest {
 
         // negate
         output.clear();
-        pc = new PredicatedConsumer<>("a"::equals, s -> output.add(s), true);
+        pc = PredicatedConsumer.ifFalse("a"::equals, s -> output.add(s));
         pc.accept("a");
         pc.accept("b");
         assertThat(output).containsExactly("b");
 
         // nulls
         output.clear();
-        pc = new PredicatedConsumer<>(null, s -> output.add(s));
+        pc = PredicatedConsumer.ifTrue(null, s -> output.add(s));
         pc.accept("a");
         assertThat(output).containsExactly("a");
 
         output.clear();
-        pc = new PredicatedConsumer<>("a"::equals, null);
+        pc = PredicatedConsumer.ifTrue("a"::equals, null);
         pc.accept("a");
         assertThat(output).isEmpty();
     }

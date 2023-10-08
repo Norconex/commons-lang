@@ -1,4 +1,4 @@
-/* Copyright 2020-2022 Norconex Inc.
+/* Copyright 2020-2023 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,10 @@ import java.io.Serializable;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.norconex.commons.lang.xml.XML;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.EqualsAndHashCode;
 
@@ -32,6 +35,10 @@ import lombok.EqualsAndHashCode;
  * @since 2.0.0
  */
 @EqualsAndHashCode
+@JsonAutoDetect(
+        fieldVisibility=Visibility.ANY,
+        getterVisibility=Visibility.NONE,
+        isGetterVisibility=Visibility.NONE)
 public final class Host implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -39,7 +46,10 @@ public final class Host implements Serializable {
     private String name;
     private int port = -1;
 
-    public Host(String name, int port) {
+    @JsonCreator
+    public Host(
+            @JsonProperty("name") String name,
+            @JsonProperty("port") int port) {
         this.name = name;
         this.port = port;
     }
@@ -64,34 +74,5 @@ public final class Host implements Serializable {
     @Override
     public String toString() {
         return name + ":" + port;
-    }
-
-    /**
-     * Gets a host from an existing XML.
-     * @param xml the XML to get the host from
-     * @param defaultHost default host if it does not exist in XML
-     * @return host
-     */
-    public static Host loadFromXML(XML xml, Host defaultHost) {
-        if (xml == null) {
-            return defaultHost;
-        }
-        String name = xml.getString("name");
-        if (StringUtils.isNotBlank(name)) {
-            return new Host(name, xml.getInteger("port"));
-        }
-        return defaultHost;
-    }
-
-    /**
-     * Adds a host to an existing XML.
-     * @param xml the XML to add the host to
-     * @param host the host
-     */
-    public static void saveToXML(XML xml, Host host) {
-        if (host != null) {
-            xml.addElement("name", host.getName());
-            xml.addElement("port", host.getPort());
-        }
     }
 }

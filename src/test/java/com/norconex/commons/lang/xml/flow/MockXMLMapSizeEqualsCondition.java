@@ -14,25 +14,29 @@
  */
 package com.norconex.commons.lang.xml.flow;
 
-import java.util.function.Consumer;
+import java.util.Map;
+import java.util.function.Predicate;
 
-import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.XMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 
-public class MockUppercaseConsumer
-        implements Consumer<Properties>, XMLConfigurable {
-    private String field;
+// number of map entries must match given size
+public class MockXMLMapSizeEqualsCondition
+        implements Predicate<Map<?, ?>>, XMLConfigurable {
+
+    private int size;
+
     @Override
-    public void accept(Properties p) {
-        p.set(field, p.getString(field, "").toUpperCase());
+    public boolean test(Map<?, ?> map) {
+        return map != null && map.size() == size;
     }
+
     @Override
     public void loadFromXML(XML xml) {
-        field = xml.getString("field");
+        size = xml.getInteger("size");
     }
     @Override
     public void saveToXML(XML xml) {
-        xml.addElement("field", field);
+        xml.addElement("size", size);
     }
 }
