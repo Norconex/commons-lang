@@ -19,8 +19,13 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JacksonAnnotationsInside;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
@@ -34,6 +39,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 @Target({ FIELD })
 @JacksonAnnotationsInside
 @JsonSerialize(using = JsonCollectionSerializer.class)
+@JsonDeserialize(using = JsonCollectionDeserializer.class)
 public @interface JsonCollection {
 
     /**
@@ -47,4 +53,13 @@ public @interface JsonCollection {
      * @return entry field name, when writing XML
      */
     public String entryName() default "";
+
+    /**
+     * Concrete type to use when deserializing. Has to be assignable
+     * to the type of your collection property.  Default will try to detect and
+     * use {@link HashSet} for a {@link Set}, and {@link ArrayList} for
+     * a {@link List}.
+     * @return collection concrete type
+     */
+    public Class<?> concreteType() default Void.class;
 }

@@ -32,6 +32,7 @@ import com.norconex.commons.lang.bean.BeanMapper;
 import com.norconex.commons.lang.bean.BeanMapper.Format;
 
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 class JsonCollectionTest {
 
@@ -40,9 +41,15 @@ class JsonCollectionTest {
     @BeforeAll
     static void beforeAll() {
         ch = new CollectionHolder();
+        ch.some = "thing";
         ch.defaultEntryNames.addAll(List.of("1", "2", "3"));
         ch.specifiedEntryNames = new HashSet<>(List.of("4", "5", "6"));
         ch.defaultType = new ArrayList<>(List.of("7", "8", "9"));
+        ch.complexType.addAll(List.of(
+                new SomeEntry().setPropa("aaa1").setPropb("bbb2").setPropc(3),
+                new SomeEntry().setPropa("aaa4").setPropb("bbb5").setPropc(6),
+                new SomeEntry().setPropa("aaa7").setPropb("bbb8").setPropc(9)
+                ));
     }
 
     @Test
@@ -66,6 +73,9 @@ class JsonCollectionTest {
 
     @Data
     static class CollectionHolder {
+
+        private String some;
+
         @JsonCollection()
         private final List<String> defaultEntryNames = new LinkedList<>();
 
@@ -74,5 +84,18 @@ class JsonCollectionTest {
 
         @JsonCollection
         private Collection<String> defaultType;
+
+        @JsonCollection
+        private final List<SomeEntry> complexType = new ArrayList<>();
+
     }
+
+    @Data
+    @Accessors(chain = true)
+    static class SomeEntry {
+        private String propa;
+        private String propb;
+        private int propc;
+    }
+
 }
