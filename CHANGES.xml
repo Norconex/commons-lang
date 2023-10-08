@@ -34,6 +34,9 @@
         New SemanticVersion and SemanticVersionParser classes. 
       </action>
       <action dev="essiembre" type="add">
+        New @JsonCollection annotation.
+      </action>
+      <action dev="essiembre" type="add">
         New PackageManifest class. 
       </action>
       <action dev="essiembre" type="add">

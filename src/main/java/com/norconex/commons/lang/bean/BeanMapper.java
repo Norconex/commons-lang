@@ -31,6 +31,7 @@ import javax.xml.stream.XMLOutputFactory;
 
 import org.apache.commons.lang3.ArrayUtils;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreType;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -359,6 +360,9 @@ public class BeanMapper { //NOSONAR
                     DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT,
                     treatEmptyAsNull);
 
+            mapper.disable(
+                    DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY);
+
             // write:
             mapper.configure(SerializationFeature.INDENT_OUTPUT, indent);
             mapper.disable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
@@ -371,6 +375,7 @@ public class BeanMapper { //NOSONAR
         });
     }
 
+    @JsonIgnoreType
     abstract static class ConfigurableMixIn<T> {
         @JsonUnwrapped
         @Valid
@@ -378,7 +383,6 @@ public class BeanMapper { //NOSONAR
         @JsonUnwrapped
         void setConfiguration(T configuration) { }
     }
-
 
     private void registerPolymorphicTypes(ObjectMapper mapper) {
         // Any

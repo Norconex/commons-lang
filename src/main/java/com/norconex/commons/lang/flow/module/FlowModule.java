@@ -17,9 +17,6 @@ package com.norconex.commons.lang.flow.module;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.norconex.commons.lang.flow.FlowMapperConfig;
 
-import lombok.Getter;
-
-@Getter
 public class FlowModule extends SimpleModule {
 
     private static final long serialVersionUID = 1L;

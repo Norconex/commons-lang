@@ -12,30 +12,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.norconex.commons.lang.flow;
+package com.norconex.commons.lang.bean.module;
 
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
-import java.util.function.Consumer;
 
 import com.fasterxml.jackson.annotation.JacksonAnnotationsInside;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize.Typing;
-import com.norconex.commons.lang.bean.BeanMapper;
-import com.norconex.commons.lang.flow.module.FlowModule;
 
 /**
- * When adding the {@link FlowModule} to Jackson, use this annotation
- * on {@link Consumer} properties to support flow (de)serialization.
- * {@link BeanMapper} automatically registers the {@link FlowModule}.
+ * Use this annotation on your collections to make sure they are written
+ * and read consistently across types (XML, JSON, Yaml).
+ * This is particularly useful for XML, as Jackson XML mapper
+ * is not always able to read what it wrote.
+ * @since 3.0.0
  */
 @Retention(RUNTIME)
 @Target({ FIELD })
 @JacksonAnnotationsInside
-@JsonSerialize(typing = Typing.STATIC)
-public @interface JsonFlow {
+@JsonSerialize(using = JsonCollectionSerializer.class)
+public @interface JsonCollection {
 
+    /**
+     * Field name to use for each collection element when serializing as XML.
+     * This name does not affect reading. The default behavior tries uses
+     * basic heuristics to detect whether the collection property name is
+     * plural and can make a singular variant of it. It it can't figure it out,
+     * it falls back to "entry".  Given the plural detection logic's simplicity,
+     * it won't always get it right. Use this attribute to ensure the exact
+     * name you want.
+     * @return entry field name, when writing XML
+     */
+    public String entryName() default "";
 }
