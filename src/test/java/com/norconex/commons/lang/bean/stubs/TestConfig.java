@@ -17,7 +17,6 @@ package com.norconex.commons.lang.bean.stubs;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 
 import jakarta.validation.Valid;
@@ -30,7 +29,5 @@ public class TestConfig {
     @JacksonXmlProperty(isAttribute = true)
     private String id;
     @Valid
-    @JacksonXmlElementWrapper(localName = "transportations")
-    @JacksonXmlProperty(localName = "transportation")
     private final List<Transportation> transportations = new ArrayList<>();
 }

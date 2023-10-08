@@ -48,10 +48,6 @@ public class JsonCollectionDeserializer <T extends Collection<?>>
             DeserializationContext ctx, BeanProperty property)
                     throws JsonMappingException {
         currentProperty = property;
-        if (property == null
-                || !(ctx instanceof XmlDeserializationContext)) {
-            return null;
-        }
         return this;
     }
 
@@ -59,12 +55,21 @@ public class JsonCollectionDeserializer <T extends Collection<?>>
     @Override
     public T deserialize(
             JsonParser p, DeserializationContext ctx) throws IOException {
+
         var objects = createCollection();
         p.nextToken();  // <outer>
-        for (; p.currentToken() != JsonToken.END_OBJECT; p.nextToken()) {
-            // Each collection entries are made of a field name followed
-            // by either an object or a scalar.
-            p.nextToken();  // <inner>  (field name)
+
+        var isXml = ctx instanceof XmlDeserializationContext;
+
+        var enderToken = isXml ? JsonToken.END_OBJECT : JsonToken.END_ARRAY;
+
+        for (; p.currentToken() != enderToken; p.nextToken()) {
+            // For XML, each collection entries are made of a field name
+            // followed by either an object or a scalar.
+
+            if (isXml) {
+                p.nextToken();  // <inner>  (field name)
+            }
             var value = p.readValueAs(currentProperty.getType()
                     .getContentType().getRawClass());
             objects.add(value);
@@ -74,16 +79,37 @@ public class JsonCollectionDeserializer <T extends Collection<?>>
 
     @SuppressWarnings("unchecked")
     private Collection<Object> createCollection() {
+        // Priority:
+        // - specified on annotation
+        // - actual type detected and instantiable
+        // - HashSet if a Set
+        // - Fall-back to ArrayList
+
         var annot = currentProperty.getAnnotation(JsonCollection.class);
-        Class<?> type =
-                currentProperty.getType().getRawClass();
+
+        // from annotation
         if (annot != null && !Void.class.equals(annot.concreteType())) {
-            type = annot.concreteType();
-        } else if (type != null && Set.class.isAssignableFrom(type)) {
-            type = HashSet.class;
-        } else {
-            type = ArrayList.class;
+            return (Collection<Object>)
+                    ClassUtil.newInstance(annot.concreteType());
         }
-        return (Collection<Object>) ClassUtil.newInstance(type);
+
+        // from actual type
+        Class<?> actualType = currentProperty.getType().getRawClass();
+        try {
+            var coll = ClassUtil.newInstance(actualType);
+            if (coll != null) {
+                return (Collection<Object>) coll;
+            }
+        } catch (Exception e) {
+            // swallow
+        }
+
+        // hashset if set
+        if (actualType != null && Set.class.isAssignableFrom(actualType)) {
+            actualType = HashSet.class;
+        } else {
+            actualType = ArrayList.class;
+        }
+        return (Collection<Object>) ClassUtil.newInstance(actualType);
     }
 }

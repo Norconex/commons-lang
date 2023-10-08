@@ -19,6 +19,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -58,6 +59,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import com.norconex.commons.lang.ClassFinder;
 import com.norconex.commons.lang.ClassUtil;
+import com.norconex.commons.lang.bean.module.JsonCollection;
 import com.norconex.commons.lang.config.Configurable;
 import com.norconex.commons.lang.convert.GenericJsonModule;
 import com.norconex.commons.lang.flow.FlowMapperConfig;
@@ -340,10 +342,13 @@ public class BeanMapper { //NOSONAR
             builder.addModule(new JavaTimeModule());
             // Nx modules
             builder.addModule(new GenericJsonModule());
+            builder.addModule(new FlowModule(flowMapperConfig));
+
+            // Nx mix-ins
             if (!configurableDetectionDisabled) {
                 builder.addMixIn(Configurable.class, ConfigurableMixIn.class);
             }
-            builder.addModule(new FlowModule(flowMapperConfig));
+            builder.addMixIn(Collection.class, CollectionMixIn.class);
 
             if (mapperBuilderCustomizer != null) {
                 mapperBuilderCustomizer.accept(builder);
@@ -382,6 +387,10 @@ public class BeanMapper { //NOSONAR
         abstract T getConfiguration();
         @JsonUnwrapped
         void setConfiguration(T configuration) { }
+    }
+
+    @JsonCollection
+    abstract static class CollectionMixIn<T> {
     }
 
     private void registerPolymorphicTypes(ObjectMapper mapper) {

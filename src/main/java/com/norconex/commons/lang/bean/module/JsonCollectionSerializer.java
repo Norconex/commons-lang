@@ -29,7 +29,6 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.ContextualSerializer;
 import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
-import com.fasterxml.jackson.dataformat.xml.ser.XmlSerializerProvider;
 
 import lombok.RequiredArgsConstructor;
 
@@ -49,10 +48,6 @@ public class JsonCollectionSerializer extends JsonSerializer<Collection<?>>
             SerializerProvider prov, BeanProperty property)
                     throws JsonMappingException {
         currentProperty = property;
-        if (property == null
-                || !(prov instanceof XmlSerializerProvider)) {
-            return null;
-        }
         return this;
     }
 
@@ -66,26 +61,39 @@ public class JsonCollectionSerializer extends JsonSerializer<Collection<?>>
             return;
         }
 
+        var isXml = gen instanceof ToXmlGenerator;
+        if (isXml) {
+            var innerName = innerName();
+            ((ToXmlGenerator) gen).setNextName(QName.valueOf(innerName));
+            var first = true;
+            for (Object object : objects) {
+                // Not sure why, but first field name is already written for us.
+                if (!first) {
+                    gen.writeFieldName(innerName);
+                }
+                gen.writeObject(object);
+                first = false;
+            }
+        } else {
+            gen.writeStartArray();
+            for (Object object : objects) {
+                gen.writeObject(object);
+            }
+            gen.writeEndArray();
+        }
+    }
+
+    private String innerName() {
         var outterName = currentProperty.getName();
+        String innerName = null;
         var annot = currentProperty.getAnnotation(JsonCollection.class);
-        var innerName = annot.entryName();
+        if (annot != null) {
+            innerName = annot.entryName();
+        }
         if (isBlank(innerName)) {
             innerName = singularOrElse(outterName, "entry");
         }
-
-        if (gen instanceof ToXmlGenerator) {
-            ((ToXmlGenerator) gen).setNextName(QName.valueOf(innerName));
-        }
-
-        var first = true;
-        for (Object object : objects) {
-            // Not sure why, but first field name is already written for us.
-            if (!first) {
-                gen.writeFieldName(innerName);
-            }
-            gen.writeObject(object);
-            first = false;
-        }
+        return innerName;
     }
 
     private String singularOrElse(String plural, String def) {

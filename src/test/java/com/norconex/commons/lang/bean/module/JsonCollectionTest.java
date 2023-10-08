@@ -76,16 +76,13 @@ class JsonCollectionTest {
 
         private String some;
 
-        @JsonCollection()
         private final List<String> defaultEntryNames = new LinkedList<>();
 
         @JsonCollection(entryName = "child")
         private Set<String> specifiedEntryNames;
 
-        @JsonCollection
         private Collection<String> defaultType;
 
-        @JsonCollection
         private final List<SomeEntry> complexType = new ArrayList<>();
 
     }
