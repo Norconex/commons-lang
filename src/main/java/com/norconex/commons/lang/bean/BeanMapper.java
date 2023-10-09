@@ -19,6 +19,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -30,6 +31,7 @@ import java.util.function.Supplier;
 import javax.xml.stream.XMLOutputFactory;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreType;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -59,6 +61,8 @@ import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import com.norconex.commons.lang.ClassFinder;
 import com.norconex.commons.lang.ClassUtil;
 import com.norconex.commons.lang.bean.module.JsonXmlCollectionModule;
+import com.norconex.commons.lang.bean.spi.PolymorphicTypeLoader;
+import com.norconex.commons.lang.bean.spi.PolymorphicTypeProvider;
 import com.norconex.commons.lang.config.Configurable;
 import com.norconex.commons.lang.convert.GenericJsonModule;
 import com.norconex.commons.lang.flow.FlowMapperConfig;
@@ -180,6 +184,12 @@ public class BeanMapper { //NOSONAR
      */
     private boolean configurableDetectionDisabled;
 
+    /**
+     * Whether to disable detecting polymorphic types and their subtypes
+     * using Java Service Loader (SPI) mechanism.
+     * @see PolymorphicTypeProvider
+     */
+    private boolean polymorphicServiceLoaderDisabled;
 
     /** Whether to skip validation when reading. */
     private boolean skipValidation;
@@ -388,11 +398,18 @@ public class BeanMapper { //NOSONAR
     }
 
     private void registerPolymorphicTypes(ObjectMapper mapper) {
-        // Any
+        //--- From service loader ---
+        if (!polymorphicServiceLoaderDisabled) {
+            PolymorphicTypeLoader.polymorphicTypes().asMap().forEach(
+                    (type, subTypes) -> {
+                registerPolymorphicType(mapper, type, subTypes);
+            });
+        }
+
+        //--- Configured ---
         polymorphicTypes.forEach((type, predicate) -> {
-            mapper.addMixIn(type, PolymorphicMixIn.class);
-            mapper.registerSubtypes(ClassFinder.findSubTypes(
-                    type, predicate).toArray(new Class<?>[] {}));
+            registerPolymorphicType(
+                    mapper, type, ClassFinder.findSubTypes(type, predicate));
         });
 
         //--- Flow-specific ---
@@ -400,21 +417,32 @@ public class BeanMapper { //NOSONAR
         Class<?> conditionType =
                 flowMapperConfig.getPredicateType().getBaseType();
         if (conditionType != null) {
-            mapper.addMixIn(conditionType, PolymorphicMixIn.class);
-            mapper.registerSubtypes(ClassFinder.findSubTypes(
-                    conditionType,
-                    flowMapperConfig.getPredicateType().getScanFilter())
-                        .toArray(new Class<?>[] {}));
+            registerPolymorphicType(mapper, conditionType,
+                    ClassFinder.findSubTypes(conditionType,
+                        flowMapperConfig.getPredicateType().getScanFilter()));
         }
 
         Class<?> consumerType =
                 flowMapperConfig.getConsumerType().getBaseType();
         if (consumerType != null) {
-            mapper.addMixIn(consumerType, PolymorphicMixIn.class);
-            mapper.registerSubtypes(ClassFinder.findSubTypes(
-                    consumerType,
-                    flowMapperConfig.getConsumerType().getScanFilter())
-                        .toArray(new Class<?>[] {}));
+            registerPolymorphicType(mapper, consumerType,
+                    ClassFinder.findSubTypes(consumerType,
+                        flowMapperConfig.getConsumerType().getScanFilter()));
+        }
+    }
+    private void registerPolymorphicType(
+            ObjectMapper mapper,
+            Class<?> type,
+            Collection<? extends Class<?>> subTypes) {
+        //TODO check and report those already registered?
+        mapper.addMixIn(type, PolymorphicMixIn.class);
+        mapper.registerSubtypes(subTypes.toArray(new Class<?>[] {}));
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Registered polymorphic type and its sub-types:\n{}\n{}",
+                    "  ▪ " + type.getName(),
+                    StringUtils.join(subTypes.stream()
+                        .map(st -> "    ▫ " + st.getName())
+                        .toList(), "\n"));
         }
     }
 
