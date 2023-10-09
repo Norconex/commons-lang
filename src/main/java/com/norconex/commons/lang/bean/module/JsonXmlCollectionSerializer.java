@@ -22,49 +22,75 @@ import java.util.Collection;
 
 import javax.xml.namespace.QName;
 
+import org.apache.commons.collections4.CollectionUtils;
+
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.BeanProperty;
+import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.deser.ResolvableDeserializer;
 import com.fasterxml.jackson.databind.ser.ContextualSerializer;
 import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
+import com.fasterxml.jackson.dataformat.xml.ser.XmlSerializerProvider;
 
 import lombok.RequiredArgsConstructor;
 
 /**
  * Collection serializer.
- * @see JsonCollection
+ * @param <T> Collection type to be serialized
+ * @see JsonXmlCollection
  * @since 3.0.0
  */
 @RequiredArgsConstructor
-public class JsonCollectionSerializer extends JsonSerializer<Collection<?>>
-        implements ContextualSerializer {
+public class JsonXmlCollectionSerializer<T extends Collection<?>> extends JsonSerializer<T>
+        implements ContextualSerializer, ResolvableDeserializer {
 
     private BeanProperty currentProperty;
+    private final JsonSerializer<?> defaultSerializer;
 
     @Override
     public JsonSerializer<?> createContextual(
             SerializerProvider prov, BeanProperty property)
                     throws JsonMappingException {
         currentProperty = property;
-        return this;
+        if (property == null) {
+            return defaultSerializer;
+        }
+        return Collection.class.isAssignableFrom(
+                property.getType().getRawClass())
+                        && prov instanceof XmlSerializerProvider
+                                ? this : defaultSerializer;
+    }
+
+    @Override
+    public void resolve(DeserializationContext ctxt)
+            throws JsonMappingException {
+        if (defaultSerializer != null
+                && defaultSerializer instanceof ResolvableDeserializer rd) {
+            rd.resolve(ctxt);
+        }
     }
 
     @Override
     public void serialize(
-            Collection<?> objects,
+            T objects,
             JsonGenerator gen,
             SerializerProvider sp) throws IOException {
 
-        if (objects == null) {
+        var innerName = innerName();
+        ((ToXmlGenerator) gen).setNextName(QName.valueOf(innerName));
+
+
+
+        if (CollectionUtils.isEmpty(objects)) {
+            ((ToXmlGenerator) gen).writeNull();
             return;
         }
 
         var isXml = gen instanceof ToXmlGenerator;
         if (isXml) {
-            var innerName = innerName();
-            ((ToXmlGenerator) gen).setNextName(QName.valueOf(innerName));
             var first = true;
             for (Object object : objects) {
                 // Not sure why, but first field name is already written for us.
@@ -86,7 +112,7 @@ public class JsonCollectionSerializer extends JsonSerializer<Collection<?>>
     private String innerName() {
         var outterName = currentProperty.getName();
         String innerName = null;
-        var annot = currentProperty.getAnnotation(JsonCollection.class);
+        var annot = currentProperty.getAnnotation(JsonXmlCollection.class);
         if (annot != null) {
             innerName = annot.entryName();
         }

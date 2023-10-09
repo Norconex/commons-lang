@@ -34,7 +34,7 @@ import com.norconex.commons.lang.bean.BeanMapper.Format;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
-class JsonCollectionTest {
+class JsonXmlCollectionTest {
 
     private static CollectionHolder ch;
 
@@ -78,13 +78,12 @@ class JsonCollectionTest {
 
         private final List<String> defaultEntryNames = new LinkedList<>();
 
-        @JsonCollection(entryName = "child")
+        @JsonXmlCollection(entryName = "child")
         private Set<String> specifiedEntryNames;
 
         private Collection<String> defaultType;
 
         private final List<SomeEntry> complexType = new ArrayList<>();
-
     }
 
     @Data

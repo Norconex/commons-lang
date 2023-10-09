@@ -25,23 +25,21 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JacksonAnnotationsInside;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.norconex.commons.lang.bean.BeanMapper;
 
 /**
- * Use this annotation on your collections to make sure they are written
- * and read consistently across types (XML, JSON, Yaml).
- * This is particularly useful for XML, as Jackson XML mapper
- * is not always able to read what it wrote.
+ * <p>
+ * This annotation must be used with the {@link JsonXmlCollectionModule}.
+ * The module is registered automatically for XML source if you are using
+ * {@link BeanMapper}.
+ * Use this annotation only when you wish to overwrite default settings
+ * via its attributes. It is otherwise of no use.
+ * </p>
  * @since 3.0.0
  */
 @Retention(RUNTIME)
 @Target({ TYPE, FIELD })
-@JacksonAnnotationsInside
-@JsonSerialize(using = JsonCollectionSerializer.class)
-@JsonDeserialize(using = JsonCollectionDeserializer.class)
-public @interface JsonCollection {
+public @interface JsonXmlCollection {
 
     /**
      * Field name to use for each collection element when serializing as XML.

@@ -20,6 +20,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.BeanProperty;
@@ -27,6 +29,7 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
+import com.fasterxml.jackson.databind.deser.ResolvableDeserializer;
 import com.fasterxml.jackson.dataformat.xml.deser.XmlDeserializationContext;
 import com.norconex.commons.lang.ClassUtil;
 
@@ -35,20 +38,37 @@ import lombok.RequiredArgsConstructor;
 /**
  * Collection deserializer.
  * @param <T> type of collection
- * @see JsonCollection
+ * @see JsonXmlCollection
  * @since 3.0.0
  */
 @RequiredArgsConstructor
-public class JsonCollectionDeserializer <T extends Collection<?>>
+public class JsonXmlCollectionDeserializer <T extends Collection<?>>
         extends JsonDeserializer<T>
-        implements ContextualDeserializer {
+        implements ContextualDeserializer, ResolvableDeserializer {
     private BeanProperty currentProperty;
+    private final JsonDeserializer<?> defaultDeserializer;
+
     @Override
     public JsonDeserializer<?> createContextual(
             DeserializationContext ctx, BeanProperty property)
                     throws JsonMappingException {
         currentProperty = property;
-        return this;
+        if (property == null) {
+            return defaultDeserializer;
+        }
+        return Collection.class.isAssignableFrom(
+                property.getType().getRawClass())
+                        && ctx instanceof XmlDeserializationContext
+                                ? this : defaultDeserializer;
+    }
+
+    @Override
+    public void resolve(DeserializationContext ctxt)
+            throws JsonMappingException {
+        if (defaultDeserializer != null
+                && defaultDeserializer instanceof ResolvableDeserializer rd) {
+            rd.resolve(ctxt);
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -63,17 +83,27 @@ public class JsonCollectionDeserializer <T extends Collection<?>>
 
         var enderToken = isXml ? JsonToken.END_OBJECT : JsonToken.END_ARRAY;
 
-        for (; p.currentToken() != enderToken; p.nextToken()) {
+        do {
             // For XML, each collection entries are made of a field name
             // followed by either an object or a scalar.
 
             if (isXml) {
                 p.nextToken();  // <inner>  (field name)
             }
-            var value = p.readValueAs(currentProperty.getType()
-                    .getContentType().getRawClass());
-            objects.add(value);
-        }
+            if (p.currentToken() == JsonToken.VALUE_STRING) {
+                // for some reason, empty tags come up as empty string
+                // use this to prevent reading a null entry, which may generate
+                // the instantiation of an object with nothing set on it.
+                var text = p.getText();
+                if (!StringUtils.isBlank(text)) {
+                    objects.add(text);
+                }
+            } else {
+                var value = p.readValueAs(currentProperty.getType()
+                        .getContentType().getRawClass());
+                objects.add(value);
+            }
+        } while (p.nextToken() != enderToken);
         return  (T) objects;
     }
 
@@ -85,7 +115,7 @@ public class JsonCollectionDeserializer <T extends Collection<?>>
         // - HashSet if a Set
         // - Fall-back to ArrayList
 
-        var annot = currentProperty.getAnnotation(JsonCollection.class);
+        var annot = currentProperty.getAnnotation(JsonXmlCollection.class);
 
         // from annotation
         if (annot != null && !Void.class.equals(annot.concreteType())) {
