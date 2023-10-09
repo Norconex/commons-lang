@@ -343,6 +343,7 @@ public class BeanMapper { //NOSONAR
 
             var builder = format.builder.get();
             builder.disable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY);
+            builder.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS);
             builder.addHandler(new BeanMapperPropertyHandler(this));
 
             // modules:
