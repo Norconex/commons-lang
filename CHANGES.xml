@@ -153,6 +153,12 @@
       <action dev="essiembre" type="add">
         New Consumers #of method.
       </action>
+      <action dev="essiembre" type="add">
+        New IOUtil #toNonNullWriter and #toNonNullOutputStream methods.
+      </action>
+      <action dev="essiembre" type="add">
+        New TextMatcher#isSet method.
+      </action>
       <action dev="essiembre" type="update">
         Now require Java 17+. 
       </action>

@@ -24,6 +24,8 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.ObjectUtils;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
@@ -310,6 +312,16 @@ public class TextMatcher implements
     }
     public TextMatcher withReplaceAll(boolean replaceAll) {
         return copy().setReplaceAll(replaceAll);
+    }
+
+    /**
+     * Checks whether this text matcher was given a pattern.
+     * @return <code>true</code> if a pattern is set (i.e.,
+     *     not <code>null</code>).
+     */
+    @JsonIgnore
+    public boolean isSet() {
+        return pattern != null;
     }
 
     /**

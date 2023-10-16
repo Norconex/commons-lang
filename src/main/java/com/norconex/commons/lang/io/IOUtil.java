@@ -21,7 +21,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.Reader;
+import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -32,6 +34,8 @@ import java.util.function.IntPredicate;
 
 import org.apache.commons.io.input.NullInputStream;
 import org.apache.commons.io.input.NullReader;
+import org.apache.commons.io.output.NullOutputStream;
+import org.apache.commons.io.output.NullWriter;
 import org.apache.commons.lang3.ArrayUtils;
 
 import lombok.NonNull;
@@ -68,7 +72,7 @@ public final class IOUtil {
         if (is == null || bytes == null) {
             return false;
         }
-        byte[] head = IOUtil.borrowBytes(is, bytes.length);
+        var head = IOUtil.borrowBytes(is, bytes.length);
         return Arrays.equals(bytes, head);
     }
 
@@ -88,7 +92,7 @@ public final class IOUtil {
                     ERR_STREAM_MUST_SUPPORT_MARK);
         }
         is.mark(qty);
-        byte[] bytes = new byte[qty];
+        var bytes = new byte[qty];
         is.read(bytes); //NOSONAR
         is.reset();
         return bytes;
@@ -108,7 +112,7 @@ public final class IOUtil {
             throw new IllegalArgumentException(ERR_READER_MUST_SUPPORT_MARK);
         }
         reader.mark(qty);
-        char[] chars = new char[qty];
+        var chars = new char[qty];
         reader.read(chars);
         reader.reset();
         return chars;
@@ -131,7 +135,7 @@ public final class IOUtil {
                     ERR_STREAM_MUST_SUPPORT_MARK);
         }
         is.mark(1);
-        int numRead = is.read();
+        var numRead = is.read();
         is.reset();
         return numRead == -1;
     }
@@ -151,7 +155,7 @@ public final class IOUtil {
             throw new IllegalArgumentException(ERR_READER_MUST_SUPPORT_MARK);
         }
         reader.mark(1);
-        int numRead = reader.read();
+        var numRead = reader.read();
         reader.reset();
         return numRead == -1;
     }
@@ -254,11 +258,11 @@ public final class IOUtil {
         if (is == null) {
             return EMPTY_STRINGS;
         }
-        Charset safeEncoding = encoding;
+        var safeEncoding = encoding;
         if (safeEncoding == null) {
             safeEncoding = StandardCharsets.UTF_8;
         }
-        BufferedReader br = new BufferedReader(
+        var br = new BufferedReader(
                 new InputStreamReader(is, safeEncoding));
         List<String> lines = new ArrayList<>(lineQty);
         String line;
@@ -323,11 +327,11 @@ public final class IOUtil {
         if (is == null) {
             return EMPTY_STRINGS;
         }
-        Charset safeEncoding = encoding;
+        var safeEncoding = encoding;
         if (safeEncoding == null) {
             safeEncoding = StandardCharsets.UTF_8;
         }
-        BufferedReader br = new BufferedReader(
+        var br = new BufferedReader(
                 new InputStreamReader(is, safeEncoding));
         List<String> lines = new ArrayList<>(lineQty);
         String line;
@@ -364,6 +368,31 @@ public final class IOUtil {
         return is != null ? is : new NullInputStream(0);
     }
 
+
+    /**
+     * Gets a non-effective writer when the supplied writer
+     * is <code>null</code> (writing to it has no effect).
+     * Else, return the supplied writer.
+     * @param writer original writer
+     * @return the supplied writer, or an empty writer
+     * @since 3.0.0
+     */
+    public static Writer toNonNullWriter(Writer writer) {
+        return writer != null ? writer : NullWriter.INSTANCE;
+    }
+    /**
+     * Gets a non-effective output stream when the supplied output
+     * stream is <code>null</code> (writing to it has no effect).
+     * Else, return the supplied output stream.
+     * @param os original output stream
+     * @return the supplied output stream, or an empty output stream
+     * @since 3.0.0
+     */
+    public static OutputStream toNonNullOutputStream(OutputStream os) {
+        return os != null ? os : NullOutputStream.INSTANCE;
+    }
+
+
     /**
      * Fully consumes an input stream.
      * @param is input stream
@@ -375,8 +404,8 @@ public final class IOUtil {
         if (is == null) {
             return 0;
         }
-        int cnt = 0;
-        int read = is.read();
+        var cnt = 0;
+        var read = is.read();
         while(read != -1) {
             read = is.read();
             cnt++;
@@ -394,8 +423,8 @@ public final class IOUtil {
         if (reader == null) {
             return 0;
         }
-        int cnt = 0;
-        int read = reader.read();
+        var cnt = 0;
+        var read = reader.read();
         while(read != -1) {
             read = reader.read();
             cnt++;
@@ -456,13 +485,13 @@ public final class IOUtil {
             Reader reader, String str, Appendable appendable)
                     throws IOException {
 
-        char[] chars = str.toCharArray();
-        int qtyRead = 0;
-        int qtyMatched = 0;
+        var chars = str.toCharArray();
+        var qtyRead = 0;
+        var qtyMatched = 0;
 
         int intch;
         while ((intch = reader.read()) != -1) {
-            char ch = (char) intch;
+            var ch = (char) intch;
             if (chars.length > 0 && chars[qtyMatched] == ch) {
                 qtyMatched++;
             } else {
@@ -519,7 +548,7 @@ public final class IOUtil {
             throw new IllegalArgumentException(ERR_READER_MUST_SUPPORT_MARK);
         }
 
-        int qtyRead = 0;
+        var qtyRead = 0;
         int ch;
         reader.mark(1);
         while ((ch = reader.read()) != -1) {
