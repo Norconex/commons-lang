@@ -27,6 +27,10 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
@@ -84,6 +88,10 @@ import lombok.ToString;
  */
 @ToString
 @EqualsAndHashCode
+@JsonAutoDetect(
+    creatorVisibility = Visibility.NONE,
+    fieldVisibility = Visibility.NONE
+)
 public class Regex {
 
     /**
@@ -289,6 +297,7 @@ public class Regex {
         return setTrim(true);
     }
 
+    @JsonIgnore
     public Regex setFlags(int... flags) {
         this.flags.clear();
         if (flags != null) {
@@ -296,6 +305,7 @@ public class Regex {
         }
         return this;
     }
+    @JsonIgnore
     public Set<Integer> getFlags() {
         return Collections.unmodifiableSet(flags);
     }
@@ -319,6 +329,7 @@ public class Regex {
      * </p>
      * @return compiled pattern
      */
+    @JsonIgnore
     public Pattern compile() {
         return compile(pattern);
     }
@@ -335,6 +346,7 @@ public class Regex {
      * @return compiled pattern
      * @throws IllegalArgumentException if pattern is <code>null</code>
      */
+    @JsonIgnore
     public Pattern compile(String pattern) {
         if (pattern == null) {
             throw new IllegalArgumentException("Pattern cannot be null.");
@@ -394,6 +406,7 @@ public class Regex {
      * @param text the text to match
      * @return matcher
      */
+    @JsonIgnore
     public Matcher matcher(CharSequence text) {
         return matcher(pattern, text);
     }
@@ -407,6 +420,7 @@ public class Regex {
      * @param text the text to match
      * @return matcher
      */
+    @JsonIgnore
     public Matcher matcher(String pattern, CharSequence text) {
         var p = pattern;
         var t = Objects.toString(text, null);
