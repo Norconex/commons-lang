@@ -20,7 +20,6 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import com.norconex.commons.lang.function.Consumers;
-import com.norconex.commons.lang.function.FunctionUtil;
 import com.norconex.commons.lang.xml.XML;
 
 import lombok.EqualsAndHashCode;
@@ -108,15 +107,15 @@ public final class XMLFlow<T> {
         List<Consumer<T>> consumers = new ArrayList<>();
         xml.forEach("*", x -> {
             Consumer<T> consumer = null;
-            Tag tag = Tag.of(x.getName());
+            var tag = Tag.of(x.getName());
             if (tag == null) {
                 consumer = parseConsumer(x);
             } else if (tag == Tag.IF) {
-                XMLIf<T> ifBlock = new XMLIf<>(this);
+                var ifBlock = new XMLIf<>(this);
                 ifBlock.loadFromXML(x);
                 consumer = ifBlock;
             } else if (tag == Tag.IFNOT) {
-                XMLIfNot<T> ifNotBlock = new XMLIfNot<>(this);
+                var ifNotBlock = new XMLIfNot<>(this);
                 ifNotBlock.loadFromXML(x);
                 consumer = ifNotBlock;
             } else {
@@ -125,7 +124,7 @@ public final class XMLFlow<T> {
             consumers.add(consumer);
         });
         if (consumers.size() > 1) {
-            return FunctionUtil.allConsumers(consumers);
+            return new Consumers<>(consumers);
         }
         if (consumers.size() == 1) {
             return consumers.get(0);
