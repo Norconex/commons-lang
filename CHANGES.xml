@@ -338,6 +338,9 @@
         Several classes previously implementing XMLConfigurable are no longer doing
         so, in favor of Jackson based serialization.
       </action>
+      <action dev="essiembre" type="update">
+        CachedOutputStream now has a dispose() method and close() has no effect.
+      </action>
       <action dev="essiembre" type="fix">
         Properties#loadFromXML is now null-safe.
       </action>

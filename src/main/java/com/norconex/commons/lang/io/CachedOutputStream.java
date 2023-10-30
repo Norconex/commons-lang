@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.nio.channels.Channels;
-import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -71,6 +70,7 @@ public class CachedOutputStream extends OutputStream implements CachedStream {
     private boolean closed = false;
     private boolean cacheEmpty = true;
     private final Path cacheDirectory;
+    private boolean disposed = false;
 
     //--- Constructors ---------------------------------------------------------
     /**
@@ -106,6 +106,9 @@ public class CachedOutputStream extends OutputStream implements CachedStream {
 
     @Override
     public void write(int b) throws IOException {
+        if (disposed) {
+            throw new IOException("CachedOutputStream has been disposed.");
+        }
         if (closed) {
             throw new IllegalStateException(
                     "Cannot write to this closed output stream.");
@@ -129,6 +132,9 @@ public class CachedOutputStream extends OutputStream implements CachedStream {
 
     @Override
     public void write(byte[] b, int off, int len) throws IOException {
+        if (disposed) {
+            throw new IOException("CachedOutputStream has been disposed.");
+        }
         if (closed) {
             throw new IllegalStateException(
                     "Cannot write to this closed output stream.");
@@ -148,14 +154,20 @@ public class CachedOutputStream extends OutputStream implements CachedStream {
         cacheEmpty = false;
     }
 
+    /**
+     * Return the cached content of the of this output stream as an input
+     * stream, before disposing it.
+     * @return cached input stream
+     * @throws IOException problem getting input stream
+     */
     public CachedInputStream getInputStream() throws IOException {
-        if (closed) {
-            throw new IllegalStateException("Cannot get CachedInputStream on a "
-                    + "closed CachedOutputStream.");
+        if (disposed) {
+            throw new IOException("CachedOutputStream has been disposed.");
         }
         CachedInputStream is;
         if (fileCache != null) {
             is = factory.newInputStream(fileCache); //NOSONAR
+            fileCache = null; // we null it here so it does not get deleted
         } else if (memCache != null) {
             is = factory.newInputStream(memCache); //NOSONAR
         } else {
@@ -164,31 +176,33 @@ public class CachedOutputStream extends OutputStream implements CachedStream {
             memOutputStream = null;
             is = factory.newInputStream(memCache); //NOSONAR
         } 
-        close(false);
+        dispose();
         return is;
     }
 
-    private void close(boolean clearCache) throws IOException {
-        if (!closed) {
-            closed = true;
-            if (memCache != null && clearCache) {
-                memCache = null;
-            }
-            closeOuputStream(outputStream);
-            outputStream = null;
-            closeOuputStream(fileOutputStream);
-            fileOutputStream = null;
-            if (fileCache != null && clearCache) {
-                FileUtil.delete(fileCache.toFile());
-                LOG.debug("Deleted cache file: {}", fileCache);
-                fileCache = null;
-            }
-            if (clearCache) {
-                closeOuputStream(memOutputStream);
-                memOutputStream = null;
-            }
-            cacheEmpty = true;
+    /**
+     * Clear the cache attached to this output stream.
+     * @throws IOException could not dispose
+     * @since 3.0.0
+     */
+    public void dispose() throws IOException {
+        if (memCache != null) {
+            memCache = null;
         }
+        closeOuputStream(outputStream);
+        outputStream = null;
+        closeOuputStream(memOutputStream);
+        memOutputStream = null;
+        closeOuputStream(fileOutputStream);
+        fileOutputStream = null;
+
+        if (fileCache != null) {
+            FileUtil.delete(fileCache.toFile());
+            LOG.trace("Deleted cache file: {}", fileCache);
+        }
+        disposed = true;
+        cacheEmpty = true;
+        closed = true;
     }
 
     private void closeOuputStream(OutputStream os) throws IOException {
@@ -199,8 +213,25 @@ public class CachedOutputStream extends OutputStream implements CachedStream {
     }
 
     @Override
+    public void flush() throws IOException {
+        if (closed) {
+            return;
+        }
+        if (outputStream != null) {
+            outputStream.flush();
+        }
+        if (memOutputStream != null) {
+            memOutputStream.flush();
+        }
+        if (fileOutputStream != null) {
+            fileOutputStream.flush();
+        }
+    }
+
+    @Override
     public void close() throws IOException {
-        close(true);
+        flush();
+        closed = true;
     }
 
     /**
@@ -250,9 +281,9 @@ public class CachedOutputStream extends OutputStream implements CachedStream {
         fileCache.toFile().deleteOnExit();
         LOG.debug("Reached max cache size. Swapping to file: {}", fileCache);
         // RAF is closed with this stream
-        RandomAccessFile f = 
+        var f =
                 new RandomAccessFile(fileCache.toFile(), "rw"); //NOSONAR
-        FileChannel channel = f.getChannel();
+        var channel = f.getChannel();
         fileOutputStream = Channels.newOutputStream(channel);
 
         IOUtils.write(memOutputStream.toByteArray(), fileOutputStream);
