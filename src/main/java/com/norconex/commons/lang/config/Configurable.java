@@ -42,16 +42,25 @@ public interface Configurable<T> {
      * var myClass = Configurable.configure(
      *      new MyConfigurableClass(), cfg -> cfg.setSomeValue("my value"));
      * </pre>
+     * <p>
+     * You can supply multiple consumers and they'll all be executed in the
+     * order provided. This is an alternative to using lambda
+     * {@link Consumer#andThen(Consumer)} without the need for casting.
+     * </p>
      * @param configurable the configurable object
-     * @param configurer object configuration consumer (not invoked if
-     *      <code>null</code> or if the configuration is <code>null</code>)
+     * @param configurers one or more object configuration consumers
+     *      (not invoked if <code>null</code> or if the configuration
+     *      is <code>null</code>)
      * @return this instance
      */
+    @SafeVarargs
     static <T, R extends Configurable<T>> R configure(
-            R configurable, Consumer<T> configurer) {
+            R configurable, Consumer<T>... configurers) {
         var cfg = configurable.getConfiguration();
-        if (configurer != null && cfg != null) {
-            configurer.accept(cfg);
+        if (configurers != null && cfg != null) {
+            for (Consumer<T> configurer: configurers) {
+                configurer.accept(cfg);
+            }
         }
         return configurable;
     }
