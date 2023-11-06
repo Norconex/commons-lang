@@ -328,6 +328,9 @@
         BeanUtil#diff now display hashCode for any non-null values.
       </action>
       <action dev="essiembre" type="update">
+        BeanUtil#visit... will no process passed collections and maps.
+      </action>
+      <action dev="essiembre" type="update">
         EnumConverter will now match values regardless of non-alphanumeric 
         characters they may contain.
       </action>

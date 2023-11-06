@@ -20,6 +20,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import com.fasterxml.jackson.annotation.JacksonAnnotationsInside;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -38,4 +39,22 @@ import com.norconex.commons.lang.flow.module.FlowModule;
 @JsonSerialize(typing = Typing.STATIC)
 public @interface JsonFlow {
 
+    /**
+     * Builder of a flow mapper configuration. Defaults to no builder,
+     * using the flow mapper configuration defined in the BeanMapepr (if any).
+     * @return flow mapper configuration builder concrete type
+     */
+    public Class<? extends Supplier<FlowMapperConfig>> builder()
+            default NoBuilder.class;
+
+    /**
+     * No-op config mapper builder symbolizing no builder.
+     */
+    public static final class NoBuilder
+            implements Supplier<FlowMapperConfig> {
+        @Override
+        public FlowMapperConfig get() {
+            return null;
+        }
+    }
 }

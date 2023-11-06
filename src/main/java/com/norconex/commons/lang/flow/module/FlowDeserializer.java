@@ -14,6 +14,8 @@
  */
 package com.norconex.commons.lang.flow.module;
 
+import static java.util.Optional.ofNullable;
+
 import java.io.IOException;
 import java.util.function.Consumer;
 
@@ -24,8 +26,10 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
 import com.fasterxml.jackson.databind.deser.ResolvableDeserializer;
+import com.norconex.commons.lang.ClassUtil;
 import com.norconex.commons.lang.flow.FlowMapperConfig;
 import com.norconex.commons.lang.flow.JsonFlow;
+import com.norconex.commons.lang.flow.JsonFlow.NoBuilder;
 
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +46,7 @@ public class FlowDeserializer<T> extends JsonDeserializer<Consumer<T>>
 
     private final FlowMapperConfig config;
     private final JsonDeserializer<?> defaultDeserializer;
+    private final ThreadLocal<FlowMapperConfig> propCfg = new ThreadLocal<>();
 
     @SuppressWarnings("unchecked")
     private RootHandler<T> rootHandler =
@@ -50,7 +55,8 @@ public class FlowDeserializer<T> extends JsonDeserializer<Consumer<T>>
     @Override
     public Consumer<T> deserialize(JsonParser p, DeserializationContext ctx)
             throws IOException {
-        return rootHandler.read(new FlowDeserContext(config, p));
+        return rootHandler.read(new FlowDeserContext(
+                ofNullable(propCfg.get()).orElse(config), p));
     }
 
     @Override
@@ -60,8 +66,19 @@ public class FlowDeserializer<T> extends JsonDeserializer<Consumer<T>>
         if (property == null) {
             return defaultDeserializer;
         }
-        return property.getAnnotation(JsonFlow.class) == null
-                ? defaultDeserializer : this;
+        var flowAnnot = property.getAnnotation(JsonFlow.class);
+        if (flowAnnot == null) {
+            return defaultDeserializer;
+        }
+
+        // If needed, create property-specific flow mapper config
+        var supplier = flowAnnot.builder();
+        if (supplier.equals(NoBuilder.class)) {
+            propCfg.remove();
+        } else {
+            propCfg.set(ClassUtil.newInstance(supplier).get());
+        }
+        return this;
     }
 
     @Override

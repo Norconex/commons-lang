@@ -495,6 +495,19 @@ class BeanUtilTest {
     }
 
     @Test
+    void testVisitAllObjectCollectionConsumerClass() {
+        List<String> names = new ArrayList<>();
+        List<Root> roots = List.of(new Root(), new Root());
+        BeanUtil.visitAll(
+                roots,
+                o -> names.add(o.getClass().getSimpleName()),
+                EventListener.class);
+        assertThat(names).containsExactly(
+                "Sub1Yes", "Sub3Yes", "Sub3_1Yes",
+                "Sub1Yes", "Sub3Yes", "Sub3_1Yes");
+    }
+
+    @Test
     void testVisitObjectPredicate() {
         List<String> names = new ArrayList<>();
         BeanUtil.visit(
@@ -526,6 +539,19 @@ class BeanUtilTest {
                 new Root(),
                 (o, pd) -> names.add(pd.getName()));
         assertThat(names).containsExactly(
+                "sub1yes", "sub2no", "sub3yes", "sub1Yes", "sub3_1Yes");
+    }
+
+
+    @Test
+    void testVisitAllPropertiesObjectCollectionBiConsumer() {
+        List<String> names = new ArrayList<>();
+        List<Root> roots = List.of(new Root(), new Root());
+        BeanUtil.visitAllProperties(
+                roots,
+                (o, pd) -> names.add(pd.getName()));
+        assertThat(names).containsExactly(
+                "sub1yes", "sub2no", "sub3yes", "sub1Yes", "sub3_1Yes",
                 "sub1yes", "sub2no", "sub3yes", "sub1Yes", "sub3_1Yes");
     }
 
