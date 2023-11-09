@@ -25,6 +25,13 @@ import java.util.function.Consumer;
  * @since 3.0.0
  */
 public interface Configurable<T> {
+
+    /**
+     * Practical constant for the string representation of the
+     * "configuration" property.
+     */
+    String PROPERTY = "configuration";
+
     /**
      * Gets the configuration for a configurable object.
      * Implementors are encouraged to ensure it is never <code>null</code>
