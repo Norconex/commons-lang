@@ -165,12 +165,21 @@
       <artifactId>java-cup</artifactId>
       <version>${java-cup.version}</version>
       <scope>runtime</scope>
-    </dependency>      
+    </dependency>
+          
     <dependency>
       <groupId>com.tdunning</groupId>
       <artifactId>json</artifactId>
       <version>${json.version}</version>      
     </dependency>
+<!--
+    <dependency>
+      <groupId>org.json</groupId>
+      <artifactId>json</artifactId>
+      <version>20231013</version>
+    </dependency>
+    -->
+    
 
     <!-- Tests and provided. -->
     <dependency>
