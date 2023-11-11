@@ -91,12 +91,14 @@ public class JsonXmlCollectionDeserializer <T extends Collection<?>>
                 p.nextToken();  // <inner>  (field name)
             }
             // for some reason, empty tags come up as empty string
-            // use this to prevent reading a null entry, which may generate
+            // We check here to prevent reading a null entry, which may generate
             // the instantiation of an object with nothing set on it.
-            var value = p.readValueAs(currentProperty.getType()
-                    .getContentType().getRawClass());
-            if (!(value instanceof String v) || !StringUtils.isBlank(v)) {
-                objects.add(value);
+            if (StringUtils.isNotBlank(p.getText())) {
+                var value = p.readValueAs(currentProperty.getType()
+                        .getContentType().getRawClass());
+                if (!(value instanceof String v) || !StringUtils.isBlank(v)) {
+                    objects.add(value);
+                }
             }
         } while (p.nextToken() != enderToken);
         return  (T) objects;
