@@ -90,17 +90,12 @@ public class JsonXmlCollectionDeserializer <T extends Collection<?>>
             if (isXml) {
                 p.nextToken();  // <inner>  (field name)
             }
-            if (p.currentToken() == JsonToken.VALUE_STRING) {
-                // for some reason, empty tags come up as empty string
-                // use this to prevent reading a null entry, which may generate
-                // the instantiation of an object with nothing set on it.
-                var text = p.getText();
-                if (!StringUtils.isBlank(text)) {
-                    objects.add(text);
-                }
-            } else {
-                var value = p.readValueAs(currentProperty.getType()
-                        .getContentType().getRawClass());
+            // for some reason, empty tags come up as empty string
+            // use this to prevent reading a null entry, which may generate
+            // the instantiation of an object with nothing set on it.
+            var value = p.readValueAs(currentProperty.getType()
+                    .getContentType().getRawClass());
+            if (!(value instanceof String v) || !StringUtils.isBlank(v)) {
                 objects.add(value);
             }
         } while (p.nextToken() != enderToken);
