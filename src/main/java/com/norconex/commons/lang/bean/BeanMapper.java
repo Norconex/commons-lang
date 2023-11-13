@@ -14,6 +14,8 @@
  */
 package com.norconex.commons.lang.bean;
 
+import static java.util.Optional.ofNullable;
+
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
@@ -30,8 +32,11 @@ import java.util.function.Supplier;
 
 import javax.xml.stream.XMLOutputFactory;
 
+import org.apache.commons.collections4.MultiMapUtils;
+import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreType;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -206,6 +211,12 @@ public class BeanMapper { //NOSONAR
     private boolean indent;
 
     /**
+     * The class loader to use to load classes. Defaults to this
+     * class class loader.
+     */
+    private ClassLoader classLoader;
+
+    /**
      * Consumes the internal Jackson {@link MapperBuilder} for custom
      * initialization.
      */
@@ -246,6 +257,18 @@ public class BeanMapper { //NOSONAR
 
     // We are caching them on first use
     private final Map<Format, ObjectMapper> cache = new ConcurrentHashMap<>(3);
+    // We keep a copy of registered polymorphic type as they are otherwise
+    // difficult to obtain from the ObjectMapper and we may need them in
+    // different context (e.g., registration in OpenApi).
+
+    private final MultiValuedMap<Class<?>, Class<?>>
+        resolvedPolymorphicTypes = MultiMapUtils.newListValuedHashMap();
+    private final MutableBoolean polyTypesResolved = new MutableBoolean();
+
+    public MultiValuedMap<Class<?>, Class<?>> getPolymorphicTypes() {
+        resolvePolymorphicTypes();
+        return resolvedPolymorphicTypes;
+    }
 
     /**
      * Write the given object as XML, JSON, or Yaml.
@@ -259,7 +282,7 @@ public class BeanMapper { //NOSONAR
             @NonNull Writer writer,
             @NonNull Format format) {
         try {
-            getMapper(format).writeValue(writer, object);
+            toObjectMapper(format).writeValue(writer, object);
         } catch (IOException e) {
             throw new BeanException("Could not write object to %s: %s"
                     .formatted(format, object), e);
@@ -282,7 +305,7 @@ public class BeanMapper { //NOSONAR
             @NonNull Reader reader,
             @NonNull Format format) {
         try {
-            return (T) validate(getMapper(format)
+            return (T) validate(toObjectMapper(format)
                     .readerForUpdating(object).readValue(reader));
         } catch (IOException e) {
             throw new BeanException(
@@ -308,7 +331,7 @@ public class BeanMapper { //NOSONAR
             @NonNull Format format) {
         try {
             return (T) validate(
-                    getMapper(format).readerFor(type).readValue(reader));
+                    toObjectMapper(format).readerFor(type).readValue(reader));
         } catch (IOException e) {
             throw new BeanException(
                     "Could not read %s source.".formatted(format), e);
@@ -346,7 +369,12 @@ public class BeanMapper { //NOSONAR
         }
     }
 
-    private ObjectMapper getMapper(Format format) {
+    /**
+     * Gets a Jackson {@link ObjectMapper} for the given format.
+     * @param format format for which to get the mapper
+     * @return Jackson ObjectMapper
+     */
+    public ObjectMapper toObjectMapper(Format format) {
         return cache.computeIfAbsent(format, fmt -> {
 
             var builder = format.builder.get();
@@ -405,43 +433,67 @@ public class BeanMapper { //NOSONAR
         void setConfiguration(T configuration) { }
     }
 
-    private void registerPolymorphicTypes(ObjectMapper mapper) {
+    private synchronized void resolvePolymorphicTypes() {
+        if (polyTypesResolved.isTrue()) {
+            // already resolved for this instance, we skip.
+            return;
+        }
+
         //--- From service loader ---
+        var cl = ofNullable(classLoader).orElseGet(
+                () -> getClass().getClassLoader());
         if (!polymorphicServiceLoaderDisabled) {
-            PolymorphicTypeLoader.polymorphicTypes().asMap().forEach(
-                    (type, subTypes) -> {
-                registerPolymorphicType(mapper, type, subTypes);
-            });
+            PolymorphicTypeLoader.polymorphicTypes(cl).asMap().forEach(
+                    (type, subTypes) ->
+                resolvedPolymorphicTypes.putAll(type, subTypes));
         }
 
         //--- Configured ---
         polymorphicTypes.forEach((type, predicate) -> {
-            registerPolymorphicType(
-                    mapper, type, ClassFinder.findSubTypes(type, predicate));
+            resolvedPolymorphicTypes.putAll(
+                    type, ClassFinder.findSubTypes(type, predicate));
         });
 
         //--- Flow-specific ---
-
         Class<?> conditionType =
                 flowMapperConfig.getPredicateType().getBaseType();
         if (conditionType != null) {
-            registerPolymorphicType(mapper, conditionType,
+            resolvedPolymorphicTypes.putAll(
+                    conditionType,
                     ClassFinder.findSubTypes(conditionType,
-                        flowMapperConfig.getPredicateType().getScanFilter()));
+                            flowMapperConfig
+                                .getPredicateType()
+                                .getScanFilter()));
         }
-
         Class<?> consumerType =
                 flowMapperConfig.getConsumerType().getBaseType();
         if (consumerType != null) {
-            registerPolymorphicType(mapper, consumerType,
+            resolvedPolymorphicTypes.putAll(
+                    consumerType,
                     ClassFinder.findSubTypes(consumerType,
-                        flowMapperConfig.getConsumerType().getScanFilter()));
+                            flowMapperConfig
+                                .getConsumerType()
+                                .getScanFilter()));
         }
+
+        polyTypesResolved.setTrue();
+    }
+
+
+    private void registerPolymorphicTypes(ObjectMapper mapper) {
+        resolvePolymorphicTypes();
+
+        resolvedPolymorphicTypes.asMap().forEach((type, subTypes) -> {
+            registerPolymorphicType(mapper, type, subTypes);
+        });
     }
     private void registerPolymorphicType(
             ObjectMapper mapper,
             Class<?> type,
             Collection<? extends Class<?>> subTypes) {
+
+        resolvedPolymorphicTypes.putAll(type, subTypes);
+
         //TODO check and report those already registered?
         mapper.addMixIn(type, PolymorphicMixIn.class);
         mapper.registerSubtypes(subTypes.toArray(new Class<?>[] {}));
