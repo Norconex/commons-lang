@@ -19,6 +19,10 @@ import java.util.Comparator;
 
 import org.apache.commons.lang3.Range;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.EqualsAndHashCode;
 
 /**
@@ -64,9 +68,9 @@ public final class CircularRange<T> implements Serializable {
                             + ", maximum=%s", minimum, maximum));
         }
         if (comp == null) {
-            this.comparator = ComparableComparator.INSTANCE;
+            comparator = ComparableComparator.INSTANCE;
         } else {
-            this.comparator = comp;
+            comparator = comp;
         }
         if (!inNormalRange(minimum, circleStart, circleEnd)
                 || !inNormalRange(maximum, circleStart, circleEnd)) {
@@ -201,10 +205,15 @@ public final class CircularRange<T> implements Serializable {
      *             if either element is null or not in order
      * @throws ClassCastException if the elements are not {@code Comparable}
      */
+    @JsonCreator
     public static <T extends Comparable<T>> CircularRange<T> between(
+            @JsonProperty("circleStart")
             final T circleStartInclusive,
+            @JsonProperty("circleEnd")
             final T circleEndInclusive,
+            @JsonProperty("minimum")
             final T rangeFromInclusive,
+            @JsonProperty("maximum")
             final T rangeToInclusive) {
         return between(circleStartInclusive, circleEndInclusive,
                 rangeFromInclusive, rangeToInclusive, null);
@@ -288,6 +297,7 @@ public final class CircularRange<T> implements Serializable {
      * <p>Gets the minimum value in this range.</p>
      * @return the minimum value in this range, not null
      */
+    @JsonProperty("minimum")
     public T getMinimum() {
         return minimum;
     }
@@ -295,6 +305,7 @@ public final class CircularRange<T> implements Serializable {
      * <p>Gets the maximum value in this range.</p>
      * @return the maximum value in this range, not null
      */
+    @JsonProperty("maximum")
     public T getMaximum() {
         return maximum;
     }
@@ -302,6 +313,7 @@ public final class CircularRange<T> implements Serializable {
      * <p>Gets the start value of this circular range.</p>
      * @return the start value of this circular range, not null
      */
+    @JsonProperty("circleStart")
     public T getCircleStart() {
         return circleStart;
     }
@@ -309,6 +321,7 @@ public final class CircularRange<T> implements Serializable {
      * <p>Gets the end value of this circular range.</p>
      * @return the end value of this circular range, not null
      */
+    @JsonProperty("circleEnd")
     public T getCircleEnd() {
         return circleEnd;
     }
@@ -321,6 +334,7 @@ public final class CircularRange<T> implements Serializable {
      *
      * @return the comparator being used, not null
      */
+    @JsonIgnore
     public Comparator<T> getComparator() {
         return comparator;
     }
@@ -334,6 +348,7 @@ public final class CircularRange<T> implements Serializable {
      *
      * @return true if using natural ordering
      */
+    @JsonIgnore
     public boolean isNaturalOrdering() {
         return comparator == ComparableComparator.INSTANCE;
     }
@@ -343,6 +358,7 @@ public final class CircularRange<T> implements Serializable {
      * if the range maximum is smaller than the minimum.</p>
      * @return <code>true</code> if rolling over
      */
+    @JsonIgnore
     public boolean isRolling() {
         return compare(minimum, maximum) > -1;
     }
@@ -513,7 +529,7 @@ public final class CircularRange<T> implements Serializable {
 
     //-----------------------------------------------------------------------
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private enum ComparableComparator implements Comparator {
+    private enum ComparableComparator implements Comparator { //NOSONAR
         INSTANCE;
         /**
          * Comparable based compare implementation.
