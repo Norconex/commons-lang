@@ -76,12 +76,16 @@ public class JsonXmlCollectionDeserializer <T extends Collection<?>>
     public T deserialize(
             JsonParser p, DeserializationContext ctx) throws IOException {
 
-        var objects = createCollection();
-        p.nextToken();  // <outer>
-
         var isXml = ctx instanceof XmlDeserializationContext;
-
         var enderToken = isXml ? JsonToken.END_OBJECT : JsonToken.END_ARRAY;
+
+        var objects = createCollection();
+
+        if (p.nextToken() == enderToken) { // <outer>
+            // Self-closed or empty tag, so we treat it as an instruction
+            // to blanking the list so we return it empty.
+            return (T) objects;
+        }
 
         do {
             // For XML, each collection entries are made of a field name
