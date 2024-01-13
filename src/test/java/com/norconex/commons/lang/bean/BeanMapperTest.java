@@ -45,6 +45,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.norconex.commons.lang.ExceptionUtil;
 import com.norconex.commons.lang.Sleeper;
 import com.norconex.commons.lang.bean.BeanMapper.Format;
 import com.norconex.commons.lang.bean.stubs.Automobile;
@@ -167,6 +168,31 @@ class BeanMapperTest {
             Sleeper.sleepMillis(1);
             return System.currentTimeMillis();
         }
+    }
+
+    @Test
+    void testIgnoreUnknownProperties() {
+        // "type2" is bad, it should be type.
+        var badYaml = """
+        ---
+        class: "Plane"
+        name: "Boeing 737"
+        type2: "COMMERCIAL"
+        """  ;
+
+        // Not ignoring unknown properties (default)
+        var bm1 = BeanMapper.builder().ignoreUnknownProperties(false).build();
+        assertThatExceptionOfType(BeanException.class)
+                .isThrownBy(() -> {//NOSONAR
+            System.err.println("" + bm1.read(Plane.class,
+                    new StringReader(badYaml), Format.YAML));
+        }).matches(ex -> ExceptionUtil.getFormattedMessages(ex).contains(
+                "Unrecognized field \"type2\""));
+
+        // Ignoring unknown properties
+        var bm2 = BeanMapper.builder().ignoreUnknownProperties(true).build();
+        assertThatNoException().isThrownBy(() ->
+        bm2.read(Plane.class, new StringReader(badYaml), Format.YAML));
     }
 
     //--- Polymorphic tests ----------------------------------------------------

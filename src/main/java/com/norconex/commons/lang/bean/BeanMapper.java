@@ -333,6 +333,7 @@ public class BeanMapper { //NOSONAR
             return (T) validate(
                     toObjectMapper(format).readerFor(type).readValue(reader));
         } catch (IOException e) {
+            LOG.error(e.getLocalizedMessage());
             throw new BeanException(
                     "Could not read %s source.".formatted(format), e);
         }
@@ -395,6 +396,11 @@ public class BeanMapper { //NOSONAR
             if (mapperBuilderCustomizer != null) {
                 mapperBuilderCustomizer.accept(builder);
             }
+            if (!ignoreUnknownProperties) {
+                builder.addModule(
+                        new FailOnUnknownConfigurablePropModule(this));
+            }
+
             if (format == Format.XML) {
                 builder.addModule(new JsonXmlCollectionModule());
             }
@@ -405,6 +411,7 @@ public class BeanMapper { //NOSONAR
             mapper.configure(
                     DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
                     !ignoreUnknownProperties);
+
             mapper.configure(Feature.AUTO_CLOSE_SOURCE, false);
             mapper.configure(
                     DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT,

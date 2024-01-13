@@ -34,8 +34,7 @@ public interface Configurable<T> {
 
     /**
      * Gets the configuration for a configurable object.
-     * Implementors are encouraged to ensure it is never <code>null</code>
-     * to facilitate usage.
+     * Never <code>null</code>.
      * @return configuration
      */
     T getConfiguration();
