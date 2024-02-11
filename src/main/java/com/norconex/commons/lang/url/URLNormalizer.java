@@ -24,10 +24,10 @@ import java.net.URLDecoder;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.collections4.bag.TreeBag;
@@ -119,8 +119,8 @@ import com.norconex.commons.lang.EqualsUtil;
  *   <li>{@link #removeDirectoryIndex() Remove directory index}</li>
  *   <li>{@link #removeFragment() Remove fragment (#)}</li>
  *   <li>{@link #replaceIPWithDomainName() Replace IP with domain name}</li>
- *   <li>{@link #unsecureScheme() Unsecure schema (https &rarr; http)}</li>
- *   <li>{@link #secureScheme() Secure schema (http &rarr; https)}</li>
+ *   <li>{@link #unsecureScheme() Unsecure scheme (https &rarr; http)}</li>
+ *   <li>{@link #secureScheme() Secure scheme (http &rarr; https)}</li>
  *   <li>{@link #removeDuplicateSlashes() Remove duplicate slashes}</li>
  *   <li>{@link #removeWWW() Remove "www."}</li>
  *   <li>{@link #addWWW() Add "www."}</li>
@@ -187,7 +187,6 @@ public class URLNormalizer implements Serializable {
      * @param url the url to normalize
      */
     public URLNormalizer(String url) {
-        super();
         if (StringUtils.isBlank(url)) {
             throw new IllegalArgumentException("URL argument cannot be null.");
         }
@@ -224,7 +223,7 @@ public class URLNormalizer implements Serializable {
      * @return this instance
      */
     public URLNormalizer lowerCaseSchemeHost() {
-        URL u = toURL();
+        var u = toURL();
         url = Pattern.compile(u.getProtocol(),
                 Pattern.CASE_INSENSITIVE).matcher(url).replaceFirst(
                         u.getProtocol().toLowerCase());
@@ -243,12 +242,12 @@ public class URLNormalizer implements Serializable {
      * @since 1.15.1
      */
     public URLNormalizer lowerCasePath() {
-        String urlRoot = HttpURL.getRoot(url);
-        String path = toURL().getPath();
-        String lcPath = StringUtils.lowerCase(path, Locale.FRENCH);
+        var urlRoot = HttpURL.getRoot(url);
+        var path = toURL().getPath();
+        var lcPath = StringUtils.lowerCase(path, Locale.FRENCH);
 
-        String urlRootAndPath = urlRoot + path;
-        String urlRootAndLcPath = urlRoot + lcPath;
+        var urlRootAndPath = urlRoot + path;
+        var urlRootAndLcPath = urlRoot + lcPath;
         url = StringUtils.replaceOnce(url, urlRootAndPath, urlRootAndLcPath);
         return this;
     }
@@ -263,11 +262,11 @@ public class URLNormalizer implements Serializable {
      * @since 1.15.1
      */
     public URLNormalizer lowerCaseQuery() {
-        Matcher m = PATTERN_QUERY_STRING.matcher(url);
+        var m = PATTERN_QUERY_STRING.matcher(url);
         if (m.find()) {
-            String baseURL = m.group(1);
-            String query = m.group(2);
-            String frag = m.group(3);
+            var baseURL = m.group(1);
+            var query = m.group(2);
+            var frag = m.group(3);
             url = baseURL + StringUtils.lowerCase(query, Locale.FRENCH) + frag;
         }
         return this;
@@ -283,17 +282,17 @@ public class URLNormalizer implements Serializable {
      * @since 1.15.1
      */
     public URLNormalizer lowerCaseQueryParameterNames() {
-        Matcher m = PATTERN_QUERY_STRING.matcher(url);
+        var m = PATTERN_QUERY_STRING.matcher(url);
         if (m.find()) {
-            String baseURL = m.group(1);
-            String query = m.group(2);
-            String frag = m.group(3);
-            String[] params = StringUtils.split(query, '&');
-            for (int i = 0; i < params.length; i++) {
-                String param = params[i];
-                String eq = param.contains("=") ? "=" : "";
-                String name = StringUtils.substringBefore(param, "=");
-                String value = StringUtils.substringAfter(param, "=");
+            var baseURL = m.group(1);
+            var query = m.group(2);
+            var frag = m.group(3);
+            var params = StringUtils.split(query, '&');
+            for (var i = 0; i < params.length; i++) {
+                var param = params[i];
+                var eq = param.contains("=") ? "=" : "";
+                var name = StringUtils.substringBefore(param, "=");
+                var value = StringUtils.substringAfter(param, "=");
                 params[i] = StringUtils.lowerCase(
                         name, Locale.FRENCH) + eq + value;
             }
@@ -312,17 +311,17 @@ public class URLNormalizer implements Serializable {
      * @since 1.15.1
      */
     public URLNormalizer lowerCaseQueryParameterValues() {
-        Matcher m = PATTERN_QUERY_STRING.matcher(url);
+        var m = PATTERN_QUERY_STRING.matcher(url);
         if (m.find()) {
-            String baseURL = m.group(1);
-            String query = m.group(2);
-            String frag = m.group(3);
-            String[] params = StringUtils.split(query, '&');
-            for (int i = 0; i < params.length; i++) {
-                String param = params[i];
-                String eq = param.contains("=") ? "=" : "";
-                String name = StringUtils.substringBefore(param, "=");
-                String value = StringUtils.substringAfter(param, "=");
+            var baseURL = m.group(1);
+            var query = m.group(2);
+            var frag = m.group(3);
+            var params = StringUtils.split(query, '&');
+            for (var i = 0; i < params.length; i++) {
+                var param = params[i];
+                var eq = param.contains("=") ? "=" : "";
+                var name = StringUtils.substringBefore(param, "=");
+                var value = StringUtils.substringAfter(param, "=");
                 params[i] = name + eq + StringUtils.lowerCase(
                         value, Locale.FRENCH);
             }
@@ -339,8 +338,8 @@ public class URLNormalizer implements Serializable {
      */
     public URLNormalizer upperCaseEscapeSequence() {
         if (url.contains("%")) {
-            StringBuffer sb = new StringBuffer();
-            Matcher m = PATTERN_PERCENT_ENCODED_CHAR.matcher(url);
+            var sb = new StringBuffer();
+            var m = PATTERN_PERCENT_ENCODED_CHAR.matcher(url);
             while (m.find()) {
                 m.appendReplacement(sb, m.group(1).toUpperCase());
             }
@@ -356,11 +355,11 @@ public class URLNormalizer implements Serializable {
      */
     public URLNormalizer decodeUnreservedCharacters() {
         if (url.contains("%")) {
-            StringBuffer sb = new StringBuffer();
-            Matcher m = PATTERN_PERCENT_ENCODED_CHAR.matcher(url);
+            var sb = new StringBuffer();
+            var m = PATTERN_PERCENT_ENCODED_CHAR.matcher(url);
             try {
                 while (m.find()) {
-                    String enc = m.group(1).toUpperCase();
+                    var enc = m.group(1).toUpperCase();
                     if (isEncodedUnreservedCharacter(enc)) {
                         m.appendReplacement(sb, URLDecoder.decode(
                                 enc, StandardCharsets.UTF_8.toString()));
@@ -410,9 +409,9 @@ public class URLNormalizer implements Serializable {
      * @since 1.8.0
      */
     public URLNormalizer encodeSpaces() {
-        String path = StringUtils.substringBefore(url, "?");
+        var path = StringUtils.substringBefore(url, "?");
         path = StringUtils.replace(path, " ", "%20");
-        String qs = StringUtils.substringAfter(url, "?");
+        var qs = StringUtils.substringAfter(url, "?");
         if (StringUtils.isNotBlank(qs)) {
             qs = StringUtils.replace(qs, " ", "+");
             url = path + "?" + qs;
@@ -429,7 +428,7 @@ public class URLNormalizer implements Serializable {
      * @return this instance
      */
     public URLNormalizer removeDefaultPort() {
-        URL u = toURL();
+        var u = toURL();
         if ("http".equalsIgnoreCase(u.getProtocol())
                 && u.getPort() == HttpURL.DEFAULT_HTTP_PORT) {
             url = url.replaceFirst(":" + HttpURL.DEFAULT_HTTP_PORT, "");
@@ -456,14 +455,14 @@ public class URLNormalizer implements Serializable {
      * @since 1.11.0 (renamed from "addTrailingSlash")
      */
     public URLNormalizer addDirectoryTrailingSlash() {
-        String urlRoot = HttpURL.getRoot(url);
-        String path = toURL().getPath();
-        String urlRootAndPath = urlRoot + path;
+        var urlRoot = HttpURL.getRoot(url);
+        var path = toURL().getPath();
+        var urlRootAndPath = urlRoot + path;
 
-        String name = StringUtils.substringAfterLast(path, "/");
+        var name = StringUtils.substringAfterLast(path, "/");
         if (StringUtils.isNotBlank(name) && !name.contains(".")) {
-            String newPath = path + "/";
-            String newUrlRootAndPath = urlRoot + newPath;
+            var newPath = path + "/";
+            var newUrlRootAndPath = urlRoot + newPath;
             url = StringUtils.replaceOnce(
                     url, urlRootAndPath, newUrlRootAndPath);
         }
@@ -482,13 +481,13 @@ public class URLNormalizer implements Serializable {
      * @since 1.12.0
      */
     public URLNormalizer addDomainTrailingSlash() {
-        String urlRoot = HttpURL.getRoot(url);
-        String path = toURL().getPath();
+        var urlRoot = HttpURL.getRoot(url);
+        var path = toURL().getPath();
         if (StringUtils.isNotBlank(path)) {
             // there is a path so do nothing
             return this;
         }
-        String urlRootAndPath = urlRoot + "/";
+        var urlRootAndPath = urlRoot + "/";
         url = StringUtils.replaceOnce(url, urlRoot, urlRootAndPath);
         return this;
     }
@@ -525,13 +524,13 @@ public class URLNormalizer implements Serializable {
      * @since 1.11.0
      */
     public URLNormalizer removeTrailingSlash() {
-        String urlRoot = HttpURL.getRoot(url);
-        String path = toURL().getPath();
-        String urlRootAndPath = urlRoot + path;
+        var urlRoot = HttpURL.getRoot(url);
+        var path = toURL().getPath();
+        var urlRootAndPath = urlRoot + path;
 
         if (StringUtils.endsWith(path, "/")) {
-            String newPath = StringUtils.removeEnd(path, "/");
-            String newUrlRootAndPath = urlRoot + newPath;
+            var newPath = StringUtils.removeEnd(path, "/");
+            var newUrlRootAndPath = urlRoot + newPath;
             url = StringUtils.replaceOnce(
                     url, urlRootAndPath, newUrlRootAndPath);
         }
@@ -556,15 +555,15 @@ public class URLNormalizer implements Serializable {
      * @see URI#normalize()
      */
     public URLNormalizer removeDotSegments() {
-        String path = toURL().getPath().trim();
+        var path = toURL().getPath().trim();
 
         // (Bulleted comments are from RFC3986, section-5.2.4)
 
         // 1.  The input buffer is initialized with the now-appended path
         //     components and the output buffer is initialized to the empty
         //     string.
-        StringBuilder in = new StringBuilder(path);
-        StringBuilder out = new StringBuilder();
+        var in = new StringBuilder(path);
+        var out = new StringBuilder();
 
         // 2.  While the input buffer is not empty, loop as follows:
         while (in.length() > 0) {
@@ -612,7 +611,7 @@ public class URLNormalizer implements Serializable {
             //     any) and any subsequent characters up to, but not including,
             //     the next "/" character or the end of the input buffer.
             else {
-                int nextSlashIndex = in.indexOf("/", 1);
+                var nextSlashIndex = in.indexOf("/", 1);
                 if (nextSlashIndex > -1) {
                     out.append(in.substring(0, nextSlashIndex));
                     in.delete(0, nextSlashIndex);
@@ -643,7 +642,7 @@ public class URLNormalizer implements Serializable {
         b.delete(0, str.length());
     }
     private void removeLastSegment(StringBuilder b) {
-        int index = b.lastIndexOf("/");
+        var index = b.lastIndexOf("/");
         if (index == -1) {
             b.setLength(0);
         } else {
@@ -678,7 +677,7 @@ public class URLNormalizer implements Serializable {
      * @return this instance
      */
     public URLNormalizer removeDirectoryIndex() {
-        String path = toURL().getPath();
+        var path = toURL().getPath();
         if (PATTERN_PATH_LAST_SEGMENT.matcher(path).matches()) {
             url = StringUtils.replaceOnce(
                    url, path, StringUtils.substringBeforeLast(path, "/") + "/");
@@ -705,7 +704,7 @@ public class URLNormalizer implements Serializable {
      * @since 1.15.1
      */
     public URLNormalizer removeQueryString() {
-        Matcher m = PATTERN_QUERY_STRING.matcher(url);
+        var m = PATTERN_QUERY_STRING.matcher(url);
         if (m.find()) {
             url = StringUtils.removeEnd(m.group(1), "?") + m.group(3);
         }
@@ -719,11 +718,11 @@ public class URLNormalizer implements Serializable {
      * @return this instance
      */
     public URLNormalizer replaceIPWithDomainName() {
-        URL u = toURL();
+        var u = toURL();
         if (!PATTERN_DOMAIN.matcher(u.getHost()).matches()) {
             try {
-                InetAddress addr = InetAddress.getByName(u.getHost());
-                String host = addr.getHostName();
+                var addr = InetAddress.getByName(u.getHost());
+                var host = addr.getHostName();
                 if (!u.getHost().equalsIgnoreCase(host)) {
                     url = url.replaceFirst(u.getHost(), host);
                 }
@@ -739,9 +738,9 @@ public class URLNormalizer implements Serializable {
      * @return this instance
      */
     public URLNormalizer unsecureScheme() {
-        Matcher m = PATTERN_SCHEMA.matcher(url);
+        var m = PATTERN_SCHEMA.matcher(url);
         if (m.find()) {
-            String schema = m.group(1);
+            var schema = m.group(1);
             if ("https".equalsIgnoreCase(schema)) {
                 url = m.replaceFirst(StringUtils.stripEnd(schema, "Ss") + "$2");
             }
@@ -754,9 +753,9 @@ public class URLNormalizer implements Serializable {
      * @return this instance
      */
     public URLNormalizer secureScheme() {
-        Matcher m = PATTERN_SCHEMA.matcher(url);
+        var m = PATTERN_SCHEMA.matcher(url);
         if (m.find()) {
-            String schema = m.group(1);
+            var schema = m.group(1);
             if ("http".equalsIgnoreCase(schema)) {
                 url = m.replaceFirst(schema + "s$2");
             }
@@ -771,11 +770,11 @@ public class URLNormalizer implements Serializable {
      * @return this instance
      */
     public URLNormalizer removeDuplicateSlashes() {
-        String urlRoot = HttpURL.getRoot(url);
-        String path = toURL().getPath();
-        String urlRootAndPath = urlRoot + path;
-        String newPath = path.replaceAll("/{2,}", "/");
-        String newUrlRootAndPath = urlRoot + newPath;
+        var urlRoot = HttpURL.getRoot(url);
+        var path = toURL().getPath();
+        var urlRootAndPath = urlRoot + path;
+        var newPath = path.replaceAll("/{2,}", "/");
+        var newUrlRootAndPath = urlRoot + newPath;
         url = StringUtils.replaceOnce(url, urlRootAndPath, newUrlRootAndPath);
         return this;
     }
@@ -785,8 +784,8 @@ public class URLNormalizer implements Serializable {
      * @return this instance
      */
     public URLNormalizer removeWWW() {
-        String host = toURL().getHost();
-        String newHost = StringUtils.removeStartIgnoreCase(host, "www.");
+        var host = toURL().getHost();
+        var newHost = StringUtils.removeStartIgnoreCase(host, "www.");
         url = StringUtils.replaceOnce(url, host, newHost);
         return this;
     }
@@ -796,7 +795,7 @@ public class URLNormalizer implements Serializable {
      * @return this instance
      */
     public URLNormalizer addWWW() {
-        String host = toURL().getHost();
+        var host = toURL().getHost();
         if (!host.toLowerCase().startsWith("www.")) {
             url = StringUtils.replaceOnce(url, host, "www." + host);
         }
@@ -814,21 +813,19 @@ public class URLNormalizer implements Serializable {
             return this;
         }
         // It does, so proceed
-        TreeBag<String> keyValues = new TreeBag<>();
-        String queryString = StringUtils.substringAfter(url, "?");
+        var keyValues = new TreeBag<String>();
+        var queryString = StringUtils.substringAfter(url, "?");
 
         // extract and remove any fragments
-        String fragment = StringUtils.substringAfter(queryString, "#");
+        var fragment = StringUtils.substringAfter(queryString, "#");
         if (StringUtils.isNotBlank(fragment)) {
             fragment = "#" + fragment;
         }
         queryString = StringUtils.substringBefore(queryString, "#");
 
-        String[] params = StringUtils.split(queryString, '&');
-        for (String param : params) {
-            keyValues.add(param);
-        }
-        String sortedQueryString = StringUtils.join(keyValues, '&');
+        var params = StringUtils.split(queryString, '&');
+        Collections.addAll(keyValues, params);
+        var sortedQueryString = StringUtils.join(keyValues, '&');
         if (StringUtils.isNotBlank(sortedQueryString)) {
             url = StringUtils.substringBefore(
                     url, "?") + "?" + sortedQueryString + fragment;
@@ -849,8 +846,8 @@ public class URLNormalizer implements Serializable {
         }
         // It does, so proceed
         List<String> keyValues = new ArrayList<>();
-        String queryString = StringUtils.substringAfter(url, "?");
-        String[] params = StringUtils.split(queryString, '&');
+        var queryString = StringUtils.substringAfter(url, "?");
+        var params = StringUtils.split(queryString, '&');
         for (String param : params) {
             if (param.contains("=")
                     && StringUtils.isNotBlank(
@@ -860,7 +857,7 @@ public class URLNormalizer implements Serializable {
                 keyValues.add(param);
             }
         }
-        String cleanQueryString = StringUtils.join(keyValues, '&');
+        var cleanQueryString = StringUtils.join(keyValues, '&');
         if (StringUtils.isNotBlank(cleanQueryString)) {
             url = StringUtils.substringBefore(
                     url, "?") + "?" + cleanQueryString;
@@ -893,8 +890,8 @@ public class URLNormalizer implements Serializable {
             url = url.replaceFirst(
                     "(;jsessionid=([A-F0-9]+)((\\.\\w+)*))", "");
         } else {
-            String u = StringUtils.substringBefore(url, "?");
-            String q = StringUtils.substringAfter(url, "?");
+            var u = StringUtils.substringBefore(url, "?");
+            var q = StringUtils.substringAfter(url, "?");
             if (StringUtils.containsIgnoreCase(url, "PHPSESSID=")) {
                 q = q.replaceFirst("(&|^)(PHPSESSID=[0-9a-zA-Z]*)", "");
             } else if (StringUtils.containsIgnoreCase(url, "ASPSESSIONID")) {
