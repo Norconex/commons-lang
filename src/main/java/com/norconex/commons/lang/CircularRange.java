@@ -207,9 +207,9 @@ public final class CircularRange<T> implements Serializable {
      */
     @JsonCreator
     public static <T extends Comparable<T>> CircularRange<T> between(
-            @JsonProperty("circleStart")
+            @JsonProperty("start")
             final T circleStartInclusive,
-            @JsonProperty("circleEnd")
+            @JsonProperty("end")
             final T circleEndInclusive,
             @JsonProperty("minimum")
             final T rangeFromInclusive,
@@ -313,7 +313,7 @@ public final class CircularRange<T> implements Serializable {
      * <p>Gets the start value of this circular range.</p>
      * @return the start value of this circular range, not null
      */
-    @JsonProperty("circleStart")
+    @JsonProperty("start")
     public T getCircleStart() {
         return circleStart;
     }
@@ -321,7 +321,7 @@ public final class CircularRange<T> implements Serializable {
      * <p>Gets the end value of this circular range.</p>
      * @return the end value of this circular range, not null
      */
-    @JsonProperty("circleEnd")
+    @JsonProperty("end")
     public T getCircleEnd() {
         return circleEnd;
     }
