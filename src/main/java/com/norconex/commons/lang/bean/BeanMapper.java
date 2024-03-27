@@ -240,6 +240,13 @@ public class BeanMapper { //NOSONAR
     @Singular
     private Map<String, Class<?>> unboundPropertyMappings;
 
+    /**
+     * Optionally register default concrete implementations for polymorphic
+     * type/interface. The default is used when no type id is defined.
+     * (i.e., "class").
+     */
+    @Singular
+    private Map<Class<?>, Class<?>> defaultPolymorphicTypes;
 
     /**
      * Optionally setup support for using flow/conditions in your
@@ -557,10 +564,37 @@ public class BeanMapper { //NOSONAR
             }
             Class<?> cls = beanMapper.unboundPropertyMappings.get(propertyName);
             if (cls != null) {
-                p.setCurrentValue(ClassUtil.newInstance(cls));
+                p.assignCurrentValue(ClassUtil.newInstance(cls));
                 return true;
             }
             return false;
+        }
+
+        @Override
+        public JavaType handleMissingTypeId(
+                DeserializationContext ctxt,
+                JavaType baseType,
+                TypeIdResolver idResolver,
+                String failureMsg) throws IOException {
+
+            var defaultType = beanMapper.defaultPolymorphicTypes.get(
+                    baseType.getRawClass());
+
+            // No default exists, let super handle it.
+            if (defaultType == null) {
+                return super.handleMissingTypeId(
+                        ctxt, baseType, idResolver, failureMsg);
+            }
+
+            // Default exists, return it.
+            var type = TypeFactory.defaultInstance()
+                    .constructType(defaultType);
+            if (type.isTypeOrSubTypeOf(baseType.getRawClass())) {
+                return type;
+            }
+            throw new BeanException(
+                    "Default polymorphic type %s not a subtype of %s."
+                        .formatted(type.getTypeName(), baseType.getTypeName()));
         }
 
         @Override
