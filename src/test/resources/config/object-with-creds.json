@@ -1,0 +1,7 @@
+{
+  "credentials": {
+    "class": "com.norconex.commons.lang.security.Credentials",
+    "username": "joe",
+    "password": "whatever"
+  }
+}
