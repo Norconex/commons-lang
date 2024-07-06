@@ -15,7 +15,6 @@
 package com.norconex.commons.lang.bean.module;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.apache.commons.lang3.StringUtils.removeEnd;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -34,6 +33,7 @@ import com.fasterxml.jackson.databind.deser.ResolvableDeserializer;
 import com.fasterxml.jackson.databind.ser.ContextualSerializer;
 import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
 import com.fasterxml.jackson.dataformat.xml.ser.XmlSerializerProvider;
+import com.norconex.commons.lang.text.StringUtil;
 
 import lombok.RequiredArgsConstructor;
 
@@ -46,6 +46,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class JsonXmlCollectionSerializer<T extends Collection<?>> extends JsonSerializer<T>
         implements ContextualSerializer, ResolvableDeserializer {
+
+    public static final String DEFAULT_INNER_NAME = "entry";
 
     private BeanProperty currentProperty;
     private final JsonSerializer<?> defaultSerializer;
@@ -117,24 +119,9 @@ public class JsonXmlCollectionSerializer<T extends Collection<?>> extends JsonSe
             innerName = annot.entryName();
         }
         if (isBlank(innerName)) {
-            innerName = singularOrElse(outterName, "entry");
+            innerName = StringUtil.singularOrElse(
+                    outterName, DEFAULT_INNER_NAME);
         }
         return innerName;
-    }
-
-    private String singularOrElse(String plural, String def) {
-        String singular;
-        if (plural.endsWith("sses")) {
-            singular = removeEnd(plural, "es");
-        } else if (plural.endsWith("ies")) {
-            singular =  removeEnd(plural, "ies") + "y";
-        } else if (plural.endsWith("oes")) {
-            singular =  removeEnd(plural, "es");
-        } else if (plural.endsWith("s") && !plural.endsWith("ss")) {
-            singular = removeEnd(plural, "s");
-        } else {
-            singular = def;
-        }
-        return singular;
     }
 }

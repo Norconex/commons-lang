@@ -43,7 +43,7 @@ public @interface JsonXmlCollection {
 
     /**
      * Field name to use for each collection element when serializing as XML.
-     * This name does not affect reading. The default behavior tries uses
+     * This name does not affect reading. The default behavior uses
      * basic heuristics to detect whether the collection property name is
      * plural and can make a singular variant of it. It it can't figure it out,
      * it falls back to "entry".  Given the plural detection logic's simplicity,
