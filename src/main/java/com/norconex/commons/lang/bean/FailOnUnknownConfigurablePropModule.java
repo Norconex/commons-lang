@@ -50,6 +50,7 @@ class FailOnUnknownConfigurablePropModule extends SimpleModule {
     }
 
     static class FailOnDeserializerModifier extends BeanDeserializerModifier {
+        private static final long serialVersionUID = 1L;
         private final BeanMapper beanMapper;
         public FailOnDeserializerModifier(BeanMapper beanMapper) {
             this.beanMapper = beanMapper;
