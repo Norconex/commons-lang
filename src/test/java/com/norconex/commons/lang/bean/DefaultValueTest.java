@@ -22,7 +22,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 
 import java.io.StringReader;
-import java.util.Collection;
 import java.util.Map;
 
 import org.junit.jupiter.params.ParameterizedTest;
@@ -224,26 +223,4 @@ class DefaultValueTest {
         assertThatNoException().isThrownBy(() ->
                 BeanMapper.DEFAULT.assertWriteRead(obj, format));
     }
-
-    static class MyObject {
-        private Collection<String> collection;
-        private String reference;
-
-        public Collection<String> getCollection() {
-            return collection;
-        }
-
-        public void setCollection(Collection<String> collection) {
-            this.collection = collection;
-        }
-
-        public String getReference() {
-            return reference;
-        }
-
-        public void setReference(String reference) {
-            this.reference = reference;
-        }
-    }
-
 }
