@@ -30,6 +30,7 @@ import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.bean.BeanMapper;
 import com.norconex.commons.lang.bean.BeanMapper.Format;
+import com.norconex.commons.lang.bean.jackson.JsonXmlCollection;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -64,7 +65,7 @@ class JsonXmlCollectionTest {
         BeanMapper.DEFAULT.write(ch, out, Format.XML);
         var xml = out.toString();
 
-        assertThat(xml).contains(
+        assertThat(xml).containsIgnoringWhitespaces(
                 "<defaultEntryNames><defaultEntryName>",
                 "<specifiedEntryNames><child>",
                 "<defaultType><entry>"

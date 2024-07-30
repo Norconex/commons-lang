@@ -14,6 +14,7 @@
  */
 package com.norconex.commons.lang.bean;
 
+import static com.fasterxml.jackson.dataformat.xml.deser.FromXmlParser.Feature.EMPTY_ELEMENT_AS_NULL;
 import static java.util.Optional.ofNullable;
 
 import java.io.IOException;
@@ -39,12 +40,16 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreType;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonSetter.Value;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import com.fasterxml.jackson.annotation.Nulls;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonParser.Feature;
+import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
@@ -66,8 +71,9 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import com.norconex.commons.lang.ClassFinder;
 import com.norconex.commons.lang.ClassUtil;
-import com.norconex.commons.lang.bean.module.JsonXmlCollectionModule;
-import com.norconex.commons.lang.bean.module.JsonXmlPropertiesDeserializer;
+import com.norconex.commons.lang.bean.jackson.EmptyWithClosingTagXmlFactory;
+import com.norconex.commons.lang.bean.jackson.JsonXmlCollectionModule;
+import com.norconex.commons.lang.bean.jackson.JsonXmlPropertiesDeserializer;
 import com.norconex.commons.lang.bean.spi.PolymorphicTypeLoader;
 import com.norconex.commons.lang.bean.spi.PolymorphicTypeProvider;
 import com.norconex.commons.lang.config.Configurable;
@@ -146,9 +152,11 @@ public class BeanMapper { //NOSONAR
     @RequiredArgsConstructor
     public enum Format {
         XML(
-                XmlMapper::builder,
+                () -> XmlMapper.builder(new EmptyWithClosingTagXmlFactory()),
                 b -> {
+                    ((XmlMapper.Builder) b).defaultUseWrapper(false);
                     var m = (XmlMapper) b.build();
+                    m.enable(EMPTY_ELEMENT_AS_NULL);
                     m.getFactory()
                         .getXMLOutputFactory()
                         .setProperty(XMLOutputFactory.IS_REPAIRING_NAMESPACES,
@@ -169,8 +177,6 @@ public class BeanMapper { //NOSONAR
         final Supplier<MapperBuilder<?, ?>> builder;
         final Function<MapperBuilder<?, ?>, ObjectMapper> mapper;
     }
-
-
 
     /**
      * A build mapper initialized with default settings.
@@ -264,10 +270,10 @@ public class BeanMapper { //NOSONAR
 
     // We are caching them on first use
     private final Map<Format, ObjectMapper> cache = new ConcurrentHashMap<>(3);
+
     // We keep a copy of registered polymorphic type as they are otherwise
     // difficult to obtain from the ObjectMapper and we may need them in
     // different context (e.g., registration in OpenApi).
-
     private final MultiValuedMap<Class<?>, Class<?>>
         resolvedPolymorphicTypes = MultiMapUtils.newListValuedHashMap();
     private final MutableBoolean polyTypesResolved = new MutableBoolean();
@@ -390,10 +396,22 @@ public class BeanMapper { //NOSONAR
             builder.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS);
             builder.addHandler(new BeanMapperPropertyHandler(this));
 
-            // modules:
+            // How to handle null or not provided:
+            builder.enable(Feature.ALLOW_COMMENTS);
+            builder.enable(Feature.ALLOW_YAML_COMMENTS);
+            if (LOG.isDebugEnabled()) {
+                builder.enable(Feature.INCLUDE_SOURCE_IN_LOCATION);
+            }
+            builder.configure(JsonReadFeature.ALLOW_UNQUOTED_FIELD_NAMES
+                    .mappedFeature(), true);
+            builder.configure(JsonReadFeature.ALLOW_TRAILING_COMMA
+                    .mappedFeature(), true);
+
+            // other modules:
             builder.addModule(new ParameterNamesModule());
             builder.addModule(new Jdk8Module());
             builder.addModule(new JavaTimeModule());
+
             // Nx modules and mix-ins
             builder.addModule(new GenericJsonModule());
             if (!configurableDetectionDisabled) {
@@ -407,11 +425,6 @@ public class BeanMapper { //NOSONAR
                 builder.addModule(
                         new FailOnUnknownConfigurablePropModule(this));
             }
-
-            if (format == Format.XML) {
-                builder.addModule(new JsonXmlCollectionModule());
-            }
-
             var mapper = format.mapper.apply(builder);
 
             // read:
@@ -429,13 +442,32 @@ public class BeanMapper { //NOSONAR
             // write:
             mapper.configure(SerializationFeature.INDENT_OUTPUT, indent);
             mapper.disable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
-            mapper.setSerializationInclusion(Include.NON_DEFAULT);
+
+            // START TEST
+            mapper.setDefaultSetterInfo(
+                    Value
+                    .empty()
+                    .withValueNulls(Nulls.SET) // value
+                    .withContentNulls(Nulls.SET));  // collection entry value
 
             // register polymorphic types:
             registerPolymorphicTypes(mapper);
 
+            if (format == Format.XML) {
+                mapper.registerModule(new JsonXmlCollectionModule());
+            }
+
+            mapper.addMixIn(Object.class, NonDefaultInclusionMixIn.class);
+
             return mapper;
         });
+    }
+
+    //NOTE: we need to set NON_DEFAULT here since setting it globally
+    // assumes "default" is the property type default, not the object
+    // initialization of those properties.
+    @JsonInclude(value = Include.NON_DEFAULT)
+    abstract static class NonDefaultInclusionMixIn {
     }
 
     @JsonIgnoreType

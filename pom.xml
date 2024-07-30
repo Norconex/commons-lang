@@ -146,7 +146,6 @@
       <version>${xpath2.version}</version>
     </dependency>
 
-
     <dependency>
       <groupId>jakarta.xml.bind</groupId>
       <artifactId>jakarta.xml.bind-api</artifactId>
@@ -361,6 +360,7 @@
            apache-camel-maven-remote-resources-plugin-goal-process-is-
            ignored-by-m2e
         -->
+        <!--
       <plugin>
         <groupId>org.eclipse.m2e</groupId>
         <artifactId>lifecycle-mapping</artifactId>
@@ -386,6 +386,7 @@
           </lifecycleMappingMetadata>
         </configuration>
       </plugin>
+      -->
 
       <plugin>
         <groupId>org.jacoco</groupId>
