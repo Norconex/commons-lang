@@ -43,7 +43,7 @@
     <jakarta-el-api.version>5.0.1</jakarta-el-api.version>
     <java-cup.version>10k</java-cup.version>
     <json.version>1.8</json.version>
-    <jackson.version>2.17.0</jackson.version>
+    <jackson.version>2.17.1</jackson.version>
     <log4j.version>2.20.0</log4j.version>
     <okhttp3.version>4.10.0</okhttp3.version>
     <slf4j.version>2.0.9</slf4j.version>
