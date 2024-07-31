@@ -59,6 +59,12 @@ public class JsonXmlCollectionSerializer<T extends Collection<?>>
     private BeanProperty currentProperty;
     private final JsonSerializer<?> defaultSerializer;
 
+    //NOTE: default empty constructor required for unit test
+    JsonXmlCollectionSerializer() {
+        defaultSerializer = null;
+    }
+
+
     @Override
     public JsonSerializer<?> createContextual(
             SerializerProvider prov, BeanProperty property)
