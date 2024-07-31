@@ -12,11 +12,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.norconex.commons.lang.bean.module;
+package com.norconex.commons.lang.bean.jackson;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 
+import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,6 +29,11 @@ import java.util.Set;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.core.exc.StreamWriteException;
+import com.fasterxml.jackson.databind.DatabindException;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.norconex.commons.lang.bean.BeanMapper;
 import com.norconex.commons.lang.bean.BeanMapper.Format;
 
@@ -64,11 +70,24 @@ class JsonXmlCollectionTest {
         BeanMapper.DEFAULT.write(ch, out, Format.XML);
         var xml = out.toString();
 
-        assertThat(xml).contains(
+        assertThat(xml).containsIgnoringWhitespaces(
                 "<defaultEntryNames><defaultEntryName>",
                 "<specifiedEntryNames><child>",
                 "<defaultType><entry>"
         );
+    }
+
+    @Test
+    void testNullCollection()
+            throws StreamWriteException, DatabindException, IOException {
+        assertThatNoException().isThrownBy(() -> {
+            var out = new StringWriter();
+            var obj = new ObjectWithNullList();
+            obj.nullList = null;
+            BeanMapper.DEFAULT.write(obj, out, Format.XML);
+            BeanMapper.DEFAULT.write(obj, out, Format.JSON);
+            BeanMapper.DEFAULT.write(obj, out, Format.YAML);
+        });
     }
 
     @Data
@@ -94,4 +113,10 @@ class JsonXmlCollectionTest {
         private int propc;
     }
 
+    @Data
+    @JsonInclude(value = Include.ALWAYS, content = Include.ALWAYS)
+    static class ObjectWithNullList {
+        @JsonSerialize(nullsUsing = JsonXmlCollectionSerializer.class)
+        private List<String> nullList = null;
+    }
 }

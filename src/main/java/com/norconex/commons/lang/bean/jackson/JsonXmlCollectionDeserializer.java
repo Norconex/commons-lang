@@ -12,15 +12,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.norconex.commons.lang.bean.module;
+package com.norconex.commons.lang.bean.jackson;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-
-import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
@@ -77,40 +75,41 @@ public class JsonXmlCollectionDeserializer <T extends Collection<?>>
             JsonParser p, DeserializationContext ctx) throws IOException {
 
         var isXml = ctx instanceof XmlDeserializationContext;
-        var enderToken = isXml ? JsonToken.END_OBJECT : JsonToken.END_ARRAY;
-
+        var contentClass = currentProperty.getType().getContentType().getRawClass();
         var objects = createCollection();
 
-        if (p.nextToken() == enderToken) { // <outer>
-            // Self-closed or empty tag, so we treat it as an instruction
-            // to blanking the list so we return it empty.
-            return (T) objects;
+        // For XML, we move the cursor to first child value (i.e., unwrap).
+        if (isXml) {           // START_OBJECT (outer)
+            p.nextToken();     // FIELD_NAME (outer)
+            if (p.nextToken()  // START_OBJECT or VALUE_NULL (inner)
+                    == JsonToken.VALUE_NULL) {
+                // Self-closed tag which is interpreted as null.
+                p.nextToken(); // END_OBJECT (inner)
+                return null;
+            }
         }
 
-        do {
-            // For XML, each collection entries are made of a field name
-            // followed by either an object or a scalar.
+        var hasChild = false;
+        while (p.nextToken()
+                != JsonToken.END_OBJECT) { // FIELD_NAME or END_OBJECT (inner)
+            p.nextToken(); //  move to value (object, scalar, etc.)
+            var value = p.readValueAs(contentClass);
+            objects.add(value);
+            hasChild = true;
+        }
 
-            if (isXml) {
-                p.nextToken();  // <inner>  (field name)
-            }
-            // for some reason, empty tags come up as empty string
-            // We check here to prevent reading a null entry, which may generate
-            // the instantiation of an object with nothing set on it.
-            if (StringUtils.isNotBlank(p.getText())) {
-                var value = p.readValueAs(currentProperty.getType()
-                        .getContentType().getRawClass());
-                if (!(value instanceof String v) || !StringUtils.isBlank(v)) {
-                    objects.add(value);
-                }
-            }
-        } while (p.nextToken() != enderToken);
+        if (isXml && hasChild) {
+            // if there were no children, the outer END_OBJECT has already
+            // been called at this point.
+            p.nextToken();  // END_OBJECT (outer)
+        }
+
         return  (T) objects;
     }
 
     @SuppressWarnings("unchecked")
     private Collection<Object> createCollection() {
-        // Priority:
+        // Type resolution priority:
         // - specified on annotation
         // - actual type detected and instantiable
         // - HashSet if a Set

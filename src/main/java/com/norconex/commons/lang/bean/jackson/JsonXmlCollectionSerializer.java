@@ -1,4 +1,4 @@
-/* Copyright 2023 Norconex Inc.
+/* Copyright 2023-2024 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.norconex.commons.lang.bean.module;
+package com.norconex.commons.lang.bean.jackson;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -20,8 +20,6 @@ import java.io.IOException;
 import java.util.Collection;
 
 import javax.xml.namespace.QName;
-
-import org.apache.commons.collections4.CollectionUtils;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.BeanProperty;
@@ -36,21 +34,36 @@ import com.fasterxml.jackson.dataformat.xml.ser.XmlSerializerProvider;
 import com.norconex.commons.lang.text.StringUtil;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
- * Collection serializer.
+ * Collection serializer. Because it needs to handle the serialization
+ * of null/empty differently, it needs to control the wrapper elements.
+ * This mean for this seralizer to work properly, make sure to set
+ * {@link
+ * com.fasterxml.jackson.dataformat.xml.XmlMapper.Builder#defaultUseWrapper(
+ * boolean)}
+ * to <code>false</code>.
  * @param <T> Collection type to be serialized
  * @see JsonXmlCollection
  * @since 3.0.0
  */
 @RequiredArgsConstructor
-public class JsonXmlCollectionSerializer<T extends Collection<?>> extends JsonSerializer<T>
+@Slf4j
+public class JsonXmlCollectionSerializer<T extends Collection<?>>
+        extends JsonSerializer<T>
         implements ContextualSerializer, ResolvableDeserializer {
 
     public static final String DEFAULT_INNER_NAME = "entry";
 
     private BeanProperty currentProperty;
     private final JsonSerializer<?> defaultSerializer;
+
+    //NOTE: default empty constructor required for unit test
+    JsonXmlCollectionSerializer() {
+        defaultSerializer = null;
+    }
+
 
     @Override
     public JsonSerializer<?> createContextual(
@@ -79,33 +92,55 @@ public class JsonXmlCollectionSerializer<T extends Collection<?>> extends JsonSe
     public void serialize(
             T objects,
             JsonGenerator gen,
-            SerializerProvider sp) throws IOException {
+            SerializerProvider serializers) throws IOException {
 
-        var innerName = innerName();
-        ((ToXmlGenerator) gen).setNextName(QName.valueOf(innerName));
-
-
-
-        if (CollectionUtils.isEmpty(objects)) {
-            ((ToXmlGenerator) gen).writeNull();
-            return;
-        }
+        LOG.debug("Serializing collection: {}", objects);
 
         var isXml = gen instanceof ToXmlGenerator;
+
         if (isXml) {
-            var first = true;
-            for (Object object : objects) {
-                // Not sure why, but first field name is already written for us.
-                if (!first) {
-                    gen.writeFieldName(innerName);
-                }
-                gen.writeObject(object);
-                first = false;
+            var xmlGen = (ToXmlGenerator) gen;
+            if (objects == null) {
+                // Ensure a self-closing wrapper tag is used for null.
+                LOG.debug("Null collection, writing self-closing tag.");
+                xmlGen.writeStartObject();
+                xmlGen.writeEndObject();
+                return;
             }
+
+            if (objects.isEmpty()) {
+                // Ensure no self-closing wrapper tag and no empty entry
+                // tag are written.
+                LOG.debug("Empty collection, writing empty tags.");
+                xmlGen.writeStartObject();
+                xmlGen.writeRaw("");
+                xmlGen.writeEndObject();
+                return;
+            }
+
+            var innerName = innerName();
+            LOG.debug("Using inner name: {}", innerName);
+
+            xmlGen.writeStartObject();
+            xmlGen.setNextName(new QName(innerName));
+            for (Object object : objects) {
+                LOG.debug("Serializing collection object: {}", object);
+                xmlGen.writeFieldName(innerName);
+                if (object == null) {
+                    serializers.defaultSerializeNull(xmlGen);
+                } else {
+                    serializers.defaultSerializeValue(object, xmlGen);
+                }
+            }
+            xmlGen.writeEndObject();
         } else {
+            if (objects == null) {
+                gen.writeNull();
+                return;
+            }
             gen.writeStartArray();
             for (Object object : objects) {
-                gen.writeObject(object);
+                serializers.defaultSerializeValue(object, gen);
             }
             gen.writeEndArray();
         }

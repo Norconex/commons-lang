@@ -36,18 +36,22 @@
      
     <commons-collections4.version>4.4</commons-collections4.version>
     <commons-io.version>2.13.0</commons-io.version>
-    <commons-lang3.version>3.12.0</commons-lang3.version>
+    <commons-lang3.version>3.13.0</commons-lang3.version>
     <commons-text.version>1.10.0</commons-text.version>
+    <hibernate.version>8.0.1.Final</hibernate.version>
+    <imgscalr-lib.version>4.2</imgscalr-lib.version>
+    <jakarta-el-api.version>5.0.1</jakarta-el-api.version>
     <java-cup.version>10k</java-cup.version>
     <json.version>1.8</json.version>
     <jackson.version>2.17.0</jackson.version>
     <log4j.version>2.20.0</log4j.version>
     <okhttp3.version>4.10.0</okhttp3.version>
-    <slf4j.version>2.0.7</slf4j.version>
+    <slf4j.version>2.0.9</slf4j.version>
     <sun-jaxb-impl.version>4.0.3</sun-jaxb-impl.version>
+    <tomcat-embed-el.version>10.1.13</tomcat-embed-el.version>
     <velocity-engine.version>2.3</velocity-engine.version>
     <xerces.version>2.12.2</xerces.version>
-    <xml-bind-api.version>4.0.0</xml-bind-api.version>
+    <xml-bind-api.version>4.0.1</xml-bind-api.version>
     <xpath2.version>2.1.100</xpath2.version>
 
     <!-- Test dependencies -->
@@ -117,7 +121,7 @@
     <dependency>
       <groupId>org.imgscalr</groupId>
       <artifactId>imgscalr-lib</artifactId>
-      <version>4.2</version>
+      <version>${imgscalr-lib.version}</version>
     </dependency>
 
     <!-- For XSD 1.1 support until Apache releases their Xerces version
@@ -145,7 +149,6 @@
       <artifactId>org.eclipse.wst.xml.xpath2.processor</artifactId>
       <version>${xpath2.version}</version>
     </dependency>
-
 
     <dependency>
       <groupId>jakarta.xml.bind</groupId>
@@ -252,18 +255,18 @@
     <dependency>
       <groupId>org.hibernate.validator</groupId>
       <artifactId>hibernate-validator</artifactId>    
-      <version>8.0.1.Final</version>
+      <version>${hibernate.version}</version>
     </dependency>
     <dependency>
       <groupId>jakarta.el</groupId>
       <artifactId>jakarta.el-api</artifactId>
-      <version>5.0.1</version>
+      <version>${jakarta-el-api.version}</version>
       <!-- <scope>test</scope>-->
     </dependency>
     <dependency>
       <groupId>org.apache.tomcat.embed</groupId>
       <artifactId>tomcat-embed-el</artifactId>
-      <version>10.1.12</version>    
+      <version>${tomcat-embed-el.version}</version>    
       <!-- <scope>test</scope> -->
     </dependency>
 
@@ -361,6 +364,7 @@
            apache-camel-maven-remote-resources-plugin-goal-process-is-
            ignored-by-m2e
         -->
+        <!--
       <plugin>
         <groupId>org.eclipse.m2e</groupId>
         <artifactId>lifecycle-mapping</artifactId>
@@ -386,6 +390,7 @@
           </lifecycleMappingMetadata>
         </configuration>
       </plugin>
+      -->
 
       <plugin>
         <groupId>org.jacoco</groupId>

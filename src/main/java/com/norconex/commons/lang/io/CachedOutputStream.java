@@ -175,7 +175,7 @@ public class CachedOutputStream extends OutputStream implements CachedStream {
             memOutputStream.close();
             memOutputStream = null;
             is = factory.newInputStream(memCache); //NOSONAR
-        } 
+        }
         dispose();
         return is;
     }
@@ -281,8 +281,8 @@ public class CachedOutputStream extends OutputStream implements CachedStream {
         fileCache.toFile().deleteOnExit();
         LOG.debug("Reached max cache size. Swapping to file: {}", fileCache);
         // RAF is closed with this stream
-        var f =
-                new RandomAccessFile(fileCache.toFile(), "rw"); //NOSONAR
+        @SuppressWarnings("resource")
+        var f = new RandomAccessFile(fileCache.toFile(), "rw"); //NOSONAR
         var channel = f.getChannel();
         fileOutputStream = Channels.newOutputStream(channel);
 
