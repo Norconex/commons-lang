@@ -14,10 +14,11 @@
  */
 package com.norconex.commons.lang.text;
 
+import static org.apache.commons.lang3.StringUtils.removeEnd;
+
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
 import java.util.function.Consumer;
@@ -99,17 +100,17 @@ public final class StringUtil {
             return text;
         }
 
-        int separatorLength = separator == null ? 0 : separator.length();
-        int roomLength = TRUNCATE_HASH_LENGTH + separatorLength;
+        var separatorLength = separator == null ? 0 : separator.length();
+        var roomLength = TRUNCATE_HASH_LENGTH + separatorLength;
 
         if (maxLength < roomLength) {
             LOG.warn("\"maxLength\" is smaller than hash length ({}) "
                     + "+ separator length ({}). No truncation will occur.",
                     TRUNCATE_HASH_LENGTH, separatorLength);
         }
-        int cutIndex = maxLength - roomLength;
-        String truncated = StringUtils.left(text, cutIndex);
-        String remainer = StringUtils.substring(text, cutIndex);
+        var cutIndex = maxLength - roomLength;
+        var truncated = StringUtils.left(text, cutIndex);
+        var remainer = StringUtils.substring(text, cutIndex);
         if (separator != null) {
             truncated += separator;
         }
@@ -225,16 +226,16 @@ public final class StringUtil {
             return bytes;
         }
 
-        Charset nullSafeCharset = charset;
+        var nullSafeCharset = charset;
         if (nullSafeCharset == null) {
             nullSafeCharset = StandardCharsets.UTF_8;
         }
 
-        int separatorLength = separator == null
+        var separatorLength = separator == null
                 ? 0 : separator.getBytes(nullSafeCharset).length;
-        int hashLength = StringUtils.repeat(
+        var hashLength = StringUtils.repeat(
                 '0', TRUNCATE_HASH_LENGTH).getBytes(nullSafeCharset).length;
-        int roomLength = hashLength + separatorLength;
+        var roomLength = hashLength + separatorLength;
 
         if (maxByteLength < roomLength) {
             LOG.warn("\"maxLength\" is smaller in bytes than hash length ({}) "
@@ -242,15 +243,15 @@ public final class StringUtil {
                     hashLength, separatorLength);
         }
 
-        int cutIndex = maxByteLength - roomLength;
-        final CharsetDecoder decoder = nullSafeCharset.newDecoder();
+        var cutIndex = maxByteLength - roomLength;
+        final var decoder = nullSafeCharset.newDecoder();
         decoder.onMalformedInput(CodingErrorAction.IGNORE);
         decoder.reset();
 
-        String fullString = new String(bytes, nullSafeCharset);
-        String truncated =
+        var fullString = new String(bytes, nullSafeCharset);
+        var truncated =
                 decoder.decode(ByteBuffer.wrap(bytes, 0, cutIndex)).toString();
-        String remainer = StringUtils.substring(fullString, truncated.length());
+        var remainer = StringUtils.substring(fullString, truncated.length());
         if (separator != null) {
             truncated += separator;
         }
@@ -278,10 +279,10 @@ public final class StringUtil {
             return null;
         }
         // Logic from String#trim()
-        char[] value = str.toCharArray();
-        int len = value.length;
-        int st = 0;
-        char[] val = value;
+        var value = str.toCharArray();
+        var len = value.length;
+        var st = 0;
+        var val = value;
         while ((st < len) && (val[len - 1] <= ' ')) {
             len--;
         }
@@ -298,10 +299,10 @@ public final class StringUtil {
             return null;
         }
         // Logic from String#trim()
-        char[] value = str.toCharArray();
-        int len = value.length;
-        int st = 0;
-        char[] val = value;
+        var value = str.toCharArray();
+        var len = value.length;
+        var st = 0;
+        var val = value;
         while ((st < len) && (val[st] <= ' ')) {
             st++;
         }
@@ -334,9 +335,9 @@ public final class StringUtil {
         if (str == null || sub == null || sub.length() > str.length()) {
             return 0;
         }
-        int len = sub.length();
-        int st = 0;
-        int cnt = 0;
+        var len = sub.length();
+        var st = 0;
+        var cnt = 0;
         while (st + len <= str.length()) {
             if (!str.startsWith(sub, st)) {
                 break;
@@ -345,5 +346,47 @@ public final class StringUtil {
             st += len;
         }
         return cnt;
+    }
+
+    /**
+     * Converts an English plural word to singular one using very simple
+     * heuristics. Returns <code>null</code> if the plural word is
+     * <code>null</code>. Else, returns the word unchanged if it cannot find a
+     * singular variant. You are encouraged to used a more sophisticated
+     * approach if accuracy is important.
+     * @param plural plural word
+     * @return singular word
+     * @since 3.0.0
+     */
+    public static String singular(String plural) {
+        return singularOrElse(plural, plural);
+    }
+    /**
+     * Converts an English plural word to singular one using very simple
+     * heuristics. Returns <code>null</code> if the plural word is
+     * <code>null</code>. Else, returns the default value if it cannot find a
+     * singular variant. You are encouraged to used a more sophisticated
+     * approach if accuracy is important.
+     * @param plural plural word
+     * @return singular word or <code>null</code>
+     * @since 3.0.0
+     */
+    public static String singularOrElse(String plural, String defaultValue) {
+        if (plural == null) {
+            return null;
+        }
+        String singular;
+        if (plural.endsWith("sses")) {
+            singular = removeEnd(plural, "es");
+        } else if (plural.endsWith("ies")) {
+            singular =  removeEnd(plural, "ies") + "y";
+        } else if (plural.endsWith("oes")) {
+            singular =  removeEnd(plural, "es");
+        } else if (plural.endsWith("s") && !plural.endsWith("ss")) {
+            singular = removeEnd(plural, "s");
+        } else {
+            singular = defaultValue;
+        }
+        return singular;
     }
 }

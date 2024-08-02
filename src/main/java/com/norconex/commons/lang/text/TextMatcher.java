@@ -15,6 +15,7 @@
 package com.norconex.commons.lang.text;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.BinaryOperator;
 import java.util.function.Predicate;
@@ -22,7 +23,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -193,6 +197,7 @@ public class TextMatcher implements
     private boolean partial;
     private boolean trim;
     private boolean matchEmpty;
+    private boolean negateMatches;
 
     /**
      * Creates a basic matcher.
@@ -313,6 +318,60 @@ public class TextMatcher implements
     }
 
     /**
+     * Whether to negates the result of invoking {@link #matches(CharSequence)}.
+     * <b>Note: only applies to the {@link #matches(CharSequence)} method.</b>
+     * @return <code>true</code> if negating matches.
+     * @since 3.0.0
+     */
+    public boolean isNegateMatches() {
+        return negateMatches;
+    }
+    /**
+     * Sets whether to negates the result of invoking
+     * {@link #matches(CharSequence)}.
+     * <b>Note: only applies to the {@link #matches(CharSequence)} method.</b>
+     * @parm negateMatches <code>true</code> to negate matches
+     * @return this
+     * @since 3.0.0
+     */
+    public TextMatcher setNegateMatches(boolean negateMatches) {
+        this.negateMatches = negateMatches;
+        return this;
+    }
+    /**
+     * Sets the negation of the result of invoking
+     * {@link #matches(CharSequence)} to <code>true</code>.
+     * Same as invoking {@link #setNegateMatches(boolean)} with
+     * <code>true</code>.
+     * <b>Note: only applies to the {@link #matches(CharSequence)} method.</b>
+     * @return this
+     * @since 3.0.0
+     */
+    public TextMatcher negateMatches() {
+        return setNegateMatches(true);
+    }
+    /**
+     * Sets whether to negates the result of invoking
+     * {@link #matches(CharSequence)} on a copy of this instance.
+     * <b>Note: only applies to the {@link #matches(CharSequence)} method.</b>
+     * @return this
+     * @since 3.0.0
+     */
+    public TextMatcher withNegateMatches(boolean negateMatches) {
+        return copy().setNegateMatches(negateMatches);
+    }
+
+    /**
+     * Checks whether this text matcher was given a pattern.
+     * @return <code>true</code> if a pattern is set (i.e.,
+     *     not <code>null</code>).
+     */
+    @JsonIgnore
+    public boolean isSet() {
+        return pattern != null;
+    }
+
+    /**
      * Gets whether <code>null</code> or empty strings should be considered a
      * positive match.
      * @return <code>true</code> if <code>null</code> and empty strings
@@ -409,6 +468,7 @@ public class TextMatcher implements
             tm.partial = partial;
             tm.trim = trim;
             tm.matchEmpty = matchEmpty;
+            tm.negateMatches = negateMatches;
         }
     }
     public void copyFrom(TextMatcher tm) {
@@ -421,6 +481,7 @@ public class TextMatcher implements
             partial = tm.partial;
             trim = tm.trim;
             matchEmpty = tm.matchEmpty;
+            negateMatches = tm.negateMatches;
         }
     }
 
@@ -493,7 +554,11 @@ public class TextMatcher implements
             return true;
         }
         var m = toRegexMatcher(text);
-        return partial ? m.find() : m.matches();
+        var matches = partial ? m.find() : m.matches();
+        if (negateMatches) {
+            matches = !matches;
+        }
+        return matches;
     }
 
     /**
@@ -560,6 +625,43 @@ public class TextMatcher implements
                 .setTrim(trim)
                 .setMatchEmpty(matchEmpty)
                 .compile();
+    }
+
+    /**
+     * Tests that at least one matcher matches the provided text, treating
+     * an empty or <code>null</code> list as a match
+     * (returning <code>true</code>).
+     * @param matchers matchers to test against supplied text
+     * @param text the text being tested
+     * @return <code>true</code> if an empty list or at least one matcher
+     *     matches the text
+     * @since 3.0.0
+     */
+    public static boolean anyMatchesOrEmpty(
+            List<TextMatcher> matchers, CharSequence text) {
+        if (CollectionUtils.isEmpty(matchers)) {
+            return true;
+        }
+        return matchers
+                .stream()
+                .anyMatch(m -> m.matches(text));
+    }
+
+    /**
+     * Tests that at least one matcher matches the provided text.
+     * If matchers is empty or <code>null</code>, it is considered not to
+     * match (returns <code>false</code>).
+     * @param matchers matchers to test against supplied text
+     * @param text the text being tested
+     * @return <code>true</code> if at least one matcher matches the text
+     * @since 3.0.0
+     */
+    public static boolean anyMatches(
+            List<TextMatcher> matchers, CharSequence text) {
+        if (matchers.isEmpty()) {
+            return false;
+        }
+        return anyMatchesOrEmpty(matchers, text);
     }
 
     private Method safeMethod() {

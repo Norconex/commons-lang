@@ -1,4 +1,4 @@
-/* Copyright 2023 Norconex Inc.
+/* Copyright 2023-2024 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.norconex.commons.lang.bean.module;
+package com.norconex.commons.lang.bean.jackson;
 
 import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.DeserializationConfig;
@@ -23,10 +23,13 @@ import com.fasterxml.jackson.databind.deser.BeanDeserializerModifier;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
 import com.fasterxml.jackson.databind.type.CollectionType;
+import com.norconex.commons.lang.bean.BeanMapper;
 
 /**
  * Jackson module providing (de)serializers for Collections, so they can be
  * written and read as JSON, Yaml, and XML without special hacks.
+ * Already registered in {@link BeanMapper}.
+ * @since 3.0.0
  */
 public class JsonXmlCollectionModule extends SimpleModule {
 
@@ -39,6 +42,7 @@ public class JsonXmlCollectionModule extends SimpleModule {
 
     public static class CollectionSerializerModifier
             extends BeanSerializerModifier {
+        private static final long serialVersionUID = 1L;
         @Override
         public JsonSerializer<?> modifyCollectionSerializer(
                 SerializationConfig config,
@@ -51,6 +55,7 @@ public class JsonXmlCollectionModule extends SimpleModule {
 
     public static class CollectionDeserializerModifier
             extends BeanDeserializerModifier {
+        private static final long serialVersionUID = 1L;
         @Override
         public JsonDeserializer<?> modifyCollectionDeserializer(
                 DeserializationConfig config, CollectionType type,

@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.norconex.commons.lang.bean.module;
+package com.norconex.commons.lang.bean.jackson;
 
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.TYPE;
@@ -43,7 +43,7 @@ public @interface JsonXmlCollection {
 
     /**
      * Field name to use for each collection element when serializing as XML.
-     * This name does not affect reading. The default behavior tries uses
+     * This name does not affect reading. The default behavior uses
      * basic heuristics to detect whether the collection property name is
      * plural and can make a singular variant of it. It it can't figure it out,
      * it falls back to "entry".  Given the plural detection logic's simplicity,

@@ -23,6 +23,8 @@ import java.nio.file.Path;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.norconex.commons.lang.SystemUtil;
 import com.norconex.commons.lang.security.Credentials;
@@ -40,26 +42,33 @@ class ConfigurationLoaderTest {
         configLoader = ConfigurationLoader.builder().build();
     }
 
-    @Test
-    void testLoadXMLPath() {
-        var xml = configLoader.toXml(cfgPath("xml.xml"));
-        assertThat(xml.getString("username")).isEqualTo("joe");
-        assertThat(xml.getString("password")).isEqualTo("whatever");
+    // when passing an object, should load into that object
+    @ParameterizedTest
+    @ValueSource(strings = {"xml", "json", "yaml"})
+    void testLoadToSimpleObject(String extension) throws IOException {
+        var testConfig = new TestConfig();
+        configLoader.toObject(cfgPath("object." + extension), testConfig);
+        assertThat(testConfig.getUsername()).isEqualTo("joe");
+        assertThat(testConfig.getPassword()).isEqualTo("whatever");
     }
 
-    // when explicit passing a class, should load into that class.
-    @Test
-    void testLoadFromXMLPathClass() throws IOException {
+    // when passing a class, should instantiate and load into created class.
+    @ParameterizedTest
+    @ValueSource(strings = {"xml", "json", "yaml"})
+    void testLoadToSimpleObjectFromClass(String extension)
+            throws IOException {
         var creds = configLoader.toObject(
-                cfgPath("xml.xml"), TestConfig.class);
+                cfgPath("object." + extension), TestConfig.class);
         assertThat(creds.getUsername()).isEqualTo("joe");
         assertThat(creds.getPassword()).isEqualTo("whatever");
     }
 
-    @Test
-    void testLoadWithClassAttribute() throws IOException {
+    @ParameterizedTest
+    @ValueSource(strings = {"xml", "json", "yaml"})
+    void testLoadToComplexObjectFromClass(String extension)
+            throws IOException {
         var testConfig = configLoader.toObject(
-                cfgPath("xml-with-creds.xml"),
+                cfgPath("object-with-creds." + extension),
                 TestConfigWithCreds.class);
         assertThat(testConfig.getCredentials().getUsername())
             .isEqualTo("joe");
@@ -67,16 +76,16 @@ class ConfigurationLoaderTest {
             .isEqualTo("whatever");
     }
 
+    // Loads to com.norconex.commons.lang.xml.XML
     @Test
-    void testLoadFromXMLPathObject() throws IOException {
-        var creds = new TestConfig();
-        configLoader.toObject(cfgPath("xml.xml"), creds);
-        assertThat(creds.getUsername()).isEqualTo("joe");
-        assertThat(creds.getPassword()).isEqualTo("whatever");
+    void testLoadToXml() {
+        var xml = configLoader.toXml(cfgPath("object.xml"));
+        assertThat(xml.getString("username")).isEqualTo("joe");
+        assertThat(xml.getString("password")).isEqualTo("whatever");
     }
 
     @Test
-    void testLoadString() throws Exception {
+    void testLoadToString() throws Exception {
         var loader = ConfigurationLoader.builder()
                 .variablesFile(cfgPath("string.vars.txt"))
                 .build();

@@ -69,7 +69,7 @@ public class Consumers<T> extends ArrayList<Consumer<T>>
      * @return a consumer group
      * @since 3.0.0
      */
-    @SuppressWarnings("unchecked")
+    @SafeVarargs
     public static <T> Consumers<T> of(@NonNull Consumer<T>... consumers) {
         return new Consumers<>(List.of(consumers));
     }

@@ -16,6 +16,7 @@ package com.norconex.commons.lang.map;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -46,6 +47,7 @@ import java.util.TreeSet;
 import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.EqualsUtil;
+import com.norconex.commons.lang.bean.BeanMapper;
 import com.norconex.commons.lang.config.ConfigurationLoader;
 import com.norconex.commons.lang.text.TextMatcher;
 
@@ -57,15 +59,29 @@ import lombok.extern.slf4j.Slf4j;
 class PropertiesTest {
 
     @Test
+    void testWriteRead() throws IOException {
+        var props = new Properties();
+        props.add("aaa", 111);
+        props.add("aaa", 222);
+        props.add("bbb", 333);
+        props.add("bbb", 444);
+        props.add("ccc", 555);
+
+        assertThatNoException().isThrownBy(() -> {
+            BeanMapper.DEFAULT.assertWriteRead(props);//, Format.JSON, Format.YAML);
+        });
+    }
+
+    @Test
     void testValueList() throws IOException {
-        Properties properties = sampleProps();
+        var properties = sampleProps();
         assertThat(properties.valueList()).contains(
                 "1", "2", "3", "4", "5", "6", "7", "8", "9");
     }
 
     @Test
     void testMiscGetters() throws IOException {
-        Properties props = new Properties();
+        var props = new Properties();
         props.add("bool", "1", "0", "true", "FALSE", "tRuE",
                 "yes", "nO", "On", "oFf");
         props.add("locale", "fr_CA", "es");
@@ -98,7 +114,7 @@ class PropertiesTest {
 
     @Test
     void testNumberGetters() throws IOException {
-        Properties props = new Properties();
+        var props = new Properties();
         props.add("numbers", "1", "2", "3");
 
         assertThat(props.getInteger("numbers")).isOne();
@@ -130,7 +146,7 @@ class PropertiesTest {
 
     @Test
     void testDateGetters() throws IOException {
-        Properties props = new Properties();
+        var props = new Properties();
         props.add("localDateTime",
                 "2022-11-06T16:20:02", "2023-11-06T16:20:02");
         props.add("instant", "2022-11-06T16:20:02Z", "2023-11-06T16:20:02Z");
@@ -167,7 +183,7 @@ class PropertiesTest {
 
     @Test
     void testSetValue() throws IOException {
-        Properties properties = new Properties();
+        var properties = new Properties();
         properties.set("a", "1", "2", "3");
         properties.set("a", "4", "5", "6");
         assertThat(properties.get("a")).containsExactly("4", "5", "6");
@@ -175,7 +191,7 @@ class PropertiesTest {
 
     @Test
     void testSetAddList() throws IOException {
-        Properties properties = new Properties();
+        var properties = new Properties();
         properties.set("a", "1", "2", "3");
         properties.setList("a", null);
         assertThat(properties.get("a")).isNull();
@@ -187,8 +203,8 @@ class PropertiesTest {
 
     @Test
     void testToJavaUtilProperties() throws IOException {
-        Properties properties = sampleProps();
-        java.util.Properties javaProps = properties.toProperties();
+        var properties = sampleProps();
+        var javaProps = properties.toProperties();
 
         assertThat(javaProps).hasSize(3);
         assertThat(javaProps.getProperty("a")).isEqualTo("1\\u241E2\\u241E3");
@@ -198,11 +214,11 @@ class PropertiesTest {
 
     @Test
     void testStoreToLoadFromJson() throws IOException {
-        Properties properties = sampleProps();
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        var properties = sampleProps();
+        var out = new ByteArrayOutputStream();
         properties.storeToJSON(out);
 
-        Properties newProps = new Properties();
+        var newProps = new Properties();
         newProps.loadFromJSON(new ByteArrayInputStream(out.toByteArray()));
         assertThat(newProps).isEqualTo(properties);
 
@@ -212,11 +228,11 @@ class PropertiesTest {
 
     @Test
     void testStoreToLoadFromXml() throws IOException {
-        Properties properties = sampleProps();
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        var properties = sampleProps();
+        var out = new ByteArrayOutputStream();
         properties.storeToXML(out);
 
-        Properties newProps = new Properties();
+        var newProps = new Properties();
         newProps.loadFromXML(new ByteArrayInputStream(out.toByteArray()));
         assertThat(newProps).isEqualTo(properties);
 
@@ -226,11 +242,11 @@ class PropertiesTest {
 
     @Test
     void testStoreToLoadFromProperties() throws IOException {
-        Properties properties = sampleProps();
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        var properties = sampleProps();
+        var out = new ByteArrayOutputStream();
         properties.storeToProperties(out);
 
-        Properties newProps = new Properties();
+        var newProps = new Properties();
         newProps.loadFromProperties(
                 new ByteArrayInputStream(out.toByteArray()));
         assertThat(newProps).isEqualTo(properties);
@@ -243,7 +259,7 @@ class PropertiesTest {
 
     @Test
     void testMatchKeys() {
-        Properties properties = sampleProps();
+        var properties = sampleProps();
         assertThat(properties.matchKeys(TextMatcher.basic("a")))
             .containsExactlyEntriesOf(MapUtil.toMap(
                     "a", asList("1", "2", "3")));
@@ -257,7 +273,7 @@ class PropertiesTest {
 
     @Test
     void testMatchValues() {
-        Properties properties = sampleProps();
+        var properties = sampleProps();
         assertThat(properties.matchValues(TextMatcher.basic("2")))
             .containsExactlyEntriesOf(MapUtil.toMap(
                     "a", asList("2")));
@@ -271,7 +287,7 @@ class PropertiesTest {
 
     @Test
     void testMatch() {
-        Properties properties = sampleProps();
+        var properties = sampleProps();
         assertThat(properties.match(
                 TextMatcher.basic("a"), TextMatcher.basic("2")))
             .containsExactlyEntriesOf(MapUtil.toMap(
@@ -291,24 +307,24 @@ class PropertiesTest {
     @Test
     void testLoadUsingDefaultDelimiter() throws Exception {
 
-        String key = "source";
-        String value = "X^2";
-        Properties properties = new Properties();
+        var key = "source";
+        var value = "X^2";
+        var properties = new Properties();
         properties.add(key, value);
-        String stored = properties.toString();
+        var stored = properties.toString();
 
         // The default multi-value separator should NOT be applied
         // when there is a single ^.
         properties = new Properties();
         properties.fromString(stored);
-        List<String> values = properties.getStrings(key);
+        var values = properties.getStrings(key);
         assertEquals(1, values.size());
         assertEquals(values.get(0), value);
     }
 
     @Test
     void testGetList() throws Exception {
-        Properties properties = new Properties();
+        var properties = new Properties();
         List<String> list = asList("1", "2", "3");
         properties.put("key", list);
         assertEquals(asList(1, 2, 3), properties.getList("key", Integer.class));
@@ -324,7 +340,7 @@ class PropertiesTest {
 
     @Test
     void testGetValue() throws Exception {
-        Properties properties = new Properties(MapUtil.toMap(
+        var properties = new Properties(MapUtil.toMap(
                 "key", asList("1", "2", "3")));
         assertEquals((Integer) 1, properties.get("key", Integer.class));
 
@@ -338,7 +354,7 @@ class PropertiesTest {
 
     @Test
     void testRemove() throws Exception {
-        Properties properties = new Properties();
+        var properties = new Properties();
         List<String> list = asList("a", "b", "c");
         properties.put("key", list);
         assertEquals(list, properties.remove("key"));
@@ -346,7 +362,7 @@ class PropertiesTest {
 
     @Test
     void testRemoveCaseInsensitive() throws Exception {
-        Properties properties = new Properties(true);
+        var properties = new Properties(true);
         List<String> list = asList("a", "b", "c");
         properties.put("KEY", list);
         assertEquals(list, properties.remove("key"));
@@ -354,7 +370,7 @@ class PropertiesTest {
 
     @Test
     void testRemoveCaseInsensitiveMultiple() throws Exception {
-        Properties properties = new Properties(true);
+        var properties = new Properties(true);
         List<String> list1 = asList("a", "b", "c");
         List<String> list2 = asList("d", "e", "f");
         properties.put("Key", list1);
@@ -364,19 +380,19 @@ class PropertiesTest {
 
     @Test
     void testRemoveNonExistingKey() throws Exception {
-        Properties properties = new Properties();
+        var properties = new Properties();
         assertNull(properties.remove("key"));
     }
 
     @Test
     void testRemoveNonExistingKeyCaseInsensitive() throws Exception {
-        Properties properties = new Properties(true);
+        var properties = new Properties(true);
         assertNull(properties.remove("key"));
     }
 
     @Test
     void testAddDifferentCharacterCases() throws Exception {
-        Properties properties = new Properties(true);
+        var properties = new Properties(true);
         properties.add("KEY", "value1");
         properties.add("key", "value2");
 
@@ -391,7 +407,7 @@ class PropertiesTest {
         m.put("key", Arrays.asList("3", "4"));
 
         // Case insensitive
-        Properties props1 = new Properties(true);
+        var props1 = new Properties(true);
         props1.putAll(m);
 
         assertEquals(1, props1.size());
@@ -400,7 +416,7 @@ class PropertiesTest {
 
 
         // Case sensitive
-        Properties props2 = new Properties(false);
+        var props2 = new Properties(false);
         props2.putAll(m);
 
         assertEquals(2, props2.size());
@@ -414,7 +430,7 @@ class PropertiesTest {
         List<String> list = Arrays.asList("1", null, "2", "");
 
         // Case insensitive
-        Properties props1 = new Properties(true);
+        var props1 = new Properties(true);
         props1.put("key", list);
 
         assertEquals(1, props1.size());
@@ -423,7 +439,7 @@ class PropertiesTest {
 
 
         // Case sensitive
-        Properties props2 = new Properties(false);
+        var props2 = new Properties(false);
         props2.put("key", list);
 
         assertEquals(1, props2.size());
@@ -439,7 +455,7 @@ class PropertiesTest {
         StringWriter w;
         Properties p;
 
-        Properties original = new Properties();
+        var original = new Properties();
         original.add("KEYsingleValueABC", "singleValueABC");
         original.add("KEYmultiValues", "t", "e", "s", "t");
         original.add("KEYsingleValueXYZ", "singleValueXYZ");
@@ -465,7 +481,7 @@ class PropertiesTest {
         StringWriter w;
         Properties p;
 
-        Properties original = new Properties();
+        var original = new Properties();
         original.add("KEYsingleValueABC", "singleValueABC");
         original.add("KEYmultiValues", "t", "e", "s", "t");
         original.add("KEYsingleValueXYZ", "singleValueXYZ");
@@ -491,7 +507,7 @@ class PropertiesTest {
     @Test
     void testBean() throws Exception {
 
-        TestBean b = new TestBean();
+        var b = new TestBean();
         b.testBigDecimal = BigDecimal.valueOf(3.1416);
         b.testBoolean = true;
         b.testClass = ConfigurationLoader.class;
@@ -515,14 +531,14 @@ class PropertiesTest {
         };
         b.nonWritableString = "def";
 
-        Properties p = new Properties();
+        var p = new Properties();
         p.add("testString", "carrot"); // should be overwritten
 
         p.loadFromBean(b);
 
         LOG.debug("PROPERTIES: " + p);
 
-        TestBean newb = new TestBean();
+        var newb = new TestBean();
         p.storeToBean(newb);
 
         b.testString = "carrot";

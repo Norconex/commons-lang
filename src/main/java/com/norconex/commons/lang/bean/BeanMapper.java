@@ -1,4 +1,4 @@
-/* Copyright 2023 Norconex Inc.
+/* Copyright 2023-2024 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,9 @@
  * limitations under the License.
  */
 package com.norconex.commons.lang.bean;
+
+import static com.fasterxml.jackson.dataformat.xml.deser.FromXmlParser.Feature.EMPTY_ELEMENT_AS_NULL;
+import static java.util.Optional.ofNullable;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -30,16 +33,23 @@ import java.util.function.Supplier;
 
 import javax.xml.stream.XMLOutputFactory;
 
+import org.apache.commons.collections4.MultiMapUtils;
+import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreType;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonSetter.Value;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import com.fasterxml.jackson.annotation.Nulls;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonParser.Feature;
+import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
@@ -51,6 +61,7 @@ import com.fasterxml.jackson.databind.cfg.MapperBuilder;
 import com.fasterxml.jackson.databind.deser.DeserializationProblemHandler;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
@@ -60,13 +71,16 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import com.norconex.commons.lang.ClassFinder;
 import com.norconex.commons.lang.ClassUtil;
-import com.norconex.commons.lang.bean.module.JsonXmlCollectionModule;
+import com.norconex.commons.lang.bean.jackson.EmptyWithClosingTagXmlFactory;
+import com.norconex.commons.lang.bean.jackson.JsonXmlCollectionModule;
+import com.norconex.commons.lang.bean.jackson.JsonXmlPropertiesDeserializer;
 import com.norconex.commons.lang.bean.spi.PolymorphicTypeLoader;
 import com.norconex.commons.lang.bean.spi.PolymorphicTypeProvider;
 import com.norconex.commons.lang.config.Configurable;
 import com.norconex.commons.lang.convert.GenericJsonModule;
 import com.norconex.commons.lang.flow.FlowMapperConfig;
 import com.norconex.commons.lang.flow.module.FlowModule;
+import com.norconex.commons.lang.map.Properties;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -138,13 +152,18 @@ public class BeanMapper { //NOSONAR
     @RequiredArgsConstructor
     public enum Format {
         XML(
-                XmlMapper::builder,
+                () -> XmlMapper.builder(new EmptyWithClosingTagXmlFactory()),
+                //XmlMapper::builder,
                 b -> {
                     var m = (XmlMapper) b.build();
+                    m.enable(EMPTY_ELEMENT_AS_NULL);
                     m.getFactory()
                         .getXMLOutputFactory()
                         .setProperty(XMLOutputFactory.IS_REPAIRING_NAMESPACES,
                                 true);
+                    m.registerModule(new SimpleModule().addDeserializer(
+                            Properties.class,
+                            new JsonXmlPropertiesDeserializer()));
                     return m;
                 }),
         JSON(
@@ -158,6 +177,8 @@ public class BeanMapper { //NOSONAR
         final Supplier<MapperBuilder<?, ?>> builder;
         final Function<MapperBuilder<?, ?>, ObjectMapper> mapper;
     }
+
+
 
     /**
      * A build mapper initialized with default settings.
@@ -198,6 +219,12 @@ public class BeanMapper { //NOSONAR
     private boolean indent;
 
     /**
+     * The class loader to use to load classes. Defaults to this
+     * class class loader.
+     */
+    private ClassLoader classLoader;
+
+    /**
      * Consumes the internal Jackson {@link MapperBuilder} for custom
      * initialization.
      */
@@ -221,6 +248,13 @@ public class BeanMapper { //NOSONAR
     @Singular
     private Map<String, Class<?>> unboundPropertyMappings;
 
+    /**
+     * Optionally register default concrete implementations for polymorphic
+     * type/interface. The default is used when no type id is defined.
+     * (i.e., "class").
+     */
+    @Singular
+    private Map<Class<?>, Class<?>> defaultPolymorphicTypes;
 
     /**
      * Optionally setup support for using flow/conditions in your
@@ -239,6 +273,18 @@ public class BeanMapper { //NOSONAR
     // We are caching them on first use
     private final Map<Format, ObjectMapper> cache = new ConcurrentHashMap<>(3);
 
+    // We keep a copy of resolved polymorphic type as they are otherwise
+    // difficult to obtain from the ObjectMapper and we may need them in
+    // different context (e.g., registration in OpenApi).
+    private final MultiValuedMap<Class<?>, Class<?>>
+        resolvedPolymorphicTypes = MultiMapUtils.newListValuedHashMap();
+    private final MutableBoolean polyTypesResolved = new MutableBoolean();
+
+    public MultiValuedMap<Class<?>, Class<?>> getPolymorphicTypes() {
+        resolvePolymorphicTypes();
+        return resolvedPolymorphicTypes;
+    }
+
     /**
      * Write the given object as XML, JSON, or Yaml.
      * @param object the object to write
@@ -251,7 +297,7 @@ public class BeanMapper { //NOSONAR
             @NonNull Writer writer,
             @NonNull Format format) {
         try {
-            getMapper(format).writeValue(writer, object);
+            toObjectMapper(format).writeValue(writer, object);
         } catch (IOException e) {
             throw new BeanException("Could not write object to %s: %s"
                     .formatted(format, object), e);
@@ -274,7 +320,7 @@ public class BeanMapper { //NOSONAR
             @NonNull Reader reader,
             @NonNull Format format) {
         try {
-            return (T) validate(getMapper(format)
+            return (T) validate(toObjectMapper(format)
                     .readerForUpdating(object).readValue(reader));
         } catch (IOException e) {
             throw new BeanException(
@@ -300,8 +346,9 @@ public class BeanMapper { //NOSONAR
             @NonNull Format format) {
         try {
             return (T) validate(
-                    getMapper(format).readerFor(type).readValue(reader));
+                    toObjectMapper(format).readerFor(type).readValue(reader));
         } catch (IOException e) {
+            LOG.error(e.getLocalizedMessage());
             throw new BeanException(
                     "Could not read %s source.".formatted(format), e);
         }
@@ -338,12 +385,32 @@ public class BeanMapper { //NOSONAR
         }
     }
 
-    private ObjectMapper getMapper(Format format) {
+    /**
+     * Gets a Jackson {@link ObjectMapper} for the given format.
+     * @param format format for which to get the mapper
+     * @return Jackson ObjectMapper
+     */
+    public ObjectMapper toObjectMapper(Format format) {
         return cache.computeIfAbsent(format, fmt -> {
 
+            //--- Builder ---
+
             var builder = format.builder.get();
+
+            // general features:
             builder.disable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY);
             builder.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS);
+            builder.enable(Feature.ALLOW_COMMENTS);
+            builder.enable(Feature.ALLOW_YAML_COMMENTS);
+            builder.configure(JsonReadFeature.ALLOW_UNQUOTED_FIELD_NAMES
+                    .mappedFeature(), true);
+            builder.configure(JsonReadFeature.ALLOW_TRAILING_COMMA
+                    .mappedFeature(), true);
+            if (LOG.isDebugEnabled()) {
+                builder.enable(Feature.INCLUDE_SOURCE_IN_LOCATION);
+            }
+
+            // handlers:
             builder.addHandler(new BeanMapperPropertyHandler(this));
 
             // modules:
@@ -359,9 +426,12 @@ public class BeanMapper { //NOSONAR
             if (mapperBuilderCustomizer != null) {
                 mapperBuilderCustomizer.accept(builder);
             }
-            if (format == Format.XML) {
-                builder.addModule(new JsonXmlCollectionModule());
+            if (!ignoreUnknownProperties) {
+                builder.addModule(
+                        new FailOnUnknownConfigurablePropModule(this));
             }
+
+            //--- Mapper ---
 
             var mapper = format.mapper.apply(builder);
 
@@ -373,17 +443,26 @@ public class BeanMapper { //NOSONAR
             mapper.configure(
                     DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT,
                     treatEmptyAsNull);
-
-            mapper.disable(
-                    DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY);
+            mapper.disable(DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY);
+            mapper.setDefaultSetterInfo(
+                    Value
+                    .empty()
+                    .withValueNulls(Nulls.SET) // value
+                    .withContentNulls(Nulls.SET));  // collection entry value
 
             // write:
             mapper.configure(SerializationFeature.INDENT_OUTPUT, indent);
             mapper.disable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
-            mapper.setSerializationInclusion(Include.NON_DEFAULT);
 
             // register polymorphic types:
             registerPolymorphicTypes(mapper);
+
+            // misc:
+            if (format == Format.XML) {
+                mapper.registerModule(new JsonXmlCollectionModule());
+            }
+
+            mapper.addMixIn(Object.class, NonDefaultInclusionMixIn.class);
 
             return mapper;
         });
@@ -398,44 +477,76 @@ public class BeanMapper { //NOSONAR
         void setConfiguration(T configuration) { }
     }
 
-    private void registerPolymorphicTypes(ObjectMapper mapper) {
+    //NOTE: we need to set NON_DEFAULT here since setting it globally
+    // assumes "default" is the property type default, not the object
+    // initialization of those properties.
+    @JsonInclude(value = Include.NON_DEFAULT)
+    abstract static class NonDefaultInclusionMixIn {
+    }
+
+
+    private synchronized void resolvePolymorphicTypes() {
+        if (polyTypesResolved.isTrue()) {
+            // already resolved for this instance, we skip.
+            return;
+        }
+
         //--- From service loader ---
+        var cl = ofNullable(classLoader).orElseGet(
+                () -> getClass().getClassLoader());
         if (!polymorphicServiceLoaderDisabled) {
-            PolymorphicTypeLoader.polymorphicTypes().asMap().forEach(
-                    (type, subTypes) -> {
-                registerPolymorphicType(mapper, type, subTypes);
-            });
+            PolymorphicTypeLoader.polymorphicTypes(cl).asMap().forEach(
+                    (type, subTypes) ->
+                resolvedPolymorphicTypes.putAll(type, subTypes));
         }
 
         //--- Configured ---
         polymorphicTypes.forEach((type, predicate) -> {
-            registerPolymorphicType(
-                    mapper, type, ClassFinder.findSubTypes(type, predicate));
+            resolvedPolymorphicTypes.putAll(
+                    type, ClassFinder.findSubTypes(type, predicate));
         });
 
         //--- Flow-specific ---
-
         Class<?> conditionType =
                 flowMapperConfig.getPredicateType().getBaseType();
         if (conditionType != null) {
-            registerPolymorphicType(mapper, conditionType,
+            resolvedPolymorphicTypes.putAll(
+                    conditionType,
                     ClassFinder.findSubTypes(conditionType,
-                        flowMapperConfig.getPredicateType().getScanFilter()));
+                            flowMapperConfig
+                                .getPredicateType()
+                                .getScanFilter()));
         }
-
         Class<?> consumerType =
                 flowMapperConfig.getConsumerType().getBaseType();
         if (consumerType != null) {
-            registerPolymorphicType(mapper, consumerType,
+            resolvedPolymorphicTypes.putAll(
+                    consumerType,
                     ClassFinder.findSubTypes(consumerType,
-                        flowMapperConfig.getConsumerType().getScanFilter()));
+                            flowMapperConfig
+                                .getConsumerType()
+                                .getScanFilter()));
         }
+
+        polyTypesResolved.setTrue();
+    }
+
+
+    private void registerPolymorphicTypes(ObjectMapper mapper) {
+        resolvePolymorphicTypes();
+
+        resolvedPolymorphicTypes.asMap().forEach((type, subTypes) -> {
+            registerPolymorphicType(mapper, type, subTypes);
+        });
     }
     private void registerPolymorphicType(
             ObjectMapper mapper,
             Class<?> type,
             Collection<? extends Class<?>> subTypes) {
-        //TODO check and report those already registered?
+
+        resolvedPolymorphicTypes.putAll(type, subTypes);
+
+        //MAYBE: check and report those already registered?
         mapper.addMixIn(type, PolymorphicMixIn.class);
         mapper.registerSubtypes(subTypes.toArray(new Class<?>[] {}));
         if (LOG.isDebugEnabled()) {
@@ -491,10 +602,37 @@ public class BeanMapper { //NOSONAR
             }
             Class<?> cls = beanMapper.unboundPropertyMappings.get(propertyName);
             if (cls != null) {
-                p.setCurrentValue(ClassUtil.newInstance(cls));
+                p.assignCurrentValue(ClassUtil.newInstance(cls));
                 return true;
             }
             return false;
+        }
+
+        @Override
+        public JavaType handleMissingTypeId(
+                DeserializationContext ctxt,
+                JavaType baseType,
+                TypeIdResolver idResolver,
+                String failureMsg) throws IOException {
+
+            var defaultType = beanMapper.defaultPolymorphicTypes.get(
+                    baseType.getRawClass());
+
+            // No default exists, let super handle it.
+            if (defaultType == null) {
+                return super.handleMissingTypeId(
+                        ctxt, baseType, idResolver, failureMsg);
+            }
+
+            // Default exists, return it.
+            var type = TypeFactory.defaultInstance()
+                    .constructType(defaultType);
+            if (type.isTypeOrSubTypeOf(baseType.getRawClass())) {
+                return type;
+            }
+            throw new BeanException(
+                    "Default polymorphic type %s not a subtype of %s."
+                        .formatted(type.getTypeName(), baseType.getTypeName()));
         }
 
         @Override

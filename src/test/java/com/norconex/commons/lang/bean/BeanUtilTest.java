@@ -26,6 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -40,7 +41,6 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import com.ibm.icu.math.BigDecimal;
 import com.norconex.commons.lang.bean.MiscAccessorsBean.Fields;
 import com.norconex.commons.lang.event.Event;
 import com.norconex.commons.lang.event.EventListener;
@@ -495,6 +495,19 @@ class BeanUtilTest {
     }
 
     @Test
+    void testVisitAllObjectCollectionConsumerClass() {
+        List<String> names = new ArrayList<>();
+        List<Root> roots = List.of(new Root(), new Root());
+        BeanUtil.visitAll(
+                roots,
+                o -> names.add(o.getClass().getSimpleName()),
+                EventListener.class);
+        assertThat(names).containsExactly(
+                "Sub1Yes", "Sub3Yes", "Sub3_1Yes",
+                "Sub1Yes", "Sub3Yes", "Sub3_1Yes");
+    }
+
+    @Test
     void testVisitObjectPredicate() {
         List<String> names = new ArrayList<>();
         BeanUtil.visit(
@@ -526,6 +539,19 @@ class BeanUtilTest {
                 new Root(),
                 (o, pd) -> names.add(pd.getName()));
         assertThat(names).containsExactly(
+                "sub1yes", "sub2no", "sub3yes", "sub1Yes", "sub3_1Yes");
+    }
+
+
+    @Test
+    void testVisitAllPropertiesObjectCollectionBiConsumer() {
+        List<String> names = new ArrayList<>();
+        List<Root> roots = List.of(new Root(), new Root());
+        BeanUtil.visitAllProperties(
+                roots,
+                (o, pd) -> names.add(pd.getName()));
+        assertThat(names).containsExactly(
+                "sub1yes", "sub2no", "sub3yes", "sub1Yes", "sub3_1Yes",
                 "sub1yes", "sub2no", "sub3yes", "sub1Yes", "sub3_1Yes");
     }
 

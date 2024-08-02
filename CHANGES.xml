@@ -153,6 +153,12 @@
       <action dev="essiembre" type="add">
         New Consumers #of method.
       </action>
+      <action dev="essiembre" type="add">
+        New IOUtil #toNonNullWriter and #toNonNullOutputStream methods.
+      </action>
+      <action dev="essiembre" type="add">
+        New TextMatcher#isSet method.
+      </action>
       <action dev="essiembre" type="update">
         Now require Java 17+. 
       </action>
@@ -322,6 +328,9 @@
         BeanUtil#diff now display hashCode for any non-null values.
       </action>
       <action dev="essiembre" type="update">
+        BeanUtil#visit... will no process passed collections and maps.
+      </action>
+      <action dev="essiembre" type="update">
         EnumConverter will now match values regardless of non-alphanumeric 
         characters they may contain.
       </action>
@@ -331,6 +340,9 @@
       <action dev="essiembre" type="update">
         Several classes previously implementing XMLConfigurable are no longer doing
         so, in favor of Jackson based serialization.
+      </action>
+      <action dev="essiembre" type="update">
+        CachedOutputStream now has a dispose() method and close() has no effect.
       </action>
       <action dev="essiembre" type="fix">
         Properties#loadFromXML is now null-safe.

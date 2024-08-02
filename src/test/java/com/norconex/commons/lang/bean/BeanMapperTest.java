@@ -45,6 +45,9 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
+import com.norconex.commons.lang.ExceptionUtil;
 import com.norconex.commons.lang.Sleeper;
 import com.norconex.commons.lang.bean.BeanMapper.Format;
 import com.norconex.commons.lang.bean.stubs.Automobile;
@@ -167,6 +170,93 @@ class BeanMapperTest {
             Sleeper.sleepMillis(1);
             return System.currentTimeMillis();
         }
+    }
+
+    @Test
+    void testIgnoreUnknownProperties() {
+        // "type2" is bad, it should be type.
+        var badYaml = """
+        ---
+        class: "Plane"
+        name: "Boeing 737"
+        type2: "COMMERCIAL"
+        """  ;
+
+        // Not ignoring unknown properties (default)
+        var bm1 = BeanMapper.builder().ignoreUnknownProperties(false).build();
+        assertThatExceptionOfType(BeanException.class)
+                .isThrownBy(() -> {//NOSONAR
+            System.err.println("" + bm1.read(Plane.class,
+                    new StringReader(badYaml), Format.YAML));
+        }).matches(ex -> ExceptionUtil.getFormattedMessages(ex).contains(
+                "Unrecognized field \"type2\""));
+
+        // Ignoring unknown properties
+        var bm2 = BeanMapper.builder().ignoreUnknownProperties(true).build();
+        assertThatNoException().isThrownBy(() ->
+                bm2.read(Plane.class, new StringReader(badYaml), Format.YAML));
+    }
+
+    @Test
+    void testDefaultPolymorphicType() {
+        // We test that a property with a missing type ID falls back to
+        // BeanMapper "defaultPropertyTypes".
+
+        // Yaml with transport assumed to be "Plane" (no class specified)
+        var yaml = """
+                ---
+                id: "my config"
+                transportations:
+                - name: "Boeing 737"
+                  type: "COMMERCIAL"
+                """;
+
+        // Without defaultPropertyTypes it should fail
+        var bm1 = BeanMapper
+                .builder()
+                .skipValidation(true)
+                .polymorphicType(Transportation.class,
+                        name -> name.startsWith("com.norconex.")).build();
+        assertThatExceptionOfType(BeanException.class)
+            .isThrownBy(() -> bm1.read( //NOSONAR
+                    TestConfig.class, new StringReader(yaml), Format.YAML))
+            .withCauseInstanceOf(InvalidTypeIdException.class);
+
+        // with bad mapping, should fail
+        var bm2 = BeanMapper
+                .builder()
+                .skipValidation(true)
+                .polymorphicType(Transportation.class,
+                        name -> name.startsWith("com.norconex."))
+                .defaultPolymorphicType(
+                        Transportation.class,
+                        MiscAccessorsBean.class) // <-- not a subtype
+                .build();
+        assertThatExceptionOfType(BeanException.class)
+            .isThrownBy(() -> bm2.read( //NOSONAR
+                    TestConfig.class, new StringReader(yaml), Format.YAML))
+            .withCauseInstanceOf(JsonMappingException.class)
+            .withStackTraceContaining("not a subtype");
+
+        // With good mapping, it should succeed
+        var bm3 = BeanMapper
+                .builder()
+                .skipValidation(true)
+                .polymorphicType(Transportation.class,
+                        name -> name.startsWith("com.norconex."))
+                .defaultPolymorphicType(
+                        Transportation.class,
+                        Plane.class) // <-- valid subtype
+                .build();
+        assertThat(bm3.read(
+                TestConfig.class, new StringReader(yaml), Format.YAML))
+            .matches(cfg -> {
+                var plane = cfg.getTransportations().get(0);
+                return "Boeing 737"
+                        .equals(((Plane) plane)
+                                .getConfiguration()
+                                .getName());
+            });
     }
 
     //--- Polymorphic tests ----------------------------------------------------

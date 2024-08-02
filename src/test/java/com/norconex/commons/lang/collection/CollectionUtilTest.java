@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -38,7 +39,6 @@ import java.util.TreeSet;
 
 import org.junit.jupiter.api.Test;
 
-import com.ibm.icu.math.BigDecimal;
 import com.norconex.commons.lang.map.MapUtil;
 
 class CollectionUtilTest {
@@ -72,10 +72,8 @@ class CollectionUtilTest {
 
     @Test
     void testSetAllCollection() {
-        List<String> target;
+        List<String> target = null;
 
-        // null target
-        target = null;
         CollectionUtil.setAll(target, Arrays.asList("1", "2"));
         assertThat(target).isNull();
 
@@ -103,10 +101,8 @@ class CollectionUtilTest {
 
     @Test
     void testSetAllArray() {
-        List<String> target;
+        List<String> target = null;
 
-        // null target
-        target = null;
         CollectionUtil.setAll(target, "1", "2");
         assertThat(target).isNull();
 
@@ -134,10 +130,8 @@ class CollectionUtilTest {
 
     @Test
     void testSetAllMap() {
-        Map<String, String> target;
+        Map<String, String> target = null;
 
-        // null target
-        target = null;
         CollectionUtil.setAll(target, MapUtil.toMap("k1", "v1", "k2", "v2"));
         assertThat(target).isNull();
 

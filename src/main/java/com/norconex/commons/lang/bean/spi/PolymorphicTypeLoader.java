@@ -30,17 +30,26 @@ public final class PolymorphicTypeLoader {
     private PolymorphicTypeLoader() {}
 
     public static List<PolymorphicTypeProvider> providers() {
+        return providers(null);
+    }
+    public static List<PolymorphicTypeProvider> providers(
+            ClassLoader classLoader) {
         List<PolymorphicTypeProvider> providers = new ArrayList<>();
         ServiceLoader<PolymorphicTypeProvider> loader =
-                ServiceLoader.load(PolymorphicTypeProvider.class);
+                ServiceLoader.load(PolymorphicTypeProvider.class, classLoader);
         loader.forEach(providers::add);
         return providers;
     }
 
     public static MultiValuedMap<Class<?>, Class<?>> polymorphicTypes() {
+        return polymorphicTypes(null);
+    }
+    public static MultiValuedMap<Class<?>, Class<?>> polymorphicTypes(
+            ClassLoader classLoader) {
         MultiValuedMap<Class<?>, Class<?>> map =
                 MultiMapUtils.newListValuedHashMap();
-        providers().forEach(p -> map.putAll(p.getPolymorphicTypes()));
+        providers(classLoader).forEach(
+                p -> map.putAll(p.getPolymorphicTypes()));
         return map;
     }
 }

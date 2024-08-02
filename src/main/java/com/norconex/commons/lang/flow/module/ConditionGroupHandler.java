@@ -1,4 +1,4 @@
-/* Copyright 2023 Norconex Inc.
+/* Copyright 2023-2024 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,7 +53,7 @@ class ConditionGroupHandler<T> implements StatementHandler<Predicate<T>> {
             whileInObject(p, () -> readObject(ctx, preds));
         }
 
-        FlowUtil.logClose(ctx, p.getCurrentName());
+        FlowUtil.logClose(ctx, p.currentName());
         return preds;
     }
 
@@ -61,8 +61,8 @@ class ConditionGroupHandler<T> implements StatementHandler<Predicate<T>> {
     private void readObject(FlowDeserContext ctx,  Predicates<T> preds)
             throws IOException {
         var p = ctx.getParser();
-        FlowUtil.logOpen(ctx, p.getCurrentName());
-        var fieldName = p.getCurrentName();
+        FlowUtil.logOpen(ctx, p.currentName());
+        var fieldName = p.currentName();
         if (!Statement.isAnyOf(fieldName,
                 Statement.CONDITION,
                 Statement.ALLOF,
@@ -75,7 +75,7 @@ class ConditionGroupHandler<T> implements StatementHandler<Predicate<T>> {
         }
         preds.add((Predicate<T>) Statement.of(fieldName)
                 .handler().read(ctx));
-        FlowUtil.logClose(ctx, p.getCurrentName());
+        FlowUtil.logClose(ctx, p.currentName());
     }
 
     @SuppressWarnings("unchecked")

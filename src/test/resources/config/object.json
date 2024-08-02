@@ -1,0 +1,5 @@
+{
+  "class": "com.norconex.commons.lang.security.Credentials",
+  "username": "${varUsr}",
+  "password": "${varPwd}"
+}

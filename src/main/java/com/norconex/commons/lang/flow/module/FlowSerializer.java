@@ -14,6 +14,8 @@
  */
 package com.norconex.commons.lang.flow.module;
 
+import static java.util.Optional.ofNullable;
+
 import java.io.IOException;
 import java.util.function.Consumer;
 
@@ -24,8 +26,10 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.ContextualSerializer;
 import com.fasterxml.jackson.databind.ser.ResolvableSerializer;
+import com.norconex.commons.lang.ClassUtil;
 import com.norconex.commons.lang.flow.FlowMapperConfig;
 import com.norconex.commons.lang.flow.JsonFlow;
+import com.norconex.commons.lang.flow.JsonFlow.NoBuilder;
 
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +46,7 @@ public class FlowSerializer<T> extends JsonSerializer<Consumer<T>>
 
     private final FlowMapperConfig config;
     private final JsonSerializer<?> defaultSerializer;
+    private final ThreadLocal<FlowMapperConfig> propCfg = new ThreadLocal<>();
 
     @SuppressWarnings("unchecked")
     private RootHandler<T> rootHandler =
@@ -52,7 +57,8 @@ public class FlowSerializer<T> extends JsonSerializer<Consumer<T>>
             Consumer<T> value,
             JsonGenerator gen,
             SerializerProvider sp) throws IOException {
-        rootHandler.write(value, new FlowSerContext(config, gen));
+        rootHandler.write(value, new FlowSerContext(
+                ofNullable(propCfg.get()).orElse(config), gen));
     }
 
     @Override
@@ -62,8 +68,20 @@ public class FlowSerializer<T> extends JsonSerializer<Consumer<T>>
         if (property == null) {
             return defaultSerializer;
         }
-        return property.getAnnotation(JsonFlow.class) == null
-                ? defaultSerializer : this;
+
+        var flowAnnot = property.getAnnotation(JsonFlow.class);
+        if (flowAnnot == null) {
+            return defaultSerializer;
+        }
+
+        // If needed, create property-specific flow mapper config
+        var supplier = flowAnnot.builder();
+        if (supplier.equals(NoBuilder.class)) {
+            propCfg.remove();
+        } else {
+            propCfg.set(ClassUtil.newInstance(supplier).get());
+        }
+        return this;
     }
 
     @Override

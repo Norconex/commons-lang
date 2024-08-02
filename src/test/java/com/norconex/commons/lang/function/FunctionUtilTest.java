@@ -25,11 +25,12 @@ import org.apache.commons.lang3.mutable.MutableObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+@Deprecated(since = "3.0.0")
 class FunctionUtilTest {
 
     @Test
     void testPredicatedConsumer() {
-        MutableObject<String> result = new MutableObject<>();
+        var result = new MutableObject<String>();
         Consumer<String> c = FunctionUtil.predicatedConsumer(
                 "potato"::equals,
                 v -> result.setValue("fries"));

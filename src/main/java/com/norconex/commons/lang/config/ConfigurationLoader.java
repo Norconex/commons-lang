@@ -526,11 +526,12 @@ public final class ConfigurationLoader {
 
     //--- Private methods ----------------------------------------------------
 
-    private Format resolveFormat(Path path) {
+    private Format resolveFormat(@NonNull Path path) {
         Format format;
-        if (path.endsWith(".json")) {
+        var asStr = path.toString();
+        if (asStr.endsWith(".json")) {
             format = Format.JSON;
-        } else if (path.endsWith(".yaml") || path.endsWith(".yml")) {
+        } else if (asStr.endsWith(".yaml") || asStr.endsWith(".yml")) {
             format = Format.YAML;
         } else {
             format = Format.XML;

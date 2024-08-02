@@ -1,4 +1,4 @@
-/* Copyright 2023 Norconex Inc.
+/* Copyright 2023-2024 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,17 +12,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.norconex.commons.lang.bean.module;
+package com.norconex.commons.lang.bean.jackson;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.apache.commons.lang3.StringUtils.removeEnd;
 
 import java.io.IOException;
 import java.util.Collection;
 
 import javax.xml.namespace.QName;
-
-import org.apache.commons.collections4.CollectionUtils;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.BeanProperty;
@@ -34,18 +31,24 @@ import com.fasterxml.jackson.databind.deser.ResolvableDeserializer;
 import com.fasterxml.jackson.databind.ser.ContextualSerializer;
 import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
 import com.fasterxml.jackson.dataformat.xml.ser.XmlSerializerProvider;
+import com.norconex.commons.lang.text.StringUtil;
 
 import lombok.RequiredArgsConstructor;
 
 /**
- * Collection serializer.
+ * XML collection serializer. Adds support for {@link JsonXmlCollection}
+ * annotation and properly writes self-closing and empty tag pairs.
+ * for <code>null</code> and empty, respectively.
  * @param <T> Collection type to be serialized
  * @see JsonXmlCollection
  * @since 3.0.0
  */
 @RequiredArgsConstructor
-public class JsonXmlCollectionSerializer<T extends Collection<?>> extends JsonSerializer<T>
+public class JsonXmlCollectionSerializer<T extends Collection<?>>
+        extends JsonSerializer<T>
         implements ContextualSerializer, ResolvableDeserializer {
+
+    public static final String DEFAULT_INNER_NAME = "entry";
 
     private BeanProperty currentProperty;
     private final JsonSerializer<?> defaultSerializer;
@@ -79,15 +82,12 @@ public class JsonXmlCollectionSerializer<T extends Collection<?>> extends JsonSe
             JsonGenerator gen,
             SerializerProvider sp) throws IOException {
 
+        //NOTE: not null and not empty when this method gets invoked.
+
+        var xmlGen = (ToXmlGenerator) gen;
+
         var innerName = innerName();
-        ((ToXmlGenerator) gen).setNextName(QName.valueOf(innerName));
-
-
-
-        if (CollectionUtils.isEmpty(objects)) {
-            ((ToXmlGenerator) gen).writeNull();
-            return;
-        }
+        xmlGen.setNextName(QName.valueOf(innerName));
 
         var isXml = gen instanceof ToXmlGenerator;
         if (isXml) {
@@ -117,24 +117,10 @@ public class JsonXmlCollectionSerializer<T extends Collection<?>> extends JsonSe
             innerName = annot.entryName();
         }
         if (isBlank(innerName)) {
-            innerName = singularOrElse(outterName, "entry");
+            innerName = StringUtil.singularOrElse(
+                    outterName, DEFAULT_INNER_NAME);
         }
         return innerName;
     }
 
-    private String singularOrElse(String plural, String def) {
-        String singular;
-        if (plural.endsWith("sses")) {
-            singular = removeEnd(plural, "es");
-        } else if (plural.endsWith("ies")) {
-            singular =  removeEnd(plural, "ies") + "y";
-        } else if (plural.endsWith("oes")) {
-            singular =  removeEnd(plural, "es");
-        } else if (plural.endsWith("s") && !plural.endsWith("ss")) {
-            singular = removeEnd(plural, "s");
-        } else {
-            singular = def;
-        }
-        return singular;
-    }
 }

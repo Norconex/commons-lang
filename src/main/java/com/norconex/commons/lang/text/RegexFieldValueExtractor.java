@@ -23,14 +23,13 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertySetter;
 
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * <p>
@@ -84,13 +83,10 @@ import lombok.ToString;
 @SuppressWarnings("javadoc")
 @EqualsAndHashCode
 @ToString
+@Slf4j
 public class RegexFieldValueExtractor {
 
-    private static final Logger LOG =
-            LoggerFactory.getLogger(RegexFieldValueExtractor.class);
-
-    public static final RegexFieldValueExtractor[] EMPTY_ARRAY =
-            {};
+    public static final RegexFieldValueExtractor[] EMPTY_ARRAY = {};
 
     private Regex regex;
     private String toField;

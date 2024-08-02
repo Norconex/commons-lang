@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.norconex.commons.lang.bean.module;
+package com.norconex.commons.lang.bean.jackson;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -36,7 +36,9 @@ import com.norconex.commons.lang.ClassUtil;
 import lombok.RequiredArgsConstructor;
 
 /**
- * Collection deserializer.
+ * XML collection deserializer. Adds support for {@link JsonXmlCollection}
+ * annotation and properly writes self-closing and empty tag pairs.
+ * for <code>null</code> and empty, respectively.
  * @param <T> type of collection
  * @see JsonXmlCollection
  * @since 3.0.0
@@ -76,32 +78,41 @@ public class JsonXmlCollectionDeserializer <T extends Collection<?>>
     public T deserialize(
             JsonParser p, DeserializationContext ctx) throws IOException {
 
-        var objects = createCollection();
-        p.nextToken();  // <outer>
-
         var isXml = ctx instanceof XmlDeserializationContext;
-
         var enderToken = isXml ? JsonToken.END_OBJECT : JsonToken.END_ARRAY;
+
+        var objects = createCollection();
+
+        if (p.currentToken() == JsonToken.VALUE_STRING) {
+            //NOTE: only way we can get a string here is if we are dealing
+            // with an open and end tags and no content or only white spaces
+            // in between.
+            return (T) objects;
+        }
+
+        p.nextToken();
+
+        if (p.currentToken() == enderToken) { // <outer>
+            // Self-closed or empty tag, so we treat it as an instruction
+            // to blanking the list so we return it empty.
+            return (T) objects;
+        }
 
         do {
             // For XML, each collection entries are made of a field name
             // followed by either an object or a scalar.
-
             if (isXml) {
                 p.nextToken();  // <inner>  (field name)
             }
-            if (p.currentToken() == JsonToken.VALUE_STRING) {
-                // for some reason, empty tags come up as empty string
-                // use this to prevent reading a null entry, which may generate
-                // the instantiation of an object with nothing set on it.
-                var text = p.getText();
-                if (!StringUtils.isBlank(text)) {
-                    objects.add(text);
-                }
-            } else {
+            // Since empty tags come up as empty string
+            // We check here to prevent reading a null entry, which may generate
+            // the instantiation of an object with nothing set on it.
+            if (StringUtils.isNotBlank(p.getText())) {
                 var value = p.readValueAs(currentProperty.getType()
                         .getContentType().getRawClass());
-                objects.add(value);
+                if (!(value instanceof String v) || !StringUtils.isBlank(v)) {
+                    objects.add(value);
+                }
             }
         } while (p.nextToken() != enderToken);
         return  (T) objects;
@@ -109,7 +120,7 @@ public class JsonXmlCollectionDeserializer <T extends Collection<?>>
 
     @SuppressWarnings("unchecked")
     private Collection<Object> createCollection() {
-        // Priority:
+        // Collection type established in this priority order:
         // - specified on annotation
         // - actual type detected and instantiable
         // - HashSet if a Set
