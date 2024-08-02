@@ -301,14 +301,14 @@ public class JarCopier {
             List<DupResult> dupResults) {
         switch (action) {
         case RENAME:
-            Streams.stream(jarFiles) //entry.getConflictingTargets())
+            Streams.failableStream(jarFiles) //entry.getConflictingTargets())
                 .forEach(jf -> {
                     renameToBackup(jf);
                     dupResults.add(new DupResult(jf, "target renamed"));
                 });
             break;
         case DELETE:
-            Streams.stream(jarFiles) //entry.getConflictingTargets())
+            Streams.failableStream(jarFiles) //entry.getConflictingTargets())
                 .forEach(jf -> {
                     delete(jf);
                     dupResults.add(new DupResult(jf, "target deleted"));

@@ -23,10 +23,13 @@ import com.fasterxml.jackson.databind.deser.BeanDeserializerModifier;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
 import com.fasterxml.jackson.databind.type.CollectionType;
+import com.norconex.commons.lang.bean.BeanMapper;
 
 /**
  * Jackson module providing (de)serializers for Collections, so they can be
  * written and read as JSON, Yaml, and XML without special hacks.
+ * Already registered in {@link BeanMapper}.
+ * @since 3.0.0
  */
 public class JsonXmlCollectionModule extends SimpleModule {
 

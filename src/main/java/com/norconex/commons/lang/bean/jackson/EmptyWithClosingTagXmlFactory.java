@@ -18,11 +18,20 @@ import java.io.IOException;
 import java.io.Writer;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlFactory;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
 import com.fasterxml.jackson.dataformat.xml.util.DefaultXmlPrettyPrinter;
 
 
+/**
+ * Version of {@link XmlFactory} that configures a {@link XmlPrettyPrinter}
+ * to write "empty" objects with a closing tag instead of self-closing.
+ * Self-closing are treated as <code>null</code> and a pair of tags witn
+ * no content is treated as empty.
+ * @since 3.0.0
+ */
 public class EmptyWithClosingTagXmlFactory extends XmlFactory {
 
     private static final long serialVersionUID = 1L;
@@ -30,7 +39,14 @@ public class EmptyWithClosingTagXmlFactory extends XmlFactory {
     @Override
     public ToXmlGenerator createGenerator(Writer out) throws IOException {
         var gen = super.createGenerator(out);
-        gen.setPrettyPrinter(new XmlPrettyPrinter());
+
+        var prettyPrinter = new XmlPrettyPrinter();
+        var mapper = (XmlMapper) gen.getCodec();
+        if (!mapper.isEnabled(SerializationFeature.INDENT_OUTPUT)) {
+            prettyPrinter.indentArraysWith(null);
+            prettyPrinter.indentObjectsWith(null);
+        }
+        gen.setPrettyPrinter(prettyPrinter);
         return gen;
     }
 
@@ -39,7 +55,6 @@ public class EmptyWithClosingTagXmlFactory extends XmlFactory {
         @Override
         public void writeEndObject(JsonGenerator gen, int nrOfEntries)
                 throws IOException {
-
             // Required to write something here to prevent the underlying
             // XML stream writer from writing a self-closing tag, which
             // is interpreted as null when reading it back.

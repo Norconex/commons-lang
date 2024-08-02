@@ -20,6 +20,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.BeanProperty;
@@ -34,7 +36,9 @@ import com.norconex.commons.lang.ClassUtil;
 import lombok.RequiredArgsConstructor;
 
 /**
- * Collection deserializer.
+ * XML collection deserializer. Adds support for {@link JsonXmlCollection}
+ * annotation and properly writes self-closing and empty tag pairs.
+ * for <code>null</code> and empty, respectively.
  * @param <T> type of collection
  * @see JsonXmlCollection
  * @since 3.0.0
@@ -75,41 +79,48 @@ public class JsonXmlCollectionDeserializer <T extends Collection<?>>
             JsonParser p, DeserializationContext ctx) throws IOException {
 
         var isXml = ctx instanceof XmlDeserializationContext;
-        var contentClass = currentProperty.getType().getContentType().getRawClass();
+        var enderToken = isXml ? JsonToken.END_OBJECT : JsonToken.END_ARRAY;
+
         var objects = createCollection();
 
-        // For XML, we move the cursor to first child value (i.e., unwrap).
-        if (isXml) {           // START_OBJECT (outer)
-            p.nextToken();     // FIELD_NAME (outer)
-            if (p.nextToken()  // START_OBJECT or VALUE_NULL (inner)
-                    == JsonToken.VALUE_NULL) {
-                // Self-closed tag which is interpreted as null.
-                p.nextToken(); // END_OBJECT (inner)
-                return null;
+        if (p.currentToken() == JsonToken.VALUE_STRING) {
+            //NOTE: only way we can get a string here is if we are dealing
+            // with an open and end tags and no content or only white spaces
+            // in between.
+            return (T) objects;
+        }
+
+        p.nextToken();
+
+        if (p.currentToken() == enderToken) { // <outer>
+            // Self-closed or empty tag, so we treat it as an instruction
+            // to blanking the list so we return it empty.
+            return (T) objects;
+        }
+
+        do {
+            // For XML, each collection entries are made of a field name
+            // followed by either an object or a scalar.
+            if (isXml) {
+                p.nextToken();  // <inner>  (field name)
             }
-        }
-
-        var hasChild = false;
-        while (p.nextToken()
-                != JsonToken.END_OBJECT) { // FIELD_NAME or END_OBJECT (inner)
-            p.nextToken(); //  move to value (object, scalar, etc.)
-            var value = p.readValueAs(contentClass);
-            objects.add(value);
-            hasChild = true;
-        }
-
-        if (isXml && hasChild) {
-            // if there were no children, the outer END_OBJECT has already
-            // been called at this point.
-            p.nextToken();  // END_OBJECT (outer)
-        }
-
+            // Since empty tags come up as empty string
+            // We check here to prevent reading a null entry, which may generate
+            // the instantiation of an object with nothing set on it.
+            if (StringUtils.isNotBlank(p.getText())) {
+                var value = p.readValueAs(currentProperty.getType()
+                        .getContentType().getRawClass());
+                if (!(value instanceof String v) || !StringUtils.isBlank(v)) {
+                    objects.add(value);
+                }
+            }
+        } while (p.nextToken() != enderToken);
         return  (T) objects;
     }
 
     @SuppressWarnings("unchecked")
     private Collection<Object> createCollection() {
-        // Type resolution priority:
+        // Collection type established in this priority order:
         // - specified on annotation
         // - actual type detected and instantiable
         // - HashSet if a Set
