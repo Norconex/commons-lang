@@ -33,7 +33,7 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <sonar.organization>norconex</sonar.organization>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
-    <sonar.exclusions>${project.basedir}/src/main/java/com/fasterxml/jackson/dataformat/xml/ser/**/*</sonar.exclusions>
+    <sonar.exclusions>**com/fasterxml/jackson/dataformat/xml/ser/**/*</sonar.exclusions>
      
     <commons-collections4.version>4.4</commons-collections4.version>
     <commons-io.version>2.13.0</commons-io.version>
