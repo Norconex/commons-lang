@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * A map implementation that reports changes to added {@link MapChangeListener}
  * instance.  Changes are triggered when a value change is detected
@@ -60,14 +62,14 @@ public class ObservableMap<K,V> implements Map<K,V> {
      * @param listener change listener
      */
     public void addMapChangeListener(MapChangeListener<K,V> listener) {
-        this.mcs.addMapChangeListener(listener);
+        mcs.addMapChangeListener(listener);
     }
     /**
      * Removes a map change listener.
      * @param listener change listener
      */
     public void removeMapChangeListener(MapChangeListener<K,V> listener) {
-        this.mcs.removeMapChangeListener(listener);
+        mcs.removeMapChangeListener(listener);
     }
 
     /**
@@ -75,6 +77,7 @@ public class ObservableMap<K,V> implements Map<K,V> {
      * @return listeners
      * @since 3.0.0
      */
+    @JsonIgnore
     public List<MapChangeListener<K, V>> getMapChangeListeners() {
         return mcs.getMapChangeListeners();
     }
@@ -92,6 +95,7 @@ public class ObservableMap<K,V> implements Map<K,V> {
         return map.size();
     }
     @Override
+    @JsonIgnore
     public boolean isEmpty() {
         return map.isEmpty();
     }
@@ -112,7 +116,7 @@ public class ObservableMap<K,V> implements Map<K,V> {
         if (mcs.isEmpty()) {
             return map.put(key, value);
         }
-        V oldValue = map.put(key, value);
+        var oldValue = map.put(key, value);
         mcs.fireMapChange(key, oldValue, value);
         return oldValue;
     }
@@ -122,7 +126,7 @@ public class ObservableMap<K,V> implements Map<K,V> {
         if (mcs.isEmpty()) {
             return map.remove(key);
         }
-        V oldValue = map.remove(key);
+        var oldValue = map.remove(key);
         mcs.fireMapChange((K) key, oldValue, null);
         return oldValue;
     }

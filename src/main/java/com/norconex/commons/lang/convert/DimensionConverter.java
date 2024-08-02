@@ -62,4 +62,32 @@ public class DimensionConverter extends AbstractConverter {
         }
         return type.cast(d);
     }
+
+    /**
+     * JSON (Jackson) serializer using this converter.
+     * @since 3.0.0
+     */
+    public static class JsonSerializer
+            extends GenericJsonSerializer<Dimension>{}
+
+    /**
+     * JSON (Jackson) deserializer using this converter.
+     * @since 3.0.0
+     */
+    public static class JsonDeserializer
+            extends GenericJsonDeserializer<Dimension> {
+        public JsonDeserializer() {
+            super(Dimension.class);
+        }
+    }
+
+    /**
+     * XML (JAXB) adapter using this converter.
+     * @since 3.0.0
+     */
+    public static class XmlAdapter extends GenericXmlAdapter<Dimension> {
+        public XmlAdapter() {
+            super(Dimension.class);
+        }
+    }
 }

@@ -1,4 +1,4 @@
-/* Copyright 2022 Norconex Inc.
+/* Copyright 2022-2023 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,17 +17,17 @@ package com.norconex.commons.lang.config;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.io.IOException;
 import java.nio.file.Path;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.xml.sax.ErrorHandler;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.norconex.commons.lang.SystemUtil;
 import com.norconex.commons.lang.security.Credentials;
-import com.norconex.commons.lang.xml.XMLConfigurable;
-import com.norconex.commons.lang.xml.XML;
 
 import lombok.Data;
 
@@ -39,93 +39,77 @@ class ConfigurationLoaderTest {
 
     @BeforeEach
     void beforeEach() {
-        configLoader = new ConfigurationLoader();
+        configLoader = ConfigurationLoader.builder().build();
     }
 
+    // when passing an object, should load into that object
+    @ParameterizedTest
+    @ValueSource(strings = {"xml", "json", "yaml"})
+    void testLoadToSimpleObject(String extension) throws IOException {
+        var testConfig = new TestConfig();
+        configLoader.toObject(cfgPath("object." + extension), testConfig);
+        assertThat(testConfig.getUsername()).isEqualTo("joe");
+        assertThat(testConfig.getPassword()).isEqualTo("whatever");
+    }
+
+    // when passing a class, should instantiate and load into created class.
+    @ParameterizedTest
+    @ValueSource(strings = {"xml", "json", "yaml"})
+    void testLoadToSimpleObjectFromClass(String extension)
+            throws IOException {
+        var creds = configLoader.toObject(
+                cfgPath("object." + extension), TestConfig.class);
+        assertThat(creds.getUsername()).isEqualTo("joe");
+        assertThat(creds.getPassword()).isEqualTo("whatever");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"xml", "json", "yaml"})
+    void testLoadToComplexObjectFromClass(String extension)
+            throws IOException {
+        var testConfig = configLoader.toObject(
+                cfgPath("object-with-creds." + extension),
+                TestConfigWithCreds.class);
+        assertThat(testConfig.getCredentials().getUsername())
+            .isEqualTo("joe");
+        assertThat(testConfig.getCredentials().getPassword())
+            .isEqualTo("whatever");
+    }
+
+    // Loads to com.norconex.commons.lang.xml.XML
     @Test
-    void testLoadXMLPath() {
-        XML xml = configLoader.loadXML(cfgPath("xml.xml"));
+    void testLoadToXml() {
+        var xml = configLoader.toXml(cfgPath("object.xml"));
         assertThat(xml.getString("username")).isEqualTo("joe");
         assertThat(xml.getString("password")).isEqualTo("whatever");
     }
 
     @Test
-    void testLoadXMLPathErrorHandler() {
-        XML xml = configLoader.loadXML(cfgPath("xml.xml"), null);
-        assertThat(xml.getString("username")).isEqualTo("joe");
-        assertThat(xml.getString("password")).isEqualTo("whatever");
-
-        assertThat(configLoader.loadXML(null, null)).isNull();
-    }
-
-    @Test
-    void testLoadFromXMLPath() {
-        Credentials creds = configLoader.loadFromXML(cfgPath("xml.xml"));
-        assertThat(creds.getUsername()).isEqualTo("joe");
-        assertThat(creds.getPassword()).isEqualTo("whatever");
-    }
-
-    @Test
-    void testLoadFromXMLPathErrorHandler() {
-        Credentials creds = configLoader.loadFromXML(
-                cfgPath("xml.xml"), (ErrorHandler) null);
-        assertThat(creds.getUsername()).isEqualTo("joe");
-        assertThat(creds.getPassword()).isEqualTo("whatever");
-
-        assertThat((Object) configLoader.loadFromXML(
-                null, (ErrorHandler) null)).isNull();
-    }
-
-    @Test
-    void testLoadFromXMLPathClass() {
-        var creds = configLoader.loadFromXML(
-                cfgPath("xml.xml"), TestConfig.class);
-        assertThat(creds.getUsername()).isEqualTo("joe");
-        assertThat(creds.getPassword()).isEqualTo("whatever");
-    }
-
-    @Test
-    void testLoadFromXMLPathClassErrorHandler() {
-        var creds = configLoader.loadFromXML(
-                cfgPath("xml.xml"), TestConfig.class, null);
-        assertThat(creds.getUsername()).isEqualTo("joe");
-        assertThat(creds.getPassword()).isEqualTo("whatever");
-
-        assertThat(configLoader.loadFromXML(
-                null, (Class<?>) null, null)).isNull();
-    }
-
-    @Test
-    void testLoadFromXMLPathObject() {
-        TestConfig creds = new TestConfig();
-        configLoader.loadFromXML(cfgPath("xml.xml"), creds);
-        assertThat(creds.getUsername()).isEqualTo("joe");
-        assertThat(creds.getPassword()).isEqualTo("whatever");
-    }
-
-    @Test
-    void testLoadString() throws Exception {
-        configLoader.setVariablesFile(cfgPath("string.vars.txt"));
+    void testLoadToString() throws Exception {
+        var loader = ConfigurationLoader.builder()
+                .variablesFile(cfgPath("string.vars.txt"))
+                .build();
         var str = SystemUtil.callWithProperty("VAR_E", "beans", () ->
-            configLoader.loadString(cfgPath("string.cfg")));
+            loader.toString(cfgPath("string.cfg")));
         // "varB" should not be resolved as it comes from an #include
         // directive (as opposed to parse)
         assertThat(StringUtils.remove(str, '\r')).isEqualTo(
-                "Config with coffee in it.\n"
-                + "It includes ${varB}, \n"
-                + "as well as milk, sugar and beans.");
-        
+                """
+                	Config with coffee in it.
+                	It includes ${varB},\s
+                	as well as milk, sugar and beans.""");
+
         // null path
-        assertThrows(ConfigurationException.class, 
-                () -> configLoader.loadString(null));
+        assertThrows(ConfigurationException.class,
+                () -> loader.toString(null));
 
         // blank include
-        Path blankIncl = cfgPath("blank-include.cfg");
-        assertThrows(ConfigurationException.class, 
-                () -> configLoader.loadString(blankIncl));
+        var blankIncl = cfgPath("blank-include.cfg");
+        assertThrows(ConfigurationException.class,
+                () -> loader.toString(blankIncl));
 
         // invalid path
-        assertThat(configLoader.loadString(cfgPath("doesntExist"))).isNull();
+        assertThat(loader.toString(cfgPath("doesntExist"))).isNull();
     }
 
     private Path cfgPath(String path) {
@@ -133,17 +117,12 @@ class ConfigurationLoaderTest {
     }
 
     @Data
-    static class TestConfig implements XMLConfigurable {
+    static class TestConfig {
         private String username;
         private String password;
-        @Override
-        public void loadFromXML(XML xml) {
-            username = xml.getString("username");
-            password = xml.getString("password");
-        }
-        @Override
-        public void saveToXML(XML xml) {
-            //NOOP
-        }
+    }
+    @Data
+    static class TestConfigWithCreds {
+        private Credentials credentials;
     }
 }

@@ -34,6 +34,17 @@ import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.convert.CharsetConverter;
+import com.norconex.commons.lang.convert.ContentTypeConverter;
+import com.norconex.commons.lang.convert.DimensionConverter;
+import com.norconex.commons.lang.convert.DurationConverter;
+import com.norconex.commons.lang.convert.FileConverter;
+import com.norconex.commons.lang.convert.InstantConverter;
+import com.norconex.commons.lang.convert.LocalDateTimeConverter;
+import com.norconex.commons.lang.convert.LocaleConverter;
+import com.norconex.commons.lang.convert.PathConverter;
+import com.norconex.commons.lang.convert.PatternConverter;
+import com.norconex.commons.lang.convert.ZonedDateTimeConverter;
 import com.norconex.commons.lang.file.ContentType;
 import com.norconex.commons.lang.img.MutableImage;
 import com.norconex.commons.lang.img.MutableImage.Quality;
@@ -89,28 +100,28 @@ class XMLAdaptersTest {
     @XmlAccessorType(XmlAccessType.FIELD)
     @Data
     public static class JaxbComplexTypes implements XMLConfigurable {
-        @XmlJavaTypeAdapter(value=XMLAdapters.CharsetAdapter.class)
+        @XmlJavaTypeAdapter(CharsetConverter.XmlAdapter.class)
         private Charset charset;
-        @XmlJavaTypeAdapter(XMLAdapters.ContentTypeAdapter.class)
+        @XmlJavaTypeAdapter(ContentTypeConverter.XmlAdapter.class)
         private ContentType contentType;
-        @XmlJavaTypeAdapter(XMLAdapters.DimensionAdapter.class)
+        @XmlJavaTypeAdapter(DimensionConverter.XmlAdapter.class)
         private Dimension dimension;
-        @XmlJavaTypeAdapter(XMLAdapters.DurationAdapter.class)
+        @XmlJavaTypeAdapter(DurationConverter.XmlAdapter.class)
         private Duration duration;
-        @XmlJavaTypeAdapter(XMLAdapters.FileAdapter.class)
+        @XmlJavaTypeAdapter(FileConverter.XmlAdapter.class)
         private File file;
-        @XmlJavaTypeAdapter(XMLAdapters.InstantAdapter.class)
+        @XmlJavaTypeAdapter(InstantConverter.XmlAdapter.class)
         private Instant instant;
-        @XmlJavaTypeAdapter(XMLAdapters.LocalDateTimeAdapter.class)
+        @XmlJavaTypeAdapter(LocalDateTimeConverter.XmlAdapter.class)
         private LocalDateTime localDateTime;
-        @XmlJavaTypeAdapter(XMLAdapters.LocaleAdapter.class)
+        @XmlJavaTypeAdapter(LocaleConverter.XmlAdapter.class)
         private Locale locale;
-        @XmlJavaTypeAdapter(XMLAdapters.PathAdapter.class)
+        @XmlJavaTypeAdapter(PathConverter.XmlAdapter.class)
         private Path path;
-        @XmlJavaTypeAdapter(XMLAdapters.PatternAdapter.class)
+        @XmlJavaTypeAdapter(PatternConverter.XmlAdapter.class)
         @EqualsAndHashCode.Exclude
         private Pattern pattern;
-        @XmlJavaTypeAdapter(XMLAdapters.ZonedDateTimeAdapter.class)
+        @XmlJavaTypeAdapter(ZonedDateTimeConverter.XmlAdapter.class)
         private ZonedDateTime zonedDateTime;
 
         // don't need adapters

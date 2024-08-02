@@ -30,10 +30,10 @@ class CachedOutputStreamTest {
 
     @Test
     void testContentMatchMemCache() throws IOException {
-        String content = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        var content = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-        CachedStreamFactory factory = new CachedStreamFactory(200, 100);
-        CachedOutputStream cache = factory.newOuputStream();
+        var factory = new CachedStreamFactory(200, 100);
+        var cache = factory.newOuputStream();
         InputStream is = null;
 
         try {
@@ -48,10 +48,10 @@ class CachedOutputStreamTest {
 
     @Test
     void testContentMatchFileCache() throws IOException {
-        String content = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        var content = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-        CachedStreamFactory factory = new CachedStreamFactory(200, 10);
-        CachedOutputStream cache = factory.newOuputStream();
+        var factory = new CachedStreamFactory(200, 10);
+        var cache = factory.newOuputStream();
 
         InputStream is = null;
         try {
@@ -66,24 +66,28 @@ class CachedOutputStreamTest {
 
     @Test
     void testMisc() throws IOException {
-        CachedStreamFactory factory = new CachedStreamFactory(200, 10);
-        ByteArrayOutputStream out1 = new ByteArrayOutputStream();
-        ByteArrayOutputStream out2 = new ByteArrayOutputStream();
+        var factory = new CachedStreamFactory(200, 10);
+        var out1 = new ByteArrayOutputStream();
+        var out2 = new ByteArrayOutputStream();
 
-        CachedOutputStream cos1 = factory.newOuputStream(out1);
-        CachedOutputStream cos2 =
+        var cos1 = factory.newOuputStream(out1);
+        var cos2 =
                 factory.newOuputStream(new BufferedOutputStream(out2));
 
         cos1.write("blah".getBytes());
         cos1.write((byte) '!');
         assertThat(cos1.isCacheEmpty()).isFalse();
         cos1.close();
+        assertThat(cos1.isCacheEmpty()).isFalse();
+        cos1.dispose();
         assertThat(cos1.isCacheEmpty()).isTrue();
 
         cos2.write("blah".getBytes());
         cos2.write((byte) '!');
         assertThat(cos2.isCacheEmpty()).isFalse();
         cos2.close();
+        assertThat(cos2.isCacheEmpty()).isFalse();
+        cos2.dispose();
         assertThat(cos2.isCacheEmpty()).isTrue();
 
         assertThat(new String(out1.toByteArray())).isEqualTo("blah!");
@@ -100,7 +104,7 @@ class CachedOutputStreamTest {
 
     private String readCacheToString(InputStream is) throws IOException {
         long i;
-        StringBuilder b = new StringBuilder();
+        var b = new StringBuilder();
         while ((i=is.read()) != -1) {
             b.append((char) i);
         }

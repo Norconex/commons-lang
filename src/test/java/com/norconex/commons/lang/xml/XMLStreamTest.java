@@ -48,7 +48,7 @@ class XMLStreamTest {
 
         // 1 book ISBN is 0000-0000
         Assertions.assertTrue("0000-0000".equals(stream()
-                .filter(c -> c.getLocalName().equals("book"))
+                .filter(c -> "book".equals(c.getLocalName()))
                 .findFirst()
                 .map(c -> c.getAttributes().getString("isbn"))
                 .orElse(null)));
@@ -57,35 +57,35 @@ class XMLStreamTest {
         //     2 plants have "botanic:" prefix
         //     1 plant has "agriculture:" prefix
         Assertions.assertEquals(4, stream()
-                .filter(c -> c.getLocalName().equals("plant"))
+                .filter(c -> "plant".equals(c.getLocalName()))
                 .count());
         Assertions.assertEquals(2, stream()
-                .filter(c -> c.getName().equals("botanic:plant"))
+                .filter(c -> "botanic:plant".equals(c.getName()))
                 .count());
         Assertions.assertEquals(1, stream()
-                .filter(c -> c.getName().equals("agriculture:plant"))
+                .filter(c -> "agriculture:plant".equals(c.getName()))
                 .count());
 
         // Same as previous test, but using path
         Assertions.assertEquals(4, stream()
-                .filter(c -> c.getLocalPath().equals("/catalog/plant"))
+                .filter(c -> "/catalog/plant".equals(c.getLocalPath()))
                 .count());
         Assertions.assertEquals(2, stream()
-                .filter(c -> c.getPath().equals("/catalog/botanic:plant"))
+                .filter(c -> "/catalog/botanic:plant".equals(c.getPath()))
                 .count());
         Assertions.assertEquals(1, stream()
-                .filter(c -> c.getPath().equals("/catalog/agriculture:plant"))
+                .filter(c -> "/catalog/agriculture:plant".equals(c.getPath()))
                 .count());
     }
 
     @Test
     void testIterateReadAsXML() throws IOException {
-        int totalPlantPrice = 0;
-        int totalBookPages = 0;
+        var totalPlantPrice = 0;
+        var totalBookPages = 0;
         for (XMLCursor c : new XML(getXmlString(XMLStreamTest.class))) {
-            if (c.getLocalName().equals("plant")) {
+            if ("plant".equals(c.getLocalName())) {
                 totalPlantPrice += c.readAsXML().getInteger("price");
-            } else if (c.getLocalName().equals("book")) {
+            } else if ("book".equals(c.getLocalName())) {
                 totalBookPages += c.readAsXML().getInteger("@pageCount");
             }
         }

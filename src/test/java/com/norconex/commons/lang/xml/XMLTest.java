@@ -51,21 +51,21 @@ import com.norconex.commons.lang.convert.ConverterException;
 import com.norconex.commons.lang.convert.DateConverter;
 import com.norconex.commons.lang.convert.DurationConverter;
 import com.norconex.commons.lang.convert.EnumConverter;
-import com.norconex.commons.lang.encrypt.EncryptionKey.Source;
 import com.norconex.commons.lang.map.MapUtil;
-import com.norconex.commons.lang.net.Host;
-import com.norconex.commons.lang.net.ProxySettings;
-import com.norconex.commons.lang.security.Credentials;
 import com.norconex.commons.lang.time.DurationUnit;
 import com.norconex.commons.lang.unit.DataUnit;
 import com.norconex.commons.lang.url.HttpURL;
+import com.norconex.commons.lang.xml.mock.MockCredentials;
+import com.norconex.commons.lang.xml.mock.MockEncryptionKey.Source;
+import com.norconex.commons.lang.xml.mock.MockHost;
+import com.norconex.commons.lang.xml.mock.MockProxySettings;
 
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 class XMLTest {
 
-    private static final Logger LOG =
+    static final Logger LOG =
             LoggerFactory.getLogger(XMLTest.class);
 
     public static final String SAMPLE_XML =
@@ -81,7 +81,7 @@ class XMLTest {
     static final String SAMPLE_PROXYSETTINGS_XML =
             """
     	<proxySettings\s\
-    	class="com.norconex.commons.lang.net.ProxySettings">\
+    	class="com.norconex.commons.lang.xml.mock.MockProxySettings">\
     	<host>\
     	<name>example.com</name>\
     	<port>123</port>\
@@ -95,14 +95,15 @@ class XMLTest {
     	</credentials>\
     	</proxySettings>""";
 
-    private static final Credentials SAMPLE_CREDS_OBJECT =
-            new Credentials("joe", "nottelling");
+    private static final MockCredentials SAMPLE_CREDS_OBJECT =
+            new MockCredentials("joe", "nottelling");
 
-    private static final ProxySettings SAMPLE_PROXY_OBJECT = new ProxySettings()
-            .setHost(new Host("example.com", 123))
-            .setScheme("https")
-            .setRealm("Cinderella")
-            .setCredentials(SAMPLE_CREDS_OBJECT);
+    private static final MockProxySettings SAMPLE_PROXY_OBJECT =
+            new MockProxySettings()
+                .setHost(new MockHost("example.com", 123))
+                .setScheme("https")
+                .setRealm("Cinderella")
+                .setCredentials(SAMPLE_CREDS_OBJECT);
 
     @TempDir
     private Path tempDir;
@@ -297,13 +298,13 @@ class XMLTest {
                 "Attribute 'invalid' is not allowed");
 
         errors.clear();
-        xml.validate(new ProxySettings());
+        xml.validate(new MockProxySettings());
         assertThat(errors.getErrors()).hasSize(1);
         assertThat(errors.getErrors().get(0).getMessage()).contains(
                 "Attribute 'invalid' is not allowed");
 
         errors.clear();
-        xml.validate(ProxySettings.class);
+        xml.validate(MockProxySettings.class);
         assertThat(errors.getErrors()).hasSize(1);
         assertThat(errors.getErrors().get(0).getMessage()).contains(
                 "Attribute 'invalid' is not allowed");
@@ -458,13 +459,13 @@ class XMLTest {
 
     @Test
     void testGetObject() {
-        assertThat(new XML(SAMPLE_PROXYSETTINGS_XML).<ProxySettings>getObject(
+        assertThat(new XML(SAMPLE_PROXYSETTINGS_XML).<MockProxySettings>getObject(
                 ".", null)).isEqualTo(SAMPLE_PROXY_OBJECT);
-        assertThat(new XML(SAMPLE_PROXYSETTINGS_XML).<ProxySettings>getObject(
+        assertThat(new XML(SAMPLE_PROXYSETTINGS_XML).<MockProxySettings>getObject(
                 null, null)).isEqualTo(SAMPLE_PROXY_OBJECT);
-        assertThat(new XML(SAMPLE_PROXYSETTINGS_XML).<ProxySettings>getObject(
-                "pathToNil", new ProxySettings()))
-            .isEqualTo(new ProxySettings());
+        assertThat(new XML(SAMPLE_PROXYSETTINGS_XML).<MockProxySettings>getObject(
+                "pathToNil", new MockProxySettings()))
+            .isEqualTo(new MockProxySettings());
         assertThat(new XML(
                 "<converter class=\"DurationConverter\"></converter>")
             .<DurationConverter>getObjectImpl(DurationConverter.class, "."))
@@ -572,32 +573,32 @@ class XMLTest {
         proxy = new XML("<proxySettings/>").toObject(SAMPLE_PROXY_OBJECT);
         assertThat(proxy).isNull();
         proxy = new XML("<proxySettings/>").toObjectImpl(
-                ProxySettings.class, SAMPLE_PROXY_OBJECT);
+                MockProxySettings.class, SAMPLE_PROXY_OBJECT);
         assertThat(proxy).isNull();
 
-        proxy = new XML("<proxySettings "
-                + "class=\"com.norconex.commons.lang.net.ProxySettings\"/>")
-                .toObject(new ProxySettings());
-        assertThat(proxy).isEqualTo(new ProxySettings());
+        proxy = new XML("<proxySettings class="
+                + "\"com.norconex.commons.lang.xml.mock.MockProxySettings\"/>")
+                .toObject(new MockProxySettings());
+        assertThat(proxy).isEqualTo(new MockProxySettings());
 
-        assertThat(new XML(SAMPLE_XML).toObjectImpl(null, new ProxySettings()))
-            .isEqualTo(new ProxySettings());
+        assertThat(new XML(SAMPLE_XML).toObjectImpl(null, new MockProxySettings()))
+            .isEqualTo(new MockProxySettings());
 
         // test when class is not in XML
         var xml = new XML(SAMPLE_PROXYSETTINGS_XML);
-        xml.setAttribute("class", "lang.net.ProxySettings");
-        proxy = xml.toObjectImpl(ProxySettings.class);
+        xml.setAttribute("class", "xml.mock.MockProxySettings");
+        proxy = xml.toObjectImpl(MockProxySettings.class);
         assertThat(proxy).isEqualTo(SAMPLE_PROXY_OBJECT);
 
         //test errors
         var badXml = new XML(SAMPLE_PROXYSETTINGS_XML);
         badXml.setAttribute("class", "blah.blah.IdoNotExist");
         assertThatExceptionOfType(XMLException.class).isThrownBy(
-                () -> badXml.toObjectImpl(ProxySettings.class))
+                () -> badXml.toObjectImpl(MockProxySettings.class))
             .withStackTraceContaining("No class implementing");
 
         var badXml2 = new XML(SAMPLE_PROXYSETTINGS_XML);
-        badXml.setAttribute("class", "lang.net.ProxySettings");
+        badXml.setAttribute("class", "xml.mock.MockProxySettings");
         assertThatExceptionOfType(XMLException.class).isThrownBy(
                 () -> badXml2.toObjectImpl(HttpURL.class))
             .withStackTraceContaining("is not an instance of");
@@ -617,14 +618,14 @@ class XMLTest {
     void testPopulate() {
         var expectedProxy = SAMPLE_PROXY_OBJECT;
 
-        var proxy = new ProxySettings();
+        var proxy = new MockProxySettings();
         new XML(SAMPLE_PROXYSETTINGS_XML).populate(proxy);
         assertThat(proxy).isEqualTo(expectedProxy);
 
         //test errors
         var xml = new XML("proxySettings");
         xml.setAttribute("badOne", "IM_BAD");
-        var badProxy = new ProxySettings();
+        var badProxy = new MockProxySettings();
         assertThatExceptionOfType(XMLException.class).isThrownBy(
                 () -> xml.populate(badProxy)
         )
@@ -632,12 +633,12 @@ class XMLTest {
                 "Attribute 'badOne' is not allowed to appear");
 
         // test with xpath
-        var creds = new Credentials();
+        var creds = new MockCredentials();
         new XML(SAMPLE_PROXYSETTINGS_XML).populate(creds, "credentials");
         assertThat(creds).isEqualTo(expectedProxy.getCredentials());
 
         // test nulls
-        var proxyNull = new ProxySettings();
+        var proxyNull = new MockProxySettings();
         assertThatNoException().isThrownBy(
                 () -> new XML((String) null).populate(proxyNull));
         assertThatNoException().isThrownBy(
@@ -1083,12 +1084,41 @@ class XMLTest {
         var c = new ClassWithDefaultLists();
 
         // Defaults should be loaded back:
-       // XML.assertWriteRead(c, "test");
+        XML.assertWriteRead(c, "test");
 
         // Defaults should not be loaded back:
         c.enums.clear();
         c.strings.clear();
         XML.assertWriteRead(c, "test");
+    }
+
+    @Test
+    void testSetGetRemoveContentText() {
+        var xml = new XML("""
+            <test attr="val">
+              here
+              <child childAttr="childVal">a child</child>
+
+              there
+            </test>
+            """);
+
+        assertThat(xml.getTextContent()).isEqualTo("here there");
+        assertThat(xml.getXML("child").getTextContent()).isEqualTo("a child");
+
+        xml.setTextContent("somewhere");
+        assertThat(xml.getTextContent()).isEqualTo("somewhere");
+        // child elements should not be affected
+        assertThat(xml.getXML("child").getTextContent()).isEqualTo("a child");
+
+
+        xml.removeTextContent();
+        assertThat(xml.getTextContent()).isNull();
+        // child elements should not be affected
+        assertThat(xml.getXML("child").getTextContent()).isEqualTo("a child");
+
+        xml.setTextContent("some value");
+        assertThat(xml.getTextContent()).isEqualTo("some value");
     }
 
     @ToString

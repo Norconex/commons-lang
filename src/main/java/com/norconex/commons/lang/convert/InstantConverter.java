@@ -1,4 +1,4 @@
-/* Copyright 2019 Norconex Inc.
+/* Copyright 2019-2023 Norconex Inc.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -30,5 +30,33 @@ public class InstantConverter extends AbstractConverter {
     @Override
     protected <T> T nullSafeToType(String value, Class<T> type) {
         return type.cast(Instant.parse(value.trim()));
+    }
+
+    /**
+     * JSON (Jackson) serializer using this converter.
+     * @since 3.0.0
+     */
+    public static class JsonSerializer
+            extends GenericJsonSerializer<Instant>{}
+
+    /**
+     * JSON (Jackson) deserializer using this converter.
+     * @since 3.0.0
+     */
+    public static class JsonDeserializer
+            extends GenericJsonDeserializer<Instant> {
+        public JsonDeserializer() {
+            super(Instant.class);
+        }
+    }
+
+    /**
+     * XML (JAXB) adapter using this converter.
+     * @since 3.0.0
+     */
+    public static class XmlAdapter extends GenericXmlAdapter<Instant> {
+        public XmlAdapter() {
+            super(Instant.class);
+        }
     }
 }

@@ -988,13 +988,19 @@ public final class BeanUtil {
                 && !args.visitor.test((T) args.bean)) {
             return false;
         }
-        for (Object child : getChildren(args.bean)) {
-            var childArgs = args.withBean(child);
-            if (!childArgs.visitIfMap(BeanUtil::doVisitMap)
-                    || !childArgs.visitIfCollection(BeanUtil::doVisitCollection)
-                    || !doVisit(childArgs)) {
-                return false;
+        
+        if (args.visitIfMap(BeanUtil::doVisitMap)
+                && args.visitIfCollection(BeanUtil::doVisitCollection)) {
+            for (Object child : getChildren(args.bean)) {
+                var childArgs = args.withBean(child);
+                if (!childArgs.visitIfMap(BeanUtil::doVisitMap)
+                        || !childArgs.visitIfCollection(BeanUtil::doVisitCollection)
+                        || !doVisit(childArgs)) {
+                    return false;
+                }
             }
+        } else {
+            return false;
         }
         return true;
     }
@@ -1036,14 +1042,20 @@ public final class BeanUtil {
             }
         }
 
-        for (Object child : getChildren(args.bean)) {
-            var childArgs = args.withBean(child);
-            if (!childArgs.visitIfMap(BeanUtil::doVisitPropertiesMap)
-                    || !childArgs.visitIfCollection(
-                            BeanUtil::doVisitPropertiesCollection)
-                    || !doVisitProperties(childArgs)) {
-                return false;
+        if (args.visitIfMap(BeanUtil::doVisitPropertiesMap)
+                && args.visitIfCollection(
+                        BeanUtil::doVisitPropertiesCollection)) {
+            for (Object child : getChildren(args.bean)) {
+                var childArgs = args.withBean(child);
+                if (!childArgs.visitIfMap(BeanUtil::doVisitPropertiesMap)
+                        || !childArgs.visitIfCollection(
+                                BeanUtil::doVisitPropertiesCollection)
+                        || !doVisitProperties(childArgs)) {
+                    return false;
+                }
             }
+        } else {
+            return false;
         }
         return true;
     }
@@ -1240,7 +1252,7 @@ public final class BeanUtil {
             if (bean instanceof Collection) {
                 return predicate.test((Collection<Object>) bean, this);
             }
-            // continue if not a map
+            // continue if not a collection
             return true;
         }
     }

@@ -1,4 +1,4 @@
-/* Copyright 2015-2022 Norconex Inc.
+/* Copyright 2015-2023 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,9 +21,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.norconex.commons.lang.security.Credentials;
-import com.norconex.commons.lang.xml.XML;
-import com.norconex.commons.lang.xml.XMLConfigurable;
 
 import lombok.EqualsAndHashCode;
 
@@ -31,14 +31,6 @@ import lombok.EqualsAndHashCode;
  * <p>Pointer to the an encryption key, or the encryption key itself. An
  * encryption key can be seen as equivalent to a secret key,
  * passphrase or password.</p>
- *
- * <p>
- * Because this class is immutable, it does not implement
- * {@link XMLConfigurable} directly, but static methods
- * {@link #saveToXML(XML, EncryptionKey)} and
- * {@link #loadFromXML(XML, EncryptionKey)} can be used instead.
- * The usage example below is for when used embedded in a parent configuration.
- * </p>
  *
  * {@nx.xml.usage
  * <value>(The actual key or reference to it.)</value>
@@ -99,7 +91,14 @@ public final class EncryptionKey implements Serializable {
      * @param size the size in bits of the encryption key
      * @param source the type of value
      */
-    public EncryptionKey(String value, Source source, int size) {
+    @JsonCreator
+    public EncryptionKey(
+            @JsonProperty("value")
+            String value,
+            @JsonProperty("source")
+            Source source,
+            @JsonProperty("size")
+            int size) {
         this.value = value;
         this.source = source;
         this.size = size;
@@ -194,47 +193,6 @@ public final class EncryptionKey implements Serializable {
         } catch (IOException e) {
             throw new EncryptionException(
                     "Could not read key file.", e);
-        }
-    }
-
-    /**
-     * Gets an encryption key from an existing XML.
-     * @param xml the XML to get the key from
-     * @param defaultKey default encryption key if it does not exist in XML
-     * @return encryption key
-     * @since 2.0.0
-     */
-    public static EncryptionKey loadFromXML(XML xml, EncryptionKey defaultKey) {
-        if (xml == null) {
-            return defaultKey;
-        }
-
-        var value = xml.getString("value");
-        if (value != null && value.trim().length() > 0) {
-            var source = xml.getString("source");
-            var size = xml.getInteger("size", DEFAULT_KEY_SIZE);
-            EncryptionKey.Source enumSource = null;
-            if (source != null && source.trim().length() > 0) {
-                enumSource = EncryptionKey.Source.valueOf(source.toUpperCase());
-            }
-            return new EncryptionKey(value, enumSource, size);
-        }
-        return defaultKey;
-    }
-
-    /**
-     * Adds an encryption key to an existing XML.
-     * @param xml the XML to add the key to
-     * @param key encryption key
-     * @since 2.0.0
-     */
-    public static void saveToXML(XML xml, EncryptionKey key) {
-        if (key != null) {
-            xml.addElement("value", key.value);
-            xml.addElement("size", key.size);
-            if (key.source != null) {
-                xml.addElement("source", key.source.name().toLowerCase());
-            }
         }
     }
 

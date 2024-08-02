@@ -2,10 +2,6 @@
 TODO:
 ==============
 
-- Maybe: replace json with jackson?
-
-- Consider integration with GitHub Actions and deploy zips there?
-
 - Add {@nx.block.hidden that would hide in javadoc, but eligible for includes 
   in other classes.
 
@@ -16,13 +12,8 @@ TODO:
 - Add equiv. of "trimToNull" to "PropertyMatchers" so that blank values
   could be treated as null (i.e., non-existant).
 
-- Allow specifying a base package from which to scan for classes when using
-  ClassFinder.
-
 - Maybe: have CachedStreamFactory set itself on current thread (but not 
   overwriting it on parent thread).
-
-- XSD: Always have a type and an element extending it to improve reuse.
 
 - Modify Jar copier to handle cases where snapshot are timestamped instead and
   not being considered the latest when they should.  Like:
@@ -41,15 +32,9 @@ LOWER:
 - Use nill/nillable for null handling, as desribed here:
   https://kiranscope.blogspot.com/2009/03/blank-space-or-null-string-validation.html
 
-- Have loadFromXML return validationError list.
-
 - DONE? Add feature and tests for when parent element is specified but has no
   value, which means blanking a list 
   (e.g. HTTP Collector: StandardSitemapResolverTest).
-
-- Make method naming more consistent between Properties and XML.   
-
-- Overload Properties load/store methods to accept a Path 
 
 - Make Properties and XML take a IConverter as constructor agreement, but 
   default to Converter static instance.
@@ -67,23 +52,8 @@ LOWER:
 MAYBE/IDEAS:
 --------------
 
-- Make deployment part of CICD tool. 
-
 - MAYBE modify assembly to use licenses.xml instead of THIRD-PARTY?
   (the second is easier to read for non-techies)  
-
-- Add XML.getValue(String xpath, Class<T> type) and use Convert 
-  for conversion.  Remove getXXX Methods?  Do same with Set if not done already.
-  
-- Same as above, but for Properties
-
-- Maybe: See if we can have getElement() use return type of assigned variable
-  to determine how to create the object instead of having getXXX methods?
-
-- Have option to not do validation on loading of dom, in case a consuming
-  class wants to modify the DOM before validation.
-
-- Remove all @since 1.x???
 
 - Reduce dependencies wherever possible.
 

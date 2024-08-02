@@ -20,24 +20,21 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-/**
- */
 class ByteArrayOutputStreamTest {
 
     @Test
     void testByteArrayOutputStream() throws IOException {
-        String val1 = "0123456789";
-        String val2 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        byte[] b = new byte[5];
-        ByteArrayOutputStream out = new ByteArrayOutputStream(5);
-        String enc = StandardCharsets.US_ASCII.toString();
+        var val1 = "0123456789";
+        var val2 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        var b = new byte[5];
+        var out = new ByteArrayOutputStream(5);
+        var enc = StandardCharsets.US_ASCII.toString();
 
         Assertions.assertEquals(-1, out.getByte(5), "no-write-yet-getByte");
         Assertions.assertEquals(
@@ -66,7 +63,7 @@ class ByteArrayOutputStreamTest {
         Assertions.assertEquals("678", new String(b, enc), "getBytes-678");
 
         b = new byte[12];
-        int read = out.getBytes(b, 8);
+        var read = out.getBytes(b, 8);
         Assertions.assertEquals(
                 "89", new String(b, 0, read, enc), "getBytes-89");
         out.write(val2.getBytes(enc));
@@ -81,6 +78,7 @@ class ByteArrayOutputStreamTest {
         out.close();
     }
 
+    @SuppressWarnings("resource")
     @Test
     void testNullAndErrors() throws IOException {
         assertThrows(IllegalArgumentException.class,
@@ -95,25 +93,25 @@ class ByteArrayOutputStreamTest {
 
     @Test
     void testWrite() throws IOException {
-        String val1 = "012345678";
-        try (ByteArrayOutputStream out = new ByteArrayOutputStream(10)) {
+        var val1 = "012345678";
+        try (var out = new ByteArrayOutputStream(10)) {
             out.write(val1.getBytes(UTF_8));
             out.write('9');
             out.write('A');
             assertThat(out.toString()).hasToString("0123456789A");
         }
 
-        try (ByteArrayOutputStream out = new ByteArrayOutputStream(10);
-                ByteArrayInputStream in =
+        try (var out = new ByteArrayOutputStream(10);
+                var in =
                         new ByteArrayInputStream(val1.getBytes(UTF_8))) {
             assertThat(out.write(in)).isEqualTo(9);
             out.reset();
             assertThat(out.write(in)).isZero();
         }
 
-        String val2 = "012345678";
-        try (ByteArrayOutputStream out1 = new ByteArrayOutputStream(10);
-                ByteArrayOutputStream out2 = new ByteArrayOutputStream(10)) {
+        var val2 = "012345678";
+        try (var out1 = new ByteArrayOutputStream(10);
+                var out2 = new ByteArrayOutputStream(10)) {
             out1.write(val2.getBytes(UTF_8));
             out1.writeTo(out2);
             assertThat(out2.toString()).hasToString("012345678");
@@ -122,14 +120,14 @@ class ByteArrayOutputStreamTest {
 
     @Test
     void testToX() throws IOException {
-        String val = "0123456789";
-        try (ByteArrayInputStream in =
+        var val = "0123456789";
+        try (var in =
                         new ByteArrayInputStream(val.getBytes(UTF_8))) {
-            InputStream is = ByteArrayOutputStream.toBufferedInputStream(in);
+            var is = ByteArrayOutputStream.toBufferedInputStream(in);
             assertThat(IOUtils.toString(is, UTF_8)).hasToString(val);
         }
 
-        try (ByteArrayOutputStream out = new ByteArrayOutputStream(10)) {
+        try (var out = new ByteArrayOutputStream(10)) {
             assertThat(out.toByteArray()).isEmpty();
             out.write(val.getBytes(UTF_8));
             assertThat(out.toString(UTF_8)).isEqualTo(val);

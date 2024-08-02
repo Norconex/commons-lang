@@ -1,4 +1,4 @@
-/* Copyright 2018 Norconex Inc.
+/* Copyright 2018-2023 Norconex Inc.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -15,11 +15,9 @@
 package com.norconex.commons.lang.convert;
 
 import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 /**
- * GenericConverter supporting both {@link File} and {@link Path}.
+ * GenericConverter for {@link File}.
  * @since 2.0.0
  */
 public class FileConverter extends AbstractConverter {
@@ -34,10 +32,36 @@ public class FileConverter extends AbstractConverter {
         if (File.class.equals(type)) {
             return type.cast(new File(value));
         }
-        if (Path.class.equals(type)) {
-            return type.cast(Paths.get(value));
-        }
         throw new ConverterException(
                 "Type " + type + " is not supported by this converter.");
     }
+
+    /**
+     * JSON (Jackson) serializer using this converter.
+     * @since 3.0.0
+     */
+    public static class JsonSerializer
+            extends GenericJsonSerializer<File>{}
+
+    /**
+     * JSON (Jackson) deserializer using this converter.
+     * @since 3.0.0
+     */
+    public static class JsonDeserializer
+            extends GenericJsonDeserializer<File> {
+        public JsonDeserializer() {
+            super(File.class);
+        }
+    }
+
+    /**
+     * XML (JAXB) adapter using this converter.
+     * @since 3.0.0
+     */
+    public static class XmlAdapter extends GenericXmlAdapter<File> {
+        public XmlAdapter() {
+            super(File.class);
+        }
+    }
 }
+

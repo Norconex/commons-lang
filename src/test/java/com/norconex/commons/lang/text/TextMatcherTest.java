@@ -25,8 +25,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
 
+import com.norconex.commons.lang.bean.BeanMapper;
 import com.norconex.commons.lang.text.TextMatcher.Method;
-import com.norconex.commons.lang.xml.XML;
 
 /**
  * @since 2.0.0
@@ -35,12 +35,12 @@ class TextMatcherTest {
 
     @Test
     void testMisc() {
-        TextMatcher tm = TextMatcher
+        var tm = TextMatcher
                 .basic("blah")
                 .trim()
                 .replaceAll()
                 .ignoreCase();
-        TextMatcher tmCopy = new TextMatcher();
+        var tmCopy = new TextMatcher();
         tm.copyTo(tmCopy);
         assertThat(tmCopy).isEqualTo(tm);
 
@@ -56,9 +56,9 @@ class TextMatcherTest {
 
     @Test
     void testReplace() {
-        String text = "un gros-gros éléphant";
+        var text = "un gros-gros éléphant";
 
-        TextMatcher tm = new TextMatcher("gros");
+        var tm = new TextMatcher("gros");
 
         assertThat(tm
                 .replace(text, "super"))
@@ -143,7 +143,7 @@ class TextMatcherTest {
 
     @Test
     void testWriteRead() {
-        TextMatcher tm = new TextMatcher()
+        var tm = new TextMatcher()
                 .setPattern("mypattern")
                 .partial()
                 .ignoreDiacritic()
@@ -151,10 +151,7 @@ class TextMatcherTest {
                 .replaceAll()
                 .setMethod(Method.WILDCARD);
         assertThatNoException().isThrownBy(
-                () -> XML.assertWriteRead(tm, "textMatcher"));
-
-        assertThatNoException().isThrownBy(() -> tm.loadFromXML(null));
-        assertThatNoException().isThrownBy(() -> tm.saveToXML(null));
+                () -> BeanMapper.DEFAULT.assertWriteRead(tm));
     }
 
     @ParameterizedTest()
@@ -167,7 +164,7 @@ class TextMatcherTest {
             boolean wildAssert,
             boolean regexAssert,
             boolean csvAssert) {
-        TextMatcher sr = new TextMatcher()
+        var sr = new TextMatcher()
                 .setPattern(pattern)
                 .setPartial(!matchWhole);
         testMatch(basicAssert, Method.BASIC, sr, text);
@@ -177,7 +174,7 @@ class TextMatcherTest {
     }
     private void testMatch(
             boolean expected, Method method, TextMatcher sr, String text) {
-        TextMatcher s = new TextMatcher(sr);
+        var s = new TextMatcher(sr);
         s.setMethod(method);
 
         Assertions.assertAll(method.toString(),

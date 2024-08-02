@@ -1,4 +1,4 @@
-/* Copyright 2019-2021 Norconex Inc.
+/* Copyright 2019-2023 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 package com.norconex.commons.lang.text;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.BinaryOperator;
 import java.util.function.Predicate;
@@ -22,10 +23,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 
-import com.norconex.commons.lang.xml.XMLConfigurable;
-import com.norconex.commons.lang.xml.XML;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -116,7 +117,7 @@ import lombok.ToString;
 @ToString
 @EqualsAndHashCode
 public class TextMatcher implements
-        Predicate<CharSequence>, BinaryOperator<String>, XMLConfigurable {
+        Predicate<CharSequence>, BinaryOperator<String> {
 
     public enum Method {
         BASIC(new MethodStrategy() {
@@ -148,9 +149,9 @@ public class TextMatcher implements
             }
             @Override
             public String toMatchExpression(TextMatcher tm) {
-                Pattern p = Pattern.compile("[^*?]+|(\\*)|(\\?)");
-                Matcher m = p.matcher(Objects.toString(tm.pattern, ""));
-                StringBuilder b = new StringBuilder();
+                var p = Pattern.compile("[^*?]+|(\\*)|(\\?)");
+                var m = p.matcher(Objects.toString(tm.pattern, ""));
+                var b = new StringBuilder();
                 while (m.find()) {
                     if(m.group(1) != null) {
                         b.append(".*");
@@ -196,6 +197,7 @@ public class TextMatcher implements
     private boolean partial;
     private boolean trim;
     private boolean matchEmpty;
+    private boolean negateMatches;
 
     /**
      * Creates a basic matcher.
@@ -316,6 +318,60 @@ public class TextMatcher implements
     }
 
     /**
+     * Whether to negates the result of invoking {@link #matches(CharSequence)}.
+     * <b>Note: only applies to the {@link #matches(CharSequence)} method.</b>
+     * @return <code>true</code> if negating matches.
+     * @since 3.0.0
+     */
+    public boolean isNegateMatches() {
+        return negateMatches;
+    }
+    /**
+     * Sets whether to negates the result of invoking
+     * {@link #matches(CharSequence)}.
+     * <b>Note: only applies to the {@link #matches(CharSequence)} method.</b>
+     * @parm negateMatches <code>true</code> to negate matches
+     * @return this
+     * @since 3.0.0
+     */
+    public TextMatcher setNegateMatches(boolean negateMatches) {
+        this.negateMatches = negateMatches;
+        return this;
+    }
+    /**
+     * Sets the negation of the result of invoking
+     * {@link #matches(CharSequence)} to <code>true</code>.
+     * Same as invoking {@link #setNegateMatches(boolean)} with
+     * <code>true</code>.
+     * <b>Note: only applies to the {@link #matches(CharSequence)} method.</b>
+     * @return this
+     * @since 3.0.0
+     */
+    public TextMatcher negateMatches() {
+        return setNegateMatches(true);
+    }
+    /**
+     * Sets whether to negates the result of invoking
+     * {@link #matches(CharSequence)} on a copy of this instance.
+     * <b>Note: only applies to the {@link #matches(CharSequence)} method.</b>
+     * @return this
+     * @since 3.0.0
+     */
+    public TextMatcher withNegateMatches(boolean negateMatches) {
+        return copy().setNegateMatches(negateMatches);
+    }
+
+    /**
+     * Checks whether this text matcher was given a pattern.
+     * @return <code>true</code> if a pattern is set (i.e.,
+     *     not <code>null</code>).
+     */
+    @JsonIgnore
+    public boolean isSet() {
+        return pattern != null;
+    }
+
+    /**
      * Gets whether <code>null</code> or empty strings should be considered a
      * positive match.
      * @return <code>true</code> if <code>null</code> and empty strings
@@ -412,6 +468,7 @@ public class TextMatcher implements
             tm.partial = partial;
             tm.trim = trim;
             tm.matchEmpty = matchEmpty;
+            tm.negateMatches = negateMatches;
         }
     }
     public void copyFrom(TextMatcher tm) {
@@ -424,6 +481,7 @@ public class TextMatcher implements
             partial = tm.partial;
             trim = tm.trim;
             matchEmpty = tm.matchEmpty;
+            negateMatches = tm.negateMatches;
         }
     }
 
@@ -495,8 +553,12 @@ public class TextMatcher implements
         if (getPattern() == null) {
             return true;
         }
-        Matcher m = toRegexMatcher(text);
-        return partial ? m.find() : m.matches();
+        var m = toRegexMatcher(text);
+        var matches = partial ? m.find() : m.matches();
+        if (negateMatches) {
+            matches = !matches;
+        }
+        return matches;
     }
 
     /**
@@ -521,9 +583,9 @@ public class TextMatcher implements
         if (pattern == null || replacement == null) {
             return text;
         }
-        String quotedRepl = safeMethod().ms.toQuotedReplacement(replacement);
+        var quotedRepl = safeMethod().ms.toQuotedReplacement(replacement);
 
-        Matcher m = toRegexMatcher(text);
+        var m = toRegexMatcher(text);
         if (!partial && m.matches()) {
             return m.replaceFirst(quotedRepl);
         }
@@ -565,36 +627,44 @@ public class TextMatcher implements
                 .compile();
     }
 
-    private Method safeMethod() {
-        return ObjectUtils.defaultIfNull(method, Method.BASIC);
+    /**
+     * Tests that at least one matcher matches the provided text, treating
+     * an empty or <code>null</code> list as a match
+     * (returning <code>true</code>).
+     * @param matchers matchers to test against supplied text
+     * @param text the text being tested
+     * @return <code>true</code> if an empty list or at least one matcher
+     *     matches the text
+     * @since 3.0.0
+     */
+    public static boolean anyMatchesOrEmpty(
+            List<TextMatcher> matchers, CharSequence text) {
+        if (CollectionUtils.isEmpty(matchers)) {
+            return true;
+        }
+        return matchers
+                .stream()
+                .anyMatch(m -> m.matches(text));
     }
 
-    @Override
-    public void loadFromXML(XML xml) {
-        if (xml == null) {
-            return;
+    /**
+     * Tests that at least one matcher matches the provided text.
+     * If matchers is empty or <code>null</code>, it is considered not to
+     * match (returns <code>false</code>).
+     * @param matchers matchers to test against supplied text
+     * @param text the text being tested
+     * @return <code>true</code> if at least one matcher matches the text
+     * @since 3.0.0
+     */
+    public static boolean anyMatches(
+            List<TextMatcher> matchers, CharSequence text) {
+        if (matchers.isEmpty()) {
+            return false;
         }
-        setMethod(xml.getEnum("@method", Method.class, method));
-        setIgnoreCase(xml.getBoolean("@ignoreCase", ignoreCase));
-        setIgnoreDiacritic(xml.getBoolean("@ignoreDiacritic", ignoreDiacritic));
-        setReplaceAll(xml.getBoolean("@replaceAll", replaceAll));
-        setPartial(xml.getBoolean("@partial", partial));
-        setTrim(xml.getBoolean("@trim", trim));
-        setMatchEmpty(xml.getBoolean("@matchEmpty", matchEmpty));
-        setPattern(xml.getString("."));
+        return anyMatchesOrEmpty(matchers, text);
     }
-    @Override
-    public void saveToXML(XML xml) {
-        if (xml == null) {
-            return;
-        }
-        xml.setAttribute("method", method);
-        xml.setAttribute("ignoreCase", ignoreCase);
-        xml.setAttribute("ignoreDiacritic", ignoreDiacritic);
-        xml.setAttribute("replaceAll", replaceAll);
-        xml.setAttribute("partial", partial);
-        xml.setAttribute("trim", trim);
-        xml.setAttribute("matchEmpty", matchEmpty);
-        xml.setTextContent(pattern);
+
+    private Method safeMethod() {
+        return ObjectUtils.defaultIfNull(method, Method.BASIC);
     }
 }

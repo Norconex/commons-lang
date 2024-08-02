@@ -1,4 +1,4 @@
-/* Copyright 2019-2020 Norconex Inc.
+/* Copyright 2019-2023 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,9 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import com.norconex.commons.lang.xml.XMLConfigurable;
-import com.norconex.commons.lang.xml.XML;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -87,7 +88,11 @@ import lombok.ToString;
  */
 @ToString
 @EqualsAndHashCode
-public class Regex implements XMLConfigurable {
+@JsonAutoDetect(
+    creatorVisibility = Visibility.NONE,
+    fieldVisibility = Visibility.NONE
+)
+public class Regex {
 
     /**
      * Flag that ignores diacritical marks when matching or replacing
@@ -292,6 +297,7 @@ public class Regex implements XMLConfigurable {
         return setTrim(true);
     }
 
+    @JsonIgnore
     public Regex setFlags(int... flags) {
         this.flags.clear();
         if (flags != null) {
@@ -299,6 +305,7 @@ public class Regex implements XMLConfigurable {
         }
         return this;
     }
+    @JsonIgnore
     public Set<Integer> getFlags() {
         return Collections.unmodifiableSet(flags);
     }
@@ -322,6 +329,7 @@ public class Regex implements XMLConfigurable {
      * </p>
      * @return compiled pattern
      */
+    @JsonIgnore
     public Pattern compile() {
         return compile(pattern);
     }
@@ -338,12 +346,13 @@ public class Regex implements XMLConfigurable {
      * @return compiled pattern
      * @throws IllegalArgumentException if pattern is <code>null</code>
      */
+    @JsonIgnore
     public Pattern compile(String pattern) {
         if (pattern == null) {
             throw new IllegalArgumentException("Pattern cannot be null.");
         }
-        boolean ignoreMarks = false;
-        int f = 0;
+        var ignoreMarks = false;
+        var f = 0;
         for (int i : flags) {
             if (i == UNICODE_MARK_INSENSTIVE_FLAG) {
                 ignoreMarks = true;
@@ -352,7 +361,7 @@ public class Regex implements XMLConfigurable {
             }
         }
 
-        String p = pattern;
+        var p = pattern;
         if (ignoreMarks) {
             p = Normalizer.normalize(p, Form.NFD)
                     .replaceAll("(\\w)(\\p{M}*)", "$1\\\\p{M}*");
@@ -397,6 +406,7 @@ public class Regex implements XMLConfigurable {
      * @param text the text to match
      * @return matcher
      */
+    @JsonIgnore
     public Matcher matcher(CharSequence text) {
         return matcher(pattern, text);
     }
@@ -410,9 +420,10 @@ public class Regex implements XMLConfigurable {
      * @param text the text to match
      * @return matcher
      */
+    @JsonIgnore
     public Matcher matcher(String pattern, CharSequence text) {
-        String p = pattern;
-        String t = Objects.toString(text, null);
+        var p = pattern;
+        var t = Objects.toString(text, null);
         if (trim) {
             t = StringUtils.trim(t);
         }
@@ -453,40 +464,5 @@ public class Regex implements XMLConfigurable {
             flags.remove(flag);
         }
         return this;
-    }
-
-    @Override
-    public void loadFromXML(XML xml) {
-        setDotAll(xml.getBoolean("@dotAll", isDotAll()));
-        setIgnoreCase(xml.getBoolean("@ignoreCase", isIgnoreCase()));
-        setIgnoreDiacritic(
-                xml.getBoolean("@ignoreDiacritic", isIgnoreDiacritic()));
-        setUnixLines(xml.getBoolean("@unixLines", isUnixLines()));
-        setLiteral(xml.getBoolean("@literal", isLiteral()));
-        setComments(xml.getBoolean("@comments", isComments()));
-        setMultiline(xml.getBoolean("@multiline", isMultiline()));
-        setCanonEq(xml.getBoolean("@canonEq", isCanonEq()));
-        setUnicodeCase(xml.getBoolean("@unicodeCase", isUnicodeCase()));
-        setUnicodeCharacterClass(xml.getBoolean(
-                "@unicodeCharacterClass", isUnicodeCharacterClass()));
-        setTrim(xml.getBoolean("@trim", trim));
-        setMatchEmpty(xml.getBoolean("@matchEmpty", matchEmpty));
-        setPattern(xml.getString(".", getPattern()));
-    }
-    @Override
-    public void saveToXML(XML xml) {
-        xml.setAttribute("dotAll", isDotAll());
-        xml.setAttribute("ignoreCase", isIgnoreCase());
-        xml.setAttribute("ignoreDiacritic", isIgnoreDiacritic());
-        xml.setAttribute("unixLines", isUnixLines());
-        xml.setAttribute("literal", isLiteral());
-        xml.setAttribute("comments", isComments());
-        xml.setAttribute("multiline", isMultiline());
-        xml.setAttribute("canonEq", isCanonEq());
-        xml.setAttribute("unicodeCase", isUnicodeCase());
-        xml.setAttribute("unicodeCharacterClass", isUnicodeCharacterClass());
-        xml.setAttribute("trim", trim);
-        xml.setAttribute("matchEmpty", matchEmpty);
-        xml.setTextContent(getPattern());
     }
 }

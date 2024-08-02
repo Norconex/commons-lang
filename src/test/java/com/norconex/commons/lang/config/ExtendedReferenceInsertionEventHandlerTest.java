@@ -35,12 +35,12 @@ class ExtendedReferenceInsertionEventHandlerTest {
 
     @Test
     void testPrecedence() throws IOException {
-        String baseVarName = "precedenceTest";
+        var baseVarName = "precedenceTest";
 
         // precedence order
-        String valueSystemProperty = "valueSystemProperty";
-        String valuePropertiesFile = "valuePropertiesFile";
-        String valueVariablesFile = "valueVariablesFile";
+        var valueSystemProperty = "valueSystemProperty";
+        var valuePropertiesFile = "valuePropertiesFile";
+        var valueVariablesFile = "valueVariablesFile";
 
 
         String varName;
@@ -69,11 +69,11 @@ class ExtendedReferenceInsertionEventHandlerTest {
     @Test
     void testWithSystemProperty() throws IOException {
 
-        String expected = "propertyValue";
+        var expected = "propertyValue";
         System.setProperty("propertyTest", expected);
 
-        String before = "${PROPERTY_TEST}";
-        String after = resolveVariable(before);
+        var before = "${PROPERTY_TEST}";
+        var after = resolveVariable(before);
 
         Assertions.assertEquals(expected, after);
         System.clearProperty("propertyTest");
@@ -82,17 +82,17 @@ class ExtendedReferenceInsertionEventHandlerTest {
     @Test
     void testWithDefaultValueInReference() throws IOException {
 
-        String expectedDefault = "defaultValue";
-        String expectedResolved = "resolvedValue";
-        String before = "${testVar|'" + expectedDefault + "'}";
+        var expectedDefault = "defaultValue";
+        var expectedResolved = "resolvedValue";
+        var before = "${testVar|'" + expectedDefault + "'}";
 
         // test getting default value (variable not set)
-        String afterDefault = resolveVariable(before);
+        var afterDefault = resolveVariable(before);
         Assertions.assertEquals(expectedDefault, afterDefault);
 
         // test getting property value (variable set)
         System.setProperty("testVar", expectedResolved);
-        String afterResolved = resolveVariable(before);
+        var afterResolved = resolveVariable(before);
         Assertions.assertEquals(expectedResolved, afterResolved);
         System.clearProperty("testVar");
     }
@@ -102,8 +102,8 @@ class ExtendedReferenceInsertionEventHandlerTest {
     @Disabled
     @Test
     void testWithEnvironmentVariable() throws IOException {
-        String before = "${javaHome}";
-        String after = resolveVariable(before);
+        var before = "${javaHome}";
+        var after = resolveVariable(before);
         Assertions.assertNotEquals(before, after);
         Assertions.assertTrue(after.contains("java"));
     }
@@ -115,15 +115,15 @@ class ExtendedReferenceInsertionEventHandlerTest {
     private String resolveVariable(String configFileContent,
             String propertiesFileContent, String variablesFileContent)
             throws IOException {
-        String fileBaseName = "text-" + TimeIdGenerator.next();
-        Path testFile = writeFile(fileBaseName + ".txt", configFileContent);
+        var fileBaseName = "text-" + TimeIdGenerator.next();
+        var testFile = writeFile(fileBaseName + ".txt", configFileContent);
         writeFile(fileBaseName + ".properties", propertiesFileContent);
         writeFile(fileBaseName + ".variables", variablesFileContent);
-        return new ConfigurationLoader().loadString(testFile);
+        return ConfigurationLoader.builder().build().toString(testFile);
     }
     private Path writeFile(String fileName, String content) throws IOException {
         if (StringUtils.isNotBlank(content)) {
-            Path file = tempDir.resolve(fileName);
+            var file = tempDir.resolve(fileName);
             FileUtils.write(file.toFile(), content, UTF_8);
             return file;
         }

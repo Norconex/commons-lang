@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import com.norconex.commons.lang.xml.XML;
+import com.norconex.commons.lang.bean.BeanMapper;
 
 /**
  */
@@ -61,7 +61,7 @@ class RegexTest {
 
     @Test
     void testMarkInsensitive() {
-        String pattern = "(èg)";
+        var pattern = "(èg)";
         String[] tests = {
                 "\u00e9gal",  // égal
                 "e\u0301gal", // e + "Combining acute accent"
@@ -71,24 +71,24 @@ class RegexTest {
                 "ëgal"
         };
 
-        Regex regex = new Regex(pattern).ignoreDiacritic();
+        var regex = new Regex(pattern).ignoreDiacritic();
         for (String test : tests) {
             Assertions.assertTrue(regex.matcher(test).find(),
                     pattern + " pattern did not match " + test);
-            String replaced = regex.matcher(test).replaceFirst("[$1]rég");
-            String expected = "[" + test.replaceFirst("al", "") + "]régal";
-            Collator collator = Collator.getInstance(Locale.FRENCH);
+            var replaced = regex.matcher(test).replaceFirst("[$1]rég");
+            var expected = "[" + test.replaceFirst("al", "") + "]régal";
+            var collator = Collator.getInstance(Locale.FRENCH);
             assertThat(collator.compare(expected, replaced)).isZero();
         }
     }
 
     @Test
     void testMarkInsensitiveWithEscape() {
-        String t = "one.*(two).?three(?Twô)*öne";
-        String p = "one.*(two).?three(?twò)*oNé";
+        var t = "one.*(two).?three(?Twô)*öne";
+        var p = "one.*(two).?three(?twò)*oNé";
         p = Regex.escape(p);
 
-        Regex regex = new Regex(p).ignoreDiacritic().ignoreCase();
+        var regex = new Regex(p).ignoreDiacritic().ignoreCase();
         Assertions.assertTrue(regex.matcher(t).matches());
         ////\\p{InCombiningDiacriticalMarks}+
     }
@@ -139,9 +139,9 @@ class RegexTest {
 
     @Test
     void testWriteRead() {
-        assertThatNoException().isThrownBy(() ->
-            XML.assertWriteRead(new Regex("mypattern")
-                    .setCanonEq(true)
-                    .setMultiline(true), "regex"));
+        assertThatNoException().isThrownBy(
+                () -> BeanMapper.DEFAULT.assertWriteRead(new Regex("mypattern")
+                        .setCanonEq(true)
+                        .setMultiline(true)));
     }
 }

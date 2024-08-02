@@ -1,4 +1,4 @@
-/* Copyright 2022 Norconex Inc.
+/* Copyright 2022-2023 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,15 @@ package com.norconex.commons.lang.map;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 
 import java.util.Arrays;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.bean.BeanMapper;
 import com.norconex.commons.lang.text.TextMatcher;
-import com.norconex.commons.lang.xml.XML;
 
 class PropertyMatcherTest {
 
@@ -143,33 +143,22 @@ class PropertyMatcherTest {
     }
 
     @Test
-    void testXmlSaveLoad() {
-        var pmBefore = new PropertyMatcher(
-                TextMatcher.regex("a|b"),
-                TextMatcher.regex("5|9"));
-        var xml = new XML("xml");
-        PropertyMatcher.saveToXML(xml, pmBefore);
-        var pmAfter = PropertyMatcher.loadFromXML(xml);
-        assertThat(pmAfter).isEqualTo(pmBefore);
+    void testWriteRead() {
+        assertThatNoException().isThrownBy(() -> {
+            var pmBefore = new PropertyMatcher(
+                    TextMatcher.regex("a|b"),
+                    TextMatcher.regex("5|9"));
 
-        pmBefore = new PropertyMatcher(null, TextMatcher.regex("5|9"));
-        xml = new XML("xml");
-        PropertyMatcher.saveToXML(xml, pmBefore);
-        pmAfter = PropertyMatcher.loadFromXML(xml);
-        assertThat(pmAfter).isEqualTo(pmBefore);
+            BeanMapper.DEFAULT.assertWriteRead(pmBefore);
 
-        pmBefore = new PropertyMatcher(TextMatcher.regex("a|b"), null);
-        xml = new XML("xml");
-        PropertyMatcher.saveToXML(xml, pmBefore);
-        pmAfter = PropertyMatcher.loadFromXML(xml);
-        assertThat(pmAfter).isEqualTo(pmBefore);
+            pmBefore = new PropertyMatcher(null, TextMatcher.regex("5|9"));
+            BeanMapper.DEFAULT.assertWriteRead(pmBefore);
 
-        pmBefore = new PropertyMatcher(null, null);
-        xml = new XML("xml");
-        PropertyMatcher.saveToXML(xml, pmBefore);
-        pmAfter = PropertyMatcher.loadFromXML(xml);
-        assertThat(pmAfter).isEqualTo(pmBefore);
-        assertThat(PropertyMatcher.loadFromXML(null)).isNull();
-        assertDoesNotThrow(() -> PropertyMatcher.saveToXML(null, null));
+            pmBefore = new PropertyMatcher(TextMatcher.regex("a|b"), null);
+            BeanMapper.DEFAULT.assertWriteRead(pmBefore);
+
+            pmBefore = new PropertyMatcher(null, null);
+            BeanMapper.DEFAULT.assertWriteRead(pmBefore);
+        });
     }
 }
