@@ -79,7 +79,7 @@ public class ClasspathInput implements LSInput {
     public String getStringData() {
         synchronized (inputStream) {
             try {
-                byte[] input = new byte[inputStream.available()];
+                var input = new byte[inputStream.available()];
                 inputStream.read(input); //NOSONAR
                 return new String(input);
             } catch (IOException e) {

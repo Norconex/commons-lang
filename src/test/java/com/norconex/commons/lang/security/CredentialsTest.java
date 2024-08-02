@@ -1,4 +1,4 @@
-/* Copyright 2022 Norconex Inc.
+/* Copyright 2022-2023 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,17 +19,17 @@ import static org.assertj.core.api.Assertions.assertThatNoException;
 
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.bean.BeanMapper;
 import com.norconex.commons.lang.encrypt.EncryptionKey;
-import com.norconex.commons.lang.xml.XML;
 
 class CredentialsTest {
 
     @Test
     void testCredentials() {
-        Credentials creds = new Credentials(
+        var creds = new Credentials(
                 "joe", "something-encrypted", new EncryptionKey("blah"));
 
-        Credentials credsCopy = new Credentials();
+        var credsCopy = new Credentials();
         assertThat(credsCopy.isSet()).isFalse();
         credsCopy.copyFrom(creds);
         assertThat(credsCopy.isSet()).isTrue();
@@ -48,6 +48,6 @@ class CredentialsTest {
                 "password=********", "EncryptionKey [value=********");
 
         assertThatNoException().isThrownBy(
-                () -> XML.assertWriteRead(creds, "credentials"));
+                () -> BeanMapper.DEFAULT.assertWriteRead(creds));
     }
 }

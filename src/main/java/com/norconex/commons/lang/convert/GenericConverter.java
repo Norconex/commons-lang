@@ -24,6 +24,7 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.Date;
@@ -55,30 +56,31 @@ import com.norconex.commons.lang.file.ContentType;
  * Default instance has converters for the following types:
  * </p>
  * <ul>
- *   <li>{@link Byte}/byte</li>
- *   <li>{@link Short}/short</li>
- *   <li>{@link Integer}/int</li>
- *   <li>{@link Float}/float</li>
- *   <li>{@link Long}/long</li>
- *   <li>{@link Double}/double</li>
- *   <li>{@link BigInteger}</li>
  *   <li>{@link BigDecimal}</li>
+ *   <li>{@link BigInteger}</li>
  *   <li>{@link Boolean}/boolean</li>
+ *   <li>{@link Byte}/byte</li>
  *   <li>{@link Character}/char</li>
- *   <li>{@link File}</li>
- *   <li>{@link Path}</li>
- *   <li>{@link Date}</li>
- *   <li>{@link LocalDateTime}</li>
- *   <li>{@link ZonedDateTime}</li>
- *   <li>{@link Instant}</li>
- *   <li>{@link Locale}</li>
- *   <li>{@link Enum}</li>
- *   <li>{@link Dimension}</li>
- *   <li>{@link Duration}</li>
- *   <li>{@link ContentType}</li>
  *   <li>{@link Charset}</li>
- *   <li>{@link URL}</li>
+ *   <li>{@link ContentType}</li>
+ *   <li>{@link Date}</li>
+ *   <li>{@link Dimension}</li>
+ *   <li>{@link Double}/double</li>
+ *   <li>{@link Duration}</li>
+ *   <li>{@link Enum}</li>
+ *   <li>{@link File}</li>
+ *   <li>{@link Float}/float</li>
+ *   <li>{@link Instant}</li>
+ *   <li>{@link Integer}/int</li>
+ *   <li>{@link LocalDateTime}</li>
+ *   <li>{@link Locale}</li>
+ *   <li>{@link Long}/long</li>
+ *   <li>{@link Path}</li>
  *   <li>{@link Pattern}</li>
+ *   <li>{@link Short}/short</li>
+ *   <li>{@link URL}</li>
+ *   <li>{@link ZonedDateTime}</li>
+ *   <li>{@link ZoneId}</li>
  * </ul>
  * <p>
  * By default {@link ConverterException} is thrown when conversion fails.
@@ -122,14 +124,14 @@ public final class GenericConverter implements Converter {
         cc.put(BigInteger.class, c);
 
         // files
-        c = new FileConverter();
-        cc.put(File.class, c);
-        cc.put(Path.class, c);
+        cc.put(File.class, new FileConverter());
+        cc.put(Path.class, new PathConverter());
 
         // dates
         cc.put(Date.class, new DateConverter());
         cc.put(LocalDateTime.class, new LocalDateTimeConverter());
         cc.put(ZonedDateTime.class, new ZonedDateTimeConverter());
+        cc.put(ZoneId.class, new ZoneIdConverter());
         cc.put(Instant.class, new InstantConverter());
 
         // others

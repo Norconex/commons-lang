@@ -1,4 +1,4 @@
-/* Copyright 2021-2022 Norconex Inc.
+/* Copyright 2021-2023 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,12 @@ package com.norconex.commons.lang.function;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 import lombok.ToString;
 
 /**
@@ -53,11 +54,23 @@ public class Consumers<T> extends ArrayList<Consumer<T>>
                 : consumers
                     .stream()
                     .filter(Objects::nonNull)
-                    .collect(Collectors.toList()));
+                    .toList());
     }
 
     @Override
     public final void accept(T t) {
         forEach(c -> c.accept(t));
+    }
+
+    /**
+     * A group of consumers. All consumers are invoked.
+     * @param <T> type of object consumed
+     * @param consumers consumers
+     * @return a consumer group
+     * @since 3.0.0
+     */
+    @SafeVarargs
+    public static <T> Consumers<T> of(@NonNull Consumer<T>... consumers) {
+        return new Consumers<>(List.of(consumers));
     }
 }

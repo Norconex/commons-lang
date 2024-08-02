@@ -1,0 +1,6 @@
+<config>
+  <credentials class="com.norconex.commons.lang.security.Credentials">
+    <username>joe</username>
+    <password>whatever</password>
+  </credentials>
+</config>

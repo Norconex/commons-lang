@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.assertThatNoException;
 import java.io.IOException;
 
 import org.junit.jupiter.api.Test;
-import org.w3c.dom.ls.LSInput;
 
 import com.norconex.commons.lang.net.ProxySettings;
 
@@ -30,14 +29,14 @@ class ClasspathResourceResolverTest {
     void testClasspathResourceResolver() throws IOException {
         assertThatNoException().isThrownBy(
                 ClasspathResourceResolver::new);
-        ClasspathResourceResolver crr =
+        var crr =
                 new ClasspathResourceResolver(ProxySettings.class);
-        LSInput input = crr.resolveResource(
-                "http://www.w3.org/2001/XMLSchema",
-                null,
-                null,
-                "Host.xsd",
-                "file:///com/norconex/commons/lang/net/ProxySettings.xsd");
+        var input = crr.resolveResource(
+            "http://www.w3.org/2001/XMLSchema",
+            null,
+            null,
+            "MockHost.xsd",
+            "file:///com/norconex/commons/lang/xml/mock/MockProxySettings.xsd");
 
         assertThat(input).isNotNull();
     }

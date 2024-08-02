@@ -9,6 +9,9 @@
   </Appenders>
   <Loggers>
   
+    <Logger name="com.norconex.commons.lang.flow" level="debug" additivity="false">
+      <AppenderRef ref="Console"/>
+    </Logger>
     <Logger name="com.norconex.commons.lang" level="info" additivity="false">
       <AppenderRef ref="Console"/>
     </Logger>

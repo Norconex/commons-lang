@@ -18,6 +18,9 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.compare.ComparableUtils;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 /**
  * <p>
  * Operators used by a few conditions based on comparable values
@@ -79,6 +82,7 @@ public enum Operator {
     Operator(String... abbr) {
         this.abbr = abbr;
     }
+    @JsonCreator
     public static Operator of(String op) {
         if (StringUtils.isBlank(op)) {
             return null;
@@ -91,6 +95,7 @@ public enum Operator {
         }
         return null;
     }
+    @JsonValue
     @Override
     public String toString() {
         return abbr[0];

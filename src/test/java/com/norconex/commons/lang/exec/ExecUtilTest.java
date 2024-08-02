@@ -29,14 +29,14 @@ class ExecUtilTest {
 
     @Test
     void testWatchProcessProcess() throws IOException {
-        Process process = Runtime.getRuntime().exec("java --help");
+        var process = Runtime.getRuntime().exec("java --help");
         assertThat(ExecUtil.watchProcess(process)).isZero();
     }
 
     @Test
     void testWatchProcessProcessInputStreamListener() throws IOException {
-        StringBuilder stdout = new StringBuilder();
-        Process process = Runtime.getRuntime().exec("java -help");
+        var stdout = new StringBuilder();
+        var process = Runtime.getRuntime().exec("java -help");
         assertThat(ExecUtil.watchProcess(process,
                 (t, b, l) -> stdout.append(new String(b)))).isZero();
         assertThat(stdout)
@@ -46,9 +46,9 @@ class ExecUtilTest {
 
     @Test
     void testWatchProcessProcessInputStreamListenerArray() throws IOException {
-        StringBuilder stdout1 = new StringBuilder();
-        StringBuilder stdout2 = new StringBuilder();
-        Process process = Runtime.getRuntime().exec("java -help");
+        var stdout1 = new StringBuilder();
+        var stdout2 = new StringBuilder();
+        var process = Runtime.getRuntime().exec("java -help");
         assertThat(ExecUtil.watchProcess(
                 process,
                 new InputStreamListener[] {
@@ -65,9 +65,9 @@ class ExecUtilTest {
     @Test
     void testWatchProcessProcessInputStreamListenerInputStreamListener()
             throws IOException {
-        StringBuilder stdout = new StringBuilder();
-        StringBuilder stderr = new StringBuilder();
-        Process process = Runtime.getRuntime().exec("java --help");
+        var stdout = new StringBuilder();
+        var stderr = new StringBuilder();
+        var process = Runtime.getRuntime().exec("java --help");
         assertThat(ExecUtil.watchProcess(
                 process,
                 (t, b, l) -> stdout.append(new String(b)),
@@ -92,9 +92,9 @@ class ExecUtilTest {
     @Test
     void testWatchProcessAsyncProcessInputStreamListenerInputStreamListener()
             throws IOException {
-        StringBuilder stdout = new StringBuilder();
-        StringBuilder stderr = new StringBuilder();
-        Process process = Runtime.getRuntime().exec("java --help");
+        var stdout = new StringBuilder();
+        var stderr = new StringBuilder();
+        var process = Runtime.getRuntime().exec("java --help");
         assertDoesNotThrow(() -> ExecUtil.watchProcessAsync(
                 process,
                 (t, b, l) -> stdout.append(new String(b)),
@@ -108,12 +108,15 @@ class ExecUtilTest {
 //
     @Test
     void testWatchProcessAsyncProcessInputStream() throws IOException {
-        StringBuilder stdout = new StringBuilder();
-        StringBuilder stderr = new StringBuilder();
-        Process process = Runtime.getRuntime().exec("java --help");
+        var stdout = new StringBuilder();
+        var stderr = new StringBuilder();
+        var process = Runtime.getRuntime().exec("java --help");
         assertDoesNotThrow(() -> ExecUtil.watchProcessAsync(
                 process,
-                new CharSequenceInputStream("java -h\n", UTF_8),
+                CharSequenceInputStream.builder()
+                        .setCharSequence("java -h\n")
+                        .setCharset(UTF_8)
+                        .get(),
                 new InputStreamListener[] {
                         (t, b, l) -> stdout.append(new String(b))
                 },

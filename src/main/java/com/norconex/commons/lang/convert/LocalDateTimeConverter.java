@@ -1,4 +1,4 @@
-/* Copyright 2018 Norconex Inc.
+/* Copyright 2018-2023 Norconex Inc.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -30,5 +30,33 @@ public class LocalDateTimeConverter extends AbstractConverter {
     @Override
     protected <T> T nullSafeToType(String value, Class<T> type) {
         return type.cast(LocalDateTime.parse(value.trim()));
+    }
+
+    /**
+     * JSON (Jackson) serializer using this converter.
+     * @since 3.0.0
+     */
+    public static class JsonSerializer
+            extends GenericJsonSerializer<LocalDateTime>{}
+
+    /**
+     * JSON (Jackson) deserializer using this converter.
+     * @since 3.0.0
+     */
+    public static class JsonDeserializer
+            extends GenericJsonDeserializer<LocalDateTime> {
+        public JsonDeserializer() {
+            super(LocalDateTime.class);
+        }
+    }
+
+    /**
+     * XML (JAXB) adapter using this converter.
+     * @since 3.0.0
+     */
+    public static class XmlAdapter extends GenericXmlAdapter<LocalDateTime> {
+        public XmlAdapter() {
+            super(LocalDateTime.class);
+        }
     }
 }

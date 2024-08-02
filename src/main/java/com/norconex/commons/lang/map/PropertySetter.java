@@ -81,8 +81,9 @@ public enum PropertySetter {
 
     /**
      * Applies the <code>PropertySetter</code> strategy on the supplied
-     * properties with the given key and value.  Supplying a
-     * <code>null</code> properties argument as no effect.
+     * properties with the given key and value. Collection or array values
+     * are considered as such.
+     * Supplying a <code>null</code> properties argument as no effect.
      * @param properties the properties to possibly add a key/value to
      * @param key the key on which we set value
      * @param value the value to possibly set

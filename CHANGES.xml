@@ -10,6 +10,17 @@
     <release version="3.0.0-SNAPSHOT" date="202?-??-??" 
         description="Feature release.">
       <action dev="essiembre" type="add">
+        New "flow" package to have conditions in XML, JSON, or Yaml 
+        configuration files. A replacement to XMLFlow.
+      </action>
+      <action dev="essiembre" type="add">
+        New BeanMapper class to write/read objects to/from XML, JSON, and Yaml,
+        with support for polymorphism. 
+      </action>
+      <action dev="essiembre" type="add">
+        New JSON and Yaml (de)serializers for types covered by GenericConverter.  
+      </action>
+      <action dev="essiembre" type="add">
         New DateModel class for easy transition from one date type to another. 
       </action>
       <action dev="essiembre" type="add">
@@ -21,6 +32,9 @@
       </action>
       <action dev="essiembre" type="add">
         New SemanticVersion and SemanticVersionParser classes. 
+      </action>
+      <action dev="essiembre" type="add">
+        New @JsonCollection annotation.
       </action>
       <action dev="essiembre" type="add">
         New PackageManifest class. 
@@ -95,7 +109,8 @@
       </action>
       <action dev="essiembre" type="add">
         New XML methods: isEmpty, hasChildElements, hasAttributes, 
-        hasTextContent, isElementPresent, computeIfElementAbsent.
+        hasTextContent, isElementPresent, computeIfElementAbsent,
+        getTextContent, removeTextContent.
       </action>
       <action dev="essiembre" type="add">
         New XPathUtil class.
@@ -126,6 +141,24 @@
       <action dev="essiembre" type="add">
         New Configurable interface.
       </action>
+      <action dev="essiembre" type="add">
+        ConfigurationLoader can now load XML, JSON, and Yaml into objects.
+      </action>
+      <action dev="essiembre" type="add">
+        New PredicatedConsumer #isTrue and #isFalse and #elseConsumer methods. 
+      </action>
+      <action dev="essiembre" type="add">
+        New Predicates #anyOf and #allOf methods.
+      </action>
+      <action dev="essiembre" type="add">
+        New Consumers #of method.
+      </action>
+      <action dev="essiembre" type="add">
+        New IOUtil #toNonNullWriter and #toNonNullOutputStream methods.
+      </action>
+      <action dev="essiembre" type="add">
+        New TextMatcher#isSet method.
+      </action>
       <action dev="essiembre" type="update">
         Now require Java 17+. 
       </action>
@@ -154,9 +187,9 @@
         when a null collection is supplied.
       </action>
       <action dev="essiembre" type="update">
-        ConfigurationLoader#setVariablesFile now assumes the variables
-        file is of the ".variables" format when its extension is neither
-        ".variables" nor ".properties". 
+        Using a variables file with ConfigurationLoader now assumes the 
+        ".variables" format when its extension is neither ".variables" nor 
+        ".properties". 
       </action>
       <action dev="essiembre" type="update">
         Converter#toString(Object, String) will now return the default value
@@ -245,6 +278,10 @@
         XML now implements #equals and #hashCode.
       </action>
       <action dev="essiembre" type="update">
+        XML#setTextContent now only sets the direct text, and no longer removes
+        other child elements.
+      </action>
+      <action dev="essiembre" type="update">
         XML#populate and XML#validate methods no longer return
         a list of errors. Relies on ErrorHandler instead.
       </action>
@@ -291,11 +328,21 @@
         BeanUtil#diff now display hashCode for any non-null values.
       </action>
       <action dev="essiembre" type="update">
+        BeanUtil#visit... will no process passed collections and maps.
+      </action>
+      <action dev="essiembre" type="update">
         EnumConverter will now match values regardless of non-alphanumeric 
         characters they may contain.
       </action>
       <action dev="essiembre" type="update">
         DateUtil now deprecated in favor of DateModel.
+      </action>
+      <action dev="essiembre" type="update">
+        Several classes previously implementing XMLConfigurable are no longer doing
+        so, in favor of Jackson based serialization.
+      </action>
+      <action dev="essiembre" type="update">
+        CachedOutputStream now has a dispose() method and close() has no effect.
       </action>
       <action dev="essiembre" type="fix">
         Properties#loadFromXML is now null-safe.

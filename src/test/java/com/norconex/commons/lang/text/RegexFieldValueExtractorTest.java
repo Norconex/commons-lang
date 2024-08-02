@@ -14,14 +14,15 @@
  */
 package com.norconex.commons.lang.text;
 
+import static org.assertj.core.api.Assertions.assertThatNoException;
+
 import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.ResourceLoader;
-import com.norconex.commons.lang.map.Properties;
-import com.norconex.commons.lang.xml.XML;
+import com.norconex.commons.lang.bean.BeanMapper;
 
 /**
  */
@@ -30,9 +31,9 @@ class RegexFieldValueExtractorTest {
     @Test
     void testExtractFields() {
 
-        String xml = ResourceLoader.getXmlString(
+        var xml = ResourceLoader.getXmlString(
                 RegexFieldValueExtractorTest.class);
-        Properties fields = RegexFieldValueExtractor.extractFieldValues(xml,
+        var fields = RegexFieldValueExtractor.extractFieldValues(xml,
             //Test 1) no match group, returning whole match as value
             new RegexFieldValueExtractor(
                     "<div class=\"value\">(.*?)</div>", "test1"),
@@ -130,11 +131,12 @@ class RegexFieldValueExtractorTest {
 
     @Test
     void testWriteRead() {
-        RegexFieldValueExtractor r = new RegexFieldValueExtractor();
+        var r = new RegexFieldValueExtractor();
         r.setRegex(new Regex(".*something.*", Pattern.UNICODE_CASE));
         r.setToField("mykey");
         r.setFieldGroup(4);
         r.setValueGroup(2);
-        XML.assertWriteRead(r, "regexFieldValueExtractor");
+        assertThatNoException().isThrownBy(
+                () -> BeanMapper.DEFAULT.assertWriteRead(r));
     }
 }

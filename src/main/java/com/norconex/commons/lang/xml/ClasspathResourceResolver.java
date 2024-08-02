@@ -14,8 +14,6 @@
  */
 package com.norconex.commons.lang.xml;
 
-import java.io.InputStream;
-
 import javax.xml.validation.SchemaFactory;
 
 import org.apache.commons.lang3.StringUtils;
@@ -68,15 +66,16 @@ public class ClasspathResourceResolver implements LSResourceResolver {
     @Override
     public LSInput resolveResource(String type, String namespaceURI,
             String publicId, String systemId, String baseURI) {
-        String path = rootPath;
+        var path = rootPath;
         if (baseURI != null) {
             path = getPackageResourcePathFromBaseURI(baseURI);
         }
-        String r = getResourcePath(path, systemId);
-        InputStream resourceAsStream = getClass().getResourceAsStream(r);
+        var r = getResourcePath(path, systemId);
+        var resourceAsStream = getClass().getResourceAsStream(r);
         if (resourceAsStream == null) {
             LOG.error("Resource not found: {} (baseURI: {}; systemId: {})",
                     r, baseURI, systemId);
+            return null;
         }
         return new ClasspathInput(publicId, r, resourceAsStream);
     }
@@ -86,9 +85,9 @@ public class ClasspathResourceResolver implements LSResourceResolver {
             // Absolute path, no need to resolve
             return systemId;
         }
-        int upCount = StringUtils.countMatches(systemId, "../");
-        String newPath = path;
-        for (int i = 0; i < upCount; i++) {
+        var upCount = StringUtils.countMatches(systemId, "../");
+        var newPath = path;
+        for (var i = 0; i < upCount; i++) {
             newPath = newPath.replaceFirst("(.*/)(.*/)$", "$1");
         }
         return newPath + systemId.replaceFirst("^(../)+", "");

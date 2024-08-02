@@ -1,4 +1,4 @@
-/* Copyright 2010-2022 Norconex Inc.
+/* Copyright 2010-2023 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,9 @@
  */
 package com.norconex.commons.lang.config;
 
+import java.io.IOException;
 import java.io.Reader;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -28,50 +30,110 @@ import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.runtime.RuntimeConstants;
 import org.xml.sax.ErrorHandler;
 
+import com.norconex.commons.lang.bean.BeanMapper;
+import com.norconex.commons.lang.bean.BeanMapper.Format;
 import com.norconex.commons.lang.xml.XML;
+
+import jakarta.validation.ConstraintViolationException;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Builder.Default;
+import lombok.NonNull;
 
 /**
  * <p>Configuration file parser using Velocity template engine
- * (which can have parse/include directives) and using separate files for
- * defining Velocity variables.
+ * which supports variables, parse/include directives, and more).
  * </p>
  * <h3>Variables</h3>
  * <p>
- * Templates, whether the main template or any template
+ * Variables can be defined in a few different ways (in order of precedence):
+ * system properties, environment variable, or variable files. In a
+ * configuration file, variables are referenced surrounded by curly braces
+ * and prefixed with a dollar sign.  Default values can be specified by
+ * following the variable name with a vertical bar character and the value.
+ * Examples:
+ * </p>
+ * <ul>
+ *   <li>
+ *     <code>${pageTitle}</code> &rarr; Prints the value of a variable named
+ *     "pageTitle" or nothing if no title variable is found.
+ *   </li>
+ *   <li>
+ *     <code>${pageTitle|'Hello world!'}</code> &rarr; Prints the value of a
+ *     variable named "pageTitle", or "Hello world!" if no title variable is
+ *     found.
+ *   </li>
+ * </ul>
+ * <h4>System Properties</h4>
+ * <p>
+ * System properties are typically passed to the JVM at launch time with
+ * the <code>-D</code> argument.
+ * Variables defined as system properties take precedence over variables
+ * of the same name defined any other way.  Character case, as well
+ * as non-alphanumeric characters have no importance in the variable
+ * resolution. For instance, all of the following are equivalent:
+ * </p>
+ * <ul>
+ *   <li><code>-DpageTitle</code></li>
+ *   <li><code>-Dpagetitle</code></li>
+ *   <li><code>-DPAGE_TITLE</code></li>
+ * </ul>
+ *
+ * <h4>Environment variables</h4>
+ * <p>
+ * Environment variables are typically set at a user account level, or
+ * operating system level. Environment variables take precedence over
+ * variable files, but not over system properties.
+ * Like system properties, character case, as well
+ * as non-alphanumeric characters have no importance in the variable
+ * resolution. For instance, all of the following are equivalent:
+ * </p>
+ * <ul>
+ *   <li><code>pageTitle</code></li>
+ *   <li><code>pagetitle</code></li>
+ *   <li><code>PAGE_TITLE</code></li>
+ * </ul>
+ *
+ * <h4>Implicit variable files</h4>
+ * <p>
+ * Configuration templates, whether the main template or any template
  * included using the <code>#parse</code> directive, can have variable files
  * attached, for which each key would become a variable in the Velocity
  * context.  A variable file must be of the same name as the template file,
  * with one of two possible extensions:
- * <code>.variables</code> or <code>.properties</code>.</p>
- *
- * <p>A <code>.variables</code> file must have
- * keys and values separated by an equal sign, one variable per line.  The
- * key and value strings are taken literally, after trimming leading and
- * trailing spaces.</p>
- *
- * <p>A <code>.properties</code> file stores key/value in the way the Java
+ * <code>.variables</code> or <code>.properties</code>. By respecting this
+ * naming condition, the variable files do not have to be explicitly specified
+ * as argument.
+ * </p>
+ * <p>
+ * A <code>.variables</code> file must have keys and values separated by an
+ * equal sign, one variable per line.  The key and value strings are taken
+ * literally, after trimming leading and trailing spaces.
+ * </p>
+ * <p>
+ * A <code>.properties</code> file stores key/value in the way the Java
  * programming language expects it for any <code>.properties</code> file.
  * It is essentially the same, but has more options (e.g. multi-line support)
  * and gotchas (e.g. must escape certain characters). Please
  * refer to the corresponding
  * <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Properties.html#load-java.io.Reader-">
- * Java API documentation</a> for exact syntax and parsing logic.</p>
- *
- * <p>When both <code>.variables</code> and <code>.properties</code> exist
+ * Java API documentation</a> for exact syntax and parsing logic.
+ * </p>
+ * <p>
+ * When both <code>.variables</code> and <code>.properties</code> exist
  * for a template, the <code>.properties</code> file variables take
- * precedence.</p>
- *
- * <p>Any <code>.variables</code> or <code>.properties</code> file
- * can also be specified using the {@link #setVariablesFile(Path)} method.
- * <b>Since 3.0.0</b>, {@link #setVariablesFile(Path)} treats any variable
- * files without the <code>.properties</code> extension as if it was
- * <code>.variables</code>.
+ * precedence.
  * </p>
  *
+ * <h4>Explicit variable files</h4>
  * <p>
- * In addition, variables can be specified as system properties or environment
- * variables. A variable defined that way takes precedence over a variable
- * defined in a file (system properties coming first).
+ * Any <code>.variables</code> or <code>.properties</code> file
+ * can also be specified using the
+ * {@link ConfigurationLoaderBuilder#setVariablesFile(Path)} method.
+ * <b>Since 3.0.0</b>, any variable files without the <code>.properties</code>
+ * extension as if it was <code>.variables</code>. The syntax for both file
+ * types is the same as described under <em>Implicit variable files</em> above.
  * </p>
  *
  * <h3>Configuration fragments</h3>
@@ -86,9 +148,11 @@ import com.norconex.commons.lang.xml.XML;
  * <p>
  * The included/parsed files are relative to the parent template, or, can be
  * absolute paths on the host where the configuration loader is executed.
- * Example (both Windows and UNIX path styles are supported equally):
+ * Example (both Windows and UNIX path styles are supported):
  * </p>
- * <p><i>Sample directory structure:</i></p>
+ * <p>
+ * <i>Sample directory structure:</i>
+ * </p>
  * <pre>
  * c:\sample\
  *     myapp\
@@ -98,19 +162,28 @@ import com.norconex.commons.lang.xml.XML;
  *              myconfig.properties
  *     shared\
  *         sharedconfig.cfg
- *         sharedconfig.variables</pre>
- * <p><i>Configuration file myconfig.cfg:</i></p>
+ *         sharedconfig.variables
+ * </pre>
+ * <p>
+ * <i>Configuration file myconfig.cfg:</i>
+ * </p>
  * <pre>
  * &lt;myconfig&gt;
  *    &lt;host&gt;$host&lt;/host&gt;
  *    &lt;port&gt;$port&lt;/port&gt;
  *    #parse("../../shared/sharedconfig.cfg")
- * &lt;/myconfig&gt;</pre>
- * <p><i>Configuration loading:</i></p>
+ * &lt;/myconfig&gt;
+ * </pre>
+ * <p>
+ * <i>Configuration loading:</i>
+ * </p>
  * <pre>
  * XML xml = new ConfigurationLoader().loadXML(
- *         Path.get("/path/to/myconfig.cfg"));</pre>
- * <p><i>Explanation:</i></p>
+ *         Path.get("/path/to/myconfig.cfg"));
+ * </pre>
+ * <p>
+ * <i>Explanation:</i>
+ * </p>
  * <p>
  * When loading myconfig.cfg, the variables defined in myconfig.properties
  * are automatically loaded and will replace the $host and $port variables.
@@ -122,171 +195,56 @@ import com.norconex.commons.lang.xml.XML;
  * <p>
  * Other Velocity directives are supported
  * (if-else statements, foreach loops, macros,
- * etc).  Refer to
+ * etc.).  Refer to
  * <a href="https://velocity.apache.org/engine/2.0/user-guide.html">
  * Velocity User Guide</a> for complete syntax and template documentation.
  * </p>
  */
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder
 public final class ConfigurationLoader {
 
-    private final VelocityEngine velocityEngine;
-    private final VelocityContext defaultContext;
-
+    /** Optional custom velocity engine. */
+    @Default
+    @NonNull
+    private VelocityEngine velocityEngine = createDefaultVelocityEngine();
+    /** Optional Velocity context. */
+    private VelocityContext defaultContext;
+    /** Optional custom bean mapper when loading into object. */
+    @Default
+    @NonNull
+    private BeanMapper beanMapper = BeanMapper.DEFAULT;
+    /** File holding variables. See class documentation. */
     private Path variablesFile;
 
     /**
-     * Constructor.
+     * @deprecated Use {@link ConfigurationLoader#builder()} instead.
      */
-    public ConfigurationLoader() {
-        defaultContext = createDefaultContext();
-        velocityEngine = createVelocityEngine();
-    }
+    @Deprecated(since="3.0.0")
+    public ConfigurationLoader() {}
 
     /**
      * Sets a variables file. See class documentation for details.
      * @param variablesFile variables file
      * @return this instance
      * @since 2.0.0
+     * @deprecated Use {@link ConfigurationLoaderBuilder#variablesFile(Path)}
+     * instead.
      */
+    @Deprecated(since="3.0.0")
     public ConfigurationLoader setVariablesFile(Path variablesFile) {
         this.variablesFile = variablesFile;
         return this;
     }
 
     /**
-     * Loads an XML configuration file.
-     * @param configFile XML configuration file
-     * @return XML
-     * @since 2.0.0
-     */
-    public XML loadXML(Path configFile) {
-        return loadXML(configFile, null);
-    }
-    /**
-     * Loads an XML configuration file.
-     * @param configFile XML configuration file
-     * @param errorHandler XML error handler
-     * @return XML
-     * @since 2.0.0
-     */
-    public XML loadXML(
-            Path configFile, ErrorHandler errorHandler) {
-        if (configFile == null || !configFile.toFile().exists()) {
-            return null;
-        }
-        try {
-            var xml = loadString(configFile);
-            // clean-up extra duplicate declaration tags due to template
-            // includes/imports that could break parsing.
-            // Keep first <?xml... tag only, and delete all <!DOCTYPE...
-            // as they are not necessary to parse configs.
-            xml = Pattern.compile("((?!^)<\\?xml.*?\\?>|<\\!DOCTYPE[^>]*>)")
-                    .matcher(xml).replaceAll("");
-            return XML.of(xml).setErrorHandler(errorHandler).create();
-        } catch (Exception e) {
-            throw new ConfigurationException(
-                    "Cannot load configuration file: \"" + configFile + "\". "
-                  + "Probably a misconfiguration or the configuration XML "
-                  + "is not well-formed.", e);
-        }
-    }
-
-    /**
-     * Loads an XML configuration file and populates a new object
-     * represented by the given "class" attribute found on XML root element.
-     * @param configFile XML configuration file
-     * @param <T> type of returned object
-     * @return new object
-     * @since 2.0.0
-     */
-    public <T> T loadFromXML(Path configFile) {
-        return loadFromXML(configFile, null, null);
-    }
-    /**
-     * Loads an XML configuration file and populates a new object
-     * represented by the given "class" attribute found on XML root element.
-     * @param configFile XML configuration file
-     * @param errorHandler XML error handler
-     * @param <T> type of returned object
-     * @return new object
-     * @since 2.0.0
-     */
-    public <T> T loadFromXML(Path configFile, ErrorHandler errorHandler) {
-        return loadFromXML(configFile, null, errorHandler);
-    }
-    /**
-     * Loads an XML configuration file and populates a new object
-     * represented by the given class.
-     * @param configFile XML configuration file
-     * @param objClass type of object to create and populate
-     * @param <T> type of returned object
-     * @return new object
-     * @since 2.0.0
-     */
-    public <T> T loadFromXML(Path configFile, Class<T> objClass) {
-        return loadFromXML(configFile, objClass, null);
-    }
-    /**
-     * Loads an XML configuration file and populates a new object
-     * represented by the given class.
-     * @param configFile XML configuration file
-     * @param objClass type of object to create and populate
-     * @param errorHandler XML error handler
-     * @param <T> type of returned object
-     * @return new object
-     * @since 2.0.0
-     */
-    public <T> T loadFromXML(
-            Path configFile, Class<T> objClass, ErrorHandler errorHandler) {
-        var xml = loadXML(configFile, errorHandler);
-        if (xml == null) {
-            return null;
-        }
-        if (objClass == null) {
-            return xml.toObject();
-        }
-        T obj;
-        try {
-            obj = objClass.getDeclaredConstructor().newInstance();
-        } catch (Exception e) {
-            throw new ConfigurationException(
-                    "This class could not be instantiated: " + objClass, e);
-        }
-        loadFromXML(configFile, obj, errorHandler);
-        return obj;
-    }
-    /**
-     * Loads an XML configuration file and populates a given object.
-     * @param configFile XML configuration file
-     * @param object object to populate
-     * @since 2.0.0
-     */
-    public void loadFromXML(Path configFile, Object object) {
-        loadFromXML(configFile, object, null);
-    }
-    /**
-     * Loads an XML configuration file and populates a given object.
-     * @param configFile XML configuration file
-     * @param object object to populate
-     * @param errorHandler XML error handler
-     * @since 2.0.0
-     */
-    public void loadFromXML(
-            Path configFile, Object object, ErrorHandler errorHandler) {
-        Objects.requireNonNull("'object' must not be null.");
-        var xml = loadXML(configFile, errorHandler);
-        if (xml != null) {
-            xml.populate(object);
-        }
-    }
-
-    /**
-     * Loads a configuration file as a string.
+     * Loads a configuration file as a string, performing variable
+     * interpolation and handling any other Velocity directives.
      * @param configFile configuration file
      * @return configuration as string
-     * @since 2.0.0
+     * @since 3.0.0, renamed from <code>loadString</code>
      */
-    public String loadString(Path configFile) {
+    public String toString(Path configFile) {
         if (configFile == null) {
             throw new ConfigurationException(
                     "No configuration file specified.");
@@ -318,15 +276,270 @@ public final class ConfigurationLoader {
         return sw.toString();
     }
 
-    //--- Protected methods ----------------------------------------------------
 
-    // @since 2.0.0
-    protected VelocityContext createDefaultContext() {
-        return null;
+    /**
+     * Loads an XML configuration file into an {@link XML} object, performing
+     * variable interpolation and handling any other Velocity directives.
+     * @param configFile XML configuration file
+     * @return XML
+     * @since 3.0.0 renamed from <code>loadXML(Path)</code>
+     */
+    public XML toXml(Path configFile) {
+        return toXml(configFile, null);
+    }
+    /**
+     * Loads an XML configuration file into an {@link XML} object, performing
+     * variable interpolation and handling any other Velocity directives.
+     * @param configFile XML configuration file
+     * @param errorHandler XML error handler
+     * @return XML
+     * @since 3.0.0 renamed from <code>loadXML(Path, ErrorHandler)</code>
+     */
+    public XML toXml(
+            Path configFile, ErrorHandler errorHandler) {
+        if (configFile == null || !configFile.toFile().exists()) {
+            return null;
+        }
+        try {
+            var xml = toString(configFile);
+            // clean-up extra duplicate declaration tags due to template
+            // includes/imports that could break parsing.
+            // Keep first <?xml... tag only, and delete all <!DOCTYPE...
+            // as they are not necessary to parse configs.
+            xml = Pattern.compile("((?!^)<\\?xml.*?\\?>|<\\!DOCTYPE[^>]*>)")
+                    .matcher(xml).replaceAll("");
+            return XML.of(xml).setErrorHandler(errorHandler).create();
+        } catch (Exception e) {
+            throw new ConfigurationException(
+                    "Cannot load configuration file: \"" + configFile + "\". "
+                  + "Probably a misconfiguration or the configuration XML "
+                  + "is not well-formed.", e);
+        }
     }
 
-    // @since 2.0.0
-    protected VelocityEngine createVelocityEngine() {
+    /**
+     * Loads an XML, JSON, or Yaml configuration file and populates a new
+     * object represented by the given class. Performs variable interpolation
+     * and handling of any other Velocity directives.
+     * Validation error will throw a {@link ConstraintViolationException}.
+     * To disable validation specify a custom {@link BeanMapper}
+     * and set <code>skipValidation</code> to <code>true</code> on the mapper
+     * builder.
+     * The file format is dictated by the file
+     * extension (XML is assumed if the file has no extension).
+     * @param configFile configuration file
+     * @param type class of the object to create and populate
+     * @param <T> type of returned object
+     * @return new object
+     * @throws IOException
+     * @since 3.0.0
+     */
+    public <T> T toObject(@NonNull Path configFile, Class<T> type)
+            throws IOException {
+        return beanMapper.read(
+                type,
+                new StringReader(toString(configFile)),
+                resolveFormat(configFile));
+    }
+
+    /**
+     * Loads an XML, JSON, or Yaml configuration file and populates the
+     * supplied object. Performs variable interpolation
+     * and handling of any other Velocity directives.
+     * Validation error will throw a {@link ConstraintViolationException}.
+     * To disable validation specify a custom {@link BeanMapper}
+     * and set <code>skipValidation</code> to <code>true</code> on the mapper
+     * builder.
+     * The file format is dictated by the file
+     * extension (XML is assumed if the file has no extension).
+     * Loads an XML configuration file and populates a given object.
+     * @param configFile XML configuration file
+     * @param object object to populate
+     * @throws IOException
+     * @since 3.0.0
+     */
+    public void toObject(@NonNull Path configFile, @NonNull Object object)
+            throws IOException {
+        beanMapper.read(
+                object,
+                new StringReader(toString(configFile)),
+                resolveFormat(configFile));
+    }
+
+    /**
+     * Loads an XML configuration file.
+     * @param configFile XML configuration file
+     * @return XML
+     * @since 2.0.0
+     * @deprecated Use {@link #toXml(Path)} instead.
+     */
+    @Deprecated(since = "3.0.0")
+    public XML loadXML(Path configFile) {
+        return loadXML(configFile, null);
+    }
+
+    /**
+     * Loads an XML configuration file.
+     * @param configFile XML configuration file
+     * @param errorHandler XML error handler
+     * @return XML
+     * @since 2.0.0
+     * @deprecated Use {@link #toXml(Path, ErrorHandler)} instead.
+     */
+    @Deprecated(since = "3.0.0")
+    public XML loadXML(
+            Path configFile, ErrorHandler errorHandler) {
+        if (configFile == null || !configFile.toFile().exists()) {
+            return null;
+        }
+        try {
+            var xml = loadString(configFile);
+            // clean-up extra duplicate declaration tags due to template
+            // includes/imports that could break parsing.
+            // Keep first <?xml... tag only, and delete all <!DOCTYPE...
+            // as they are not necessary to parse configs.
+            xml = Pattern.compile("((?!^)<\\?xml.*?\\?>|<\\!DOCTYPE[^>]*>)")
+                    .matcher(xml).replaceAll("");
+            return XML.of(xml).setErrorHandler(errorHandler).create();
+        } catch (Exception e) {
+            throw new ConfigurationException(
+                    "Cannot load configuration file: \"" + configFile + "\". "
+                  + "Probably a misconfiguration or the configuration XML "
+                  + "is not well-formed.", e);
+        }
+    }
+
+    /**
+     * Loads an XML configuration file and populates a new object
+     * represented by the given "class" attribute found on XML root element.
+     * @param configFile XML configuration file
+     * @param <T> type of returned object
+     * @return new object
+     * @since 2.0.0
+     * @deprecated Use {@link #toObject(Path, Class)} instead
+     */
+    @Deprecated(since = "3.0.0")
+    public <T> T loadFromXML(Path configFile) {
+        return loadFromXML(configFile, null, null);
+    }
+
+    /**
+     * Loads an XML configuration file and populates a new object
+     * represented by the given "class" attribute found on XML root element.
+     * @param configFile XML configuration file
+     * @param errorHandler XML error handler
+     * @param <T> type of returned object
+     * @return new object
+     * @since 2.0.0
+     * @deprecated Use {@link #toObject(Path, Class)} instead
+     */
+    @Deprecated(since = "3.0.0")
+    public <T> T loadFromXML(Path configFile, ErrorHandler errorHandler) {
+        return loadFromXML(configFile, null, errorHandler);
+    }
+    /**
+     * Loads an XML configuration file and populates a new object
+     * represented by the given class.
+     * @param configFile XML configuration file
+     * @param objClass type of object to create and populate
+     * @param <T> type of returned object
+     * @return new object
+     * @since 2.0.0
+     * @deprecated Use {@link #toObject(Path, Class)} instead
+     */
+    @Deprecated(since = "3.0.0")
+    public <T> T loadFromXML(Path configFile, Class<T> objClass) {
+        return loadFromXML(configFile, objClass, null);
+    }
+    /**
+     * Loads an XML configuration file and populates a new object
+     * represented by the given class.
+     * @param configFile XML configuration file
+     * @param objClass type of object to create and populate
+     * @param errorHandler XML error handler
+     * @param <T> type of returned object
+     * @return new object
+     * @since 2.0.0
+     * @deprecated Use {@link #toObject(Path, Class)} instead
+     */
+    @Deprecated(since = "3.0.0")
+    public <T> T loadFromXML(
+            Path configFile, Class<T> objClass, ErrorHandler errorHandler) {
+        var xml = loadXML(configFile, errorHandler);
+        if (xml == null) {
+            return null;
+        }
+        if (objClass == null) {
+            return xml.toObject();
+        }
+        T obj;
+        try {
+            obj = objClass.getDeclaredConstructor().newInstance();
+        } catch (Exception e) {
+            throw new ConfigurationException(
+                    "This class could not be instantiated: " + objClass, e);
+        }
+        loadFromXML(configFile, obj, errorHandler);
+        return obj;
+    }
+
+    /**
+     * Loads an XML configuration file and populates a given object.
+     * @param configFile XML configuration file
+     * @param object object to populate
+     * @since 2.0.0
+     * @deprecated Use {@link #toObject(Path, Object)} instead
+     */
+    @Deprecated(since = "3.0.0")
+    public void loadFromXML(Path configFile, Object object) {
+        loadFromXML(configFile, object, null);
+    }
+    /**
+     * Loads an XML configuration file and populates a given object.
+     * @param configFile XML configuration file
+     * @param object object to populate
+     * @param errorHandler XML error handler
+     * @since 2.0.0
+     * @deprecated Use {@link #toObject(Path, Object)} instead
+     */
+    @Deprecated(since = "3.0.0")
+    public void loadFromXML(
+            Path configFile, Object object, ErrorHandler errorHandler) {
+        Objects.requireNonNull("'object' must not be null.");
+        var xml = loadXML(configFile, errorHandler);
+        if (xml != null) {
+            xml.populate(object);
+        }
+    }
+
+    /**
+     * Loads a configuration file as a string.
+     * @param configFile configuration file
+     * @return configuration as string
+     * @since 2.0.0
+     * @deprecated Use {@link #toString(Path)} instead
+     */
+    @Deprecated(since = "3.0.0")
+    public String loadString(Path configFile) {
+        return toString(configFile);
+    }
+
+    //--- Private methods ----------------------------------------------------
+
+    private Format resolveFormat(@NonNull Path path) {
+        Format format;
+        var asStr = path.toString();
+        if (asStr.endsWith(".json")) {
+            format = Format.JSON;
+        } else if (asStr.endsWith(".yaml") || asStr.endsWith(".yml")) {
+            format = Format.YAML;
+        } else {
+            format = Format.XML;
+        }
+        return format;
+    }
+
+    private static VelocityEngine createDefaultVelocityEngine() {
         var engine = new VelocityEngine();
         engine.setProperty(RuntimeConstants.EVENTHANDLER_INCLUDE,
                 RelativeIncludeEventHandler.class.getName());

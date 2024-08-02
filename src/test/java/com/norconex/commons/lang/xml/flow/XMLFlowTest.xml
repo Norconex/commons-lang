@@ -30,12 +30,12 @@
       <valueMatcher>volvo</valueMatcher>
     </condition>
     <then>
-      <handler class="MockUppercaseConsumer">
+      <handler class="MockXMLUppercaseConsumer">
         <field>firstName</field>
       </handler>
     </then>
     <else>
-      <handler class="MockUppercaseConsumer">
+      <handler class="MockXMLUppercaseConsumer">
         <field>lastName</field>
       </handler>
     </else>
@@ -50,7 +50,7 @@
         This condition will be evaluated using an instance of the class
         represented by the "class" attribute.
         -->
-      <condition class="MockMapSizeEqualsCondition">
+      <condition class="MockXMLMapSizeEqualsCondition">
         <size>3</size>
       </condition>
       <condition>
@@ -59,7 +59,7 @@
       </condition>
     </conditions>
     <then>
-      <aConsumer class="MockLowercaseConsumer">
+      <aConsumer class="MockXMLLowercaseConsumer">
         <field>firstName</field>
       </aConsumer>
       <!-- Nested ifNot condition -->
@@ -69,7 +69,7 @@
           <valueMatcher>john</valueMatcher>
         </condition>
         <then>
-          <anotherConsumer class="MockLowercaseConsumer">
+          <anotherConsumer class="MockXMLLowercaseConsumer">
             <field>lastName</field>
           </anotherConsumer>
         </then>

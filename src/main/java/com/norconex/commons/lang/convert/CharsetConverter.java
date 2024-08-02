@@ -35,4 +35,32 @@ public class CharsetConverter extends AbstractConverter {
             throw toTypeException(value, type, e);
         }
     }
+
+    /**
+     * JSON (Jackson) serializer using this converter.
+     * @since 3.0.0
+     */
+    public static class JsonSerializer
+            extends GenericJsonSerializer<Charset>{}
+
+    /**
+     * JSON (Jackson) deserializer using this converter.
+     * @since 3.0.0
+     */
+    public static class JsonDeserializer
+        extends GenericJsonDeserializer<Charset> {
+        public JsonDeserializer() {
+            super(Charset.class);
+        }
+    }
+
+    /**
+     * XML (JAXB) adapter using this converter.
+     * @since 3.0.0
+     */
+    public static class XmlAdapter extends GenericXmlAdapter<Charset> {
+        public XmlAdapter() {
+            super(Charset.class);
+        }
+    }
 }

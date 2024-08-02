@@ -9,7 +9,9 @@ import java.util.function.Predicate;
 /**
  * Function-related utility methods
  * @since 2.0.0
+ * @deprecated use {@link Consumers} and {@link Predicates} instead.
  */
+@Deprecated(since = "3.0.0")
 public final class FunctionUtil {
 
     private FunctionUtil() {}
@@ -48,6 +50,6 @@ public final class FunctionUtil {
 
     public static <T> Consumer<T> predicatedConsumer(
             Predicate<T> predicate, Consumer<T> consumer) {
-        return new PredicatedConsumer<>(predicate, consumer);
+        return PredicatedConsumer.ifTrue(predicate, consumer);
     }
 }

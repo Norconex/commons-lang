@@ -15,20 +15,20 @@
 package com.norconex.commons.lang.net;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.bean.BeanMapper;
 import com.norconex.commons.lang.encrypt.EncryptionKey;
 import com.norconex.commons.lang.encrypt.EncryptionKey.Source;
 import com.norconex.commons.lang.security.Credentials;
-import com.norconex.commons.lang.xml.XML;
 
 class ProxySettingsTest {
 
     @Test
     void testProxySettings() {
-        ProxySettings proxy = new ProxySettings("example.com", 123)
+        var proxy = new ProxySettings("example.com", 123)
                 .setScheme("myscheme")
                 .setRealm("myrealm")
                 .setCredentials(new Credentials("Bob", "Secure"));
@@ -37,7 +37,7 @@ class ProxySettingsTest {
         assertThat(proxy.getRealm()).isEqualTo("myrealm");
         assertThat(proxy.isSet()).isTrue();
 
-        ProxySettings anotherProxy = new ProxySettings();
+        var anotherProxy = new ProxySettings();
         proxy.copyTo(anotherProxy);
         assertThat(anotherProxy).isEqualTo(proxy);
 
@@ -49,7 +49,7 @@ class ProxySettingsTest {
 
     @Test
     void testWriteRead() {
-        ProxySettings ps = new ProxySettings();
+        var ps = new ProxySettings();
         ps.setHost(new Host("myhost", 99));
         ps.getCredentials().setUsername("myusername");
         ps.getCredentials().setPassword("mypassword");
@@ -58,9 +58,7 @@ class ProxySettingsTest {
         ps.setRealm("realm");
         ps.setScheme("scheme");
 
-        XML.assertWriteRead(ps, "proxySettings");
-
-        assertDoesNotThrow(() -> ps.loadFromXML(null));
-        assertDoesNotThrow(() -> ps.saveToXML(null));
+        assertThatNoException().isThrownBy(
+                () -> BeanMapper.DEFAULT.assertWriteRead(ps));
     }
 }
