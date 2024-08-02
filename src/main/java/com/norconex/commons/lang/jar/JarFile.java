@@ -78,7 +78,7 @@ public class JarFile implements Comparable<JarFile> {
         file = jarFile;
         fullName = jarFile.getName();
 
-        var p = Pattern.compile("(.*?)-(\\d[\\.\\w-]*)\\.jar");
+        var p = Pattern.compile("^(.*?)-(\\d[\\.\\w-]*)\\.jar");
         var m = p.matcher(fullName);
         if (m.find()) {
             var jarName = m.group(1);
