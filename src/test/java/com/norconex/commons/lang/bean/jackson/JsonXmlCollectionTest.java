@@ -33,7 +33,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.exc.StreamWriteException;
 import com.fasterxml.jackson.databind.DatabindException;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.norconex.commons.lang.bean.BeanMapper;
 import com.norconex.commons.lang.bean.BeanMapper.Format;
 
@@ -116,7 +115,6 @@ class JsonXmlCollectionTest {
     @Data
     @JsonInclude(value = Include.ALWAYS, content = Include.ALWAYS)
     static class ObjectWithNullList {
-        @JsonSerialize(nullsUsing = JsonXmlCollectionSerializer.class)
         private List<String> nullList = null;
     }
 }

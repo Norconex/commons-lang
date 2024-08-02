@@ -27,7 +27,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -79,11 +78,11 @@ public class JarFile implements Comparable<JarFile> {
         file = jarFile;
         fullName = jarFile.getName();
 
-        Pattern p = Pattern.compile("(.*?)-(\\d[\\.\\w-]*)\\.jar");
-        Matcher m = p.matcher(fullName);
+        var p = Pattern.compile("(.*?)-(\\d[\\.\\w-]*)\\.jar");
+        var m = p.matcher(fullName);
         if (m.find()) {
-            String jarName = m.group(1);
-            String jarVersion = m.group(2);
+            var jarName = m.group(1);
+            var jarVersion = m.group(2);
             baseName = jarName;
             version = jarVersion;
         } else {
@@ -91,7 +90,7 @@ public class JarFile implements Comparable<JarFile> {
             version = null;
         }
 
-        SemanticVersion semVer = SemanticVersion.UNVERSIONED;
+        var semVer = SemanticVersion.UNVERSIONED;
         if (StringUtils.isNotBlank(version)) {
             try {
                 semVer = SemanticVersionParser.LENIENT.parse(version);
@@ -254,7 +253,7 @@ public class JarFile implements Comparable<JarFile> {
             return baseName.compareTo(o.baseName);
         }
 
-        int result = semanticVersion.compareTo(o.semanticVersion);
+        var result = semanticVersion.compareTo(o.semanticVersion);
         if (result != 0) {
             return result;
         }
@@ -293,9 +292,9 @@ public class JarFile implements Comparable<JarFile> {
      */
     public static List<JarFile> toJarFiles(Path... jarPaths) {
         List<JarFile> jarFiles = new ArrayList<>();
-        Streams.stream(CollectionUtil.asListOrEmpty(jarPaths))
+        Streams.failableStream(CollectionUtil.asListOrEmpty(jarPaths))
                 .forEach(jarPath -> {
-            try (Stream<Path> stream = Files.isDirectory(jarPath)
+            try (var stream = Files.isDirectory(jarPath)
                     ? Files.list(jarPath)
                     : Stream.of(jarPath)) {
                 jarFiles.addAll(stream

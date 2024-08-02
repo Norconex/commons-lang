@@ -1,4 +1,4 @@
-/* Copyright 2023 Norconex Inc.
+/* Copyright 2023-2024 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -153,8 +153,8 @@ public class BeanMapper { //NOSONAR
     public enum Format {
         XML(
                 () -> XmlMapper.builder(new EmptyWithClosingTagXmlFactory()),
+                //XmlMapper::builder,
                 b -> {
-                    ((XmlMapper.Builder) b).defaultUseWrapper(false);
                     var m = (XmlMapper) b.build();
                     m.enable(EMPTY_ELEMENT_AS_NULL);
                     m.getFactory()
@@ -177,6 +177,8 @@ public class BeanMapper { //NOSONAR
         final Supplier<MapperBuilder<?, ?>> builder;
         final Function<MapperBuilder<?, ?>, ObjectMapper> mapper;
     }
+
+
 
     /**
      * A build mapper initialized with default settings.
@@ -271,7 +273,7 @@ public class BeanMapper { //NOSONAR
     // We are caching them on first use
     private final Map<Format, ObjectMapper> cache = new ConcurrentHashMap<>(3);
 
-    // We keep a copy of registered polymorphic type as they are otherwise
+    // We keep a copy of resolved polymorphic type as they are otherwise
     // difficult to obtain from the ObjectMapper and we may need them in
     // different context (e.g., registration in OpenApi).
     private final MultiValuedMap<Class<?>, Class<?>>
@@ -391,27 +393,30 @@ public class BeanMapper { //NOSONAR
     public ObjectMapper toObjectMapper(Format format) {
         return cache.computeIfAbsent(format, fmt -> {
 
+            //--- Builder ---
+
             var builder = format.builder.get();
+
+            // general features:
             builder.disable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY);
             builder.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS);
-            builder.addHandler(new BeanMapperPropertyHandler(this));
-
-            // How to handle null or not provided:
             builder.enable(Feature.ALLOW_COMMENTS);
             builder.enable(Feature.ALLOW_YAML_COMMENTS);
-            if (LOG.isDebugEnabled()) {
-                builder.enable(Feature.INCLUDE_SOURCE_IN_LOCATION);
-            }
             builder.configure(JsonReadFeature.ALLOW_UNQUOTED_FIELD_NAMES
                     .mappedFeature(), true);
             builder.configure(JsonReadFeature.ALLOW_TRAILING_COMMA
                     .mappedFeature(), true);
+            if (LOG.isDebugEnabled()) {
+                builder.enable(Feature.INCLUDE_SOURCE_IN_LOCATION);
+            }
 
-            // other modules:
+            // handlers:
+            builder.addHandler(new BeanMapperPropertyHandler(this));
+
+            // modules:
             builder.addModule(new ParameterNamesModule());
             builder.addModule(new Jdk8Module());
             builder.addModule(new JavaTimeModule());
-
             // Nx modules and mix-ins
             builder.addModule(new GenericJsonModule());
             if (!configurableDetectionDisabled) {
@@ -425,34 +430,34 @@ public class BeanMapper { //NOSONAR
                 builder.addModule(
                         new FailOnUnknownConfigurablePropModule(this));
             }
+
+            //--- Mapper ---
+
             var mapper = format.mapper.apply(builder);
 
             // read:
             mapper.configure(
                     DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
                     !ignoreUnknownProperties);
-
             mapper.configure(Feature.AUTO_CLOSE_SOURCE, false);
             mapper.configure(
                     DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT,
                     treatEmptyAsNull);
-            mapper.disable(
-                    DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY);
-
-            // write:
-            mapper.configure(SerializationFeature.INDENT_OUTPUT, indent);
-            mapper.disable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
-
-            // START TEST
+            mapper.disable(DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY);
             mapper.setDefaultSetterInfo(
                     Value
                     .empty()
                     .withValueNulls(Nulls.SET) // value
                     .withContentNulls(Nulls.SET));  // collection entry value
 
+            // write:
+            mapper.configure(SerializationFeature.INDENT_OUTPUT, indent);
+            mapper.disable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
+
             // register polymorphic types:
             registerPolymorphicTypes(mapper);
 
+            // misc:
             if (format == Format.XML) {
                 mapper.registerModule(new JsonXmlCollectionModule());
             }
@@ -463,13 +468,6 @@ public class BeanMapper { //NOSONAR
         });
     }
 
-    //NOTE: we need to set NON_DEFAULT here since setting it globally
-    // assumes "default" is the property type default, not the object
-    // initialization of those properties.
-    @JsonInclude(value = Include.NON_DEFAULT)
-    abstract static class NonDefaultInclusionMixIn {
-    }
-
     @JsonIgnoreType
     abstract static class ConfigurableMixIn<T> {
         @JsonUnwrapped
@@ -478,6 +476,14 @@ public class BeanMapper { //NOSONAR
         @JsonUnwrapped
         void setConfiguration(T configuration) { }
     }
+
+    //NOTE: we need to set NON_DEFAULT here since setting it globally
+    // assumes "default" is the property type default, not the object
+    // initialization of those properties.
+    @JsonInclude(value = Include.NON_DEFAULT)
+    abstract static class NonDefaultInclusionMixIn {
+    }
+
 
     private synchronized void resolvePolymorphicTypes() {
         if (polyTypesResolved.isTrue()) {
@@ -540,7 +546,7 @@ public class BeanMapper { //NOSONAR
 
         resolvedPolymorphicTypes.putAll(type, subTypes);
 
-        //TODO check and report those already registered?
+        //MAYBE: check and report those already registered?
         mapper.addMixIn(type, PolymorphicMixIn.class);
         mapper.registerSubtypes(subTypes.toArray(new Class<?>[] {}));
         if (LOG.isDebugEnabled()) {
