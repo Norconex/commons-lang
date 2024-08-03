@@ -49,7 +49,7 @@
     <okhttp3.version>4.10.0</okhttp3.version>
     <slf4j.version>2.0.9</slf4j.version>
     <sun-jaxb-impl.version>4.0.3</sun-jaxb-impl.version>
-    <tomcat-embed-el.version>10.1.13</tomcat-embed-el.version>
+    <tomcat-embed-el.version>10.1.26</tomcat-embed-el.version>
     <velocity-engine.version>2.3</velocity-engine.version>
     <xerces.version>2.12.2</xerces.version>
     <xml-bind-api.version>4.0.1</xml-bind-api.version>
