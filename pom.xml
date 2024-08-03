@@ -47,7 +47,7 @@
     <jackson.version>2.17.1</jackson.version>
     <log4j.version>2.20.0</log4j.version>
     <okhttp3.version>4.10.0</okhttp3.version>
-    <slf4j.version>2.0.9</slf4j.version>
+    <slf4j.version>2.0.13</slf4j.version>
     <sun-jaxb-impl.version>4.0.3</sun-jaxb-impl.version>
     <tomcat-embed-el.version>10.1.13</tomcat-embed-el.version>
     <velocity-engine.version>2.3</velocity-engine.version>
