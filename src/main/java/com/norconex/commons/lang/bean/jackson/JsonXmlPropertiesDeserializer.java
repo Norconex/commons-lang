@@ -43,7 +43,7 @@ public class JsonXmlPropertiesDeserializer extends StdDeserializer<Properties> {
     @Override
     public Properties deserialize(
             JsonParser p, DeserializationContext ctxt) throws IOException {
-        var  node = (JsonNode) p.getCodec().readTree(p);
+        var node = (JsonNode) p.getCodec().readTree(p);
         var props = new Properties();
 
         node.fields().forEachRemaining(en -> {

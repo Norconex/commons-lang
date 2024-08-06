@@ -39,7 +39,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreType;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonSetter.Value;
@@ -468,7 +467,7 @@ public class BeanMapper { //NOSONAR
         });
     }
 
-    @JsonIgnoreType
+//     @JsonIgnoreType  // <-- messes up nested object deserializing since update of Jackson
     abstract static class ConfigurableMixIn<T> {
         @JsonUnwrapped
         @Valid
