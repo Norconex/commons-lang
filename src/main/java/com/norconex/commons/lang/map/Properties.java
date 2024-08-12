@@ -1210,7 +1210,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the value
      */
     public final Boolean getBoolean(String key) {
-        return get(key, Boolean.class);
+        return getBoolean(key, false);
     }
     /**
      * Gets value as a boolean. The underlying string value matching
