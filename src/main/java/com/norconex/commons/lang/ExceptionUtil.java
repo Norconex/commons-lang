@@ -14,10 +14,11 @@
  */
 package com.norconex.commons.lang;
 
+import static org.apache.commons.lang3.StringUtils.repeat;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
@@ -46,14 +47,16 @@ public final class ExceptionUtil {
      * @return formatted string or empty string, never <code>null</code>
      */
     public static String getFormattedMessages(Throwable throwable) {
-        int cnt = 0;
-        StringBuilder b = new StringBuilder();
+        var cnt = 0;
+        var b = new StringBuilder();
         for (String msg : getMessageList(throwable)) {
             if (cnt > 0) {
                 b.append('\n');
+                b.append(repeat(' ', cnt * 2) + "→ " + msg);
+            } else {
+                b.append(msg);
             }
             cnt++;
-            b.append(StringUtils.repeat(' ', cnt * 2) + "→ " + msg);
         }
         return b.toString();
     }

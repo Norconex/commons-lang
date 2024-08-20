@@ -110,7 +110,7 @@ public class Predicates<T> extends ArrayList<Predicate<T>>
      * @return a group of predicates
      * @since 3.0.0
      */
-    @SuppressWarnings("unchecked")
+    @SafeVarargs
     public static <T> Predicates<T> anyOf(
             @NonNull Predicate<T>... predicates) {
         return new Predicates<>(List.of(predicates), true);
@@ -124,7 +124,7 @@ public class Predicates<T> extends ArrayList<Predicate<T>>
      * @return a group of predicates
      * @since 3.0.0
      */
-    @SuppressWarnings("unchecked")
+    @SafeVarargs
     public static <T> Predicates<T> allOf(
             @NonNull Predicate<T>... predicates) {
         return new Predicates<>(List.of(predicates), false);

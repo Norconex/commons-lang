@@ -49,7 +49,6 @@ public class FileLocker {
     private FileChannel fileChannel;
 
     public FileLocker(Path lockFile) {
-        super();
         this.lockFile = Objects.requireNonNull(
                 lockFile, "'lockFile' must not be null.");
     }
@@ -70,11 +69,11 @@ public class FileLocker {
             return false;
         }
         try {
-            FileChannel fc = fileChannel();
-            FileLock lck = lock(fc, false);
+            var fc = fileChannel();
+            var lck = lock(fc, false);
             if (lck != null) {
-                this.fileChannel = fc;
-                this.lock = lck;
+                fileChannel = fc;
+                lock = lck;
             }
             return lock != null;
         } catch (OverlappingFileLockException e) {
@@ -114,13 +113,13 @@ public class FileLocker {
             throw alreadyLocked(null);
         }
         try {
-            FileChannel fc = fileChannel();
-            FileLock lck = lock(fc, block);
+            var fc = fileChannel();
+            var lck = lock(fc, block);
             if (lck == null) {
                 throw alreadyLocked(null);
             }
-            this.fileChannel = fc;
-            this.lock = lck;
+            fileChannel = fc;
+            lock = lck;
         } catch (OverlappingFileLockException e) {
             throw alreadyLocked(e);
         }
@@ -160,6 +159,7 @@ public class FileLocker {
     }
 
     private FileChannel fileChannel() throws IOException {
+        Files.createDirectories(lockFile.getParent());
         return FileChannel.open(lockFile,
                 StandardOpenOption.READ,
                 StandardOpenOption.WRITE,

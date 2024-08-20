@@ -23,6 +23,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -256,6 +257,13 @@ public class BeanMapper { //NOSONAR
     private Map<Class<?>, Class<?>> defaultPolymorphicTypes;
 
     /**
+     * Allows for manually registering polymorphic types. The implementations
+     * (map values) must extend the base class (map key) or it will fail.
+     */
+    @Singular
+    private Map<Class<?>, List<Class<?>>> polymorphicTypeImpls;
+
+    /**
      * Optionally setup support for using flow/conditions in your
      * your source.
      */
@@ -384,6 +392,18 @@ public class BeanMapper { //NOSONAR
         }
     }
 
+    public static Format detectFormat(@NonNull String str) {
+        var cfg = str.stripLeading();
+        if (cfg.startsWith("{")) {
+            return Format.JSON;
+        }
+        if (cfg.startsWith("<")) {
+            return Format.XML;
+        }
+        return Format.YAML;
+    }
+
+
     /**
      * Gets a Jackson {@link ObjectMapper} for the given format.
      * @param format format for which to get the mapper
@@ -490,20 +510,21 @@ public class BeanMapper { //NOSONAR
             return;
         }
 
+        //--- Directly specified ---
+        polymorphicTypeImpls.forEach(resolvedPolymorphicTypes::putAll);
+
         //--- From service loader ---
         var cl = ofNullable(classLoader).orElseGet(
                 () -> getClass().getClassLoader());
         if (!polymorphicServiceLoaderDisabled) {
             PolymorphicTypeLoader.polymorphicTypes(cl).asMap().forEach(
-                    (type, subTypes) ->
-                resolvedPolymorphicTypes.putAll(type, subTypes));
+                    resolvedPolymorphicTypes::putAll);
         }
 
         //--- Configured ---
-        polymorphicTypes.forEach((type, predicate) -> {
+        polymorphicTypes.forEach((type, predicate) ->
             resolvedPolymorphicTypes.putAll(
-                    type, ClassFinder.findSubTypes(type, predicate));
-        });
+                    type, ClassFinder.findSubTypes(type, predicate)));
 
         //--- Flow-specific ---
         Class<?> conditionType =
