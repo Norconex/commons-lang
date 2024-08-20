@@ -16,27 +16,26 @@ package com.norconex.commons.lang;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.List;
-
 import org.junit.jupiter.api.Test;
 
 class ExceptionUtilTest {
 
     @Test
     void testGetFormattedMessages() {
-        String msg = ExceptionUtil.getFormattedMessages(
+        var msg = ExceptionUtil.getFormattedMessages(
             new RuntimeException("A parent runtime exception.",
                 new RuntimeException(null,
                     new NullPointerException("A null pointer exception."))));
         assertThat(msg).isEqualTo(
-                "  → RuntimeException: A parent runtime exception.\n"
-                + "    → RuntimeException: \n"
-                + "      → NullPointerException: A null pointer exception.");
+                """
+                RuntimeException: A parent runtime exception.
+                  → RuntimeException:\s
+                    → NullPointerException: A null pointer exception.""");
     }
 
     @Test
     void testGetMessageList() {
-        List<String> msgs = ExceptionUtil.getMessageList(
+        var msgs = ExceptionUtil.getMessageList(
             new RuntimeException("A parent runtime exception.",
                 new RuntimeException(null,
                     new NullPointerException("A null pointer exception."))));
