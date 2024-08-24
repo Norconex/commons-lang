@@ -166,7 +166,7 @@ public final class BeanUtil {
             // swallow
         }
         if (constructor == null) {
-            LOG.debug("Could not find an accessible public no-arg "
+            LOG.trace("Could not find an accessible public no-arg "
                     + "constructor on {}.", beanClass);
             return Collections.emptyList();
         }
@@ -1165,7 +1165,7 @@ public final class BeanUtil {
             var writeMethod = getWriteMethod(
                     beanClass, field.getName(), field.getType());
             if (ObjectUtils.allNull(readMethod, writeMethod)) {
-                LOG.debug("""
+                LOG.trace("""
                     Cannot get descriptor for property "{}" of bean\s\
                     class "{}". Property has no read or\s\
                     write methods.""",
@@ -1175,7 +1175,7 @@ public final class BeanUtil {
             return new FluentPropertyDescriptor(
                     field.getName(), readMethod, writeMethod);
         } catch (IntrospectionException e) {
-            LOG.debug("Cannot get descriptor for property \"{}\" of bean "
+            LOG.trace("Cannot get descriptor for property \"{}\" of bean "
                     + "class \"{}\".",
                     field.getName(), beanClass.getName(), e);
             return null;
