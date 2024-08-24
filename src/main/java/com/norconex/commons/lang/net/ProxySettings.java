@@ -15,7 +15,6 @@
 package com.norconex.commons.lang.net;
 
 import java.io.Serializable;
-import java.net.InetSocketAddress;
 import java.net.Proxy;
 
 import org.apache.commons.lang3.StringUtils;
@@ -184,7 +183,6 @@ public class ProxySettings implements Serializable {
             LOG.warn("Unsupported proxy scheme: '{}'. Defaulting to HTTP.",
                     scheme);
         }
-        var address = new InetSocketAddress(host.getName(), host.getPort());
-        return new Proxy(type, address);
+        return new Proxy(type, host.toInetSocketAddress());
     }
 }
