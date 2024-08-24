@@ -15,6 +15,7 @@
 package com.norconex.commons.lang.net;
 
 import java.io.Serializable;
+import java.net.InetSocketAddress;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -69,6 +70,19 @@ public final class Host implements Serializable {
     }
     public Host withPort(int port) {
         return new Host(getName(), port);
+    }
+
+    /**
+     * Converts this host to an {@link InetSocketAddress} if the name
+     * is set, otherwise returns <code>null</code>.
+     * The port must be greater or equal to zero.
+     * @return socket address or <code>null</code>
+     */
+    public InetSocketAddress toInetSocketAddress() {
+        if (isSet() && port >= 0) {
+            return new InetSocketAddress(name, port);
+        }
+        return null;
     }
 
     @Override
