@@ -215,8 +215,15 @@ public class MutableImage {
     //--- Crop -----------------------------------------------------------------
 
     public MutableImage crop(@NonNull Rectangle rectangle) {
-        return apply(Scalr.crop(image,
-                rectangle.x, rectangle.y, rectangle.width, rectangle.height));
+        var w = rectangle.width;
+        if (rectangle.x + rectangle.width > image.getWidth()) {
+            w = image.getWidth() - rectangle.x;
+        }
+        var h = rectangle.height;
+        if (rectangle.y + rectangle.height > image.getHeight()) {
+            h = image.getHeight() - rectangle.y;
+        }
+        return apply(Scalr.crop(image, rectangle.x, rectangle.y, w, h));
     }
 
     //--- Stretch --------------------------------------------------------------
