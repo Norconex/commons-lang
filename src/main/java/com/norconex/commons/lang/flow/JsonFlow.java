@@ -44,8 +44,8 @@ public @interface JsonFlow {
      * using the flow mapper configuration defined in the BeanMapepr (if any).
      * @return flow mapper configuration builder concrete type
      */
-    public Class<? extends Supplier<FlowMapperConfig>> builder()
-            default NoBuilder.class;
+    public Class<? extends Supplier<
+            FlowMapperConfig>> builder() default NoBuilder.class;
 
     /**
      * No-op config mapper builder symbolizing no builder.

@@ -42,7 +42,6 @@ class ExtendedReferenceInsertionEventHandlerTest {
         var valuePropertiesFile = "valuePropertiesFile";
         var valueVariablesFile = "valueVariablesFile";
 
-
         String varName;
         String before;
         String after;
@@ -112,6 +111,7 @@ class ExtendedReferenceInsertionEventHandlerTest {
             throws IOException {
         return resolveVariable(configFileContent, null, null);
     }
+
     private String resolveVariable(String configFileContent,
             String propertiesFileContent, String variablesFileContent)
             throws IOException {
@@ -121,6 +121,7 @@ class ExtendedReferenceInsertionEventHandlerTest {
         writeFile(fileBaseName + ".variables", variablesFileContent);
         return ConfigurationLoader.builder().build().toString(testFile);
     }
+
     private Path writeFile(String fileName, String content) throws IOException {
         if (StringUtils.isNotBlank(content)) {
             var file = tempDir.resolve(fileName);

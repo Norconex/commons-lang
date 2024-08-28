@@ -97,6 +97,7 @@ public final class IOUtil {
         is.reset();
         return bytes;
     }
+
     /**
      * Gets and resets the specified number of characters from the reader.
      * Must support marks.
@@ -139,6 +140,7 @@ public final class IOUtil {
         is.reset();
         return numRead == -1;
     }
+
     /**
      * Gets whether the given Reader is <code>null</code> or empty.
      * Must support marks.
@@ -209,6 +211,7 @@ public final class IOUtil {
             throws IOException {
         return tail(is, StandardCharsets.UTF_8, lineQty);
     }
+
     /**
      * Gets the last lines from an input stream, using the specified encoding.
      * This method is null-safe.
@@ -233,6 +236,7 @@ public final class IOUtil {
             throws IOException {
         return tail(is, Charset.forName(encoding), lineQty);
     }
+
     /**
      * Gets the last lines from an input stream, using the specified encoding.
      * This method is null-safe.
@@ -309,6 +313,7 @@ public final class IOUtil {
             throws IOException {
         return head(is, Charset.forName(encoding), lineQty);
     }
+
     /**
      * Gets the first lines from an input stream, using the specified encoding.
      * This method is null-safe.
@@ -356,6 +361,7 @@ public final class IOUtil {
     public static Reader toNonNullReader(Reader reader) {
         return reader != null ? reader : new NullReader(0);
     }
+
     /**
      * Gets an "empty" input stream (zero size) when the supplied input
      * stream is <code>null</code>.
@@ -368,7 +374,6 @@ public final class IOUtil {
         return is != null ? is : new NullInputStream(0);
     }
 
-
     /**
      * Gets a non-effective writer when the supplied writer
      * is <code>null</code> (writing to it has no effect).
@@ -380,6 +385,7 @@ public final class IOUtil {
     public static Writer toNonNullWriter(Writer writer) {
         return writer != null ? writer : NullWriter.INSTANCE;
     }
+
     /**
      * Gets a non-effective output stream when the supplied output
      * stream is <code>null</code> (writing to it has no effect).
@@ -391,7 +397,6 @@ public final class IOUtil {
     public static OutputStream toNonNullOutputStream(OutputStream os) {
         return os != null ? os : NullOutputStream.INSTANCE;
     }
-
 
     /**
      * Fully consumes an input stream.
@@ -406,12 +411,13 @@ public final class IOUtil {
         }
         var cnt = 0;
         var read = is.read();
-        while(read != -1) {
+        while (read != -1) {
             read = is.read();
             cnt++;
         }
         return cnt;
     }
+
     /**
      * Fully consumes an input stream.
      * @param reader reader
@@ -425,7 +431,7 @@ public final class IOUtil {
         }
         var cnt = 0;
         var read = reader.read();
-        while(read != -1) {
+        while (read != -1) {
             read = reader.read();
             cnt++;
         }
@@ -446,8 +452,9 @@ public final class IOUtil {
      */
     public static int consumeUntil(Reader reader, IntPredicate predicate)
             throws IOException {
-        return consumeWhile(reader,  ch -> !predicate.test(ch), null);
+        return consumeWhile(reader, ch -> !predicate.test(ch), null);
     }
+
     /**
      * Consumes markable reader characters until the predicate returns
      * <code>true</code> for a character or the end of stream is reached.
@@ -465,9 +472,10 @@ public final class IOUtil {
      */
     public static int consumeUntil(
             Reader reader, IntPredicate predicate, Appendable appendable)
-                    throws IOException {
-        return consumeWhile(reader,  ch -> !predicate.test(ch), appendable);
+            throws IOException {
+        return consumeWhile(reader, ch -> !predicate.test(ch), appendable);
     }
+
     /**
      * Consumes reader characters until after encountering the supplied string
      * (the matching string is also consumed) or the end of stream is reached.
@@ -483,7 +491,7 @@ public final class IOUtil {
      */
     public static int consumeUntil(
             Reader reader, String str, Appendable appendable)
-                    throws IOException {
+            throws IOException {
 
         var chars = str.toCharArray();
         var qtyRead = 0;
@@ -506,6 +514,7 @@ public final class IOUtil {
         }
         return qtyRead;
     }
+
     /**
      * Consumes markable reader characters while the predicate returns
      * <code>true</code> for a character or the end of stream is reached.
@@ -522,6 +531,7 @@ public final class IOUtil {
             throws IOException {
         return consumeWhile(reader, predicate, null);
     }
+
     /**
      * Consumes markable reader characters while the predicate returns
      * <code>true</code> for a character or the end of stream is reached.
@@ -539,7 +549,7 @@ public final class IOUtil {
      */
     public static int consumeWhile(
             Reader reader, IntPredicate predicate, Appendable appendable)
-                    throws IOException {
+            throws IOException {
 
         if (reader == null) {
             return 0;
@@ -578,7 +588,11 @@ public final class IOUtil {
         }
         for (Closeable cl : closeable) {
             if (cl != null) {
-                try { cl.close(); } catch (IOException e) { /*NOOP*/ }
+                try {
+                    cl.close();
+                } catch (IOException e) {
+                    /*NOOP*/
+                }
             }
         }
     }

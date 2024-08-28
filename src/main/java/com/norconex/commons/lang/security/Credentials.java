@@ -110,9 +110,10 @@ import lombok.experimental.FieldNameConstants;
 @Data
 @Accessors(chain = true)
 @JsonAutoDetect(
-        fieldVisibility=Visibility.ANY,
-        getterVisibility=Visibility.NONE,
-        isGetterVisibility=Visibility.NONE)
+    fieldVisibility = Visibility.ANY,
+    getterVisibility = Visibility.NONE,
+    isGetterVisibility = Visibility.NONE
+)
 public class Credentials implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -140,6 +141,7 @@ public class Credentials implements Serializable {
     public Credentials() {
         this(null, null);
     }
+
     /**
      * Creates a new Credentials instance with the supplied username and
      * password.
@@ -150,6 +152,7 @@ public class Credentials implements Serializable {
     public Credentials(String username, String password) {
         this(username, password, null);
     }
+
     /**
      * Creates a new Credentials instance with the supplied username,
      * password and password key.
@@ -167,6 +170,7 @@ public class Credentials implements Serializable {
         this.password = password;
         this.passwordKey = passwordKey;
     }
+
     public Credentials(Credentials copy) {
         copyFrom(copy);
     }
@@ -174,6 +178,7 @@ public class Credentials implements Serializable {
     public boolean isSet() {
         return !isEmpty();
     }
+
     public boolean isEmpty() {
         return StringUtils.isAllBlank(username, password);
     }
@@ -181,6 +186,7 @@ public class Credentials implements Serializable {
     public void copyTo(Credentials creds) {
         BeanUtil.copyProperties(creds, this);
     }
+
     public void copyFrom(Credentials creds) {
         BeanUtil.copyProperties(this, creds);
     }
@@ -188,9 +194,9 @@ public class Credentials implements Serializable {
     @Override
     public String toString() {
         return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-            .append(Fields.username, username)
-            .append(Fields.password, "********")
-            .append(Fields.passwordKey, passwordKey)
-            .toString();
+                .append(Fields.username, username)
+                .append(Fields.password, "********")
+                .append(Fields.passwordKey, passwordKey)
+                .toString();
     }
 }

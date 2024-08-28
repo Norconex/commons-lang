@@ -58,6 +58,7 @@ public class MapChangeEvent<K, V> {
     public Map<K, V> getSource() {
         return source;
     }
+
     /**
      * Gets the key that has is value changed.
      * @return the key
@@ -65,6 +66,7 @@ public class MapChangeEvent<K, V> {
     public K getKey() {
         return key;
     }
+
     /**
      * Gets the old value.
      * @return old value
@@ -72,6 +74,7 @@ public class MapChangeEvent<K, V> {
     public V getOldValue() {
         return oldValue;
     }
+
     /**
      * Gets the new value.
      * @return new value

@@ -90,6 +90,7 @@ public class CachedStreamFactory {
             int maxMemoryInstance) {
         this(maxMemoryPool, maxMemoryInstance, getDefaultCacheDirectory());
     }
+
     /**
      * Constructor.
      * @param maxMemoryPool maximum number of bytes used for memory caching by
@@ -109,6 +110,7 @@ public class CachedStreamFactory {
         this.maxMemoryInstance = maxMemoryInstance;
         this.cacheDirectory = cacheDirectory;
     }
+
     /**
      * Creates a new instance with default memory values
      * (see class documentation).
@@ -122,6 +124,7 @@ public class CachedStreamFactory {
         maxMemoryInstance = getDefaultMaxMemoryInstance();
         this.cacheDirectory = cacheDirectory;
     }
+
     /**
      * Creates a new instance with default values (see class documentation)
      * @since 2.0.0
@@ -134,10 +137,12 @@ public class CachedStreamFactory {
         return NumberUtils.toInt(System.getProperty(
                 PROP_MAX_MEM_POOL), DEFAULT_MAX_MEM_POOL);
     }
+
     private static int getDefaultMaxMemoryInstance() {
         return NumberUtils.toInt(System.getProperty(
                 PROP_MAX_MEM_INSTANCE), DEFAULT_MAX_MEM_INSTANCE);
     }
+
     private static Path getDefaultCacheDirectory() {
         String dir = System.getProperty(PROP_DIR);
         if (StringUtils.isNotBlank(dir)) {
@@ -165,6 +170,7 @@ public class CachedStreamFactory {
         }
         return byteSize;
     }
+
     /*default*/ int getPoolRemainingMemory() {
         return Math.max(0, maxMemoryPool - getPoolCurrentMemory());
     }
@@ -182,6 +188,7 @@ public class CachedStreamFactory {
     public CachedInputStream newInputStream() {
         return newInputStream(StringUtils.EMPTY);
     }
+
     /**
      * Creates a new input stream, assuming UTF-8 content.
      * @param content content to stream
@@ -191,10 +198,12 @@ public class CachedStreamFactory {
         return registerStream(new CachedInputStream(this, cacheDirectory,
                 IOUtils.toInputStream(content, StandardCharsets.UTF_8)));
     }
+
     public CachedInputStream newInputStream(File file) {
         Objects.requireNonNull(file, "'file' must not be null");
         return newInputStream(file.toPath());
     }
+
     /**
      * Creates a new cached input stream.
      * @param path path where to cache large files
@@ -205,6 +214,7 @@ public class CachedStreamFactory {
         return registerStream(
                 new CachedInputStream(this, cacheDirectory, path));
     }
+
     public CachedInputStream newInputStream(InputStream is) {
         return registerStream(new CachedInputStream(this, cacheDirectory, is));
     }
@@ -212,6 +222,7 @@ public class CachedStreamFactory {
     public CachedOutputStream newOuputStream(OutputStream os) {
         return registerStream(new CachedOutputStream(this, cacheDirectory, os));
     }
+
     public CachedOutputStream newOuputStream() {
         return registerStream(
                 new CachedOutputStream(this, cacheDirectory, null));
@@ -228,6 +239,7 @@ public class CachedStreamFactory {
         private static final int CHECK_CHUNK_SIZE = (int) FileUtils.ONE_KB;
         private int poolRemaining = -1;
         private int kbReadSoFar = -1;
+
         // Checks every KB read the new max CacheSize
         public boolean hasEnoughAvailableMemory(
                 ByteArrayOutputStream memOutputStream,

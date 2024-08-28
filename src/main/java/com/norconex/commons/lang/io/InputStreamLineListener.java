@@ -46,6 +46,7 @@ public abstract class InputStreamLineListener implements InputStreamListener {
     protected InputStreamLineListener() {
         this(StandardCharsets.UTF_8);
     }
+
     /**
      * Creates a line listener with supplied character encoding
      * (defaults to UTF-8 if null).
@@ -58,6 +59,7 @@ public abstract class InputStreamLineListener implements InputStreamListener {
             this.charset = charset;
         }
     }
+
     /**
      * Creates a line listener with supplied character encoding
      * (defaults to UTF-8 if null).

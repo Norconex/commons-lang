@@ -69,6 +69,7 @@ public class XMLFormatter {
     public XMLFormatter() {
         this(null);
     }
+
     private XMLFormatter(Builder b) {
         cfg = new Builder(b);
     }
@@ -76,6 +77,7 @@ public class XMLFormatter {
     public String format(XML xml) {
         return format(xml.toString());
     }
+
     public String format(String xml) {
         StringWriter w = new StringWriter();
         try {
@@ -87,6 +89,7 @@ public class XMLFormatter {
         }
         return w.toString();
     }
+
     public void format(Reader reader, Writer writer) throws IOException {
         Writer w = IOUtils.buffer(writer);
         int depth = 0;
@@ -114,6 +117,7 @@ public class XMLFormatter {
     static class TokenReader {
         final Reader r;
         final Builder cfg;
+
         TokenReader(Reader reader, Builder cfg) {
             this.r = IOUtils.buffer(reader);
             this.cfg = cfg;
@@ -153,16 +157,19 @@ public class XMLFormatter {
         }
     }
 
-
     //--- XML Tokens -----------------------------------------------------------
 
     private abstract static class Token {
         protected final Builder cfg;
+
         abstract void read(Reader r) throws IOException;
+
         abstract void write(Appendable w, String margin) throws IOException;
+
         public Token(Builder cfg) {
             this.cfg = cfg;
         }
+
         @Override
         public String toString() {
             return ReflectionToStringBuilder.toString(
@@ -177,9 +184,11 @@ public class XMLFormatter {
         boolean selfClosed;
         int flIndent = 0;
         final Map<String, String> attribs = new ListOrderedMap<>();
+
         public Element(Builder cfg) {
             super(cfg);
         }
+
         @Override
         void read(Reader r) throws IOException {
             final StringBuilder b = new StringBuilder();
@@ -233,6 +242,7 @@ public class XMLFormatter {
                 selfClosed = true;
             }
         }
+
         @Override
         void write(Appendable w, String margin) throws IOException {
             boolean attribsWrapped = false;
@@ -289,31 +299,34 @@ public class XMLFormatter {
         private boolean writeAttributes(Appendable w, String margin)
                 throws IOException {
             switch (cfg.attributeWrap) {
-            case NONE:
-                writeAttribsWrapNone(w);
-                return false;
-            case AT_MAX:
-                return writeAttribsWrapAtMax(w, margin);
-            case AT_MAX_ALL:
-                return writeAttribsWrapAtMaxAll(w, margin);
-            default: // ALL
-                writeAttribsWarpAll(w, margin);
-                return true;
+                case NONE:
+                    writeAttribsWrapNone(w);
+                    return false;
+                case AT_MAX:
+                    return writeAttribsWrapAtMax(w, margin);
+                case AT_MAX_ALL:
+                    return writeAttribsWrapAtMaxAll(w, margin);
+                default: // ALL
+                    writeAttribsWarpAll(w, margin);
+                    return true;
             }
         }
+
         private void writeAttribsWrapNone(Appendable w)
                 throws IOException {
-            for (Entry<String, String> en: attribs.entrySet()) {
+            for (Entry<String, String> en : attribs.entrySet()) {
                 w.append(" " + en.getKey() + "=\"" + en.getValue() + "\"");
             }
         }
+
         private void writeAttribsWarpAll(Appendable w, String margin)
                 throws IOException {
-            for (Entry<String, String> en: attribs.entrySet()) {
+            for (Entry<String, String> en : attribs.entrySet()) {
                 w.append("\n" + margin + attribIndent())
-                    .append(en.getKey() + "=\"" + en.getValue() + "\"");
+                        .append(en.getKey() + "=\"" + en.getValue() + "\"");
             }
         }
+
         private boolean writeAttribsWrapAtMaxAll(Appendable w, String margin)
                 throws IOException {
 
@@ -331,9 +344,10 @@ public class XMLFormatter {
             // Calculate the potential text length:
             //   '<' + name length + all attribs length + '>' or '/>'
             int txtLength = 1 + name.length()
-                    + attribs.entrySet().stream().mapToInt(en ->
-                            en.getKey().length()
-                          + en.getValue().length() + 4).sum()
+                    + attribs.entrySet().stream()
+                            .mapToInt(en -> en.getKey().length()
+                                    + en.getValue().length() + 4)
+                            .sum()
                     + tagEndLength;
             // wrap only if needed
             if (margin.length() + txtLength > cfg.maxLineLength
@@ -345,6 +359,7 @@ public class XMLFormatter {
                 return false;
             }
         }
+
         private boolean writeAttribsWrapAtMax(Appendable w, String margin)
                 throws IOException {
 
@@ -356,7 +371,7 @@ public class XMLFormatter {
             }
             // we start the text length at '<' + name length
             int txtLength = name.length() + 1;
-            for (Entry<String, String> en: attribs.entrySet()) {
+            for (Entry<String, String> en : attribs.entrySet()) {
                 String attribute = en.getKey() + "=\"" + en.getValue() + "\"";
                 // ' ' + attribute
                 txtLength += attribute.length() + 1;
@@ -374,16 +389,20 @@ public class XMLFormatter {
             }
             return wrapped;
         }
+
         private String attribIndent() {
             return cfg.attributeIndent == null ? EMPTY : cfg.attributeIndent;
         }
     }
+
     private static class FreeContent extends Token {
         String text; // trimmed
         int flIndent = 0;
+
         public FreeContent(Builder cfg) {
             super(cfg);
         }
+
         @Override
         void read(Reader r) throws IOException {
             StringBuilder b = new StringBuilder();
@@ -392,6 +411,7 @@ public class XMLFormatter {
             flIndent = firstLineIndentSize(txt);
             text = b.toString().trim();
         }
+
         @Override
         void write(Appendable w, String margin) throws IOException {
             if (StringUtils.isNotBlank(text)) {
@@ -400,11 +420,14 @@ public class XMLFormatter {
             }
         }
     }
+
     private static class CloserTag extends Token {
         String name = null;
+
         public CloserTag(Builder cfg) {
             super(cfg);
         }
+
         @Override
         void read(Reader r) throws IOException {
             StringBuilder b = new StringBuilder();
@@ -413,6 +436,7 @@ public class XMLFormatter {
             name = b.toString().trim();
             r.skip(1); // '>'
         }
+
         @Override
         void write(Appendable w, String margin) throws IOException {
             if (StringUtils.isNotEmpty(name)) {
@@ -423,15 +447,18 @@ public class XMLFormatter {
 
     private static class CData extends Token {
         String text = null; // trimmed
+
         public CData(Builder cfg) {
             super(cfg);
         }
+
         @Override
         void read(Reader r) throws IOException {
             StringBuilder b = new StringBuilder();
             IOUtil.consumeUntil(r, "]]>", b);
             text = b.toString().trim();
         }
+
         @Override
         void write(Appendable w, String margin) throws IOException {
             w.append(margin).append(text);
@@ -441,9 +468,11 @@ public class XMLFormatter {
     private static class Comment extends Token {
         String text = null; // trimmed
         int flIndent = 0; // non-zero only if on separate line from tag
+
         public Comment(Builder cfg) {
             super(cfg);
         }
+
         @Override
         void read(Reader r) throws IOException {
             StringBuilder b = new StringBuilder();
@@ -495,6 +524,7 @@ public class XMLFormatter {
 
     private static final Pattern FL_INDENT_PATTERN =
             Pattern.compile("(?s)^[\\s\n\r]*[\n\r](\\s+).*$");
+
     private static int firstLineIndentSize(String str) {
         Matcher m = FL_INDENT_PATTERN.matcher(str);
         if (m.matches()) {
@@ -533,7 +563,7 @@ public class XMLFormatter {
         //--- Process each lines ---
 
         StringBuilder b = new StringBuilder();
-        for (String paragraph: paragraphs) {
+        for (String paragraph : paragraphs) {
             String line = paragraph;
             String textIndent = "";
             if (cfg.preserveTextIndent) {
@@ -554,6 +584,7 @@ public class XMLFormatter {
         }
         w.append(b.toString().trim());
     }
+
     private static String breakLongParagraphs(
             Builder cfg, String margin, String paragraph) {
         int maxTextLength = NumberUtils.max(
@@ -562,13 +593,16 @@ public class XMLFormatter {
                 "(.{1," + maxTextLength + "})( |$)",
                 margin + "$1\n");
     }
+
     private static boolean nextCharsEquals(Reader r, char[] chars)
             throws IOException {
         return Arrays.equals(chars, IOUtil.borrowCharacters(r, chars.length));
     }
+
     private static int skipWhiteSpaces(Reader r) throws IOException {
         return IOUtil.consumeWhile(r, Character::isWhitespace);
     }
+
     private String buildMargin(int depth) {
         if (cfg.elementIndent == null) {
             return EMPTY;
@@ -601,6 +635,7 @@ public class XMLFormatter {
              */
             AT_MAX_ALL
         }
+
         private String elementIndent = "  ";
         private String attributeIndent = "    ";
         private AttributeWrap attributeWrap = AttributeWrap.ALL;
@@ -615,6 +650,7 @@ public class XMLFormatter {
         private Builder() {
             super();
         }
+
         // Copy constructor
         private Builder(Builder b) {
             super();
@@ -642,6 +678,7 @@ public class XMLFormatter {
             this.elementIndent = indent;
             return this;
         }
+
         /**
          * String to use for indenting attributed, when wrapped.
          * Defaults to four spaces.
@@ -652,6 +689,7 @@ public class XMLFormatter {
             this.attributeIndent = indent;
             return this;
         }
+
         /**
          * Attribute wrapping strategy.
          * Defaults to {@link AttributeWrap#ALL}.
@@ -662,6 +700,7 @@ public class XMLFormatter {
             this.attributeWrap = attributeWrapping;
             return this;
         }
+
         /**
          * Put the closing angle bracket of tags with wrapping
          * attributes on its own line, aligned with opening angle bracket.
@@ -670,9 +709,10 @@ public class XMLFormatter {
          * @return this builder
          */
         public Builder closeWrappingTagOnOwnLine() {
-          this.closeWrappingTagOnOwnLine = true;
-          return this;
+            this.closeWrappingTagOnOwnLine = true;
+            return this;
         }
+
         /**
          * Maximum length a line can have before wrapping is performed.
          * Tries to do smart break when possible. When not possible,
@@ -686,6 +726,7 @@ public class XMLFormatter {
             this.maxLineLength = charQty;
             return this;
         }
+
         /**
          * Minimum length for text on any line before text can be wrapped.
          * This takes precedence over {@link #maxLineLength}.
@@ -696,6 +737,7 @@ public class XMLFormatter {
             this.minTextLength = charQty;
             return this;
         }
+
         /**
          * Inserts a blank line before a comment.
          * @return this builder
@@ -704,6 +746,7 @@ public class XMLFormatter {
             this.blankLineBeforeComment = true;
             return this;
         }
+
         /**
          * Inserts a blank line after a comment.
          * @return this builder
@@ -712,6 +755,7 @@ public class XMLFormatter {
             this.blankLineAfterComment = true;
             return this;
         }
+
         /**
          * Self-close elements with no or blank values.
          * @return this builder
@@ -720,6 +764,7 @@ public class XMLFormatter {
             this.selfCloseEmptyElements = true;
             return this;
         }
+
         /**
          * Preserves indentation found in element or comment text.
          * By default all lines are trimmed. When this option is set,

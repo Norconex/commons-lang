@@ -33,17 +33,18 @@ public class EnumConverter extends AbstractConverter {
     protected <T> T nullSafeToType(String value, Class<T> type) {
         var trimmed = value.trim();
         return match(type, t -> matchToString(t, trimmed, false))
-            .or(() -> match(type, t -> matchName(t, trimmed, false)))
-            .or(() -> match(type, t -> matchToString(t, trimmed, true)))
-            .or(() -> match(type, t -> matchName(t, trimmed, true)))
-            .orElseThrow(() -> new ConverterException(String.format(
-                "\"%s\" is not an enum value of %s", value, type)));
+                .or(() -> match(type, t -> matchName(t, trimmed, false)))
+                .or(() -> match(type, t -> matchToString(t, trimmed, true)))
+                .or(() -> match(type, t -> matchName(t, trimmed, true)))
+                .orElseThrow(() -> new ConverterException(String.format(
+                        "\"%s\" is not an enum value of %s", value, type)));
     }
 
     private static <T> boolean matchName(
             T t, String value, boolean stripNonAlphanum) {
         return matchToString(((Enum<?>) t).name(), value, stripNonAlphanum);
     }
+
     private static <T> boolean matchToString(
             T t, String value, boolean stripNonAlphanum) {
         var typeStr = t.toString();
@@ -57,7 +58,7 @@ public class EnumConverter extends AbstractConverter {
 
     private static <T> Optional<T> match(Class<T> type, Predicate<T> p) {
         return Stream.of(type.getEnumConstants())
-            .filter(p)
-            .findFirst();
+                .filter(p)
+                .findFirst();
     }
 }

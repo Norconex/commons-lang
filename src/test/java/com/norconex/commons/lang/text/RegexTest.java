@@ -34,36 +34,36 @@ class RegexTest {
     @Test
     void testMisc() {
         assertThatExceptionOfType(IllegalArgumentException.class)
-            .isThrownBy(() -> new Regex().compile(null)); //NOSONAR
+                .isThrownBy(() -> new Regex().compile(null)); //NOSONAR
         assertThatExceptionOfType(IllegalArgumentException.class)
-            .isThrownBy(() -> Regex.compileDotAll(null, false)); //NOSONAR
+                .isThrownBy(() -> Regex.compileDotAll(null, false)); //NOSONAR
         assertThat(Regex.escape(null)).isNull();
         assertThat(new Regex("blah").createKeyValueExtractor().getRegex())
-            .isEqualTo(new Regex("blah"));
+                .isEqualTo(new Regex("blah"));
         assertThat(new Regex("blah").createKeyValueExtractor("key").getRegex())
-            .isEqualTo(new Regex("blah"));
+                .isEqualTo(new Regex("blah"));
         assertThat(new Regex("blah").createKeyValueExtractor("key", 1)
-            .getRegex()).isEqualTo(new Regex("blah"));
+                .getRegex()).isEqualTo(new Regex("blah"));
         assertThat(new Regex("blah").createKeyValueExtractor(1, 2).getRegex())
-            .isEqualTo(new Regex("blah"));
+                .isEqualTo(new Regex("blah"));
 
         assertThat(new Regex("blah")
-            .trim()
-            .matchEmpty()
-            .matcher(null)
-            .pattern()).hasToString(".*");
+                .trim()
+                .matchEmpty()
+                .matcher(null)
+                .pattern()).hasToString(".*");
         assertThat(new Regex("blah")
-            .trim()
-            .setMatchEmpty(false)
-            .matcher(null)
-            .pattern()).hasToString("(?=x)(?!x)");
+                .trim()
+                .setMatchEmpty(false)
+                .matcher(null)
+                .pattern()).hasToString("(?=x)(?!x)");
     }
 
     @Test
     void testMarkInsensitive() {
         var pattern = "(èg)";
         String[] tests = {
-                "\u00e9gal",  // égal
+                "\u00e9gal", // égal
                 "e\u0301gal", // e + "Combining acute accent"
                 "egal",
                 "ègal",
@@ -96,45 +96,43 @@ class RegexTest {
     @Test
     void testFluentAndFlags() {
         assertThat(
-            new Regex(".*")
-                .canonEq()
-                .comments()
-                .dotAll()
-                .literal()
-                .matchEmpty()
-                .multiline()
-                .trim()
-                .unicodeCase()
-                .unicodeCharacterClass()
-                .unixLines()
-        ).isEqualTo(
-            new Regex(".*")
-                .setCanonEq(true)
-                .setComments(true)
-                .setDotAll(true)
-                .setLiteral(true)
-                .setMatchEmpty(true)
-                .setMultiline(true)
-                .setTrim(true)
-                .setUnicodeCase(true)
-                .setUnicodeCharacterClass(true)
-                .setUnixLines(true)
-        );
+                new Regex(".*")
+                        .canonEq()
+                        .comments()
+                        .dotAll()
+                        .literal()
+                        .matchEmpty()
+                        .multiline()
+                        .trim()
+                        .unicodeCase()
+                        .unicodeCharacterClass()
+                        .unixLines()).isEqualTo(
+                                new Regex(".*")
+                                        .setCanonEq(true)
+                                        .setComments(true)
+                                        .setDotAll(true)
+                                        .setLiteral(true)
+                                        .setMatchEmpty(true)
+                                        .setMultiline(true)
+                                        .setTrim(true)
+                                        .setUnicodeCase(true)
+                                        .setUnicodeCharacterClass(true)
+                                        .setUnixLines(true));
 
         assertThat(
-            new Regex(".*", Pattern.DOTALL, Pattern.CASE_INSENSITIVE)
-                .setFlags(Pattern.MULTILINE, Pattern.CANON_EQ)
-        ).isEqualTo(
-            new Regex()
-                .setPattern(".*")
-                .multiline()
-                .canonEq()
-        );
+                new Regex(".*", Pattern.DOTALL, Pattern.CASE_INSENSITIVE)
+                        .setFlags(Pattern.MULTILINE, Pattern.CANON_EQ))
+                                .isEqualTo(
+                                        new Regex()
+                                                .setPattern(".*")
+                                                .multiline()
+                                                .canonEq());
 
         assertThat(new Regex("example.com")
                 .setFlags(Pattern.DOTALL, Regex.UNICODE_CASE_INSENSTIVE_FLAG)
-                    .compile().pattern())
-            .isEqualTo(Regex.compileDotAll("example.com", true).pattern());
+                .compile().pattern())
+                        .isEqualTo(Regex.compileDotAll("example.com", true)
+                                .pattern());
     }
 
     @Test

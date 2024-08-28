@@ -37,7 +37,8 @@ public class PatternConverter extends AbstractConverter {
      * @since 3.0.0
      */
     public static class JsonSerializer
-            extends GenericJsonSerializer<Pattern>{}
+            extends GenericJsonSerializer<Pattern> {
+    }
 
     /**
      * JSON (Jackson) deserializer using this converter.

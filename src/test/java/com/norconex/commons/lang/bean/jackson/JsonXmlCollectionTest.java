@@ -53,8 +53,7 @@ class JsonXmlCollectionTest {
         ch.complexType.addAll(List.of(
                 new SomeEntry().setPropa("aaa1").setPropb("bbb2").setPropc(3),
                 new SomeEntry().setPropa("aaa4").setPropb("bbb5").setPropc(6),
-                new SomeEntry().setPropa("aaa7").setPropb("bbb8").setPropc(9)
-                ));
+                new SomeEntry().setPropa("aaa7").setPropb("bbb8").setPropc(9)));
     }
 
     @Test
@@ -72,8 +71,7 @@ class JsonXmlCollectionTest {
         assertThat(xml).containsIgnoringWhitespaces(
                 "<defaultEntryNames><defaultEntryName>",
                 "<specifiedEntryNames><child>",
-                "<defaultType><entry>"
-        );
+                "<defaultType><entry>");
     }
 
     @Test

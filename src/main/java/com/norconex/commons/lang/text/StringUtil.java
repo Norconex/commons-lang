@@ -37,7 +37,8 @@ public final class StringUtil {
 
     public static final int TRUNCATE_HASH_LENGTH = 10;
 
-    private StringUtil() {}
+    private StringUtil() {
+    }
 
     /**
      * Consume the given string only if it is blank.
@@ -50,6 +51,7 @@ public final class StringUtil {
             runnable.run();
         }
     }
+
     /**
      * Consume the given string only if it is not blank.
      * @param str the string to consume
@@ -79,6 +81,7 @@ public final class StringUtil {
             String text, int maxLength) {
         return truncateWithHash(text, maxLength, null);
     }
+
     /**
      * Truncate text larger than the given max length and appends a hash
      * value from the truncated text, with an optional separator in-between.
@@ -140,7 +143,7 @@ public final class StringUtil {
      */
     public static String truncateBytesWithHash(String text,
             Charset charset, int maxByteLength)
-                    throws CharacterCodingException {
+            throws CharacterCodingException {
         if (text == null) {
             return null;
         }
@@ -148,6 +151,7 @@ public final class StringUtil {
                 text.getBytes(charset), charset, maxByteLength, null),
                 charset);
     }
+
     /**
      * Truncates text with size in bytes larger than the given max byte
      * length and appends a hash
@@ -168,7 +172,7 @@ public final class StringUtil {
      */
     public static String truncateBytesWithHash(String text,
             Charset charset, int maxByteLength, String separator)
-                    throws CharacterCodingException {
+            throws CharacterCodingException {
         if (text == null) {
             return null;
         }
@@ -176,6 +180,7 @@ public final class StringUtil {
                 text.getBytes(charset), charset, maxByteLength, separator),
                 charset);
     }
+
     /**
      * Truncates character byte array text larger than the given max byte
      * length and appends a hash
@@ -195,12 +200,13 @@ public final class StringUtil {
      */
     public static byte[] truncateBytesWithHash(
             byte[] bytes, Charset charset, int maxByteLength)
-                    throws CharacterCodingException {
+            throws CharacterCodingException {
         if (bytes == null) {
             return bytes;
         }
         return truncateBytesWithHash(bytes, charset, maxByteLength, null);
     }
+
     /**
      * Truncates character byte array text larger than the given max byte
      * length and appends a hash
@@ -221,7 +227,7 @@ public final class StringUtil {
      */
     public static byte[] truncateBytesWithHash(
             byte[] bytes, Charset charset, int maxByteLength, String separator)
-                    throws CharacterCodingException {
+            throws CharacterCodingException {
         if ((bytes == null) || (bytes.length <= maxByteLength)) {
             return bytes;
         }
@@ -232,7 +238,8 @@ public final class StringUtil {
         }
 
         var separatorLength = separator == null
-                ? 0 : separator.getBytes(nullSafeCharset).length;
+                ? 0
+                : separator.getBytes(nullSafeCharset).length;
         var hashLength = StringUtils.repeat(
                 '0', TRUNCATE_HASH_LENGTH).getBytes(nullSafeCharset).length;
         var roomLength = hashLength + separatorLength;
@@ -288,6 +295,7 @@ public final class StringUtil {
         }
         return (len < value.length) ? str.substring(st, len) : str;
     }
+
     /**
      * Trims white spaces at the beginning of a string.
      * @param str the string to trim its beginning
@@ -308,6 +316,7 @@ public final class StringUtil {
         }
         return st > 0 ? str.substring(st, len) : str;
     }
+
     /**
      * Counts the number of consecutive matches at end of a
      * a string.
@@ -323,6 +332,7 @@ public final class StringUtil {
         return countMatchesStart(
                 StringUtils.reverse(str), StringUtils.reverse(sub));
     }
+
     /**
      * Counts the number of consecutive matches from the beginning of
      * a string.
@@ -361,6 +371,7 @@ public final class StringUtil {
     public static String singular(String plural) {
         return singularOrElse(plural, plural);
     }
+
     /**
      * Converts an English plural word to singular one using very simple
      * heuristics. Returns <code>null</code> if the plural word is
@@ -379,9 +390,9 @@ public final class StringUtil {
         if (plural.endsWith("sses")) {
             singular = removeEnd(plural, "es");
         } else if (plural.endsWith("ies")) {
-            singular =  removeEnd(plural, "ies") + "y";
+            singular = removeEnd(plural, "ies") + "y";
         } else if (plural.endsWith("oes")) {
-            singular =  removeEnd(plural, "es");
+            singular = removeEnd(plural, "es");
         } else if (plural.endsWith("s") && !plural.endsWith("ss")) {
             singular = removeEnd(plural, "s");
         } else {

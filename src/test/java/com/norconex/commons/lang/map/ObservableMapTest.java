@@ -40,10 +40,10 @@ class ObservableMapTest {
         @SuppressWarnings("deprecation")
         IMapChangeListener<String, String> listener = //NOSONAR
                 event -> {
-            key.setValue(event.getKey());
-            newValue.setValue(event.getNewValue());
-            oldValue.setValue(event.getOldValue());
-        };
+                    key.setValue(event.getKey());
+                    newValue.setValue(event.getNewValue());
+                    oldValue.setValue(event.getOldValue());
+                };
         obsMap.addMapChangeListener(listener);
 
         obsMap.put("a", "aaa");
@@ -53,13 +53,12 @@ class ObservableMapTest {
         assertThat(newValue.getValue()).isEqualTo("aaa");
 
         assertThat(obsMap)
-            .hasSize(2)
-            .isNotEmpty()
-            .containsKeys("a", "b")
-            .containsValues("aaa", "bb")
-            .containsEntry("a", "aaa")
-            .hasToString("ObservableMap [map={a=aaa, b=bb}]")
-            ;
+                .hasSize(2)
+                .isNotEmpty()
+                .containsKeys("a", "b")
+                .containsValues("aaa", "bb")
+                .containsEntry("a", "aaa")
+                .hasToString("ObservableMap [map={a=aaa, b=bb}]");
 
         assertThat(obsMap.keySet()).containsExactly("a", "b");
         assertThat(obsMap.values()).containsExactly("aaa", "bb");

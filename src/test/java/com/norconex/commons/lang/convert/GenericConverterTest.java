@@ -48,7 +48,6 @@ import com.norconex.commons.lang.Operator;
 import com.norconex.commons.lang.file.ContentType;
 import com.norconex.commons.lang.unit.DataUnit;
 
-
 class GenericConverterTest {
 
     @Test
@@ -98,7 +97,7 @@ class GenericConverterTest {
         assertThat(c.toType("greaterEqual", Operator.class))
                 .isSameAs(Operator.GREATER_EQUAL);
         assertThat(c.toType("g|e", Operator.class))
-            .isSameAs(Operator.GREATER_EQUAL);
+                .isSameAs(Operator.GREATER_EQUAL);
     }
 
     @Test
@@ -144,15 +143,19 @@ class GenericConverterTest {
         Assertions.assertEquals("640x480", GenericConverter.convert(d));
 
         //from string
-        Assertions.assertEquals(d, GenericConverter.convert("640x480", Dimension.class));
-        Assertions.assertEquals(d, GenericConverter.convert("640 480", Dimension.class));
+        Assertions.assertEquals(d,
+                GenericConverter.convert("640x480", Dimension.class));
+        Assertions.assertEquals(d,
+                GenericConverter.convert("640 480", Dimension.class));
         Assertions.assertEquals(
-                d, GenericConverter.convert("width:640, h:480", Dimension.class));
+                d,
+                GenericConverter.convert("width:640, h:480", Dimension.class));
         Assertions.assertEquals(
                 d, GenericConverter.convert("aaa640b480cc10", Dimension.class));
 
         d = new Dimension(1200, 1200);
-        Assertions.assertEquals(d, GenericConverter.convert("1200", Dimension.class));
+        Assertions.assertEquals(d,
+                GenericConverter.convert("1200", Dimension.class));
         Assertions.assertEquals(
                 d, GenericConverter.convert("size:1200px", Dimension.class));
 
@@ -247,15 +250,16 @@ class GenericConverterTest {
         assertThat(c.toType("blah", String.class, "default")).isEqualTo("blah");
 
         assertThat(GenericConverter.convert("blah", String.class, "default"))
-            .isEqualTo("blah");
+                .isEqualTo("blah");
 
-        assertThat(GenericConverter.convert("blah", "default")).isEqualTo("blah");
+        assertThat(GenericConverter.convert("blah", "default"))
+                .isEqualTo("blah");
     }
 
     @Test
     void testGetConverters() {
         assertThat(GenericConverter.defaultInstance().getConverters())
-            .containsEntry(Locale.class, new LocaleConverter());
+                .containsEntry(Locale.class, new LocaleConverter());
     }
 
     @Test
@@ -263,16 +267,16 @@ class GenericConverterTest {
         List<String> source = Arrays.asList("en_CA", "fr_CA", "it");
         List<Locale> result = GenericConverter.convert(source, Locale.class);
         assertThat(result).containsExactly(
-                new Locale("en",  "CA"),
-                new Locale("fr",  "CA"),
+                new Locale("en", "CA"),
+                new Locale("fr", "CA"),
                 new Locale("it"));
     }
 
     @Test
     void testConvertList() {
         List<Object> source = Arrays.asList(
-                new Locale("en",  "CA"),
-                new Locale("fr",  "CA"),
+                new Locale("en", "CA"),
+                new Locale("fr", "CA"),
                 new Locale("it"));
         var result = GenericConverter.convert(source);
         assertThat(result).containsExactly("en_CA", "fr_CA", "it");
@@ -281,22 +285,22 @@ class GenericConverterTest {
     @Test
     void testToStringList() {
         List<Locale> source = Arrays.asList(
-                new Locale("en",  "CA"),
-                new Locale("fr",  "CA"),
+                new Locale("en", "CA"),
+                new Locale("fr", "CA"),
                 new Locale("it"));
         var result =
                 GenericConverter.defaultInstance().toString(source);
         assertThat(result).containsExactly("en_CA", "fr_CA", "it");
 
         assertThat(GenericConverter.defaultInstance().toString((List<?>) null))
-            .isEmpty();
+                .isEmpty();
     }
 
     @Test
     void testPatternConverter() {
         var p = Pattern.compile(".*");
         assertThat(GenericConverter.defaultInstance().toString(p))
-            .isEqualTo(".*");
+                .isEqualTo(".*");
     }
 
     @Test
@@ -314,17 +318,18 @@ class GenericConverterTest {
     @Test
     void testToStringObjectString() {
         assertThat(GenericConverter.defaultInstance().toString(null, "42"))
-            .isEqualTo("42");
+                .isEqualTo("42");
         assertThat(GenericConverter.defaultInstance().toString("7", "42"))
-            .isEqualTo("7");
+                .isEqualTo("7");
     }
 
     @Test
     void testIsConvertible() {
-        assertThat(GenericConverter.defaultInstance().isConvertible(String.class))
-            .isTrue();
+        assertThat(
+                GenericConverter.defaultInstance().isConvertible(String.class))
+                        .isTrue();
         assertThat(GenericConverter.defaultInstance().isConvertible(Void.class))
-            .isFalse();
+                .isFalse();
     }
 
     @Test
@@ -335,6 +340,7 @@ class GenericConverterTest {
                     throws Exception {
                 return type.cast("toType");
             }
+
             @Override
             protected String nullSafeToString(Object object) throws Exception {
                 return "toString";
@@ -349,6 +355,7 @@ class GenericConverterTest {
                     throws Exception {
                 throw new IllegalArgumentException("blah");
             }
+
             @Override
             protected String nullSafeToString(Object object) throws Exception {
                 throw new IllegalArgumentException("blah");
@@ -366,9 +373,12 @@ class GenericConverterTest {
         assertToString(strValue, objValue);
         assertToType(objValue, strValue, type);
     }
+
     private <T> void assertToType(T expected, String value, Class<T> type) {
-        Assertions.assertEquals(expected, GenericConverter.convert(value, type));
+        Assertions.assertEquals(expected,
+                GenericConverter.convert(value, type));
     }
+
     private <T> void assertToString(String expected, Object obj) {
         Assertions.assertEquals(expected, GenericConverter.convert(obj));
     }
@@ -378,6 +388,7 @@ class GenericConverterTest {
         public String toString(Object object) {
             return StringUtils.trimToNull(Objects.toString(object, null));
         }
+
         @Override
         public <T> T toType(String value, Class<T> type) {
             return type.cast(StringUtils.trimToNull(value));

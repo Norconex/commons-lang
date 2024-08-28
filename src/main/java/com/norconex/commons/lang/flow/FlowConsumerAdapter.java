@@ -18,5 +18,6 @@ import java.util.function.Consumer;
 
 public interface FlowConsumerAdapter<T> extends Consumer<T> {
     Object getConsumerAdaptee();
+
     void setConsumerAdaptee(Object consumerAdaptee);
 }

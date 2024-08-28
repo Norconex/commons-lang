@@ -32,7 +32,8 @@ import lombok.experimental.StandardException;
  */
 public final class SystemUtil {
 
-    private SystemUtil() {}
+    private SystemUtil() {
+    }
 
     /**
      * Holds possible return value and standard output/error when
@@ -52,6 +53,7 @@ public final class SystemUtil {
         private String stdOut;
         private String stdErr;
     }
+
     /**
      * Runtime exception wrapping possible exceptions thrown by invoking
      * {@link Callable} by one of {@link SystemUtil} methods.
@@ -79,7 +81,7 @@ public final class SystemUtil {
         var captured = new Captured<T>();
         var originalOut = System.out; //NOSONAR
         var originalErr = System.err; //NOSONAR
-        try (   var out = new ByteArrayOutputStream();
+        try (var out = new ByteArrayOutputStream();
                 var outPs = new PrintStream(out);
                 var err = new ByteArrayOutputStream();
                 var errPs = new PrintStream(err)) {
@@ -111,7 +113,7 @@ public final class SystemUtil {
      * @since 3.0.0
      */
     public static synchronized Captured<Void> runAndCaptureOutput(
-            Runnable runnable)  {
+            Runnable runnable) {
         try {
             return callAndCaptureOutput(() -> {
                 runnable.run();
@@ -168,6 +170,7 @@ public final class SystemUtil {
             }
         }
     }
+
     /**
      * <p>
      * Executes the supplied {@link Callable} after setting the system
@@ -242,6 +245,7 @@ public final class SystemUtil {
         }
         return getProperty(name);
     }
+
     /**
      * Gets the system property or environment variable matching the exact
      * name, or a supported variant.

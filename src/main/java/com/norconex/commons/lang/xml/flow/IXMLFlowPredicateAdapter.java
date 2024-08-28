@@ -23,7 +23,7 @@ import java.util.function.Predicate;
  * @since 2.0.0
  * @deprecated Use {@link XMLFlowPredicateAdapter} instead.
  */
-@Deprecated(since="3.0.0")
-public interface IXMLFlowPredicateAdapter<T>  //NOSONAR
+@Deprecated(since = "3.0.0")
+public interface IXMLFlowPredicateAdapter<T> //NOSONAR
         extends XMLFlowPredicateAdapter<T> {
 }

@@ -25,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class GenericJsonDeserializer<T> extends JsonDeserializer<T> {
     private final Class<T> type;
+
     @Override
     public T deserialize(JsonParser p, DeserializationContext ctxt)
             throws IOException {

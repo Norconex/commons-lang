@@ -99,9 +99,11 @@ public final class GenericConverter implements Converter {
     public GenericConverter(Map<Class<?>, Converter> converters) {
         this.converters = Collections.unmodifiableMap(converters);
     }
+
     public static GenericConverter defaultInstance() {
         return DEFAULT_INSTANCE;
     }
+
     private static Map<Class<?>, Converter> createDefaultConverters() {
         Converter c;
         Map<Class<?>, Converter> cc = new HashMap<>();
@@ -161,9 +163,11 @@ public final class GenericConverter implements Converter {
     public static <T> List<T> convert(List<String> values, Class<T> type) {
         return defaultInstance().toType(values, type);
     }
+
     public static <T> T convert(String value, Class<T> type) {
         return defaultInstance().toType(value, type);
     }
+
     public static <T> T convert(String value, Class<T> type, T defaultValue) {
         return defaultInstance().toType(value, type, defaultValue);
     }
@@ -171,9 +175,11 @@ public final class GenericConverter implements Converter {
     public static List<String> convert(List<Object> objects) {
         return defaultInstance().toString(objects);
     }
+
     public static String convert(Object object) {
         return defaultInstance().toString(object);
     }
+
     public static String convert(Object object, String defaultValue) {
         return defaultInstance().toString(object, defaultValue);
     }
@@ -182,10 +188,12 @@ public final class GenericConverter implements Converter {
     public <T> List<T> toType(List<String> values, Class<T> type) {
         return CollectionUtil.toTypeList(values, type);
     }
+
     @Override
     public <T> T toType(String value, Class<T> type) {
         return nullSafeConverter(type).toType(value, type);
     }
+
     @Override
     public <T> T toType(String value, Class<T> type, T defaultValue) {
         return nullSafeConverter(type).toType(value, type, defaultValue);
@@ -206,6 +214,7 @@ public final class GenericConverter implements Converter {
         }
         return nullSafeConverter(object.getClass()).toString(object);
     }
+
     @Override
     public String toString(Object object, String defaultValue) {
         if (object == null) {

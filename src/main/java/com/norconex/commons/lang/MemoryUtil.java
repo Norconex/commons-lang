@@ -33,7 +33,7 @@ public final class MemoryUtil {
      */
     public static long getFreeMemory() {
         Runtime runtime = Runtime.getRuntime();
-        return runtime.freeMemory() 
+        return runtime.freeMemory()
                 + (runtime.maxMemory() - runtime.totalMemory());
     }
 }

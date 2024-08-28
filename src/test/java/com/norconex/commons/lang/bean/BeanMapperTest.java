@@ -137,35 +137,30 @@ class BeanMapperTest {
 
     @Test
     void testExceptions() {
-        assertThatException().isThrownBy(() ->//NOSONAR
-            BeanMapper.DEFAULT.write(
-                    new MultiTypes(), BrokenWriter.INSTANCE, Format.XML)
-        );
-        assertThatException().isThrownBy(() ->
-            BeanMapper.DEFAULT.read(
-                    MultiTypes.class, BrokenReader.INSTANCE, Format.XML)
-        );
-        assertThatException().isThrownBy(() ->//NOSONAR
-            BeanMapper.DEFAULT.read(
-                    new MultiTypes(), BrokenReader.INSTANCE, Format.XML)
-        );
+        assertThatException().isThrownBy(() -> //NOSONAR
+        BeanMapper.DEFAULT.write(
+                new MultiTypes(), BrokenWriter.INSTANCE, Format.XML));
+        assertThatException().isThrownBy(() -> BeanMapper.DEFAULT.read(
+                MultiTypes.class, BrokenReader.INSTANCE, Format.XML));
+        assertThatException().isThrownBy(() -> //NOSONAR
+        BeanMapper.DEFAULT.read(
+                new MultiTypes(), BrokenReader.INSTANCE, Format.XML));
 
         var obj = new MultiTypes();
         obj.setIntValue(-200);
         assertThatExceptionOfType(
-                ConstraintViolationException.class).isThrownBy(() ->//NOSONAR
-            BeanMapper.DEFAULT.assertWriteRead(obj)
-        );
+                ConstraintViolationException.class).isThrownBy(() -> //NOSONAR
+        BeanMapper.DEFAULT.assertWriteRead(obj));
 
-        assertThatException().isThrownBy(() ->//NOSONAR
-            BeanMapper.DEFAULT.assertWriteRead(new NotEqual())
-        );
+        assertThatException().isThrownBy(() -> //NOSONAR
+        BeanMapper.DEFAULT.assertWriteRead(new NotEqual()));
 
     }
 
     @Data
-    public static class NotEqual{
+    public static class NotEqual {
         long timestamp;
+
         public long getTimestamp() {
             Sleeper.sleepMillis(1);
             return System.currentTimeMillis();
@@ -180,21 +175,22 @@ class BeanMapperTest {
         class: "Plane"
         name: "Boeing 737"
         type2: "COMMERCIAL"
-        """  ;
+        """;
 
         // Not ignoring unknown properties (default)
         var bm1 = BeanMapper.builder().ignoreUnknownProperties(false).build();
         assertThatExceptionOfType(BeanException.class)
                 .isThrownBy(() -> {//NOSONAR
-            System.err.println("" + bm1.read(Plane.class,
-                    new StringReader(badYaml), Format.YAML));
-        }).matches(ex -> ExceptionUtil.getFormattedMessages(ex).contains(
-                "Unrecognized field \"type2\""));
+                    System.err.println("" + bm1.read(Plane.class,
+                            new StringReader(badYaml), Format.YAML));
+                })
+                .matches(ex -> ExceptionUtil.getFormattedMessages(ex).contains(
+                        "Unrecognized field \"type2\""));
 
         // Ignoring unknown properties
         var bm2 = BeanMapper.builder().ignoreUnknownProperties(true).build();
-        assertThatNoException().isThrownBy(() ->
-                bm2.read(Plane.class, new StringReader(badYaml), Format.YAML));
+        assertThatNoException().isThrownBy(() -> bm2.read(Plane.class,
+                new StringReader(badYaml), Format.YAML));
     }
 
     @Test
@@ -216,11 +212,12 @@ class BeanMapperTest {
                 .builder()
                 .skipValidation(true)
                 .polymorphicType(Transportation.class,
-                        name -> name.startsWith("com.norconex.")).build();
+                        name -> name.startsWith("com.norconex."))
+                .build();
         assertThatExceptionOfType(BeanException.class)
-            .isThrownBy(() -> bm1.read( //NOSONAR
-                    TestConfig.class, new StringReader(yaml), Format.YAML))
-            .withCauseInstanceOf(InvalidTypeIdException.class);
+                .isThrownBy(() -> bm1.read( //NOSONAR
+                        TestConfig.class, new StringReader(yaml), Format.YAML))
+                .withCauseInstanceOf(InvalidTypeIdException.class);
 
         // with bad mapping, should fail
         var bm2 = BeanMapper
@@ -233,10 +230,10 @@ class BeanMapperTest {
                         MiscAccessorsBean.class) // <-- not a subtype
                 .build();
         assertThatExceptionOfType(BeanException.class)
-            .isThrownBy(() -> bm2.read( //NOSONAR
-                    TestConfig.class, new StringReader(yaml), Format.YAML))
-            .withCauseInstanceOf(JsonMappingException.class)
-            .withStackTraceContaining("not a subtype");
+                .isThrownBy(() -> bm2.read( //NOSONAR
+                        TestConfig.class, new StringReader(yaml), Format.YAML))
+                .withCauseInstanceOf(JsonMappingException.class)
+                .withStackTraceContaining("not a subtype");
 
         // With good mapping, it should succeed
         var bm3 = BeanMapper
@@ -250,13 +247,13 @@ class BeanMapperTest {
                 .build();
         assertThat(bm3.read(
                 TestConfig.class, new StringReader(yaml), Format.YAML))
-            .matches(cfg -> {
-                var plane = cfg.getTransportations().get(0);
-                return "Boeing 737"
-                        .equals(((Plane) plane)
-                                .getConfiguration()
-                                .getName());
-            });
+                        .matches(cfg -> {
+                            var plane = cfg.getTransportations().get(0);
+                            return "Boeing 737"
+                                    .equals(((Plane) plane)
+                                            .getConfiguration()
+                                            .getName());
+                        });
     }
 
     //--- Polymorphic tests ----------------------------------------------------
@@ -278,8 +275,7 @@ class BeanMapperTest {
               </transportations>
             </TestConfig>
             """,
-            Format.XML
-        ),
+                Format.XML),
         JSON("""
             {
               "id" : "my config",
@@ -294,8 +290,7 @@ class BeanMapperTest {
                 "type" : "COMMERCIAL"
               } ]
             }""",
-            Format.JSON
-        ),
+                Format.JSON),
         YAML("""
             ---
             id: "my config"
@@ -308,9 +303,8 @@ class BeanMapperTest {
               name: "Boeing 737"
               type: "COMMERCIAL"
             """,
-            Format.YAML
-        )
-        ;
+                Format.YAML);
+
         final String source;
         final Format format;
     }
@@ -326,24 +320,22 @@ class BeanMapperTest {
 
         var automobile = new Automobile();
         automobile.getConfiguration()
-            .setModel("Camry")
-            .setYear(1800)
-            .setBrand("Toyota");
+                .setModel("Camry")
+                .setYear(1800)
+                .setBrand("Toyota");
         expected.getTransportations().add(automobile);
 
         var plane = new Plane();
         plane.getConfiguration()
-            .setName("Boeing 737")
-            .setType(Type.COMMERCIAL);
+                .setName("Boeing 737")
+                .setType(Type.COMMERCIAL);
         expected.getTransportations().add(plane);
-
 
         // Mapper
         var builder = BeanMapper.builder()
-            .skipValidation(true)
-            .polymorphicType(Transportation.class,
-                    name -> name.startsWith("com.norconex."))
-            ;
+                .skipValidation(true)
+                .polymorphicType(Transportation.class,
+                        name -> name.startsWith("com.norconex."));
         var cfg = builder.build().read(
                 TestConfig.class,
                 new StringReader(source.source),
@@ -362,10 +354,10 @@ class BeanMapperTest {
         builder.skipValidation(false);
         assertThatExceptionOfType(
                 ConstraintViolationException.class).isThrownBy(() -> {//NOSONAR
-            builder.build().read(
-                    TestConfig.class,
-                    new StringReader(source.source),
-                    source.format);
-        });
+                    builder.build().read(
+                            TestConfig.class,
+                            new StringReader(source.source),
+                            source.format);
+                });
     }
 }

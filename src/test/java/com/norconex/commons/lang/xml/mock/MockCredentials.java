@@ -35,18 +35,22 @@ public class MockCredentials
     private String username;
     private String password;
     private MockEncryptionKey passwordKey;
+
     public MockCredentials() {
         this(null, null);
     }
+
     public MockCredentials(String username, String password) {
         this(username, password, null);
     }
+
     public MockCredentials(
             String username, String password, MockEncryptionKey passwordKey) {
         this.username = username;
         this.password = password;
         this.passwordKey = passwordKey;
     }
+
     public MockCredentials(MockCredentials copy) {
         copyFrom(copy);
     }
@@ -54,6 +58,7 @@ public class MockCredentials
     public boolean isSet() {
         return !isEmpty();
     }
+
     public boolean isEmpty() {
         return StringUtils.isAllBlank(username, password);
     }
@@ -61,6 +66,7 @@ public class MockCredentials
     public void copyTo(MockCredentials creds) {
         BeanUtil.copyProperties(creds, this);
     }
+
     public void copyFrom(MockCredentials creds) {
         BeanUtil.copyProperties(this, creds);
     }
@@ -74,6 +80,7 @@ public class MockCredentials
                     xml.getXML(Fields.passwordKey), passwordKey));
         }
     }
+
     @Override
     public void saveToXML(XML xml) {
         if (xml != null) {
@@ -88,9 +95,9 @@ public class MockCredentials
     public String toString() {
         return new ToStringBuilder(
                 this, ToStringStyle.SHORT_PREFIX_STYLE)
-            .append(Fields.username, username)
-            .append(Fields.password, "********")
-            .append(Fields.passwordKey, passwordKey)
-            .toString();
+                        .append(Fields.username, username)
+                        .append(Fields.password, "********")
+                        .append(Fields.passwordKey, passwordKey)
+                        .toString();
     }
 }

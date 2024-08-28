@@ -38,11 +38,10 @@ class JsonXmlCollectionSerializerTest {
         testClass.regularProp3 = "prop3";
 
         var sw = new StringWriter();
-//        BeanMapper.builder().indent(true).build().write(testClass, sw, Format.XML);
+        //        BeanMapper.builder().indent(true).build().write(testClass, sw, Format.XML);
         BeanMapper.DEFAULT.write(testClass, sw, Format.XML);
         System.err.println(sw.toString());
     }
-
 
     @Data
     static class TestClass {

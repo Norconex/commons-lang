@@ -31,28 +31,27 @@ class SemanticVersionTest {
     @Test
     void testVersionComparison() {
         List<String> expected = Arrays.asList(
-            "0.0.6",
-            "0.5.0",
-            "1.0.0",
-            "1.1.1",
-            "1.2.0",
-            "2.0.0-RC",
-            "3.0.0-SNAPSHOT",
-            "3.0.0-M1",
-            "3.0.0-alpha",
-            "3.0.0-alpha1",
-            "3.0.0-beta",
-            "3.0.0-RC1",
-            "3.0.0-RC3a2b",
-            "3.0.0-RC3a2b3c",
-            "3.0.0-RC12a2b",
-            "3.0.0-RELEASE",
-            "3.0.0",
-            "3.1.0-snapshot+build66",
-            "3.1.0-Stable+build33",
-            "3.1.0+build33",
-            "3.10.10"
-        );
+                "0.0.6",
+                "0.5.0",
+                "1.0.0",
+                "1.1.1",
+                "1.2.0",
+                "2.0.0-RC",
+                "3.0.0-SNAPSHOT",
+                "3.0.0-M1",
+                "3.0.0-alpha",
+                "3.0.0-alpha1",
+                "3.0.0-beta",
+                "3.0.0-RC1",
+                "3.0.0-RC3a2b",
+                "3.0.0-RC3a2b3c",
+                "3.0.0-RC12a2b",
+                "3.0.0-RELEASE",
+                "3.0.0",
+                "3.1.0-snapshot+build66",
+                "3.1.0-Stable+build33",
+                "3.1.0+build33",
+                "3.10.10");
 
         // Source is the same, shuffled, with a few entries modified
         // to test versions without minor and patch segments.

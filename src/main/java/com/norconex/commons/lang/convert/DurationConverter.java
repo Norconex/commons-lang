@@ -45,14 +45,15 @@ public class DurationConverter extends AbstractConverter {
      * @since 3.0.0
      */
     public static class JsonSerializer
-        extends GenericJsonSerializer<Duration>{}
+            extends GenericJsonSerializer<Duration> {
+    }
 
     /**
      * JSON (Jackson) deserializer using this converter.
      * @since 3.0.0
      */
     public static class JsonDeserializer
-        extends GenericJsonDeserializer<Duration> {
+            extends GenericJsonDeserializer<Duration> {
         public JsonDeserializer() {
             super(Duration.class);
         }

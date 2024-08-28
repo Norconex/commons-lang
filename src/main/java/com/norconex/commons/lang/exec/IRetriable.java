@@ -23,7 +23,7 @@ package com.norconex.commons.lang.exec;
  * @since 1.13.0
  * @deprecated Use {@link Retriable} instead
  */
-@Deprecated(since="3.0.0")
+@Deprecated(since = "3.0.0")
 @FunctionalInterface
 public interface IRetriable<T> extends Retriable<T> { //NOSONAR
     /**

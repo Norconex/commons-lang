@@ -49,6 +49,7 @@ public class FilteredInputStream extends InputStream { // NOSONAR
             throws IOException {
         this(is, filter, StandardCharsets.UTF_8);
     }
+
     /**
      * Constructor.
      * @param is input stream to filter
@@ -70,6 +71,7 @@ public class FilteredInputStream extends InputStream { // NOSONAR
         this.filter = filter;
         nextLine();
     }
+
     /**
      * Constructor.
      * @param is input stream to filter

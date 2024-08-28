@@ -97,31 +97,39 @@ public class RegexFieldValueExtractor {
     public RegexFieldValueExtractor() {
         regex = defaultRegex(null);
     }
+
     public RegexFieldValueExtractor(String pattern) {
         this(defaultRegex(pattern), null);
     }
+
     public RegexFieldValueExtractor(String pattern, String field) {
         this(defaultRegex(pattern), field, -1);
     }
+
     public RegexFieldValueExtractor(
             String pattern, String field, int valueGroup) {
         this(defaultRegex(pattern), field, valueGroup);
     }
+
     public RegexFieldValueExtractor(
             String pattern, int fieldGroup, int valueGroup) {
         this(defaultRegex(pattern), fieldGroup, valueGroup);
     }
+
     public RegexFieldValueExtractor(Regex regex) {
         this(regex, null);
     }
+
     public RegexFieldValueExtractor(Regex regex, String field) {
         this(regex, field, -1);
     }
+
     public RegexFieldValueExtractor(Regex regex, String field, int valueGroup) {
         this.regex = regex;
         toField = field;
         this.valueGroup = valueGroup;
     }
+
     public RegexFieldValueExtractor(
             Regex regex, int fieldGroup, int valueGroup) {
         this.regex = regex;
@@ -132,6 +140,7 @@ public class RegexFieldValueExtractor {
     public Regex getRegex() {
         return regex;
     }
+
     public RegexFieldValueExtractor setRegex(Regex regex) {
         Objects.requireNonNull(regex, "'regex' must not be null.");
         this.regex = regex;
@@ -141,20 +150,25 @@ public class RegexFieldValueExtractor {
     public int getFieldGroup() {
         return fieldGroup;
     }
+
     public RegexFieldValueExtractor setFieldGroup(int fieldGroup) {
         this.fieldGroup = fieldGroup;
         return this;
     }
+
     public int getValueGroup() {
         return valueGroup;
     }
+
     public RegexFieldValueExtractor setValueGroup(int valueGroup) {
         this.valueGroup = valueGroup;
         return this;
     }
+
     public String getToField() {
         return toField;
     }
+
     public RegexFieldValueExtractor setToField(String field) {
         toField = field;
         return this;
@@ -168,6 +182,7 @@ public class RegexFieldValueExtractor {
     public PropertySetter getOnSet() {
         return onSet;
     }
+
     /**
      * Sets the property setter to use when a value is set.
      * @param onSet property setter
@@ -198,11 +213,12 @@ public class RegexFieldValueExtractor {
                 extractedFieldValues.add(k, v);
             }
         }
-        for (Entry<String,List<String>> en : extractedFieldValues.entrySet()) {
+        for (Entry<String, List<String>> en : extractedFieldValues.entrySet()) {
             PropertySetter.orAppend(onSet).apply(
                     dest, en.getKey(), en.getValue());
         }
     }
+
     public Properties extractFieldValues(CharSequence text) {
         var dest = new Properties();
         extractFieldValues(dest, text);
@@ -248,6 +264,7 @@ public class RegexFieldValueExtractor {
     private Matcher matcher(CharSequence text) {
         return regex.matcher(text);
     }
+
     private String extractField(Matcher m) {
         var f = StringUtils.isNotBlank(getToField()) ? getToField() : "";
         if (hasFieldGroup()) {
@@ -265,6 +282,7 @@ public class RegexFieldValueExtractor {
         }
         return f;
     }
+
     private String extractValue(Matcher m) {
         if (hasValueGroup()) {
             if (m.groupCount() >= getValueGroup()) {
@@ -281,9 +299,11 @@ public class RegexFieldValueExtractor {
         }
         return m.group();
     }
+
     private boolean hasFieldGroup() {
         return getFieldGroup() > -1;
     }
+
     private boolean hasValueGroup() {
         return getValueGroup() > -1;
     }

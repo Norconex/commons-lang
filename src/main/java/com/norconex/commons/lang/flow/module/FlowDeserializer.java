@@ -62,7 +62,7 @@ public class FlowDeserializer<T> extends JsonDeserializer<Consumer<T>>
     @Override
     public JsonDeserializer<?> createContextual(
             DeserializationContext ctxt, BeanProperty property)
-                    throws JsonMappingException {
+            throws JsonMappingException {
         if (property == null) {
             return defaultDeserializer;
         }
@@ -95,9 +95,11 @@ public class FlowDeserializer<T> extends JsonDeserializer<Consumer<T>>
         private final FlowMapperConfig config;
         private final JsonParser parser;
         private int depth;
+
         int incrementDepth() {
             return depth++;
         }
+
         int decrementDepth() {
             return --depth;
         }

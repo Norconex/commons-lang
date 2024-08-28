@@ -68,6 +68,7 @@ class ResourceLoaderTest {
             return IOUtils.toString(r);
         }
     }
+
     private String toString(InputStream is) throws IOException {
         try (is) {
             return IOUtils.toString(is, StandardCharsets.UTF_8);

@@ -30,15 +30,19 @@ import com.norconex.commons.lang.xml.XMLValidationError.Severity;
 public class ErrorHandlerCapturer implements ErrorHandler {
     private final Class<?> clazz;
     private final List<XMLValidationError> errors;
+
     public ErrorHandlerCapturer() {
         this(null, null);
     }
+
     public ErrorHandlerCapturer(List<XMLValidationError> errors) {
         this(null, errors);
     }
+
     public ErrorHandlerCapturer(Class<?> clazz) {
         this(clazz, null);
     }
+
     public ErrorHandlerCapturer(
             Class<?> clazz, List<XMLValidationError> errors) {
         super();
@@ -49,6 +53,7 @@ public class ErrorHandlerCapturer implements ErrorHandler {
     public List<XMLValidationError> getErrors() {
         return errors;
     }
+
     public int clear() {
         int size = errors.size();
         errors.clear();
@@ -59,14 +64,17 @@ public class ErrorHandlerCapturer implements ErrorHandler {
     public void warning(SAXParseException e) throws SAXException {
         errors.add(new XMLValidationError(Severity.WARNING, msg(e)));
     }
+
     @Override
     public void error(SAXParseException e) throws SAXException {
         errors.add(new XMLValidationError(Severity.ERROR, msg(e)));
     }
+
     @Override
     public void fatalError(SAXParseException e) throws SAXException {
         errors.add(new XMLValidationError(Severity.FATAL, msg(e)));
     }
+
     private String msg(SAXParseException e) {
         if (clazz == null) {
             return "[XML] " + e.getMessage();

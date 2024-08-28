@@ -45,7 +45,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
-
 /**
  * Simple Jar file representation holding name and version information.
  * @since 1.10.0
@@ -110,6 +109,7 @@ public class JarFile implements Comparable<JarFile> {
     public File toFile() {
         return file;
     }
+
     /**
      * Gets this jar file as a {@link File}.
      * @return a file
@@ -119,15 +119,19 @@ public class JarFile implements Comparable<JarFile> {
     public File getPath() { //NOSONAR
         return file;
     }
+
     public String getFullName() {
         return fullName;
     }
+
     public String getBaseName() {
         return baseName;
     }
+
     public String getVersion() {
         return version;
     }
+
     public Date getLastModified() {
         return new Date(file.lastModified());
     }
@@ -149,7 +153,7 @@ public class JarFile implements Comparable<JarFile> {
      * @since 1.13.0
      * @deprecated Use {@link #isEquivalentTo(JarFile)} instead.
      */
-    @Deprecated(since="3.0.0")
+    @Deprecated(since = "3.0.0")
     public boolean isSameVersion(JarFile jarFile) { //NOSONAR
         if (jarFile == null) {
             return false;
@@ -183,9 +187,9 @@ public class JarFile implements Comparable<JarFile> {
      * @since 1.13.0
      * @deprecated Use {@link #isEquivalentTo(JarFile)} instead.
      */
-    @Deprecated(since="3.0.0")
+    @Deprecated(since = "3.0.0")
     public boolean isSameVersionAndTime(JarFile jarFile) { //NOSONAR
-        return isSameVersion(jarFile)  //NOSONAR
+        return isSameVersion(jarFile) //NOSONAR
                 && file.lastModified() == jarFile.file.lastModified();
     }
 
@@ -201,6 +205,7 @@ public class JarFile implements Comparable<JarFile> {
     public boolean isEquivalentTo(JarFile other) {
         return compareTo(other) == 0;
     }
+
     /**
      * Gets whether this jar file is greater than the other,
      * by comparing semantic versions and last modified dates.
@@ -210,6 +215,7 @@ public class JarFile implements Comparable<JarFile> {
     public boolean isGreaterThan(JarFile other) {
         return compareTo(other) > 0;
     }
+
     /**
      * Gets whether this jar file is greater or equivalent to the other,
      * by comparing semantic versions and last modified dates.
@@ -220,6 +226,7 @@ public class JarFile implements Comparable<JarFile> {
     public boolean isGreaterOrEquivalentTo(JarFile other) {
         return compareTo(other) >= 0;
     }
+
     /**
      * Gets whether this jar file lower than the other,
      * by comparing semantic versions and last modified dates.
@@ -229,6 +236,7 @@ public class JarFile implements Comparable<JarFile> {
     public boolean isLowerThan(JarFile other) {
         return compareTo(other) < 0;
     }
+
     /**
      * Gets whether this jar file is lower or equivalent to
      * the other.
@@ -294,15 +302,16 @@ public class JarFile implements Comparable<JarFile> {
         List<JarFile> jarFiles = new ArrayList<>();
         Streams.failableStream(CollectionUtil.asListOrEmpty(jarPaths))
                 .forEach(jarPath -> {
-            try (var stream = Files.isDirectory(jarPath)
-                    ? Files.list(jarPath)
-                    : Stream.of(jarPath)) {
-                jarFiles.addAll(stream
-                    .filter(f -> endsWithIgnoreCase(f.toString(), ".jar"))
-                    .map(f -> new JarFile(f.toFile()))
-                    .collect(Collectors.toList()));
-            }
-        });
+                    try (var stream = Files.isDirectory(jarPath)
+                            ? Files.list(jarPath)
+                            : Stream.of(jarPath)) {
+                        jarFiles.addAll(stream
+                                .filter(f -> endsWithIgnoreCase(f.toString(),
+                                        ".jar"))
+                                .map(f -> new JarFile(f.toFile()))
+                                .collect(Collectors.toList()));
+                    }
+                });
         return jarFiles;
     }
 

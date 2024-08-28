@@ -38,7 +38,8 @@ public class LocaleConverter extends AbstractConverter {
      * JSON (Jackson) serializer using this converter.
      * @since 3.0.0
      */
-    public static class JsonSerializer extends GenericJsonSerializer<Locale>{}
+    public static class JsonSerializer extends GenericJsonSerializer<Locale> {
+    }
 
     /**
      * JSON (Jackson) deserializer using this converter.

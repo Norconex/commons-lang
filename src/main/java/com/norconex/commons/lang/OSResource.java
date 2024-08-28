@@ -46,6 +46,7 @@ public class OSResource<T> {
         }
         return this;
     }
+
     public OSResource<T> unix(T resource) {
         if (SystemUtils.IS_OS_UNIX
                 && !SystemUtils.IS_OS_LINUX
@@ -54,12 +55,14 @@ public class OSResource<T> {
         }
         return this;
     }
+
     public OSResource<T> linux(T resource) {
         if (SystemUtils.IS_OS_LINUX) {
             this.resource = resource;
         }
         return this;
     }
+
     public OSResource<T> mac(T resource) {
         if (SystemUtils.IS_OS_MAC) {
             this.resource = resource;

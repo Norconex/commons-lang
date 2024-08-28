@@ -111,7 +111,6 @@ class PropertiesTest {
                 Integer.class, Double.class);
     }
 
-
     @Test
     void testNumberGetters() throws IOException {
         var props = new Properties();
@@ -143,7 +142,6 @@ class PropertiesTest {
                 BigDecimal.valueOf(3));
     }
 
-
     @Test
     void testDateGetters() throws IOException {
         var props = new Properties();
@@ -151,7 +149,7 @@ class PropertiesTest {
                 "2022-11-06T16:20:02", "2023-11-06T16:20:02");
         props.add("instant", "2022-11-06T16:20:02Z", "2023-11-06T16:20:02Z");
         props.add("date",
-                "1667769602000",  // 2022-11-06T16:20:02
+                "1667769602000", // 2022-11-06T16:20:02
                 "1699305602000"); // 2023-11-06T16:20:02
 
         assertThat(props.getLocalDateTime("localDateTime")).isEqualTo(
@@ -167,7 +165,7 @@ class PropertiesTest {
                 Instant.parse("2022-11-06T16:20:02Z"));
         assertThat(props.getInstant(
                 "bad", Instant.parse("2020-12-31T01:02:03Z")))
-                    .isEqualTo(Instant.parse("2020-12-31T01:02:03Z"));
+                        .isEqualTo(Instant.parse("2020-12-31T01:02:03Z"));
         assertThat(props.getInstants("instant")).containsExactly(
                 Instant.parse("2022-11-06T16:20:02Z"),
                 Instant.parse("2023-11-06T16:20:02Z"));
@@ -251,23 +249,22 @@ class PropertiesTest {
                 new ByteArrayInputStream(out.toByteArray()));
         assertThat(newProps).isEqualTo(properties);
 
-        assertDoesNotThrow(() ->
-                properties.loadFromProperties((InputStream) null));
-        assertDoesNotThrow(() ->
-                properties.loadFromProperties((Reader) null));
+        assertDoesNotThrow(
+                () -> properties.loadFromProperties((InputStream) null));
+        assertDoesNotThrow(() -> properties.loadFromProperties((Reader) null));
     }
 
     @Test
     void testMatchKeys() {
         var properties = sampleProps();
         assertThat(properties.matchKeys(TextMatcher.basic("a")))
-            .containsExactlyEntriesOf(MapUtil.toMap(
-                    "a", asList("1", "2", "3")));
+                .containsExactlyEntriesOf(MapUtil.toMap(
+                        "a", asList("1", "2", "3")));
         assertThat(properties.matchKeys(
                 TextMatcher.regex("a").setPartial(true)))
-            .containsExactlyEntriesOf(MapUtil.toMap(
-                    "a", asList("1", "2", "3"),
-                    "abc", asList("7", "8", "9")));
+                        .containsExactlyEntriesOf(MapUtil.toMap(
+                                "a", asList("1", "2", "3"),
+                                "abc", asList("7", "8", "9")));
         assertThat(properties.matchKeys(null)).isEmpty();
     }
 
@@ -275,13 +272,13 @@ class PropertiesTest {
     void testMatchValues() {
         var properties = sampleProps();
         assertThat(properties.matchValues(TextMatcher.basic("2")))
-            .containsExactlyEntriesOf(MapUtil.toMap(
-                    "a", asList("2")));
+                .containsExactlyEntriesOf(MapUtil.toMap(
+                        "a", asList("2")));
         assertThat(properties.matchValues(
                 TextMatcher.regex("1|3|8").setPartial(true)))
-            .containsExactlyEntriesOf(MapUtil.toMap(
-                    "a", asList("1", "3"),
-                    "abc", asList("8")));
+                        .containsExactlyEntriesOf(MapUtil.toMap(
+                                "a", asList("1", "3"),
+                                "abc", asList("8")));
         assertThat(properties.matchValues(null)).isEmpty();
     }
 
@@ -290,17 +287,17 @@ class PropertiesTest {
         var properties = sampleProps();
         assertThat(properties.match(
                 TextMatcher.basic("a"), TextMatcher.basic("2")))
-            .containsExactlyEntriesOf(MapUtil.toMap(
-                    "a", asList("2")));
+                        .containsExactlyEntriesOf(MapUtil.toMap(
+                                "a", asList("2")));
         assertThat(properties.match(
                 TextMatcher.basic("a"), TextMatcher.basic("6")))
-            .isEmpty();
+                        .isEmpty();
         assertThat(properties.match(
                 TextMatcher.regex("a").setPartial(true),
                 TextMatcher.regex("1|3|8").setPartial(true)))
-            .containsExactlyEntriesOf(MapUtil.toMap(
-                    "a", asList("1", "3"),
-                    "abc", asList("8")));
+                        .containsExactlyEntriesOf(MapUtil.toMap(
+                                "a", asList("1", "3"),
+                                "abc", asList("8")));
         assertThat(properties.match(null)).isEmpty();
     }
 
@@ -331,11 +328,11 @@ class PropertiesTest {
 
         assertThat(properties.getList(
                 "key", String.class, Collections.emptyList()))
-            .containsExactly("1", "2", "3");
+                        .containsExactly("1", "2", "3");
 
         assertThat(properties.getList(
                 "nonExist", String.class, Arrays.asList("x", "y", "z")))
-            .containsExactly("x", "y", "z");
+                        .containsExactly("x", "y", "z");
     }
 
     @Test
@@ -345,10 +342,10 @@ class PropertiesTest {
         assertEquals((Integer) 1, properties.get("key", Integer.class));
 
         assertThat(properties.get("nonExist", String.class, "some default"))
-            .isEqualTo("some default");
+                .isEqualTo("some default");
 
         assertThat(properties.getString("nonExist", "some default"))
-            .isEqualTo("some default");
+                .isEqualTo("some default");
 
     }
 
@@ -414,7 +411,6 @@ class PropertiesTest {
         assertEquals(4, props1.get("kEy").size());
         assertEquals(Arrays.asList("1", "2", "3", "4"), props1.get("kEy"));
 
-
         // Case sensitive
         var props2 = new Properties(false);
         props2.putAll(m);
@@ -436,7 +432,6 @@ class PropertiesTest {
         assertEquals(1, props1.size());
         assertEquals(4, props1.get("kEy").size());
         assertEquals(Arrays.asList("1", "", "2", ""), props1.get("kEy"));
-
 
         // Case sensitive
         var props2 = new Properties(false);
@@ -520,8 +515,8 @@ class PropertiesTest {
         b.testLocale = Locale.CANADA_FRENCH;
         b.testLong = 1L;
         b.testString = "potato";
-        b.testStringArray = new String[] {"arrayVal-1of2", "arrayVal-2of2"};
-        b.testIntArray = new int[] {10, 20, 30, 137};
+        b.testStringArray = new String[] { "arrayVal-1of2", "arrayVal-2of2" };
+        b.testIntArray = new int[] { 10, 20, 30, 137 };
         b.testDateList = new ArrayList<>(Arrays.asList(
                 new Date(11111111), new Date(222222222), new Date(3333333)));
         b.testStringSet = new TreeSet<>(Arrays.asList("a", "b", "c"));
@@ -550,10 +545,9 @@ class PropertiesTest {
 
     private Properties sampleProps() {
         return new Properties(MapUtil.toMap(
-            "a", asList("1", "2", "3"),
-            "b", asList("4", "5", "6"),
-            "abc", asList("7", "8", "9")
-        ));
+                "a", asList("1", "2", "3"),
+                "b", asList("4", "5", "6"),
+                "abc", asList("7", "8", "9")));
     }
 
     @Data

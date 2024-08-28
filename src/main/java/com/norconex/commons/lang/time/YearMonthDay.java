@@ -55,6 +55,7 @@ public final class YearMonthDay
     public YearMonthDay() {
         this(Calendar.getInstance(TimeZone.getTimeZone(ZoneOffset.UTC)));
     }
+
     /**
      * Constructs a YearMonthDay with the specified values.
      * @param year the year
@@ -66,6 +67,7 @@ public final class YearMonthDay
         this.month = month;
         this.day = day;
     }
+
     /**
      * Constructs a YearMonthDay with the specified year and month.
      * The day is set to 1.
@@ -75,6 +77,7 @@ public final class YearMonthDay
     public YearMonthDay(int year, int month) {
         this(year, month, 1);
     }
+
     /**
      * Constructs a YearMonthDay with the specified year.
      * The day and the months are both set to 1.
@@ -83,6 +86,7 @@ public final class YearMonthDay
     public YearMonthDay(int year) {
         this(year, 1, 1);
     }
+
     /**
      * Constructs a YearMonthDay from a {@link Date} (UTC).
      * @param date a date
@@ -90,6 +94,7 @@ public final class YearMonthDay
     public YearMonthDay(@NonNull Date date) {
         this(DateUtils.toCalendar(date, TimeZone.getTimeZone(ZoneOffset.UTC)));
     }
+
     /**
      * Constructs a YearMonthDay from a {@link Calendar}.
      * @param calendar a calendar instant
@@ -99,6 +104,7 @@ public final class YearMonthDay
         month = calendar.get(Calendar.MONTH) + 1;
         day = calendar.get(Calendar.DAY_OF_MONTH);
     }
+
     /**
      * Constructs a YearMonthDay from a string of this format:
      * <code>yyyy-MM-dd</code>.
@@ -108,9 +114,10 @@ public final class YearMonthDay
         this(Integer.parseInt(StringUtils.substringBefore(
                 // lombok non null did not generate corresponding code.
                 Objects.requireNonNull(date), "-")),
-             Integer.parseInt(StringUtils.substringBetween(date, "-")),
-             Integer.parseInt(StringUtils.substringAfterLast(date, "-")));
+                Integer.parseInt(StringUtils.substringBetween(date, "-")),
+                Integer.parseInt(StringUtils.substringAfterLast(date, "-")));
     }
+
     /**
      * Constructs a YearMonthDay from a {@link LocalDate}.
      * @param localDate a local date
@@ -129,6 +136,7 @@ public final class YearMonthDay
     public int getYear() {
         return year;
     }
+
     /**
      * Gets the month.
      * @return the month
@@ -136,6 +144,7 @@ public final class YearMonthDay
     public int getMonth() {
         return month;
     }
+
     /**
      * Gets the day.
      * @return the day
@@ -153,6 +162,7 @@ public final class YearMonthDay
     public boolean isBefore(YearMonthDay ymd) {
         return compareTo(ymd) < 0;
     }
+
     /**
      * Whether this YearMonthDay represents a date before the given
      * date.
@@ -172,6 +182,7 @@ public final class YearMonthDay
     public boolean isAfter(YearMonthDay ymd) {
         return compareTo(ymd) > 0;
     }
+
     /**
      * Whether this YearMonthDay represents a date after the given
      * date.
@@ -191,6 +202,7 @@ public final class YearMonthDay
     public boolean contains(Date date) {
         return equals(new YearMonthDay(date));
     }
+
     /**
      * Converts this YearMonthDay to a {@link Date} at midnight (00:00) UTC.
      * @return a date
@@ -198,6 +210,7 @@ public final class YearMonthDay
     public Date toDate() {
         return toCalendar().getTime();
     }
+
     /**
      * Converts this YearMonthDay to the current time as
      * UTC milliseconds from the epoch.
@@ -206,6 +219,7 @@ public final class YearMonthDay
     public long toMillis() {
         return toCalendar().getTimeInMillis();
     }
+
     /**
      * Gets the date as midnight the day after to represent the end of the
      * day. This ensures all dates on the
@@ -231,6 +245,7 @@ public final class YearMonthDay
         cal.add(Calendar.DAY_OF_MONTH, numOfDays);
         return new YearMonthDay(cal.getTime());
     }
+
     /**
      * Adds a number of months to a new created YearMonthDay.  For subtractions,
      * user a negative integer.
@@ -242,6 +257,7 @@ public final class YearMonthDay
         cal.add(Calendar.MONTH, numOfMonths);
         return new YearMonthDay(cal.getTime());
     }
+
     /**
      * Adds a number of years to a new created YearMonthDay.  For subtractions,
      * user a negative integer.
@@ -261,7 +277,7 @@ public final class YearMonthDay
     public Calendar toCalendar() {
         Calendar cal = Calendar.getInstance(
                 TimeZone.getTimeZone(ZoneOffset.UTC));
-        cal.set(year, month -1, day);
+        cal.set(year, month - 1, day);
         return DateUtils.truncate(cal, Calendar.DAY_OF_MONTH);
     }
 

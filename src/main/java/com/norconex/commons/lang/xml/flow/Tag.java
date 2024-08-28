@@ -14,17 +14,22 @@ enum Tag {
     THEN("then"),
     ELSE("else");
     ;
+
     private final String name;
+
     Tag(String name) {
         this.name = name;
     }
+
     public boolean is(String tagName) {
         return name.equals(tagName);
     }
+
     @Override
     public String toString() {
         return name;
     }
+
     public boolean isAny(Tag... tags) {
         for (Tag tag : tags) {
             if (tag == this) {
@@ -33,6 +38,7 @@ enum Tag {
         }
         return false;
     }
+
     public static boolean isAny(String tagName, Tag... tags) {
         for (Tag tag : tags) {
             if (tag.is(tagName)) {
@@ -41,10 +47,11 @@ enum Tag {
         }
         return false;
     }
+
     public static Tag of(String tagName) {
         return Arrays.stream(values())
-            .filter(t -> t.is(tagName))
-            .findFirst()
-            .orElse(null);
+                .filter(t -> t.is(tagName))
+                .findFirst()
+                .orElse(null);
     }
 }

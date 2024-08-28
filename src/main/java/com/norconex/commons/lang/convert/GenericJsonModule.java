@@ -65,7 +65,6 @@ public class GenericJsonModule extends SimpleModule {
         addSerializer(Locale.class,
                 new LocaleConverter.JsonSerializer());
 
-
         // Deserializers
         addDeserializer(Dimension.class,
                 new DimensionConverter.JsonDeserializer());

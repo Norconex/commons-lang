@@ -72,6 +72,7 @@ public final class CollectionUtil {
         }
         return list;
     }
+
     /**
      * Adapts any object to a new non-null mutable Set, regardless of the
      * nature of the object. If the object is a Collection or array,
@@ -134,6 +135,7 @@ public final class CollectionUtil {
             target.addAll(source);
         }
     }
+
     /**
      * Sets all values of the source array into the target collection.
      * Same as doing a "clear", followed by "addAll" after converting the
@@ -170,7 +172,7 @@ public final class CollectionUtil {
      * @param <K> key type
      * @param <V> value type
      */
-    public static <K,V> void setAll(Map<K,V> target, Map<K,V> source) {
+    public static <K, V> void setAll(Map<K, V> target, Map<K, V> source) {
         if (target == null || target == source) {
             return;
         }
@@ -196,6 +198,7 @@ public final class CollectionUtil {
         }
         return Arrays.asList(values);
     }
+
     /**
      * Returns a fixed-size list backed by the specified array or
      * <code>null</code> if the array is <code>null</code>. This is a null-safe
@@ -226,6 +229,7 @@ public final class CollectionUtil {
     public static List<String> toStringList(Object... values) {
         return toStringList(asListOrNull(values));
     }
+
     /**
      * Converts a list of objects to an unmodifiable list of strings using
      * default {@link GenericConverter} instance.
@@ -240,6 +244,7 @@ public final class CollectionUtil {
         }
         return values.stream().map(GenericConverter::convert).toList();
     }
+
     /**
      * Converts a list of strings to an unmodifiable list of objects matching
      * the return type.
@@ -291,9 +296,10 @@ public final class CollectionUtil {
     public static <T> List<T> unmodifiableList(T... values) {
         return Collections.unmodifiableList(
                 values == null
-                ? Collections.emptyList()
-                : Arrays.asList(values));
+                        ? Collections.emptyList()
+                        : Arrays.asList(values));
     }
+
     /**
      * Returns an unmodifiable view of the specified set. Convenience method
      * for doing with an array the same as
@@ -308,8 +314,8 @@ public final class CollectionUtil {
     public static <T> Set<T> unmodifiableSet(T... values) {
         return Collections.unmodifiableSet(
                 values == null
-                ? Collections.emptySet()
-                : new LinkedHashSet<>(Arrays.asList(values)));
+                        ? Collections.emptySet()
+                        : new LinkedHashSet<>(Arrays.asList(values)));
     }
 
     /**
@@ -346,7 +352,6 @@ public final class CollectionUtil {
         c.removeIf(StringUtils::isEmpty);
     }
 
-
     /**
      * Replaces all elements matching the source value with the target
      * value.
@@ -373,6 +378,7 @@ public final class CollectionUtil {
         }
         CollectionUtils.transform(c, e -> Objects.equals(e, null) ? "" : e);
     }
+
     /**
      * Convert empty string entries to <code>null</code>.
      * @param c a string collection
@@ -383,6 +389,7 @@ public final class CollectionUtil {
         }
         CollectionUtils.transform(c, e -> StringUtils.isEmpty(e) ? null : e);
     }
+
     /**
      * Convert blank string entries to <code>null</code>.
      * @param c a string collection

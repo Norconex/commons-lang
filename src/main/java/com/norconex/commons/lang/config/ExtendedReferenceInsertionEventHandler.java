@@ -28,7 +28,7 @@ import com.norconex.commons.lang.SystemUtil;
  * @since 2.0.0
  */
 public class ExtendedReferenceInsertionEventHandler
-        implements ReferenceInsertionEventHandler  {
+        implements ReferenceInsertionEventHandler {
 
     @Override
     public Object referenceInsert(

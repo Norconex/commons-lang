@@ -58,12 +58,12 @@ class StringUtilTest {
         //numOfBytes:  111111111111111111212121333333223
         String text = "Various 33 chars: é è ï ﮈ₡ὴḚᴙࢤՅǜ™";
 
-//        char[] chars = text.toCharArray();
-//        for (char c : chars) {
-//            System.out.println(c + " : "
-//                    + Character.toString(c).getBytes(utf8).length);
-//        }
-//        System.out.println(text.getBytes(utf8).length);
+        //        char[] chars = text.toCharArray();
+        //        for (char c : chars) {
+        //            System.out.println(c + " : "
+        //                    + Character.toString(c).getBytes(utf8).length);
+        //        }
+        //        System.out.println(text.getBytes(utf8).length);
 
         // Test no truncate needed
         assertEquals(text, StringUtil.truncateBytesWithHash(text, utf8, 60));
@@ -92,6 +92,7 @@ class StringUtilTest {
         assertEquals("trimmed \n ", StringUtil.trimStart("trimmed \n "));
         assertEquals("trimmed \n ", StringUtil.trimStart("  trimmed \n "));
     }
+
     @Test
     void testTrimEnd() {
         assertEquals("trimmed", StringUtil.trimEnd("trimmed  \n  \t "));
@@ -99,12 +100,14 @@ class StringUtilTest {
         assertEquals(" \n trimmed", StringUtil.trimEnd(" \n trimmed"));
         assertEquals("  trimmed", StringUtil.trimEnd("  trimmed \n "));
     }
+
     @Test
     void testCountMatchesStart() {
         assertEquals(2, countMatchesStart("  aa a aa ", " "));
         assertEquals(2, countMatchesStart("aaaa a aa a", "aa"));
         assertEquals(0, countMatchesStart("  aaa a aa a", "a"));
     }
+
     @Test
     void testCountMatchesEnd() {
         assertEquals(2, countMatchesEnd(" aa a aa  ", " "));

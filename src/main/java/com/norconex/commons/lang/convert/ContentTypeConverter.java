@@ -37,7 +37,8 @@ public class ContentTypeConverter extends AbstractConverter {
      * @since 3.0.0
      */
     public static class JsonSerializer
-            extends GenericJsonSerializer<ContentType>{}
+            extends GenericJsonSerializer<ContentType> {
+    }
 
     /**
      * JSON (Jackson) deserializer using this converter.

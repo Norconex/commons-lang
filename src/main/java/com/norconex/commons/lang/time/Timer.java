@@ -24,7 +24,8 @@ import org.apache.commons.lang3.time.StopWatch;
  */
 public final class Timer {
 
-    private Timer() {}
+    private Timer() {
+    }
 
     /**
      * Returns the runnable execution time in milliseconds.

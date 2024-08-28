@@ -21,7 +21,7 @@ package com.norconex.commons.lang.time;
  * @see DurationFormatter
  * @deprecated Use {@link DurationUnitFormatter} instead.
  */
-@Deprecated(since="3.0.0")
+@Deprecated(since = "3.0.0")
 @FunctionalInterface
 public interface IDurationUnitFormatter //NOSONAR
         extends DurationUnitFormatter {

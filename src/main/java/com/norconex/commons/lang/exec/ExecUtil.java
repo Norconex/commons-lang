@@ -53,6 +53,7 @@ public final class ExecUtil {
         return watchProcess(process,
                 new InputStreamListener[] {}, new InputStreamListener[] {});
     }
+
     /**
      * Watches a running process.  This method will wait until the process
      * as finished executing before returning with its exit value.
@@ -69,9 +70,10 @@ public final class ExecUtil {
             Process process,
             InputStreamListener listener) {
         return watchProcess(process,
-                new InputStreamListener[] {listener},
-                new InputStreamListener[] {listener});
+                new InputStreamListener[] { listener },
+                new InputStreamListener[] { listener });
     }
+
     /**
      * Watches a running process.  This method will wait until the process
      * as finished executing before returning with its exit value.
@@ -108,9 +110,10 @@ public final class ExecUtil {
             InputStreamListener outputListener,
             InputStreamListener errorListener) {
         return watchProcess(process,
-                new InputStreamListener[] {outputListener},
-                new InputStreamListener[] {errorListener});
+                new InputStreamListener[] { outputListener },
+                new InputStreamListener[] { errorListener });
     }
+
     /**
      * Watches a running process.  This method will wait until the process
      * as finished executing before returning with its exit value.
@@ -130,6 +133,7 @@ public final class ExecUtil {
             InputStreamListener[] errorListeners) {
         return watchProcess(process, null, outputListeners, errorListeners);
     }
+
     /**
      * Watches a running process while sending data to its STDIN.
      * This method will wait until the process
@@ -159,7 +163,6 @@ public final class ExecUtil {
         }
     }
 
-
     /**
      * Watches process output.  This method is the same as
      * {@link #watchProcess(
@@ -175,10 +178,9 @@ public final class ExecUtil {
             InputStreamListener outputListener,
             InputStreamListener errorListener) {
         watchProcessAsync(process,
-                new InputStreamListener[] {outputListener},
-                new InputStreamListener[] {errorListener});
+                new InputStreamListener[] { outputListener },
+                new InputStreamListener[] { errorListener });
     }
-
 
     /**
      * Watches process output.  This method is the same as
@@ -238,9 +240,9 @@ public final class ExecUtil {
                 }
             };
             t.start();
-            try{
-               t.join();
-            } catch(InterruptedException e) {
+            try {
+                t.join();
+            } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 throw new ExecException(
                         "Process interrupted while sending input stream.", e);

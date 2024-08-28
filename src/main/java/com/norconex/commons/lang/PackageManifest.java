@@ -145,7 +145,6 @@ public final class PackageManifest {
         }
     }
 
-
     // When unpacked, if Maven structure is respected, the pom.xml location
     // should be found at: ../../pom.xml
     // (from current directory: [...]/target/classes/).
@@ -153,20 +152,21 @@ public final class PackageManifest {
             PackageManifestBuilder pmb, Class<?> cls) {
         try {
             Optional.ofNullable(cls.getProtectionDomain().getCodeSource())
-                .map(CodeSource::getLocation)
-                .map(url -> Failable.<URI, URISyntaxException>call(
-                        () -> url.toURI().resolve("../../pom.xml")))
-                .map(uri -> new File(uri.getPath()))
-                .map(pomFile -> XML.of(pomFile).create())
-                .ifPresent(xml -> {
-                    ifBlank(pmb.version,
-                            () -> pmb.version(xml.getString("version")));
-                    ifBlank(pmb.version,
-                            () -> pmb.version(xml.getString("parent/version")));
-                    ifBlank(pmb.title, () -> pmb.title(xml.getString("name")));
-                    ifBlank(pmb.vendor, () ->
-                            pmb.vendor(xml.getString("organization/name")));
-                });
+                    .map(CodeSource::getLocation)
+                    .map(url -> Failable.<URI, URISyntaxException>call(
+                            () -> url.toURI().resolve("../../pom.xml")))
+                    .map(uri -> new File(uri.getPath()))
+                    .map(pomFile -> XML.of(pomFile).create())
+                    .ifPresent(xml -> {
+                        ifBlank(pmb.version, () -> pmb.version(
+                                xml.getString("version")));
+                        ifBlank(pmb.version, () -> pmb.version(
+                                xml.getString("parent/version")));
+                        ifBlank(pmb.title, () -> pmb.title(
+                                xml.getString("name")));
+                        ifBlank(pmb.vendor, () -> pmb.vendor(
+                                xml.getString("organization/name")));
+                    });
         } catch (Exception e) {
             LOG.trace("Could not obtain pom.xml from code source.", e);
         }

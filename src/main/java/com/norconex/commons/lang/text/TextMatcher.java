@@ -125,6 +125,7 @@ public class TextMatcher implements
             public String toQuotedReplacement(String replacement) {
                 return Matcher.quoteReplacement(replacement);
             }
+
             @Override
             public String toMatchExpression(TextMatcher tm) {
                 return Regex.escape(Objects.toString(tm.pattern, ""));
@@ -135,11 +136,12 @@ public class TextMatcher implements
             public String toQuotedReplacement(String replacement) {
                 return Matcher.quoteReplacement(replacement);
             }
+
             @Override
             public String toMatchExpression(TextMatcher tm) {
                 return Arrays.stream(Objects.toString(tm.pattern, "")
                         .split("\\s*,\\s*")).map(Regex::escape)
-                                .collect(Collectors.joining("|")).trim();
+                        .collect(Collectors.joining("|")).trim();
             }
         }),
         WILDCARD(new MethodStrategy() {
@@ -147,15 +149,16 @@ public class TextMatcher implements
             public String toQuotedReplacement(String replacement) {
                 return Matcher.quoteReplacement(replacement);
             }
+
             @Override
             public String toMatchExpression(TextMatcher tm) {
                 var p = Pattern.compile("[^*?]+|(\\*)|(\\?)");
                 var m = p.matcher(Objects.toString(tm.pattern, ""));
                 var b = new StringBuilder();
                 while (m.find()) {
-                    if(m.group(1) != null) {
+                    if (m.group(1) != null) {
                         b.append(".*");
-                    } else if(m.group(2) != null) {
+                    } else if (m.group(2) != null) {
                         b.append(".");
                     } else {
                         b.append(Regex.escape(m.group()));
@@ -170,6 +173,7 @@ public class TextMatcher implements
                 // do not quote for regex
                 return replacement;
             }
+
             @Override
             public String toMatchExpression(TextMatcher tm) {
                 return Objects.toString(tm.pattern, "");
@@ -185,6 +189,7 @@ public class TextMatcher implements
 
     private interface MethodStrategy {
         String toMatchExpression(TextMatcher tm);
+
         String toQuotedReplacement(String text);
     }
 
@@ -204,6 +209,7 @@ public class TextMatcher implements
      */
     public TextMatcher() {
     }
+
     /**
      * Creates a basic matcher with the given pattern.
      * Default behavior will match the pattern exactly.
@@ -212,6 +218,7 @@ public class TextMatcher implements
     public TextMatcher(String pattern) {
         this.pattern = pattern;
     }
+
     /**
      * Creates a matcher with the specified method.
      * @param method matching method
@@ -219,6 +226,7 @@ public class TextMatcher implements
     public TextMatcher(Method method) {
         this.method = method;
     }
+
     /**
      * Creates a basic matcher with the given pattern.
      * @param pattern expression used for matching
@@ -228,6 +236,7 @@ public class TextMatcher implements
         this.pattern = pattern;
         this.method = method;
     }
+
     /**
      * Copy constructor. Supplying <code>null</code> is the same
      * as evoking the empty constructor.
@@ -242,10 +251,12 @@ public class TextMatcher implements
     public Method getMethod() {
         return method;
     }
+
     public TextMatcher setMethod(Method method) {
         this.method = method;
         return this;
     }
+
     public TextMatcher withMethod(Method method) {
         return copy().setMethod(method);
     }
@@ -253,13 +264,16 @@ public class TextMatcher implements
     public boolean isPartial() {
         return partial;
     }
+
     public TextMatcher setPartial(boolean partial) {
         this.partial = partial;
         return this;
     }
+
     public TextMatcher partial() {
         return setPartial(true);
     }
+
     public TextMatcher withPartial(boolean partial) {
         return copy().setPartial(partial);
     }
@@ -267,10 +281,12 @@ public class TextMatcher implements
     public String getPattern() {
         return pattern;
     }
+
     public TextMatcher setPattern(String pattern) {
         this.pattern = pattern;
         return this;
     }
+
     public TextMatcher withPattern(String pattern) {
         return copy().setPattern(pattern);
     }
@@ -278,13 +294,16 @@ public class TextMatcher implements
     public boolean isIgnoreCase() {
         return ignoreCase;
     }
+
     public TextMatcher setIgnoreCase(boolean ignoreCase) {
         this.ignoreCase = ignoreCase;
         return this;
     }
+
     public TextMatcher ignoreCase() {
         return setIgnoreCase(true);
     }
+
     public TextMatcher withIgnoreCase(boolean ignoreCase) {
         return copy().setIgnoreCase(ignoreCase);
     }
@@ -292,13 +311,16 @@ public class TextMatcher implements
     public boolean isIgnoreDiacritic() {
         return ignoreDiacritic;
     }
+
     public TextMatcher setIgnoreDiacritic(boolean ignoreDiacritic) {
         this.ignoreDiacritic = ignoreDiacritic;
         return this;
     }
+
     public TextMatcher ignoreDiacritic() {
         return setIgnoreDiacritic(true);
     }
+
     public TextMatcher withIgnoreDiacritic(boolean ignoreDiacritic) {
         return copy().setIgnoreDiacritic(ignoreDiacritic);
     }
@@ -306,13 +328,16 @@ public class TextMatcher implements
     public boolean isReplaceAll() {
         return replaceAll;
     }
+
     public TextMatcher setReplaceAll(boolean replaceAll) {
         this.replaceAll = replaceAll;
         return this;
     }
+
     public TextMatcher replaceAll() {
         return setReplaceAll(true);
     }
+
     public TextMatcher withReplaceAll(boolean replaceAll) {
         return copy().setReplaceAll(replaceAll);
     }
@@ -326,6 +351,7 @@ public class TextMatcher implements
     public boolean isNegateMatches() {
         return negateMatches;
     }
+
     /**
      * Sets whether to negates the result of invoking
      * {@link #matches(CharSequence)}.
@@ -338,6 +364,7 @@ public class TextMatcher implements
         this.negateMatches = negateMatches;
         return this;
     }
+
     /**
      * Sets the negation of the result of invoking
      * {@link #matches(CharSequence)} to <code>true</code>.
@@ -350,6 +377,7 @@ public class TextMatcher implements
     public TextMatcher negateMatches() {
         return setNegateMatches(true);
     }
+
     /**
      * Sets whether to negates the result of invoking
      * {@link #matches(CharSequence)} on a copy of this instance.
@@ -381,6 +409,7 @@ public class TextMatcher implements
     public boolean isMatchEmpty() {
         return matchEmpty;
     }
+
     /**
      * Sets whether <code>null</code> or empty strings should be considered a
      * positive match. To also consider blank values as positive matches,
@@ -394,6 +423,7 @@ public class TextMatcher implements
         this.matchEmpty = matchEmpty;
         return this;
     }
+
     /**
      * Sets that <code>null</code> or empty strings should be considered a
      * positive match. Same as invoking {@link #setMatchEmpty(boolean)} with
@@ -404,6 +434,7 @@ public class TextMatcher implements
     public TextMatcher matchEmpty() {
         return setMatchEmpty(true);
     }
+
     /**
      * Sets whether <code>null</code> or empty strings should be considered a
      * positive match. To also consider blank values as positive matches,
@@ -426,6 +457,7 @@ public class TextMatcher implements
     public boolean isTrim() {
         return trim;
     }
+
     /**
      * Sets whether values should be trimmed before being evaluated
      * (as per {@link String#trim()}).
@@ -437,6 +469,7 @@ public class TextMatcher implements
         this.trim = trim;
         return this;
     }
+
     /**
      * Sets that values should be trimmed before being evaluated
      * (as per {@link String#trim()}). Same as invoking
@@ -447,6 +480,7 @@ public class TextMatcher implements
     public TextMatcher trim() {
         return setTrim(true);
     }
+
     /**
      * Sets whether values should be trimmed before being evaluated
      * (as per {@link String#trim()}).
@@ -471,6 +505,7 @@ public class TextMatcher implements
             tm.negateMatches = negateMatches;
         }
     }
+
     public void copyFrom(TextMatcher tm) {
         if (tm != null) {
             method = tm.method;
@@ -499,6 +534,7 @@ public class TextMatcher implements
     public static TextMatcher basic(String pattern) {
         return new TextMatcher(Method.BASIC).setPattern(pattern);
     }
+
     /**
      * <p>Creates a new text matcher initialized with comma-separated-value
      * matching. Same as invoking
@@ -509,6 +545,7 @@ public class TextMatcher implements
     public static TextMatcher csv(String pattern) {
         return new TextMatcher(Method.CSV).setPattern(pattern);
     }
+
     /**
      * <p>Creates a new text matcher initialized with wildcard matching.
      * Same as invoking
@@ -519,6 +556,7 @@ public class TextMatcher implements
     public static TextMatcher wildcard(String pattern) {
         return new TextMatcher(Method.WILDCARD).setPattern(pattern);
     }
+
     /**
      * <p>Creates a new text matcher initialized with regular expression
      * matching. Same as invoking
@@ -573,6 +611,7 @@ public class TextMatcher implements
     public String apply(String text, String replacement) {
         return replace(text, replacement);
     }
+
     /**
      * Replaces this class matching text with replacement value.
      * @param text text to match
@@ -612,6 +651,7 @@ public class TextMatcher implements
                 .setMatchEmpty(matchEmpty)
                 .matcher(text);
     }
+
     /**
      * Compiles this text matcher to create a regular expression
      * {@link Pattern}.

@@ -61,62 +61,82 @@ public enum DurationUnit {
     public ChronoUnit toTemporalUnit() {
         return chronoUnit;
     }
+
     public Duration toDuration() {
         return Duration.ofMillis(ms);
     }
+
     public long toMilliseconds() {
         return toMilliseconds(1);
     }
+
     public long toMilliseconds(long amount) {
         return toUnit(DurationUnit.MILLISECOND, amount);
     }
+
     public long toSeconds() {
         return toSeconds(1);
     }
+
     public long toSeconds(long amount) {
         return toUnit(DurationUnit.SECOND, amount);
     }
+
     public long toMinutes() {
         return toMinutes(1);
     }
+
     public long toMinutes(long amount) {
         return toUnit(DurationUnit.MINUTE, amount);
     }
+
     public long toHours() {
         return toHours(1);
     }
+
     public long toHours(long amount) {
         return toUnit(DurationUnit.HOUR, amount);
     }
+
     public long toDays() {
         return toDays(1);
     }
+
     public long toDays(long amount) {
         return toUnit(DurationUnit.DAY, amount);
     }
+
     public long toWeeks() {
         return toWeeks(1);
     }
+
     public long toWeeks(long amount) {
         return toUnit(DurationUnit.WEEK, amount);
     }
+
     public long toMonths() {
         return toMonths(1);
     }
+
     public long toMonths(long amount) {
         return toUnit(DurationUnit.MONTH, amount);
     }
+
     public long toYears() {
         return toYears(1);
     }
+
     public long toYears(long amount) {
         return toUnit(DurationUnit.YEAR, amount);
     }
 
     public long toUnit(DurationUnit targetUnit, long amount) {
         return BigDecimal.valueOf(ms).multiply(
-                BigDecimal.valueOf(amount)).divide(BigDecimal.valueOf(
-                        targetUnit.ms), RoundingMode.DOWN).longValueExact();
+                BigDecimal.valueOf(amount)).divide(
+                        BigDecimal.valueOf(
+                                targetUnit.ms),
+                        RoundingMode.DOWN)
+                .longValueExact();
     }
 
     /**
@@ -131,6 +151,7 @@ public enum DurationUnit {
         }
         return from(duration.toMillis());
     }
+
     /**
      * Gets the largest unit fitting in the provided duration. If the duration
      * is zero or less, <code>null</code> is returned.
@@ -165,6 +186,7 @@ public enum DurationUnit {
         }
         return null;
     }
+
     public static DurationUnit from(TemporalUnit temporalUnit) {
         if (temporalUnit == null) {
             return null;
@@ -185,6 +207,7 @@ public enum DurationUnit {
     public static DurationUnit[] reverseValues() {
         return REVERSE_VALUES;
     }
+
     /**
      * Gets ordinal value in reverse order.
      * @return ordinal value

@@ -26,10 +26,10 @@ class RBDurationUnitFormatterTest {
     void testRBDurationUnitFormatter() {
         assertThat(RBDurationUnitFormatter.ABBREVIATED.format(
                 DurationUnit.DAY, Locale.FRENCH, false))
-                    .isEqualTo("jr");
+                        .isEqualTo("jr");
         assertThat(RBDurationUnitFormatter.ABBREVIATED.format(
                 DurationUnit.DAY, Locale.FRENCH, true))
-                    .isEqualTo("jrs");
+                        .isEqualTo("jrs");
         assertThat(RBDurationUnitFormatter.ABBREVIATED.format(
                 null, Locale.FRENCH, true)).isNull();
     }

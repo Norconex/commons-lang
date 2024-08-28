@@ -42,23 +42,28 @@ class XMLCondition<T> implements XMLConfigurable, Predicate<T> {
 
     enum Operator {
         AND("AND", "ALL", "&&"),
-        OR("OR", "ANY", "||")
-        ;
+        OR("OR", "ANY", "||");
+
         private final List<String> tokens = new ArrayList<>();
+
         Operator(String... tokens) {
             this.tokens.addAll(Arrays.asList(tokens));
         }
+
         @Override
         public String toString() {
             return tokens.get(0);
         }
+
         public static Operator of(String operator) {
             return OR.tokens.contains(
                     StringUtils.upperCase(operator)) ? OR : AND;
         }
     }
 
-    @ToStringExclude @EqualsExclude @HashCodeExclude
+    @ToStringExclude
+    @EqualsExclude
+    @HashCodeExclude
     private final XMLFlow<T> flow;
 
     private Predicate<T> predicate;
@@ -102,7 +107,8 @@ class XMLCondition<T> implements XMLConfigurable, Predicate<T> {
 
     private void writeGroupPredicate(XML xml, Predicates<T> predicates) {
         xml.setAttribute("operator", predicates.isAny()
-                ? Operator.OR.toString() : Operator.AND.toString());
+                ? Operator.OR.toString()
+                : Operator.AND.toString());
         predicates.forEach(p -> {
             if (p instanceof Predicates) {
                 writeGroupPredicate(
@@ -112,6 +118,7 @@ class XMLCondition<T> implements XMLConfigurable, Predicate<T> {
             }
         });
     }
+
     private void writeSinglePredicate(XML xml, Predicate<T> predicate) {
         xml.replace(new XML(xml.getName(), predicate));
     }
@@ -127,7 +134,7 @@ class XMLCondition<T> implements XMLConfigurable, Predicate<T> {
         } else {
             throw new XMLFlowException(
                     "Only 'conditions' and 'condition' are accepted "
-                    + "in an 'if' or 'ifNot' block.");
+                            + "in an 'if' or 'ifNot' block.");
         }
         return p;
     }
@@ -150,8 +157,8 @@ class XMLCondition<T> implements XMLConfigurable, Predicate<T> {
                 //MAYBE: throw XMLValidationException if there are any errors?
                 XMLFlowPredicateAdapter<T> adapter =
                         flow.getPredicateAdapter()
-                            .getDeclaredConstructor()
-                            .newInstance();
+                                .getDeclaredConstructor()
+                                .newInstance();
                 adapter.loadFromXML(predicateXML);
                 p = adapter;
             } catch (Exception e) {
@@ -166,10 +173,10 @@ class XMLCondition<T> implements XMLConfigurable, Predicate<T> {
         }
         if (p == null) {
             throw new XMLFlowException("XML element '" + predicateXML.getName()
-            + "' does not resolve to an implementation of "
-            + "java.util.function.Predicate. Add a class=\"\" attribute "
-            + "pointing to your predicate implementation, or initialize "
-            + "XMLFlow with an XMLFlowPredicateAdapter.");
+                    + "' does not resolve to an implementation of "
+                    + "java.util.function.Predicate. Add a class=\"\" attribute "
+                    + "pointing to your predicate implementation, or initialize "
+                    + "XMLFlow with an XMLFlowPredicateAdapter.");
         }
         return p;
     }

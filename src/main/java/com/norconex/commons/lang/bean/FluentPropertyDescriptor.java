@@ -85,7 +85,7 @@ public class FluentPropertyDescriptor extends PropertyDescriptor {
     public FluentPropertyDescriptor(
             String propertyName, Class<?> beanClass,
             String readMethodName, String writeMethodName)
-                    throws IntrospectionException {
+            throws IntrospectionException {
         super(propertyName,
                 readMethod(beanClass, propertyName, readMethodName),
                 writeMethod(beanClass, propertyName, writeMethodName));
@@ -121,7 +121,7 @@ public class FluentPropertyDescriptor extends PropertyDescriptor {
      */
     public FluentPropertyDescriptor(
             String propertyName, Method readMethod, Method writeMethod)
-                    throws IntrospectionException {
+            throws IntrospectionException {
         super(propertyName,
                 Optional.ofNullable(readMethod).orElseGet(() -> readMethod(
                         writeMethod.getDeclaringClass(), propertyName, null)),
@@ -140,15 +140,19 @@ public class FluentPropertyDescriptor extends PropertyDescriptor {
             throws IntrospectionException {
         this(propertyDescriptor.getName(),
                 Optional.ofNullable(propertyDescriptor.getReadMethod())
-                    .orElseGet(() -> readMethod(
-                        propertyDescriptor.getWriteMethod().getDeclaringClass(),
-                        propertyDescriptor.getName(),
-                        null)),
+                        .orElseGet(() -> readMethod(
+                                propertyDescriptor
+                                        .getWriteMethod()
+                                        .getDeclaringClass(),
+                                propertyDescriptor.getName(),
+                                null)),
                 Optional.ofNullable(propertyDescriptor.getWriteMethod())
-                    .orElseGet(() -> writeMethod(
-                        propertyDescriptor.getReadMethod().getDeclaringClass(),
-                        propertyDescriptor.getName(),
-                        null)));
+                        .orElseGet(() -> writeMethod(
+                                propertyDescriptor
+                                        .getReadMethod()
+                                        .getDeclaringClass(),
+                                propertyDescriptor.getName(),
+                                null)));
     }
 
     /**
@@ -159,6 +163,7 @@ public class FluentPropertyDescriptor extends PropertyDescriptor {
     public boolean isReadable() {
         return getReadMethod() != null;
     }
+
     /**
      * Gets whether this described property can be written to
      * (has a writer method).
@@ -179,6 +184,7 @@ public class FluentPropertyDescriptor extends PropertyDescriptor {
     public <T> T readValue(Object bean) {
         return BeanUtil.getValue(bean, this);
     }
+
     /**
      * Writes the bean value matching the property descriptor.
      * @param bean bean to write property to
@@ -198,6 +204,7 @@ public class FluentPropertyDescriptor extends PropertyDescriptor {
         }
         return BeanUtil.getReadMethod(beanClass, propertyName);
     }
+
     private static Method writeMethod(
             Class<?> beanClass,
             String propertyName,

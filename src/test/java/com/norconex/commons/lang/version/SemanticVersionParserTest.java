@@ -79,7 +79,7 @@ class SemanticVersionParserTest {
     @Test
     void testNull() {
         assertThrows(SemanticVersionParserException.class, () -> {
-           SemanticVersionParser.STRICT.parse(null);
+            SemanticVersionParser.STRICT.parse(null);
         });
         assertThrows(SemanticVersionParserException.class, () -> {
             SemanticVersionParser.STRICT.parse(null);
@@ -91,27 +91,32 @@ class SemanticVersionParserTest {
         assertThat(STRICT.parse(version)).isEqualTo(
                 semver(major, minor, patch));
     }
+
     private void assertStrict(
             String version, int major, int minor, int patch,
             String preRelease, String meta) {
         assertThat(STRICT.parse(version)).isEqualTo(
                 semver(major, minor, patch, preRelease, meta));
     }
+
     private void assertStrictFail(String version) {
         assertThrows(SemanticVersionParserException.class,
                 () -> STRICT.parse(version));
     }
+
     private void assertLenient(
             String version, int major, int minor, int patch) {
         assertThat(LENIENT.parse(version)).isEqualTo(
                 semver(major, minor, patch));
     }
+
     private void assertLenient(
             String version, int major, int minor, int patch,
             String preRelease, String meta) {
         assertThat(LENIENT.parse(version)).isEqualTo(
                 semver(major, minor, patch, preRelease, meta));
     }
+
     private void assertLenientFail(String version) {
         assertThrows(SemanticVersionParserException.class,
                 () -> LENIENT.parse(version));
@@ -120,6 +125,7 @@ class SemanticVersionParserTest {
     private SemanticVersion semver(int major, int minor, int patch) {
         return semver(major, minor, patch, null, null);
     }
+
     private SemanticVersion semver(
             int major, int minor, int patch, String preRelease, String meta) {
         return SemanticVersion.of(

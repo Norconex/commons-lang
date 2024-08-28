@@ -67,7 +67,7 @@ class EventManagerTest {
         em.addListenersFromScan(new TestObject());
         assertThat(em.getListeners()).hasSize(1);
         assertThat(((TestEventListener) em.getListeners().get(0)).getSalt())
-            .isEqualTo("found me");
+                .isEqualTo("found me");
     }
 
     @Test
@@ -131,10 +131,13 @@ class EventManagerTest {
         private String salt;
         private Event event;
 
-        public TestEventListener() {}
+        public TestEventListener() {
+        }
+
         public TestEventListener(String salt) {
             this.salt = salt;
         }
+
         @Override
         public void accept(Event event) {
             this.event = event;

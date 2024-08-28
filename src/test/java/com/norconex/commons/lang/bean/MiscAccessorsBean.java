@@ -34,30 +34,36 @@ public class MiscAccessorsBean implements Serializable {
 
     // * getX();  void setX(*)
     private String normal;
+
     public String getNormal() {
         return normal;
     }
+
     public void setNormal(String normal) {
         this.normal = normal;
     }
 
     // -       ;  void setX(*)
     private String normalSetterNoGetter;
+
     public void setNormalSetterNoGetter(String normalSetterNoGetter) {
         this.normalSetterNoGetter = normalSetterNoGetter;
     }
 
     // * getX();  -
     private String normalGetterNoSetter;
+
     public String getNormalGetterNoSetter() {
         return normalGetterNoSetter;
     }
 
     // * getX();  <this> setX(*)
     private String fluent;
+
     public String getFluent() {
         return fluent;
     }
+
     public MiscAccessorsBean setFluent(String fluent) {
         this.fluent = fluent;
         return this;
@@ -65,6 +71,7 @@ public class MiscAccessorsBean implements Serializable {
 
     // -       ;  <this> setX(*)
     private String fluentSetterNoGetter;
+
     public MiscAccessorsBean setFluentSetterNoGetter(
             String fluentSetterNoGetter) {
         this.fluentSetterNoGetter = fluentSetterNoGetter;
@@ -73,30 +80,36 @@ public class MiscAccessorsBean implements Serializable {
 
     // * isX() ;  void setX(*)
     private boolean boolNormal;
+
     public boolean isBoolNormal() {
         return boolNormal;
     }
+
     public void setBoolNormal(boolean boolNormal) {
         this.boolNormal = boolNormal;
     }
 
     // -       ;  void setX(*)
     private boolean boolSetterNoGetter;
+
     public void setBoolSetterNoGetter(boolean boolSetterNoGetter) {
         this.boolSetterNoGetter = boolSetterNoGetter;
     }
 
     // * isX() ;  -
     private boolean boolGetterNoSetter;
+
     public boolean isBoolGetterNoSetter() {
         return boolGetterNoSetter;
     }
 
     // * isX() ;  <this> setX(*)
     private boolean boolFluent;
+
     public boolean isBoolFluent() {
         return boolFluent;
     }
+
     public MiscAccessorsBean setBoolFluent(boolean boolFluent) {
         this.boolFluent = boolFluent;
         return this;
@@ -104,6 +117,7 @@ public class MiscAccessorsBean implements Serializable {
 
     // -       ;  <this> setX(*)
     private boolean boolFluentSetterNoGetter;
+
     public MiscAccessorsBean setBoolFluentSetterNoGetter(
             boolean boolFluentSetterNoGetter) {
         this.boolFluentSetterNoGetter = boolFluentSetterNoGetter;
@@ -112,30 +126,36 @@ public class MiscAccessorsBean implements Serializable {
 
     // * x()   ;  void x(*)
     private String compactNormal;
+
     public String compactNormal() {
         return compactNormal;
     }
+
     public void compactNormal(String compactNormal) {
         this.compactNormal = compactNormal;
     }
 
     // -       ;  void x(*)
     private String compactSetterNoGetter;
+
     public void compactSetterNoGetter(String compactSetterNoGetter) {
         this.compactSetterNoGetter = compactSetterNoGetter;
     }
 
     // * x()   ;  -
     private String compactGetterNoSetter;
+
     public String compactGetterNoSetter() {
         return compactGetterNoSetter;
     }
 
     // * x()   ;  <this> x(*)
     private String compactFluent;
+
     public String compactFluent() {
         return compactFluent;
     }
+
     public MiscAccessorsBean compactFluent(String compactFluent) {
         this.compactFluent = compactFluent;
         return this;
@@ -143,6 +163,7 @@ public class MiscAccessorsBean implements Serializable {
 
     // -       ;  <this> x(*)
     private String compactFluentSetterNoGetter;
+
     public MiscAccessorsBean compactFluentSetterNoGetter(
             String compactFluentSetterNoGetter) {
         this.compactFluentSetterNoGetter = compactFluentSetterNoGetter;

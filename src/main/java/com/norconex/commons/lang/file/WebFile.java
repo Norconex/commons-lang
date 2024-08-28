@@ -62,6 +62,7 @@ public class WebFile implements Path {
     public WebFile(String url) {
         this(toURL(url), null);
     }
+
     /**
      * Creates a web file using a local path to store the dowloaded file.
      * If the local file argument is <code>null</code>, invoking this method
@@ -82,6 +83,7 @@ public class WebFile implements Path {
     public WebFile(URL url) {
         this(url, null);
     }
+
     /**
      * Creates a web file using a local path to store the dowloaded file.
      * If the local file argument is <code>null</code>, invoking this method
@@ -110,6 +112,7 @@ public class WebFile implements Path {
     public static WebFile create(String url, Path localDir) {
         return create(toURL(url), localDir);
     }
+
     /**
      * Creates a web file using the given directory as the local download
      * location, and the given name as the local file name.
@@ -121,6 +124,7 @@ public class WebFile implements Path {
     public static WebFile create(String url, Path localDir, String localName) {
         return create(toURL(url), localDir, localName);
     }
+
     /**
      * Creates a web file using the OS temp directory + "webfiles" as the local
      * download location, and the given name as the local file name.
@@ -143,6 +147,7 @@ public class WebFile implements Path {
         Objects.requireNonNull(localDir, "'localDir' must not be null");
         return new WebFile(url, localDir.resolve(extractFileName(url)));
     }
+
     /**
      * Creates a web file using the given directory as the local download
      * location, and the given name as the local file name.
@@ -156,6 +161,7 @@ public class WebFile implements Path {
         Objects.requireNonNull(localName, "'localName' must not be null");
         return new WebFile(url, localDir.resolve(localName));
     }
+
     /**
      * Creates a web file using the OS temp directory + "webfiles" as the local
      * download location, and the given name as the local file name.
@@ -222,100 +228,124 @@ public class WebFile implements Path {
     public FileSystem getFileSystem() {
         return getResolvedFile().getFileSystem();
     }
+
     @Override
     public boolean isAbsolute() {
         return getResolvedFile().isAbsolute();
     }
+
     @Override
     public Path getRoot() {
         return getResolvedFile().getRoot();
     }
+
     @Override
     public Path getFileName() {
         return getResolvedFile().getFileName();
     }
+
     @Override
     public Path getParent() {
         return getResolvedFile().getParent();
     }
+
     @Override
     public int getNameCount() {
         return getResolvedFile().getNameCount();
     }
+
     @Override
     public Path getName(int index) {
         return getResolvedFile().getName(index);
     }
+
     @Override
     public Path subpath(int beginIndex, int endIndex) {
         return getResolvedFile().subpath(beginIndex, endIndex);
     }
+
     @Override
     public boolean startsWith(Path other) {
         return getResolvedFile().startsWith(other);
     }
+
     @Override
     public boolean startsWith(String other) {
         return getResolvedFile().startsWith(other);
     }
+
     @Override
     public boolean endsWith(Path other) {
         return getResolvedFile().endsWith(other);
     }
+
     @Override
     public boolean endsWith(String other) {
         return getResolvedFile().endsWith(other);
     }
+
     @Override
     public Path normalize() {
         return getResolvedFile().normalize();
     }
+
     @Override
     public Path resolve(Path other) {
         return getResolvedFile().resolve(other);
     }
+
     @Override
     public Path resolve(String other) {
         return getResolvedFile().resolve(other);
     }
+
     @Override
     public Path resolveSibling(Path other) {
         return getResolvedFile().resolveSibling(other);
     }
+
     @Override
     public Path resolveSibling(String other) {
         return getResolvedFile().resolveSibling(other);
     }
+
     @Override
     public Path relativize(Path other) {
         return getResolvedFile().relativize(other);
     }
+
     @Override
     public URI toUri() {
         return getResolvedFile().toUri();
     }
+
     @Override
     public Path toAbsolutePath() {
         return getResolvedFile().toAbsolutePath();
     }
+
     @Override
     public Path toRealPath(LinkOption... options) throws IOException {
         return getResolvedFile().toRealPath(options);
     }
+
     @Override
     public File toFile() {
         return getResolvedFile().toFile();
     }
+
     @Override
     public WatchKey register(WatchService watcher, Kind<?>[] events,
             Modifier... modifiers) throws IOException {
         return getResolvedFile().register(watcher, events, modifiers);
     }
+
     @Override
     public WatchKey register(WatchService watcher, Kind<?>... events)
             throws IOException {
         return getResolvedFile().register(watcher, events);
     }
+
     @Override
     public Iterator<Path> iterator() {
         return getResolvedFile().iterator();
@@ -325,6 +355,7 @@ public class WebFile implements Path {
     public String toString() {
         return localFile.toString();
     }
+
     @Override
     public int hashCode() {
         return localFile.hashCode();
@@ -345,6 +376,7 @@ public class WebFile implements Path {
     @SuppressWarnings("unchecked")
     private <T> T nativePath(T path) {
         return path instanceof WebFile
-                ? (T) ((WebFile) path).getResolvedFile() : path;
+                ? (T) ((WebFile) path).getResolvedFile()
+                : path;
     }
 }

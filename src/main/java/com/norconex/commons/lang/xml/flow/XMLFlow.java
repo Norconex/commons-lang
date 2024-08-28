@@ -85,6 +85,7 @@ public final class XMLFlow<T> {
     public XMLFlow() {
         this(null, null);
     }
+
     public XMLFlow(
             Class<? extends XMLFlowConsumerAdapter<T>> consumerAdapter,
             Class<? extends XMLFlowPredicateAdapter<T>> predicateAdapter) {
@@ -95,6 +96,7 @@ public final class XMLFlow<T> {
     public Class<? extends XMLFlowConsumerAdapter<T>> getConsumerAdapter() {
         return consumerAdapter;
     }
+
     public Class<? extends XMLFlowPredicateAdapter<T>> getPredicateAdapter() {
         return predicateAdapter;
     }
@@ -156,10 +158,10 @@ public final class XMLFlow<T> {
         }
         if (consumer == null) {
             throw new XMLFlowException("XML element '" + consumerXML.getName()
-            + "' does not resolve to an implementation of "
-            + "java.util.function.Consumer. Add a class=\"\" attribute "
-            + "pointing to your predicate implementation, or initialize "
-            + "XMLFlow with an XMLFlowConsumerAdapter.");
+                    + "' does not resolve to an implementation of "
+                    + "java.util.function.Consumer. Add a class=\"\" attribute "
+                    + "pointing to your predicate implementation, or initialize "
+                    + "XMLFlow with an XMLFlowConsumerAdapter.");
         }
         return consumer;
     }
@@ -181,6 +183,7 @@ public final class XMLFlow<T> {
             writeSingleConsumer(xml, consumer);
         }
     }
+
     private void writeSingleConsumer(XML xml, Consumer<T> consumer) {
         if (consumer instanceof XMLIfNot) {
             ((XMLIfNot<T>) consumer).saveToXML(xml.addElement("ifNot"));

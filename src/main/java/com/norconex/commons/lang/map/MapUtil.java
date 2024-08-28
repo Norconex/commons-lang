@@ -40,6 +40,7 @@ public final class MapUtil {
         toMap(map, values);
         return map;
     }
+
     /**
      * Populates an existing map with the array of values,
      * alternating between key and values.

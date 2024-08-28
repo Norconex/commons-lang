@@ -52,6 +52,7 @@ class FailOnUnknownConfigurablePropModule extends SimpleModule {
     static class FailOnDeserializerModifier extends BeanDeserializerModifier {
         private static final long serialVersionUID = 1L;
         private final BeanMapper beanMapper;
+
         public FailOnDeserializerModifier(BeanMapper beanMapper) {
             this.beanMapper = beanMapper;
         }
@@ -77,6 +78,7 @@ class FailOnUnknownConfigurablePropModule extends SimpleModule {
                 BeanDeserializerBase src, BeanMapper beanMapper) {
             super(src);
         }
+
         @Override
         public Object deserializeFromObject(JsonParser p,
                 DeserializationContext ctxt) throws IOException {
@@ -87,7 +89,7 @@ class FailOnUnknownConfigurablePropModule extends SimpleModule {
             var mapper = (ObjectMapper) p.getCodec();
             var originalFormatString = mapper.writeValueAsString(node);
             mapper.readerForUpdating(configuration)
-                .readValue(originalFormatString);
+                    .readValue(originalFormatString);
             return configurable;
         }
     }

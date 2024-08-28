@@ -43,6 +43,7 @@ public class JsonXmlCollectionModule extends SimpleModule {
     public static class CollectionSerializerModifier
             extends BeanSerializerModifier {
         private static final long serialVersionUID = 1L;
+
         @Override
         public JsonSerializer<?> modifyCollectionSerializer(
                 SerializationConfig config,
@@ -56,6 +57,7 @@ public class JsonXmlCollectionModule extends SimpleModule {
     public static class CollectionDeserializerModifier
             extends BeanDeserializerModifier {
         private static final long serialVersionUID = 1L;
+
         @Override
         public JsonDeserializer<?> modifyCollectionDeserializer(
                 DeserializationConfig config, CollectionType type,

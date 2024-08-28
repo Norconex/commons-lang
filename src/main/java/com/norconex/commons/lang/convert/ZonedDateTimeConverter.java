@@ -37,7 +37,8 @@ public class ZonedDateTimeConverter extends AbstractConverter {
      * @since 3.0.0
      */
     public static class JsonSerializer
-            extends GenericJsonSerializer<ZonedDateTime>{}
+            extends GenericJsonSerializer<ZonedDateTime> {
+    }
 
     /**
      * JSON (Jackson) deserializer using this converter.

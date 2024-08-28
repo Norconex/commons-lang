@@ -93,16 +93,14 @@ public final class EncryptionKey implements Serializable {
      */
     @JsonCreator
     public EncryptionKey(
-            @JsonProperty("value")
-            String value,
-            @JsonProperty("source")
-            Source source,
-            @JsonProperty("size")
-            int size) {
+            @JsonProperty("value") String value,
+            @JsonProperty("source") Source source,
+            @JsonProperty("size") int size) {
         this.value = value;
         this.source = source;
         this.size = size;
     }
+
     /**
      * Creates a new reference to an encryption key. The reference can either
      * be the key itself, or a pointer to a file or environment variable
@@ -113,6 +111,7 @@ public final class EncryptionKey implements Serializable {
     public EncryptionKey(String value, Source source) {
         this(value, source, DEFAULT_KEY_SIZE);
     }
+
     /**
      * Creates a new encryption key where the value is the actual key, and the
      * number of key bits to generate is the size.
@@ -122,6 +121,7 @@ public final class EncryptionKey implements Serializable {
     public EncryptionKey(String value, int size) {
         this(value, Source.KEY, size);
     }
+
     /**
      * Creates a new encryption key where the value is the actual key.
      * @param value the encryption key
@@ -129,12 +129,15 @@ public final class EncryptionKey implements Serializable {
     public EncryptionKey(String value) {
         this(value, Source.KEY, DEFAULT_KEY_SIZE);
     }
+
     public String getValue() {
         return value;
     }
+
     public Source getSource() {
         return source;
     }
+
     /**
      * Gets the size in bits of the encryption key. Default is
      * {@value #DEFAULT_KEY_SIZE}.
@@ -142,7 +145,7 @@ public final class EncryptionKey implements Serializable {
      * @since 1.15.0
      */
     public int getSize() {
-        return  (size != null ? size : DEFAULT_KEY_SIZE);
+        return (size != null ? size : DEFAULT_KEY_SIZE);
     }
 
     /**
@@ -161,11 +164,11 @@ public final class EncryptionKey implements Serializable {
             return value;
         }
         return switch (source) {
-        case KEY -> value;
-        case FILE -> fromFile();
-        case ENVIRONMENT -> fromEnv();
-        case PROPERTY -> fromProperty();
-        default -> null;
+            case KEY -> value;
+            case FILE -> fromFile();
+            case ENVIRONMENT -> fromEnv();
+            case PROPERTY -> fromProperty();
+            default -> null;
         };
     }
 
@@ -184,7 +187,7 @@ public final class EncryptionKey implements Serializable {
         if (!file.isFile()) {
             throw new EncryptionException(
                     "Key file is not a file or does not exists: "
-                    + file.getAbsolutePath());
+                            + file.getAbsolutePath());
         }
         try {
             //MAYBE allow a flag to optionally throw an exception when null?

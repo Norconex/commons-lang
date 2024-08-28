@@ -60,10 +60,13 @@ public class MutableImage {
         MEDIUM(Method.BALANCED),
         HIGH(Method.QUALITY),
         MAX(Method.ULTRA_QUALITY);
+
         private Method scaleMethod;
+
         Quality(Method scaleMethod) {
             this.scaleMethod = scaleMethod;
         }
+
         public Method getScaleMethod() {
             return scaleMethod;
         }
@@ -75,9 +78,11 @@ public class MutableImage {
     public MutableImage(@NonNull Path imageFile) throws IOException {
         image = ImageIO.read(imageFile.toFile());
     }
+
     public MutableImage(@NonNull InputStream imageStream) throws IOException {
         image = ImageIO.read(imageStream);
     }
+
     public MutableImage(@NonNull Image image) {
         if (image instanceof BufferedImage bufImg) {
             this.image = bufImg;
@@ -96,6 +101,7 @@ public class MutableImage {
     public Quality getResizeQuality() {
         return resizeQuality;
     }
+
     public MutableImage setResizeQuality(Quality resizeQuality) {
         this.resizeQuality = resizeQuality;
         return this;
@@ -104,12 +110,14 @@ public class MutableImage {
     public BufferedImage toImage() {
         return image;
     }
+
     public String toBase64String(String format) throws IOException {
         var baos = new ByteArrayOutputStream();
         ImageIO.write(deAlpha(image, format), format, baos);
         return "data:image/" + format + ";base64,"
                 + Base64.getMimeEncoder().encodeToString(baos.toByteArray());
     }
+
     /**
      * Decodes a Base64 image string.
      * @param base64Image Base64 encoded image
@@ -129,6 +137,7 @@ public class MutableImage {
                 Base64.getMimeDecoder().decode(base64));
         return new MutableImage(ImageIO.read(bais));
     }
+
     public InputStream toInputStream(String format) throws IOException {
         var os = new ByteArrayOutputStream();
         ImageIO.write(deAlpha(image, format), format, os);
@@ -138,6 +147,7 @@ public class MutableImage {
     public void write(@NonNull Path file) throws IOException {
         write(file, null);
     }
+
     public void write(@NonNull Path file, String format) throws IOException {
         var f = format;
         if (StringUtils.isBlank(format)) {
@@ -145,6 +155,7 @@ public class MutableImage {
         }
         ImageIO.write(deAlpha(image, format), f, file.toFile());
     }
+
     public void write(@NonNull OutputStream out, @NonNull String format)
             throws IOException {
         ImageIO.write(deAlpha(image, format), format, out);
@@ -153,9 +164,11 @@ public class MutableImage {
     public Dimension getDimension() {
         return new Dimension(image.getWidth(), image.getHeight());
     }
+
     public int getHeight() {
         return image.getHeight();
     }
+
     public int getWidth() {
         return image.getWidth();
     }
@@ -169,6 +182,7 @@ public class MutableImage {
     public MutableImage rotateLeft() {
         return rotate(-90);
     }
+
     /**
      * Rotates this image clockwise by 90 degrees.
      * @return this image
@@ -176,6 +190,7 @@ public class MutableImage {
     public MutableImage rotateRight() {
         return rotate(90);
     }
+
     /**
      * Rotates this image clockwise by the specified degrees.
      * @param degrees degrees by which to rotate the image
@@ -205,6 +220,7 @@ public class MutableImage {
             t.scale(-1.0, 1.0);
         });
     }
+
     public MutableImage flipVertical() {
         return apply(t -> {
             t.translate(0, image.getHeight());
@@ -231,27 +247,34 @@ public class MutableImage {
     public MutableImage stretchWidth(int width) {
         return stretch(width, image.getHeight());
     }
+
     public MutableImage stretchHeight(int height) {
         return stretch(image.getWidth(), height);
     }
+
     public MutableImage stretchWidthFactor(double factor) {
         return stretch((int) (image.getWidth() * factor), image.getHeight());
     }
+
     public MutableImage stretchHeightFactor(double factor) {
         return stretch(image.getWidth(), (int) (image.getHeight() * factor));
     }
+
     public MutableImage stretch(Dimension dimension) {
         Objects.requireNonNull(dimension, "'dimension' must not be null.");
         return stretch((int) dimension.getWidth(), (int) dimension.getHeight());
     }
+
     public MutableImage stretchFactor(double factorWidth, double factorHeight) {
         return stretch(
                 (int) (image.getWidth() * factorWidth),
                 (int) (image.getHeight() * factorHeight));
     }
+
     public MutableImage stretch(int size) {
         return stretch(size, size);
     }
+
     public MutableImage stretch(int width, int height) {
         return apply(Scalr.resize(
                 image, getScaleMethod(), Mode.FIT_EXACT, width, height));
@@ -263,30 +286,37 @@ public class MutableImage {
         return apply(Scalr.resize(
                 image, getScaleMethod(), Mode.FIT_TO_WIDTH, width));
     }
+
     public MutableImage scaleHeight(int height) {
         return apply(Scalr.resize(
                 image, getScaleMethod(), Mode.FIT_TO_HEIGHT, height));
     }
+
     public MutableImage scaleWidthFactor(double factor) {
         return scaleWidth((int) (image.getWidth() * factor));
     }
+
     public MutableImage scaleHeightFactor(double factor) {
         return scaleHeight((int) (image.getHeight() * factor));
     }
+
     public MutableImage scaleFactor(double factor) {
         return scale(
                 (int) (image.getWidth() * factor),
                 (int) (image.getHeight() * factor));
     }
+
     public MutableImage scale(int size) {
         return scale(size, size);
     }
+
     public MutableImage scale(Dimension maxDimension) {
         Objects.requireNonNull(
                 maxDimension, "'maxDimension' must not be null.");
         return scale((int) maxDimension.getWidth(),
                 (int) maxDimension.getHeight());
     }
+
     public MutableImage scale(int maxWidth, int maxHeight) {
         return apply(Scalr.resize(image,
                 getScaleMethod(), Mode.AUTOMATIC, maxWidth, maxHeight));
@@ -300,15 +330,18 @@ public class MutableImage {
         }
         return largerThan(img.getDimension());
     }
+
     public boolean largerThan(Dimension dim) {
         if (dim == null) {
             return false;
         }
         return largerThan(dim.width, dim.height);
     }
+
     public boolean largerThan(int width, int height) {
         return image.getWidth() > width && image.getHeight() > height;
     }
+
     public MutableImage largest(MutableImage img) {
         if (img == null) {
             return this;
@@ -318,21 +351,25 @@ public class MutableImage {
         }
         return this;
     }
+
     public boolean smallerThan(MutableImage img) {
         if (img == null) {
             return false;
         }
         return smallerThan(img.getDimension());
     }
+
     public boolean smallerThan(Dimension dim) {
         if (dim == null) {
             return false;
         }
         return smallerThan((int) dim.getWidth(), (int) dim.getHeight());
     }
+
     public boolean smallerThan(int width, int height) {
         return image.getWidth() < width && image.getHeight() < height;
     }
+
     public MutableImage smallest(MutableImage img) {
         if (img == null) {
             return this;
@@ -342,6 +379,7 @@ public class MutableImage {
         }
         return this;
     }
+
     public MutableImage tallest(MutableImage img) {
         if (img == null) {
             return this;
@@ -351,6 +389,7 @@ public class MutableImage {
         }
         return this;
     }
+
     public MutableImage widest(MutableImage img) {
         if (img == null) {
             return this;

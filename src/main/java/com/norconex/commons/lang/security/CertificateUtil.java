@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 package com.norconex.commons.lang.security;
+
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
@@ -51,7 +52,8 @@ public final class CertificateUtil {
     private static final Logger LOG =
             LoggerFactory.getLogger(CertificateUtil.class);
 
-    private CertificateUtil() {}
+    private CertificateUtil() {
+    }
 
     /**
      * Fetches certificates associated with the URL host.
@@ -76,7 +78,7 @@ public final class CertificateUtil {
      */
     public static List<X509Certificate> fetchCertificates(
             @NonNull String host, int port)
-                    throws GeneralSecurityException, IOException {
+            throws GeneralSecurityException, IOException {
         List<X509Certificate> certs = new ArrayList<>();
         fetchCertificates(certs, host, port, null);
         return certs;
@@ -93,7 +95,7 @@ public final class CertificateUtil {
      */
     public static boolean isTrusted(
             @NonNull String host, int port, KeyStore keyStore)
-                    throws GeneralSecurityException, IOException {
+            throws GeneralSecurityException, IOException {
         return fetchCertificates(new ArrayList<>(), host, port, keyStore);
     }
 
@@ -128,7 +130,7 @@ public final class CertificateUtil {
      */
     public static int trustHost(
             @NonNull String host, int port, KeyStore keyStore)
-                    throws GeneralSecurityException, IOException {
+            throws GeneralSecurityException, IOException {
         List<X509Certificate> certs = new ArrayList<>();
         var trusted = fetchCertificates(certs, host, port, keyStore);
         if (LOG.isDebugEnabled()) {
@@ -175,7 +177,7 @@ public final class CertificateUtil {
     // return true if trusted
     private static boolean fetchCertificates(List<X509Certificate> certificates,
             String host, int port, KeyStore keyStore)
-                    throws GeneralSecurityException, IOException  {
+            throws GeneralSecurityException, IOException {
         var context = SSLContext.getInstance("TLS");
         var tmf = TrustManagerFactory.getInstance(
                 TrustManagerFactory.getDefaultAlgorithm());
@@ -212,21 +214,26 @@ public final class CertificateUtil {
     private static class CertificateInterceptor implements X509TrustManager {
         private final X509TrustManager tm;
         private X509Certificate[] chain;
+
         private CertificateInterceptor(X509TrustManager tm) {
             this.tm = tm;
         }
+
         public X509Certificate[] getCerts() {
             return chain;
         }
+
         @Override
         public X509Certificate[] getAcceptedIssuers() { // NOSONAR
             return chain;
         }
+
         @Override
         public void checkClientTrusted(X509Certificate[] chain, String authType)
                 throws CertificateException {
             tm.checkClientTrusted(chain, authType);
         }
+
         @Override
         public void checkServerTrusted(X509Certificate[] chain, String authType)
                 throws CertificateException {

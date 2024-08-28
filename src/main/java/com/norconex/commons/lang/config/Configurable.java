@@ -64,7 +64,7 @@ public interface Configurable<T> {
             R configurable, Consumer<T>... configurers) {
         var cfg = configurable.getConfiguration();
         if (configurers != null && cfg != null) {
-            for (Consumer<T> configurer: configurers) {
+            for (Consumer<T> configurer : configurers) {
                 configurer.accept(cfg);
             }
         }

@@ -46,7 +46,7 @@ public class JSONTaglet extends AbstractInlineTaglet {
     private static final Wrapper ARRAY_WRAPPER = new Wrapper(
             s -> "{\"wrap\":[" + s + "]}",
             s -> {
-                var json =  s;
+                var json = s;
                 json = substringAfter(json, "\"wrap\": [");
                 json = substringBeforeLast(json, "]").trim();
                 json = removeEnd(json, "null");

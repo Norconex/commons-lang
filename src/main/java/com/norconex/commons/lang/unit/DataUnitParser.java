@@ -111,8 +111,8 @@ public final class DataUnitParser {
     private static final Pattern PATTERN =
             Pattern.compile("(\\d+([\\.,]\\d+)?)(\\D+)");
 
-    private DataUnitParser() {}
-
+    private DataUnitParser() {
+    }
 
     /**
      * Parses a text representation of a data measurement and returns

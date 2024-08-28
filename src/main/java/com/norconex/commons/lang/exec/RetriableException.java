@@ -39,6 +39,7 @@ public class RetriableException extends Exception {
         super(message);
         causes = null;
     }
+
     /**
      * Constructor.
      * @param causes exception causes
@@ -47,6 +48,7 @@ public class RetriableException extends Exception {
         super(getLastCause(causes));
         this.causes = causes;
     }
+
     /**
      * @param message exception message
      * @param causes exception causes
@@ -64,6 +66,6 @@ public class RetriableException extends Exception {
         if (ArrayUtils.isEmpty(causes)) {
             return null;
         }
-        return causes[causes.length -1];
+        return causes[causes.length - 1];
     }
 }

@@ -62,12 +62,12 @@ class IOUtilTest {
         // same stream can be re-read from start without impact
         try (Reader r = newReader(val)) {
             assertThat(IOUtil.borrowCharacters(r, 4))
-                .isEqualTo("1234".toCharArray());
+                    .isEqualTo("1234".toCharArray());
             assertThat(IOUtil.borrowCharacters(r, 10))
-                .isEqualTo(val.toCharArray());
+                    .isEqualTo(val.toCharArray());
         }
         assertThrows(IllegalArgumentException.class, //NOSONAR
-                () -> IOUtil.borrowCharacters(NullReader.nullReader() , 4));
+                () -> IOUtil.borrowCharacters(NullReader.nullReader(), 4));
     }
 
     @Test
@@ -89,40 +89,40 @@ class IOUtilTest {
     @Test
     void testToBufferedReader() throws IOException {
         assertThat(IOUtil.toBufferedReader(newReader(val)))
-            .isInstanceOf(BufferedReader.class)
-            .extracting(this::toString).isEqualTo(val);
+                .isInstanceOf(BufferedReader.class)
+                .extracting(this::toString).isEqualTo(val);
         assertThat(IOUtil.toBufferedReader(new BufferedReader(newReader(val))))
-            .isInstanceOf(BufferedReader.class)
-            .extracting(this::toString).isEqualTo(val);
+                .isInstanceOf(BufferedReader.class)
+                .extracting(this::toString).isEqualTo(val);
     }
 
     @Test
     void testToBufferedInputStream() throws IOException {
         assertThat(IOUtil.toBufferedInputStream(newInputStream(val)))
-            .isInstanceOf(BufferedInputStream.class);
+                .isInstanceOf(BufferedInputStream.class);
         assertThat(IOUtil.toBufferedInputStream(new BufferedInputStream(
                 newInputStream(val))))
-            .isInstanceOf(BufferedInputStream.class);
+                        .isInstanceOf(BufferedInputStream.class);
     }
 
     @Test
     void testTail() throws IOException {
         String lines = "a\nb\nc\nd\ne\nf\ng\nh\ni\nj";
         assertThat(IOUtil.tail(newInputStream(lines), 3))
-            .containsExactly("h", "i", "j");
+                .containsExactly("h", "i", "j");
         assertThat(IOUtil.tail(null, "UTF-8", 3)).isEmpty();
         assertThat(IOUtil.tail(newInputStream(lines), (Charset) null, 3))
-            .containsExactly("h", "i", "j");
+                .containsExactly("h", "i", "j");
     }
 
     @Test
     void testHead() throws IOException {
         String lines = "a\nb\nc\nd\ne\nf\ng\nh\ni\nj";
         assertThat(IOUtil.head(newInputStream(lines), 3))
-            .containsExactly("a", "b", "c");
+                .containsExactly("a", "b", "c");
         assertThat(IOUtil.head(null, "UTF-8", 3)).isEmpty();
         assertThat(IOUtil.head(newInputStream(lines), (Charset) null, 3))
-            .containsExactly("a", "b", "c");
+                .containsExactly("a", "b", "c");
     }
 
     @Test
@@ -189,7 +189,7 @@ class IOUtilTest {
         assertThat(IOUtil.consumeWhile(null, ch -> ch != 'd', b)).isZero();
         assertThrows(IllegalArgumentException.class, //NOSONAR
                 () -> IOUtil.consumeWhile(
-                        NullReader.nullReader() , ch -> ch != 'd', b));
+                        NullReader.nullReader(), ch -> ch != 'd', b));
     }
 
     @Test
@@ -208,9 +208,11 @@ class IOUtilTest {
     private InputStream newInputStream(String content) {
         return new ByteArrayInputStream(content.getBytes());
     }
+
     private Reader newReader(String content) {
         return new StringReader(content);
     }
+
     private String toString(Reader reader) {
         try {
             return IOUtils.toString(reader);

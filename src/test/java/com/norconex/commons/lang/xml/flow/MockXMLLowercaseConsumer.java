@@ -23,14 +23,17 @@ import com.norconex.commons.lang.xml.XML;
 public class MockXMLLowercaseConsumer
         implements Consumer<Properties>, XMLConfigurable {
     private String field;
+
     @Override
     public void accept(Properties p) {
         p.set(field, p.getString(field, "").toLowerCase());
     }
+
     @Override
     public void loadFromXML(XML xml) {
         field = xml.getString("field");
     }
+
     @Override
     public void saveToXML(XML xml) {
         xml.addElement("field", field);

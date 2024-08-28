@@ -35,14 +35,15 @@ class ContentTypeTest {
                 ContentType.valueOf(
                         "application/oebps-package+xml").getDisplayName());
         assertThat(ContentType.valueOf("nope").getDisplayName(Locale.ENGLISH))
-            .isEqualTo("[nope]");
+                .isEqualTo("[nope]");
     }
+
     @Test
     void testGetExtension() {
         Assertions.assertEquals("pdf", ContentType.PDF.getExtension());
         Assertions.assertEquals("wpd",
                 ContentType.valueOf("application/wordperfect").getExtension());
-        Assertions.assertArrayEquals(new String[]{ "wpd", "wp", "wp5", "wp6" },
+        Assertions.assertArrayEquals(new String[] { "wpd", "wp", "wp5", "wp6" },
                 ContentType.valueOf("application/wordperfect").getExtensions());
 
         assertThat(ContentType.valueOf("imbad").getExtension()).isEmpty();
@@ -55,12 +56,12 @@ class ContentTypeTest {
                 "application/pdf")).isEqualTo(ContentType.PDF);
 
         assertThat(ContentType.valuesOf("application/pdf", "text/html"))
-            .containsExactly(ContentType.PDF, ContentType.HTML);
+                .containsExactly(ContentType.PDF, ContentType.HTML);
         assertThat(ContentType.valuesOf((String[]) null)).isEmpty();
 
         assertThat(ContentType.valuesOf(
                 Arrays.asList("application/pdf", "text/html")))
-            .containsExactly(ContentType.PDF, ContentType.HTML);
+                        .containsExactly(ContentType.PDF, ContentType.HTML);
         assertThat(ContentType.valuesOf(Collections.emptyList())).isEmpty();
     }
 
@@ -83,8 +84,8 @@ class ContentTypeTest {
     @Test
     void testToBaseType() {
         assertThat(ContentType.valueOf("text/html;charset=UTF-8").toBaseType())
-            .isEqualTo(ContentType.HTML);
+                .isEqualTo(ContentType.HTML);
         assertThat(ContentType.valueOf("text/html").toBaseType())
-            .isEqualTo(ContentType.HTML);
+                .isEqualTo(ContentType.HTML);
     }
 }

@@ -28,16 +28,20 @@ class ClassUtilTest {
     @Test
     void testGetAnnotation() {
         assertThat(ClassUtil.getAnnotation(Child.class, TestAnnotation.class))
-            .isInstanceOf(TestAnnotation.class);
+                .isInstanceOf(TestAnnotation.class);
 
         assertThat(ClassUtil.getAnnotation(Child.class, Test.class)).isNull();
     }
 
     @TestAnnotation
-    public static class Parent {}
-    public static class Child extends Parent {}
+    public static class Parent {
+    }
+
+    public static class Child extends Parent {
+    }
 
     @Target({ ElementType.TYPE })
     @Retention(RetentionPolicy.RUNTIME)
-    public static @interface TestAnnotation {}
+    public static @interface TestAnnotation {
+    }
 }

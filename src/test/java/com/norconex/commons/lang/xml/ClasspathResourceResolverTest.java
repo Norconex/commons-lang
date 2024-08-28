@@ -32,11 +32,11 @@ class ClasspathResourceResolverTest {
         var crr =
                 new ClasspathResourceResolver(ProxySettings.class);
         var input = crr.resolveResource(
-            "http://www.w3.org/2001/XMLSchema",
-            null,
-            null,
-            "MockHost.xsd",
-            "file:///com/norconex/commons/lang/xml/mock/MockProxySettings.xsd");
+                "http://www.w3.org/2001/XMLSchema",
+                null,
+                null,
+                "MockHost.xsd",
+                "file:///com/norconex/commons/lang/xml/mock/MockProxySettings.xsd");
 
         assertThat(input).isNotNull();
     }

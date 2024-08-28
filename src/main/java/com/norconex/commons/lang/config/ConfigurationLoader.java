@@ -220,8 +220,9 @@ public final class ConfigurationLoader {
     /**
      * @deprecated Use {@link ConfigurationLoader#builder()} instead.
      */
-    @Deprecated(since="3.0.0")
-    public ConfigurationLoader() {}
+    @Deprecated(since = "3.0.0")
+    public ConfigurationLoader() {
+    }
 
     /**
      * Sets a variables file. See class documentation for details.
@@ -231,7 +232,7 @@ public final class ConfigurationLoader {
      * @deprecated Use {@link ConfigurationLoaderBuilder#variablesFile(Path)}
      * instead.
      */
-    @Deprecated(since="3.0.0")
+    @Deprecated(since = "3.0.0")
     public ConfigurationLoader setVariablesFile(Path variablesFile) {
         this.variablesFile = variablesFile;
         return this;
@@ -258,7 +259,6 @@ public final class ConfigurationLoader {
         // Load from explicitly referenced properties
         VariablesFileResolver.resolve(variablesFile).forEach(context::put);
 
-
         // Load from properties matching config file name
         var file = configFile.toAbsolutePath().toString();
         var fullpath = FilenameUtils.getFullPath(file);
@@ -276,7 +276,6 @@ public final class ConfigurationLoader {
         return sw.toString();
     }
 
-
     /**
      * Loads an XML configuration file into an {@link XML} object, performing
      * variable interpolation and handling any other Velocity directives.
@@ -287,6 +286,7 @@ public final class ConfigurationLoader {
     public XML toXml(Path configFile) {
         return toXml(configFile, null);
     }
+
     /**
      * Loads an XML configuration file into an {@link XML} object, performing
      * variable interpolation and handling any other Velocity directives.
@@ -312,8 +312,9 @@ public final class ConfigurationLoader {
         } catch (Exception e) {
             throw new ConfigurationException(
                     "Cannot load configuration file: \"" + configFile + "\". "
-                  + "Probably a misconfiguration or the configuration XML "
-                  + "is not well-formed.", e);
+                            + "Probably a misconfiguration or the configuration XML "
+                            + "is not well-formed.",
+                    e);
         }
     }
 
@@ -404,8 +405,9 @@ public final class ConfigurationLoader {
         } catch (Exception e) {
             throw new ConfigurationException(
                     "Cannot load configuration file: \"" + configFile + "\". "
-                  + "Probably a misconfiguration or the configuration XML "
-                  + "is not well-formed.", e);
+                            + "Probably a misconfiguration or the configuration XML "
+                            + "is not well-formed.",
+                    e);
         }
     }
 
@@ -437,6 +439,7 @@ public final class ConfigurationLoader {
     public <T> T loadFromXML(Path configFile, ErrorHandler errorHandler) {
         return loadFromXML(configFile, null, errorHandler);
     }
+
     /**
      * Loads an XML configuration file and populates a new object
      * represented by the given class.
@@ -451,6 +454,7 @@ public final class ConfigurationLoader {
     public <T> T loadFromXML(Path configFile, Class<T> objClass) {
         return loadFromXML(configFile, objClass, null);
     }
+
     /**
      * Loads an XML configuration file and populates a new object
      * represented by the given class.
@@ -494,6 +498,7 @@ public final class ConfigurationLoader {
     public void loadFromXML(Path configFile, Object object) {
         loadFromXML(configFile, object, null);
     }
+
     /**
      * Loads an XML configuration file and populates a given object.
      * @param configFile XML configuration file

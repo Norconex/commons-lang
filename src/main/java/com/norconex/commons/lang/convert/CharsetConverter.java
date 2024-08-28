@@ -41,14 +41,15 @@ public class CharsetConverter extends AbstractConverter {
      * @since 3.0.0
      */
     public static class JsonSerializer
-            extends GenericJsonSerializer<Charset>{}
+            extends GenericJsonSerializer<Charset> {
+    }
 
     /**
      * JSON (Jackson) deserializer using this converter.
      * @since 3.0.0
      */
     public static class JsonDeserializer
-        extends GenericJsonDeserializer<Charset> {
+            extends GenericJsonDeserializer<Charset> {
         public JsonDeserializer() {
             super(Charset.class);
         }

@@ -84,7 +84,8 @@ class SystemCommandTest {
         var l = addEnvAndListener(cmd);
         cmd.execute(input);
         input.close();
-        Assertions.assertEquals(expectedOutputAsString(), fileAsString(outFile));
+        Assertions.assertEquals(expectedOutputAsString(),
+                fileAsString(outFile));
         Assertions.assertTrue(
                 l.capturedThemAll(), "Listener missed some output.");
     }
@@ -118,19 +119,22 @@ class SystemCommandTest {
         assertThat(cmd.getWorkdir()).isNull();
 
         assertThat(cmd.getEnvironmentVariables()).containsOnly(
-            entry(ExternalApp.ENV_STDOUT_BEFORE, ExternalApp.ENV_STDOUT_BEFORE),
-            entry(ExternalApp.ENV_STDOUT_AFTER, ExternalApp.ENV_STDOUT_AFTER),
-            entry(ExternalApp.ENV_STDERR_BEFORE, ExternalApp.ENV_STDERR_BEFORE),
-            entry(ExternalApp.ENV_STDERR_AFTER, ExternalApp.ENV_STDERR_AFTER)
-        );
+                entry(ExternalApp.ENV_STDOUT_BEFORE,
+                        ExternalApp.ENV_STDOUT_BEFORE),
+                entry(ExternalApp.ENV_STDOUT_AFTER,
+                        ExternalApp.ENV_STDOUT_AFTER),
+                entry(ExternalApp.ENV_STDERR_BEFORE,
+                        ExternalApp.ENV_STDERR_BEFORE),
+                entry(ExternalApp.ENV_STDERR_AFTER,
+                        ExternalApp.ENV_STDERR_AFTER));
 
         assertThat(cmd.isRunning()).isFalse();
         assertDoesNotThrow(() -> cmd.abort());
 
         assertThat(SystemCommand.escape("ha \"ha\" 'ha'"))
-            .containsExactly("ha", "ha", "ha");
+                .containsExactly("ha", "ha", "ha");
         assertThat(SystemCommand.escape("ha ha", "\"ha\"", "'ha'"))
-            .containsExactly("\"ha ha\"", "\"ha\"", "'ha'");
+                .containsExactly("\"ha ha\"", "\"ha\"", "'ha'");
     }
 
     private File inputAsFile() throws IOException {
@@ -139,16 +143,20 @@ class SystemCommandTest {
                 getClass().getResourceAsStream(IN_FILE_PATH), inFile);
         return inFile;
     }
+
     private InputStream inputAsStream() {
         return getClass().getResourceAsStream(IN_FILE_PATH);
     }
+
     private String fileAsString(File file) throws IOException {
         return FileUtils.readFileToString(file, StandardCharsets.UTF_8).trim();
     }
+
     private String expectedOutputAsString() throws IOException {
         return IOUtils.toString(getClass().getResourceAsStream(
                 EXPECTED_OUT_FILE_PATH), StandardCharsets.UTF_8);
     }
+
     private File newTempFile() throws IOException {
         var file = Files.createTempFile(
                 tempFolder, "SystemCommandTest", null).toFile();
@@ -201,9 +209,11 @@ class SystemCommandTest {
                 }
             }
         }
+
         public boolean capturedThemAll() {
             return stdoutBefore && stdoutAfter && stderrBefore && stderrAfter;
         }
+
         public String getStdoutContent() {
             return b.toString();
         }

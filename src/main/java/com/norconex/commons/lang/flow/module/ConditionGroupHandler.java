@@ -58,7 +58,7 @@ class ConditionGroupHandler<T> implements StatementHandler<Predicate<T>> {
     }
 
     @SuppressWarnings("unchecked")
-    private void readObject(FlowDeserContext ctx,  Predicates<T> preds)
+    private void readObject(FlowDeserContext ctx, Predicates<T> preds)
             throws IOException {
         var p = ctx.getParser();
         FlowUtil.logOpen(ctx, p.currentName());

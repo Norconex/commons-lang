@@ -36,9 +36,9 @@ class YearMonthDayTest {
         Date date2000StartOfDay = new Date(946684800000L); //2000-01-01T00:00:00
 
         assertThat(ymd2000)
-            .isEqualTo(new YearMonthDay(2000))
-            .isEqualTo(new YearMonthDay(2000, 1))
-            .isEqualTo(new YearMonthDay("2000-01-01"));
+                .isEqualTo(new YearMonthDay(2000))
+                .isEqualTo(new YearMonthDay(2000, 1))
+                .isEqualTo(new YearMonthDay("2000-01-01"));
         assertThat(ymd2000.isBefore(new YearMonthDay(2000))).isFalse();
         assertThat(ymd2000.isBefore(new YearMonthDay(1999, 12, 3))).isFalse();
         assertThat(ymd2000.isBefore(new YearMonthDay(2000, 1, 2))).isTrue();
@@ -57,9 +57,9 @@ class YearMonthDayTest {
                 DateUtils.addDays(date2000StartOfDay, 1));
 
         assertThat(ymd2000.addMonths(15))
-            .isEqualTo(new YearMonthDay(2001, 4, 1));
+                .isEqualTo(new YearMonthDay(2001, 4, 1));
         assertThat(ymd2000.addYears(-99))
-            .isEqualTo(new YearMonthDay(1901, 1, 1));
+                .isEqualTo(new YearMonthDay(1901, 1, 1));
 
         assertThat(ymd2000.compareTo(null)).isEqualTo(-1);
 
@@ -67,17 +67,18 @@ class YearMonthDayTest {
 
         assertThat(ymd2000.toLocalDate()).isEqualTo(LocalDate.of(2000, 1, 1));
         assertThat(ymd2000)
-            .isEqualTo(new YearMonthDay(LocalDate.of(2000, 1, 1)));
+                .isEqualTo(new YearMonthDay(LocalDate.of(2000, 1, 1)));
     }
+
     @Test
     void testErrors() {
-        assertThatExceptionOfType(NullPointerException.class).isThrownBy(() ->
-                new YearMonthDay((Date) null));
-        assertThatExceptionOfType(NullPointerException.class).isThrownBy(() ->
-                new YearMonthDay((Calendar) null));
-        assertThatExceptionOfType(NullPointerException.class).isThrownBy(() ->
-                new YearMonthDay((String) null));
-        assertThatExceptionOfType(NullPointerException.class).isThrownBy(() ->
-                new YearMonthDay((LocalDate) null));
+        assertThatExceptionOfType(NullPointerException.class)
+                .isThrownBy(() -> new YearMonthDay((Date) null));
+        assertThatExceptionOfType(NullPointerException.class)
+                .isThrownBy(() -> new YearMonthDay((Calendar) null));
+        assertThatExceptionOfType(NullPointerException.class)
+                .isThrownBy(() -> new YearMonthDay((String) null));
+        assertThatExceptionOfType(NullPointerException.class)
+                .isThrownBy(() -> new YearMonthDay((LocalDate) null));
     }
 }

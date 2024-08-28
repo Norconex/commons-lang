@@ -65,6 +65,7 @@ public class PredicatedConsumer<T> implements Consumer<T> {
             Predicate<T> predicate, Consumer<T> consumer) {
         this(predicate, consumer, false);
     }
+
     /**
      * Constructor.
      * @param predicate predicate
@@ -100,6 +101,7 @@ public class PredicatedConsumer<T> implements Consumer<T> {
     public Predicate<T> getPredicate() {
         return predicate;
     }
+
     /**
      * Gets the "then" consumer.
      * @return consumer
@@ -138,6 +140,7 @@ public class PredicatedConsumer<T> implements Consumer<T> {
             Consumer<T> thenConsumer) {
         return ifTrue(condition, thenConsumer, null);
     }
+
     /**
      * If condition is <code>true</code>, then execute the "then" consumer,
      * else,execute the "else" consumer.
@@ -171,6 +174,7 @@ public class PredicatedConsumer<T> implements Consumer<T> {
             Consumer<T> thenConsumer) {
         return ifFalse(condition, thenConsumer, null);
     }
+
     /**
      * If condition is <code>false</code>, then execute the "then" consumer,
      * else, execute the "else" consumer.

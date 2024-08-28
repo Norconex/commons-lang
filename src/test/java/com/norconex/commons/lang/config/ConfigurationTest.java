@@ -26,14 +26,15 @@ class ConfigurationTest {
     @Test
     void testPreserveWhiteSpace() {
         var xml = XML.of(
-                  "<test>"
-                + "<tagBlank>   </tagBlank>"
-                + "<tagPreserve xml:space=\"preserve\">   </tagPreserve>"
-                + "<tagNested>"
-                + " <nestedBlank>   </nestedBlank>"
-                + " <nestedPreserve xml:space=\"preserve\">   </nestedPreserve>"
-                + "</tagNested>"
-                + "</test>").create();
+                "<test>"
+                        + "<tagBlank>   </tagBlank>"
+                        + "<tagPreserve xml:space=\"preserve\">   </tagPreserve>"
+                        + "<tagNested>"
+                        + " <nestedBlank>   </nestedBlank>"
+                        + " <nestedPreserve xml:space=\"preserve\">   </nestedPreserve>"
+                        + "</tagNested>"
+                        + "</test>")
+                .create();
 
         Assertions.assertNull(xml.getString("tagNotPresent"));
         Assertions.assertEquals("", xml.getString("tagBlank"));

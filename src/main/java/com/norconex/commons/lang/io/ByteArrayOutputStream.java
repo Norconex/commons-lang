@@ -86,7 +86,7 @@ public class ByteArrayOutputStream extends OutputStream {
     public ByteArrayOutputStream(int size) {
         if (size < 0) {
             throw new IllegalArgumentException(
-                "Negative initial size: " + size);
+                    "Negative initial size: " + size);
         }
         synchronized (this) {
             bufferCapacity = size;
@@ -399,6 +399,7 @@ public class ByteArrayOutputStream extends OutputStream {
     public String toString(String enc) throws UnsupportedEncodingException {
         return new String(toByteArray(), enc);
     }
+
     /**
      * Gets the current contents of this byte stream as a string
      * using the specified encoding.

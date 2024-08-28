@@ -37,7 +37,7 @@ import lombok.extern.slf4j.Slf4j;
  * @since 1.5.0
  * @deprecated Use {@link Predicates} or {@link Predicate} chaining instead
  */
-@Deprecated(since="3.0.0")
+@Deprecated(since = "3.0.0")
 @Slf4j
 public class Pipeline<T> implements IPipelineStage<T> { // NOSONAR
 
@@ -46,7 +46,9 @@ public class Pipeline<T> implements IPipelineStage<T> { // NOSONAR
     /**
      * Constructor.
      */
-    public Pipeline() {}
+    public Pipeline() {
+    }
+
     /**
      * Creates a new pipeline with the specified stages.
      * @param stages the stages to execute
@@ -72,6 +74,7 @@ public class Pipeline<T> implements IPipelineStage<T> { // NOSONAR
         this.stages.addAll(stages);
         return this;
     }
+
     /**
      * Adds a stage to the pipeline.
      * @param stage pipeline stage to add

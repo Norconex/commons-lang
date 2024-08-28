@@ -28,26 +28,26 @@ class OperatorTest {
     @Test
     void testOf() {
         assertThat(of("gt", "GT", ">"))
-            .isNotEmpty()
-            .allMatch(op -> Operator.GREATER_THAN == op);
+                .isNotEmpty()
+                .allMatch(op -> Operator.GREATER_THAN == op);
         assertThat(of("ge", "GE", ">=", "=>"))
-            .isNotEmpty()
-            .allMatch(op -> Operator.GREATER_EQUAL == op);
+                .isNotEmpty()
+                .allMatch(op -> Operator.GREATER_EQUAL == op);
         assertThat(of("eq", "EQ", "is", "IS", "=", "=="))
-            .isNotEmpty()
-            .allMatch(op -> Operator.EQUALS == op);
+                .isNotEmpty()
+                .allMatch(op -> Operator.EQUALS == op);
         assertThat(of("le", "LE", "<=", "=<"))
-            .isNotEmpty()
-            .allMatch(op -> Operator.LOWER_EQUAL == op);
+                .isNotEmpty()
+                .allMatch(op -> Operator.LOWER_EQUAL == op);
         assertThat(of("lt", "LT", "<"))
-            .isNotEmpty()
-            .allMatch(op -> Operator.LOWER_THAN == op);
+                .isNotEmpty()
+                .allMatch(op -> Operator.LOWER_THAN == op);
         assertThat(of((String) null))
-            .isNotEmpty()
-            .allMatch(Objects::isNull);
+                .isNotEmpty()
+                .allMatch(Objects::isNull);
         assertThat(of("badOne"))
-            .isNotEmpty()
-            .allMatch(Objects::isNull);
+                .isNotEmpty()
+                .allMatch(Objects::isNull);
     }
 
     @Test

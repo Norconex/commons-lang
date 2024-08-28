@@ -46,8 +46,8 @@ class PredicatesTest {
         assertThat(predicates.test("")).isFalse();
 
         predicates = new Predicates<>(Arrays.asList(
-            s -> false,
-            s -> false));
+                s -> false,
+                s -> false));
         assertThat(predicates.test("")).isFalse();
 
         assertThat((List<Predicate<Object>>) new Predicates<Object>(
@@ -65,7 +65,7 @@ class PredicatesTest {
         assertThat(predicates.test("")).isTrue();
 
         predicates = new Predicates<>(Arrays.asList(
-            s -> false, s -> false), true);
+                s -> false, s -> false), true);
         assertThat(predicates.test("")).isFalse();
         assertThat(predicates.isAny()).isTrue();
     }

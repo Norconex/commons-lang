@@ -62,7 +62,8 @@ public final class DurationFormatter {
      * Creates a duration with the default locale and full words for
      * duration units.
      */
-    public DurationFormatter() {} //NOSONAR Exists for javadoc
+    public DurationFormatter() {  //NOSONAR Exists for javadoc
+    }
 
     /**
      * Creates a copy if this formatter with the given locale.  Default
@@ -75,6 +76,7 @@ public final class DurationFormatter {
         df.locale = locale;
         return df;
     }
+
     public Locale getLocale() {
         return locale;
     }
@@ -89,6 +91,7 @@ public final class DurationFormatter {
         df.unitPrecision = unitPrecision;
         return df;
     }
+
     public int getUnitPrecision() {
         return unitPrecision;
     }
@@ -104,6 +107,7 @@ public final class DurationFormatter {
         df.numberFormat = numberFormat;
         return df;
     }
+
     public NumberFormat getNumberFormat() {
         return numberFormat;
     }
@@ -118,6 +122,7 @@ public final class DurationFormatter {
         df.highestUnit = highestUnit;
         return df;
     }
+
     public DurationUnit getHighestUnit() {
         return highestUnit;
     }
@@ -132,6 +137,7 @@ public final class DurationFormatter {
         df.lowestUnit = lowestUnit;
         return df;
     }
+
     public DurationUnit getLowestUnit() {
         return lowestUnit;
     }
@@ -147,6 +153,7 @@ public final class DurationFormatter {
         df.unitFormatter = unitFormatter;
         return df;
     }
+
     public DurationUnitFormatter getUnitFormatter() {
         return unitFormatter;
     }
@@ -165,6 +172,7 @@ public final class DurationFormatter {
         df.innerSeparator = innerSeparator;
         return df;
     }
+
     public String getInnerSeparator() {
         return innerSeparator;
     }
@@ -184,6 +192,7 @@ public final class DurationFormatter {
         df.outerSeparator = outerSeparator;
         return df;
     }
+
     public String getOuterSeparator() {
         return outerSeparator;
     }
@@ -205,6 +214,7 @@ public final class DurationFormatter {
         df.outerLastSeparator = outerLastSeparator;
         return df;
     }
+
     public String getOuterLastSeparator() {
         return outerLastSeparator;
     }
@@ -322,7 +332,7 @@ public final class DurationFormatter {
     private DurationFormatter copy() {
         DurationFormatter df = new DurationFormatter();
         df.locale = locale;
-        df.unitPrecision= unitPrecision;
+        df.unitPrecision = unitPrecision;
         df.highestUnit = highestUnit;
         df.lowestUnit = lowestUnit;
         df.unitFormatter = unitFormatter;

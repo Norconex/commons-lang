@@ -100,8 +100,8 @@ public class CachedInputStream extends InputStream implements CachedStream {
 
     private final Path cacheDirectory;
 
-    private int count;        // total number of bytes read so far
-    private int pos = 0;      // byte position we are in
+    private int count; // total number of bytes read so far
+    private int pos = 0; // byte position we are in
     private int markpos = -1; // position we want to go back to
 
     // undefined until a full read was performed
@@ -146,6 +146,7 @@ public class CachedInputStream extends InputStream implements CachedStream {
             length = memCache.length;
         }
     }
+
     /**
      * Creates an input stream with an existing file cache.
      * @param factory stream factory
@@ -196,6 +197,7 @@ public class CachedInputStream extends InputStream implements CachedStream {
         return Optional.ofNullable(streamFactory)
                 .orElseGet(CachedStreamFactory::new).newInputStream(is);
     }
+
     /**
      * Casts to <code>CachedInputSteam</code> if argument is already of that
      * type, else create a new <code>CachedInputStream</code> from the input
@@ -216,6 +218,7 @@ public class CachedInputStream extends InputStream implements CachedStream {
     public boolean markSupported() {
         return true;
     }
+
     /**
      * The read limit value is ignored. Limit is always unlimited.
      * Supported since 1.6.0.
@@ -225,6 +228,7 @@ public class CachedInputStream extends InputStream implements CachedStream {
     public synchronized void mark(int readlimit) {
         markpos = pos;
     }
+
     /**
      * If no mark has previously been set, it resets to the beginning.
      * Supported since 1.6.0.
@@ -374,8 +378,6 @@ public class CachedInputStream extends InputStream implements CachedStream {
         }
         return read;
     }
-
-
 
     private int realRead(byte[] b, int off, int len) throws IOException {
         if (needNewStream) {
@@ -574,6 +576,7 @@ public class CachedInputStream extends InputStream implements CachedStream {
     public CachedInputStream newInputStream(Path file) {
         return factory.newInputStream(file);
     }
+
     /**
      * Creates a new {@link CachedInputStream} using the same factory settings
      * that were used to create this instance.
@@ -617,7 +620,10 @@ public class CachedInputStream extends InputStream implements CachedStream {
 
     private void quietClose(Closeable closable) {
         if (closable != null) {
-            try { closable.close(); } catch (IOException e) { /*NOOP*/ }
+            try {
+                closable.close();
+            } catch (IOException e) {
+                /*NOOP*/ }
         }
     }
 }

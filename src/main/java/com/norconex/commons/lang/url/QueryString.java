@@ -28,7 +28,6 @@ import com.norconex.commons.lang.map.Properties;
 
 import lombok.EqualsAndHashCode;
 
-
 /**
  * Provides utility methods for getting and setting attributes on
  * a URL query string.
@@ -57,6 +56,7 @@ public class QueryString extends Properties {
     public QueryString(URL urlWithQueryString) {
         this(urlWithQueryString.toString(), null);
     }
+
     /**
      * Constructor.
      * @param urlWithQueryString a URL from which to extract a query string.
@@ -65,6 +65,7 @@ public class QueryString extends Properties {
     public QueryString(URL urlWithQueryString, String encoding) {
         this(urlWithQueryString.toString(), encoding);
     }
+
     /**
      * Constructor.   Default URL character encoding is UTF-8.
      * It is possible to only supply a query string as opposed to an
@@ -76,6 +77,7 @@ public class QueryString extends Properties {
     public QueryString(String urlWithQueryString) {
         this(urlWithQueryString, null);
     }
+
     /**
      * Constructor.
      * It is possible to only supply a query string as opposed to an
@@ -114,11 +116,12 @@ public class QueryString extends Properties {
             }
             try {
                 add(URLDecoder.decode(key, this.encoding),
-                          URLDecoder.decode(value, this.encoding));
+                        URLDecoder.decode(value, this.encoding));
             } catch (UnsupportedEncodingException e) {
                 throw new URLException(
                         "Cannot URL-decode query string (key="
-                                + key + "; value=" + value + ").", e);
+                                + key + "; value=" + value + ").",
+                        e);
             }
         }
     }
@@ -154,7 +157,8 @@ public class QueryString extends Properties {
                 } catch (UnsupportedEncodingException e) {
                     throw new URLException(
                             "Cannot URL-encode query string (key="
-                                    + key + "; value=" + value + ").", e);
+                                    + key + "; value=" + value + ").",
+                            e);
                 }
             }
         }
@@ -174,6 +178,7 @@ public class QueryString extends Properties {
         }
         return StringUtils.substringBefore(url, "?") + toString();
     }
+
     /**
      * Apply this url QueryString on the given URL. If a query string already
      * exists, it is replaced by this one.

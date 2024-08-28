@@ -29,10 +29,9 @@ class PropertyMatchersTest {
     void testPropertyMatchers() {
 
         Properties sampleProps = new Properties(MapUtil.toMap(
-            "a", asList("1", "2", "3"),
-            "b", asList("4", "5", "6"),
-            "abc", asList("7", "8", "9")
-        ));
+                "a", asList("1", "2", "3"),
+                "b", asList("4", "5", "6"),
+                "abc", asList("7", "8", "9")));
 
         PropertyMatcher pm1 = new PropertyMatcher(
                 TextMatcher.regex("a|b"),
@@ -44,11 +43,9 @@ class PropertyMatchersTest {
         assertThat(pms.matches(sampleProps)).isTrue();
         assertThat(pms.test(sampleProps)).isTrue();
         assertThat(pms.match(sampleProps)).isEqualTo(
-            new Properties(MapUtil.toMap(
-                "b", asList("5"),
-                "abc", asList("7", "8", "9")
-            ))
-        );
+                new Properties(MapUtil.toMap(
+                        "b", asList("5"),
+                        "abc", asList("7", "8", "9"))));
 
         assertThat(pms.addAll((PropertyMatcher[]) null)).isFalse();
         assertThat(pms.addAll((Collection<PropertyMatcher>) null)).isFalse();
@@ -63,12 +60,10 @@ class PropertyMatchersTest {
         assertThat(pms.replace(sampleProps, "0")).isEqualTo(
                 new Properties(MapUtil.toMap("b", asList("5"))));
         assertThat(sampleProps).isEqualTo(
-            new Properties(MapUtil.toMap(
-                "a", asList("1", "2", "3"),
-                "b", asList("4", "0", "6"),
-                "abc", asList("7", "8", "9")
-            ))
-        );
+                new Properties(MapUtil.toMap(
+                        "a", asList("1", "2", "3"),
+                        "b", asList("4", "0", "6"),
+                        "abc", asList("7", "8", "9"))));
 
         assertThat(pms.replace(null, "0")).isEmpty();
     }

@@ -35,12 +35,12 @@ class SLF4JUtilTest {
         });
 
         assertThat(SLF4JUtil.isEnabled(logger, Level.DEBUG))
-            .isEqualTo(logger.isDebugEnabled());
+                .isEqualTo(logger.isDebugEnabled());
 
         assertThat(SLF4JUtil.fromJavaLevel(java.util.logging.Level.WARNING))
-            .isEqualTo(Level.WARN);
+                .isEqualTo(Level.WARN);
 
         assertThat(SLF4JUtil.toJavaLevel(Level.WARN))
-            .isEqualTo(java.util.logging.Level.WARNING);
+                .isEqualTo(java.util.logging.Level.WARNING);
     }
 }

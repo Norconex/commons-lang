@@ -62,32 +62,38 @@ public class Predicates<T> extends ArrayList<Predicate<T>>
     public Predicates() {
         this(false);
     }
+
     public Predicates(boolean any) {
         this.any = any;
     }
+
     public Predicates(int initialCapacity) {
         this(initialCapacity, false);
     }
+
     public Predicates(int initialCapacity, boolean any) {
         super(initialCapacity);
         this.any = any;
     }
+
     public Predicates(Collection<Predicate<T>> predicates) {
         this(predicates, false);
     }
+
     public Predicates(Collection<Predicate<T>> predicates, boolean any) {
         super(predicates == null
                 ? Collections.emptyList()
                 : predicates
-                    .stream()
-                    .filter(Objects::nonNull)
-                    .toList());
+                        .stream()
+                        .filter(Objects::nonNull)
+                        .toList());
         this.any = any;
     }
 
     public boolean isAny() {
         return any;
     }
+
     @Override
     public boolean test(T t) {
         for (Predicate<T> predicate : this) {

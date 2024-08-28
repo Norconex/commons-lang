@@ -53,18 +53,18 @@ class URLStreamerTest {
         Credentials creds = new Credentials("joe", "dalton");
 
         assertThat(toString(URLStreamer.stream(URLSTR, creds)))
-            .isEqualTo("SUCCESS");
+                .isEqualTo("SUCCESS");
         assertThat(toString(URLStreamer.stream(URL, creds)))
-            .isEqualTo("SUCCESS");
+                .isEqualTo("SUCCESS");
         assertThat(toString(URLStreamer.stream(
                 HTTPURL, creds))).isEqualTo("SUCCESS");
 
         HttpHost proxy = new HttpHost("blah", 0);
 
         assertThat(toString(URLStreamer.stream(URLSTR, creds, proxy)))
-            .isEqualTo("SUCCESS");
+                .isEqualTo("SUCCESS");
         assertThat(toString(URLStreamer.stream(URL, creds, proxy)))
-            .isEqualTo("SUCCESS");
+                .isEqualTo("SUCCESS");
         assertThat(toString(URLStreamer.stream(
                 HTTPURL, creds, proxy))).isEqualTo("SUCCESS");
 
@@ -88,18 +88,18 @@ class URLStreamerTest {
         Credentials creds = new Credentials("joe", "dalton");
 
         assertThat(URLStreamer.streamToString(URLSTR, creds))
-            .isEqualTo("SUCCESS");
+                .isEqualTo("SUCCESS");
         assertThat(URLStreamer.streamToString(URL, creds))
-            .isEqualTo("SUCCESS");
+                .isEqualTo("SUCCESS");
         assertThat(URLStreamer.streamToString(
                 HTTPURL, creds)).isEqualTo("SUCCESS");
 
         HttpHost proxy = new HttpHost("blah", 0);
 
         assertThat(URLStreamer.streamToString(URLSTR, creds, proxy))
-            .isEqualTo("SUCCESS");
+                .isEqualTo("SUCCESS");
         assertThat(URLStreamer.streamToString(URL, creds, proxy))
-            .isEqualTo("SUCCESS");
+                .isEqualTo("SUCCESS");
         assertThat(URLStreamer.streamToString(
                 HTTPURL, creds, proxy)).isEqualTo("SUCCESS");
 

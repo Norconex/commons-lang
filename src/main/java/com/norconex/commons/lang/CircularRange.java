@@ -60,12 +60,14 @@ public final class CircularRange<T> implements Serializable {
         if (circleStart == null || circleEnd == null) {
             throw new IllegalArgumentException(String.format(
                     "Circular boundaries must not be null: circleStart=%s"
-                            + ", circleEnd=%s", circleStart, circleEnd));
+                            + ", circleEnd=%s",
+                    circleStart, circleEnd));
         }
         if (minimum == null || maximum == null) {
             throw new IllegalArgumentException(String.format(
                     "Elements in a range must not be null: minimum=%s"
-                            + ", maximum=%s", minimum, maximum));
+                            + ", maximum=%s",
+                    minimum, maximum));
         }
         if (comp == null) {
             comparator = ComparableComparator.INSTANCE;
@@ -76,14 +78,14 @@ public final class CircularRange<T> implements Serializable {
                 || !inNormalRange(maximum, circleStart, circleEnd)) {
             throw new IllegalArgumentException(String.format(
                     "Elements in a range must fit between circular start/end: "
-                  + "circleStart=%s, circleEnd=%s, minimum=%s, maximum=%s",
-                          circleStart, circleEnd, minimum, maximum));
+                            + "circleStart=%s, circleEnd=%s, minimum=%s, maximum=%s",
+                    circleStart, circleEnd, minimum, maximum));
         }
         if (compare(circleEnd, circleStart) < 0) {
             throw new IllegalArgumentException(String.format(
                     "Circular start must be smaller than or equal to circlar "
-                    + "end: circleStart=%s, circleEnd=%s",
-                            circleStart, circleEnd));
+                            + "end: circleStart=%s, circleEnd=%s",
+                    circleStart, circleEnd));
         }
         this.circleStart = circleStart;
         this.circleEnd = circleEnd;
@@ -207,14 +209,10 @@ public final class CircularRange<T> implements Serializable {
      */
     @JsonCreator
     public static <T extends Comparable<T>> CircularRange<T> between(
-            @JsonProperty("start")
-            final T circleStartInclusive,
-            @JsonProperty("end")
-            final T circleEndInclusive,
-            @JsonProperty("minimum")
-            final T rangeFromInclusive,
-            @JsonProperty("maximum")
-            final T rangeToInclusive) {
+            @JsonProperty("start") final T circleStartInclusive,
+            @JsonProperty("end") final T circleEndInclusive,
+            @JsonProperty("minimum") final T rangeFromInclusive,
+            @JsonProperty("maximum") final T rangeToInclusive) {
         return between(circleStartInclusive, circleEndInclusive,
                 rangeFromInclusive, rangeToInclusive, null);
     }
@@ -273,6 +271,7 @@ public final class CircularRange<T> implements Serializable {
                 circleStartInclusive, circleEndInclusive,
                 getMinimum(), getMaximum(), getComparator());
     }
+
     /**
      * <p>Obtains a new range with the specified minimum and maximum range
      * values (both inclusive). The circular start and end are the same.</p>
@@ -301,6 +300,7 @@ public final class CircularRange<T> implements Serializable {
     public T getMinimum() {
         return minimum;
     }
+
     /**
      * <p>Gets the maximum value in this range.</p>
      * @return the maximum value in this range, not null
@@ -309,6 +309,7 @@ public final class CircularRange<T> implements Serializable {
     public T getMaximum() {
         return maximum;
     }
+
     /**
      * <p>Gets the start value of this circular range.</p>
      * @return the start value of this circular range, not null
@@ -317,6 +318,7 @@ public final class CircularRange<T> implements Serializable {
     public T getCircleStart() {
         return circleStart;
     }
+
     /**
      * <p>Gets the end value of this circular range.</p>
      * @return the end value of this circular range, not null
@@ -325,6 +327,7 @@ public final class CircularRange<T> implements Serializable {
     public T getCircleEnd() {
         return circleEnd;
     }
+
     /**
      * <p>Gets the comparator being used to determine if objects are
      * within the range.</p>
@@ -449,8 +452,9 @@ public final class CircularRange<T> implements Serializable {
         if (isRolling() && !otherRange.isRolling()) {
             return (inNormalRange(otherRange.minimum, minimum, circleEnd)
                     && inNormalRange(otherRange.maximum, minimum, circleEnd))
-                || (inNormalRange(otherRange.minimum, circleStart, maximum)
-                    && inNormalRange(otherRange.maximum, circleStart, maximum));
+                    || (inNormalRange(otherRange.minimum, circleStart, maximum)
+                            && inNormalRange(otherRange.maximum, circleStart,
+                                    maximum));
         }
 
         // Normal vs rolling is always false
@@ -475,13 +479,14 @@ public final class CircularRange<T> implements Serializable {
             return false;
         }
         return otherRange.contains(minimum)
-            || otherRange.contains(maximum)
-            || contains(otherRange.minimum);
+                || otherRange.contains(maximum)
+                || contains(otherRange.minimum);
     }
 
     private int compare(T o1, T o2) {
         return comparator.compare(o1, o2);
     }
+
     private boolean inNormalRange(T element, T min, T max) {
         return compare(element, min) > -1 && compare(element, max) < 1;
     }
@@ -498,7 +503,7 @@ public final class CircularRange<T> implements Serializable {
     public String toString() {
         if (toString == null) {
             toString = "[" + minimum + ".." + maximum
-                     + "](" + circleStart + ".." + circleEnd + ")";
+                    + "](" + circleStart + ".." + circleEnd + ")";
         }
         return toString;
     }
@@ -528,9 +533,10 @@ public final class CircularRange<T> implements Serializable {
     }
 
     //-----------------------------------------------------------------------
-    @SuppressWarnings({"rawtypes", "unchecked"})
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     private enum ComparableComparator implements Comparator { //NOSONAR
         INSTANCE;
+
         /**
          * Comparable based compare implementation.
          *

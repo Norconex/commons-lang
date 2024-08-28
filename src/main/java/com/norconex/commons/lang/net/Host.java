@@ -37,9 +37,10 @@ import lombok.EqualsAndHashCode;
  */
 @EqualsAndHashCode
 @JsonAutoDetect(
-        fieldVisibility=Visibility.ANY,
-        getterVisibility=Visibility.NONE,
-        isGetterVisibility=Visibility.NONE)
+    fieldVisibility = Visibility.ANY,
+    getterVisibility = Visibility.NONE,
+    isGetterVisibility = Visibility.NONE
+)
 public final class Host implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -54,9 +55,11 @@ public final class Host implements Serializable {
         this.name = name;
         this.port = port;
     }
+
     public String getName() {
         return name;
     }
+
     public int getPort() {
         return port;
     }
@@ -68,6 +71,7 @@ public final class Host implements Serializable {
     public Host withName(String name) {
         return new Host(name, getPort());
     }
+
     public Host withPort(int port) {
         return new Host(getName(), port);
     }

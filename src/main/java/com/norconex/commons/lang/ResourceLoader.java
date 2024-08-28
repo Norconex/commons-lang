@@ -66,6 +66,7 @@ public final class ResourceLoader {
         return clazz.getResourceAsStream(
                 clazz.getSimpleName() + suffix);
     }
+
     /**
      * Gets a UTF-8 resource from class loader as a reader. The resource is
      * relative to the given class, with the same name as the class, but
@@ -85,6 +86,7 @@ public final class ResourceLoader {
         }
         return new InputStreamReader(is, StandardCharsets.UTF_8);
     }
+
     /**
      * Gets a UTF-8 a resource from class loader as a string. The resource is
      * relative to the given class, with the same name as the class, but
@@ -119,6 +121,7 @@ public final class ResourceLoader {
     public static InputStream getXmlStream(Class<?> clazz) {
         return getStream(clazz, XML);
     }
+
     /**
      * Gets a UTF-8 reader from resource matching class name with ".xml" suffix.
      * @param clazz the class to load related resource
@@ -127,6 +130,7 @@ public final class ResourceLoader {
     public static Reader getXmlReader(Class<?> clazz) {
         return getReader(clazz, XML);
     }
+
     /**
      * Gets a UTF-8 string from resource matching class name with ".xml" suffix.
      * @param clazz the class to load related resource
@@ -135,6 +139,7 @@ public final class ResourceLoader {
     public static String getXmlString(Class<?> clazz) {
         return getString(clazz, XML);
     }
+
     /**
      * Gets a stream from a resource matching class name with ".txt" suffix.
      * @param clazz the class to load related resource
@@ -143,6 +148,7 @@ public final class ResourceLoader {
     public static InputStream getTxtStream(Class<?> clazz) {
         return getStream(clazz, TXT);
     }
+
     /**
      * Gets a UTF-8 reader from resource matching class name with ".txt" suffix.
      * @param clazz the class to load related resource
@@ -151,6 +157,7 @@ public final class ResourceLoader {
     public static Reader getTxtReader(Class<?> clazz) {
         return getReader(clazz, TXT);
     }
+
     /**
      * Gets a UTF-8 string from resource matching class name with ".txt" suffix.
      * @param clazz the class to load related resource
@@ -159,6 +166,7 @@ public final class ResourceLoader {
     public static String getTxtString(Class<?> clazz) {
         return getString(clazz, TXT);
     }
+
     /**
      * Gets a stream from a resource matching class name with ".html" suffix.
      * @param clazz the class to load related resource
@@ -167,6 +175,7 @@ public final class ResourceLoader {
     public static InputStream getHtmlStream(Class<?> clazz) {
         return getStream(clazz, HTML);
     }
+
     /**
      * Gets a UTF-8 reader from resource matching class name with ".html"
      * suffix.
@@ -176,6 +185,7 @@ public final class ResourceLoader {
     public static Reader getHtmlReader(Class<?> clazz) {
         return getReader(clazz, HTML);
     }
+
     /**
      * Gets a UTF-8 string from resource matching class name with ".html"
      * suffix.
@@ -185,6 +195,7 @@ public final class ResourceLoader {
     public static String getHtmlString(Class<?> clazz) {
         return getString(clazz, HTML);
     }
+
     /**
      * Gets a stream from a resource matching class name with ".json" suffix.
      * @param clazz the class to load related resource
@@ -193,6 +204,7 @@ public final class ResourceLoader {
     public static InputStream getJsonStream(Class<?> clazz) {
         return getStream(clazz, JSON);
     }
+
     /**
      * Gets a UTF-8 reader from resource matching class name with ".json"
      * suffix.
@@ -202,6 +214,7 @@ public final class ResourceLoader {
     public static Reader getJsonReader(Class<?> clazz) {
         return getReader(clazz, JSON);
     }
+
     /**
      * Gets a UTF-8 string from resource matching class name with ".json"
      * suffix.

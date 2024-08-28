@@ -53,8 +53,7 @@ class TagletTest {
     	      attr="xyz">
     	    123
     	  </b>
-    	</a>"""
-    );
+    	</a>""");
 
     @TempDir
     static Path tempDir;
@@ -69,8 +68,8 @@ class TagletTest {
         var classAsPath = MockJavadoc.class.getName().replace('.', '/');
 
         var javadocDir =
-            tempDir.toString();
-            //"./target/temp-javadocs";
+                tempDir.toString();
+        //"./target/temp-javadocs";
 
         var src = "./src/test/java/" + classAsPath + ".java";
         ToolProvider.getSystemDocumentationTool().run(null, null, null,
@@ -107,7 +106,7 @@ class TagletTest {
     void testXML() {
         var expected =
                 "<pre><code class=\"language-xml\">\n"
-              + TEST_XML + "</code></pre>";
+                        + TEST_XML + "</code></pre>";
         assertEquals(expected, methodJavadocs.get("xml"));
     }
 
@@ -115,11 +114,10 @@ class TagletTest {
     void testXMLNoParent() {
         var expected =
                 "<pre><code class=\"language-xml\">\n"
-              + escapeHtml4(
-                      "<a>123</a>\n"
-                    + "<b>456</b>"
-                )
-              + "</code></pre>";
+                        + escapeHtml4(
+                                "<a>123</a>\n"
+                                        + "<b>456</b>")
+                        + "</code></pre>";
         assertEquals(expected, methodJavadocs.get("xmlNoParent"));
     }
 
@@ -127,11 +125,11 @@ class TagletTest {
     void testXMLUsage() {
         var expected =
                 "<h3 id=\"nx-xml-usage-heading\">"
-                  + "XML configuration usage:"
-              + "</h3>\n\n"
-              + "<pre><code id=\"nx-xml-usage\" class=\"language-xml\">\n"
-              + TEST_XML
-              + "</code></pre>";
+                        + "XML configuration usage:"
+                        + "</h3>\n\n"
+                        + "<pre><code id=\"nx-xml-usage\" class=\"language-xml\">\n"
+                        + TEST_XML
+                        + "</code></pre>";
         assertEquals(expected, methodJavadocs.get("xmlUsage"));
     }
 
@@ -139,11 +137,11 @@ class TagletTest {
     void testXMLExample() {
         var expected =
                 "<h4 id=\"nx-xml-example-heading\">"
-                  + "XML usage example:"
-              + "</h4>\n\n"
-              + "<pre><code id=\"nx-xml-example\" class=\"language-xml\">\n"
-              + TEST_XML
-              + "</code></pre>";
+                        + "XML usage example:"
+                        + "</h4>\n\n"
+                        + "<pre><code id=\"nx-xml-example\" class=\"language-xml\">\n"
+                        + TEST_XML
+                        + "</code></pre>";
         assertEquals(expected, methodJavadocs.get("xmlExample"));
     }
 
@@ -153,13 +151,13 @@ class TagletTest {
     void testJSON() {
         var expected = "<pre><code class=\"language-json\">\n" + escapeXml11(
                 "{\n"
-              + "  \"object\": {\n"
-              + "    \"prop1\": \"text\",\n"
-              + "    \"prop2\": 123,\n"
-              + "    \"prop3\": true\n"
-              + "  }\n"
-              + "}")
-              + "</code></pre>";
+                        + "  \"object\": {\n"
+                        + "    \"prop1\": \"text\",\n"
+                        + "    \"prop2\": 123,\n"
+                        + "    \"prop3\": true\n"
+                        + "  }\n"
+                        + "}")
+                + "</code></pre>";
         assertEquals(expected, methodJavadocs.get("json"));
     }
 
@@ -167,12 +165,12 @@ class TagletTest {
     void testJSONPropertiesNoParent() {
         var expected = "<pre><code class=\"language-json\">\n" + escapeXml11(
                 "\"object1\": {\n"
-              + "  \"prop1\": \"value1\"\n"
-              + "},\n"
-              + "\"object2\": {\n"
-              + "  \"prop2\": \"value2\"\n"
-              + "},")
-              + "</code></pre>";
+                        + "  \"prop1\": \"value1\"\n"
+                        + "},\n"
+                        + "\"object2\": {\n"
+                        + "  \"prop2\": \"value2\"\n"
+                        + "},")
+                + "</code></pre>";
         assertEquals(expected, methodJavadocs.get("jsonPropertiesNoParent"));
     }
 
@@ -180,12 +178,12 @@ class TagletTest {
     void testJSONObjectsNoParent() {
         var expected = "<pre><code class=\"language-json\">\n" + escapeXml11(
                 "{\n"
-              + "  \"prop1\": \"value1\"\n"
-              + "},\n"
-              + "{\n"
-              + "  \"prop2\": \"value2\"\n"
-              + "},")
-              + "</code></pre>";
+                        + "  \"prop1\": \"value1\"\n"
+                        + "},\n"
+                        + "{\n"
+                        + "  \"prop2\": \"value2\"\n"
+                        + "},")
+                + "</code></pre>";
         assertEquals(expected, methodJavadocs.get("jsonObjectsNoParent"));
     }
 
@@ -193,14 +191,14 @@ class TagletTest {
     void testJSONArraysNoParent() {
         var expected = "<pre><code class=\"language-json\">\n" + escapeXml11(
                 "[\n"
-              + "  \"value1A\",\n"
-              + "  \"value1B\"\n"
-              + "],\n"
-              + "[\n"
-              + "  \"value2A\",\n"
-              + "  \"value2B\"\n"
-              + "],")
-              + "</code></pre>";
+                        + "  \"value1A\",\n"
+                        + "  \"value1B\"\n"
+                        + "],\n"
+                        + "[\n"
+                        + "  \"value2A\",\n"
+                        + "  \"value2B\"\n"
+                        + "],")
+                + "</code></pre>";
         assertEquals(expected, methodJavadocs.get("jsonArraysNoParent"));
     }
 
@@ -210,12 +208,11 @@ class TagletTest {
     void testHTML() {
         var expected =
                 "<pre><code class=\"language-html\">\n"
-              + escapeHtml4(
-                      "<div>\n"
-                    + "  <h1>Title</h1>\n"
-                    + "</div>"
-                )
-              + "</code></pre>";
+                        + escapeHtml4(
+                                "<div>\n"
+                                        + "  <h1>Title</h1>\n"
+                                        + "</div>")
+                        + "</code></pre>";
         assertEquals(expected, methodJavadocs.get("html"));
     }
 
@@ -223,11 +220,10 @@ class TagletTest {
     void testHTMLNoParent() {
         var expected =
                 "<pre><code class=\"language-html\">\n"
-              + escapeHtml4(
-                      "<div>a</div>\n"
-                    + "<div>b</div>"
-                )
-              + "</code></pre>";
+                        + escapeHtml4(
+                                "<div>a</div>\n"
+                                        + "<div>b</div>")
+                        + "</code></pre>";
         assertEquals(expected, methodJavadocs.get("htmlNoParent"));
     }
 
@@ -261,14 +257,14 @@ class TagletTest {
     void testJsonBadSyntax() {
         assertTrue(methodJavadocs.get("jsonBadSyntax").contains(
                 "!!! Documentation error: JSONTaglet could not "
-                + "parse JSON content:"));
+                        + "parse JSON content:"));
     }
 
     @Test
     void testIncludeNonExisting() {
         assertTrue(methodJavadocs.get("includeNonExisting").contains(
                 "!!! Documentation error: Include directive failed as type "
-                + "element could not be resolved:"));
+                        + "element could not be resolved:"));
     }
 
     //--- Misc. ----------------------------------------------------------------
@@ -290,14 +286,17 @@ class TagletTest {
             public String getTagName() {
                 return "SOMENAME";
             }
+
             @Override
             public Kind getKind() {
                 return DocTree.Kind.UNKNOWN_INLINE_TAG;
             }
+
             @Override
             public <R, D> R accept(DocTreeVisitor<R, D> visitor, D data) {
                 return null;
             }
+
             @Override
             public List<? extends DocTree> getContent() {
                 TextTree textTree = new TextTree() {
@@ -305,15 +304,18 @@ class TagletTest {
                     public Kind getKind() {
                         return DocTree.Kind.TEXT;
                     }
+
                     @Override
                     public <R, D> R accept(
                             DocTreeVisitor<R, D> visitor, D data) {
                         return null;
                     }
+
                     @Override
                     public String getBody() {
                         return "#someref\nsomebody";
                     }
+
                     @Override
                     public String toString() {
                         return getBody();
@@ -322,6 +324,7 @@ class TagletTest {
                 return new ArrayList<>(
                         Arrays.asList(textTree)) {
                     private static final long serialVersionUID = 1L;
+
                     @Override
                     public String toString() {
                         return get(0).toString();

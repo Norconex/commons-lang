@@ -41,7 +41,8 @@ public class FileConverter extends AbstractConverter {
      * @since 3.0.0
      */
     public static class JsonSerializer
-            extends GenericJsonSerializer<File>{}
+            extends GenericJsonSerializer<File> {
+    }
 
     /**
      * JSON (Jackson) deserializer using this converter.
@@ -64,4 +65,3 @@ public class FileConverter extends AbstractConverter {
         }
     }
 }
-

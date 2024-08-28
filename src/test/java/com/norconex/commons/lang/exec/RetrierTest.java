@@ -31,7 +31,9 @@ class RetrierTest {
         assertThat(r.getMaxRetries()).isEqualTo(Retrier.DEFAULT_MAX_RETRIES);
         assertThat(r.getRetryDelay()).isEqualTo(Retrier.DEFAULT_RETRY_DELAY);
         try {
-            r.execute(() -> { throw new RuntimeException(); });
+            r.execute(() -> {
+                throw new RuntimeException();
+            });
         } catch (RetriableException e) {
             // initial run + default retries
             assertThat(e.getAllCauses()).hasSize(Retrier.DEFAULT_MAX_RETRIES);
@@ -60,18 +62,20 @@ class RetrierTest {
     void testRetrierExceptionFilter() {
         final MutableInt count = new MutableInt();
         try {
-            new Retrier(e -> "retryMe".equals(e.getMessage()), 20).execute(() -> {
-                count.increment();
-                if (count.intValue() < 7) {
-                    throw new RuntimeException("retryMe");
-                }
-                throw new RuntimeException("failMe");
-            });
+            new Retrier(e -> "retryMe".equals(e.getMessage()), 20)
+                    .execute(() -> {
+                        count.increment();
+                        if (count.intValue() < 7) {
+                            throw new RuntimeException("retryMe");
+                        }
+                        throw new RuntimeException("failMe");
+                    });
         } catch (RetriableException e) {
             // Failed for real after 7 attempts
             Assertions.assertEquals(7, count.intValue());
             Assertions.assertEquals(7, e.getAllCauses().length);
-            Assertions.assertEquals("retryMe", e.getAllCauses()[0].getMessage());
+            Assertions.assertEquals("retryMe",
+                    e.getAllCauses()[0].getMessage());
             Assertions.assertEquals("failMe", e.getCause().getMessage());
         }
     }

@@ -34,11 +34,13 @@ final class VariablesFileResolver {
     /**
      * Constructor.
      */
-    private VariablesFileResolver() {}
+    private VariablesFileResolver() {
+    }
 
     static Map<String, String> resolve(String fullDir, String baseFileName) {
         return resolve(getVariablesFile(fullDir, baseFileName));
     }
+
     static Map<String, String> resolve(Path varFile) {
         if (varFile == null) {
             return Collections.emptyMap();
@@ -55,7 +57,6 @@ final class VariablesFileResolver {
         }
     }
 
-
     private static Map<String, String> fromProperties(Path varFile)
             throws IOException {
         Map<String, String> map = new HashMap<>();
@@ -68,6 +69,7 @@ final class VariablesFileResolver {
         }
         return map;
     }
+
     private static Map<String, String> fromVariables(Path varFile)
             throws IOException {
         Map<String, String> map = new HashMap<>();

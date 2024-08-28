@@ -31,13 +31,13 @@ import org.slf4j.LoggerFactory;
 import com.norconex.commons.lang.security.Credentials;
 
 import jakarta.xml.bind.DatatypeConverter;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Provides a quick and easy way to stream a URL.
  */
+@Slf4j
 public final class URLStreamer {
-
-    private static final Logger LOG = LoggerFactory.getLogger(URLStreamer.class);
 
     private URLStreamer() {
     }
@@ -50,6 +50,7 @@ public final class URLStreamer {
     public static InputStream stream(String url) {
         return stream(url, null);
     }
+
     /**
      * Streams URL content.
      * @param url the URL to stream
@@ -58,6 +59,7 @@ public final class URLStreamer {
     public static InputStream stream(URL url) {
         return stream(url.toString(), null);
     }
+
     /**
      * Streams URL content.
      * @param url the URL to stream
@@ -76,6 +78,7 @@ public final class URLStreamer {
     public static InputStream stream(String url, Credentials creds) {
         return stream(url, creds, null);
     }
+
     /**
      * Streams URL content.
      * @param url the URL to stream
@@ -85,6 +88,7 @@ public final class URLStreamer {
     public static InputStream stream(URL url, Credentials creds) {
         return stream(url.toString(), creds, null);
     }
+
     /**
      * Streams URL content.
      * @param url the URL to stream
@@ -106,6 +110,7 @@ public final class URLStreamer {
             String url, Credentials creds, HttpHost proxy) {
         return stream(url, creds, proxy, null);
     }
+
     /**
      * Streams URL content.
      * @param url the URL to stream
@@ -117,6 +122,7 @@ public final class URLStreamer {
             URL url, Credentials creds, HttpHost proxy) {
         return stream(url.toString(), creds, proxy, null);
     }
+
     /**
      * Streams URL content.
      * @param url the URL to stream
@@ -173,7 +179,6 @@ public final class URLStreamer {
         }
     }
 
-
     /**
      * Streams URL content.
      * @param url the URL to stream
@@ -187,6 +192,7 @@ public final class URLStreamer {
             Credentials proxyCreds) {
         return stream(url.toString(), creds, proxy, proxyCreds);
     }
+
     /**
      * Streams URL content.
      * @param url the URL to stream
@@ -243,6 +249,7 @@ public final class URLStreamer {
         }
         return out;
     }
+
     /**
      * Streams URL content to a String.
      * @param url the URL to stream
@@ -254,6 +261,7 @@ public final class URLStreamer {
             URL url, Credentials creds, HttpHost proxy) {
         return streamToString(url.toString(), creds, proxy);
     }
+
     /**
      * Streams URL content to a String.
      * @param url the URL to stream
@@ -312,6 +320,7 @@ public final class URLStreamer {
         }
         return out;
     }
+
     /**
      * Streams URL content to a String.
      * @param url the URL to stream
@@ -325,6 +334,7 @@ public final class URLStreamer {
             Credentials proxyCreds) {
         return streamToString(url.toString(), creds, proxy, proxyCreds);
     }
+
     /**
      * Streams URL content to a String.
      * @param url the URL to stream
@@ -348,6 +358,7 @@ public final class URLStreamer {
     public static String streamToString(String url, Credentials creds) {
         return streamToString(url, creds, null);
     }
+
     /**
      * Streams URL content to a String.
      * @param url the URL to stream
@@ -357,6 +368,7 @@ public final class URLStreamer {
     public static String streamToString(URL url, Credentials creds) {
         return streamToString(url.toString(), creds, null);
     }
+
     /**
      * Streams URL content to a String.
      * @param url the URL to stream
@@ -376,6 +388,7 @@ public final class URLStreamer {
     public static String streamToString(String url) {
         return streamToString(url, null);
     }
+
     /**
      * Streams URL content to a String.
      * @param url the URL to stream
@@ -385,6 +398,7 @@ public final class URLStreamer {
     public static String streamToString(URL url) {
         return streamToString(url, null);
     }
+
     /**
      * Streams URL content to a String.
      * @param url the URL to stream
@@ -402,6 +416,7 @@ public final class URLStreamer {
                 .setInputStream(conn.getInputStream())
                 .get();
     }
+
     private static String base64BasicAuth(String username, String password) {
         var userpass = username + ':' + password;
         return "Basic "
@@ -411,13 +426,16 @@ public final class URLStreamer {
     public static class HttpHost {
         private final String hostName;
         private final int port;
+
         public HttpHost(String hostName, int port) {
             this.hostName = hostName;
             this.port = port;
         }
+
         public String getHostName() {
             return hostName;
         }
+
         public int getPort() {
             return port;
         }

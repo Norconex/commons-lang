@@ -68,7 +68,8 @@ public class DimensionConverter extends AbstractConverter {
      * @since 3.0.0
      */
     public static class JsonSerializer
-            extends GenericJsonSerializer<Dimension>{}
+            extends GenericJsonSerializer<Dimension> {
+    }
 
     /**
      * JSON (Jackson) deserializer using this converter.

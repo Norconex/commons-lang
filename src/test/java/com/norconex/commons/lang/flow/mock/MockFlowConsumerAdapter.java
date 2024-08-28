@@ -29,7 +29,7 @@ public final class MockFlowConsumerAdapter
 
     public static Consumer<Properties> wrap(MockConsumerBase rawConsumer) {
         var adapter = new MockFlowConsumerAdapter();
-        adapter .setConsumerAdaptee(rawConsumer);
+        adapter.setConsumerAdaptee(rawConsumer);
         return adapter;
     }
 
@@ -42,6 +42,7 @@ public final class MockFlowConsumerAdapter
     public Object getConsumerAdaptee() {
         return rawInputConsumer;
     }
+
     @Override
     public void setConsumerAdaptee(Object rawInputConsumer) {
         this.rawInputConsumer = (MockConsumerBase) rawInputConsumer;

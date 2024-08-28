@@ -29,7 +29,7 @@ public class Mocker {
 
     public static synchronized String mockStdInOutErr(
             FailableRunnable<IOException> runnable, String... userInputs)
-                    throws IOException {
+            throws IOException {
         InputStream originalInput = System.in;
         PrintStream originalOutput = System.out;
         PrintStream originalError = System.err;

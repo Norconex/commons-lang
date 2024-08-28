@@ -95,7 +95,6 @@ class XMLAdaptersTest {
         });
     }
 
-
     @XmlRootElement
     @XmlAccessorType(XmlAccessType.FIELD)
     @Data
@@ -149,6 +148,7 @@ class XMLAdaptersTest {
         public void loadFromXML(XML xml) {
             setFromXMLConfig(xml.getString("fromXMLConfig", "Not there."));
         }
+
         @Override
         public void saveToXML(XML xml) {
             xml.addElement("fromXMLConfig", fromXMLConfig);

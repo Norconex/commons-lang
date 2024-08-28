@@ -40,9 +40,15 @@ class CachedOutputStreamTest {
             cache.write(content.getBytes());
             is = cache.getInputStream();
             Assertions.assertEquals(content, readCacheToString(is));
-        }  finally {
-            try { is.close(); } catch (IOException e) { /*NOOP*/ }
-            try { cache.close(); } catch (IOException e) { /*NOOP*/ }
+        } finally {
+            try {
+                is.close();
+            } catch (IOException e) {
+                /*NOOP*/ }
+            try {
+                cache.close();
+            } catch (IOException e) {
+                /*NOOP*/ }
         }
     }
 
@@ -58,9 +64,15 @@ class CachedOutputStreamTest {
             cache.write(content.getBytes());
             is = cache.getInputStream();
             Assertions.assertEquals(content, readCacheToString(is));
-        }  finally {
-            try { is.close(); } catch (IOException e) { /*NOOP*/ }
-            try { cache.close(); } catch (IOException e) { /*NOOP*/ }
+        } finally {
+            try {
+                is.close();
+            } catch (IOException e) {
+                /*NOOP*/ }
+            try {
+                cache.close();
+            } catch (IOException e) {
+                /*NOOP*/ }
         }
     }
 
@@ -105,7 +117,7 @@ class CachedOutputStreamTest {
     private String readCacheToString(InputStream is) throws IOException {
         long i;
         var b = new StringBuilder();
-        while ((i=is.read()) != -1) {
+        while ((i = is.read()) != -1) {
             b.append((char) i);
         }
         return b.toString();

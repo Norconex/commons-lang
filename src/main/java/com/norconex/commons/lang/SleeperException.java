@@ -15,7 +15,7 @@
 package com.norconex.commons.lang;
 
 /**
- * Runtime <code>Sleep</code> exception wrapping any 
+ * Runtime <code>Sleep</code> exception wrapping any
  * {@link InterruptedException} thrown.
  * @see Sleeper
  */

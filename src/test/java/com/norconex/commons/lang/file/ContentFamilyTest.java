@@ -57,8 +57,8 @@ class ContentFamilyTest {
 
     @Test
     void testNullEqualsToString() {
-        assertThat(ContentFamily. forContentType((String) null)).isNull();
-        assertThat(ContentFamily. forContentType((String) null)).isNull();
+        assertThat(ContentFamily.forContentType((String) null)).isNull();
+        assertThat(ContentFamily.forContentType((String) null)).isNull();
 
         assertThat(ContentFamily.valueOf("spreadsheet")).isNotEqualTo(
                 ContentFamily.valueOf("text"));

@@ -36,9 +36,18 @@ class ErrorHandlerTest {
     @ArgumentsSource(ArgsProvider.class)
     void testErrorHandlers(ErrorHandler eh, Asserter asserter) { //NOSONAR
         SAXParseException e = new SAXParseException("Dummy exception", null);
-        asserter.accept(() -> {eh.warning(e); return eh;});
-        asserter.accept(() -> {eh.error(e); return eh;});
-        asserter.accept(() -> {eh.fatalError(e); return eh;});
+        asserter.accept(() -> {
+            eh.warning(e);
+            return eh;
+        });
+        asserter.accept(() -> {
+            eh.error(e);
+            return eh;
+        });
+        asserter.accept(() -> {
+            eh.fatalError(e);
+            return eh;
+        });
     }
 
     static class ArgsProvider implements ArgumentsProvider {
@@ -46,23 +55,26 @@ class ErrorHandlerTest {
         public Stream<? extends Arguments> provideArguments(
                 ExtensionContext context) throws Exception {
             return Stream.of(
-                of(new ErrorHandlerCapturer(), (Asserter) t -> {
-                    try {
-                        assertThat(((ErrorHandlerCapturer) t.call())
-                                .getErrors().size()).isGreaterThan(0);
-                    } catch (Exception e) {}
-                }),
-                of(new ErrorHandlerLogger(ErrorHandlerTest.class),
-                        (Asserter) t -> {
-                    assertThatNoException().isThrownBy(() -> t.call());
-                }),
-                of(new ErrorHandlerFailer(ErrorHandlerTest.class),
-                        (Asserter) t -> {
-                    assertThatException().isThrownBy(() -> t.call());
-                })
-            );
+                    of(new ErrorHandlerCapturer(), (Asserter) t -> {
+                        try {
+                            assertThat(((ErrorHandlerCapturer) t.call())
+                                    .getErrors().size()).isGreaterThan(0);
+                        } catch (Exception e) {
+                        }
+                    }),
+                    of(new ErrorHandlerLogger(ErrorHandlerTest.class),
+                            (Asserter) t -> {
+                                assertThatNoException()
+                                        .isThrownBy(() -> t.call());
+                            }),
+                    of(new ErrorHandlerFailer(ErrorHandlerTest.class),
+                            (Asserter) t -> {
+                                assertThatException()
+                                        .isThrownBy(() -> t.call());
+                            }));
         }
     }
 
-    interface Asserter extends Consumer<Callable<ErrorHandler>>{}
+    interface Asserter extends Consumer<Callable<ErrorHandler>> {
+    }
 }

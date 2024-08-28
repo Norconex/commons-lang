@@ -78,10 +78,13 @@ public enum Operator {
             return ComparableUtils.is(first).lessThan(second);
         }
     };
+
     String[] abbr;
+
     Operator(String... abbr) {
         this.abbr = abbr;
     }
+
     @JsonCreator
     public static Operator of(String op) {
         if (StringUtils.isBlank(op)) {
@@ -95,11 +98,13 @@ public enum Operator {
         }
         return null;
     }
+
     @JsonValue
     @Override
     public String toString() {
         return abbr[0];
     }
+
     public abstract <T extends Comparable<T>> boolean evaluate(
             T first, T second);
 }

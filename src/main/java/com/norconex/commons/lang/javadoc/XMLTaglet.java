@@ -59,7 +59,9 @@ public class XMLTaglet extends AbstractInlineTaglet {
     public XMLTaglet() {
         super(NAME);
     }
-    protected XMLTaglet(String name, Function<TagContent, String> headingProvider) {
+
+    protected XMLTaglet(String name,
+            Function<TagContent, String> headingProvider) {
         super(name, headingProvider);
     }
 

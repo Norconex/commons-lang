@@ -44,7 +44,7 @@ import lombok.RequiredArgsConstructor;
  * @since 3.0.0
  */
 @RequiredArgsConstructor
-public class JsonXmlCollectionDeserializer <T extends Collection<?>>
+public class JsonXmlCollectionDeserializer<T extends Collection<?>>
         extends JsonDeserializer<T>
         implements ContextualDeserializer, ResolvableDeserializer {
     private BeanProperty currentProperty;
@@ -53,15 +53,16 @@ public class JsonXmlCollectionDeserializer <T extends Collection<?>>
     @Override
     public JsonDeserializer<?> createContextual(
             DeserializationContext ctx, BeanProperty property)
-                    throws JsonMappingException {
+            throws JsonMappingException {
         currentProperty = property;
         if (property == null) {
             return defaultDeserializer;
         }
         return Collection.class.isAssignableFrom(
                 property.getType().getRawClass())
-                        && ctx instanceof XmlDeserializationContext
-                                ? this : defaultDeserializer;
+                && ctx instanceof XmlDeserializationContext
+                        ? this
+                        : defaultDeserializer;
     }
 
     @Override
@@ -102,7 +103,7 @@ public class JsonXmlCollectionDeserializer <T extends Collection<?>>
             // For XML, each collection entries are made of a field name
             // followed by either an object or a scalar.
             if (isXml) {
-                p.nextToken();  // <inner>  (field name)
+                p.nextToken(); // <inner>  (field name)
             }
             // Since empty tags come up as empty string
             // We check here to prevent reading a null entry, which may generate
@@ -115,7 +116,7 @@ public class JsonXmlCollectionDeserializer <T extends Collection<?>>
                 }
             }
         } while (p.nextToken() != enderToken);
-        return  (T) objects;
+        return (T) objects;
     }
 
     @SuppressWarnings("unchecked")
@@ -130,8 +131,8 @@ public class JsonXmlCollectionDeserializer <T extends Collection<?>>
 
         // from annotation
         if (annot != null && !Void.class.equals(annot.concreteType())) {
-            return (Collection<Object>)
-                    ClassUtil.newInstance(annot.concreteType());
+            return (Collection<Object>) ClassUtil.newInstance(
+                    annot.concreteType());
         }
 
         // from actual type

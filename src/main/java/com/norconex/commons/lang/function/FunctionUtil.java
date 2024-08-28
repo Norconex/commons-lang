@@ -14,17 +14,20 @@ import java.util.function.Predicate;
 @Deprecated(since = "3.0.0")
 public final class FunctionUtil {
 
-    private FunctionUtil() {}
+    private FunctionUtil() {
+    }
 
     @SafeVarargs
     public static <T> Consumers<T> allConsumers(Consumer<T>... consumers) {
         return allConsumers(
                 consumers == null ? null : Arrays.asList(consumers));
     }
+
     public static <T> Consumers<T> allConsumers(
             Collection<Consumer<T>> consumers) {
         return new Consumers<>(consumers == null
-                ? Collections.emptyList() : consumers);
+                ? Collections.emptyList()
+                : consumers);
     }
 
     @SafeVarargs
@@ -32,20 +35,25 @@ public final class FunctionUtil {
         return allPredicates(
                 predicates == null ? null : Arrays.asList(predicates));
     }
+
     public static <T> Predicates<T> allPredicates(
             Collection<Predicate<T>> predicates) {
         return new Predicates<>(predicates == null
-                ? Collections.emptyList() : predicates, false);
+                ? Collections.emptyList()
+                : predicates, false);
     }
+
     @SafeVarargs
     public static <T> Predicates<T> anyPredicates(Predicate<T>... predicates) {
         return anyPredicates(
                 predicates == null ? null : Arrays.asList(predicates));
     }
+
     public static <T> Predicates<T> anyPredicates(
             Collection<Predicate<T>> predicates) {
         return new Predicates<>(predicates == null
-                ? Collections.emptyList() : predicates, true);
+                ? Collections.emptyList()
+                : predicates, true);
     }
 
     public static <T> Consumer<T> predicatedConsumer(

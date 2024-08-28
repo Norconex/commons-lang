@@ -29,6 +29,7 @@ final class MockXMLFlowPredicateAdapter
     public boolean test(Properties t) {
         return predicate.test(t);
     }
+
     @Override
     public void loadFromXML(XML xml) {
         predicate = xml.toObjectImpl(Predicate.class);
@@ -38,6 +39,7 @@ final class MockXMLFlowPredicateAdapter
             xml.populate(predicate);
         }
     }
+
     @Override
     public void saveToXML(XML xml) {
         xml.replace(new XML(xml.getName(), predicate));

@@ -35,6 +35,7 @@ public class MockXMLMapSizeEqualsCondition
     public void loadFromXML(XML xml) {
         size = xml.getInteger("size");
     }
+
     @Override
     public void saveToXML(XML xml) {
         xml.addElement("size", size);

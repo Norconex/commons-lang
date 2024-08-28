@@ -75,6 +75,7 @@ public class HttpURL implements Serializable {
     public HttpURL(@NonNull URL url) {
         this(url.toString());
     }
+
     /**
      * Creates a new HttpURL from the URL string using UTF-8 for URL encoding.
      * @param url a URL
@@ -93,6 +94,7 @@ public class HttpURL implements Serializable {
     public HttpURL(@NonNull URL url, String encoding) {
         this(url.toString(), encoding);
     }
+
     /**
      * Creates a new HttpURL from the URL string using the provided encoding
      * for URL encoding.
@@ -121,8 +123,7 @@ public class HttpURL implements Serializable {
             if (port < 0) {
                 if (StringUtils.startsWithIgnoreCase(u, PROTOCOL_HTTPS)) {
                     port = DEFAULT_HTTPS_PORT;
-                } else if (
-                        StringUtils.startsWithIgnoreCase(u, PROTOCOL_HTTP)) {
+                } else if (StringUtils.startsWithIgnoreCase(u, PROTOCOL_HTTP)) {
                     port = DEFAULT_HTTP_PORT;
                 }
             }
@@ -141,7 +142,6 @@ public class HttpURL implements Serializable {
         }
     }
 
-
     /**
      * Gets the character encoding. Default is UTF-8.
      * @return character encoding
@@ -158,6 +158,7 @@ public class HttpURL implements Serializable {
     public String getPath() {
         return path;
     }
+
     /**
      * Sets the URL path.
      * @param path url path
@@ -175,6 +176,7 @@ public class HttpURL implements Serializable {
     public QueryString getQueryString() {
         return queryString;
     }
+
     /**
      * Sets the URL query string, replacing this URL existing query string
      * parameters with the ones from the supplied query string (the original
@@ -192,6 +194,7 @@ public class HttpURL implements Serializable {
     public String getHost() {
         return host;
     }
+
     /**
      * Sets the host portion of the URL.
      * @param host the host portion of the URL
@@ -207,6 +210,7 @@ public class HttpURL implements Serializable {
     public String getProtocol() {
         return protocol;
     }
+
     /**
      * Sets the protocol portion of the URL.
      * @param protocol the protocol portion of the URL
@@ -214,6 +218,7 @@ public class HttpURL implements Serializable {
     public void setProtocol(String protocol) {
         this.protocol = protocol;
     }
+
     /**
      * Whether this URL is secure (e.g. https).
      * @return <code>true</code> if protocol is secure
@@ -231,6 +236,7 @@ public class HttpURL implements Serializable {
     public int getPort() {
         return port;
     }
+
     /**
      * Sets the URL port.
      * @param port the URL port
@@ -247,6 +253,7 @@ public class HttpURL implements Serializable {
     public String getFragment() {
         return fragment;
     }
+
     /**
      * Sets the URL fragment.
      * @param fragment the fragment to set
@@ -269,6 +276,7 @@ public class HttpURL implements Serializable {
         var segment = path;
         return StringUtils.substringAfterLast(segment, "/");
     }
+
     /**
      * Converts this HttpURL to a regular {@link URL}, making sure
      * appropriate characters are escaped properly.
@@ -314,6 +322,7 @@ public class HttpURL implements Serializable {
             throw new URLException("Cannot convert to URI: " + url, e);
         }
     }
+
     /**
      * <p>
      * Converts the supplied URL to a {@link URL}, making sure
@@ -329,6 +338,7 @@ public class HttpURL implements Serializable {
     public static URL toURL(String url) {
         return new HttpURL(url).toURL();
     }
+
     /**
      * <p>Converts the supplied URL to a {@link URI}, making sure
      * appropriate characters are encoded properly using UTF-8. This method
@@ -448,11 +458,11 @@ public class HttpURL implements Serializable {
             // Space to plus sign
             if (ch == ' ') {
                 sb.append("%20");
-            // Valid: keep it as is.
+                // Valid: keep it as is.
             } else if (CharUtils.isAsciiAlphanumeric(ch)
-                    || ".-_~!$&'()*+,;=:@/%".indexOf(ch) != -1)  {
+                    || ".-_~!$&'()*+,;=:@/%".indexOf(ch) != -1) {
                 sb.append(ch);
-            // Invalid: encode it
+                // Invalid: encode it
             } else {
                 byte[] bytes;
                 bytes = Character.toString(ch).getBytes(StandardCharsets.UTF_8);

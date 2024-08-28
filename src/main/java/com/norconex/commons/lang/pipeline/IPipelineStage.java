@@ -22,7 +22,7 @@ import java.util.function.Predicate;
  * @since 1.5.0
  * @deprecated Use {@link Predicate} instead.
  */
-@Deprecated(since="3.0.0")
+@Deprecated(since = "3.0.0")
 @FunctionalInterface
 public interface IPipelineStage<T> extends Predicate<T> { // NOSONAR
 

@@ -73,8 +73,7 @@ class RootHandler<T> implements StatementHandler<Consumer<T>> {
         if (statement == null) {
             consumers.add(readInputConsumer(ctx));
         } else if (statement.isAnyOf(Statement.IF, Statement.IFNOT)) {
-            consumers.add((Consumer<T>)
-                    statement.handler().read(ctx));
+            consumers.add((Consumer<T>) statement.handler().read(ctx));
         } else {
             throw new IOException("<" + statement + "> is misplaced.");
         }
@@ -156,4 +155,3 @@ class RootHandler<T> implements StatementHandler<Consumer<T>> {
                 .orElse("consumer");
     }
 }
-

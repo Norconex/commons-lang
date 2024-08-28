@@ -20,7 +20,7 @@ package com.norconex.commons.lang.exec;
  * @since 1.13.0
  * @deprecated Use {@link ExceptionFilter} isntead.
  */
-@Deprecated(since="3.0.0")
+@Deprecated(since = "3.0.0")
 public interface IExceptionFilter extends ExceptionFilter { //NOSONAR
 
     /**

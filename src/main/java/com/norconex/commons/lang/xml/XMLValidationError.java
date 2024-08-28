@@ -33,7 +33,9 @@ public class XMLValidationError implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    public enum Severity { WARNING, ERROR, FATAL }
+    public enum Severity {
+        WARNING, ERROR, FATAL
+    }
 
     private final Severity severity;
     private final String message;

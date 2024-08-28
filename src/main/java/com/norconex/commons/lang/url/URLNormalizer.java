@@ -154,9 +154,10 @@ public class URLNormalizer implements Serializable {
             Pattern.compile("(%[0-9a-f]{2})", Pattern.CASE_INSENSITIVE);
     private static final Pattern PATTERN_PATH_LAST_SEGMENT = Pattern.compile(
             "(.*/)(index\\.html|index\\.htm|index\\.shtml|index\\.php"
-          + "|default\\.html|default\\.htm|home\\.html|home\\.htm|index\\.php5"
-          + "|index\\.php4|index\\.php3|index\\.cgi|placeholder\\.html"
-          + "|default\\.asp)$", Pattern.CASE_INSENSITIVE);
+                    + "|default\\.html|default\\.htm|home\\.html|home\\.htm"
+                    + "|index\\.php5|index\\.php4|index\\.php3|index\\.cgi"
+                    + "|placeholder\\.html|default\\.asp)$",
+            Pattern.CASE_INSENSITIVE);
     private static final Pattern PATTERN_DOMAIN = Pattern.compile(
             "^[a-z0-9]+([\\-\\.]{1}[a-z0-9]+)*\\.[a-z]{2,5}$",
             Pattern.CASE_INSENSITIVE);
@@ -215,6 +216,7 @@ public class URLNormalizer implements Serializable {
         url = StringUtils.lowerCase(url, Locale.FRENCH);
         return this;
     }
+
     /**
      * <p>Converts the scheme and host to lower case.</p>
      * <p>
@@ -232,6 +234,7 @@ public class URLNormalizer implements Serializable {
                         u.getHost().toLowerCase());
         return this;
     }
+
     /**
      * <p>Converts the URL path to lower case.</p>
      * <p>
@@ -251,6 +254,7 @@ public class URLNormalizer implements Serializable {
         url = StringUtils.replaceOnce(url, urlRootAndPath, urlRootAndLcPath);
         return this;
     }
+
     /**
      * <p>Converts the URL query string to lower case, which includes
      * both the parameter names and values.</p>
@@ -271,6 +275,7 @@ public class URLNormalizer implements Serializable {
         }
         return this;
     }
+
     /**
      * <p>Converts the URL query parameter names to lower case, leaving
      * query parameter values intact.</p>
@@ -300,6 +305,7 @@ public class URLNormalizer implements Serializable {
         }
         return this;
     }
+
     /**
      * <p>Converts the URL query parameter values to lower case, leaving
      * query parameter names intact.</p>
@@ -347,6 +353,7 @@ public class URLNormalizer implements Serializable {
         }
         return this;
     }
+
     /**
      * Decodes percent-encoded unreserved characters.<p>
      * <code>http://www.example.com/%7Eusername/ &rarr;
@@ -394,6 +401,7 @@ public class URLNormalizer implements Serializable {
         url = toURI().toASCIIString();
         return this;
     }
+
     /**
      * <p>
      * Encodes space characters into plus signs (+) if they are part of the
@@ -537,7 +545,6 @@ public class URLNormalizer implements Serializable {
         return this;
     }
 
-
     /**
      * <p>Removes the unnecessary "." and ".." segments from the URL path.
      * </p>
@@ -627,20 +634,25 @@ public class URLNormalizer implements Serializable {
         url = StringUtils.replaceOnce(url, path, out.toString());
         return this;
     }
+
     private static boolean equalStrings(StringBuilder b, String str) {
         return b.length() == str.length() && b.indexOf(str) == 0;
     }
+
     private static boolean startsWith(StringBuilder b, String str) {
         return b.indexOf(str) == 0;
     }
+
     private void replaceStart(
             StringBuilder b, String toreplace, String replacement) {
         deleteStart(b, toreplace);
         b.insert(0, replacement);
     }
+
     private void deleteStart(StringBuilder b, String str) {
         b.delete(0, str.length());
     }
+
     private void removeLastSegment(StringBuilder b) {
         var index = b.lastIndexOf("/");
         if (index == -1) {
@@ -680,10 +692,12 @@ public class URLNormalizer implements Serializable {
         var path = toURL().getPath();
         if (PATTERN_PATH_LAST_SEGMENT.matcher(path).matches()) {
             url = StringUtils.replaceOnce(
-                   url, path, StringUtils.substringBeforeLast(path, "/") + "/");
+                    url, path,
+                    StringUtils.substringBeforeLast(path, "/") + "/");
         }
         return this;
     }
+
     /**
      * <p>Removes the URL fragment (from the "#" character until the end).</p>
      * <code>http://www.example.com/bar.html#section1 &rarr;
@@ -694,6 +708,7 @@ public class URLNormalizer implements Serializable {
         url = url.replaceFirst("(.*?)(#.*)", "$1");
         return this;
     }
+
     /**
      * <p>Removes the URL query string (from the "?" character until the end
      * or the first # character).
@@ -710,6 +725,7 @@ public class URLNormalizer implements Serializable {
         }
         return this;
     }
+
     /**
      * <p>Replaces IP address with domain name.  This is often not
      * reliable due to virtual domain names and can be slow, as it has
@@ -732,6 +748,7 @@ public class URLNormalizer implements Serializable {
         }
         return this;
     }
+
     /**
      * <p>Converts <code>https</code> scheme to <code>http</code>.</p>
      * <code>https://www.example.com/ &rarr; http://www.example.com/</code>
@@ -747,6 +764,7 @@ public class URLNormalizer implements Serializable {
         }
         return this;
     }
+
     /**
      * <p>Converts <code>http</code> scheme to <code>https</code>.</p>
      * <code>http://www.example.com/ &rarr; https://www.example.com/</code>
@@ -762,6 +780,7 @@ public class URLNormalizer implements Serializable {
         }
         return this;
     }
+
     /**
      * <p>Removes duplicate slashes.  Two or more adjacent slash ("/")
      * characters will be converted into one.</p>
@@ -778,6 +797,7 @@ public class URLNormalizer implements Serializable {
         url = StringUtils.replaceOnce(url, urlRootAndPath, newUrlRootAndPath);
         return this;
     }
+
     /**
      * <p>Removes "www." domain name prefix.</p>
      * <code>http://www.example.com/ &rarr; http://example.com/</code>
@@ -789,6 +809,7 @@ public class URLNormalizer implements Serializable {
         url = StringUtils.replaceOnce(url, host, newHost);
         return this;
     }
+
     /**
      * <p>Adds "www." domain name prefix.</p>
      * <code>http://example.com/ &rarr; http://www.example.com/</code>
@@ -801,6 +822,7 @@ public class URLNormalizer implements Serializable {
         }
         return this;
     }
+
     /**
      * <p>Sorts query parameters.</p>
      * <code>http://www.example.com/?z=bb&amp;y=cc&amp;z=aa &rarr;
@@ -833,6 +855,7 @@ public class URLNormalizer implements Serializable {
 
         return this;
     }
+
     /**
      * <p>Removes empty parameters.</p>
      * <code>http://www.example.com/display?a=b&amp;a=&amp;c=d&amp;e=&amp;f=g
@@ -864,6 +887,7 @@ public class URLNormalizer implements Serializable {
         }
         return this;
     }
+
     /**
      * <p>Removes trailing question mark ("?").</p>
      * <code>http://www.example.com/display? &rarr;
@@ -876,6 +900,7 @@ public class URLNormalizer implements Serializable {
         }
         return this;
     }
+
     /**
      * <p>Removes a URL-based session id.  It removes PHP (PHPSESSID),
      * ASP (ASPSESSIONID), and Java EE (jsessionid) session ids.</p>
@@ -932,6 +957,7 @@ public class URLNormalizer implements Serializable {
     public String toString() {
         return url;
     }
+
     /**
      * Returns the normalized URL as {@link URI}.
      * @return URI
@@ -942,6 +968,7 @@ public class URLNormalizer implements Serializable {
         }
         return HttpURL.toURI(url);
     }
+
     /**
      * Returns the normalized URL as {@link URL}.
      * @return URI
@@ -962,7 +989,7 @@ public class URLNormalizer implements Serializable {
     private boolean isEncodedUnreservedCharacter(String enc) {
         // is ALPHA (a-zA-Z)
         if ((enc.compareTo("%41") >= 0 && enc.compareTo("%5A") <= 0)
-         || (enc.compareTo("%61") >= 0 && enc.compareTo("%7A") <= 0)) {
+                || (enc.compareTo("%61") >= 0 && enc.compareTo("%7A") <= 0)) {
             return true;
         }
         // is Digit (0-9)

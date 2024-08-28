@@ -45,9 +45,8 @@ class DurationUnitTest {
         assertThat(DurationUnit.MONTH.toYears(36)).isEqualTo(3);
         assertThat(DurationUnit.MONTH.toYears()).isZero();
 
-
         assertThat(DurationUnit.MONTH.toTemporalUnit())
-            .isSameAs(ChronoUnit.MONTHS);
+                .isSameAs(ChronoUnit.MONTHS);
         assertThat(DurationUnit.WEEK.toDuration()).isEqualTo(
                 Duration.ofDays(7));
     }
@@ -55,13 +54,13 @@ class DurationUnitTest {
     @Test
     void testFrom() {
         assertThat(DurationUnit.from(Duration.ofHours(75)))
-            .isSameAs(DurationUnit.DAY);
+                .isSameAs(DurationUnit.DAY);
         assertThat(DurationUnit.from((Duration) null)).isNull();
         assertThat(DurationUnit.from("week")).isSameAs(DurationUnit.WEEK);
         assertThat(DurationUnit.from((String) null)).isNull();
         assertThat(DurationUnit.from("invalid")).isNull();
         assertThat(DurationUnit.from(ChronoUnit.MINUTES))
-            .isSameAs(DurationUnit.MINUTE);
+                .isSameAs(DurationUnit.MINUTE);
         assertThat(DurationUnit.from((ChronoUnit) null)).isNull();
         assertThat(DurationUnit.from(ChronoUnit.CENTURIES)).isNull();
     }

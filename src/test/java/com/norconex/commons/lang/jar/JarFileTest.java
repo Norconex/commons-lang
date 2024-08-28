@@ -154,16 +154,16 @@ class JarFileTest {
         assertThat(JarFile.toJarFiles(
                 tempDir.resolve("a-1.0.0.jar"),
                 tempDir.resolve("a-2.0.0.jar")))
-            .containsExactly(file1, file2);
+                        .containsExactly(file1, file2);
 
         assertThat(JarFile.toJarFiles(Arrays.asList(
                 tempDir.resolve("a-1.0.0.jar"),
                 tempDir.resolve("a-2.0.0.jar"))))
-            .containsExactly(file1, file2);
+                        .containsExactly(file1, file2);
 
         assertThat(JarFile.toJarFiles(
                 tempDir.resolve("a-1.0.0.jar").toFile(),
                 tempDir.resolve("a-2.0.0.jar").toFile()))
-            .containsExactly(file1, file2);
+                        .containsExactly(file1, file2);
     }
 }

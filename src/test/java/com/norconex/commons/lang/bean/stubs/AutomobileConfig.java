@@ -25,7 +25,7 @@ import lombok.experimental.Accessors;
 @Data
 @Accessors(chain = true)
 @Valid
-@JsonPropertyOrder({"make", "model", "year"})
+@JsonPropertyOrder({ "make", "model", "year" })
 public class AutomobileConfig {
     @JsonProperty("make")
     private String brand;

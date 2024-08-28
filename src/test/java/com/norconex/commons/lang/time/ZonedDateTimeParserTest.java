@@ -43,17 +43,17 @@ class ZonedDateTimeParserTest {
                 .format("yyyy-MM-dd['T'HH:mm:ss][.SSS][Z][z]");
         var zdtp = b.build();
         assertThat(zdtp.parse("2022-11-10T04:49:51.000"))
-            .isEqualTo(DateModel.of(Y, M, D, h, m, s).toZonedDateTime());
+                .isEqualTo(DateModel.of(Y, M, D, h, m, s).toZonedDateTime());
         assertThat(zdtp.parse("2022-11-10T04:49:51.000-08:00"))
-            .isEqualTo(DateModel.of(Y, M, D, h, m, s).withZoneId(vanZoneId)
-                    .toZonedDateTime());
+                .isEqualTo(DateModel.of(Y, M, D, h, m, s).withZoneId(vanZoneId)
+                        .toZonedDateTime());
         assertThat(zdtp.parse("2022-11-10T04:49:51"))
-            .isEqualTo(DateModel.of(Y, M, D, h, m, s).toZonedDateTime());
+                .isEqualTo(DateModel.of(Y, M, D, h, m, s).toZonedDateTime());
         assertThat(zdtp.parse("2022-11-10"))
-            .isEqualTo(DateModel.of(Y, M, D).toZonedDateTime());
+                .isEqualTo(DateModel.of(Y, M, D).toZonedDateTime());
         assertThat(zdtp.parse("2022-11-10T00:00:00-08:00"))
-            .isEqualTo(DateModel.of(Y, M, D)
-                    .withZoneId(vanZoneId).toZonedDateTime());
+                .isEqualTo(DateModel.of(Y, M, D)
+                        .withZoneId(vanZoneId).toZonedDateTime());
 
         assertThatExceptionOfType(DateTimeException.class).isThrownBy(//NOSONAR
                 () -> zdtp.parse("NOGOOD"));
@@ -64,8 +64,8 @@ class ZonedDateTimeParserTest {
                 .zoneId(vanZoneId)
                 .build()
                 .parse("jeu., 10 nov. 2022 04:49:51 PST"))
-            .isEqualTo(DateModel.of(Y, M, D, h, m, s)
-                    .withZoneId(vanZoneId).toZonedDateTime());
+                        .isEqualTo(DateModel.of(Y, M, D, h, m, s)
+                                .withZoneId(vanZoneId).toZonedDateTime());
     }
 
     @Test
@@ -74,16 +74,16 @@ class ZonedDateTimeParserTest {
                 .zoneId(vanZoneId)
                 .build()
                 .parse("1668084591000"))
-            .isEqualTo(DateModel
-                    .of(Y, M, D, h, m, s)
-                    .withZoneId(vanZoneId)
-                    .toZonedDateTime());
+                        .isEqualTo(DateModel
+                                .of(Y, M, D, h, m, s)
+                                .withZoneId(vanZoneId)
+                                .toZonedDateTime());
 
         assertThatExceptionOfType(DateTimeException.class).isThrownBy(//NOSONAR
                 () -> ZonedDateTimeParser.builder()
-                    .zoneId(vanZoneId)
-                    .build()
-                    .parse("1234567890123456789012345678901234567890"));
+                        .zoneId(vanZoneId)
+                        .build()
+                        .parse("1234567890123456789012345678901234567890"));
     }
 
     @Test
@@ -95,7 +95,7 @@ class ZonedDateTimeParserTest {
         // Test within a 2 minute range given we deal with actual time
         assertThat(expectedNow.minusMinutes(1).compareTo(actualNow)
                 * actualNow.compareTo(expectedNow.plusMinutes(1)))
-                    .isNotNegative();
+                        .isNotNegative();
 
         // 9 hour am sharp
         var actualToday = ZonedDateTimeParser.builder()

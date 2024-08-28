@@ -51,7 +51,6 @@ public final class ClassFinder {
 
     private static WeakReference<Cache> refCache;
 
-
     private ClassFinder() {
     }
 
@@ -69,6 +68,7 @@ public final class ClassFinder {
             Class<T> superClass) {
         return findSubTypes(superClass, null);
     }
+
     /**
      * Finds the names of all subtypes of the super class,
      * scanning the roots of this class classpath.
@@ -101,6 +101,7 @@ public final class ClassFinder {
             List<File> files, Class<T> superClass) {
         return findSubTypes(files, superClass, null);
     }
+
     /**
      * Finds the names of all subtypes of the super class in list
      * of {@link File} supplied.
@@ -142,6 +143,7 @@ public final class ClassFinder {
             File file, Class<T> superClass) {
         return findSubTypes(file, superClass, null);
     }
+
     /**
      * Finds the names of all subtypes of the super class for the
      * supplied {@link File}.
@@ -163,7 +165,7 @@ public final class ClassFinder {
         }
         if (file == null || !file.exists()) {
             LOG.warn("Trying to find implementing classes from a null or "
-                   + "non-existant file: {}", file);
+                    + "non-existant file: {}", file);
             return new ArrayList<>();
         }
 
@@ -212,8 +214,8 @@ public final class ClassFinder {
         if (refCache == null || refCache.get() == null) {
             Set<String> classes = new HashSet<>();
             for (File file : Arrays.stream(SystemUtils.JAVA_CLASS_PATH.split(
-                    File.pathSeparator)).distinct().map(
-                           File::new).collect(Collectors.toList())) {
+                    File.pathSeparator)).distinct().map(File::new)
+                    .collect(Collectors.toList())) {
                 Set<String> listClasses = listClasses(file);
                 if (!listClasses.isEmpty()) {
                     classes.addAll(listClasses);
@@ -243,7 +245,7 @@ public final class ClassFinder {
     private static Set<String> listClasses(File file) {
         if (file == null || !file.exists()) {
             LOG.warn("Trying to find implementing classes from a null or "
-                   + "non-existant file: {}", file);
+                    + "non-existant file: {}", file);
             return Collections.emptySet();
         }
         if (file.isDirectory()) {
@@ -261,7 +263,7 @@ public final class ClassFinder {
         Set<String> classes = new HashSet<>();
         String dirPath = dir.getAbsolutePath();
         Collection<File> classFiles = FileUtils.listFiles(
-                dir, new String[] {"class"}, true);
+                dir, new String[] { "class" }, true);
         for (File classFile : classFiles) {
             String filePath = classFile.getAbsolutePath();
             String className = StringUtils.removeStart(filePath, dirPath);
@@ -311,6 +313,7 @@ public final class ClassFinder {
 
     private static class Cache {
         private final Set<String> classes;
+
         public Cache(Set<String> classes) {
             this.classes = Collections.unmodifiableSet(classes);
         }

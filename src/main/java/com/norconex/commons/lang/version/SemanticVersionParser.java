@@ -84,18 +84,18 @@ public class SemanticVersionParser {
     // make sure the string is within reasonable length.
     private static final Pattern semverPattern = Pattern.compile(
             "^(?<leadingchars>.*?)"
-            + "(?<major>0|[1-9]\\d*)"
-            + "(?:\\.(?<minor>0|[1-9]\\d*))?"
-            + "(?:\\.(?<patch>0|[1-9]\\d*))?"
-            + "(?:"
-            +   "(?<prereleaseprefix>[^0-9a-zA-Z\\+])?"
-            +   "(?<prerelease>"
-            +     "(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)"
-            +     "(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*"//NOSONAR
-            +   ")"
-            + ")?"
-            + "(?:\\+(?<buildmetadata>[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?"
-            + "$",
+                    + "(?<major>0|[1-9]\\d*)"
+                    + "(?:\\.(?<minor>0|[1-9]\\d*))?"
+                    + "(?:\\.(?<patch>0|[1-9]\\d*))?"
+                    + "(?:"
+                    + "(?<prereleaseprefix>[^0-9a-zA-Z\\+])?"
+                    + "(?<prerelease>"
+                    + "(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)"
+                    + "(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*"//NOSONAR
+                    + ")"
+                    + ")?"
+                    + "(?:\\+(?<buildmetadata>[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?"
+                    + "$",
             Pattern.MULTILINE);
 
     /**

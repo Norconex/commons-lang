@@ -58,9 +58,10 @@ class XMLIterator implements Iterator<XMLCursor> {
                     "Could not verify if there is a next element.", e);
         }
     }
+
     @Override
     public XMLCursor next() {
-        if(!hasNext()){
+        if (!hasNext()) {
             throw new NoSuchElementException();
         }
         try {

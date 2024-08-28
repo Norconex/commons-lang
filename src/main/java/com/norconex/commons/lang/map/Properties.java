@@ -148,6 +148,7 @@ public class Properties extends ObservableMap<String, List<String>>
     public Properties(Map<String, List<String>> map) {
         this(map, false);
     }
+
     /**
      * Decorates a {@code Map} argument as a {@code Properties}.
      * As of version <b>1.4</b> the {@code Map} argument is decorated so that
@@ -193,6 +194,7 @@ public class Properties extends ObservableMap<String, List<String>>
         }
         return props;
     }
+
     /**
      * Gets a properties subset for values matched by the value matcher.
      * @param valueMatcher values to match
@@ -213,6 +215,7 @@ public class Properties extends ObservableMap<String, List<String>>
         }
         return props;
     }
+
     /**
      * Gets a properties subset for keys and values matched by the property
      * matcher. Same as invoking {@link #match(TextMatcher, TextMatcher)}.
@@ -226,6 +229,7 @@ public class Properties extends ObservableMap<String, List<String>>
         }
         return propertyMatcher.match(this);
     }
+
     /**
      * Gets a properties subset for matching keys and values. Same as
      * invoking {@link #match(PropertyMatcher)}.
@@ -273,6 +277,7 @@ public class Properties extends ObservableMap<String, List<String>>
     public void storeToProperties(Writer writer) throws IOException {
         storeToProperties(writer, null);
     }
+
     /**
      * Stores this {@link Map} in a format
      * compatible with {@link java.util.Properties#store(Writer, String)}.
@@ -290,6 +295,7 @@ public class Properties extends ObservableMap<String, List<String>>
             throws IOException {
         storeToJavaUtilProperties(writer, delimiter, false);
     }
+
     /**
      * Stores this {@link Map} in a format
      * compatible with {@link java.util.Properties#store(OutputStream, String)}.
@@ -302,6 +308,7 @@ public class Properties extends ObservableMap<String, List<String>>
     public void storeToProperties(OutputStream out) throws IOException {
         storeToProperties(out, null);
     }
+
     /**
      * Stores this {@link Map} in a format
      * compatible with {@link java.util.Properties#store(OutputStream, String)}.
@@ -381,7 +388,6 @@ public class Properties extends ObservableMap<String, List<String>>
         storeToJavaUtilProperties(writer, delimiter, true);
     }
 
-
     private synchronized void storeToJavaUtilProperties(
             Object output, String delimiter, boolean isXML) throws IOException {
         // Convert to Java Properties
@@ -433,6 +439,7 @@ public class Properties extends ObservableMap<String, List<String>>
     public void storeToJSON(OutputStream os) throws IOException {
         storeToJSON(new OutputStreamWriter(os, StandardCharsets.UTF_8));
     }
+
     /**
      * Writes this {@link Map} as JSON to the writer in a format
      * suitable for using the
@@ -502,11 +509,13 @@ public class Properties extends ObservableMap<String, List<String>>
                 arg = CollectionUtil.toArray(listType, arrayType);
             } else if (List.class.isAssignableFrom(targetType)) {
                 Class<?> listType =
-                        BeanUtil.getPropertyGenericType(bean.getClass(), property);
+                        BeanUtil.getPropertyGenericType(
+                                bean.getClass(), property);
                 arg = CollectionUtil.toTypeList(values, listType);
             } else if (Set.class.isAssignableFrom(targetType)) {
                 Class<?> listType =
-                        BeanUtil.getPropertyGenericType(bean.getClass(), property);
+                        BeanUtil.getPropertyGenericType(
+                                bean.getClass(), property);
                 arg = ListOrderedSet.listOrderedSet(
                         CollectionUtil.toTypeList(values, listType));
             } else {
@@ -532,6 +541,7 @@ public class Properties extends ObservableMap<String, List<String>>
             throw new PropertiesException("Could not parse string.", e);
         }
     }
+
     /**
      * Converts this {@link Map} to a new Java {@link java.util.Properties}
      * instance.
@@ -597,6 +607,7 @@ public class Properties extends ObservableMap<String, List<String>>
     public void loadFromProperties(Reader reader) throws IOException {
         loadFromProperties(reader, null);
     }
+
     /**
      * Loads this {@link Map} from an input of a format
      * compatible with {@link java.util.Properties#load(Reader)}.
@@ -627,6 +638,7 @@ public class Properties extends ObservableMap<String, List<String>>
             InputStream inStream) throws IOException {
         loadFromProperties(inStream, null);
     }
+
     /**
      * Loads this {@link Map} from an input of a format
      * compatible with {@link java.util.Properties#load(InputStream)}.
@@ -656,6 +668,7 @@ public class Properties extends ObservableMap<String, List<String>>
     public void loadFromXML(InputStream in) throws IOException {
         loadFromXML(in, null);
     }
+
     /**
      * Loads this {@link Map} from an input of a format
      * compatible with {@link java.util.Properties#load(InputStream)}.
@@ -750,6 +763,7 @@ public class Properties extends ObservableMap<String, List<String>>
         }
         loadFromJSON(new InputStreamReader(in, UTF_8));
     }
+
     /**
      * Loads all of the properties from the JSON document reader
      * into this instance.
@@ -804,6 +818,7 @@ public class Properties extends ObservableMap<String, List<String>>
     public final <T> T get(String key, Class<T> type) {
         return get(key, type, null);
     }
+
     /**
      * Gets a single value, converted to the given type.
      * @param key the key of the value to get
@@ -825,6 +840,7 @@ public class Properties extends ObservableMap<String, List<String>>
                     + key + "' value to " + type.getSimpleName(), e);
         }
     }
+
     /**
      * Gets a list of values, with its elements converted to the given type.
      * @param key the key of the values to get
@@ -836,6 +852,7 @@ public class Properties extends ObservableMap<String, List<String>>
     public final <T> List<T> getList(String key, Class<T> type) {
         return CollectionUtil.toTypeList(getStrings(key), type);
     }
+
     /**
      * Gets a list of values, with its elements converted to the given type.
      * @param key the key of the values to get
@@ -870,6 +887,7 @@ public class Properties extends ObservableMap<String, List<String>>
     public final <T> void set(String key, T... values) {
         setList(key, CollectionUtil.asListOrNull(values));
     }
+
     /**
      * Adds one or multiple string values.
      * Adding a single <code>null</code> value has no effect.
@@ -884,6 +902,7 @@ public class Properties extends ObservableMap<String, List<String>>
     public final <T> void add(String key, T... values) {
         addList(key, CollectionUtil.asListOrNull(values));
     }
+
     /**
      * Sets one or multiple values as strings replacing existing ones.
      * Setting a single <code>null</code> value or an empty array is
@@ -906,6 +925,7 @@ public class Properties extends ObservableMap<String, List<String>>
         CollectionUtil.nullsToEmpties(list);
         put(key, list);
     }
+
     /**
      * Adds one or multiple values as strings.
      * Adding a <code>null</code> or empty list has no effect.
@@ -945,6 +965,7 @@ public class Properties extends ObservableMap<String, List<String>>
         }
         return null;
     }
+
     /**
      * Gets value as string.
      * @param key property key
@@ -954,6 +975,7 @@ public class Properties extends ObservableMap<String, List<String>>
     public final String getString(String key, String defaultValue) {
         return ObjectUtils.defaultIfNull(getString(key), defaultValue);
     }
+
     /**
      * Gets values as a list of strings. This method is null-safe. No matches
      * returns an empty list.
@@ -977,6 +999,7 @@ public class Properties extends ObservableMap<String, List<String>>
     public final Integer getInteger(String key) {
         return get(key, Integer.TYPE);
     }
+
     /**
      * Gets value as an integer.
      * @param key property key
@@ -986,6 +1009,7 @@ public class Properties extends ObservableMap<String, List<String>>
     public final Integer getInteger(String key, Integer defaultValue) {
         return get(key, Integer.TYPE, defaultValue);
     }
+
     /**
      * Gets values as a list of integers.
      * @param key property key
@@ -1004,6 +1028,7 @@ public class Properties extends ObservableMap<String, List<String>>
     public final Double getDouble(String key) {
         return get(key, Double.class);
     }
+
     /**
      * Gets value as a double.
      * @param key property key
@@ -1013,6 +1038,7 @@ public class Properties extends ObservableMap<String, List<String>>
     public final Double getDouble(String key, Double defaultValue) {
         return get(key, Double.class, defaultValue);
     }
+
     /**
      * Gets values as a list of doubles.
      * @param key property key
@@ -1031,6 +1057,7 @@ public class Properties extends ObservableMap<String, List<String>>
     public final Long getLong(String key) {
         return get(key, Long.class);
     }
+
     /**
      * Gets value as a long.
      * @param key property key
@@ -1040,6 +1067,7 @@ public class Properties extends ObservableMap<String, List<String>>
     public final Long getLong(String key, Long defaultValue) {
         return get(key, Long.class, defaultValue);
     }
+
     /**
      * Gets values as a list of longs.
      * @param key property key
@@ -1058,6 +1086,7 @@ public class Properties extends ObservableMap<String, List<String>>
     public final Float getFloat(String key) {
         return get(key, Float.class);
     }
+
     /**
      * Gets value as a float.
      * @param key property key
@@ -1067,6 +1096,7 @@ public class Properties extends ObservableMap<String, List<String>>
     public final Float getFloat(String key, Float defaultValue) {
         return get(key, Float.class, defaultValue);
     }
+
     /**
      * Gets values as a list of floats.
      * @param key property key
@@ -1085,6 +1115,7 @@ public class Properties extends ObservableMap<String, List<String>>
     public final BigDecimal getBigDecimal(String key) {
         return get(key, BigDecimal.class);
     }
+
     /**
      * Gets value as a BigDecimal.
      * @param key property key
@@ -1094,6 +1125,7 @@ public class Properties extends ObservableMap<String, List<String>>
     public final BigDecimal getBigDecimal(String key, BigDecimal defaultValue) {
         return get(key, BigDecimal.class, defaultValue);
     }
+
     /**
      * Gets values as a list of BigDecimals.
      * @param key property key
@@ -1114,6 +1146,7 @@ public class Properties extends ObservableMap<String, List<String>>
     public final LocalDateTime getLocalDateTime(String key) {
         return get(key, LocalDateTime.class);
     }
+
     /**
      * Gets value as a local date-time. The date must be a valid date-time
      * as defined by {@link DateTimeFormatter#ISO_LOCAL_DATE_TIME}.
@@ -1126,6 +1159,7 @@ public class Properties extends ObservableMap<String, List<String>>
             String key, LocalDateTime defaultValue) {
         return get(key, LocalDateTime.class, defaultValue);
     }
+
     /**
      * Gets values as a list of local date-times. Each date must be a valid
      * date-time as defined by {@link DateTimeFormatter#ISO_LOCAL_DATE_TIME}.
@@ -1149,6 +1183,7 @@ public class Properties extends ObservableMap<String, List<String>>
     public final Instant getInstant(String key) {
         return get(key, Instant.class);
     }
+
     /**
      * Gets value as a UTC date-time {@link Instant}.
      * The date must be a valid date-time
@@ -1161,6 +1196,7 @@ public class Properties extends ObservableMap<String, List<String>>
     public final Instant getInstant(String key, Instant defaultValue) {
         return get(key, Instant.class, defaultValue);
     }
+
     /**
      * Gets values as a list of UTC date-time {@link Instant}s.
      * Each date must be a valid
@@ -1182,6 +1218,7 @@ public class Properties extends ObservableMap<String, List<String>>
     public final Date getDate(String key) {
         return get(key, Date.class);
     }
+
     /**
      * Gets value as a date.
      * @param key property key
@@ -1191,6 +1228,7 @@ public class Properties extends ObservableMap<String, List<String>>
     public final Date getDate(String key, Date defaultValue) {
         return get(key, Date.class, defaultValue);
     }
+
     /**
      * Gets values as a list of dates.
      * @param key property key
@@ -1212,6 +1250,7 @@ public class Properties extends ObservableMap<String, List<String>>
     public final Boolean getBoolean(String key) {
         return getBoolean(key, false);
     }
+
     /**
      * Gets value as a boolean. The underlying string value matching
      * the key must exist and equal "true" (ignoring case) to return
@@ -1225,6 +1264,7 @@ public class Properties extends ObservableMap<String, List<String>>
     public final Boolean getBoolean(String key, Boolean defaultValue) {
         return get(key, Boolean.class, defaultValue);
     }
+
     /**
      * Gets values as a list of booleans.
      * @param key property key
@@ -1243,6 +1283,7 @@ public class Properties extends ObservableMap<String, List<String>>
     public final Locale getLocale(String key) {
         return get(key, Locale.class);
     }
+
     /**
      * Gets value as a locale.
      * @param key property key
@@ -1252,6 +1293,7 @@ public class Properties extends ObservableMap<String, List<String>>
     public final Locale getLocale(String key, Locale defaultValue) {
         return get(key, Locale.class, defaultValue);
     }
+
     /**
      * Gets values as a list of locales.
      * @param key property key
@@ -1270,6 +1312,7 @@ public class Properties extends ObservableMap<String, List<String>>
     public final File getFile(String key) {
         return get(key, File.class);
     }
+
     /**
      * Gets a file, assuming key value is a file system path.
      * @param key properties key
@@ -1280,6 +1323,7 @@ public class Properties extends ObservableMap<String, List<String>>
     public final File getFile(String key, File defaultValue) {
         return get(key, File.class, defaultValue);
     }
+
     /**
      * Gets values as a list of files.
      * @param key property key
@@ -1299,6 +1343,7 @@ public class Properties extends ObservableMap<String, List<String>>
     public final Class<?> getClass(String key) {
         return get(key, Class.class);
     }
+
     /**
      * Gets a class, assuming key value is a fully qualified class name
      * available in the classloader.
@@ -1310,6 +1355,7 @@ public class Properties extends ObservableMap<String, List<String>>
     public final Class<?> getClass(String key, Class<?> defaultValue) {
         return get(key, Class.class, defaultValue);
     }
+
     /**
      * Gets values as a list of initialized classes.
      * @param key property key
@@ -1380,7 +1426,7 @@ public class Properties extends ObservableMap<String, List<String>>
      */
     public List<String> valueList() {
         List<String> list = new ArrayList<>();
-        for (Collection<String> values: values()) {
+        for (Collection<String> values : values()) {
             list.addAll(values);
         }
         return list;
@@ -1393,6 +1439,7 @@ public class Properties extends ObservableMap<String, List<String>>
         }
         return EqualsUtil.equalsMap(this, (Map<?, ?>) other);
     }
+
     @Override
     public int hashCode() {
         return HashCodeBuilder.reflectionHashCode(this);
@@ -1418,7 +1465,7 @@ public class Properties extends ObservableMap<String, List<String>>
     private void addMapEntry(String key, Object valObj) {
         Iterable<?> it = null;
         if (valObj.getClass().isArray()) {
-            if(valObj.getClass().getComponentType().isPrimitive()) {
+            if (valObj.getClass().getComponentType().isPrimitive()) {
                 List<Object> objs = new ArrayList<>();
                 for (var i = 0; i < Array.getLength(valObj); i++) {
                     objs.add(Array.get(valObj, i));

@@ -30,7 +30,8 @@ import lombok.NonNull;
 @Deprecated(forRemoval = true, since = "3.0.0")
 public final class VersionUtil { //NOSONAR
 
-    private VersionUtil() {}
+    private VersionUtil() {
+    }
 
     /**
      * <p>
@@ -115,6 +116,7 @@ public final class VersionUtil { //NOSONAR
     public static String getDetailedVersion(Class<?> cls) {
         return getDetailedVersion(cls, null);
     }
+
     /**
      * <p>
      * Gets the detailed version from the project or library the provided

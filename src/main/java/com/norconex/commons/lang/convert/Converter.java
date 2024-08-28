@@ -26,7 +26,7 @@ public interface Converter {
         if (value == null) {
             return defaultValue;
         }
-        T obj =  toType(value, type);
+        T obj = toType(value, type);
         if (obj == null) {
             return defaultValue;
         }

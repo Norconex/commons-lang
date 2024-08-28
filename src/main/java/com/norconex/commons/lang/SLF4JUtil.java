@@ -35,8 +35,8 @@ public final class SLF4JUtil {
     static {
         LL_MAP.put(Level.TRACE, Logger::trace);
         LL_MAP.put(Level.DEBUG, Logger::debug);
-        LL_MAP.put(Level.INFO,  Logger::info);
-        LL_MAP.put(Level.WARN,  Logger::warn);
+        LL_MAP.put(Level.INFO, Logger::info);
+        LL_MAP.put(Level.WARN, Logger::warn);
         LL_MAP.put(Level.ERROR, Logger::error);
     }
 
@@ -45,23 +45,22 @@ public final class SLF4JUtil {
     static {
         ENABLED_MAP.put(Level.TRACE, Logger::isTraceEnabled);
         ENABLED_MAP.put(Level.DEBUG, Logger::isDebugEnabled);
-        ENABLED_MAP.put(Level.INFO,  Logger::isInfoEnabled);
-        ENABLED_MAP.put(Level.WARN,  Logger::isWarnEnabled);
+        ENABLED_MAP.put(Level.INFO, Logger::isInfoEnabled);
+        ENABLED_MAP.put(Level.WARN, Logger::isWarnEnabled);
         ENABLED_MAP.put(Level.ERROR, Logger::isErrorEnabled);
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    private static final BidiMap<java.util.logging.Level, Level>
-            JAVA_LEVEL_MAP = new DualHashBidiMap();
+    private static final BidiMap<java.util.logging.Level,
+            Level> JAVA_LEVEL_MAP = new DualHashBidiMap();
     static {
-        JAVA_LEVEL_MAP.put(java.util.logging.Level.FINEST,  Level.TRACE);
-        JAVA_LEVEL_MAP.put(java.util.logging.Level.FINER,   Level.DEBUG);
-        JAVA_LEVEL_MAP.put(java.util.logging.Level.FINE,    Level.DEBUG);
-        JAVA_LEVEL_MAP.put(java.util.logging.Level.INFO,    Level.INFO);
+        JAVA_LEVEL_MAP.put(java.util.logging.Level.FINEST, Level.TRACE);
+        JAVA_LEVEL_MAP.put(java.util.logging.Level.FINER, Level.DEBUG);
+        JAVA_LEVEL_MAP.put(java.util.logging.Level.FINE, Level.DEBUG);
+        JAVA_LEVEL_MAP.put(java.util.logging.Level.INFO, Level.INFO);
         JAVA_LEVEL_MAP.put(java.util.logging.Level.WARNING, Level.WARN);
-        JAVA_LEVEL_MAP.put(java.util.logging.Level.SEVERE,  Level.ERROR);
+        JAVA_LEVEL_MAP.put(java.util.logging.Level.SEVERE, Level.ERROR);
     }
-
 
     private SLF4JUtil() {
     }
@@ -125,6 +124,7 @@ public final class SLF4JUtil {
     public static Level fromJavaLevel(java.util.logging.Level javaLevel) {
         return JAVA_LEVEL_MAP.get(javaLevel);
     }
+
     /**
      * Converts a SLF4J {@link Level} to a Java {@link java.util.logging.Level}.
      * @param level SLF4J Level

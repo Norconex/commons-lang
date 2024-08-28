@@ -30,7 +30,7 @@ package com.norconex.commons.lang.io;
  * @see InputStreamLineListener
  * @deprecated Use {@link InputStreamListener} instead.
  */
-@Deprecated(since="3.0.0")
+@Deprecated(since = "3.0.0")
 @FunctionalInterface
 public interface IInputStreamListener extends InputStreamListener { //NOSONAR
 }

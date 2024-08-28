@@ -51,8 +51,7 @@ class DurationParserTest {
                 "54 jours, 18 heures, 1m et 23 secondes"));
 
         assertThat(frenchParser.parseToMillis("12345678", -1L))
-            .isEqualTo(12345678L);
-
+                .isEqualTo(12345678L);
 
         assertThatExceptionOfType(DurationParserException.class).isThrownBy(
                 () -> frenchParser.parseToMillis("wwwww"));
@@ -74,16 +73,14 @@ class DurationParserTest {
                 "54 jours, 18 heures, 1m et 23 secondes"));
 
         assertThat(frenchParser.parse(null, Duration.ofDays(3)))
-            .isEqualTo(Duration.ofDays(3));
+                .isEqualTo(Duration.ofDays(3));
         assertThat(frenchParser.parse(null, null))
-            .isEqualTo(Duration.ofDays(0));
+                .isEqualTo(Duration.ofDays(0));
         assertThat(frenchParser.getLocale()).isEqualTo(Locale.FRENCH);
     }
 
-
     @Test
     void testMisc() {
-
 
         // test default value
         Assertions.assertEquals(2, englishParser.parseToMillis("-5", 2));

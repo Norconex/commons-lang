@@ -31,19 +31,23 @@ public abstract class BaseConsumerAdapter<A, T>
     public A getConsumerAdaptee() {
         return adaptee;
     }
+
     @SuppressWarnings("unchecked")
     @Override
     public void setConsumerAdaptee(Object adaptee) {
         this.adaptee = (A) adaptee;
     }
+
     @Override
     public String toString() {
         return Objects.toString(adaptee, "");
     }
+
     @Override
     public boolean equals(Object obj) {
         return Objects.equals(adaptee, obj);
     }
+
     @Override
     public int hashCode() {
         return Objects.hashCode(adaptee);

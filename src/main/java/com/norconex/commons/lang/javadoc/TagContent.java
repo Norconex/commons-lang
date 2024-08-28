@@ -41,12 +41,14 @@ public class TagContent {
     public String getName() {
         return unknownTag.getTagName();
     }
+
     public String getReference() {
         if (!parsed) {
             parse();
         }
         return reference;
     }
+
     public String getContent() {
         if (!parsed) {
             parse();
@@ -57,6 +59,7 @@ public class TagContent {
     public TagContent withReference(String reference) {
         return new TagContent(unknownTag, reference, content, parsed);
     }
+
     public TagContent withContent(String content) {
         return new TagContent(unknownTag, reference, content, parsed);
     }
@@ -68,6 +71,7 @@ public class TagContent {
         }
         return of(docTrees.get(0));
     }
+
     public static Optional<TagContent> of(DocTree docTree) {
         if (docTree.getKind() != UNKNOWN_INLINE_TAG) {
             return Optional.empty();

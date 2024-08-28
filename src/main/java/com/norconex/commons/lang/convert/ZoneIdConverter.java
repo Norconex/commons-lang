@@ -36,7 +36,8 @@ public class ZoneIdConverter extends AbstractConverter {
      * JSON (Jackson) serializer using this converter.
      */
     public static class JsonSerializer
-            extends GenericJsonSerializer<ZoneId>{}
+            extends GenericJsonSerializer<ZoneId> {
+    }
 
     /**
      * JSON (Jackson) deserializer using this converter.

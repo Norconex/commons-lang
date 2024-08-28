@@ -27,5 +27,6 @@ import com.norconex.commons.lang.flow.module.FlowSerializer.FlowSerContext;
  */
 interface StatementHandler<T> {
     T read(FlowDeserContext ctx) throws IOException;
+
     void write(T object, FlowSerContext ctx) throws IOException;
 }

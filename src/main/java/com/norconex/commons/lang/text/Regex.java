@@ -119,9 +119,11 @@ public class Regex {
 
     public Regex() {
     }
+
     public Regex(String pattern) {
         this.pattern = pattern;
     }
+
     public Regex(String pattern, int... flags) {
         this.pattern = pattern;
         this.flags.addAll(Arrays.asList(ArrayUtils.toObject(flags)));
@@ -130,9 +132,11 @@ public class Regex {
     public Regex dotAll() {
         return setDotAll(true);
     }
+
     public Regex setDotAll(boolean dotAll) {
         return setFlag(Pattern.DOTALL, dotAll);
     }
+
     public boolean isDotAll() {
         return flags.contains(Pattern.DOTALL);
     }
@@ -140,9 +144,11 @@ public class Regex {
     public Regex ignoreCase() {
         return setIgnoreCase(true);
     }
+
     public Regex setIgnoreCase(boolean ignoreCase) {
         return setFlag(UNICODE_CASE_INSENSTIVE_FLAG, ignoreCase);
     }
+
     public boolean isIgnoreCase() {
         return flags.contains(UNICODE_CASE_INSENSTIVE_FLAG);
     }
@@ -150,9 +156,11 @@ public class Regex {
     public Regex unixLines() {
         return setUnixLines(true);
     }
+
     public Regex setUnixLines(boolean unixLines) {
         return setFlag(Pattern.UNIX_LINES, unixLines);
     }
+
     public boolean isUnixLines() {
         return flags.contains(Pattern.UNIX_LINES);
     }
@@ -160,9 +168,11 @@ public class Regex {
     public Regex literal() {
         return setLiteral(true);
     }
+
     public Regex setLiteral(boolean literal) {
         return setFlag(Pattern.LITERAL, literal);
     }
+
     public boolean isLiteral() {
         return flags.contains(Pattern.LITERAL);
     }
@@ -170,9 +180,11 @@ public class Regex {
     public Regex comments() {
         return setComments(true);
     }
+
     public Regex setComments(boolean comments) {
         return setFlag(Pattern.COMMENTS, comments);
     }
+
     public boolean isComments() {
         return flags.contains(Pattern.COMMENTS);
     }
@@ -180,9 +192,11 @@ public class Regex {
     public Regex multiline() {
         return setMultiline(true);
     }
+
     public Regex setMultiline(boolean multiline) {
         return setFlag(Pattern.MULTILINE, multiline);
     }
+
     public boolean isMultiline() {
         return flags.contains(Pattern.MULTILINE);
     }
@@ -190,9 +204,11 @@ public class Regex {
     public Regex canonEq() {
         return setCanonEq(true);
     }
+
     public Regex setCanonEq(boolean canonEq) {
         return setFlag(Pattern.CANON_EQ, canonEq);
     }
+
     public boolean isCanonEq() {
         return flags.contains(Pattern.CANON_EQ);
     }
@@ -200,9 +216,11 @@ public class Regex {
     public Regex unicodeCase() {
         return setUnicodeCase(true);
     }
+
     public Regex setUnicodeCase(boolean unicode) {
         return setFlag(Pattern.UNICODE_CASE, unicode);
     }
+
     public boolean isUnicodeCase() {
         return flags.contains(Pattern.UNICODE_CASE);
     }
@@ -210,9 +228,11 @@ public class Regex {
     public Regex unicodeCharacterClass() {
         return setUnicodeCharacterClass(true);
     }
+
     public Regex setUnicodeCharacterClass(boolean unicode) {
         return setFlag(Pattern.UNICODE_CHARACTER_CLASS, unicode);
     }
+
     public boolean isUnicodeCharacterClass() {
         return flags.contains(Pattern.UNICODE_CHARACTER_CLASS);
     }
@@ -225,9 +245,11 @@ public class Regex {
     public Regex ignoreDiacritic() {
         return setIgnoreDiacritic(true);
     }
+
     public Regex setIgnoreDiacritic(boolean ignoreDiacritic) {
         return setFlag(UNICODE_MARK_INSENSTIVE_FLAG, ignoreDiacritic);
     }
+
     public boolean isIgnoreDiacritic() {
         return flags.contains(UNICODE_MARK_INSENSTIVE_FLAG);
     }
@@ -242,6 +264,7 @@ public class Regex {
     public boolean isMatchEmpty() {
         return matchEmpty;
     }
+
     /**
      * Sets whether <code>null</code> or empty strings should be considered a
      * positive match. To also consider blank values as positive matches,
@@ -255,6 +278,7 @@ public class Regex {
         this.matchEmpty = matchEmpty;
         return this;
     }
+
     /**
      * Sets that <code>null</code> or empty strings should be considered a
      * positive match. Same as invoking {@link #setMatchEmpty(boolean)} with
@@ -275,6 +299,7 @@ public class Regex {
     public boolean isTrim() {
         return trim;
     }
+
     /**
      * Sets whether values should be trimmed before being evaluated
      * (as per {@link String#trim()}).
@@ -286,6 +311,7 @@ public class Regex {
         this.trim = trim;
         return this;
     }
+
     /**
      * Sets that values should be trimmed before being evaluated
      * (as per {@link String#trim()}). Same as invoking
@@ -305,6 +331,7 @@ public class Regex {
         }
         return this;
     }
+
     @JsonIgnore
     public Set<Integer> getFlags() {
         return Collections.unmodifiableSet(flags);
@@ -314,6 +341,7 @@ public class Regex {
         this.pattern = pattern;
         return this;
     }
+
     public String getPattern() {
         return pattern;
     }
@@ -333,6 +361,7 @@ public class Regex {
     public Pattern compile() {
         return compile(pattern);
     }
+
     /**
      * <p>
      * Compiles the given pattern without assigning it to this object.
@@ -410,6 +439,7 @@ public class Regex {
     public Matcher matcher(CharSequence text) {
         return matcher(pattern, text);
     }
+
     /**
      * Matches the the given pattern against the given text without assigning
      * the pattern to this object.
@@ -445,13 +475,16 @@ public class Regex {
     public RegexFieldValueExtractor createKeyValueExtractor() {
         return new RegexFieldValueExtractor(this);
     }
+
     public RegexFieldValueExtractor createKeyValueExtractor(String key) {
         return new RegexFieldValueExtractor(this, key);
     }
+
     public RegexFieldValueExtractor createKeyValueExtractor(
             String key, int valueGroup) {
         return new RegexFieldValueExtractor(this, key, valueGroup);
     }
+
     public RegexFieldValueExtractor createKeyValueExtractor(
             int keyGroup, int valueGroup) {
         return new RegexFieldValueExtractor(this, keyGroup, valueGroup);

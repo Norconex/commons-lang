@@ -36,7 +36,6 @@ class FilteredInputStreamTest {
             assertThat(IOUtils.toString(is, UTF_8)).isEqualTo("one\n");
         }
 
-
         try (FilteredInputStream is = new FilteredInputStream(
                 new ByteArrayInputStream(LINES.getBytes()),
                 "two"::equals,

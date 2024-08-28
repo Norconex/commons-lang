@@ -30,26 +30,24 @@ class DataUnitTest {
         Assertions.assertEquals(
                 3, DataUnit.MIB.from(3072, DataUnit.KIB).intValue());
 
-
         // Test bytes vs bits
-        Assertions.assertEquals(1024*8, DataUnit.KIB.toBits(1).intValue());
+        Assertions.assertEquals(1024 * 8, DataUnit.KIB.toBits(1).intValue());
 
         assertThat(DataUnit.B.getName()).isEqualTo("byte");
         assertThat(DataUnit.EIB)
-            .returns("exibyte", DataUnit::getName)
-            .returns("exi", DataUnit::getPrefix)
-            .returns("EiB", DataUnit::getSymbol)
-            .returns(6, DataUnit::getGroupIndex)
-            .returns(true, DataUnit::isByteUnit)
-            .returns(true, DataUnit::isBinary)
-            .returns(false, DataUnit::isDecimal)
-            ;
+                .returns("exibyte", DataUnit::getName)
+                .returns("exi", DataUnit::getPrefix)
+                .returns("EiB", DataUnit::getSymbol)
+                .returns(6, DataUnit::getGroupIndex)
+                .returns(true, DataUnit::isByteUnit)
+                .returns(true, DataUnit::isBinary)
+                .returns(false, DataUnit::isDecimal);
         assertThat(DataUnit.KBIT.bits()).isEqualTo(1000);
         assertThat(DataUnit.KBIT.bytes()).isEqualTo(125);
         assertThat(DataUnit.KBIT.fromBits(2000))
-            .isEqualByComparingTo(BigDecimal.valueOf(2));
+                .isEqualByComparingTo(BigDecimal.valueOf(2));
         assertThat(DataUnit.KBIT.fromBytes(250))
-            .isEqualByComparingTo(BigDecimal.valueOf(2));
+                .isEqualByComparingTo(BigDecimal.valueOf(2));
 
         assertThat(DataUnit.from("EIB")).isEqualTo(DataUnit.EIB);
         assertThat(DataUnit.EIB).hasToString("EiB");

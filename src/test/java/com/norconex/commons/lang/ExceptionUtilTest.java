@@ -23,9 +23,10 @@ class ExceptionUtilTest {
     @Test
     void testGetFormattedMessages() {
         var msg = ExceptionUtil.getFormattedMessages(
-            new RuntimeException("A parent runtime exception.",
-                new RuntimeException(null,
-                    new NullPointerException("A null pointer exception."))));
+                new RuntimeException("A parent runtime exception.",
+                        new RuntimeException(null,
+                                new NullPointerException(
+                                        "A null pointer exception."))));
         assertThat(msg).isEqualTo(
                 """
                 RuntimeException: A parent runtime exception.
@@ -36,12 +37,13 @@ class ExceptionUtilTest {
     @Test
     void testGetMessageList() {
         var msgs = ExceptionUtil.getMessageList(
-            new RuntimeException("A parent runtime exception.",
-                new RuntimeException(null,
-                    new NullPointerException("A null pointer exception."))));
+                new RuntimeException("A parent runtime exception.",
+                        new RuntimeException(null,
+                                new NullPointerException(
+                                        "A null pointer exception."))));
         assertThat(msgs).containsExactly(
-                    "RuntimeException: A parent runtime exception.",
-                    "RuntimeException: ",
-                    "NullPointerException: A null pointer exception.");
+                "RuntimeException: A parent runtime exception.",
+                "RuntimeException: ",
+                "NullPointerException: A null pointer exception.");
     }
 }

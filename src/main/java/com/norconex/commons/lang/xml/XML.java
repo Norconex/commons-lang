@@ -166,6 +166,7 @@ public class XML implements Iterable<XMLCursor> {
     public XML(Path file) {
         this(XML.of(file).create().node);
     }
+
     /**
      * <p>Parse an XML file into an XML document, without consideration
      * for namespaces.</p>
@@ -175,6 +176,7 @@ public class XML implements Iterable<XMLCursor> {
     public XML(File file) {
         this(XML.of(file).create().node);
     }
+
     /**
      * <p>Parse an XML stream into an XML document, without consideration
      * for namespaces.</p>
@@ -184,6 +186,7 @@ public class XML implements Iterable<XMLCursor> {
     public XML(Reader reader) {
         this(XML.of(reader).create().node);
     }
+
     /**
      * <p>
      * Parse an XML string into an XML document, without consideration
@@ -257,21 +260,27 @@ public class XML implements Iterable<XMLCursor> {
     public static Builder of(File file) {
         return new Builder(file);
     }
+
     public static Builder of(Path path) {
         return new Builder(path);
     }
+
     public static Builder of(Node node) {
         return new Builder(node);
     }
+
     public static Builder of(InputStream is) {
         return new Builder(is);
     }
+
     public static Builder of(Reader reader) {
         return new Builder(reader);
     }
+
     public static Builder of(String xml) {
         return new Builder(xml);
     }
+
     public static Builder of(String rootElementName, Object object) {
         return new Builder(object, rootElementName);
     }
@@ -287,19 +296,23 @@ public class XML implements Iterable<XMLCursor> {
         private Builder(Object source) {
             this(source, null);
         }
+
         private Builder(Object source, String rootElementName) {
             this.source = source;
             this.rootElementName = rootElementName;
         }
+
         public Builder setDocumentBuilderFactory(
                 DocumentBuilderFactory documentBuilderFactory) {
             this.documentBuilderFactory = documentBuilderFactory;
             return this;
         }
+
         public Builder setErrorHandler(ErrorHandler errorHandler) {
             this.errorHandler = errorHandler;
             return this;
         }
+
         public XML create() {
             errorHandler = defaultIfNull(errorHandler);
             documentBuilderFactory = defaultIfNull(documentBuilderFactory);
@@ -344,7 +357,7 @@ public class XML implements Iterable<XMLCursor> {
             try {
                 node = documentBuilderFactory.newDocumentBuilder()
                         .parse(new InputSource(new StringReader(xmlStr)))
-                            .getDocumentElement();
+                        .getDocumentElement();
             } catch (ParserConfigurationException
                     | SAXException | IOException e) {
                 throw new XMLException("Could not parse XML.", e);
@@ -357,6 +370,7 @@ public class XML implements Iterable<XMLCursor> {
             return new XML(
                     node, sourceObject, errorHandler, documentBuilderFactory);
         }
+
         private static String readerToString(Reader reader) {
             try {
                 return IOUtils.toString(reader);
@@ -364,6 +378,7 @@ public class XML implements Iterable<XMLCursor> {
                 throw new XMLException("Could not read XML.", e);
             }
         }
+
         private static String fileToString(File file) {
             try {
                 return FileUtils.readFileToString(file, StandardCharsets.UTF_8);
@@ -425,7 +440,7 @@ public class XML implements Iterable<XMLCursor> {
         } catch (Exception e) {
             throw new XMLException("XML (tag: <" + getName() + ">) "
                     + "could not be converted to object of type: "
-                            + targetObject.getClass(), e);
+                    + targetObject.getClass(), e);
         }
     }
 
@@ -453,6 +468,7 @@ public class XML implements Iterable<XMLCursor> {
     public <T> T toObject() {
         return toObject(null);
     }
+
     /**
      * <p>
      * Creates a new instance of the class represented by the "class" attribute
@@ -536,6 +552,7 @@ public class XML implements Iterable<XMLCursor> {
     public <T> T toObjectImpl(Class<?> type) {
         return toObjectImpl(type, null);
     }
+
     /**
      * <p>
      * Creates a new instance of the class represented by the "class" attribute
@@ -588,15 +605,15 @@ public class XML implements Iterable<XMLCursor> {
                         .toList();
                 if (filteredResults.size() != 1) {
                     throw new XMLException(results.size()
-                        + " classes implementing \""
-                        + type.getName() + "\" "
-                        + "and ending with \"" + partialName + "\" "
-                        + "where found when only 1 was expected. "
-                        + "Consider using fully qualified class name. "
-                        + "Found classes: "
-                        + results.stream()
-                                .map(c -> ((Class<?>) c).getName())
-                                .collect(Collectors.joining(", ")));
+                            + " classes implementing \""
+                            + type.getName() + "\" "
+                            + "and ending with \"" + partialName + "\" "
+                            + "where found when only 1 was expected. "
+                            + "Consider using fully qualified class name. "
+                            + "Found classes: "
+                            + results.stream()
+                                    .map(c -> ((Class<?>) c).getName())
+                                    .collect(Collectors.joining(", ")));
                 }
                 LOG.debug("""
                     {} classes implementing "{}" and ending\s\
@@ -612,11 +629,11 @@ public class XML implements Iterable<XMLCursor> {
 
             if (results.isEmpty()) {
                 throw new XMLException(
-                          "No class implementing \""
-                        + type.getName() + "\" "
-                        + "and ending with \"" + partialName + "\" "
-                        + "could be found. Check your classpath or "
-                        + "consider using fully qualified class name.");
+                        "No class implementing \""
+                                + type.getName() + "\" "
+                                + "and ending with \"" + partialName + "\" "
+                                + "could be found. Check your classpath or "
+                                + "consider using fully qualified class name.");
             }
             obj = toObject((Class<T>) results.get(0), defaultObject);
         }
@@ -649,6 +666,7 @@ public class XML implements Iterable<XMLCursor> {
     public <T extends Object> T getObject(String xpathExpression) {
         return getObject(xpathExpression, (T) null);
     }
+
     /**
      * <p>Creates a new instance of the class represented by the "class"
      * attribute on the node matching the expression.
@@ -688,6 +706,7 @@ public class XML implements Iterable<XMLCursor> {
             return defaultObject;
         }
     }
+
     /**
      * <p>Creates an instance list from classes represented by the "class"
      * attribute on the nodes matching the expression.
@@ -736,6 +755,7 @@ public class XML implements Iterable<XMLCursor> {
         }
         return list;
     }
+
     /**
      * <p>Creates an instance list from classes represented by the "class"
      * attribute on the nodes matching the expression.
@@ -789,6 +809,7 @@ public class XML implements Iterable<XMLCursor> {
             Class<?> type, String xpathExpression) {
         return getObjectImpl(type, xpathExpression, (T) null);
     }
+
     /**
      * <p>Creates a new instance of the class represented by the "class"
      * attribute on the node matching the expression.
@@ -840,6 +861,7 @@ public class XML implements Iterable<XMLCursor> {
             return defaultObject;
         }
     }
+
     /**
      * <p>Creates an instance list from classes represented by the "class"
      * attribute on the nodes matching the expression.
@@ -900,6 +922,7 @@ public class XML implements Iterable<XMLCursor> {
         }
         return list;
     }
+
     /**
      * <p>Creates an instance list from classes represented by the "class"
      * attribute on the nodes matching the expression.
@@ -950,6 +973,7 @@ public class XML implements Iterable<XMLCursor> {
             String xpathExpression, Class<T> type) {
         return getDelimitedList(xpathExpression, type, Collections.emptyList());
     }
+
     /**
      * Gets a list of given type after splitting the matching node value(s)
      * on commas (CSV).
@@ -968,6 +992,7 @@ public class XML implements Iterable<XMLCursor> {
         return getDelimitedList(
                 xpathExpression, type, DEFAULT_DELIM_REGEX, defaultValues);
     }
+
     /**
      * Gets a list of given type after splitting the matching node value(s) with
      * the given delimiter regular expression.
@@ -984,6 +1009,7 @@ public class XML implements Iterable<XMLCursor> {
         return getDelimitedList(
                 xpathExpression, type, delimRegex, Collections.emptyList());
     }
+
     /**
      * Gets a list of given type after splitting the matching node value(s) with
      * the given delimiter regular expression.
@@ -1068,12 +1094,15 @@ public class XML implements Iterable<XMLCursor> {
     public Node getNode(String xpathExpression) {
         return getNode(xpathExpression, node);
     }
+
     public Node getNode() {
         return node;
     }
+
     public Node toNode() {
         return node;
     }
+
     private Node getNode(String xpathExpression, Node parentNode) {
         try {
             return (Node) XPathUtil.newXPathExpression(
@@ -1083,6 +1112,7 @@ public class XML implements Iterable<XMLCursor> {
                     "Could not evaluate XPath expression.", e);
         }
     }
+
     private Optional<NodeArrayList> getNodeList(String xpathExpression) {
         try {
             var nodeList = (NodeList) XPathUtil.newXPathExpression(
@@ -1108,7 +1138,8 @@ public class XML implements Iterable<XMLCursor> {
         } catch (XPathExpressionException e) {
             throw new XMLException(
                     "Could not evaluate XPath expression: '"
-                            + xpathExpression + "'.", e);
+                            + xpathExpression + "'.",
+                    e);
         }
     }
 
@@ -1117,6 +1148,7 @@ public class XML implements Iterable<XMLCursor> {
     public String getString(String xpathExpression) {
         return getString(xpathExpression, null);
     }
+
     public String getString(String xpathExpression, String defaultValue) {
         var n = getNode(xpathExpression);
         if (n == null) {
@@ -1124,6 +1156,7 @@ public class XML implements Iterable<XMLCursor> {
         }
         return getNodeString(n);
     }
+
     /**
      * Gets the matching list of elements/attributes as strings.
      * @param xpathExpression XPath expression to the node values
@@ -1136,6 +1169,7 @@ public class XML implements Iterable<XMLCursor> {
         }
         return list;
     }
+
     /**
      * Gets the matching list of elements/attributes as strings.
      * @param xpathExpression XPath expression to the node values
@@ -1182,6 +1216,7 @@ public class XML implements Iterable<XMLCursor> {
         }
         return values;
     }
+
     /**
      * Gets a list of strings after splitting the matching node value(s)
      * on commas (CSV).
@@ -1197,6 +1232,7 @@ public class XML implements Iterable<XMLCursor> {
         return getDelimitedStringList(
                 xpathExpression, DEFAULT_DELIM_REGEX, defaultValues);
     }
+
     /**
      * Gets a list of strings after splitting the matching node value(s) with
      * the given delimiter regular expression. Values are trimmed
@@ -1214,6 +1250,7 @@ public class XML implements Iterable<XMLCursor> {
         }
         return values;
     }
+
     /**
      * Gets a list of strings after splitting the matching node value(s) with
      * the given delimiter regular expression. Values are trimmed
@@ -1257,6 +1294,7 @@ public class XML implements Iterable<XMLCursor> {
         }
         return Collections.emptyList();
     }
+
     private List<String> split(String str, String delimRegex) {
         if (StringUtils.isBlank(str)) {
             return Collections.emptyList();
@@ -1278,6 +1316,7 @@ public class XML implements Iterable<XMLCursor> {
             String xpathExpression, Class<E> enumClass) {
         return get(xpathExpression, enumClass);
     }
+
     /**
      * Gets an Enum constant matching one of the constants in the provided
      * Enum class, ignoring case.
@@ -1355,6 +1394,7 @@ public class XML implements Iterable<XMLCursor> {
     public final Path getPath(String xpathExpression) {
         return get(xpathExpression, Path.class);
     }
+
     /**
      * Gets a path, assuming the node value is a file system path.
      * @param xpathExpression XPath expression to the node containing the path
@@ -1365,6 +1405,7 @@ public class XML implements Iterable<XMLCursor> {
     public final Path getPath(String xpathExpression, Path defaultValue) {
         return get(xpathExpression, Path.class, defaultValue);
     }
+
     /**
      * Gets values as a list of paths.
      * @param xpathExpression XPath expression
@@ -1374,6 +1415,7 @@ public class XML implements Iterable<XMLCursor> {
     public final List<Path> getPathList(String xpathExpression) {
         return (List<Path>) getList(xpathExpression, Path.class);
     }
+
     /**
      * Gets values as a list of paths.
      * @param xpathExpression XPath expression
@@ -1396,6 +1438,7 @@ public class XML implements Iterable<XMLCursor> {
     public final File getFile(String xpathExpression) {
         return get(xpathExpression, File.class);
     }
+
     /**
      * Gets a file, assuming the node value is a file system path.
      * @param xpathExpression XPath expression to the node containing the path
@@ -1406,6 +1449,7 @@ public class XML implements Iterable<XMLCursor> {
     public final File getFile(String xpathExpression, File defaultValue) {
         return get(xpathExpression, File.class, defaultValue);
     }
+
     /**
      * Gets values as a list of files.
      * @param xpathExpression XPath expression
@@ -1415,6 +1459,7 @@ public class XML implements Iterable<XMLCursor> {
     public final List<File> getFileList(String xpathExpression) {
         return (List<File>) getList(xpathExpression, File.class);
     }
+
     /**
      * Gets values as a list of files.
      * @param xpathExpression XPath expression
@@ -1432,13 +1477,16 @@ public class XML implements Iterable<XMLCursor> {
     public final URL getURL(String xpathExpression) {
         return get(xpathExpression, URL.class);
     }
+
     public final URL getURL(String xpathExpression, URL defaultValue) {
         return get(xpathExpression, URL.class, defaultValue);
     }
+
     @SuppressWarnings("unchecked")
     public final List<URL> getURLList(String xpathExpression) {
         return (List<URL>) getList(xpathExpression, URL.class);
     }
+
     @SuppressWarnings("unchecked")
     public final List<URL> getURLList(
             String xpathExpression, List<URL> defaultValue) {
@@ -1450,6 +1498,7 @@ public class XML implements Iterable<XMLCursor> {
     public Integer getInteger(String xpathExpression) {
         return get(xpathExpression, Integer.class);
     }
+
     public Integer getInteger(String xpathExpression, Integer defaultValue) {
         return get(xpathExpression, Integer.class, defaultValue);
     }
@@ -1459,6 +1508,7 @@ public class XML implements Iterable<XMLCursor> {
     public Long getLong(String xpathExpression) {
         return get(xpathExpression, Long.class);
     }
+
     public Long getLong(String xpathExpression, Long defaultValue) {
         return get(xpathExpression, Long.class, defaultValue);
     }
@@ -1468,6 +1518,7 @@ public class XML implements Iterable<XMLCursor> {
     public Float getFloat(String xpathExpression) {
         return get(xpathExpression, Float.class);
     }
+
     public Float getFloat(String xpathExpression, Float defaultValue) {
         return get(xpathExpression, Float.class, defaultValue);
     }
@@ -1477,6 +1528,7 @@ public class XML implements Iterable<XMLCursor> {
     public Dimension getDimension(String xpathExpression) {
         return get(xpathExpression, Dimension.class);
     }
+
     public Dimension getDimension(
             String xpathExpression, Dimension defaultValue) {
         return get(xpathExpression, Dimension.class, defaultValue);
@@ -1487,6 +1539,7 @@ public class XML implements Iterable<XMLCursor> {
     public Double getDouble(String xpathExpression) {
         return get(xpathExpression, Double.class);
     }
+
     public Double getDouble(String xpathExpression, Double defaultValue) {
         return get(xpathExpression, Double.class, defaultValue);
     }
@@ -1496,6 +1549,7 @@ public class XML implements Iterable<XMLCursor> {
     public Boolean getBoolean(String xpathExpression) {
         return get(xpathExpression, Boolean.class);
     }
+
     public Boolean getBoolean(String xpathExpression, Boolean defaultValue) {
         return get(xpathExpression, Boolean.class, defaultValue);
     }
@@ -1505,6 +1559,7 @@ public class XML implements Iterable<XMLCursor> {
     public Locale getLocale(String xpathExpression) {
         return get(xpathExpression, Locale.class);
     }
+
     public Locale getLocale(String xpathExpression, Locale defaultValue) {
         return get(xpathExpression, Locale.class, defaultValue);
     }
@@ -1514,6 +1569,7 @@ public class XML implements Iterable<XMLCursor> {
     public Charset getCharset(String xpathExpression) {
         return get(xpathExpression, Charset.class);
     }
+
     public Charset getCharset(String xpathExpression, Charset defaultValue) {
         return get(xpathExpression, Charset.class, defaultValue);
     }
@@ -1531,6 +1587,7 @@ public class XML implements Iterable<XMLCursor> {
     public Long getDataSize(String xpathExpression) {
         return getDataSize(xpathExpression, null, null);
     }
+
     /**
      * Gets the size of a data expression, in bytes (e.g., 2KB, 1GiB,
      * 3 megabytes, etc).  Without a unit specified, the value is assumed
@@ -1544,6 +1601,7 @@ public class XML implements Iterable<XMLCursor> {
             String xpathExpression, Long defaultValue) {
         return getDataSize(xpathExpression, null, defaultValue);
     }
+
     /**
      * Gets the size of a data expression, in the specified target unit
      * (e.g., 2KB, 1GiB, 3 megabytes, etc).  Without a unit specified
@@ -1579,6 +1637,7 @@ public class XML implements Iterable<XMLCursor> {
     public Long getDurationMillis(String xpathExpression) {
         return getDurationMillis(xpathExpression, null);
     }
+
     /**
      * Gets a duration in milliseconds which can exists as a numerical
      * value or a textual
@@ -1597,6 +1656,7 @@ public class XML implements Iterable<XMLCursor> {
         }
         return d.toMillis();
     }
+
     /**
      * Gets a duration which can exists as a numerical
      * value or a textual
@@ -1612,6 +1672,7 @@ public class XML implements Iterable<XMLCursor> {
     public Duration getDuration(String xpathExpression) {
         return get(xpathExpression, Duration.class);
     }
+
     /**
      * Gets a duration which can exists as a numerical
      * value or a textual
@@ -1640,6 +1701,7 @@ public class XML implements Iterable<XMLCursor> {
     public Pattern getPattern(String xpathExpression) {
         return get(xpathExpression, Pattern.class);
     }
+
     /**
      * Gets a regular expression pattern.
      * @param xpathExpression xpath to the element/attribute with the pattern
@@ -1807,6 +1869,7 @@ public class XML implements Iterable<XMLCursor> {
             throw new XMLException("Could not validate class: " + clazz, e);
         }
     }
+
     private void validate(
             Class<?> clazz,
             InputStream xsdStream,
@@ -1888,6 +1951,7 @@ public class XML implements Iterable<XMLCursor> {
     public boolean equals(Object obj) {
         return toString().equals(Objects.toString(obj, null));
     }
+
     @Override
     public int hashCode() {
         return toString().hashCode();
@@ -1902,6 +1966,7 @@ public class XML implements Iterable<XMLCursor> {
     public String toString() {
         return toString(0);
     }
+
     /**
      * Gets a string representation of this XML.
      * @param indent whether to indent the XML
@@ -1942,7 +2007,8 @@ public class XML implements Iterable<XMLCursor> {
                 | TransformerException e) {
             throw new XMLException(
                     "Could not convert node to reader "
-                  + "for node \"" + node.getNodeName() + "\".", e);
+                            + "for node \"" + node.getNodeName() + "\".",
+                    e);
         }
     }
 
@@ -2005,7 +2071,7 @@ public class XML implements Iterable<XMLCursor> {
                     node, XPathConstants.NODE) != null;
         } catch (XPathExpressionException e) {
             throw new XMLException(
-                    "Could not evaluate expression: " + xpathExpression, e) ;
+                    "Could not evaluate expression: " + xpathExpression, e);
         }
     }
 
@@ -2014,17 +2080,18 @@ public class XML implements Iterable<XMLCursor> {
      * @return new XPath instance
      * @deprecated Use {@link XPathUtil#newXPath()} instead
      */
-    @Deprecated(since="3.0.0")
+    @Deprecated(since = "3.0.0")
     public static XPath newXPath() { //NOSONAR
         return XPathUtil.newXPath();
     }
+
     /**
      * Gets a new compiled {@link XPathExpression} from the given string.
      * @param expression the XPath string
      * @return compiled XPath expression
      * @deprecated Use {@link XPathUtil#newXPathExpression(String)} instead
      */
-    @Deprecated(since="3.0.0")
+    @Deprecated(since = "3.0.0")
     public static XPathExpression newXPathExpression( //NOSONAR
             String expression) {
         return XPathUtil.newXPathExpression(expression);
@@ -2041,6 +2108,7 @@ public class XML implements Iterable<XMLCursor> {
     public <T> T get(String xpathExpression, Class<T> type) {
         return get(xpathExpression, type, null);
     }
+
     /**
      * Gets the matching element/attribute, converted from
      * string to the given type.
@@ -2074,6 +2142,7 @@ public class XML implements Iterable<XMLCursor> {
             String xpathExpression, Class<T> type) {
         return getList(xpathExpression, type, Collections.emptyList());
     }
+
     /**
      * Gets the matching list of elements/attributes, converted from
      * string to the given type.
@@ -2112,6 +2181,7 @@ public class XML implements Iterable<XMLCursor> {
         }
         return map;
     }
+
     /**
      * Gets the matching map of elements/attributes as strings.
      * @param xpathList XPath expression to the node list representing the map
@@ -2223,6 +2293,7 @@ public class XML implements Iterable<XMLCursor> {
         }
         return Collections.unmodifiableList(xmlList);
     }
+
     /**
      * Adds a list of values under a new parent tag name to the current XML
      * and return the added list.
@@ -2254,6 +2325,7 @@ public class XML implements Iterable<XMLCursor> {
     public XML addDelimitedElementList(String name, List<?> values) {
         return addDelimitedElementList(name, ",", values);
     }
+
     /**
      * Adds a list of values as a new element after joining them with
      * the given delimiter. Values are trimmed and blank entries removed.
@@ -2304,7 +2376,7 @@ public class XML implements Iterable<XMLCursor> {
             return Collections.emptyList();
         }
         List<XML> xmlList = new ArrayList<>();
-        for (Entry<?, ?> en: map.entrySet()) {
+        for (Entry<?, ?> en : map.entrySet()) {
             var name = GenericConverter.convert(en.getKey());
             CollectionUtil.toStringList(
                     CollectionUtil.adaptedList(en.getValue())).forEach(
@@ -2313,6 +2385,7 @@ public class XML implements Iterable<XMLCursor> {
         }
         return Collections.unmodifiableList(xmlList);
     }
+
     /**
      * <p>
      * Adds a {@link Map} as a series of elements with a parent element
@@ -2390,6 +2463,7 @@ public class XML implements Iterable<XMLCursor> {
         }
         return newXML;
     }
+
     /**
      * Inserts a new XML node after this one, as a sibling of a shared parent.
      * If there is no parent to this XML, the new XML is not inserted.
@@ -2430,6 +2504,7 @@ public class XML implements Iterable<XMLCursor> {
         }
         return this;
     }
+
     /**
      * Sets attributes on this XML element.
      * @param attribs attributes
@@ -2444,6 +2519,7 @@ public class XML implements Iterable<XMLCursor> {
         }
         return this;
     }
+
     /**
      * Sets a list of values as an attribute after joining them with
      * a comma (CSV). Values are trimmed and blank entries removed.
@@ -2456,6 +2532,7 @@ public class XML implements Iterable<XMLCursor> {
     public XML setDelimitedAttributeList(String name, List<?> values) {
         return setDelimitedAttributeList(name, ",", values);
     }
+
     /**
      * Sets a list of values as an attribute after joining them with
      * the given delimiter. Values are trimmed and blank entries removed.
@@ -2471,7 +2548,7 @@ public class XML implements Iterable<XMLCursor> {
         if (values.isEmpty()) {
             return this;
         }
-        setAttribute(name, join(delim, values));  //NOSONAR
+        setAttribute(name, join(delim, values)); //NOSONAR
         return this;
     }
 
@@ -2564,10 +2641,12 @@ public class XML implements Iterable<XMLCursor> {
     public XML addXML(Reader xml) {
         return addXML(createAndInitXML(XML.of(xml)));
     }
+
     // returns the newly added XML
     public XML addXML(String xml) {
         return addXML(createAndInitXML(XML.of(xml)));
     }
+
     // returns the newly added XML
     public XML addXML(XML xml) {
         var childNode = node.getOwnerDocument().importNode(xml.node, true);
@@ -2586,7 +2665,8 @@ public class XML implements Iterable<XMLCursor> {
             }
         };
     }
-    @Deprecated(since="3.0.0")
+
+    @Deprecated(since = "3.0.0")
     public EnhancedXMLStreamWriter getXMLStreamWriter() {
         return new EnhancedXMLStreamWriter(getXMLWriter());
     }
@@ -2594,6 +2674,7 @@ public class XML implements Iterable<XMLCursor> {
     public void write(Writer writer) {
         write(writer, 0);
     }
+
     public void write(Writer writer, int indent) {
         try {
             writer.write(toString(indent));
@@ -2605,13 +2686,15 @@ public class XML implements Iterable<XMLCursor> {
     public void write(File file) {
         write(file, 0);
     }
+
     public void write(File file, int indent) {
         try {
             FileUtils.writeStringToFile(
                     file, toString(indent), StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new XMLException(
-                    "Could not write XML to file: " + file.getAbsolutePath(), e);
+                    "Could not write XML to file: " + file.getAbsolutePath(),
+                    e);
         }
     }
 
@@ -2695,8 +2778,9 @@ public class XML implements Iterable<XMLCursor> {
      * @since 3.0.0
      */
     public boolean isEmpty() {
-        return !hasAttributes() && ! hasTextContent() && !hasChildElements();
+        return !hasAttributes() && !hasTextContent() && !hasChildElements();
     }
+
     /**
      * Gets whether this XML element has any child elements.
      * @return <code>true</code> if this element has at least one child element
@@ -2707,6 +2791,7 @@ public class XML implements Iterable<XMLCursor> {
                 .filter(n -> n.getNodeType() == Node.ELEMENT_NODE)
                 .count() > 0;
     }
+
     /**
      * Gets whether this XML element has any attributes.
      * @return <code>true</code> if this element has at least one attribute
@@ -2715,6 +2800,7 @@ public class XML implements Iterable<XMLCursor> {
     public boolean hasAttributes() {
         return node.hasAttributes();
     }
+
     /**
      * Gets whether this XML has any text content.
      * @return <code>true</code> if non-<code>null</code> and non-empty.
@@ -2735,7 +2821,7 @@ public class XML implements Iterable<XMLCursor> {
 
         // overwrite parent node with child one
         var attrs = replacement.node.getAttributes();
-        for (var i=0; i < attrs.getLength(); i++) {
+        for (var i = 0; i < attrs.getLength(); i++) {
             node.getAttributes().setNamedItem(
                     doc.importNode(attrs.item(i), true));
         }
@@ -2751,11 +2837,13 @@ public class XML implements Iterable<XMLCursor> {
     public Class<?> getClass(String xpathExpression) {
         return get(xpathExpression, Class.class);
     }
+
     @SuppressWarnings("unchecked")
     public <T> Class<T> getClass(
             String xpathExpression, Class<T> defaultValue) {
         return get(xpathExpression, Class.class, defaultValue);
     }
+
     /**
      * Gets values as a list of files.
      * @param xpathExpression XPath expression
@@ -2766,6 +2854,7 @@ public class XML implements Iterable<XMLCursor> {
     public final <T> List<Class<T>> getClassList(String xpathExpression) {
         return (List<Class<T>>) getList(xpathExpression, Class.class);
     }
+
     /**
      * Gets values as a list of files.
      * @param xpathExpression XPath expression
@@ -2784,6 +2873,7 @@ public class XML implements Iterable<XMLCursor> {
             String xpathExpression, @NonNull Function<XML, T> parser) {
         return parseXML(xpathExpression, parser, null);
     }
+
     public <T> T parseXML(
             String xpathExpression,
             @NonNull Function<XML, T> parser,
@@ -2800,6 +2890,7 @@ public class XML implements Iterable<XMLCursor> {
             String xpathExpression, @NonNull Function<XML, T> parser) {
         return parseXMLList(xpathExpression, parser, null);
     }
+
     public <T> List<T> parseXMLList(
             String xpathExpression,
             @NonNull Function<XML, T> parser,
@@ -2834,14 +2925,15 @@ public class XML implements Iterable<XMLCursor> {
 
     //MAYBE: have a formatXMLMap and others
     //MAYBE: allow to specify map implementation?
-    public <K,V> Map<K,V> parseXMLMap(
+    public <K, V> Map<K, V> parseXMLMap(
             String xpathExpression, Function<XML, Entry<K, V>> parser) {
         return parseXMLMap(xpathExpression, parser, null);
     }
-    public <K,V> Map<K,V> parseXMLMap(
+
+    public <K, V> Map<K, V> parseXMLMap(
             String xpathExpression,
             Function<XML, Entry<K, V>> parser,
-            Map<K,V> defaultValue) {
+            Map<K, V> defaultValue) {
         Objects.requireNonNull(parser, "Parser argument cannot be null.");
 
         var xmls = getXMLListOptional(xpathExpression);
@@ -2852,7 +2944,7 @@ public class XML implements Iterable<XMLCursor> {
             return Collections.emptyMap();
         }
 
-        Map<K,V> map = new ListOrderedMap<>();
+        Map<K, V> map = new ListOrderedMap<>();
         for (XML xml : xmls.get()) {
             if (xml != null) {
                 var entry = parser.apply(xml);
@@ -2903,6 +2995,7 @@ public class XML implements Iterable<XMLCursor> {
             }
         }
     }
+
     /**
      * Checks whether a deprecated configuration entry (without replacement)
      * was specified and log a warning or throw an {@link XMLException}.
@@ -2918,6 +3011,7 @@ public class XML implements Iterable<XMLCursor> {
     public ErrorHandler getErrorHandler() {
         return errorHandler;
     }
+
     public DocumentBuilderFactory getDocumentBuilderFactory() {
         return documentBuilderFactory;
     }
@@ -2925,6 +3019,7 @@ public class XML implements Iterable<XMLCursor> {
     public static boolean isXMLConfigurable(Object obj) {
         return obj instanceof XMLConfigurable;
     }
+
     public static boolean isJAXB(Object obj) {
         return obj != null && obj.getClass().isAnnotationPresent(
                 XmlRootElement.class);
@@ -2942,6 +3037,7 @@ public class XML implements Iterable<XMLCursor> {
     public Iterator<XMLCursor> iterator() {
         return iterator(this);
     }
+
     /**
      * Returns a {@link Stream} of {@link XMLCursor} from this XML,
      * in sequential order.
@@ -2953,6 +3049,7 @@ public class XML implements Iterable<XMLCursor> {
     public Stream<XMLCursor> stream() {
         return stream(this);
     }
+
     /**
      * <p>
      * Returns an {@link Iterator} of {@link XMLCursor} from the supplied XML
@@ -2981,6 +3078,7 @@ public class XML implements Iterable<XMLCursor> {
     public static Iterator<XMLCursor> iterator(Object obj) {
         return new XMLIterator(XMLUtil.createXMLEventReader(obj));
     }
+
     /**
      * <p>
      * Returns a {@link Stream} of {@link XMLCursor} from the supplied XML
@@ -3020,8 +3118,8 @@ public class XML implements Iterable<XMLCursor> {
      * @return joined values, as a string
      * @deprecated Will be removed or visibility reduced in a future release.
      */
-    @Deprecated(since="3.0.0")
-    public String join(String delim, List<?> values) {  //NOSONAR
+    @Deprecated(since = "3.0.0")
+    public String join(String delim, List<?> values) { //NOSONAR
         var sep = Objects.toString(delim, ",");
         var b = new StringBuilder();
         for (Object obj : values) {
@@ -3051,7 +3149,7 @@ public class XML implements Iterable<XMLCursor> {
 
     private static ErrorHandler defaultIfNull(ErrorHandler eh) {
         return Optional.ofNullable(eh).orElseGet(
-                    () -> new ErrorHandlerFailer(XML.class));
+                () -> new ErrorHandlerFailer(XML.class));
     }
 
     private boolean isDefined() {
@@ -3081,7 +3179,8 @@ public class XML implements Iterable<XMLCursor> {
         }
         throw new XMLException(
                 "Could not instantiate object from configuration "
-              + "for \"" + rootNode + " -> " + key + "\".", e);
+                        + "for \"" + rootNode + " -> " + key + "\".",
+                e);
     }
 
     // For some reason, the following is required as a workaround
@@ -3118,10 +3217,11 @@ public class XML implements Iterable<XMLCursor> {
         public W3XMLNamespaceFilter(XMLReader parent) {
             super(parent);
         }
+
         @Override
         public void startElement(
                 String uri, String localName, String qName, Attributes atts)
-                        throws SAXException {
+                throws SAXException {
             for (var i = 0; i < atts.getLength(); i++) {
                 if (XMLConstants.XML_NS_URI.equals(atts.getURI(i))) {
                     var modifiedAtts = new AttributesImpl(atts);
@@ -3152,9 +3252,9 @@ public class XML implements Iterable<XMLCursor> {
         var str = n.getTextContent();
 
         Optional<String> xmlSpace = Optional
-            .ofNullable(n.getAttributes())
-            .map(nnm -> nnm.getNamedItem(ATT_XML_SPACE))
-            .map(Node::getNodeValue);
+                .ofNullable(n.getAttributes())
+                .map(nnm -> nnm.getNamedItem(ATT_XML_SPACE))
+                .map(Node::getNodeValue);
 
         // Empty tags are converted to "" while self-closed to null:
         if (StringUtils.isEmpty(str)) {

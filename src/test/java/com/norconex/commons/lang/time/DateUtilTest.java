@@ -107,7 +107,6 @@ class DateUtilTest {
         assertEquals(toDate(utcInstant()), sysDateTime);
         assertEquals(toDate(utcInstant(), vanZoneOffset), vanDateTime);
 
-
         // 1. UTC Date to LocalDateTime in each local,
         // 2. Each local LocalDateTime back to UTC Date
         assertEquals(toDateUTC(toLocalDateTimeUTC(utcDateTime)), utcDateTime);
@@ -154,24 +153,31 @@ class DateUtilTest {
                 actual, expected, actual.getClass().getSimpleName());
         assertThat(actual).isEqualTo(expected);
     }
+
     private static LocalDateTime utcLocalDateTime() {
         return ofEpochSecond(utcDateTimeAsEpoch / 1000L, 0, utcZoneOffset);
     }
+
     private static LocalDateTime sysLocalDateTime() {
         return ofEpochSecond(utcDateTimeAsEpoch / 1000L, 0, sysZoneOffset);
     }
+
     private static LocalDateTime vanLocalDateTime() {
         return ofEpochSecond(utcDateTimeAsEpoch / 1000L, 0, vanZoneOffset);
     }
+
     private static Instant utcInstant() {
         return Instant.ofEpochMilli(utcDateTimeAsEpoch);
     }
+
     private static LocalDate utcLocalDate() {
         return utcLocalDateTime().toLocalDate();
     }
+
     private static LocalDate sysLocalDate() {
         return sysLocalDateTime().toLocalDate();
     }
+
     private static LocalDate vanLocalDate() {
         return vanLocalDateTime().toLocalDate();
     }

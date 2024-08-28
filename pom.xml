@@ -69,6 +69,11 @@
     <!-- Test and provided -->      
     <lombok.version>1.18.32</lombok.version>
     
+    <!-- === Maven plugins ================================================= -->
+
+    <formatter-maven-plugin.version>2.24.1</formatter-maven-plugin.version>
+    
+    
   </properties>
 
   <licenses>
@@ -361,6 +366,35 @@
         <version>3.5.3</version>
       </extension>
     </extensions>
+
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>net.revelc.code.formatter</groupId>
+          <artifactId>formatter-maven-plugin</artifactId>
+          <version>${formatter-maven-plugin.version}</version>
+          <executions>
+            <execution>
+              <goals>
+                <goal>format</goal>
+              </goals>
+            </execution>
+          </executions>
+          <configuration>
+            <compilerSource>${java.version}</compilerSource>
+            <compilerCompliance>${java.version}</compilerCompliance>
+            <compilerTargetPlatform>${java.version}</compilerTargetPlatform>
+            <lineEnding>LF</lineEnding>
+            <encoding>UTF-8</encoding>
+            <configFile>norconex-formatter.xml</configFile>
+            <includes>
+              <include>com/norconex/**/*.java</include>
+            </includes>
+          </configuration>
+          <inherited>true</inherited>
+        </plugin>
+      </plugins>
+    </pluginManagement>
 
     <plugins>
 
@@ -826,7 +860,12 @@
           </execution>
         </executions>
       </plugin>
-            
+
+      <plugin>
+        <groupId>net.revelc.code.formatter</groupId>
+        <artifactId>formatter-maven-plugin</artifactId>
+      </plugin>
+
     </plugins>
 
   </build>

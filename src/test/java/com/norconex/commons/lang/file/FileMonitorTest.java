@@ -48,7 +48,7 @@ class FileMonitorTest {
         File file = tempDir.resolve("file.txt").toFile();
         FileUtils.touch(file);
         FileMonitor.getInstance().addFileChangeListener(
-                listener,  file.getAbsolutePath(), 50L);
+                listener, file.getAbsolutePath(), 50L);
 
         FileUtils.writeStringToFile(file, "one", UTF_8);
         Sleeper.sleepMillis(100);

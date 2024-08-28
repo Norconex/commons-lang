@@ -19,6 +19,6 @@ package com.norconex.commons.lang.file;
  * @since 1.3.0
  * @deprecated Use {@link FileChangeListener} instead
  */
-@Deprecated(since="3.0.0")
+@Deprecated(since = "3.0.0")
 public interface IFileChangeListener extends FileChangeListener { //NOSONAR
 }

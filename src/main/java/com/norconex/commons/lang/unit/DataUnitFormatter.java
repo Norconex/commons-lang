@@ -74,10 +74,12 @@ public class DataUnitFormatter implements Serializable {
     public Locale getLocale() {
         return locale;
     }
+
     public DataUnitFormatter setLocale(Locale locale) {
         this.locale = locale;
         return this;
     }
+
     public DataUnitFormatter withLocale(Locale locale) {
         return new DataUnitFormatter(this).setLocale(locale);
     }
@@ -85,10 +87,12 @@ public class DataUnitFormatter implements Serializable {
     public int getDecimalPrecision() {
         return decimalPrecision;
     }
+
     public DataUnitFormatter setDecimalPrecision(int decimalPrecision) {
         this.decimalPrecision = decimalPrecision;
         return this;
     }
+
     public DataUnitFormatter withDecimalPrecision(int decimalPrecision) {
         return new DataUnitFormatter(this)
                 .setDecimalPrecision(decimalPrecision);
@@ -97,10 +101,12 @@ public class DataUnitFormatter implements Serializable {
     public boolean isFixedUnit() {
         return fixedUnit;
     }
+
     public DataUnitFormatter setFixedUnit(boolean fixedUnit) {
         this.fixedUnit = fixedUnit;
         return this;
     }
+
     public DataUnitFormatter withFixedUnit(boolean fixedUnit) {
         return new DataUnitFormatter(this).setFixedUnit(fixedUnit);
     }
@@ -108,10 +114,12 @@ public class DataUnitFormatter implements Serializable {
     public boolean isBinaryNotation() {
         return binaryNotation;
     }
+
     public DataUnitFormatter setBinaryNotation(boolean binaryNotation) {
         this.binaryNotation = binaryNotation;
         return this;
     }
+
     public DataUnitFormatter withBinaryNotation(boolean binaryNotation) {
         return new DataUnitFormatter(this).setBinaryNotation(binaryNotation);
     }
@@ -119,10 +127,12 @@ public class DataUnitFormatter implements Serializable {
     public RoundingMode getRoundingMode() {
         return roundingMode;
     }
+
     public DataUnitFormatter setRoundingMode(RoundingMode roundingMode) {
         this.roundingMode = roundingMode;
         return this;
     }
+
     public DataUnitFormatter withRoundingMode(RoundingMode roundingMode) {
         return new DataUnitFormatter(this).setRoundingMode(roundingMode);
     }
@@ -154,9 +164,11 @@ public class DataUnitFormatter implements Serializable {
         }
 
         List<DataUnit> units = binaryNotation
-                ? DataUnit.BINARY_BYTE_UNITS : DataUnit.DECIMAL_BYTE_UNITS;
+                ? DataUnit.BINARY_BYTE_UNITS
+                : DataUnit.DECIMAL_BYTE_UNITS;
         int kiloLength = (binaryNotation
-                ? DataUnit.KIB : DataUnit.KB).bytes().intValue();
+                ? DataUnit.KIB
+                : DataUnit.KB).bytes().intValue();
         int unitIndex = unit.getGroupIndex();
 
         // Use coarser unit if applicable to make value more human-readable
@@ -168,7 +180,7 @@ public class DataUnitFormatter implements Serializable {
                     / Math.log(kiloLength));
             if (unitShift > 0) {
                 DataUnit scaledUnit = units.get(Math.min(
-                        unitIndex + unitShift, units.size() -1));
+                        unitIndex + unitShift, units.size() - 1));
                 resolvedAmount = scaledUnit.from(resolvedAmount, resolvedUnit);
                 resolvedUnit = scaledUnit;
             }

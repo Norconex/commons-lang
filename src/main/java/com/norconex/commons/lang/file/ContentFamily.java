@@ -107,6 +107,7 @@ public final class ContentFamily {
         }
         return forContentType(contentType.toString());
     }
+
     public static ContentFamily forContentType(String contentType) {
         if (StringUtils.isBlank(contentType)) {
             return null;
@@ -135,6 +136,7 @@ public final class ContentFamily {
     public String getDisplayName() {
         return getDisplayName(Locale.getDefault());
     }
+
     public String getDisplayName(Locale locale) {
         var safeLocale = locale;
         if (safeLocale == null) {
@@ -147,6 +149,7 @@ public final class ContentFamily {
         }
         return "[" + id + "]";
     }
+
     private synchronized ResourceBundle getDisplayBundle(Locale locale) {
         var bundle = BUNDLE_DISPLAYNAMES.get(locale);
         if (bundle != null) {
@@ -155,7 +158,8 @@ public final class ContentFamily {
         try {
             bundle = ResourceBundle.getBundle(
                     ContentFamily.class.getSimpleName()
-                            + "-custom-names", locale);
+                            + "-custom-names",
+                    locale);
         } catch (MissingResourceException e) {
             bundle = ResourceBundle.getBundle(
                     ContentFamily.class.getName() + "-names", locale);
@@ -164,13 +168,13 @@ public final class ContentFamily {
         return bundle;
     }
 
-
     public boolean contains(ContentType contentType) {
         if (contentType == null) {
             return false;
         }
         return contains(contentType.toString());
     }
+
     public boolean contains(String contentType) {
         var family = forContentType(contentType);
         return family == this;

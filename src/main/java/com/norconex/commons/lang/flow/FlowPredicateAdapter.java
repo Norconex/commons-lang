@@ -21,5 +21,6 @@ import java.util.function.Predicate;
 // predicate/consumer type?
 public interface FlowPredicateAdapter<T> extends Predicate<T> {
     Object getPredicateAdaptee();
+
     void setPredicateAdaptee(Object predicateAdaptee);
 }

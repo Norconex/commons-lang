@@ -60,7 +60,7 @@ public class RelativeIncludeEventHandler implements IncludeEventHandler {
             VariablesFileResolver.resolve(
                     FilenameUtils.getFullPath(inclFile),
                     FilenameUtils.getBaseName(inclFile))
-                .forEach(context::put);
+                    .forEach(context::put);
         }
         LOG.debug("Resolved include/parse template file: {}", inclFile);
         return inclFile;

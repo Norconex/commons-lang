@@ -44,17 +44,20 @@ public class Consumers<T> extends ArrayList<Consumer<T>>
 
     private static final long serialVersionUID = 1L;
 
-    public Consumers() {}
+    public Consumers() {
+    }
+
     public Consumers(int initialCapacity) {
         super(initialCapacity);
     }
+
     public Consumers(Collection<? extends Consumer<T>> consumers) {
         super(consumers == null
                 ? Collections.emptyList()
                 : consumers
-                    .stream()
-                    .filter(Objects::nonNull)
-                    .toList());
+                        .stream()
+                        .filter(Objects::nonNull)
+                        .toList());
     }
 
     @Override

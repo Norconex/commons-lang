@@ -52,6 +52,7 @@ public class InputStreamConsumer extends Thread {
     public InputStreamConsumer(InputStream input) {
         this(input, null);
     }
+
     /**
      * Constructor.
      * @param input input stream
@@ -65,6 +66,7 @@ public class InputStreamConsumer extends Thread {
             InputStreamListener... listeners) {
         this(input, DEFAULT_CHUNK_SIZE, type, listeners);
     }
+
     /**
      * Constructor.
      * @param input input stream
@@ -78,7 +80,7 @@ public class InputStreamConsumer extends Thread {
     public InputStreamConsumer(
             InputStream input, int chunkSize, String type,
             InputStreamListener... listeners) {
-        super("StreamConsumer" + (type == null ? "": "-" + type));
+        super("StreamConsumer" + (type == null ? "" : "-" + type));
         this.input = input;
         this.type = type;
         this.chunkSize = chunkSize;
@@ -102,6 +104,7 @@ public class InputStreamConsumer extends Thread {
         }
         afterStreaming();
     }
+
     /**
      * Returns stream listeners.
      * @return the listeners
@@ -109,6 +112,7 @@ public class InputStreamConsumer extends Thread {
     public InputStreamListener[] getStreamListeners() {
         return listeners.toArray(new InputStreamListener[] {});
     }
+
     /**
      * Gets the stream type or <code>null</code> if no type was set.
      * @return the type
@@ -116,6 +120,7 @@ public class InputStreamConsumer extends Thread {
     public String getType() {
         return type;
     }
+
     /**
      * Invoked just before steaming begins, in a new thread.
      * Default implementation does nothing.  This method is for implementors.
@@ -123,6 +128,7 @@ public class InputStreamConsumer extends Thread {
     protected void beforeStreaming() {
         // do nothing (for subclasses)
     }
+
     /**
      * Invoked just after steaming ended, before the thread dies.
      * Default implementation does nothing.  This method is for implementors.
@@ -158,6 +164,7 @@ public class InputStreamConsumer extends Thread {
     public static void consume(InputStream input) {
         consume(input, null);
     }
+
     /**
      * Convenience method for creating a consumer instance and starting it.
      * @param input input stream
@@ -170,6 +177,7 @@ public class InputStreamConsumer extends Thread {
             InputStreamListener... listeners) {
         consume(input, DEFAULT_CHUNK_SIZE, type, listeners);
     }
+
     /**
      * Convenience method for creasing a consumer instance, starting it,
      * and waiting for it to complete.
@@ -185,6 +193,7 @@ public class InputStreamConsumer extends Thread {
             InputStreamListener... listeners) {
         new InputStreamConsumer(input, chunkSize, type, listeners).start();
     }
+
     /**
      * Convenience method for creasing a consumer instance, starting it,
      * and waiting for it to complete.
@@ -193,6 +202,7 @@ public class InputStreamConsumer extends Thread {
     public static void consumeAndWait(InputStream input) {
         consumeAndWait(input, null);
     }
+
     /**
      * Convenience method for creasing a consumer instance and starting it.
      * @param input input stream
@@ -205,6 +215,7 @@ public class InputStreamConsumer extends Thread {
             InputStreamListener... listeners) {
         consumeAndWait(input, DEFAULT_CHUNK_SIZE, type, listeners);
     }
+
     /**
      * Convenience method for creasing a consumer instance, starting it,
      * and waiting for it to complete.

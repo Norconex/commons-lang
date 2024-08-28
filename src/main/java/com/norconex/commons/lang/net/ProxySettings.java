@@ -58,9 +58,10 @@ import lombok.extern.slf4j.Slf4j;
 @FieldNameConstants(level = AccessLevel.PRIVATE)
 @Slf4j
 @JsonAutoDetect(
-        fieldVisibility=Visibility.ANY,
-        getterVisibility=Visibility.NONE,
-        isGetterVisibility=Visibility.NONE)
+    fieldVisibility = Visibility.ANY,
+    getterVisibility = Visibility.NONE,
+    isGetterVisibility = Visibility.NONE
+)
 public class ProxySettings implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -70,10 +71,13 @@ public class ProxySettings implements Serializable {
     private final Credentials credentials = new Credentials();
     private String realm;
 
-    public ProxySettings() {}
+    public ProxySettings() {
+    }
+
     public ProxySettings(String name, int port) {
         this(new Host(name, port));
     }
+
     public ProxySettings(Host host) {
         this.host = host;
     }
@@ -86,6 +90,7 @@ public class ProxySettings implements Serializable {
     public Host getHost() {
         return host;
     }
+
     /**
      * Sets the proxy host.
      * @param host proxy host
@@ -104,6 +109,7 @@ public class ProxySettings implements Serializable {
     public String getScheme() {
         return scheme;
     }
+
     /**
      * Sets the proxy scheme.
      * @param scheme proxy scheme
@@ -123,6 +129,7 @@ public class ProxySettings implements Serializable {
     public Credentials getCredentials() {
         return credentials;
     }
+
     /**
      * Sets the proxy credentials.
      * @param credentials proxy credentials
@@ -142,6 +149,7 @@ public class ProxySettings implements Serializable {
     public String getRealm() {
         return realm;
     }
+
     /**
      * Sets the proxy realm.
      * @param realm proxy realm
@@ -160,6 +168,7 @@ public class ProxySettings implements Serializable {
     public void copyTo(ProxySettings another) {
         BeanUtil.copyProperties(another, this);
     }
+
     public void copyFrom(ProxySettings another) {
         BeanUtil.copyProperties(this, another);
     }

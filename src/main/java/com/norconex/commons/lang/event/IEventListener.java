@@ -20,7 +20,7 @@ package com.norconex.commons.lang.event;
  * @since 2.0.0
  * @deprecated Use {@link com.norconex.commons.lang.event.EventListener} instead
  */
-@Deprecated(since="3.0.0")
+@Deprecated(since = "3.0.0")
 @FunctionalInterface
 public interface IEventListener<T extends Event> //NOSONAR
         extends EventListener<T> {

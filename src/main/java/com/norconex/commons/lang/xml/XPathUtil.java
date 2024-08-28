@@ -27,7 +27,8 @@ import org.apache.commons.lang3.StringUtils;
  */
 public final class XPathUtil {
 
-    private XPathUtil() {}
+    private XPathUtil() {
+    }
 
     /**
      * Create an XPath attribute reference or an empty string if the
@@ -51,6 +52,7 @@ public final class XPathUtil {
         // Consider caching w/ ThreadLocal if performance becomes a concern
         return XPathFactory.newInstance().newXPath();
     }
+
     /**
      * Gets a new compiled {@link XPathExpression} from the given string.
      * @param expression the XPath string

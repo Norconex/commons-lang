@@ -76,8 +76,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public final class BeanUtil {
 
-    private BeanUtil() {}
-
+    private BeanUtil() {
+    }
 
     //--------------------------------------------------------------------------
     // Bean methods
@@ -171,12 +171,12 @@ public final class BeanUtil {
             return Collections.emptyList();
         }
         return FieldUtils.getAllFieldsList(beanClass).stream()
-            .filter(f -> Modifier.isPrivate(f.getModifiers())
-                    && !Modifier.isNative(f.getModifiers())
-                    && !Modifier.isStatic(f.getModifiers()))
-            .map(f -> doGetFluentPropertyDescriptor(beanClass, f))
-            .filter(Objects::nonNull)
-            .toList();
+                .filter(f -> Modifier.isPrivate(f.getModifiers())
+                        && !Modifier.isNative(f.getModifiers())
+                        && !Modifier.isStatic(f.getModifiers()))
+                .map(f -> doGetFluentPropertyDescriptor(beanClass, f))
+                .filter(Objects::nonNull)
+                .toList();
     }
 
     /**
@@ -200,7 +200,7 @@ public final class BeanUtil {
             }
             var name = pd.getName();
             // only copy if target property is null and is writable
-            if (getValue (target, name) == null && isWritable(target, name)) {
+            if (getValue(target, name) == null && isWritable(target, name)) {
                 setValue(target, name, getValue(source, name));
             }
             return true;
@@ -346,7 +346,6 @@ public final class BeanUtil {
         return false;
     }
 
-
     //--------------------------------------------------------------------------
     // Property methods
     //--------------------------------------------------------------------------
@@ -396,8 +395,8 @@ public final class BeanUtil {
             var field = beanClass.getDeclaredField(propertyName);
             var type = field.getGenericType();
             if (type instanceof ParameterizedType) {
-                return (Class<?>)
-                        ((ParameterizedType) type).getActualTypeArguments()[0];
+                return (Class<?>) ((ParameterizedType) type)
+                        .getActualTypeArguments()[0];
             }
             return null;
         } catch (NoSuchFieldException e) {
@@ -494,6 +493,7 @@ public final class BeanUtil {
             Class<?> beanClass, String propertyName) {
         return getWriteMethod(beanClass, propertyName, null);
     }
+
     /**
      * Gets the write method (setter) for a bean property.
      * Supports method name variations for accessors.
@@ -716,7 +716,6 @@ public final class BeanUtil {
         return getWriteMethod(beanClass, propertyName) != null;
     }
 
-
     //--------------------------------------------------------------------------
     // Map/Properties methods
     //--------------------------------------------------------------------------
@@ -791,7 +790,6 @@ public final class BeanUtil {
         return props;
     }
 
-
     //--------------------------------------------------------------------------
     // Visitor/Graph methods
     //--------------------------------------------------------------------------
@@ -826,7 +824,10 @@ public final class BeanUtil {
         // does not return anything. same as predicate always returning true
         doVisit(VisitArgs.beanVisitor()
                 .bean(bean)
-                .visitor(b -> {visitor.accept(b); return true;})
+                .visitor(b -> {
+                    visitor.accept(b);
+                    return true;
+                })
                 .build());
     }
 
@@ -843,7 +844,10 @@ public final class BeanUtil {
             Object bean, Consumer<T> visitor, Class<T> type) {
         doVisit(VisitArgs.<T>beanVisitor()
                 .bean(bean)
-                .visitor(b -> {visitor.accept(b); return true;})
+                .visitor(b -> {
+                    visitor.accept(b);
+                    return true;
+                })
                 .type(type)
                 .build());
     }
@@ -901,7 +905,10 @@ public final class BeanUtil {
         // does not return anything... same as predicate always returning true
         doVisitProperties(VisitArgs.propertyVisitor()
                 .bean(bean)
-                .visitor((b, p) -> {visitor.accept(b, p); return true;})
+                .visitor((b, p) -> {
+                    visitor.accept(b, p);
+                    return true;
+                })
                 .build());
     }
 
@@ -922,7 +929,10 @@ public final class BeanUtil {
             BiConsumer<T, PropertyDescriptor> visitor, Class<T> type) {
         doVisitProperties(VisitArgs.<T>propertyVisitor()
                 .bean(bean)
-                .visitor((b, p) -> {visitor.accept((T) b, p); return true;})
+                .visitor((b, p) -> {
+                    visitor.accept((T) b, p);
+                    return true;
+                })
                 .type(type)
                 .build());
     }
@@ -974,7 +984,6 @@ public final class BeanUtil {
                 .build());
     }
 
-
     //--------------------------------------------------------------------------
     // Private/package methods
     //--------------------------------------------------------------------------
@@ -988,13 +997,14 @@ public final class BeanUtil {
                 && !args.visitor.test((T) args.bean)) {
             return false;
         }
-        
+
         if (args.visitIfMap(BeanUtil::doVisitMap)
                 && args.visitIfCollection(BeanUtil::doVisitCollection)) {
             for (Object child : getChildren(args.bean)) {
                 var childArgs = args.withBean(child);
                 if (!childArgs.visitIfMap(BeanUtil::doVisitMap)
-                        || !childArgs.visitIfCollection(BeanUtil::doVisitCollection)
+                        || !childArgs
+                                .visitIfCollection(BeanUtil::doVisitCollection)
                         || !doVisit(childArgs)) {
                     return false;
                 }
@@ -1071,6 +1081,7 @@ public final class BeanUtil {
         }
         return true;
     }
+
     private static <T> boolean doVisitPropertiesCollection(
             Collection<Object> collection,
             VisitArgs<BiPredicate<Object, PropertyDescriptor>, T> args) {
@@ -1138,16 +1149,16 @@ public final class BeanUtil {
                 method = beanClass.getMethod(methodName, propType);
             } catch (NoSuchMethodException
                     | SecurityException
-                    | NullPointerException e ) {
+                    | NullPointerException e) {
                 // swallow
             }
         } else {
             // get first matching method name, having a single argument
             method = Stream.of(beanClass.getMethods())
-                .filter(m -> m.getName().equals(methodName))
-                .filter(m -> m.getParameterCount() == 1)
-                .findFirst()
-                .orElse(null);
+                    .filter(m -> m.getName().equals(methodName))
+                    .filter(m -> m.getParameterCount() == 1)
+                    .findFirst()
+                    .orElse(null);
         }
 
         // if fluent is requested and is not fluent, we don't return it
@@ -1221,6 +1232,7 @@ public final class BeanUtil {
         static <T> VisitArgsBuilder<Predicate<T>, T> beanVisitor() {
             return new VisitArgsBuilder<>();
         }
+
         static <T> VisitArgsBuilder<
                 BiPredicate<Object, PropertyDescriptor>, T> propertyVisitor() {
             return new VisitArgsBuilder<>();
@@ -1233,6 +1245,7 @@ public final class BeanUtil {
         boolean isBeanNullOrCached() {
             return bean == null || !cache.add(bean);
         }
+
         boolean isTypeNullOrBeanInstance() {
             return type == null || type.isInstance(bean);
         }
@@ -1246,6 +1259,7 @@ public final class BeanUtil {
             // continue if not a map
             return true;
         }
+
         @SuppressWarnings("unchecked")
         boolean visitIfCollection(
                 BiPredicate<Collection<Object>, VisitArgs<V, T>> predicate) {

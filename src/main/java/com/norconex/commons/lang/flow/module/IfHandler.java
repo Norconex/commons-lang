@@ -129,6 +129,7 @@ class IfHandler<T> implements StatementHandler<Consumer<T>> {
         private Predicate<T> condition;
         private Consumer<T> thenConsumer;
         private Consumer<T> elseConsumer;
+
         public void setCondition(
                 Object condition, String name) throws IOException {
             if (this.condition != null) {
@@ -137,12 +138,14 @@ class IfHandler<T> implements StatementHandler<Consumer<T>> {
             }
             this.condition = (Predicate<T>) condition;
         }
+
         public void setThenConsumer(Object thenConsumer) throws IOException {
             if (this.thenConsumer != null) {
                 badChildren("Element appearing more than once: <then>");
             }
             this.thenConsumer = (Consumer<T>) thenConsumer;
         }
+
         public void setElseConsumer(Object elseConsumer) throws IOException {
             if (this.elseConsumer != null) {
                 badChildren("Element appearing more than once: <else>");

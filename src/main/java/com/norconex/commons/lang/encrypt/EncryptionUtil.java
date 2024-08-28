@@ -72,7 +72,8 @@ public class EncryptionUtil {
     private static final String CIPHER_ALGO = "AES/GCM/NoPadding";
     private static final String SECRET_ALGO = "PBKDF2WithHmacSHA256";
 
-    private EncryptionUtil() {}
+    private EncryptionUtil() {
+    }
 
     public static void main(String[] args) {
         if (args.length != 4) {
@@ -109,6 +110,7 @@ public class EncryptionUtil {
             printUsage();
         }
     }
+
     private static void printUsage() {
         var out = System.out; //NOSONAR
         out.println("<appName> encrypt|decrypt -k|-f|-e|-p key text");
@@ -155,7 +157,6 @@ public class EncryptionUtil {
             var salt = new byte[SALT_LENGTH_BYTE];
             new SecureRandom().nextBytes(salt);
 
-
             // GCM recommended 12 bytes iv?
             var iv = new byte[IV_LENGTH_BYTE];
             new SecureRandom().nextBytes(salt);
@@ -168,7 +169,6 @@ public class EncryptionUtil {
                     salt, ITER_CNT, encryptionKey.getSize());
             SecretKey secretKey = new SecretKeySpec(
                     factory.generateSecret(spec).getEncoded(), "AES");
-
 
             var cipher = Cipher.getInstance(CIPHER_ALGO);
 
@@ -183,10 +183,10 @@ public class EncryptionUtil {
             // prefix IV and Salt to cipher text
             var cipherTextWithIvSalt = ByteBuffer.allocate(
                     iv.length + salt.length + cipherText.length)
-                        .put(iv)
-                        .put(salt)
-                        .put(cipherText)
-                        .array();
+                    .put(iv)
+                    .put(salt)
+                    .put(cipherText)
+                    .array();
 
             // string representation, base64, send this string to other
             // for decryption.

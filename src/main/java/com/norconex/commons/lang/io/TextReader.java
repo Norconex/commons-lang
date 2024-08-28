@@ -52,7 +52,8 @@ public class TextReader extends Reader {
 
     private static final Pattern PARAGRAPH_PATTERN = Pattern.compile(
             "^.*(\\p{javaWhitespace}*[\\n\\r]\\p{javaWhitespace}*?"
-          + "[\\n\\r]\\p{javaWhitespace}*)", PATTERN_FLAGS);
+                    + "[\\n\\r]\\p{javaWhitespace}*)",
+            PATTERN_FLAGS);
 
     private static final Pattern SENTENCE_PATTERN = Pattern.compile(
             "^.*[\\.\\?\\!](\\p{javaWhitespace}+|$)", PATTERN_FLAGS);
@@ -67,6 +68,7 @@ public class TextReader extends Reader {
     public TextReader(Reader reader) {
         this(reader, DEFAULT_MAX_READ_SIZE);
     }
+
     /**
      * Constructor.
      * @param reader a Reader
@@ -75,6 +77,7 @@ public class TextReader extends Reader {
     public TextReader(Reader reader, int maxReadSize) {
         this(reader, maxReadSize, false);
     }
+
     /**
      * Constructor.
      * @param reader a Reader
@@ -132,7 +135,7 @@ public class TextReader extends Reader {
 
         // Try breaking at paragraph:
         m = PARAGRAPH_PATTERN.matcher(buffer);
-        if(m.find()) {
+        if (m.find()) {
             int mStart = m.start(1);
             int mEnd = m.end(1);
             int substringEnd = mEnd;
@@ -147,7 +150,7 @@ public class TextReader extends Reader {
 
         // Try breaking at sentence:
         m = SENTENCE_PATTERN.matcher(buffer);
-        if(m.find()) {
+        if (m.find()) {
             int mStart = m.start(1);
             int mEnd = m.end(1);
             int substringEnd = mEnd;
@@ -162,7 +165,7 @@ public class TextReader extends Reader {
 
         // Try breaking at word:
         m = WORD_PATTERN.matcher(buffer);
-        if(m.find()) {
+        if (m.find()) {
             int mStart = m.start(1);
             int mEnd = m.end(1);
             int substringEnd = mEnd;
@@ -174,7 +177,6 @@ public class TextReader extends Reader {
             LOG.debug("Reader text split after word.");
             return t;
         }
-
 
         String t = buffer.toString();
         buffer.setLength(0);

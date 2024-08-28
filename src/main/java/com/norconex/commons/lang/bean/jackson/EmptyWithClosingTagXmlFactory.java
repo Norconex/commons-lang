@@ -24,7 +24,6 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
 import com.fasterxml.jackson.dataformat.xml.util.DefaultXmlPrettyPrinter;
 
-
 /**
  * Version of {@link XmlFactory} that configures a {@link XmlPrettyPrinter}
  * to write "empty" objects with a closing tag instead of self-closing.
@@ -50,8 +49,9 @@ public class EmptyWithClosingTagXmlFactory extends XmlFactory {
         return gen;
     }
 
-    class XmlPrettyPrinter extends DefaultXmlPrettyPrinter  {
+    class XmlPrettyPrinter extends DefaultXmlPrettyPrinter {
         private static final long serialVersionUID = 1L;
+
         @Override
         public void writeEndObject(JsonGenerator gen, int nrOfEntries)
                 throws IOException {
@@ -63,4 +63,3 @@ public class EmptyWithClosingTagXmlFactory extends XmlFactory {
         }
     }
 }
-

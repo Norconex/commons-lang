@@ -33,22 +33,20 @@ class PipelineTest {
                 ctx -> {
                     ctx.add("1");
                     return true;
-                }
-        ));
+                }));
         pipeline.addStage(ctx -> {
             ctx.add("2");
             return true;
         });
         pipeline.addStages(Arrays.asList(
-            ctx -> {
-                ctx.add("3");
-                return false;
-            },
-            ctx -> {
-                ctx.add("4");
-                return true;
-            }
-        ));
+                ctx -> {
+                    ctx.add("3");
+                    return false;
+                },
+                ctx -> {
+                    ctx.add("4");
+                    return true;
+                }));
 
         assertThat(pipeline.execute(context)).isFalse();
         assertThat(context).containsExactly("1", "2", "3");

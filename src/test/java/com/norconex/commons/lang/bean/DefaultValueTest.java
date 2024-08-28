@@ -51,8 +51,7 @@ class DefaultValueTest {
             Format.YAML,
             """
             reference: potato
-            """
-            );
+            """);
 
     private final Map<Format, String> empty = MapUtil.toMap(
             Format.XML,
@@ -83,8 +82,7 @@ class DefaultValueTest {
             number: ""
             object: {}
             collection: []
-            """
-            );
+            """);
 
     private final Map<Format, String> nulls = MapUtil.toMap(
             Format.XML,
@@ -115,8 +113,7 @@ class DefaultValueTest {
             number:
             object: ~
             collection: null
-            """
-            );
+            """);
 
     private final Map<Format, String> filled = MapUtil.toMap(
             Format.XML,
@@ -156,8 +153,7 @@ class DefaultValueTest {
               model: Camry
             collection:
               - Carrot
-            """
-            );
+            """);
 
     @ParameterizedTest
     @EnumSource(Format.class)
@@ -172,8 +168,8 @@ class DefaultValueTest {
         assertThat(obj.getObject()).isEqualTo(DEFAULT_OBJECT);
         assertThat(obj.getCollection())
                 .containsExactlyElementsOf(DEFAULT_LIST);
-        assertThatNoException().isThrownBy(() ->
-                BeanMapper.DEFAULT.assertWriteRead(obj, format));
+        assertThatNoException().isThrownBy(
+                () -> BeanMapper.DEFAULT.assertWriteRead(obj, format));
     }
 
     @ParameterizedTest
@@ -188,8 +184,8 @@ class DefaultValueTest {
         // specifying an empty object clears all values and goes to defaults
         assertThat(obj.getObject()).isEqualTo(new AutomobileConfig());
         assertThat(obj.getCollection()).isEmpty();
-        assertThatNoException().isThrownBy(() ->
-                BeanMapper.DEFAULT.assertWriteRead(obj, format));
+        assertThatNoException().isThrownBy(
+                () -> BeanMapper.DEFAULT.assertWriteRead(obj, format));
     }
 
     @ParameterizedTest
@@ -203,8 +199,8 @@ class DefaultValueTest {
         assertThat(obj.getNumber()).isZero();
         assertThat(obj.getObject()).isNull();
         assertThat(obj.getCollection()).isNull();
-        assertThatNoException().isThrownBy(() ->
-                BeanMapper.DEFAULT.assertWriteRead(obj, format));
+        assertThatNoException().isThrownBy(
+                () -> BeanMapper.DEFAULT.assertWriteRead(obj, format));
     }
 
     @ParameterizedTest
@@ -220,7 +216,7 @@ class DefaultValueTest {
         assertThat(obj.getObject()).isEqualTo(
                 new AutomobileConfig().setModel("Camry"));
         assertThat(obj.getCollection()).containsExactly("Carrot");
-        assertThatNoException().isThrownBy(() ->
-                BeanMapper.DEFAULT.assertWriteRead(obj, format));
+        assertThatNoException().isThrownBy(
+                () -> BeanMapper.DEFAULT.assertWriteRead(obj, format));
     }
 }

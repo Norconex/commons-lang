@@ -21,6 +21,6 @@ package com.norconex.commons.lang.xml;
  * @since 2.0.0 (Moved and modified from *.lang.config.XMLConfigurable)
  * @deprecated Use {@link XMLConfigurable} instead.
  */
-@Deprecated(since="3.0.0")
+@Deprecated(since = "3.0.0")
 public interface IXMLConfigurable extends XMLConfigurable { //NOSONAR
 }

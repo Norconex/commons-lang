@@ -70,23 +70,26 @@ class EnhancedXMLStreamWriterTest {
         xml.writeEmptyElement("test");
         xml.writeEndDocument();
         assertThat(xml.getWriter())
-            .hasToString("<?xml version='1.1' encoding='UTF-16'?><test/>");
+                .hasToString("<?xml version='1.1' encoding='UTF-16'?><test/>");
 
         EnhancedXMLStreamWriter badWriter =
                 new EnhancedXMLStreamWriter(new StringWriter()) {
-            @Override
-            public void writeStartDocument() {
-                throw new XMLException("fake start doc");
-            }
-            @Override
-            public void writeStartDocument(String version) {
-                throw new XMLException("fake start doc");
-            }
-            @Override
-            public void writeStartDocument(String encoding, String version) {
-                throw new XMLException("fake start doc");
-            }
-        };
+                    @Override
+                    public void writeStartDocument() {
+                        throw new XMLException("fake start doc");
+                    }
+
+                    @Override
+                    public void writeStartDocument(String version) {
+                        throw new XMLException("fake start doc");
+                    }
+
+                    @Override
+                    public void writeStartDocument(String encoding,
+                            String version) {
+                        throw new XMLException("fake start doc");
+                    }
+                };
         assertThatExceptionOfType(XMLException.class).isThrownBy(() -> {
             badWriter.writeStartDocument();
         });
@@ -111,8 +114,7 @@ class EnhancedXMLStreamWriterTest {
                     <!--A comment-->\
                     <?target?>\
                     <?target data?>\
-                    <![CDATA[cdata sample]]>"""
-        );
+                    <![CDATA[cdata sample]]>""");
 
         assertThatNoException().isThrownBy(() -> { //NOSONAR
             var xml2 = newXMLWriter();
@@ -128,13 +130,13 @@ class EnhancedXMLStreamWriterTest {
 
         assertThatExceptionOfType(XMLException.class)
                 .isThrownBy(() -> {//NOSONAR
-            var xml3 = newXMLWriter();
-            xml3.writeStartDocument();
-            xml3.writeStartElement("test");
-            xml3.writeAttribute("nsURI", "localName", "value");
-            xml3.writeEndElement();
-            xml3.writeEndDocument();
-        });
+                    var xml3 = newXMLWriter();
+                    xml3.writeStartDocument();
+                    xml3.writeStartElement("test");
+                    xml3.writeAttribute("nsURI", "localName", "value");
+                    xml3.writeEndElement();
+                    xml3.writeEndDocument();
+                });
     }
 
     @Test
@@ -154,8 +156,7 @@ class EnhancedXMLStreamWriterTest {
                     <test/>\
                     <test class="java.time.Duration"/>\
                     <test class="java.time.Duration" disabled="true"/>\
-                    <prefix:test/>"""
-        );
+                    <prefix:test/>""");
 
         assertThatException().isThrownBy(
                 () -> xml.writeStartElement("uri", "localName"));
@@ -174,8 +175,7 @@ class EnhancedXMLStreamWriterTest {
                 """
                 <?xml version='1.0' encoding='UTF-8'?>\
                 <test/>\
-                <prefix:localName/>"""
-        );
+                <prefix:localName/>""");
 
         assertThatException().isThrownBy(
                 () -> xml.writeStartElement("uri", "localName"));
@@ -211,8 +211,7 @@ class EnhancedXMLStreamWriterTest {
 
         assertThat(xml.getWriter()).hasToString(
                 "<?xml version='1.0' encoding='UTF-8'?>"
-              + XMLTest.SAMPLE_PROXYSETTINGS_XML
-        );
+                        + XMLTest.SAMPLE_PROXYSETTINGS_XML);
     }
 
     @Test
@@ -260,8 +259,7 @@ class EnhancedXMLStreamWriterTest {
                     <object>8</object>\
                     <object>9</object>\
                     </objectList>\
-                    <objectList/>"""
-        );
+                    <objectList/>""");
     }
 
     @Test
@@ -307,8 +305,7 @@ class EnhancedXMLStreamWriterTest {
                     disabled="true" \
                     disabled="true" \
                     disabled="true"\
-                    />"""
-        );
+                    />""");
     }
 
     @Test
@@ -329,18 +326,19 @@ class EnhancedXMLStreamWriterTest {
                 <test>
                   <value1> a </value1>
                   <value2/>
-                </test>"""
-        );
+                </test>""");
     }
 
     @Data
     @AllArgsConstructor
     private static class Configurable implements XMLConfigurable {
         private String value;
+
         @Override
         public void loadFromXML(XML xml) {
             value = xml.getString(".");
         }
+
         @Override
         public void saveToXML(XML xml) {
             xml.setTextContent(value);

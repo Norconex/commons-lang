@@ -83,7 +83,7 @@ class SystemUtilTest {
     void testGetEnvironmentOrProperty() throws Exception {
         assertThat(SystemUtil.callWithProperty("some.fruit", "apple",
                 () -> SystemUtil.getPropertyOrEnvironment("SOME_FRUIT")))
-            .isEqualTo("apple");
+                        .isEqualTo("apple");
         assertThat(SystemUtil.getPropertyOrEnvironment("Not/Exist")).isNull();
     }
 }

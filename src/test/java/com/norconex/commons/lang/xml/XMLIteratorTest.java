@@ -36,14 +36,14 @@ class XMLIteratorTest {
         List<String> paths = new ArrayList<>();
         for (XMLCursor xmlCursor : new XML(
                 "<test>"
-              +   "<block>"
-              +     "<value>1</value>"
-              +     "<value>2</value>"
-              +   "</block>"
-              +   "<block>"
-              +     "<value>3</value>"
-              +   "</block>"
-              + "</test>")) {
+                        + "<block>"
+                        + "<value>1</value>"
+                        + "<value>2</value>"
+                        + "</block>"
+                        + "<block>"
+                        + "<value>3</value>"
+                        + "</block>"
+                        + "</test>")) {
             tags.add(xmlCursor.getLocalName());
             paths.add(xmlCursor.getPath());
         }
@@ -63,7 +63,7 @@ class XMLIteratorTest {
         Iterator<XMLCursor> cur = new XML("<test/>").iterator();
         cur.next();
         assertThatExceptionOfType(NoSuchElementException.class)
-            .isThrownBy(() -> cur.next());
+                .isThrownBy(() -> cur.next());
 
         Iterator<XMLCursor> badCur = new XML("<test/>") {
             @Override
@@ -73,6 +73,7 @@ class XMLIteratorTest {
                     public boolean hasNext() {
                         return true;
                     }
+
                     @Override
                     public XMLEvent peek() throws XMLStreamException {
                         throw new XMLStreamException("Just testing.");
@@ -81,6 +82,6 @@ class XMLIteratorTest {
             }
         }.iterator();
         assertThatExceptionOfType(XMLException.class)
-            .isThrownBy(() -> badCur.hasNext());
+                .isThrownBy(() -> badCur.hasNext());
     }
 }

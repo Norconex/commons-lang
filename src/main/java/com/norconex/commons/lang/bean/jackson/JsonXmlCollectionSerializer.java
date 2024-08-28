@@ -56,15 +56,16 @@ public class JsonXmlCollectionSerializer<T extends Collection<?>>
     @Override
     public JsonSerializer<?> createContextual(
             SerializerProvider prov, BeanProperty property)
-                    throws JsonMappingException {
+            throws JsonMappingException {
         currentProperty = property;
         if (property == null) {
             return defaultSerializer;
         }
         return Collection.class.isAssignableFrom(
                 property.getType().getRawClass())
-                        && prov instanceof XmlSerializerProvider
-                                ? this : defaultSerializer;
+                && prov instanceof XmlSerializerProvider
+                        ? this
+                        : defaultSerializer;
     }
 
     @Override

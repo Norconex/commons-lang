@@ -102,7 +102,6 @@ public class DurationParser {
 
     private static final Locale DEFAULT_LOCALE = Locale.ENGLISH;
 
-
     private static final Pattern PATTERN =
             Pattern.compile("(\\d+([\\.,]\\d+)?)(\\D+)");
 
@@ -119,6 +118,7 @@ public class DurationParser {
         dp.locale = locale;
         return dp;
     }
+
     public Locale getLocale() {
         return locale;
     }
@@ -133,6 +133,7 @@ public class DurationParser {
     public Duration parse(String duration) {
         return Duration.ofMillis(parseToMillis(duration, 0, true));
     }
+
     /**
      * Parses a text representation of a duration.
      * If the value cannot be parsed, the default value is returned
@@ -156,6 +157,7 @@ public class DurationParser {
     public long parseToMillis(String duration) {
         return parseToMillis(duration, 0, true);
     }
+
     /**
      * Parses a text representation of a duration.
      * If the value cannot be parsed, the default value is returned
@@ -252,7 +254,8 @@ public class DurationParser {
             String[] variants = rb.getString(key).split(",");
             if ((label.length() == 1 && StringUtils.equalsAny(label, variants))
                     || (label.length() > 1
-                        && StringUtils.equalsAnyIgnoreCase(label, variants))) {
+                            && StringUtils.equalsAnyIgnoreCase(
+                                    label, variants))) {
                 return DurationUnit.from(key);
             }
         }

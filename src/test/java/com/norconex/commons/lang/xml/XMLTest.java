@@ -100,10 +100,10 @@ class XMLTest {
 
     private static final MockProxySettings SAMPLE_PROXY_OBJECT =
             new MockProxySettings()
-                .setHost(new MockHost("example.com", 123))
-                .setScheme("https")
-                .setRealm("Cinderella")
-                .setCredentials(SAMPLE_CREDS_OBJECT);
+                    .setHost(new MockHost("example.com", 123))
+                    .setScheme("https")
+                    .setRealm("Cinderella")
+                    .setCredentials(SAMPLE_CREDS_OBJECT);
 
     @TempDir
     private Path tempDir;
@@ -138,8 +138,7 @@ class XMLTest {
         xml.setAttribute("a1", "v1");
         xml.setAttributes(MapUtil.toMap(
                 "a2", "v2",
-                "a3", "v3"
-        ));
+                "a3", "v3"));
         xml.setDelimitedAttributeList("a4", Arrays.asList("v4-1", "v4-2"));
         xml.setDelimitedAttributeList("a5", "|", Arrays.asList("v5-1", "v5-2"));
         assertThat(xml).hasToString("""
@@ -149,8 +148,7 @@ class XMLTest {
         	a3="v3" \
         	a4="v4-1,v4-2" \
         	a5="v5-1|v5-2"\
-        	/>"""
-        );
+        	/>""");
         xml.removeAttribute("a1");
         xml.removeAttribute("a4");
         xml.removeAttribute("a5");
@@ -158,8 +156,7 @@ class XMLTest {
         	<test\s\
         	a2="v2" \
         	a3="v3"\
-        	/>"""
-        );
+        	/>""");
     }
 
     @Test
@@ -172,8 +169,7 @@ class XMLTest {
                 	<value>1</value>\
                 	<value>2</value>\
                 	<value>3</value>\
-                	</test>"""
-        );
+                	</test>""");
 
         var xmlWithParent = new XML("<test/>");
         xmlWithParent.addElementList("parent", "value", Arrays.asList(1, 2, 3));
@@ -185,8 +181,7 @@ class XMLTest {
                 	<value>2</value>\
                 	<value>3</value>\
                 	</parent>\
-                	</test>"""
-        );
+                	</test>""");
 
         assertThat(new XML("<test/>").addElementList("value", null)).isEmpty();
 
@@ -196,7 +191,7 @@ class XMLTest {
                 "<test><value>1,2,3</value></test>");
 
         var xmlDelimBar = new XML("<test/>");
-        xmlDelimBar.addDelimitedElementList("value", "|", Arrays.asList(5,6));
+        xmlDelimBar.addDelimitedElementList("value", "|", Arrays.asList(5, 6));
         assertThat(xmlDelimBar).hasToString("<test><value>5|6</value></test>");
 
         var xmlDelimEmpty = new XML("<test/>");
@@ -209,9 +204,8 @@ class XMLTest {
     void testGetName() {
         var xml = new XML(
                 "<test>"
-              +   "<blah>abc</blah>"
-              + "</test>"
-        );
+                        + "<blah>abc</blah>"
+                        + "</test>");
         assertThat(xml.getName()).isEqualTo("test");
         assertThat(xml.getXML("blah").getName()).isEqualTo("blah");
         assertThat(new XML("").getName()).isNull();
@@ -221,16 +215,15 @@ class XMLTest {
     void testGetStringMap() {
         var xml = new XML(
                 "<test>"
-              +   "<map>"
-              +     "<entry><key>k1</key><value>v1</value></entry>"
-              +     "<entry><key>k2</key><value>v2</value></entry>"
-              +     "<entry><key>k3</key><value>v3</value></entry>"
-              +   "</map>"
-              + "</test>"
-        );
+                        + "<map>"
+                        + "<entry><key>k1</key><value>v1</value></entry>"
+                        + "<entry><key>k2</key><value>v2</value></entry>"
+                        + "<entry><key>k3</key><value>v3</value></entry>"
+                        + "</map>"
+                        + "</test>");
         assertThat(xml.getStringMap("map/entry", "key", "value"))
-            .containsAllEntriesOf(MapUtil.toMap(
-                    "k1", "v1", "k2", "v2", "k3", "v3"));
+                .containsAllEntriesOf(MapUtil.toMap(
+                        "k1", "v1", "k2", "v2", "k3", "v3"));
         assertThat(xml.getStringMap("nil", "key", "value")).isEmpty();
     }
 
@@ -238,7 +231,7 @@ class XMLTest {
     @Test
     void testJoin() {
         assertThat(new XML("<test/>").join("|", Arrays.asList(1, 2, 3)))
-            .isEqualTo("1|2|3");
+                .isEqualTo("1|2|3");
     }
 
     @Test
@@ -258,16 +251,16 @@ class XMLTest {
 
         total.setValue(0);
         new XML("<test><value>6</value><value>7</value></test>")
-            .stream()
-            .filter(c -> "value".equals(c.getName()))
-            .forEach(c -> total.add(c.readAsXML().getInteger(".")));
+                .stream()
+                .filter(c -> "value".equals(c.getName()))
+                .forEach(c -> total.add(c.readAsXML().getInteger(".")));
         assertThat(total.intValue()).isEqualTo(13);
     }
 
     @Test
     void testHashCode() {
         assertThat(new XML("<test/>"))
-            .hasSameHashCodeAs(XML.of("<test/>").create());
+                .hasSameHashCodeAs(XML.of("<test/>").create());
     }
 
     @Test
@@ -277,9 +270,9 @@ class XMLTest {
                 .getNode().getNodeName()).isEqualTo("test");
         var xml = new XML(
                 "<test>"
-              +   "<value>abc</value>"
-              +   "<parent><value>def</value></parent>"
-              + "</test>");
+                        + "<value>abc</value>"
+                        + "<parent><value>def</value></parent>"
+                        + "</test>");
         assertThat(xml.getNode("value").getTextContent()).isEqualTo("abc");
     }
 
@@ -288,8 +281,8 @@ class XMLTest {
         var errors = new ErrorHandlerCapturer();
         var xml = XML.of(SAMPLE_PROXYSETTINGS_XML.replace(
                 "class", "invalid=\"invalid\" class"))
-            .setErrorHandler(errors)
-            .create();
+                .setErrorHandler(errors)
+                .create();
 
         errors.clear();
         xml.validate();
@@ -319,166 +312,168 @@ class XMLTest {
     void testGetURL() throws MalformedURLException {
         var xml = XML.of(
                 "<test>"
-              +   "<single>http://example.com</single>"
-              +   "<value>http://example.com/1</value>"
-              +   "<value>http://example.com/2</value>"
-              +   "<value>http://example.com/3</value>"
-              + "</test>"
-        ).create();
+                        + "<single>http://example.com</single>"
+                        + "<value>http://example.com/1</value>"
+                        + "<value>http://example.com/2</value>"
+                        + "<value>http://example.com/3</value>"
+                        + "</test>")
+                .create();
 
         assertThat(xml.getURL("single"))
-            .isEqualTo(new URL("http://example.com"));
+                .isEqualTo(new URL("http://example.com"));
         assertThat(xml.getURL("nil", new URL("http://example.com/4")))
-            .isEqualTo(new URL("http://example.com/4"));
+                .isEqualTo(new URL("http://example.com/4"));
         assertThat(xml.getURLList("value")).containsExactly(
                 new URL("http://example.com/1"),
                 new URL("http://example.com/2"),
                 new URL("http://example.com/3"));
         assertThat(xml.getURLList("nil", Arrays.asList(
                 new URL("http://example.com/5"))))
-            .containsExactly(new URL("http://example.com/5"));
+                        .containsExactly(new URL("http://example.com/5"));
     }
 
     @Test
     void testGetPathAndFiles() {
         var xml = XML.of(
                 "<test>"
-              +   "<single>c:\\file.txt</single>"
-              +   "<value>/path/1</value>"
-              +   "<value>/path/2</value>"
-              +   "<value>/path/3</value>"
-              + "</test>"
-        ).create();
+                        + "<single>c:\\file.txt</single>"
+                        + "<value>/path/1</value>"
+                        + "<value>/path/2</value>"
+                        + "<value>/path/3</value>"
+                        + "</test>")
+                .create();
 
         assertThat(xml.getPath("single")).isEqualTo(Path.of("c:\\file.txt"));
         assertThat(xml.getPath("nil", Path.of("blah")))
-            .isEqualTo(Path.of("blah"));
+                .isEqualTo(Path.of("blah"));
         assertThat(xml.getPathList("value")).containsExactly(
                 Path.of("/path/1"), Path.of("/path/2"), Path.of("/path/3"));
         assertThat(xml.getPathList("nil", Arrays.asList(Path.of("/path/4"))))
-            .containsExactly(Path.of("/path/4"));
+                .containsExactly(Path.of("/path/4"));
 
         assertThat(xml.getFile("single")).isEqualTo(new File("c:\\file.txt"));
         assertThat(xml.getFile("nil", new File("blah")))
-            .isEqualTo(new File("blah"));
+                .isEqualTo(new File("blah"));
         assertThat(xml.getFileList("value")).containsExactly(
                 new File("/path/1"), new File("/path/2"), new File("/path/3"));
         assertThat(xml.getFileList("nil", Arrays.asList(new File("/path/4"))))
-            .containsExactly(new File("/path/4"));
+                .containsExactly(new File("/path/4"));
     }
-
 
     @Test
     void testGetEnum() {
         var xml = XML.of(
                 "<test>"
-              +   "<single>MINUTE</single>"
-              +   "<value>SECOND</value>"
-              +   "<value>YEAR</value>"
-              +   "<value>DAY</value>"
-              +   "<noValues/>"
-              +   "<values>WEEK, MONTH, MILLISECOND</values>"
-              +   "<dashedValues>YEAR-MONTH-DAY</dashedValues>"
-              + "</test>"
-        ).create();
+                        + "<single>MINUTE</single>"
+                        + "<value>SECOND</value>"
+                        + "<value>YEAR</value>"
+                        + "<value>DAY</value>"
+                        + "<noValues/>"
+                        + "<values>WEEK, MONTH, MILLISECOND</values>"
+                        + "<dashedValues>YEAR-MONTH-DAY</dashedValues>"
+                        + "</test>")
+                .create();
 
         assertThat(xml.getEnum("single", DurationUnit.class))
-            .isSameAs(DurationUnit.MINUTE);
+                .isSameAs(DurationUnit.MINUTE);
         assertThat(xml.getEnum(
                 "pathToNil", DurationUnit.class, DurationUnit.HOUR))
-            .isSameAs(DurationUnit.HOUR);
+                        .isSameAs(DurationUnit.HOUR);
         assertThat(xml.getEnumList("value", DurationUnit.class,
                 Arrays.asList(DurationUnit.WEEK)))
-            .containsExactly(
-                    DurationUnit.SECOND,
-                    DurationUnit.YEAR,
-                    DurationUnit.DAY);
+                        .containsExactly(
+                                DurationUnit.SECOND,
+                                DurationUnit.YEAR,
+                                DurationUnit.DAY);
         assertThat(xml.getDelimitedEnumList("values", DurationUnit.class,
                 Arrays.asList(DurationUnit.WEEK)))
-            .containsExactly(
-                    DurationUnit.WEEK,
-                    DurationUnit.MONTH,
-                    DurationUnit.MILLISECOND);
+                        .containsExactly(
+                                DurationUnit.WEEK,
+                                DurationUnit.MONTH,
+                                DurationUnit.MILLISECOND);
         assertThat(xml.getDelimitedEnumList("dashedValues", DurationUnit.class,
                 "-", Arrays.asList(DurationUnit.WEEK)))
-            .containsExactly(
-                    DurationUnit.YEAR,
-                    DurationUnit.MONTH,
-                    DurationUnit.DAY);
+                        .containsExactly(
+                                DurationUnit.YEAR,
+                                DurationUnit.MONTH,
+                                DurationUnit.DAY);
     }
 
     @Test
     void testGetString() {
         var xml = XML.of(
                 "<test>"
-              +   "<value>aa</value>"
-              +   "<value>bb</value>"
-              +   "<value>cc</value>"
-              +   "<noValues/>"
-              +   "<values>x, y, z</values>"
-              +   "<dashedValues>d-a-s-h</dashedValues>"
-              + "</test>"
-        ).create();
+                        + "<value>aa</value>"
+                        + "<value>bb</value>"
+                        + "<value>cc</value>"
+                        + "<noValues/>"
+                        + "<values>x, y, z</values>"
+                        + "<dashedValues>d-a-s-h</dashedValues>"
+                        + "</test>")
+                .create();
         assertThat(xml.getStringList("value")).containsExactly(
                 "aa", "bb", "cc");
         assertThat(xml.getStringList("pathToNil", Arrays.asList("dd", "ee")))
-            .containsExactly("dd", "ee");
+                .containsExactly("dd", "ee");
         assertThat(xml.getStringList("noValues")).isEmpty();
         assertThat(xml.getDelimitedStringList("values"))
-            .containsExactly("x", "y", "z");
+                .containsExactly("x", "y", "z");
         assertThat(xml.getDelimitedStringList("pathToNil")).isEmpty();
         assertThat(xml.getDelimitedStringList("dashedValues", "-"))
-            .containsExactly("d", "a", "s", "h");
+                .containsExactly("d", "a", "s", "h");
         assertThat(xml.getDelimitedStringList("pathToNil", "-")).isEmpty();
         assertThat(xml.getDelimitedStringList(
                 "dashedValues", "-", Arrays.asList("a", "b", "c")))
-            .containsExactly("d", "a", "s", "h");
+                        .containsExactly("d", "a", "s", "h");
         assertThat(xml.getDelimitedStringList(
                 "pathToNil", "-", Arrays.asList("a", "b", "c")))
-            .containsExactly("a", "b", "c");
+                        .containsExactly("a", "b", "c");
         assertThat(xml.getDelimitedStringList(
                 "noValues", "-", Arrays.asList("a", "b", "c")))
-            .isEmpty();
+                        .isEmpty();
     }
 
     @Test
     void testGetXMLList() {
         var xml = XML.of(
                 "<test>"
-              +   "<values>1, 2, 3</values>"
-              +   "<values>4, 5, 6</values>"
-              +   "<values>7, 8, 9</values>"
-              + "</test>"
-        ).create();
+                        + "<values>1, 2, 3</values>"
+                        + "<values>4, 5, 6</values>"
+                        + "<values>7, 8, 9</values>"
+                        + "</test>")
+                .create();
         assertThat(xml.getXMLList("values")).containsExactly(
-            new XML("<values>1, 2, 3</values>"),
-            new XML("<values>4, 5, 6</values>"),
-            new XML("<values>7, 8, 9</values>"));
+                new XML("<values>1, 2, 3</values>"),
+                new XML("<values>4, 5, 6</values>"),
+                new XML("<values>7, 8, 9</values>"));
         assertThat(xml.getXMLList("pathToNil")).isEmpty();
     }
 
     @Test
     void testGetObject() {
-        assertThat(new XML(SAMPLE_PROXYSETTINGS_XML).<MockProxySettings>getObject(
-                ".", null)).isEqualTo(SAMPLE_PROXY_OBJECT);
-        assertThat(new XML(SAMPLE_PROXYSETTINGS_XML).<MockProxySettings>getObject(
-                null, null)).isEqualTo(SAMPLE_PROXY_OBJECT);
-        assertThat(new XML(SAMPLE_PROXYSETTINGS_XML).<MockProxySettings>getObject(
-                "pathToNil", new MockProxySettings()))
-            .isEqualTo(new MockProxySettings());
+        assertThat(
+                new XML(SAMPLE_PROXYSETTINGS_XML).<MockProxySettings>getObject(
+                        ".", null)).isEqualTo(SAMPLE_PROXY_OBJECT);
+        assertThat(
+                new XML(SAMPLE_PROXYSETTINGS_XML).<MockProxySettings>getObject(
+                        null, null)).isEqualTo(SAMPLE_PROXY_OBJECT);
+        assertThat(
+                new XML(SAMPLE_PROXYSETTINGS_XML).<MockProxySettings>getObject(
+                        "pathToNil", new MockProxySettings()))
+                                .isEqualTo(new MockProxySettings());
         assertThat(new XML(
                 "<converter class=\"DurationConverter\"></converter>")
-            .<DurationConverter>getObjectImpl(DurationConverter.class, "."))
-            .isEqualTo(new DurationConverter());
+                        .<DurationConverter>getObjectImpl(
+                                DurationConverter.class, "."))
+                                        .isEqualTo(new DurationConverter());
         assertThat(new XML("<converter/>")
-            .getObjectImpl(null, "", new DurationConverter()))
-                .isEqualTo(new DurationConverter());
+                .getObjectImpl(null, "", new DurationConverter()))
+                        .isEqualTo(new DurationConverter());
         assertThat(new XML("<converter/>").<DurationConverter>getObjectImpl(
                 DurationConverter.class, null, null)).isNull();
         assertThat(new XML("<converter/>").<DurationConverter>getObjectImpl(
                 DurationConverter.class, "pathToNil", new DurationConverter()))
-                    .isEqualTo(new DurationConverter());
-
+                        .isEqualTo(new DurationConverter());
 
         Object[] expectedList = {
                 new DurationConverter(),
@@ -490,53 +485,53 @@ class XMLTest {
         var pkg = "com.norconex.commons.lang.convert.";
         var xml = XML.of(String.format(
                 "<test>"
-              + "<converters>"
-              + "<converter class=\"%1$sDurationConverter\"></converter>"
-              + "<converter class=\"%1$sEnumConverter\"></converter>"
-              + "<converter class=\"%1$sDateConverter\"></converter>"
-              + "</converters>"
-              + "<presentButEmpty>"
-              +   "<converters/>"
-              + "</presentButEmpty>"
-              + "<withSingleNull>"
-              +   "<converters>"
-              +     "<converter/>"
-              +   "</converters>"
-              + "</withSingleNull>"
-              + "</test>", pkg)
-        ).create();
+                        + "<converters>"
+                        + "<converter class=\"%1$sDurationConverter\"></converter>"
+                        + "<converter class=\"%1$sEnumConverter\"></converter>"
+                        + "<converter class=\"%1$sDateConverter\"></converter>"
+                        + "</converters>"
+                        + "<presentButEmpty>"
+                        + "<converters/>"
+                        + "</presentButEmpty>"
+                        + "<withSingleNull>"
+                        + "<converters>"
+                        + "<converter/>"
+                        + "</converters>"
+                        + "</withSingleNull>"
+                        + "</test>",
+                pkg)).create();
         assertThat(xml.getObjectList("converters/converter"))
-            .containsExactly(expectedList);
+                .containsExactly(expectedList);
         assertThat(xml.getObjectList("notPresent",
                 Arrays.asList(new DurationConverter())))
-            .containsExactly(new DurationConverter());
+                        .containsExactly(new DurationConverter());
         assertThat(xml.getObjectList("presentButEmpty/converters/converter",
                 Arrays.asList(new DurationConverter()))).isEmpty();
         assertThat(xml.getObjectList("withSingleNull/converters/converter",
                 Arrays.asList(new DurationConverter())))
-            .containsExactly(new DurationConverter());
+                        .containsExactly(new DurationConverter());
 
         // List Impl
         var xmlImpl = XML.of(
                 "<test>"
-              + "<converters>"
-              + "<converter class=\"DurationConverter\"></converter>"
-              + "<converter class=\"com.norconex.commons.lang.convert"
-              + ".EnumConverter\"></converter>"
-              + "<converter class=\"convert.DateConverter\"></converter>"
-              + "</converters>"
-              + "</test>"
-        ).create();
+                        + "<converters>"
+                        + "<converter class=\"DurationConverter\"></converter>"
+                        + "<converter class=\"com.norconex.commons.lang.convert"
+                        + ".EnumConverter\"></converter>"
+                        + "<converter class=\"convert.DateConverter\"></converter>"
+                        + "</converters>"
+                        + "</test>")
+                .create();
         assertThat(xmlImpl.getObjectListImpl(
                 Converter.class, "converters/converter"))
-            .containsExactly(expectedList);
+                        .containsExactly(expectedList);
         assertThat(xml.getObjectListImpl(DurationConverter.class,
                 "presentButEmpty/converters/converter",
                 Arrays.asList(new DurationConverter()))).isEmpty();
         assertThat(xml.getObjectListImpl(DurationConverter.class,
                 "withSingleNull/converters/converter",
-                    Arrays.asList(new DurationConverter())))
-            .containsExactly(new DurationConverter());
+                Arrays.asList(new DurationConverter())))
+                        .containsExactly(new DurationConverter());
 
         assertThat(xmlImpl.toNode()).isNotNull();
     }
@@ -545,17 +540,17 @@ class XMLTest {
     void testGetDelimitedListObject() {
         var xml = XML.of(
                 "<test>"
-              + "<values>1, 2, 3, 4, 5</values>"
-              + "<converters>"
-              +   "java.time.Duration|java.io.File|java.nio.file.Path"
-              + "</converters>"
-              + "<noValues/>"
-              + "</test>"
-        ).create();
+                        + "<values>1, 2, 3, 4, 5</values>"
+                        + "<converters>"
+                        + "java.time.Duration|java.io.File|java.nio.file.Path"
+                        + "</converters>"
+                        + "<noValues/>"
+                        + "</test>")
+                .create();
         assertThat(xml.getDelimitedList("values", Integer.TYPE))
-            .containsExactly(1, 2, 3, 4, 5);
+                .containsExactly(1, 2, 3, 4, 5);
         assertThat(xml.getDelimitedList("converters", Class.class, "\\|"))
-            .containsExactly(Duration.class, File.class, Path.class);
+                .containsExactly(Duration.class, File.class, Path.class);
         assertThat(xml.getDelimitedList("pathToNil", Integer.TYPE,
                 Arrays.asList(6, 7, 8))).containsExactly(6, 7, 8);
         // Deliberately empty
@@ -578,11 +573,12 @@ class XMLTest {
 
         proxy = new XML("<proxySettings class="
                 + "\"com.norconex.commons.lang.xml.mock.MockProxySettings\"/>")
-                .toObject(new MockProxySettings());
+                        .toObject(new MockProxySettings());
         assertThat(proxy).isEqualTo(new MockProxySettings());
 
-        assertThat(new XML(SAMPLE_XML).toObjectImpl(null, new MockProxySettings()))
-            .isEqualTo(new MockProxySettings());
+        assertThat(
+                new XML(SAMPLE_XML).toObjectImpl(null, new MockProxySettings()))
+                        .isEqualTo(new MockProxySettings());
 
         // test when class is not in XML
         var xml = new XML(SAMPLE_PROXYSETTINGS_XML);
@@ -595,13 +591,13 @@ class XMLTest {
         badXml.setAttribute("class", "blah.blah.IdoNotExist");
         assertThatExceptionOfType(XMLException.class).isThrownBy(
                 () -> badXml.toObjectImpl(MockProxySettings.class))
-            .withStackTraceContaining("No class implementing");
+                .withStackTraceContaining("No class implementing");
 
         var badXml2 = new XML(SAMPLE_PROXYSETTINGS_XML);
         badXml.setAttribute("class", "xml.mock.MockProxySettings");
         assertThatExceptionOfType(XMLException.class).isThrownBy(
                 () -> badXml2.toObjectImpl(HttpURL.class))
-            .withStackTraceContaining("is not an instance of");
+                .withStackTraceContaining("is not an instance of");
 
         xml = XML.of("<test class=\"DurationConverter\"></test>").create();
         var c = xml.toObjectImpl(Converter.class);
@@ -609,9 +605,9 @@ class XMLTest {
 
         var xmlMany = XML.of("<test class=\"erConverter\"></test>").create();
         assertThatExceptionOfType(XMLException.class)
-            .isThrownBy(() -> xmlMany.toObjectImpl(Converter.class))
-            .withStackTraceContaining(
-                    "Consider using fully qualified class name.");
+                .isThrownBy(() -> xmlMany.toObjectImpl(Converter.class))
+                .withStackTraceContaining(
+                        "Consider using fully qualified class name.");
     }
 
     @Test
@@ -627,10 +623,9 @@ class XMLTest {
         xml.setAttribute("badOne", "IM_BAD");
         var badProxy = new MockProxySettings();
         assertThatExceptionOfType(XMLException.class).isThrownBy(
-                () -> xml.populate(badProxy)
-        )
-        .withStackTraceContaining(
-                "Attribute 'badOne' is not allowed to appear");
+                () -> xml.populate(badProxy))
+                .withStackTraceContaining(
+                        "Attribute 'badOne' is not allowed to appear");
 
         // test with xpath
         var creds = new MockCredentials();
@@ -666,7 +661,6 @@ class XMLTest {
         assertThat(new XML((String) null).isDisabled()).isFalse();
     }
 
-
     @Test
     void testXMLCreation() throws IOException {
         // all these must be equivalent
@@ -676,7 +670,7 @@ class XMLTest {
         assertThat(new XML(xmlFile)).hasToString(SAMPLE_XML);
         assertThat(new XML(xmlFile.toFile())).hasToString(SAMPLE_XML);
         assertThat(new XML(Files.newBufferedReader(xmlFile)))
-            .hasToString(SAMPLE_XML);
+                .hasToString(SAMPLE_XML);
         assertThat(new XML(SAMPLE_XML)).hasToString(SAMPLE_XML);
         var freshXML = new XML("test");
         freshXML.addXML(SAMPLE_XML);
@@ -689,15 +683,15 @@ class XMLTest {
 
         // with object
         assertThat(new XML("test", new DurationConverter()))
-            .hasToString("<test class=\"com.norconex.commons.lang.convert"
-                    + ".DurationConverter\"/>");
+                .hasToString("<test class=\"com.norconex.commons.lang.convert"
+                        + ".DurationConverter\"/>");
         assertThat(new XML("test", DurationConverter.class))
-            .hasToString("<test class=\"com.norconex.commons.lang.convert"
-                    + ".DurationConverter\"/>");
+                .hasToString("<test class=\"com.norconex.commons.lang.convert"
+                        + ".DurationConverter\"/>");
         assertThat(new XML("test", 123)).hasToString("<test>123</test>");
 
         assertThat(XML.of(Files.newInputStream(xmlFile)).create())
-            .hasToString(SAMPLE_XML);
+                .hasToString(SAMPLE_XML);
     }
 
     @Test
@@ -748,21 +742,18 @@ class XMLTest {
 
         var xmlRemove = new XML(
                 "<test>"
-              +   "<one>1</one>"
-              +   "<two>2</two>"
-              +   "<three>3</three>"
-              + "</test>"
-        );
+                        + "<one>1</one>"
+                        + "<two>2</two>"
+                        + "<three>3</three>"
+                        + "</test>");
         xmlRemove.removeElement("two");
         assertThat(xmlRemove).hasToString(
                 """
                 	<test>\
                 	<one>1</one>\
                 	<three>3</three>\
-                	</test>"""
-        );
+                	</test>""");
     }
-
 
     @Test
     void testMap() {
@@ -781,7 +772,7 @@ class XMLTest {
         // string -> string
         map.put("f1", "v1");
         // object -> string array
-        map.put(Double.valueOf(2.22), new String[] {"v2a", "v2b", "v2c"});
+        map.put(Double.valueOf(2.22), new String[] { "v2a", "v2b", "v2c" });
         // string -> mixed object collection
         map.put("f3", Arrays.asList(
                 Double.valueOf(3.3), Duration.ofMillis(33333)));
@@ -835,26 +826,26 @@ class XMLTest {
     @Test
     void testGetCommonTypes() {
         assertThat(new XML("<test>fr_CA</test>").getLocale("."))
-            .isEqualTo(Locale.CANADA_FRENCH);
+                .isEqualTo(Locale.CANADA_FRENCH);
         assertThat(new XML("<test/>").getLocale("nil", Locale.ITALIAN))
-            .isEqualTo(Locale.ITALIAN);
+                .isEqualTo(Locale.ITALIAN);
         assertThat(new XML("<test>UTF-8</test>").getCharset("."))
-            .isEqualTo(StandardCharsets.UTF_8);
+                .isEqualTo(StandardCharsets.UTF_8);
         assertThat(new XML("<test/>").getCharset("nil", ISO_8859_1))
-            .isEqualTo(ISO_8859_1);
+                .isEqualTo(ISO_8859_1);
         assertThat(new XML("<test>2KiB</test>").getDataSize("."))
-            .isEqualTo(2048);
+                .isEqualTo(2048);
         assertThat(new XML("<test/>").getDataSize("nil", 123L)).isEqualTo(123L);
         assertThat(new XML("<test>2MiB</test>").getDataSize(
                 ".", DataUnit.KIB, 1234L)).isEqualTo(2048);
         assertThat(new XML("<test>3 minutes</test>").getDurationMillis("."))
-            .isEqualTo(3 * 60 * 1000);
+                .isEqualTo(3 * 60 * 1000);
         assertThat(new XML("<test/>").getDurationMillis("nil", 123L))
-            .isEqualTo(123L);
+                .isEqualTo(123L);
         assertThat(new XML("<test>3 minutes</test>").getDuration("."))
-            .isEqualTo(Duration.ofMinutes(3));
+                .isEqualTo(Duration.ofMinutes(3));
         assertThat(new XML("<test/>").getDuration("nil", Duration.ofDays(2)))
-            .isEqualTo(Duration.ofDays(2));
+                .isEqualTo(Duration.ofDays(2));
     }
 
     @Test
@@ -927,8 +918,8 @@ class XMLTest {
     void testUnwrap() {
         var wrapped =
                 "<rootTag id=\"banana\" remove=\"me\">"
-              + SAMPLE_XML
-              + "</rootTag>";
+                        + SAMPLE_XML
+                        + "</rootTag>";
         Assertions.assertEquals(SAMPLE_XML,
                 XML.of(wrapped).create().unwrap().toString());
 
@@ -938,7 +929,8 @@ class XMLTest {
         try { //NOSONAR
             XML.of(wrappedList).create().unwrap();
             Assertions.fail("Should have thrown exception.");
-        } catch (XMLException e) { }
+        } catch (XMLException e) {
+        }
     }
 
     @Test
@@ -958,8 +950,11 @@ class XMLTest {
     void testReplace() {
         var replacement = "<replacementTag>I replace!</replacementTag>";
         Assertions.assertEquals(replacement, XML.of(
-                SAMPLE_XML).create().replace(XML.of(
-                        replacement).create()).toString());
+                SAMPLE_XML).create().replace(XML
+                        .of(
+                                replacement)
+                        .create())
+                .toString());
     }
 
     @Test
@@ -1013,16 +1008,16 @@ class XMLTest {
                 xml.getDimension("dimMissing", new Dimension(70, 80)));
         // empty tag should fail
         Assertions.assertThrows(ConverterException.class, () -> //NOSONAR
-            xml.getDimension("dimEmpty", new Dimension(50, 60)),
-            "Dimension wrongfully converted from empty string.");
+        xml.getDimension("dimEmpty", new Dimension(50, 60)),
+                "Dimension wrongfully converted from empty string.");
         // blank tag should fail
         Assertions.assertThrows(ConverterException.class, () -> //NOSONAR
-            xml.getDimension("dimBlank", new Dimension(50, 60)),
-            "Dimension wrongfully converted from blank string.");
+        xml.getDimension("dimBlank", new Dimension(50, 60)),
+                "Dimension wrongfully converted from blank string.");
         // blankPreserve tag should fail
         Assertions.assertThrows(ConverterException.class, () -> //NOSONAR
-            xml.getDimension("dimBlankPreserve", new Dimension(50, 60)),
-            "Dimension wrongfully converted from blankPreserve string.");
+        xml.getDimension("dimBlankPreserve", new Dimension(50, 60)),
+                "Dimension wrongfully converted from blankPreserve string.");
     }
 
     @Test
@@ -1034,24 +1029,24 @@ class XMLTest {
         // Lists are never null, so what would normally be null is
         // considered empty list when obtained as a list.
 
-
         //--- empty lists ---
 
         // self-closing tag is empty list
         Assertions.assertTrue(xml.getList("listNull", Dimension.class,
                 defaultList).isEmpty(), "List not empty.");
         // empty tag should fail
-        Assertions.assertThrows(ConverterException.class, () ->
-            xml.getList("listEmpty", Dimension.class, defaultList),
-            "Dimension wrongfully converted from empty string.");
+        Assertions.assertThrows(ConverterException.class,
+                () -> xml.getList("listEmpty", Dimension.class, defaultList),
+                "Dimension wrongfully converted from empty string.");
         // blank tag should fail
-        Assertions.assertThrows(ConverterException.class, () ->
-            xml.getList("listBlank", Dimension.class, defaultList),
-            "Dimension wrongfully converted from blank string.");
+        Assertions.assertThrows(ConverterException.class,
+                () -> xml.getList("listBlank", Dimension.class, defaultList),
+                "Dimension wrongfully converted from blank string.");
         // blankPreserve tag should fail
-        Assertions.assertThrows(ConverterException.class, () ->
-            xml.getList("listBlankPreserve", Dimension.class, defaultList),
-            "Dimension wrongfully converted from blankPreserve string.");
+        Assertions.assertThrows(ConverterException.class,
+                () -> xml.getList("listBlankPreserve", Dimension.class,
+                        defaultList),
+                "Dimension wrongfully converted from blankPreserve string.");
 
         // missing tag uses default
         Assertions.assertEquals(defaultList,
@@ -1077,7 +1072,6 @@ class XMLTest {
         Assertions.assertTrue(xml.getList("listNullNoParent",
                 Dimension.class, defaultList).isEmpty(), "List not empty.");
     }
-
 
     @Test
     void testOverwriteDefaultWithEmptyListReadWrite() {
@@ -1111,7 +1105,6 @@ class XMLTest {
         // child elements should not be affected
         assertThat(xml.getXML("child").getTextContent()).isEqualTo("a child");
 
-
         xml.removeTextContent();
         assertThat(xml.getTextContent()).isNull();
         // child elements should not be affected
@@ -1137,6 +1130,7 @@ class XMLTest {
             CollectionUtil.setAll(strings,
                     xml.getDelimitedStringList("strings", strings));
         }
+
         @Override
         public void saveToXML(XML xml) {
             xml.addDelimitedElementList("enums", enums);

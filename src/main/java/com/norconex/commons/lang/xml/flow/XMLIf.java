@@ -88,7 +88,9 @@ import lombok.ToString;
 @EqualsAndHashCode
 class XMLIf<T> implements Consumer<T>, XMLConfigurable {
 
-    @ToStringExclude @EqualsExclude @HashCodeExclude
+    @ToStringExclude
+    @EqualsExclude
+    @HashCodeExclude
     private final XMLFlow<T> flow;
     private XMLCondition<T> condition;
     private Consumer<T> thenConsumer;
@@ -101,9 +103,11 @@ class XMLIf<T> implements Consumer<T>, XMLConfigurable {
     public Predicate<T> getCondition() {
         return condition;
     }
+
     public Consumer<T> getThenConsumer() {
         return thenConsumer;
     }
+
     public Consumer<T> getElseConsumer() {
         return elseConsumer;
     }
@@ -133,7 +137,8 @@ class XMLIf<T> implements Consumer<T>, XMLConfigurable {
                     + "<conditions> or <condition> as a direct child element "
                     + "of <if> or <ifNot>. Got instead: \""
                     + StringUtils.abbreviate(xml.toString(0)
-                            .replaceAll("[\n\r]", ""), 40) + "\"");
+                            .replaceAll("[\n\r]", ""), 40)
+                    + "\"");
         }
         XMLCondition<T> cond = new XMLCondition<>(flow);
         cond.loadFromXML(bag.get(0));

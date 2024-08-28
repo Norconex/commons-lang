@@ -70,11 +70,10 @@ class FlowTest {
         flowCfg.setConsumerNameProvider(c -> "testConsumer");
 
         beanMapper = BeanMapper.builder()
-            .flowMapperConfig(flowCfg)
-            .indent(true)
-            .build();
+                .flowMapperConfig(flowCfg)
+                .indent(true)
+                .build();
     }
-
 
     @ParameterizedTest
     @EnumSource(Format.class)
@@ -102,67 +101,65 @@ class FlowTest {
     private Consumer<Properties> createPropertiesFlowAsRead() {
         return Consumers.of(
 
-            // if
-            PredicatedConsumer.ifTrue(
-                // condition
-                propertyMatcherCondition("car", "volvo"),
-                // then
-                Consumers.of(
-                    adapt(new MockUppercaseConsumer().setField("firstName"))
-                ),
-                // else
-                Consumers.of(
-                    adapt(new MockUppercaseConsumer().setField("lastName"))
-                )
-            ),
-
-            // consumer
-            adapt(new MockLowercaseConsumer().setField("IdontExist")),
-
-            // if
-            PredicatedConsumer.ifTrue(
-                // allOf
-                Predicates.allOf(
-                    // condition
-                    adapt(new MockMapSizeEqualsCondition().setSize(3)),
-                    // condition
-                    propertyMatcherCondition("car", "toyota")
-                ),
-                // then
-                Consumers.of(
-                    // consumer
-                    adapt(new MockLowercaseConsumer().setField("firstName")),
-                    // ifNot
-                    PredicatedConsumer.ifFalse(
+                // if
+                PredicatedConsumer.ifTrue(
                         // condition
-                        propertyMatcherCondition("firstName", "john"),
+                        propertyMatcherCondition("car", "volvo"),
                         // then
                         Consumers.of(
-                            // consumer
-                            adapt(new MockLowercaseConsumer()
-                                    .setField("lastName")),
-                            // consumer
-                            adapt(new MockLowercaseConsumer()
-                                    .setField("DoNothing1"))
-                        ),
+                                adapt(new MockUppercaseConsumer()
+                                        .setField("firstName"))),
                         // else
                         Consumers.of(
-                            // consumer
-                            adapt(new MockUppercaseConsumer()
-                                    .setField("lastName")),
-                            // consumer
-                            adapt(new MockUppercaseConsumer()
-                                    .setField("DoNothing2"))
-                        )
-                    )
-                )
-            )
-        );
+                                adapt(new MockUppercaseConsumer()
+                                        .setField("lastName")))),
+
+                // consumer
+                adapt(new MockLowercaseConsumer().setField("IdontExist")),
+
+                // if
+                PredicatedConsumer.ifTrue(
+                        // allOf
+                        Predicates.allOf(
+                                // condition
+                                adapt(new MockMapSizeEqualsCondition()
+                                        .setSize(3)),
+                                // condition
+                                propertyMatcherCondition("car", "toyota")),
+                        // then
+                        Consumers.of(
+                                // consumer
+                                adapt(new MockLowercaseConsumer()
+                                        .setField("firstName")),
+                                // ifNot
+                                PredicatedConsumer.ifFalse(
+                                        // condition
+                                        propertyMatcherCondition("firstName",
+                                                "john"),
+                                        // then
+                                        Consumers.of(
+                                                // consumer
+                                                adapt(new MockLowercaseConsumer()
+                                                        .setField("lastName")),
+                                                // consumer
+                                                adapt(new MockLowercaseConsumer()
+                                                        .setField(
+                                                                "DoNothing1"))),
+                                        // else
+                                        Consumers.of(
+                                                // consumer
+                                                adapt(new MockUppercaseConsumer()
+                                                        .setField("lastName")),
+                                                // consumer
+                                                adapt(new MockUppercaseConsumer()
+                                                        .setField(
+                                                                "DoNothing2")))))));
     }
 
     private Predicate<Properties> adapt(MockPredicateBase p) {
         return MockFlowPredicateAdapter.wrap(p);
     }
+
     private Consumer<Properties> adapt(MockConsumerBase p) {
         return MockFlowConsumerAdapter.wrap(p);
     }
@@ -175,7 +172,7 @@ class FlowTest {
                         new PropertyMatcher(basic(name), basic(value)))));
     }
 
-    void assertFlowConsumed(Consumer<Properties>  c) {
+    void assertFlowConsumed(Consumer<Properties> c) {
         var data1 = new Properties();
         data1.add("firstName", "John");
         data1.add("lastName", "Smith");

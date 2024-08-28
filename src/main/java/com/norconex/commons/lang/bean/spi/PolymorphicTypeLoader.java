@@ -27,11 +27,13 @@ import org.apache.commons.collections4.MultiValuedMap;
  */
 public final class PolymorphicTypeLoader {
 
-    private PolymorphicTypeLoader() {}
+    private PolymorphicTypeLoader() {
+    }
 
     public static List<PolymorphicTypeProvider> providers() {
         return providers(null);
     }
+
     public static List<PolymorphicTypeProvider> providers(
             ClassLoader classLoader) {
         List<PolymorphicTypeProvider> providers = new ArrayList<>();
@@ -44,6 +46,7 @@ public final class PolymorphicTypeLoader {
     public static MultiValuedMap<Class<?>, Class<?>> polymorphicTypes() {
         return polymorphicTypes(null);
     }
+
     public static MultiValuedMap<Class<?>, Class<?>> polymorphicTypes(
             ClassLoader classLoader) {
         MultiValuedMap<Class<?>, Class<?>> map =

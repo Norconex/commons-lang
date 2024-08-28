@@ -42,7 +42,8 @@ public class PathConverter extends AbstractConverter {
      * @since 3.0.0
      */
     public static class JsonSerializer
-            extends GenericJsonSerializer<Path>{}
+            extends GenericJsonSerializer<Path> {
+    }
 
     /**
      * JSON (Jackson) deserializer using this converter.
@@ -65,4 +66,3 @@ public class PathConverter extends AbstractConverter {
         }
     }
 }
-

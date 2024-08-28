@@ -31,19 +31,23 @@ public abstract class BasePredicateAdapter<A, T>
     public A getPredicateAdaptee() {
         return adaptee;
     }
+
     @SuppressWarnings("unchecked")
     @Override
     public void setPredicateAdaptee(Object adaptee) {
         this.adaptee = (A) adaptee;
     }
+
     @Override
     public String toString() {
         return Objects.toString(adaptee, "");
     }
+
     @Override
     public boolean equals(Object obj) {
         return Objects.equals(adaptee, obj);
     }
+
     @Override
     public int hashCode() {
         return Objects.hashCode(adaptee);

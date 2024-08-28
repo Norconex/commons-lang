@@ -60,8 +60,8 @@ public final class FileUtil {
     /** @since 3.0.0 */
     public static final File[] EMPTY_FILE_ARRAY = {};
 
-    private FileUtil() {}
-
+    private FileUtil() {
+    }
 
     /**
      * Gets whether a directory is empty of files or directories
@@ -144,7 +144,7 @@ public final class FileUtil {
             return null;
         }
         var b = new StringBuilder();
-        for (var i = 0; i < unsafeFileName.length(); i++){
+        for (var i = 0; i < unsafeFileName.length(); i++) {
             var ch = unsafeFileName.charAt(i);
             if (CharUtils.isAsciiAlphanumeric(ch) || ch == '-' || ch == '.') {
                 b.append(ch);
@@ -202,7 +202,7 @@ public final class FileUtil {
      */
     public static File moveFileToDir(
             @NonNull File sourceFile, @NonNull File targetDir)
-                    throws IOException {
+            throws IOException {
         return moveFileToDir(toPath(sourceFile), toPath(targetDir)).toFile();
     }
 
@@ -225,7 +225,7 @@ public final class FileUtil {
      */
     public static Path moveFileToDir(
             @NonNull Path sourceFile, @NonNull Path targetDir)
-                    throws IOException {
+            throws IOException {
         if (!isFile(sourceFile)) {
             throw new IOException("Source file does not exist, is not a file, "
                     + "or is otherwise not valid: " + sourceFile);
@@ -262,7 +262,7 @@ public final class FileUtil {
      */
     public static void moveFile(
             @NonNull File sourceFile, @NonNull File targetFile)
-                    throws IOException {
+            throws IOException {
         moveFile(toPath(sourceFile), toPath(targetFile));
     }
 
@@ -286,7 +286,7 @@ public final class FileUtil {
      */
     public static void moveFile(
             @NonNull Path sourceFile, @NonNull Path targetFile)
-                    throws IOException {
+            throws IOException {
         if (!isFile(sourceFile)) {
             throw new IOException("Source file does not exist, is not a file, "
                     + "or is otherwise not valid: " + sourceFile);
@@ -472,6 +472,7 @@ public final class FileUtil {
     public static void visitAllDirsAndFiles(File dir, FileVisitor visitor) {
         visitAllDirsAndFiles(dir, visitor, null);
     }
+
     /**
      * Visits all files and directories under a directory.
      * @param dir the directory
@@ -512,6 +513,7 @@ public final class FileUtil {
             }
         }
     }
+
     /**
      * Visits only empty directories under a directory.
      * @param dir the directory
@@ -555,6 +557,7 @@ public final class FileUtil {
             }
         }
     }
+
     /**
      * Visits only directories under a directory.
      * @param dir the directory
@@ -587,6 +590,7 @@ public final class FileUtil {
     public static void visitAllFiles(File dir, FileVisitor visitor) {
         visitAllFiles(dir, visitor, null);
     }
+
     /**
      * Visits all files (and only files) under a directory, including
      * sub-directories.
@@ -639,6 +643,7 @@ public final class FileUtil {
             int numberOfLinesToRead) throws IOException {
         return head(file, encoding, numberOfLinesToRead, true);
     }
+
     /**
      * Returns the specified number of lines starting from the beginning
      * of a text file, using the given encoding.
@@ -654,6 +659,7 @@ public final class FileUtil {
             throws IOException {
         return head(file, encoding, numberOfLinesToRead, stripBlankLines, null);
     }
+
     /**
      * Returns the specified number of lines starting from the beginning
      * of a text file, using the given encoding.
@@ -676,14 +682,14 @@ public final class FileUtil {
                 new InputStreamReader(new FileInputStream(file), encoding))) {
             var remainingLinesToRead = numberOfLinesToRead;
             var line = StringUtils.EMPTY;
-            while(line != null && remainingLinesToRead-- > 0){
-                 line = reader.readLine();
-                 if ((!stripBlankLines || StringUtils.isNotBlank(line))
-                         && (filter == null || filter.test(line))) {
-                     lines.add(line);
-                 } else {
-                     remainingLinesToRead++;
-                 }
+            while (line != null && remainingLinesToRead-- > 0) {
+                line = reader.readLine();
+                if ((!stripBlankLines || StringUtils.isNotBlank(line))
+                        && (filter == null || filter.test(line))) {
+                    lines.add(line);
+                } else {
+                    remainingLinesToRead++;
+                }
             }
         }
         return lines.toArray(ArrayUtils.EMPTY_STRING_ARRAY);
@@ -821,6 +827,7 @@ public final class FileUtil {
     public static File createDateTimeDirs(File parentDir) throws IOException {
         return createDateTimeDirs(parentDir, new Date());
     }
+
     /**
      * Creates (if not already existing) a series of directories reflecting
      * a date and time, up to the seconds, under a given parent directory.
@@ -862,7 +869,7 @@ public final class FileUtil {
      */
     public static File createDateFormattedDirs(
             @NonNull File parentDir, @NonNull Date dateTime, String format)
-                    throws IOException {
+            throws IOException {
         if (parentDir.exists() && !parentDir.isDirectory()) {
             throw new IOException(String.format("Parent directory \"%s\" "
                     + "already exists and is not a directory.", parentDir));
@@ -919,6 +926,7 @@ public final class FileUtil {
             throws IOException {
         return createURLDirs(parentDir, url, false);
     }
+
     /**
      * <p>Creates (if not already existing) a series of directories
      * matching URL segments, under a given parent directory.
@@ -942,6 +950,7 @@ public final class FileUtil {
             throws IOException {
         return createURLDirs(parentDir, url, false);
     }
+
     /**
      * Creates (if not already existing) a series of directories
      * matching URL segments, under a given parent directory.
@@ -967,6 +976,7 @@ public final class FileUtil {
         }
         return createURLDirs(parentDir, url.toString(), truncate);
     }
+
     /**
      * Creates (if not already existing) a series of directories
      * matching URL segments, under a given parent directory.
@@ -987,7 +997,7 @@ public final class FileUtil {
      */
     public static File createURLDirs(
             @NonNull File parentDir, @NonNull String url, boolean truncate)
-                    throws IOException {
+            throws IOException {
         if (parentDir.exists() && !parentDir.isDirectory()) {
             throw new IOException(String.format("Parent directory \"%s\" "
                     + "already exists and is not a directory.", parentDir));
@@ -1019,6 +1029,7 @@ public final class FileUtil {
     public static File toURLDir(File parentDir, URL url) {
         return toURLDir(parentDir, url, false);
     }
+
     /**
      * <p>Gets (but does not create) a directory matching URL segments,
      * under a given parent directory.
@@ -1041,6 +1052,7 @@ public final class FileUtil {
     public static File toURLDir(File parentDir, String url) {
         return toURLDir(parentDir, url, false);
     }
+
     /**
      * Gets (but does not create) a directory matching URL segments,
      * under a given parent directory.
@@ -1139,6 +1151,7 @@ public final class FileUtil {
         }
         return toPaths(Arrays.asList(files)).toArray(EMPTY_PATH_ARRAY);
     }
+
     /**
      * Converts all supplied files to {@link Path} (<code>null</code> entries
      * remain <code>null</code>).
@@ -1148,9 +1161,9 @@ public final class FileUtil {
      */
     public static List<Path> toPaths(Collection<File> files) {
         return CollectionUtils.emptyIfNull(files).stream()
-            .filter(Objects::nonNull)
-            .map(File::toPath)
-            .toList();
+                .filter(Objects::nonNull)
+                .map(File::toPath)
+                .toList();
     }
 
     /**
@@ -1176,10 +1189,11 @@ public final class FileUtil {
         if (truncate && parentDir.getAbsolutePath().length() > 200) {
             throw new IllegalArgumentException(String.format(
                     "Parent directory \"%s\" is too long (must be 200 "
-                    + "characters or less).", parentDir));
+                            + "characters or less).",
+                    parentDir));
         }
         var b = new StringBuilder(parentDir.getAbsolutePath());
-        var segs = url.replaceFirst("://", "/") .split("/");
+        var segs = url.replaceFirst("://", "/").split("/");
         for (String seg : segs) {
             b.append("/").append(toSafeFileName(seg));
         }

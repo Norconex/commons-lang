@@ -30,22 +30,27 @@ import com.norconex.commons.lang.xml.XMLValidationError.Severity;
  */
 public class ErrorHandlerFailer implements ErrorHandler {
     private final Class<?> clazz;
+
     public ErrorHandlerFailer(Class<?> clazz) {
         super();
         this.clazz = clazz;
     }
+
     @Override
     public void warning(SAXParseException e) throws SAXException {
         fail(e, Severity.WARNING);
     }
+
     @Override
     public void error(SAXParseException e) throws SAXException {
         fail(e, Severity.ERROR);
     }
+
     @Override
     public void fatalError(SAXParseException e) throws SAXException {
         fail(e, Severity.FATAL);
     }
+
     private void fail(SAXParseException e, Severity severity) {
         String msg = "[XML] ";
         if (clazz == null) {

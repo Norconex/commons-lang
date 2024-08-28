@@ -26,7 +26,7 @@ class VersionUtilTest {
     void testGetVersionClass() {
         assertThat(Integer.parseInt(
                 substringBefore(VersionUtil.getVersion(getClass()), ".")))
-            .isGreaterThanOrEqualTo(3);
+                        .isGreaterThanOrEqualTo(3);
     }
 
     @Test

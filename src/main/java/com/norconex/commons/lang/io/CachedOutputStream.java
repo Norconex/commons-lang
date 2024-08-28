@@ -208,7 +208,11 @@ public class CachedOutputStream extends OutputStream implements CachedStream {
     private void closeOuputStream(OutputStream os) throws IOException {
         if (os != null) {
             os.flush();
-            try { os.close(); } catch (IOException e) { /*NOOP*/ }
+            try {
+                os.close();
+            } catch (IOException e) {
+                /*NOOP*/
+            }
         }
     }
 
@@ -256,10 +260,10 @@ public class CachedOutputStream extends OutputStream implements CachedStream {
         return cacheEmpty;
     }
 
-
     public CachedOutputStream newOuputStream(OutputStream os) {
         return factory.newOuputStream(os);
     }
+
     public CachedOutputStream newOuputStream() {
         return factory.newOuputStream();
     }

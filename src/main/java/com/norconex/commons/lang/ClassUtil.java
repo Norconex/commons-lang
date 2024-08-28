@@ -26,7 +26,8 @@ import org.apache.commons.lang3.reflect.ConstructorUtils;
  */
 public final class ClassUtil {
 
-    private ClassUtil() {}
+    private ClassUtil() {
+    }
 
     /**
      * Gets a type annotation, considering super classes.  If more than
@@ -75,9 +76,9 @@ public final class ClassUtil {
                 | InvocationTargetException | InstantiationException e) {
             throw new IllegalArgumentException(
                     ("Could not instantiate class %s with the following "
-                    + "arguments: %s.").formatted(
-                            clazz.getCanonicalName(),
-                            Arrays.toString(args)));
+                            + "arguments: %s.").formatted(
+                                    clazz.getCanonicalName(),
+                                    Arrays.toString(args)));
         }
     }
 }

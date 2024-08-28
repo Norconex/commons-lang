@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 package com.norconex.commons.lang.security;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,7 +33,6 @@ import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.encrypt.EncryptionKey;
 import com.norconex.commons.lang.encrypt.EncryptionUtil;
-
 
 /**
  * Builder for creating a KeyStore.
@@ -66,6 +66,7 @@ public final class KeyStoreBuilder {
         this.provider = provider;
         return this;
     }
+
     /**
      * Sets the key store type. When not set, uses default key store type.
      * @param type key store type
@@ -75,6 +76,7 @@ public final class KeyStoreBuilder {
         this.type = type;
         return this;
     }
+
     /**
      * Sets the key store password. When not set, it is assumed the key store
      * does not require any password.
@@ -85,6 +87,7 @@ public final class KeyStoreBuilder {
         this.password = password;
         return this;
     }
+
     /**
      * Sets the password encryption key.  In case the password is encrypted.
      * @param passwordKey password key
@@ -116,7 +119,7 @@ public final class KeyStoreBuilder {
             ks = KeyStore.getInstance(ktype);
         }
         if (storeFile != null) {
-            LOG.debug("Loading KeyStore {}...",  storeFile.toAbsolutePath());
+            LOG.debug("Loading KeyStore {}...", storeFile.toAbsolutePath());
             try (InputStream in = Files.newInputStream(storeFile)) {
                 ks.load(in, passwordArray());
             }
@@ -135,6 +138,7 @@ public final class KeyStoreBuilder {
         }
         return EncryptionUtil.decrypt(password, passwordKey).toCharArray();
     }
+
     private String orNotBlank(
             String originalValue, Supplier<String> nonBlankValueSupplier) {
         if (StringUtils.isNotBlank(originalValue)) {
@@ -156,10 +160,11 @@ public final class KeyStoreBuilder {
         }
         File file = new File(javaHome,
                 File.separatorChar + "lib"
-              + File.separatorChar + "security"
-              + File.separatorChar + "cacerts");
+                        + File.separatorChar + "security"
+                        + File.separatorChar + "cacerts");
         return fromFile(file.toPath());
     }
+
     /**
      * A builder for a key store initialized from a key store file.
      * @param file key store file
@@ -172,6 +177,7 @@ public final class KeyStoreBuilder {
         }
         return new KeyStoreBuilder(file);
     }
+
     /**
      * A builder for an empty key store.
      * @return a key store builder

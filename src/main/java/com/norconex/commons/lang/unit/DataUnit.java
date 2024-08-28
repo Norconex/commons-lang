@@ -91,22 +91,22 @@ public enum DataUnit {
     B(0, "B", "byte", 8),
 
     //--- Decimal bits ---
-    KBIT(1, "kbit", "kilo",  10,  3),
-    MBIT(2, "Mbit", "mega",  10,  6),
-    GBIT(3, "Gbit", "giga",  10,  9),
-    TBIT(4, "Tbit", "tera",  10, 12),
-    PBIT(5, "Pbit", "peta",  10, 15),
-    EBIT(6, "Ebit", "exa",   10, 18),
+    KBIT(1, "kbit", "kilo", 10, 3),
+    MBIT(2, "Mbit", "mega", 10, 6),
+    GBIT(3, "Gbit", "giga", 10, 9),
+    TBIT(4, "Tbit", "tera", 10, 12),
+    PBIT(5, "Pbit", "peta", 10, 15),
+    EBIT(6, "Ebit", "exa", 10, 18),
     ZBIT(7, "Zbit", "zetta", 10, 21),
     YBIT(8, "Ybit", "yotta", 10, 24),
 
     //--- Decimal bytes ---
-    KB(1, "kB", "kilo",  10,  3, 8),
-    MB(2, "MB", "mega",  10,  6, 8),
-    GB(3, "GB", "giga",  10,  9, 8),
-    TB(4, "TB", "tera",  10, 12, 8),
-    PB(5, "PB", "peta",  10, 15, 8),
-    EB(6, "EB", "exa",   10, 18, 8),
+    KB(1, "kB", "kilo", 10, 3, 8),
+    MB(2, "MB", "mega", 10, 6, 8),
+    GB(3, "GB", "giga", 10, 9, 8),
+    TB(4, "TB", "tera", 10, 12, 8),
+    PB(5, "PB", "peta", 10, 15, 8),
+    EB(6, "EB", "exa", 10, 18, 8),
     ZB(7, "ZB", "zetta", 10, 21, 8),
     YB(8, "YB", "yotta", 10, 24, 8),
 
@@ -116,7 +116,7 @@ public enum DataUnit {
     GIBIT(3, "Gibit", "gibi", 2, 30),
     TIBIT(4, "Tibit", "tebi", 2, 40),
     PIBIT(5, "Pibit", "pebi", 2, 50),
-    EIBIT(6, "Eibit", "exi",  2, 60),
+    EIBIT(6, "Eibit", "exi", 2, 60),
     ZIBIT(7, "Zibit", "zebi", 2, 70),
     YIBIT(8, "Yibit", "yobi", 2, 80),
 
@@ -126,7 +126,7 @@ public enum DataUnit {
     GIB(3, "GiB", "gibi", 2, 30, 8),
     TIB(4, "TiB", "tebi", 2, 40, 8),
     PIB(5, "PiB", "pebi", 2, 50, 8),
-    EIB(6, "EiB", "exi",  2, 60, 8),
+    EIB(6, "EiB", "exi", 2, 60, 8),
     ZIB(7, "ZiB", "zebi", 2, 70, 8),
     YIB(8, "YiB", "yobi", 2, 80, 8),
 
@@ -152,12 +152,14 @@ public enum DataUnit {
         this.prefix = prefix;
         this.index = index;
     }
+
     DataUnit(int index, String symbol, String prefix, int base, int power) {
         bits = BigDecimal.valueOf(base).pow(power);
         this.symbol = symbol;
         this.prefix = prefix;
         this.index = index;
     }
+
     DataUnit(int index, String symbol,
             String prefix, int base, int power, int multiplier) {
         bits = BigDecimal.valueOf(
@@ -170,15 +172,18 @@ public enum DataUnit {
     public String getSymbol() {
         return symbol;
     }
+
     public String getPrefix() {
         return prefix;
     }
+
     public String getName() {
         if (this == BIT || this == B) {
             return prefix;
         }
         return prefix + (isBitUnit() ? "bit" : "byte");
     }
+
     public int getGroupIndex() {
         return index;
     }
@@ -186,13 +191,16 @@ public enum DataUnit {
     public boolean isBitUnit() {
         return name().contains("BIT");
     }
+
     public boolean isByteUnit() {
         return !name().contains("BIT");
     }
+
     public boolean isBinary() {
         return BINARY_BIT_UNITS.contains(this)
                 || BINARY_BYTE_UNITS.contains(this);
     }
+
     public boolean isDecimal() {
         return DECIMAL_BIT_UNITS.contains(this)
                 || DECIMAL_BYTE_UNITS.contains(this);
@@ -201,6 +209,7 @@ public enum DataUnit {
     public BigInteger bits() {
         return bits.toBigInteger();
     }
+
     public BigInteger bytes() {
         return bits.toBigInteger().divide(BigInteger.valueOf(8));
     }
@@ -208,13 +217,16 @@ public enum DataUnit {
     public BigDecimal toBits(double amount) {
         return toBits(BigDecimal.valueOf(amount));
     }
+
     public BigDecimal toBits(BigDecimal amount) {
         Objects.requireNonNull(amount, "'amount' must not be null.");
         return bits.multiply(amount);
     }
+
     public BigDecimal toBytes(double amount) {
         return toBytes(BigDecimal.valueOf(amount));
     }
+
     public BigDecimal toBytes(BigDecimal amount) {
         return toBits(amount).divide(BigDecimal.valueOf(8));
     }
@@ -222,21 +234,24 @@ public enum DataUnit {
     public BigDecimal fromBits(double amount) {
         return fromBits(BigDecimal.valueOf(amount));
     }
+
     public BigDecimal fromBits(BigDecimal amount) {
         Objects.requireNonNull(amount, "'amount' must not be null.");
         return amount.divide(bits);
     }
+
     public BigDecimal fromBytes(double amount) {
         return fromBytes(BigDecimal.valueOf(amount));
     }
+
     public BigDecimal fromBytes(BigDecimal amount) {
         return fromBits(amount.multiply(BigDecimal.valueOf(8)));
     }
 
-
     public BigDecimal to(double sourceAmount, DataUnit targetUnit) {
         return to(BigDecimal.valueOf(sourceAmount), targetUnit);
     }
+
     public BigDecimal to(BigDecimal sourceAmount, DataUnit targetUnit) {
         Objects.requireNonNull(sourceAmount,
                 "'sourceAmount' must not be null.");
@@ -254,6 +269,7 @@ public enum DataUnit {
     public BigDecimal from(double sourceAmount, DataUnit sourceUnit) {
         return from(BigDecimal.valueOf(sourceAmount), sourceUnit);
     }
+
     /**
      * Converts an amount of a specific unit to this unit.
      * @param sourceAmount source amount to convert
@@ -288,7 +304,8 @@ public enum DataUnit {
 
         // compare
         for (DataUnit unit : values()) {
-            if (unit.getSymbol().equalsIgnoreCase(txt) || unit.getName().equalsIgnoreCase(txt)) {
+            if (unit.getSymbol().equalsIgnoreCase(txt)
+                    || unit.getName().equalsIgnoreCase(txt)) {
                 return unit;
             }
         }

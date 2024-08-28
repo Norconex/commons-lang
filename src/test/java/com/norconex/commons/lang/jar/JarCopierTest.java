@@ -82,36 +82,35 @@ class JarCopierTest {
 
     @Test
     void testCopyIfGreaterOrEquivThenRename() throws IOException {
-        JarCopier copier = new JarCopier();  // test with defaults
+        JarCopier copier = new JarCopier(); // test with defaults
         copier.copyJarDirectory(sourceDir.toString(), targetDir.toString());
 
         JarTestUtil.assertDirOnlyHasFiles(targetDir,
-            "noversion.jar",
-            "noversion.jar.bak",
-            "a-1.0.0.jar",
-            "a-1.0.0.jar.bak",
-            "b-1.0.3.jar.bak",
-            "b-1.1.0.jar",
-            "c-1.2.3.jar.bak",
-            "c-2.jar",
-            "d.jar.bak",
-            "d-2.1.jar",
-            "e-1.0.0.jar",
-            "f-1.0.0.jar",
-            "g-1.0.0-RC1.jar",
-            "g-1.0.0M1.jar.bak",
-            "h-1.0.0beta.jar",
-            "i-1.0.0beta1.jar.bak",
-            "i-1.0.0-beta2.jar",
-            "j-1.0.0-SNAPSHOT.jar",
-            "k-1.0.0-SNAPSHOT.2.jar",
-            "l-1.0.0-RELEASE.jar",
-            "m-1.2.3.jar",
-            "m-0.2.3-ASDF.jar.bak",
-            "m-0.2.3-QWER.jar.bak",
-            "n-1.0.0-AAA.jar",
-            "n-1.0.0-BBB.jar.bak"
-        );
+                "noversion.jar",
+                "noversion.jar.bak",
+                "a-1.0.0.jar",
+                "a-1.0.0.jar.bak",
+                "b-1.0.3.jar.bak",
+                "b-1.1.0.jar",
+                "c-1.2.3.jar.bak",
+                "c-2.jar",
+                "d.jar.bak",
+                "d-2.1.jar",
+                "e-1.0.0.jar",
+                "f-1.0.0.jar",
+                "g-1.0.0-RC1.jar",
+                "g-1.0.0M1.jar.bak",
+                "h-1.0.0beta.jar",
+                "i-1.0.0beta1.jar.bak",
+                "i-1.0.0-beta2.jar",
+                "j-1.0.0-SNAPSHOT.jar",
+                "k-1.0.0-SNAPSHOT.2.jar",
+                "l-1.0.0-RELEASE.jar",
+                "m-1.2.3.jar",
+                "m-0.2.3-ASDF.jar.bak",
+                "m-0.2.3-QWER.jar.bak",
+                "n-1.0.0-AAA.jar",
+                "n-1.0.0-BBB.jar.bak");
     }
 
     @Test
@@ -122,22 +121,21 @@ class JarCopierTest {
         copier.copyJarDirectory(sourceDir.toString(), targetDir.toString());
 
         JarTestUtil.assertDirOnlyHasFiles(targetDir,
-            "noversion.jar",
-            "a-1.0.0.jar",
-            "b-1.1.0.jar",
-            "c-2.jar",
-            "d-2.1.jar",
-            "e-1.0.0.jar",
-            "f-1.0.0.jar",
-            "g-1.0.0-RC1.jar",
-            "h-1.0.0beta.jar",
-            "i-1.0.0-beta2.jar",
-            "j-1.0.0-SNAPSHOT.jar",
-            "k-1.0.0-SNAPSHOT.2.jar",
-            "l-1.0.0-RELEASE.jar",
-            "m-1.2.3.jar",
-            "n-1.0.0-BBB.jar"
-        );
+                "noversion.jar",
+                "a-1.0.0.jar",
+                "b-1.1.0.jar",
+                "c-2.jar",
+                "d-2.1.jar",
+                "e-1.0.0.jar",
+                "f-1.0.0.jar",
+                "g-1.0.0-RC1.jar",
+                "h-1.0.0beta.jar",
+                "i-1.0.0-beta2.jar",
+                "j-1.0.0-SNAPSHOT.jar",
+                "k-1.0.0-SNAPSHOT.2.jar",
+                "l-1.0.0-RELEASE.jar",
+                "m-1.2.3.jar",
+                "n-1.0.0-BBB.jar");
     }
 
     @Test
@@ -148,33 +146,32 @@ class JarCopierTest {
         copier.copyJarDirectory(sourceDir.toString(), targetDir.toString());
 
         JarTestUtil.assertDirOnlyHasFiles(targetDir,
-            "noversion.jar",
-            "a-1.0.0.jar",
-            "b-1.1.0.jar",
-            "b-1.0.3.jar",
-            "c-1.2.3.jar",
-            "c-2.jar",
-            "d-2.1.jar",
-            "d.jar",
-            "e-1.0.0.jar",
-            "f-1.0.0-M1.jar",
-            "f-1.0.0.jar",
-            "g-1.0.0M1.jar",
-            "g-1.0.0-RC1.jar",
-            "h-1.0.0-alpha.jar",
-            "h-1.0.0beta.jar",
-            "i-1.0.0-beta2.jar",
-            "i-1.0.0beta1.jar",
-            "j-1.0.0-SNAPSHOT.jar",
-            "k-1.0.0-SNAPSHOT.2.jar",
-            "l-1.0.0-RELEASE.jar",
-            "m-1.2.3.jar",
-            "m-1.1.0.jar",
-            "m-0.2.3-ASDF.jar",
-            "m-0.2.3-QWER.jar",
-            "n-1.0.0-AAA.jar",
-            "n-1.0.0-BBB.jar"
-        );
+                "noversion.jar",
+                "a-1.0.0.jar",
+                "b-1.1.0.jar",
+                "b-1.0.3.jar",
+                "c-1.2.3.jar",
+                "c-2.jar",
+                "d-2.1.jar",
+                "d.jar",
+                "e-1.0.0.jar",
+                "f-1.0.0-M1.jar",
+                "f-1.0.0.jar",
+                "g-1.0.0M1.jar",
+                "g-1.0.0-RC1.jar",
+                "h-1.0.0-alpha.jar",
+                "h-1.0.0beta.jar",
+                "i-1.0.0-beta2.jar",
+                "i-1.0.0beta1.jar",
+                "j-1.0.0-SNAPSHOT.jar",
+                "k-1.0.0-SNAPSHOT.2.jar",
+                "l-1.0.0-RELEASE.jar",
+                "m-1.2.3.jar",
+                "m-1.1.0.jar",
+                "m-0.2.3-ASDF.jar",
+                "m-0.2.3-QWER.jar",
+                "n-1.0.0-AAA.jar",
+                "n-1.0.0-BBB.jar");
     }
 
     @Test
@@ -186,31 +183,30 @@ class JarCopierTest {
         copier.copyJarDirectory(sourceDir.toString(), targetDir.toString());
 
         JarTestUtil.assertDirOnlyHasFiles(targetDir,
-            "noversion.jar",
-            "a-1.0.0.jar",
-            "b-1.0.3.jar",
-            "c-1.2.3.jar",
-            "d.jar",
-            "e-1.0.0.jar",
-            "f-1.0.0.jar",
-            "g-1.0.0M1.jar",
-            "h-1.0.0beta.jar",
-            "i-1.0.0beta1.jar",
-            "j-1.0.0-SNAPSHOT.jar",
-            "k-1.0.0-SNAPSHOT.2.jar",
-            "l-1.0.0-RELEASE.jar",
-            "m-1.2.3.jar",
-            "m-0.2.3-ASDF.jar.bak",
-            "m-0.2.3-QWER.jar.bak",
-            "n-1.0.0-BBB.jar"
-        );
+                "noversion.jar",
+                "a-1.0.0.jar",
+                "b-1.0.3.jar",
+                "c-1.2.3.jar",
+                "d.jar",
+                "e-1.0.0.jar",
+                "f-1.0.0.jar",
+                "g-1.0.0M1.jar",
+                "h-1.0.0beta.jar",
+                "i-1.0.0beta1.jar",
+                "j-1.0.0-SNAPSHOT.jar",
+                "k-1.0.0-SNAPSHOT.2.jar",
+                "l-1.0.0-RELEASE.jar",
+                "m-1.2.3.jar",
+                "m-0.2.3-ASDF.jar.bak",
+                "m-0.2.3-QWER.jar.bak",
+                "n-1.0.0-BBB.jar");
     }
 
     @Test
     void testCmdLine() throws IOException {
         // needs at least 1 argument
-        assertThrows(IllegalArgumentException.class, () ->
-                Mocker.mockStdInOutErr(
+        assertThrows(IllegalArgumentException.class,
+                () -> Mocker.mockStdInOutErr(
                         JarCopier::doMain));
 
         assertCmdLineResults("m-1.1.0.jar", "1", "1", "SKIPPED",
@@ -246,26 +242,25 @@ class JarCopierTest {
         String out;
 
         // invalid source dir
-        out = Mocker.mockStdInOutErr(() ->
-            jarCopier.copyJarDirectory(badDir.toFile(), targetDir.toFile()));
+        out = Mocker.mockStdInOutErr(() -> jarCopier
+                .copyJarDirectory(badDir.toFile(), targetDir.toFile()));
         assertThat(out).contains("Invalid source directory");
 
         // invalid target dir
-        out = Mocker.mockStdInOutErr(() ->
-            jarCopier.copyJarDirectory(sourceDir.toFile(), badDir.toFile()));
+        out = Mocker.mockStdInOutErr(() -> jarCopier
+                .copyJarDirectory(sourceDir.toFile(), badDir.toFile()));
         assertThat(out).contains("Invalid target directory");
 
-        out = Mocker.mockStdInOutErr(() ->
-            jarCopier.copyJarFile(
-                    new JarFile(sourceDir.resolve("e-1.0.0.jar").toFile()),
-                            badDir.toFile()));
+        out = Mocker.mockStdInOutErr(() -> jarCopier.copyJarFile(
+                new JarFile(sourceDir.resolve("e-1.0.0.jar").toFile()),
+                badDir.toFile()));
         assertThat(out).contains("Invalid target directory");
 
         // source dir empty
         File emptySourceDir =
                 Files.createDirectory(sourceDir.resolve("emptyDir")).toFile();
-        out = Mocker.mockStdInOutErr(() ->
-            jarCopier.copyJarDirectory(emptySourceDir, targetDir.toFile()));
+        out = Mocker.mockStdInOutErr(() -> jarCopier
+                .copyJarDirectory(emptySourceDir, targetDir.toFile()));
         assertThat(out).contains("No jar files were found in");
 
         // Illegal argument
@@ -306,58 +301,60 @@ class JarCopierTest {
     }
 
     //--- Private methods ------------------------------------------------------
-//    private void assertTargetFileNames(String... names) throws IOException {
-//        assertThat(Files.list(targetDir)
-//                .map(p -> p.getFileName().toString()
-//                        .replaceFirst("^(.*\\.bak)-\\d+$", "$1"))
-//                .collect(Collectors.toList()))
-//            .containsExactlyInAnyOrder(names);
-//    }
-//    private void assertTargetContains(String... names) throws IOException {
-//        assertThat(Files.list(targetDir)
-//                .map(p -> p.getFileName().toString()
-//                        .replaceFirst("^(.*\\.bak)-\\d+$", "$1"))
-//                .collect(Collectors.toList()))
-//            .contains(names);
-//    }
+    //    private void assertTargetFileNames(String... names) throws IOException {
+    //        assertThat(Files.list(targetDir)
+    //                .map(p -> p.getFileName().toString()
+    //                        .replaceFirst("^(.*\\.bak)-\\d+$", "$1"))
+    //                .collect(Collectors.toList()))
+    //            .containsExactlyInAnyOrder(names);
+    //    }
+    //    private void assertTargetContains(String... names) throws IOException {
+    //        assertThat(Files.list(targetDir)
+    //                .map(p -> p.getFileName().toString()
+    //                        .replaceFirst("^(.*\\.bak)-\\d+$", "$1"))
+    //                .collect(Collectors.toList()))
+    //            .contains(names);
+    //    }
     private void assertCmdLineResults(
             String sourceFileName, String sourceAction, String targetAction,
             String outContains, String... expectedFiles) throws IOException {
-        String out = Mocker.mockStdInOutErr(() ->
-            JarCopier.doMain(sourceDir.resolve(sourceFileName).toString()),
-        targetDir.toAbsolutePath().toString(), sourceAction, targetAction);
+        String out = Mocker.mockStdInOutErr(
+                () -> JarCopier
+                        .doMain(sourceDir.resolve(sourceFileName).toString()),
+                targetDir.toAbsolutePath().toString(), sourceAction,
+                targetAction);
         assertThat(out).contains(outContains);
         JarTestUtil.assertDirContainsFiles(targetDir, expectedFiles);
     }
 
-//    private void jarsSameDate(String sourceAndTarget) throws IOException {
-//        jarsSameDate(sourceAndTarget, sourceAndTarget);//, true);
-//    }
-//    private void jarsSameDate(String source, String target) throws IOException {
-//        FileTime lastModified = null;
-//        if (source != null) {
-//            lastModified = Files.getLastModifiedTime(
-//                    Files.createFile(sourceDir.resolve(source)));
-//        }
-//        if (target != null) {
-//            Path file = Files.createFile(targetDir.resolve(target));
-//            if (lastModified != null) {
-//                Files.setLastModifiedTime(file, lastModified);
-//            }
-//        }
-//    }
-//
-//    private FileTime sourceJar(String source) throws IOException {
-//        return Files.getLastModifiedTime(
-//                Files.createFile(sourceDir.resolve(source)));
-//    }
-//    private void targetJar(String target) throws IOException {
-//        targetJar(target, null);
-//    }
-//    private void targetJar(String target, FileTime time) throws IOException {
-//        Path file = Files.createFile(targetDir.resolve(target));
-//        if (time != null) {
-//            Files.setLastModifiedTime(file, time);
-//        }
-//    }
+    //    private void jarsSameDate(String sourceAndTarget) throws IOException {
+    //        jarsSameDate(sourceAndTarget, sourceAndTarget);//, true);
+    //    }
+    //    private void jarsSameDate(String source, String target) throws IOException {
+    //        FileTime lastModified = null;
+    //        if (source != null) {
+    //            lastModified = Files.getLastModifiedTime(
+    //                    Files.createFile(sourceDir.resolve(source)));
+    //        }
+    //        if (target != null) {
+    //            Path file = Files.createFile(targetDir.resolve(target));
+    //            if (lastModified != null) {
+    //                Files.setLastModifiedTime(file, lastModified);
+    //            }
+    //        }
+    //    }
+    //
+    //    private FileTime sourceJar(String source) throws IOException {
+    //        return Files.getLastModifiedTime(
+    //                Files.createFile(sourceDir.resolve(source)));
+    //    }
+    //    private void targetJar(String target) throws IOException {
+    //        targetJar(target, null);
+    //    }
+    //    private void targetJar(String target, FileTime time) throws IOException {
+    //        Path file = Files.createFile(targetDir.resolve(target));
+    //        if (time != null) {
+    //            Files.setLastModifiedTime(file, time);
+    //        }
+    //    }
 }

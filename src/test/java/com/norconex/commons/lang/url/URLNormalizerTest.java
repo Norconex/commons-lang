@@ -61,14 +61,13 @@ public class URLNormalizerTest {
                 .removeWWW()
                 .sortQueryParameters()
                 .unsecureScheme()
-                .upperCaseEscapeSequence()
-                ;
-//          System.out.println("toString(): " + n.toString());
-//          System.out.println("toURL()   : " + n.toURL());
-//          System.out.println("toURI()   : " + n.toURI());
-          assertEquals(t,  n.toString());
-          assertEquals(t,  n.toURL().toString());
-          assertEquals(t,  n.toURI().toString());
+                .upperCaseEscapeSequence();
+        //          System.out.println("toString(): " + n.toString());
+        //          System.out.println("toURL()   : " + n.toURL());
+        //          System.out.println("toURI()   : " + n.toURI());
+        assertEquals(t, n.toString());
+        assertEquals(t, n.toURL().toString());
+        assertEquals(t, n.toURI().toString());
     }
 
     @Test
@@ -105,7 +104,6 @@ public class URLNormalizerTest {
         t = "http://www.example.com/#hash";
         assertEquals(t, n(s).addDomainTrailingSlash().toString());
     }
-
 
     @Test
     public void testEncodeUTF8Characters() {
@@ -315,37 +313,37 @@ public class URLNormalizerTest {
         Map<String, String> m = new HashMap<>();
 
         // 5.4.1 Normal Examples
-        m.put("/b/c/."             , "/b/c/");
-        m.put("/b/c/./"            , "/b/c/");
-        m.put("/b/c/.."            , "/b/");
-        m.put("/b/c/../"           , "/b/");
-        m.put("/b/c/../g"          , "/b/g");
-        m.put("/b/c/../.."         , "/");
-        m.put("/b/c/../../"        , "/");
-        m.put("/b/c/../../g"       , "/g");
+        m.put("/b/c/.", "/b/c/");
+        m.put("/b/c/./", "/b/c/");
+        m.put("/b/c/..", "/b/");
+        m.put("/b/c/../", "/b/");
+        m.put("/b/c/../g", "/b/g");
+        m.put("/b/c/../..", "/");
+        m.put("/b/c/../../", "/");
+        m.put("/b/c/../../g", "/g");
 
         // 5.4.2. Abnormal Examples
-        m.put("/b/c/../../../g"    ,  "/g");
-        m.put("/b/c/../../../../g" ,  "/g");
+        m.put("/b/c/../../../g", "/g");
+        m.put("/b/c/../../../../g", "/g");
 
-        m.put("/./g"               ,  "/g");
-        m.put("/../g"              ,  "/g");
-        m.put("/b/c/g."            ,  "/b/c/g.");
-        m.put("/b/c/.g"            ,  "/b/c/.g");
-        m.put("/b/c/g.."           ,  "/b/c/g..");
-        m.put("/b/c/..g"           ,  "/b/c/..g");
+        m.put("/./g", "/g");
+        m.put("/../g", "/g");
+        m.put("/b/c/g.", "/b/c/g.");
+        m.put("/b/c/.g", "/b/c/.g");
+        m.put("/b/c/g..", "/b/c/g..");
+        m.put("/b/c/..g", "/b/c/..g");
 
-        m.put("/b/c/./../g"        ,  "/b/g");
-        m.put("/b/c/./g/."         ,  "/b/c/g/");
-        m.put("/b/c/g/./h"         ,  "/b/c/g/h");
-        m.put("/b/c/g/../h"        ,  "/b/c/h");
-        m.put("/b/c/g;x=1/./y"     ,  "/b/c/g;x=1/y");
-        m.put("/b/c/g;x=1/../y"    ,  "/b/c/y");
+        m.put("/b/c/./../g", "/b/g");
+        m.put("/b/c/./g/.", "/b/c/g/");
+        m.put("/b/c/g/./h", "/b/c/g/h");
+        m.put("/b/c/g/../h", "/b/c/h");
+        m.put("/b/c/g;x=1/./y", "/b/c/g;x=1/y");
+        m.put("/b/c/g;x=1/../y", "/b/c/y");
 
-        m.put("/b/c/g?y/./x"       ,  "/b/c/g?y/./x");
-        m.put("/b/c/g?y/../x"      ,  "/b/c/g?y/../x");
-        m.put("/b/c/g#s/./x"       ,  "/b/c/g#s/./x");
-        m.put("/b/c/g#s/../x"      ,  "/b/c/g#s/../x");
+        m.put("/b/c/g?y/./x", "/b/c/g?y/./x");
+        m.put("/b/c/g?y/../x", "/b/c/g?y/../x");
+        m.put("/b/c/g#s/./x", "/b/c/g#s/./x");
+        m.put("/b/c/g#s/../x", "/b/c/g#s/../x");
 
         for (Entry<String, String> e : m.entrySet()) {
             s = urlRoot + e.getKey();
@@ -353,6 +351,7 @@ public class URLNormalizerTest {
             assertEquals(t, n(s).removeDotSegments().toString());
         }
     }
+
     @Test
     public void testRemoveDirectoryIndex() {
         s = "http://www.example.com/index.html";
@@ -407,7 +406,8 @@ public class URLNormalizerTest {
         s = "http://208.80.154.224/wiki/Main_Page";
         t = null;
         Assertions.assertTrue(
-               n(s).replaceIPWithDomainName().toString().contains("wikimedia"));
+                n(s).replaceIPWithDomainName().toString()
+                        .contains("wikimedia"));
         s = "http://wikipedia.org/wiki/Main_Page";
         t = "http://wikipedia.org/wiki/Main_Page";
         assertEquals(t, n(s).replaceIPWithDomainName().toString());
@@ -574,8 +574,8 @@ public class URLNormalizerTest {
         t = "http://12.eg.com/app";
         assertEquals(t, n(s).removeSessionIds().toString());
     }
-//  /myservlet;jsessionid=1E6FEC0D14D044541DD84D2D013D29ED?_option=XX[b]'[/b];[
-//  PHPSESSID=f9f2770d591366bc
+    //  /myservlet;jsessionid=1E6FEC0D14D044541DD84D2D013D29ED?_option=XX[b]'[/b];[
+    //  PHPSESSID=f9f2770d591366bc
 
     // Test for supporting file:// scheme, from here:
     // https://github.com/Norconex/commons-lang/issues/11

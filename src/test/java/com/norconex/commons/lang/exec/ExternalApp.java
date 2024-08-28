@@ -81,9 +81,9 @@ public class ExternalApp {
         OutputStream output = getOutputStream(outFile);
         try (InputStream input = getInputStream(inFile)) {
             List<String> lines =
-                   IOUtils.readLines(input, StandardCharsets.UTF_8);
+                    IOUtils.readLines(input, StandardCharsets.UTF_8);
             for (String line : lines) {
-                String[] words =  line.split(" ");
+                String[] words = line.split(" ");
                 ArrayUtils.reverse(words);
                 output.write(StringUtils.join(words, " ").getBytes());
                 output.write('\n');
@@ -98,13 +98,13 @@ public class ExternalApp {
         }
     }
 
-
     private static void printEnvToStdout(String varName) {
         String var = System.getenv(varName);
         if (StringUtils.isNotBlank(var)) {
             System.out.println(var);
         }
     }
+
     private static void printEnvToStderr(String varName) {
         String var = System.getenv(varName);
         if (StringUtils.isNotBlank(var)) {
@@ -119,6 +119,7 @@ public class ExternalApp {
         }
         return System.in;
     }
+
     private static OutputStream getOutputStream(File outFile)
             throws FileNotFoundException {
         if (outFile != null) {
@@ -208,6 +209,7 @@ public class ExternalApp {
             "log4j",
             "ant",
     };
+
     private static boolean keepPath(String path) {
         if (StringUtils.isBlank(path)) {
             return false;

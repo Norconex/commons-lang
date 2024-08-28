@@ -30,18 +30,18 @@ class PackageManifestTest {
         assertThat(pm.isEmpty()).isFalse();
 
         assertThat(Integer.parseInt(substringBefore(pm.getVersion(), ".")))
-            .isGreaterThanOrEqualTo(3);
+                .isGreaterThanOrEqualTo(3);
         assertThat(pm.getVendor()).isEqualTo("Norconex Inc.");
         assertThat(pm.getTitle()).isEqualTo("Norconex Commons Lang");
 
         assertThat(pm.toString()).matches(
                 "^Norconex Commons Lang \\d+.\\d+.\\d+.* "
-                + "\\(Norconex Inc\\.\\)$");
+                        + "\\(Norconex Inc\\.\\)$");
 
         assertThat(pm.getSemanticVersion().isGreaterOrEquivalentTo(
                 SemanticVersion.builder()
-                    .major(3)
-                    .preRelease("SNAPSHOT")
-                    .build())).isTrue();
+                        .major(3)
+                        .preRelease("SNAPSHOT")
+                        .build())).isTrue();
     }
 }

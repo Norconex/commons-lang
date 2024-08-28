@@ -49,7 +49,7 @@ public class ByteBufferInputStream extends InputStream {
         }
         int newLen = Math.min(len, buf.remaining());
         buf.get(bytes, off, newLen);
-        
+
         if (newLen < len) {
             for (int i = 0; i < bytes.length; i++) {
                 if (bytes[i] == 0) {

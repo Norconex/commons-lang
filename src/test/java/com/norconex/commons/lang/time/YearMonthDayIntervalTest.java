@@ -53,32 +53,33 @@ class YearMonthDayIntervalTest {
     @Test
     void testMisc() {
         assertThatExceptionOfType(IllegalArgumentException.class)
-            .isThrownBy( //NOSONAR
-                () -> new YearMonthDayInterval(
-                        new YearMonthDay(2004, 1, 15),
-                        new YearMonthDay(2000, 1, 14)));
+                .isThrownBy( //NOSONAR
+                        () -> new YearMonthDayInterval(
+                                new YearMonthDay(2004, 1, 15),
+                                new YearMonthDay(2000, 1, 14)));
         assertThatExceptionOfType(IllegalArgumentException.class)
-            .isThrownBy( //NOSONAR
-                () -> new YearMonthDayInterval(
-                        null, new YearMonthDay(200, 1, 14)));
+                .isThrownBy( //NOSONAR
+                        () -> new YearMonthDayInterval(
+                                null, new YearMonthDay(200, 1, 14)));
         assertThatExceptionOfType(IllegalArgumentException.class)
-            .isThrownBy( //NOSONAR
-                () -> new YearMonthDayInterval(
-                        new YearMonthDay(2004, 1, 15), null));
+                .isThrownBy( //NOSONAR
+                        () -> new YearMonthDayInterval(
+                                new YearMonthDay(2004, 1, 15), null));
 
         assertThatExceptionOfType(IllegalArgumentException.class)
-            .isThrownBy( //NOSONAR
-                    () -> interval(""));
+                .isThrownBy( //NOSONAR
+                        () -> interval(""));
 
         assertThatExceptionOfType(IllegalArgumentException.class)
-            .isThrownBy( //NOSONAR
-                () -> new YearMonthDayInterval(new Date(), null));
+                .isThrownBy( //NOSONAR
+                        () -> new YearMonthDayInterval(new Date(), null));
         assertThatNoException().isThrownBy(() -> new YearMonthDayInterval(
                 new Date(), new Date()));
 
         assertThatExceptionOfType(IllegalArgumentException.class)
-            .isThrownBy( //NOSONAR
-                () -> new YearMonthDayInterval(Calendar.getInstance(), null));
+                .isThrownBy( //NOSONAR
+                        () -> new YearMonthDayInterval(Calendar.getInstance(),
+                                null));
         assertThatNoException().isThrownBy(() -> new YearMonthDayInterval(
                 Calendar.getInstance(), Calendar.getInstance()));
 
@@ -86,17 +87,17 @@ class YearMonthDayIntervalTest {
                 new YearMonthDay(2000, 1, 15),
                 new YearMonthDay(2004, 1, 14));
         assertThat(ymdi)
-            .returns(new YearMonthDay(2000, 1, 15),
-                    from(YearMonthDayInterval::getStart))
-            .returns(new YearMonthDay(2004, 1, 14),
-                    from(YearMonthDayInterval::getEnd))
-            .returns(new YearMonthDay(2000, 1, 15).toDate(),
-                    from(YearMonthDayInterval::getStartDate))
-            .returns(new YearMonthDay(2004, 1, 14).toDate(),
-                    from(YearMonthDayInterval::getEndDate))
-            .returns(new YearMonthDay(2004, 1, 15).toDate(),
-                    from(YearMonthDayInterval::getEndDateEndOfDay))
-            .hasToString("2000-01-15 - 2004-01-14");
+                .returns(new YearMonthDay(2000, 1, 15),
+                        from(YearMonthDayInterval::getStart))
+                .returns(new YearMonthDay(2004, 1, 14),
+                        from(YearMonthDayInterval::getEnd))
+                .returns(new YearMonthDay(2000, 1, 15).toDate(),
+                        from(YearMonthDayInterval::getStartDate))
+                .returns(new YearMonthDay(2004, 1, 14).toDate(),
+                        from(YearMonthDayInterval::getEndDate))
+                .returns(new YearMonthDay(2004, 1, 15).toDate(),
+                        from(YearMonthDayInterval::getEndDateEndOfDay))
+                .hasToString("2000-01-15 - 2004-01-14");
     }
 
     @Test
@@ -127,6 +128,7 @@ class YearMonthDayIntervalTest {
     private YearMonthDayInterval interval(String interval) {
         return new YearMonthDayInterval(interval);
     }
+
     private YearMonthDay ymd(String ymd) {
         return new YearMonthDay(ymd);
     }

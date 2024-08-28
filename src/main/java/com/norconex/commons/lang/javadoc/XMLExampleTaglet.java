@@ -16,7 +16,6 @@ package com.norconex.commons.lang.javadoc;
 
 import org.apache.commons.lang3.StringUtils;
 
-
 /**
  * <p>{&#64;nx.xml.example} XML beautifier with enhanced functionality.</p>
  *
@@ -34,7 +33,7 @@ public class XMLExampleTaglet extends XMLTaglet {
 
     public XMLExampleTaglet() {
         super(NAME, tag -> "<h4 id=\"nx-xml-" + orDefaultId(tag.getReference())
-        + "-heading\">XML usage example:</h4>\n");
+                + "-heading\">XML usage example:</h4>\n");
     }
 
     private static String orDefaultId(String id) {

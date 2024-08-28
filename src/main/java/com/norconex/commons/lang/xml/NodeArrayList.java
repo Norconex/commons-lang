@@ -42,6 +42,7 @@ public class NodeArrayList extends ArrayList<Node> implements NodeList {
             }
         }
     }
+
     /**
      * Creates a node ArrayList from the given Node children.
      * A <code>null</code> node or no children results in an empty

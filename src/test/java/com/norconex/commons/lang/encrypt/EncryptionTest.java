@@ -84,7 +84,7 @@ class EncryptionTest {
         assertThat(EncryptionUtil.decrypt(
                 ENCRYPTED_TEXT,
                 new EncryptionKey(keyFile.toString(), Source.FILE)))
-            .isEqualTo(TEXT);
+                        .isEqualTo(TEXT);
     }
 
     @Test
@@ -93,7 +93,7 @@ class EncryptionTest {
             assertThat(EncryptionUtil.decrypt(
                     ENCRYPTED_TEXT,
                     new EncryptionKey("myKey", Source.PROPERTY)))
-                .isEqualTo(TEXT);
+                            .isEqualTo(TEXT);
         });
     }
 
@@ -104,7 +104,7 @@ class EncryptionTest {
         assertThat(EncryptionUtil.decrypt(
                 ENCRYPTED_TEXT,
                 new EncryptionKey("I/SHOULD/NOT/EXIST", Source.ENVIRONMENT)))
-            .isNotEqualTo(TEXT);
+                        .isNotEqualTo(TEXT);
     }
 
     @Test
@@ -139,7 +139,7 @@ class EncryptionTest {
         assertThat(captured.getStdErr()).isBlank();
 
         captured = SystemUtil.runAndCaptureOutput(
-                () -> EncryptionUtil.main(new String[] {"", "", "", ""}));
+                () -> EncryptionUtil.main(new String[] { "", "", "", "" }));
         assertThat(captured.getStdOut()).contains("<appName> encrypt|decrypt");
         assertThat(captured.getStdErr()).contains("Unsupported type of key");
     }
@@ -148,9 +148,10 @@ class EncryptionTest {
     void testDecryptPassword() {
         assertThat(EncryptionUtil.decryptPassword(
                 new Credentials()
-                    .setUsername("u")
-                    .setPassword(ENCRYPTED_TEXT)
-                    .setPasswordKey(new EncryptionKey(KEY)))).isEqualTo(TEXT);
+                        .setUsername("u")
+                        .setPassword(ENCRYPTED_TEXT)
+                        .setPasswordKey(new EncryptionKey(KEY))))
+                                .isEqualTo(TEXT);
         assertThat(EncryptionUtil.decryptPassword(null)).isNull();
     }
 
@@ -159,7 +160,7 @@ class EncryptionTest {
         assertThat(new EncryptionKey(KEY).getValue()).isEqualTo(KEY);
         assertThat(new EncryptionKey(KEY).getSource()).isEqualTo(Source.KEY);
         assertThat(new EncryptionKey(KEY).getSize())
-            .isEqualTo(EncryptionKey.DEFAULT_KEY_SIZE);
+                .isEqualTo(EncryptionKey.DEFAULT_KEY_SIZE);
         assertThat(EncryptionUtil.decryptPassword(null)).isNull();
     }
 

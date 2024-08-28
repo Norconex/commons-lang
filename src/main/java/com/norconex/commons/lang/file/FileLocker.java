@@ -166,6 +166,7 @@ public class FileLocker {
                 StandardOpenOption.CREATE,
                 StandardOpenOption.SYNC);
     }
+
     private FileLock lock(FileChannel fileChannel, boolean block)
             throws IOException {
         if (block) {
@@ -173,6 +174,7 @@ public class FileLocker {
         }
         return fileChannel.tryLock();
     }
+
     private FileAlreadyLockedException alreadyLocked(Exception e) {
         return new FileAlreadyLockedException(
                 lockFile.toAbsolutePath() + " already locked.", e);

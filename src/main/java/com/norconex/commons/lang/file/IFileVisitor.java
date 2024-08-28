@@ -19,6 +19,6 @@ package com.norconex.commons.lang.file;
  * @see FileUtil
  * @deprecated Use {@link FileVisitor} instead.
  */
-@Deprecated(since="3.0.0")
+@Deprecated(since = "3.0.0")
 public interface IFileVisitor extends FileVisitor { //NOSONAR
 }

@@ -26,23 +26,25 @@ import com.sun.source.doctree.UnknownInlineTagTree;
 
 final class TagletUtil {
 
-    private TagletUtil() {}
+    private TagletUtil() {
+    }
 
     static boolean isDeclaredType(TypeElement el) {
         switch (el.getKind()) {
-        case CLASS:
-        case INTERFACE:
-        case ENUM:
-        case ANNOTATION_TYPE:
-            return true;
-        default:
-            return false;
+            case CLASS:
+            case INTERFACE:
+            case ENUM:
+            case ANNOTATION_TYPE:
+                return true;
+            default:
+                return false;
         }
     }
 
     static UnknownInlineTagTree toUnknownInlineTagTreeOrFail(DocTree docTree) {
         return toUnknownInlineTagTreeOrFail(docTree, null);
     }
+
     static UnknownInlineTagTree toUnknownInlineTagTreeOrFail(
             DocTree docTree, String expectedTagName) {
         if (docTree.getKind() != UNKNOWN_INLINE_TAG) {
@@ -78,6 +80,7 @@ final class TagletUtil {
 
     static String toHtmlIdOrNull(TagContent tag, String prefix) {
         return isNotBlank(tag.getReference())
-                ? prefix + tag.getReference() : null;
+                ? prefix + tag.getReference()
+                : null;
     }
 }

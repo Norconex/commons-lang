@@ -37,7 +37,8 @@ public class LocalDateTimeConverter extends AbstractConverter {
      * @since 3.0.0
      */
     public static class JsonSerializer
-            extends GenericJsonSerializer<LocalDateTime>{}
+            extends GenericJsonSerializer<LocalDateTime> {
+    }
 
     /**
      * JSON (Jackson) deserializer using this converter.

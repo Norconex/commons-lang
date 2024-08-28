@@ -29,7 +29,7 @@ public final class MockFlowPredicateAdapter
 
     public static Predicate<Properties> wrap(MockPredicateBase rawCondition) {
         var adapter = new MockFlowPredicateAdapter();
-        adapter .setPredicateAdaptee(rawCondition);
+        adapter.setPredicateAdaptee(rawCondition);
         return adapter;
     }
 
@@ -37,10 +37,12 @@ public final class MockFlowPredicateAdapter
     public boolean test(Properties props) {
         return rawCondition.isPropertiesConditionMet(props);
     }
+
     @Override
     public MockPredicateBase getPredicateAdaptee() {
         return rawCondition;
     }
+
     @Override
     public void setPredicateAdaptee(Object rawCondition) {
         this.rawCondition = (MockPredicateBase) rawCondition;

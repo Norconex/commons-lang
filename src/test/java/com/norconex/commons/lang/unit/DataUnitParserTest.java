@@ -72,10 +72,10 @@ class DataUnitParserTest {
                 () -> DataUnitParser.parse("BAD", DataUnit.B));
     }
 
-
     private long parse(String text) {
         return DataUnitParser.parse(text).longValue();
     }
+
     private double parseMB(String text) {
         return DataUnitParser.parse(text, DataUnit.MB).doubleValue();
     }

@@ -60,6 +60,7 @@ public class JsonXmlPropertiesDeserializer extends StdDeserializer<Properties> {
 
     private void addString(Properties props, String key, JsonNode valueNode) {
         props.add(key, valueNode.isTextual()
-                ? valueNode.textValue() : valueNode.asText());
+                ? valueNode.textValue()
+                : valueNode.asText());
     }
 }

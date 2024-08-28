@@ -31,12 +31,11 @@ class PropertySetterTest {
     @Test
     void testApply() {
         Properties sampleProps = new Properties(MapUtil.toMap(
-            "a", asList("1", "2", "3"),
-            "b", asList("4", "5", "6"),
-            "abc", asList("7", "8", "9")
-        ));
+                "a", asList("1", "2", "3"),
+                "b", asList("4", "5", "6"),
+                "abc", asList("7", "8", "9")));
 
-        APPEND.apply(sampleProps, "a", new String[] {"10", "11"});
+        APPEND.apply(sampleProps, "a", new String[] { "10", "11" });
         assertThat(sampleProps.get("a")).containsExactly(
                 "1", "2", "3", "10", "11");
         APPEND.apply(sampleProps, "d", 12);

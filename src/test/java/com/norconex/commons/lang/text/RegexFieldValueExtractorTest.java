@@ -34,16 +34,17 @@ class RegexFieldValueExtractorTest {
         var xml = ResourceLoader.getXmlString(
                 RegexFieldValueExtractorTest.class);
         var fields = RegexFieldValueExtractor.extractFieldValues(xml,
-            //Test 1) no match group, returning whole match as value
-            new RegexFieldValueExtractor(
-                    "<div class=\"value\">(.*?)</div>", "test1"),
-            //Test 2) 1 match group, returning specified match value
-            new RegexFieldValueExtractor(
-                    "<div class=\"value\">(.*?)</div>", "test2", 1),
-            //Test 3) 2 match groups, returning field name and values
-            new RegexFieldValueExtractor("<div class=\"field\">(.*?)</div>.*?"
-                    + "<div class=\"value\">(.*?)</div>", 1, 2)
-        );
+                //Test 1) no match group, returning whole match as value
+                new RegexFieldValueExtractor(
+                        "<div class=\"value\">(.*?)</div>", "test1"),
+                //Test 2) 1 match group, returning specified match value
+                new RegexFieldValueExtractor(
+                        "<div class=\"value\">(.*?)</div>", "test2", 1),
+                //Test 3) 2 match groups, returning field name and values
+                new RegexFieldValueExtractor(
+                        "<div class=\"field\">(.*?)</div>.*?"
+                                + "<div class=\"value\">(.*?)</div>",
+                        1, 2));
 
         //Test 1
         Assertions.assertEquals(4,
@@ -64,17 +65,19 @@ class RegexFieldValueExtractorTest {
         Assertions.assertEquals(1, fields.getStrings("Last Name").size());
         Assertions.assertEquals("Dalton", fields.getString("Last Name"));
         Assertions.assertEquals(2, fields.getStrings("Street").size());
-        Assertions.assertEquals("123 MultiValue St", fields.getString("Street"));
-        Assertions.assertEquals("Suite 456", fields.getStrings("Street").get(1));
+        Assertions.assertEquals("123 MultiValue St",
+                fields.getString("Street"));
+        Assertions.assertEquals("Suite 456",
+                fields.getStrings("Street").get(1));
 
         //Test 4) No field group specified, using default field name
         fields = null;
         fields = RegexFieldValueExtractor.extractFieldValues(xml,
-            new RegexFieldValueExtractor("<div class=\"field\">(.*?)</div>.*?"
-                        + "<div class=\"value\">(.*?)</div>")
-                .setToField("test4")
-                .setValueGroup(2)
-        );
+                new RegexFieldValueExtractor(
+                        "<div class=\"field\">(.*?)</div>.*?"
+                                + "<div class=\"value\">(.*?)</div>")
+                                        .setToField("test4")
+                                        .setValueGroup(2));
         Assertions.assertEquals(4,
                 fields.getStrings("test4").size(), "Wrong test4 value count.");
         Assertions.assertEquals("Suite 456",
@@ -87,7 +90,7 @@ class RegexFieldValueExtractorTest {
                     new RegexFieldValueExtractor(
                             "<div class=\"field\">(.*?)</div>.*?"
                                     + "<div class=\"value\">(.*?)</div>")
-                        .setValueGroup(2));
+                                            .setValueGroup(2));
             Assertions.fail("Should have thrown an exception.");
         } catch (IllegalArgumentException e) {
             Assertions.assertNull(fields, "Test5 fields should be null.");
@@ -96,22 +99,23 @@ class RegexFieldValueExtractorTest {
         //Test 6) No value group specified, with field group
         fields = null;
         fields = RegexFieldValueExtractor.extractFieldValues(xml,
-            new RegexFieldValueExtractor("<DIV class=\"field\">(.*?)</DIV>.*?"
-                        + "<DIV class=\"value\">(.*?)</DIV>")
-                .setFieldGroup(1)
-        );
+                new RegexFieldValueExtractor(
+                        "<DIV class=\"field\">(.*?)</DIV>.*?"
+                                + "<DIV class=\"value\">(.*?)</DIV>")
+                                        .setFieldGroup(1));
         Assertions.assertEquals(3, fields.size(), "Wrong test6 fields size.");
         Assertions.assertEquals(
                 "<div class=\"field\">Last Name</div>\n  "
-              + "<div class=\"value\">Dalton</div>",
+                        + "<div class=\"value\">Dalton</div>",
                 fields.getString("Last Name"), "Wrong test6 value.");
 
         //Test 7) No value or field group
         try { //NOSONAR
             fields = null;
             fields = RegexFieldValueExtractor.extractFieldValues(xml,
-                new RegexFieldValueExtractor("<div class=\"field\">(.*?)</div>.*?"
-                            + "<div class=\"value\">(.*?)</div>"));
+                    new RegexFieldValueExtractor(
+                            "<div class=\"field\">(.*?)</div>.*?"
+                                    + "<div class=\"value\">(.*?)</div>"));
             Assertions.fail("Should have thrown an exception.");
         } catch (IllegalArgumentException e) {
             Assertions.assertNull(fields, "Test7 fields should be null.");
@@ -120,11 +124,10 @@ class RegexFieldValueExtractorTest {
         //Test 8) No value group specified, with field group, case sensitive
         fields = null;
         fields = RegexFieldValueExtractor.extractFieldValues(xml,
-            new RegexFieldValueExtractor(new Regex()
-                .setPattern("<DIV class=\"field\">(.*?)</DIV>.*?"
-                        + "<DIV class=\"value\">(.*?)</DIV>"))
-                .setFieldGroup(1)
-        );
+                new RegexFieldValueExtractor(new Regex()
+                        .setPattern("<DIV class=\"field\">(.*?)</DIV>.*?"
+                                + "<DIV class=\"value\">(.*?)</DIV>"))
+                                        .setFieldGroup(1));
         Assertions.assertTrue(
                 fields.isEmpty(), "Test8 fields should be empty.");
     }

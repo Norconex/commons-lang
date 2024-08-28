@@ -55,6 +55,7 @@ class IncludeDirective {
     boolean matches(TagContent tag) {
         return !hasParseError() && nameOK(tag) && refOK(tag);
     }
+
     boolean hasParseError() {
         return parseError != null;
     }
@@ -62,9 +63,11 @@ class IncludeDirective {
     private boolean nameOK(TagContent tag) {
         return tagName == null || tagName.equals(tag.getName());
     }
+
     private boolean refOK(TagContent tag) {
         return reference == null || reference.equals(tag.getReference());
     }
+
     private static String extractGroup1(String txt, String regex) {
         var m = Pattern.compile(regex).matcher(txt);
         if (m.find()) {

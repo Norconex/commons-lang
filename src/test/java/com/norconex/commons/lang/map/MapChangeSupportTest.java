@@ -36,10 +36,10 @@ class MapChangeSupportTest {
         @SuppressWarnings("deprecation")
         IMapChangeListener<String, String> listener = //NOSONAR
                 event -> {
-            key.setValue(event.getKey());
-            newValue.setValue(event.getNewValue());
-            oldValue.setValue(event.getOldValue());
-        };
+                    key.setValue(event.getKey());
+                    newValue.setValue(event.getNewValue());
+                    oldValue.setValue(event.getOldValue());
+                };
 
         MapChangeSupport<String, String> mcs = new MapChangeSupport<>(map);
         mcs.addMapChangeListener(listener);

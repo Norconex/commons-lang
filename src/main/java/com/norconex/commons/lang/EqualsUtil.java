@@ -47,6 +47,7 @@ public final class EqualsUtil {
         }
         return false;
     }
+
     /**
      * Whether a source string equals ANY of the target string.
      * @param source string being tested for equality with target strings
@@ -90,6 +91,7 @@ public final class EqualsUtil {
         }
         return true;
     }
+
     /**
      * Whether a source string equals ALL of the target string.
      * @param source string being tested for equality with target strings
@@ -122,6 +124,7 @@ public final class EqualsUtil {
     public static boolean equalsNone(Object source, Object... targets) {
         return !equalsAny(source, targets);
     }
+
     /**
      * Whether a source string equals NONE of the target string.
      * @param source string being tested for equality with target strings
@@ -144,7 +147,7 @@ public final class EqualsUtil {
      * @return <code>true</code> if the two maps are equal
      * @since 1.14.0
      */
-    public static boolean equalsMap(Map<?, ?> map1, Map<?,?> map2) {
+    public static boolean equalsMap(Map<?, ?> map1, Map<?, ?> map2) {
         if (map1 == null && map2 == null) {
             return true;
         }

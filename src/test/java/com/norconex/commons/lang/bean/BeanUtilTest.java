@@ -58,29 +58,30 @@ class BeanUtilTest {
                 .stream()
                 .map(PropertyDescriptor::getName)
                 .collect(Collectors.toList()))
-            .containsExactlyInAnyOrder(
-                    "string",
-                    "primitiveInt",
-                    "objectInteger",
-                    "event",
-                    "doubles");
+                        .containsExactlyInAnyOrder(
+                                "string",
+                                "primitiveInt",
+                                "objectInteger",
+                                "event",
+                                "doubles");
         assertThat(BeanUtil.getPropertyDescriptors((Object) null)).isEmpty();
         // Test no empty args contructor
         assertThat(BeanUtil.getPropertyDescriptors(
                 new BigDecimal(0))).isEmpty();
     }
+
     @Test
     void testGetPropertyDescriptorsClass() {
         assertThat(BeanUtil.getPropertyDescriptors(Bean.class)
                 .stream()
                 .map(PropertyDescriptor::getName)
                 .collect(Collectors.toList()))
-            .containsExactlyInAnyOrder(
-                    "string",
-                    "primitiveInt",
-                    "objectInteger",
-                    "event",
-                    "doubles");
+                        .containsExactlyInAnyOrder(
+                                "string",
+                                "primitiveInt",
+                                "objectInteger",
+                                "event",
+                                "doubles");
         assertThat(BeanUtil.getPropertyDescriptors((Class<?>) null)).isEmpty();
         // Test no empty args contructor
         assertThat(BeanUtil.getPropertyDescriptors(
@@ -109,25 +110,25 @@ class BeanUtilTest {
         // messing up "string", we exclude it from comparison.
         BeanUtil.copyPropertiesOverNulls(target, source);
         assertThat(target)
-            .usingRecursiveComparison()
-            .ignoringFields("string")
-            .isEqualTo(expected);
+                .usingRecursiveComparison()
+                .ignoringFields("string")
+                .isEqualTo(expected);
 
         //--- Test when different types ---
         // Expected to be unchanged
         BeanUtil.copyPropertiesOverNulls(target, "Not same type");
         assertThat(target)
-            .usingRecursiveComparison()
-            .ignoringFields("string")
-            .isEqualTo(expected);
+                .usingRecursiveComparison()
+                .ignoringFields("string")
+                .isEqualTo(expected);
 
         //--- Test when source is null ---
         // Expected to be unchanged
         BeanUtil.copyPropertiesOverNulls(target, null);
         assertThat(target)
-            .usingRecursiveComparison()
-            .ignoringFields("string")
-            .isEqualTo(expected);
+                .usingRecursiveComparison()
+                .ignoringFields("string")
+                .isEqualTo(expected);
     }
 
     @Test
@@ -153,25 +154,25 @@ class BeanUtilTest {
         // messing up "string", we exclude it from comparison.
         BeanUtil.copyProperties(target, source);
         assertThat(target)
-            .usingRecursiveComparison()
-            .ignoringFields("string")
-            .isEqualTo(expected);
+                .usingRecursiveComparison()
+                .ignoringFields("string")
+                .isEqualTo(expected);
 
         //--- Test when different types ---
         // Expected to be unchanged
         BeanUtil.copyProperties(target, "Not same type");
         assertThat(target)
-            .usingRecursiveComparison()
-            .ignoringFields("string")
-            .isEqualTo(expected);
+                .usingRecursiveComparison()
+                .ignoringFields("string")
+                .isEqualTo(expected);
 
         //--- Test when source is null ---
         // Expected to be unchanged
         BeanUtil.copyProperties(target, null);
         assertThat(target)
-            .usingRecursiveComparison()
-            .ignoringFields("string")
-            .isEqualTo(expected);
+                .usingRecursiveComparison()
+                .ignoringFields("string")
+                .isEqualTo(expected);
     }
 
     @Test
@@ -186,9 +187,9 @@ class BeanUtilTest {
         // messing up "string", we exclude it from comparison.
         // we also exclude write/readOnly as they are not compliant accessors.
         assertThat(actualBean)
-            .usingRecursiveComparison()
-            .ignoringFields("string", "writeOnly", "readOnly")
-            .isEqualTo(bean);
+                .usingRecursiveComparison()
+                .ignoringFields("string", "writeOnly", "readOnly")
+                .isEqualTo(bean);
         assertThat(actualBean.readOnly).isNull();
         assertThat(actualBean.writeOnly).isNull();
 
@@ -196,7 +197,6 @@ class BeanUtilTest {
         assertThat(BeanUtil.clone("nope")).isEqualTo("nope");
         assertThat(BeanUtil.clone(123)).isEqualTo(123);
     }
-
 
     @Test
     void testDiff() {
@@ -250,11 +250,11 @@ class BeanUtilTest {
     @Test
     void testGetPropertyGenericType() {
         assertThat(BeanUtil.getPropertyGenericType(Bean.class, "doubles"))
-            .isEqualTo(Double.class);
+                .isEqualTo(Double.class);
         assertThat(BeanUtil.getPropertyGenericType(null, "doubles")).isNull();
         assertThat(BeanUtil.getPropertyGenericType(Bean.class, null)).isNull();
-        assertThatExceptionOfType(BeanException.class).isThrownBy(() ->
-            BeanUtil.getPropertyGenericType(Bean.class, "badProperty"));
+        assertThatExceptionOfType(BeanException.class).isThrownBy(() -> BeanUtil
+                .getPropertyGenericType(Bean.class, "badProperty"));
     }
 
     @Test
@@ -468,7 +468,6 @@ class BeanUtilTest {
         assertThat(names).containsExactly(
                 "Root", "Sub1Yes", "Sub2No", "Sub3Yes", "Sub3_1Yes");
 
-
         // collections/maps
         Set<String> nameSet = new TreeSet<>();
         BeanUtil.visitAll(
@@ -480,8 +479,7 @@ class BeanUtilTest {
                 "CollectionsHolder",
                 "HashMap",
                 "HashSet",
-                "String"
-        );
+                "String");
     }
 
     @Test
@@ -542,7 +540,6 @@ class BeanUtilTest {
                 "sub1yes", "sub2no", "sub3yes", "sub1Yes", "sub3_1Yes");
     }
 
-
     @Test
     void testVisitAllPropertiesObjectCollectionBiConsumer() {
         List<String> names = new ArrayList<>();
@@ -587,8 +584,7 @@ class BeanUtilTest {
                     return !"entryName".equals(pd.getName());
                 });
         assertThat(propList).containsExactly(
-                "multiValueMap", "entries", "entryName"
-        );
+                "multiValueMap", "entries", "entryName");
     }
 
     @Test
@@ -606,7 +602,6 @@ class BeanUtilTest {
                 EventListener.class);
         assertThat(names).containsExactly("sub1Yes", "sub3_1Yes");
 
-
         names.clear();
         BeanUtil.visitProperties(
                 new Root(),
@@ -619,7 +614,6 @@ class BeanUtilTest {
         assertThat(names).containsExactly("sub1Yes");
     }
 
-
     //--- Test classes ---------------------------------------------------------
 
     public static class Root implements Serializable {
@@ -627,21 +621,27 @@ class BeanUtilTest {
         private Sub1Yes sub1yes = new Sub1Yes();
         private Sub2No sub2no = new Sub2No();
         private Sub3Yes sub3yes = new Sub3Yes(sub1yes);
+
         public Sub1Yes getSub1yes() {
             return sub1yes;
         }
+
         public void setSub1yes(Sub1Yes sub1yes) {
             this.sub1yes = sub1yes;
         }
+
         public Sub2No getSub2no() {
             return sub2no;
         }
+
         public void setSub2no(Sub2No sub2no) {
             this.sub2no = sub2no;
         }
+
         public Sub3Yes getSub3yes() {
             return sub3yes;
         }
+
         public void setSub3yes(Sub3Yes sub3yes) {
             this.sub3yes = sub3yes;
         }
@@ -649,33 +649,44 @@ class BeanUtilTest {
 
     public static class Sub1Yes implements EventListener<Event>, Serializable {
         private static final long serialVersionUID = 1L;
+
         @Override
         public void accept(Event t) {
         }
     }
+
     public static class Sub2No implements Serializable {
         private static final long serialVersionUID = 1L;
     }
+
     public static class Sub3Yes implements EventListener<Event>, Serializable {
         private static final long serialVersionUID = 1L;
         private Sub1Yes sub1Yes;
         private Sub3_1Yes sub3_1Yes = new Sub3_1Yes();
-        public Sub3Yes() {}
+
+        public Sub3Yes() {
+        }
+
         public Sub3Yes(Sub1Yes sub1Yes) {
             this.sub1Yes = sub1Yes;
         }
+
         public Sub1Yes getSub1Yes() {
             return sub1Yes;
         }
+
         public Sub3_1Yes getSub3_1Yes() {
             return sub3_1Yes;
         }
+
         public void setSub1Yes(Sub1Yes sub1Yes) {
             this.sub1Yes = sub1Yes;
         }
+
         public void setSub3_1Yes(Sub3_1Yes sub3_1Yes) {
             this.sub3_1Yes = sub3_1Yes;
         }
+
         @Override
         public void accept(Event t) {
         }
@@ -684,6 +695,7 @@ class BeanUtilTest {
     public static class Sub3_1Yes
             implements EventListener<Event>, Serializable {
         private static final long serialVersionUID = 1L;
+
         @Override
         public void accept(Event t) {
         }
@@ -706,29 +718,37 @@ class BeanUtilTest {
         private Date date;
         private String readOnly;
         private String writeOnly;
+
         public Date getDate() {
             return date;
         }
+
         public void setDate(Date date) {
             this.date = date;
         }
+
         public String getReadOnly() {
             return readOnly;
         }
+
         public void setWriteOnly(String writeOnly) {
             this.writeOnly = writeOnly;
         }
+
         @Override
         public Integer getObjectInteger() {
             return super.getObjectInteger();
         }
+
         @Override
         public void setObjectInteger(Integer objectInteger) {
             super.setObjectInteger(objectInteger);
         }
+
         public String getUnrelated() {
             return writeOnly;
         }
+
         public void setUnrelated(String str) {
             setString(str);
         }
@@ -749,6 +769,7 @@ class BeanUtilTest {
             entries.add(new CollectionEntry("setName2", null));
         }
     }
+
     @Data
     @AllArgsConstructor
     @NoArgsConstructor

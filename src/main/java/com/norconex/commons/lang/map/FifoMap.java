@@ -26,8 +26,8 @@ import java.util.Map;
  * @see Collections#synchronizedMap(Map)
  * @since 2.0.0
  */
-public final class FifoMap<K,V> //NOSONAR we don't consider maxSize for equality
-        extends LinkedHashMap<K,V> {
+public final class FifoMap<K, V> //NOSONAR we don't consider maxSize for equality
+        extends LinkedHashMap<K, V> {
 
     private static final long serialVersionUID = 1L;
 

@@ -75,6 +75,7 @@ public enum PropertySetter {
     });
 
     private final Strategy s;
+
     PropertySetter(Strategy s) {
         this.s = s;
     }
@@ -99,6 +100,7 @@ public enum PropertySetter {
             String name, PropertySetter defaultSetter) {
         return Optional.ofNullable(from(name)).orElse(defaultSetter);
     }
+
     public static PropertySetter from(String name) {
         if (StringUtils.isBlank(name)) {
             return null;
@@ -110,6 +112,7 @@ public enum PropertySetter {
         }
         return null;
     }
+
     // if null, returns desired appender.
     public static PropertySetter orAppend(PropertySetter setter) {
         if (setter == null) {
@@ -117,18 +120,21 @@ public enum PropertySetter {
         }
         return setter;
     }
+
     public static PropertySetter orOptional(PropertySetter setter) {
         if (setter == null) {
             return OPTIONAL;
         }
         return setter;
     }
+
     public static PropertySetter orPrepend(PropertySetter setter) {
         if (setter == null) {
             return PREPEND;
         }
         return setter;
     }
+
     public static PropertySetter orReplace(PropertySetter setter) {
         if (setter == null) {
             return REPLACE;
@@ -143,6 +149,7 @@ public enum PropertySetter {
         }
         return xml.getEnum("@onSet", PropertySetter.class, defaultValue);
     }
+
     public static void toXML(XML xml, PropertySetter setter) {
         if (xml != null) {
             xml.setAttribute("onSet", setter);

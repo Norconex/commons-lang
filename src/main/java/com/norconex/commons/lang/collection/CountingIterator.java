@@ -35,7 +35,7 @@ public class CountingIterator<T> extends AbstractIteratorDecorator<T> {
     public T next() {
         T t = super.next();
         count++;
-        return  t;
+        return t;
     }
 
     public int getCount() {

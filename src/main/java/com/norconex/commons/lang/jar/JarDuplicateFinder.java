@@ -43,7 +43,8 @@ public final class JarDuplicateFinder {
 
     private static final File[] emptyFiles = {};
 
-    private JarDuplicateFinder() {}
+    private JarDuplicateFinder() {
+    }
 
     /**
      * Finds all jar duplicates.
@@ -96,12 +97,12 @@ public final class JarDuplicateFinder {
                 MultiMapUtils.newListValuedHashMap();
 
         JarFile.toJarFiles(FileUtil.toPaths(jarPaths))
-            .forEach(jf -> jarPathsByBaseName.put(jf.getBaseName(), jf));
+                .forEach(jf -> jarPathsByBaseName.put(jf.getBaseName(), jf));
 
         return jarPathsByBaseName.asMap().entrySet().stream()
-            .filter(en -> en.getValue().size() > 1)
-            .map(en -> new JarDuplicates(en.getValue()))
-            .collect(Collectors.toList());
+                .filter(en -> en.getValue().size() > 1)
+                .map(en -> new JarDuplicates(en.getValue()))
+                .collect(Collectors.toList());
     }
 
     /**
@@ -122,8 +123,8 @@ public final class JarDuplicateFinder {
         JarFile source = new JarFile(jarFile);
         List<JarFile> duplicates = JarFile.toJarFiles(
                 FileUtil.toPaths(paths)).stream()
-            .filter(source::isDuplicateOf)
-            .collect(Collectors.toList());
+                .filter(source::isDuplicateOf)
+                .collect(Collectors.toList());
         Collections.sort(duplicates, new ReverseComparator<>());
         return Collections.unmodifiableList(duplicates);
     }
@@ -139,13 +140,14 @@ public final class JarDuplicateFinder {
                     jarDuplicates.getGreatest().getBaseName() + ":");
             for (JarFile jarFile : jarDuplicates.getJarFiles()) {
                 if (jarDuplicates.areEquivalent()) {
-                    System.out.print(" * ");  //NOSONAR
+                    System.out.print(" * "); //NOSONAR
                 } else {
-                    System.out.print("   ");  //NOSONAR
+                    System.out.print("   "); //NOSONAR
                 }
-                System.out.println(jarFile.toFile() + " ["  //NOSONAR
+                System.out.println(jarFile.toFile() + " [" //NOSONAR
                         + DateFormatUtils.ISO_8601_EXTENDED_DATETIME_FORMAT
-                                .format(jarFile.getLastModified()) + "]");
+                                .format(jarFile.getLastModified())
+                        + "]");
             }
         }
     }

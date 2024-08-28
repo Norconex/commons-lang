@@ -47,7 +47,6 @@ class ByteBufferInputStreamTest {
             in.read(bytes, 0, bytes.length);
             assertThat(new String(bytes, UTF_8)).isEqualTo(val);
 
-
             byte[] bigBytes = new byte[100];
             in.read(bigBytes, 0, 100);
             int numBytes = in.read(bigBytes, 0, 100);

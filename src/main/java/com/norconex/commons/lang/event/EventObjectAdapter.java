@@ -46,10 +46,13 @@ abstract class EventObjectAdapter extends EventObject {
             B extends EventObjectAdapter.EventObjectAdapterBuilder<C, B>> {
         @Generated
         private Object source;
+
         @Generated
         public abstract C build();
+
         @Generated
         protected abstract B self();
+
         @Generated
         public B source(final Object source) {
             this.source = requireNonNull(source, "source must not be null");
@@ -61,14 +64,21 @@ abstract class EventObjectAdapter extends EventObject {
     // them
     @Override
     public boolean equals(final Object other) {
-        if (other == null) { return false; }
-        if (other == this) { return true; }
-        if (other.getClass() != getClass()) { return false; }
+        if (other == null) {
+            return false;
+        }
+        if (other == this) {
+            return true;
+        }
+        if (other.getClass() != getClass()) {
+            return false;
+        }
         var event = (Event) other;
         return new EqualsBuilder()
                 .append(source, event.source)
                 .isEquals();
     }
+
     @Override
     public int hashCode() {
         return new HashCodeBuilder()

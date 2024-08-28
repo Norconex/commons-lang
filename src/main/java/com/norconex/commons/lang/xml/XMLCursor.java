@@ -60,9 +60,11 @@ public class XMLCursor {
     public StartElement getElement() {
         return element;
     }
+
     public String getPath() {
         return '/' + String.join("/", pathSegments);
     }
+
     public String getLocalPath() {
         return getPath().replaceAll("(/)[^/]+?\\:", "$1");
     }
@@ -70,6 +72,7 @@ public class XMLCursor {
     public String getName() {
         return XMLUtil.toName(element.getName());
     }
+
     public String getLocalName() {
         return XMLUtil.toLocalName(element.getName());
     }
@@ -77,9 +80,11 @@ public class XMLCursor {
     public Properties getAttributes() {
         return doGetAttributes(XMLUtil::toName);
     }
+
     public Properties getLocalAttributes() {
         return doGetAttributes(XMLUtil::toLocalName);
     }
+
     private Properties doGetAttributes(Function<QName, String> f) {
         var props = new Properties();
         var attrs = element.getAttributes();
@@ -124,9 +129,9 @@ public class XMLCursor {
                 event = reader.peek();
                 writer.add(event);
                 if (event.isStartElement()) {
-                  depth++;
+                    depth++;
                 } else if (event.isEndElement()) {
-                  depth--;
+                    depth--;
                 }
                 if (event.isEndElement() && depth <= 0) {
                     break;
@@ -140,6 +145,7 @@ public class XMLCursor {
                     "Could not convert cursor to XML object.", e);
         }
     }
+
     public XML readAsXML() {
         return new XML(readAsDOM());
     }

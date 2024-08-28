@@ -39,35 +39,33 @@ class FluentPropertyDescriptorTest {
                 null,
                 getAccessibleMethod(
                         MiscAccessorsBean.class, "setNormal", String.class))))
-            .isEqualTo(expected);
+                                .isEqualTo(expected);
         assertThat(new FluentPropertyDescriptor(new PropertyDescriptor(
                 "normal",
                 getAccessibleMethod(MiscAccessorsBean.class, "getNormal"),
                 null)))
-            .isEqualTo(expected);
-
-
+                        .isEqualTo(expected);
 
         assertThat(new FluentPropertyDescriptor(
                 "normal",
                 getAccessibleMethod(MiscAccessorsBean.class, "getNormal"),
                 getAccessibleMethod(
                         MiscAccessorsBean.class, "setNormal", String.class)))
-            .isEqualTo(expected);
+                                .isEqualTo(expected);
         assertThat(new FluentPropertyDescriptor(
                 "normal",
                 null,
                 getAccessibleMethod(
                         MiscAccessorsBean.class, "setNormal", String.class)))
-            .isEqualTo(expected);
+                                .isEqualTo(expected);
         assertThat(new FluentPropertyDescriptor(
                 "normal",
                 getAccessibleMethod(MiscAccessorsBean.class, "getNormal"),
                 null))
-            .isEqualTo(expected);
+                        .isEqualTo(expected);
         assertThat(new FluentPropertyDescriptor(
                 "normal", MiscAccessorsBean.class, "getNormal", "setNormal"))
-            .isEqualTo(expected);
+                        .isEqualTo(expected);
     }
 
     @Test
@@ -154,26 +152,29 @@ class FluentPropertyDescriptorTest {
             throws IntrospectionException {
         assertThat(new FluentPropertyDescriptor(
                 property, MiscAccessorsBean.class)
-            .isReadable())
-            .isEqualTo(readable);
+                        .isReadable())
+                                .isEqualTo(readable);
     }
+
     private void assertWritable(String property, boolean writable)
             throws IntrospectionException {
         assertThat(new FluentPropertyDescriptor(
                 property, MiscAccessorsBean.class)
-            .isWritable())
-            .isEqualTo(writable);
+                        .isWritable())
+                                .isEqualTo(writable);
     }
+
     private void assertReadValue(
             MiscAccessorsBean mab, String property, Object expectedValue)
-                    throws IntrospectionException {
+            throws IntrospectionException {
         assertEquals(expectedValue, new FluentPropertyDescriptor(
                 property, MiscAccessorsBean.class)
-            .readValue(mab));
+                        .readValue(mab));
     }
+
     private void writeValue(
             MiscAccessorsBean mab, String property, Object value)
-                    throws IntrospectionException {
+            throws IntrospectionException {
         new FluentPropertyDescriptor(
                 property, MiscAccessorsBean.class).writeValue(mab, value);
     }

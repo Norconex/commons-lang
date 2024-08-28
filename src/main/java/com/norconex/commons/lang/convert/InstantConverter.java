@@ -37,7 +37,8 @@ public class InstantConverter extends AbstractConverter {
      * @since 3.0.0
      */
     public static class JsonSerializer
-            extends GenericJsonSerializer<Instant>{}
+            extends GenericJsonSerializer<Instant> {
+    }
 
     /**
      * JSON (Jackson) deserializer using this converter.

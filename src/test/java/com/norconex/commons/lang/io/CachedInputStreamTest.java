@@ -50,17 +50,20 @@ class CachedInputStreamTest {
             cache.reset();
 
             // second read
-            while (cache.read() != -1) {}
+            while (cache.read() != -1) {
+            }
             cache.rewind();
 
             // third read and test
             Assertions.assertEquals(content, toString(cache));
-        }  finally {
-            try { cache.close(); } catch (IOException e) { /*NOOP*/ }
+        } finally {
+            try {
+                cache.close();
+            } catch (IOException e) {
+                /*NOOP*/ }
             cache.dispose();
         }
     }
-
 
     @Test
     void testContentMatchMemCache() throws IOException {
@@ -77,8 +80,11 @@ class CachedInputStreamTest {
             cache.rewind();
             // second time should read from cache
             Assertions.assertEquals(content, toString(cache));
-        }  finally {
-            try { cache.close(); } catch (IOException e) { /*NOOP*/ }
+        } finally {
+            try {
+                cache.close();
+            } catch (IOException e) {
+                /*NOOP*/ }
             cache.dispose();
         }
     }
@@ -103,8 +109,11 @@ class CachedInputStreamTest {
             bytes = new byte[7];
             cache.read(bytes);
             Assertions.assertEquals("56789AB", new String(bytes, enc));
-        }  finally {
-            try { cache.close(); } catch (IOException e) { /*NOOP*/ }
+        } finally {
+            try {
+                cache.close();
+            } catch (IOException e) {
+                /*NOOP*/ }
             cache.dispose();
         }
     }
@@ -129,9 +138,15 @@ class CachedInputStreamTest {
             toString(cache2);
             assertThat(cache2.getMemCacheSize()).isZero();
             assertThat(cache2.isInMemory()).isFalse();
-        }  finally {
-            try { cache1.close(); } catch (IOException e) { /*NOOP*/ }
-            try { cache2.close(); } catch (IOException e) { /*NOOP*/ }
+        } finally {
+            try {
+                cache1.close();
+            } catch (IOException e) {
+                /*NOOP*/ }
+            try {
+                cache2.close();
+            } catch (IOException e) {
+                /*NOOP*/ }
             cache1.dispose();
             cache2.dispose();
         }
@@ -150,8 +165,11 @@ class CachedInputStreamTest {
             cache.rewind();
             // second time should read from cache
             Assertions.assertEquals(content, toString(cache));
-        }  finally {
-            try { cache.close(); } catch (IOException e) { /*NOOP*/ }
+        } finally {
+            try {
+                cache.close();
+            } catch (IOException e) {
+                /*NOOP*/ }
             cache.dispose();
         }
     }
@@ -166,11 +184,15 @@ class CachedInputStreamTest {
             // can re-read proper?
             cache.rewind();
             Assertions.assertEquals(content, toString(cache));
-        }  finally {
-            try { cache.close(); } catch (IOException e) { /*NOOP*/ }
+        } finally {
+            try {
+                cache.close();
+            } catch (IOException e) {
+                /*NOOP*/ }
             cache.dispose();
         }
     }
+
     @Test
     void testLengthSmallReadFileCache() throws IOException {
         String content = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -187,11 +209,15 @@ class CachedInputStreamTest {
             Assertions.assertEquals("56789", new String(bytes));
             // still good length?
             Assertions.assertEquals(content.length(), cache.length());
-        }  finally {
-            try { cache.close(); } catch (IOException e) { /*NOOP*/ }
+        } finally {
+            try {
+                cache.close();
+            } catch (IOException e) {
+                /*NOOP*/ }
             cache.dispose();
         }
     }
+
     @Test
     void testLengthBigReadFileCache() throws IOException {
         String content = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -209,8 +235,11 @@ class CachedInputStreamTest {
             Assertions.assertEquals("FGHIJ", new String(bytes));
             // still good length?
             Assertions.assertEquals(content.length(), cache.length());
-        }  finally {
-            try { cache.close(); } catch (IOException e) { /*NOOP*/ }
+        } finally {
+            try {
+                cache.close();
+            } catch (IOException e) {
+                /*NOOP*/ }
             cache.dispose();
         }
     }
@@ -225,11 +254,15 @@ class CachedInputStreamTest {
             // can re-read proper?
             cache.rewind();
             Assertions.assertEquals(content, toString(cache));
-        }  finally {
-            try { cache.close(); } catch (IOException e) { /*NOOP*/ }
+        } finally {
+            try {
+                cache.close();
+            } catch (IOException e) {
+                /*NOOP*/ }
             cache.dispose();
         }
     }
+
     @Test
     void testLengthSmallReadMemCache() throws IOException {
         String content = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -246,11 +279,15 @@ class CachedInputStreamTest {
             Assertions.assertEquals("56789", new String(bytes));
             // still good length?
             Assertions.assertEquals(content.length(), cache.length());
-        }  finally {
-            try { cache.close(); } catch (IOException e) { /*NOOP*/ }
+        } finally {
+            try {
+                cache.close();
+            } catch (IOException e) {
+                /*NOOP*/ }
             cache.dispose();
         }
     }
+
     @Test
     void testLengthBigReadMemCache() throws IOException {
         String content = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -268,8 +305,11 @@ class CachedInputStreamTest {
             Assertions.assertEquals("FGHIJ", new String(bytes));
             // still good length?
             Assertions.assertEquals(content.length(), cache.length());
-        }  finally {
-            try { cache.close(); } catch (IOException e) { /*NOOP*/ }
+        } finally {
+            try {
+                cache.close();
+            } catch (IOException e) {
+                /*NOOP*/ }
             cache.dispose();
         }
     }
@@ -307,7 +347,6 @@ class CachedInputStreamTest {
         assertThat(toString(
                 cis.newInputStream(newInputStream("ok")))).isEqualTo("ok");
     }
-
 
     private CachedInputStream newCachedInputStream(
             String content, int poolMaxMemory, int instanceMaxMemory) {

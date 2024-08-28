@@ -89,8 +89,8 @@ public class PercentFormatter implements Serializable {
             return format(0d, decimalPrecision, locale);
         }
         return format(BigDecimal.valueOf(numerator).divide(
-                        BigDecimal.valueOf(denominator), decimalPrecision + 2,
-                        RoundingMode.HALF_UP).doubleValue(),
+                BigDecimal.valueOf(denominator), decimalPrecision + 2,
+                RoundingMode.HALF_UP).doubleValue(),
                 decimalPrecision + 2, locale);
     }
 

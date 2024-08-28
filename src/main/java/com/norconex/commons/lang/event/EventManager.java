@@ -59,6 +59,7 @@ public class EventManager {
     public EventManager() {
         this(null);
     }
+
     /**
      * Wraps a parent event manager.  Events fired on this event manager
      * will be fired on this instance listeners first, then its parent
@@ -89,6 +90,7 @@ public class EventManager {
             listeners.add(listener);
         }
     }
+
     /**
      * Adds event listeners. Event listeners are added by "identity", meaning
      * you can have multiple listeners coexisting even if their test
@@ -136,6 +138,7 @@ public class EventManager {
         }
         return listeners.removeIf(l -> l == listener);
     }
+
     /**
      * Removes listener instances. Removal is done by "identity", meaning
      * you can have listeners that are not removed despite testing
@@ -165,6 +168,7 @@ public class EventManager {
     public void clearListeners() {
         listeners.clear();
     }
+
     /**
      * Gets the number of event listeners registered with this event manager.
      * Listeners attached to a parent are not counted.
@@ -214,7 +218,7 @@ public class EventManager {
     public void log(Event event, Level level) {
         //FYI, depending on logger pattern, it is possible only the last part
         //of the logger name is shown (after the dot)
-        Logger log =  LoggerFactory.getLogger(event.getClass().getSimpleName()
+        Logger log = LoggerFactory.getLogger(event.getClass().getSimpleName()
                 + "." + event.getName());
         Level safeLevel = ObjectUtils.defaultIfNull(level, Level.INFO);
         if (stacktraceLoggingDisabled && event.getException() != null) {

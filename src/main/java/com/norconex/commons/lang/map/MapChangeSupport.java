@@ -54,9 +54,9 @@ import lombok.ToString;
  */
 @ToString
 @EqualsAndHashCode
-public class MapChangeSupport<K,V> {
+public class MapChangeSupport<K, V> {
 
-    private final List<MapChangeListener<K,V>> listeners = new ArrayList<>();
+    private final List<MapChangeListener<K, V>> listeners = new ArrayList<>();
     private final Map<K, V> source;
 
     public MapChangeSupport(Map<K, V> source) {
@@ -76,6 +76,7 @@ public class MapChangeSupport<K,V> {
         }
         this.listeners.add(listener);
     }
+
     /**
      * Removes a {@link MapChangeListener} from the listener list.
      * If <code>listener</code> is null, no exception is thrown and no action
@@ -83,7 +84,7 @@ public class MapChangeSupport<K,V> {
      *
      * @param listener  The {@link MapChangeListener}    to be removed
      */
-    public void removeMapChangeListener(MapChangeListener<K,V> listener) {
+    public void removeMapChangeListener(MapChangeListener<K, V> listener) {
         if (listener == null) {
             return;
         }

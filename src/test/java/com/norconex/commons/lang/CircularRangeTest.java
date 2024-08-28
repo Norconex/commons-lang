@@ -110,6 +110,7 @@ class CircularRangeTest {
         assertThat(CircularRange.is(9).contains(9)).isTrue();
         assertThat(CircularRange.is(9).contains(10)).isFalse();
     }
+
     @Test
     void testIsComparator() {
         Comparator<Integer> c = Comparator.reverseOrder();
@@ -144,6 +145,7 @@ class CircularRangeTest {
         assertThat(CircularRange.between(10, 20).isStartedBy(9)).isFalse();
         assertThat(CircularRange.between(10, 20).isStartedBy(11)).isFalse();
     }
+
     @Test
     void testIsEndedBy() {
         assertThat(CircularRange.between(10, 20).isEndedBy(null)).isFalse();
@@ -173,14 +175,14 @@ class CircularRangeTest {
     @Test
     void testToString() {
         assertThat(CircularRange.between(10, 20, 12, 18))
-            .hasToString("[12..18](10..20)");
+                .hasToString("[12..18](10..20)");
     }
 
     @Test
     void testToStringFormat() {
         assertThat(CircularRange.between(10, 20, 12, 18)
                 .toString("%3$s-%4$s|%1$s-%2$s"))
-            .isEqualTo("10-20|12-18");
+                        .isEqualTo("10-20|12-18");
     }
 
     @Test

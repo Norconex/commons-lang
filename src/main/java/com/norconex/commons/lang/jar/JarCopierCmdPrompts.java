@@ -96,14 +96,16 @@ class JarCopierCmdPrompts
 
         int choice = promptForIntChoice("singleFileActions", 1, 4);
         switch (choice) {
-        case 1:
-            return new OnJarConflict(SourceAction.COPY, TargetAction.RENAME);
-        case 2:
-            return new OnJarConflict(SourceAction.COPY, TargetAction.DELETE);
-        case 3:
-            return new OnJarConflict(SourceAction.COPY, TargetAction.NOOP);
-        default: // 4
-            return new OnJarConflict(SourceAction.NOOP, TargetAction.NOOP);
+            case 1:
+                return new OnJarConflict(SourceAction.COPY,
+                        TargetAction.RENAME);
+            case 2:
+                return new OnJarConflict(SourceAction.COPY,
+                        TargetAction.DELETE);
+            case 3:
+                return new OnJarConflict(SourceAction.COPY, TargetAction.NOOP);
+            default: // 4
+                return new OnJarConflict(SourceAction.NOOP, TargetAction.NOOP);
         }
     }
 

@@ -59,6 +59,7 @@ public class XMLValidationException extends RuntimeException {
     public List<XMLValidationError> getErrors() {
         return errors;
     }
+
     public XML getXml() {
         return xml;
     }

@@ -86,6 +86,5 @@ class DataUnitFormatterTest {
         duf = duf.withRoundingMode(RoundingMode.HALF_DOWN);
         assertThat(duf.getRoundingMode()).isSameAs(RoundingMode.HALF_DOWN);
 
-
     }
 }

@@ -30,20 +30,21 @@ class JarTestUtil {
                 .map(p -> p.getFileName().toString()
                         .replaceFirst("^(.*\\.bak)-\\d+$", "$1"))
                 .collect(Collectors.toList()))
-            .containsExactlyInAnyOrder(fileNames);
+                        .containsExactlyInAnyOrder(fileNames);
     }
+
     static void assertDirContainsFiles(
             Path dir, String... fileNames) throws IOException {
         assertThat(Files.list(dir)
                 .map(p -> p.getFileName().toString()
                         .replaceFirst("^(.*\\.bak)-\\d+$", "$1"))
                 .collect(Collectors.toList()))
-            .contains(fileNames);
+                        .contains(fileNames);
     }
 
     static void createSourceTargetJars(
             Path sourceDir, Path targetDir, String fileName)
-                    throws IOException {
+            throws IOException {
         createSourceTargetJars(
                 sourceDir.resolve(fileName), targetDir.resolve(fileName));
     }
@@ -66,6 +67,7 @@ class JarTestUtil {
     static FileTime createJar(Path file) throws IOException {
         return Files.getLastModifiedTime(Files.createFile(file));
     }
+
     static void createJar(Path file, FileTime time) throws IOException {
         Files.createFile(file);
         if (time != null) {

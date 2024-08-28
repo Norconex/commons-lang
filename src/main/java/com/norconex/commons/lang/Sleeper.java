@@ -46,6 +46,7 @@ public final class Sleeper {
             throw new SleeperException("Cannot sleep.", e);
         }
     }
+
     /**
      * Sleeps for the number of nanoseconds specified.
      * @param nanoSeconds nanoseconds
@@ -61,6 +62,7 @@ public final class Sleeper {
             throw new SleeperException("Cannot sleep.", e);
         }
     }
+
     /**
      * Sleeps for the number of seconds specified.
      * @param seconds seconds
@@ -68,6 +70,7 @@ public final class Sleeper {
     public static void sleepSeconds(int seconds) {
         sleepMillis(seconds * ONE_SECOND);
     }
+
     /**
      * Sleeps for the number of minutes specified.
      * @param minutes minutes
@@ -75,6 +78,7 @@ public final class Sleeper {
     public static void sleepMinutes(int minutes) {
         sleepMillis(minutes * ONE_MINUTE);
     }
+
     /**
      * Sleeps for the number of hours specified.
      * @param hours hours

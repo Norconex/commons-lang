@@ -44,7 +44,7 @@ class ConfigurationLoaderTest {
 
     // when passing an object, should load into that object
     @ParameterizedTest
-    @ValueSource(strings = {"xml", "json", "yaml"})
+    @ValueSource(strings = { "xml", "json", "yaml" })
     void testLoadToSimpleObject(String extension) throws IOException {
         var testConfig = new TestConfig();
         configLoader.toObject(cfgPath("object." + extension), testConfig);
@@ -54,7 +54,7 @@ class ConfigurationLoaderTest {
 
     // when passing a class, should instantiate and load into created class.
     @ParameterizedTest
-    @ValueSource(strings = {"xml", "json", "yaml"})
+    @ValueSource(strings = { "xml", "json", "yaml" })
     void testLoadToSimpleObjectFromClass(String extension)
             throws IOException {
         var creds = configLoader.toObject(
@@ -64,16 +64,16 @@ class ConfigurationLoaderTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"xml", "json", "yaml"})
+    @ValueSource(strings = { "xml", "json", "yaml" })
     void testLoadToComplexObjectFromClass(String extension)
             throws IOException {
         var testConfig = configLoader.toObject(
                 cfgPath("object-with-creds." + extension),
                 TestConfigWithCreds.class);
         assertThat(testConfig.getCredentials().getUsername())
-            .isEqualTo("joe");
+                .isEqualTo("joe");
         assertThat(testConfig.getCredentials().getPassword())
-            .isEqualTo("whatever");
+                .isEqualTo("whatever");
     }
 
     // Loads to com.norconex.commons.lang.xml.XML
@@ -89,8 +89,8 @@ class ConfigurationLoaderTest {
         var loader = ConfigurationLoader.builder()
                 .variablesFile(cfgPath("string.vars.txt"))
                 .build();
-        var str = SystemUtil.callWithProperty("VAR_E", "beans", () ->
-            loader.toString(cfgPath("string.cfg")));
+        var str = SystemUtil.callWithProperty("VAR_E", "beans",
+                () -> loader.toString(cfgPath("string.cfg")));
         // "varB" should not be resolved as it comes from an #include
         // directive (as opposed to parse)
         assertThat(StringUtils.remove(str, '\r')).isEqualTo(
@@ -121,6 +121,7 @@ class ConfigurationLoaderTest {
         private String username;
         private String password;
     }
+
     @Data
     static class TestConfigWithCreds {
         private Credentials credentials;

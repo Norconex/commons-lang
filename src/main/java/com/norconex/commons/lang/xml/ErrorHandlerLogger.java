@@ -29,27 +29,32 @@ import lombok.extern.slf4j.Slf4j;
 public class ErrorHandlerLogger implements ErrorHandler {
 
     private final Class<?> clazz;
+
     public ErrorHandlerLogger(Class<?> clazz) {
         this.clazz = clazz;
     }
+
     @Override
     public void warning(SAXParseException e) throws SAXException {
         if (LOG.isWarnEnabled()) {
             LOG.warn(msg(e));
         }
     }
+
     @Override
     public void error(SAXParseException e) throws SAXException {
         if (LOG.isErrorEnabled()) {
             LOG.error(msg(e));
         }
     }
+
     @Override
     public void fatalError(SAXParseException e) throws SAXException {
         if (LOG.isErrorEnabled()) {
             LOG.error(msg(e));
         }
     }
+
     private String msg(SAXParseException e) {
         if (clazz == null) {
             return "[XML] " + e.getMessage();

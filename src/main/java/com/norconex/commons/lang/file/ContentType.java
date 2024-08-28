@@ -167,6 +167,7 @@ public final class ContentType implements Serializable {
         }
         return new ContentType[] {};
     }
+
     /**
      * Creates a null-safe array of content types.  The same number of elements
      * as the supplied strings are returned.  A <code>null</code> value will
@@ -193,6 +194,7 @@ public final class ContentType implements Serializable {
     public String getDisplayName() {
         return getDisplayName(null);
     }
+
     /**
      * Gets a name for the content type suitable for display to a user.
      * If the locale is {@code null}, the system locale is used.
@@ -215,6 +217,7 @@ public final class ContentType implements Serializable {
         }
         return "[" + type + "]";
     }
+
     private synchronized ResourceBundle getDisplayBundle(Locale locale) {
         var bundle = BUNDLE_DISPLAYNAMES.get(locale);
         if (bundle != null) {
@@ -248,6 +251,7 @@ public final class ContentType implements Serializable {
         }
         return exts[0];
     }
+
     /**
      * Gets the file extensions usually associated with this content type.
      * Most content types only have one commonly used extension.
@@ -280,6 +284,7 @@ public final class ContentType implements Serializable {
     public String toString() {
         return type;
     }
+
     /**
      * Returns the raw content-type representation without any parameters
      * (removes ";" and any values afterwards).
@@ -289,6 +294,7 @@ public final class ContentType implements Serializable {
     public String toBaseTypeString() {
         return StringUtils.substringBefore(type, ";");
     }
+
     /**
      * Returns a content-type without any parameters
      * (removes ";" and any values afterwards).  Invoking a content type

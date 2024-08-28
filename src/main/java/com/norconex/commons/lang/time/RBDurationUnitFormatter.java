@@ -60,14 +60,15 @@ import lombok.ToString;
 public class RBDurationUnitFormatter implements DurationUnitFormatter {
 
     public static final DurationUnitFormatter FULL =
-            new RBDurationUnitFormatter(RBDurationUnitFormatter
-                    .class.getCanonicalName() + "-full");
+            new RBDurationUnitFormatter(
+                    RBDurationUnitFormatter.class.getCanonicalName() + "-full");
     public static final DurationUnitFormatter COMPACT =
-            new RBDurationUnitFormatter(RBDurationUnitFormatter
-                    .class.getCanonicalName() + "-compact");
+            new RBDurationUnitFormatter(
+                    RBDurationUnitFormatter.class.getCanonicalName()
+                            + "-compact");
     public static final DurationUnitFormatter ABBREVIATED =
-            new RBDurationUnitFormatter(RBDurationUnitFormatter
-                    .class.getCanonicalName() + "-abbr");
+            new RBDurationUnitFormatter(
+                    RBDurationUnitFormatter.class.getCanonicalName() + "-abbr");
 
     private final String baseName;
     private final ClassLoader classLoader;
@@ -75,10 +76,12 @@ public class RBDurationUnitFormatter implements DurationUnitFormatter {
     public RBDurationUnitFormatter(String baseName) {
         this(baseName, null);
     }
+
     public RBDurationUnitFormatter(String baseName, ClassLoader classLoader) {
         this.baseName = baseName;
         this.classLoader = classLoader == null
-                ? getClass().getClassLoader() : classLoader;
+                ? getClass().getClassLoader()
+                : classLoader;
     }
 
     @Override

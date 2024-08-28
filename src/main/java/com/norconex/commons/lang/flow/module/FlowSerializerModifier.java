@@ -37,7 +37,8 @@ public class FlowSerializerModifier extends BeanSerializerModifier {
             BeanDescription beanDesc,
             JsonSerializer<?> serializer) {
 
-        Class<?> consumerType = flowMapperConfig.getConsumerType().getBaseType();
+        Class<?> consumerType =
+                flowMapperConfig.getConsumerType().getBaseType();
         if (consumerType != null
                 && consumerType.getClass().isAssignableFrom(
                         beanDesc.getBeanClass())

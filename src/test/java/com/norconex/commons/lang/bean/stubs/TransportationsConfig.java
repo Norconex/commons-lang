@@ -30,5 +30,6 @@ public class TransportationsConfig {
 
     @Valid
     @JsonProperty("transportation")
-    private final List<? extends Transportation> transportations = new ArrayList<>();
+    private final List<? extends Transportation> transportations =
+            new ArrayList<>();
 }

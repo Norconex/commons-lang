@@ -61,7 +61,8 @@ public class MockJavadoc {
      * </a>
      * }
      */
-    public void xml() {}
+    public void xml() {
+    }
 
     /**
      * {@nx.xml
@@ -69,7 +70,8 @@ public class MockJavadoc {
      *   <b>456</b>
      * }
      */
-    public void xmlNoParent() {}
+    public void xmlNoParent() {
+    }
 
     /**
      * {@nx.xml.usage
@@ -78,7 +80,8 @@ public class MockJavadoc {
      * </a>
      * }
      */
-    public void xmlUsage() {}
+    public void xmlUsage() {
+    }
 
     /**
      * {@nx.xml.example
@@ -87,7 +90,8 @@ public class MockJavadoc {
      * </a>
      * }
      */
-    public void xmlExample() {}
+    public void xmlExample() {
+    }
 
     /**
      * {@nx.json
@@ -101,7 +105,8 @@ public class MockJavadoc {
      *   }
      * }
      */
-    public void json() {}
+    public void json() {
+    }
 
     /**
      * {@nx.json
@@ -110,7 +115,8 @@ public class MockJavadoc {
      * }
      */
 
-    public void jsonPropertiesNoParent() {}
+    public void jsonPropertiesNoParent() {
+    }
 
     /**
      * {@nx.json
@@ -119,7 +125,8 @@ public class MockJavadoc {
      * }
      */
 
-    public void jsonObjectsNoParent() {}
+    public void jsonObjectsNoParent() {
+    }
 
     /**
      * {@nx.json
@@ -127,21 +134,24 @@ public class MockJavadoc {
      *   [ "value2A", "value2B" ],
      * }
      */
-    public void jsonArraysNoParent() {}
+    public void jsonArraysNoParent() {
+    }
 
     /**
      * {@nx.json
      *   <div>I am not Jason.</div>
      * }
      */
-    public void jsonBadSyntax() {}
+    public void jsonBadSyntax() {
+    }
 
     /**
      * {@nx.html
      *   <div><h1>Title</h1></div>
      * }
      */
-    public void html() {}
+    public void html() {
+    }
 
     /**
      * {@nx.html
@@ -149,26 +159,30 @@ public class MockJavadoc {
      *   <div>b</div>
      * }
      */
-    public void htmlNoParent() {}
+    public void htmlNoParent() {
+    }
 
     /**
      * XML include:
      * {@nx.include com.norconex.commons.lang.javadoc.MockJavadoc#spaceId}
      */
-    public void include() {}
+    public void include() {
+    }
 
     /**
      * Before block include.
      * {@nx.include com.norconex.commons.lang.javadoc.MockJavadoc#blockWithInclude}
      * After block include.
      */
-    public void includeNested() {}
+    public void includeNested() {
+    }
 
     /**
      * Before block include.
      * {@nx.include com.norconex.commons.lang.javadoc.MockJavadoc#blockWithBadInclude}
      * After block include.
      */
-    public void includeNonExisting() {}
+    public void includeNonExisting() {
+    }
 
 }

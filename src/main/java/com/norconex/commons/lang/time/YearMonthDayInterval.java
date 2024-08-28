@@ -69,6 +69,7 @@ public final class YearMonthDayInterval implements Serializable {
         start = new YearMonthDay(startStr);
         end = new YearMonthDay(endStr);
     }
+
     public YearMonthDayInterval(Date start, Date end) {
         if (start == null || end == null) {
             throw new IllegalArgumentException(
@@ -77,6 +78,7 @@ public final class YearMonthDayInterval implements Serializable {
         this.start = new YearMonthDay(start);
         this.end = new YearMonthDay(end);
     }
+
     public YearMonthDayInterval(Calendar start, Calendar end) {
         if (start == null || end == null) {
             throw new IllegalArgumentException(
@@ -85,18 +87,23 @@ public final class YearMonthDayInterval implements Serializable {
         this.start = new YearMonthDay(start);
         this.end = new YearMonthDay(end);
     }
+
     public YearMonthDay getStart() {
         return start;
     }
+
     public Date getStartDate() {
         return start.toDate();
     }
+
     public YearMonthDay getEnd() {
         return end;
     }
+
     public Date getEndDate() {
         return end.toDate();
     }
+
     /**
      * Gets the end date as midnight the day after to ensure all dates on the
      * same day as this YearMonthDay are smaller than this returned
@@ -118,6 +125,7 @@ public final class YearMonthDayInterval implements Serializable {
         long millis = ymd.toMillis();
         return millis >= start.toMillis() && millis <= end.toMillis();
     }
+
     /**
      * Whether the date falls between this interval
      * (inclusive endpoints).
@@ -136,6 +144,7 @@ public final class YearMonthDayInterval implements Serializable {
     public int getYears() {
         return toPeriod().getYears();
     }
+
     /**
      * Gets the number of months between start and end dates, rounded down.
      * @return number of months
@@ -143,6 +152,7 @@ public final class YearMonthDayInterval implements Serializable {
     public int getMonths() {
         return (int) toPeriod().toTotalMonths();
     }
+
     /**
      * Gets the number of days between start and end dates, rounded down.
      * @return number of days

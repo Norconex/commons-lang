@@ -159,24 +159,25 @@ class DateModelTest {
         // test when sources can be other than UTC
         assertThat(of(ZonedDateTime.of(Y, M, D, h, m, s, 0, vanZoneId))
                 .withZoneId(ZoneOffset.UTC).toZonedDateTime())
-            .isEqualTo(utc.zonedDateTime);
+                        .isEqualTo(utc.zonedDateTime);
     }
 
     @Test
     void testOfString() {
         assertThat(of("2022-11-10T04:49:51.000"))
-            .isEqualTo(DateModel.of(Y, M, D, h, m, s));
+                .isEqualTo(DateModel.of(Y, M, D, h, m, s));
         assertThat(of("2022-11-10T04:49:51.000-08:00").toZonedDateTime())
-            .isEqualTo(DateModel.of(Y, M, D, h, m, s).withZoneId(vanZoneId)
-                    .toZonedDateTime());
+                .isEqualTo(DateModel.of(Y, M, D, h, m, s).withZoneId(vanZoneId)
+                        .toZonedDateTime());
         assertThat(of("2022-11-10T04:49:51.000-08:00[America/Vancouver]"))
-            .isEqualTo(DateModel.of(Y, M, D, h, m, s).withZoneId(vanZoneId));
+                .isEqualTo(
+                        DateModel.of(Y, M, D, h, m, s).withZoneId(vanZoneId));
         assertThat(of("2022-11-10T04:49:51"))
-            .isEqualTo(DateModel.of(Y, M, D, h, m, s));
+                .isEqualTo(DateModel.of(Y, M, D, h, m, s));
         assertThat(of("2022-11-10")).isEqualTo(DateModel.of(Y, M, D));
         assertThat(of("2022-11-10T00:00:00-08:00").toZonedDateTime())
-            .isEqualTo(DateModel.of(Y, M, D)
-                    .withZoneId(vanZoneId).toZonedDateTime());
+                .isEqualTo(DateModel.of(Y, M, D)
+                        .withZoneId(vanZoneId).toZonedDateTime());
     }
 
     @Test
@@ -185,15 +186,15 @@ class DateModelTest {
                 .format("EEE, dd MMM yyyy HH:mm:ss z");
 
         assertThat(of("Thu, 10 Nov 2022 04:49:51 GMT", builder.build()))
-            .isEqualTo(DateModel.of(Y, M, D, h, m, s)
-                    .withZoneId(ZoneId.of("GMT")));
+                .isEqualTo(DateModel.of(Y, M, D, h, m, s)
+                        .withZoneId(ZoneId.of("GMT")));
 
         assertThat(of("jeu., 10 nov. 2022 04:49:51 PST", builder
                 .format("EEE, dd MMM yyyy HH:mm:ss z")
                 .locale(Locale.CANADA_FRENCH)
                 .build()).toZonedDateTime())
-            .isEqualTo(DateModel.of(Y, M, D, h, m, s)
-                    .withZoneId(vanZoneId).toZonedDateTime());
+                        .isEqualTo(DateModel.of(Y, M, D, h, m, s)
+                                .withZoneId(vanZoneId).toZonedDateTime());
     }
 
     private void assertDates(DateModel date, Expected expected) {
@@ -237,23 +238,23 @@ class DateModelTest {
                 .withNano(123)
                 .toLocalDateTime()
                 .getNano())
-            .isEqualTo(123);
+                        .isEqualTo(123);
         assertThat(DateModel.of(utc.zonedDateTime)
                 .withDate(1999, 12, 31)
                 .toLocalDateTime())
-            .isEqualTo(LocalDateTime.of(1999, 12, 31, 4, 49, 51));
+                        .isEqualTo(LocalDateTime.of(1999, 12, 31, 4, 49, 51));
         assertThat(DateModel.of(utc.zonedDateTime)
                 .withTime(17, 02, 56)
                 .toLocalDateTime())
-            .isEqualTo(LocalDateTime.of(2022, 11, 10, 17, 02, 56));
+                        .isEqualTo(LocalDateTime.of(2022, 11, 10, 17, 02, 56));
     }
 
     @Test
     void testToString() {
         assertThat(DateModel.of(utc.zonedDateTime))
-            .hasToString("2022-11-10T04:49:51Z");
+                .hasToString("2022-11-10T04:49:51Z");
         assertThat(DateModel.of(utc.zonedDateTime).withZoneId(vanZoneId))
-            .hasToString("2022-11-10T04:49:51-08:00[America/Vancouver]");
+                .hasToString("2022-11-10T04:49:51-08:00[America/Vancouver]");
     }
 
     @Data

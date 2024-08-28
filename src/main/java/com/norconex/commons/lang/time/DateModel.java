@@ -168,6 +168,7 @@ public final class DateModel {
         }
         return of(zdt);
     }
+
     /**
      * Create a date model out of a date string representation, based on
      * settings defined in the supplied {@link ZonedDateTimeParser}.
@@ -220,12 +221,12 @@ public final class DateModel {
     }
 
     public ZonedDateTime toZonedDateTime() {
-//        if (startOfDay) {
-//            return ZonedDateTime.of(
-//                    year, month, day, 0, 0, 0, 0, zoneId);
-//        }
-//        return ZonedDateTime.of(
-//                year, month, day, hour, minute, second, nano, zoneId);
+        //        if (startOfDay) {
+        //            return ZonedDateTime.of(
+        //                    year, month, day, 0, 0, 0, 0, zoneId);
+        //        }
+        //        return ZonedDateTime.of(
+        //                year, month, day, hour, minute, second, nano, zoneId);
         var zdt = ZonedDateTime.of(
                 year, month, day, hour, minute, second, nano, zoneId);
         if (startOfDay) {

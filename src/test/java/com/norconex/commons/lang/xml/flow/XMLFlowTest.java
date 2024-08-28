@@ -47,7 +47,7 @@ class XMLFlowTest {
     void testCondition() {
         XMLCondition<Integer> cnd1 = new XMLCondition<>(new XMLFlow<>());
         assertThat(cnd1.test(null)).isFalse(); // nothing to test, false
-        assertThat(cnd1.test(123)).isTrue();   // no predicate, always true
+        assertThat(cnd1.test(123)).isTrue(); // no predicate, always true
     }
 
     @Test
@@ -61,9 +61,9 @@ class XMLFlowTest {
 
         XMLFlow<Properties> flow2 = new XMLFlow<>();
         assertThatExceptionOfType(XMLFlowException.class)
-            .isThrownBy(() -> flow2.parse( //NOSONAR
-                    new XML("<test><value>1</value></test>")))
-            .withStackTraceContaining("does not resolve to ");
+                .isThrownBy(() -> flow2.parse( //NOSONAR
+                        new XML("<test><value>1</value></test>")))
+                .withStackTraceContaining("does not resolve to ");
     }
 
     @Test

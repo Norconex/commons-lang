@@ -67,20 +67,24 @@ class InputStreamLineListenerTest {
     void testMisc() throws IOException {
         assertThat(new InputStreamLineListener(UTF_8) {
             @Override
-            protected void lineStreamed(String type, String line) {/*NOOP*/}
+            protected void lineStreamed(String type, String line) {
+                /*NOOP*/}
         }.getCharset()).isEqualTo(UTF_8);
         assertThat(new InputStreamLineListener((Charset) null) {
             @Override
-            protected void lineStreamed(String type, String line) {/*NOOP*/}
+            protected void lineStreamed(String type, String line) {
+                /*NOOP*/}
         }.getCharset()).isEqualTo(UTF_8);
 
         assertThat(new InputStreamLineListener("UTF-8") {
             @Override
-            protected void lineStreamed(String type, String line) {/*NOOP*/}
+            protected void lineStreamed(String type, String line) {
+                /*NOOP*/}
         }.getCharset()).isEqualTo(UTF_8);
         assertThat(new InputStreamLineListener((String) null) {
             @Override
-            protected void lineStreamed(String type, String line) {/*NOOP*/}
+            protected void lineStreamed(String type, String line) {
+                /*NOOP*/}
         }.getCharset()).isEqualTo(UTF_8);
     }
 

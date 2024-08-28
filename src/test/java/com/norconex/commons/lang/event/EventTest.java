@@ -78,9 +78,9 @@ class EventTest {
         Event event3 =
                 Event.builder().name("nope").source("sourceNope").build();
         assertThat(event1)
-            .isEqualTo(event2)
-            .hasSameHashCodeAs(event2)
-            .isNotEqualTo(event3)
-            .doesNotHaveSameHashCodeAs(event3);
+                .isEqualTo(event2)
+                .hasSameHashCodeAs(event2)
+                .isNotEqualTo(event3)
+                .doesNotHaveSameHashCodeAs(event3);
     }
 }

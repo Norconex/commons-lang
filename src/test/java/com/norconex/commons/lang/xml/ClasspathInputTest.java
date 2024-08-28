@@ -45,7 +45,7 @@ class ClasspathInputTest {
         ci.setInputStream(IOUtils.buffer(
                 new ByteArrayInputStream("STILL OK".getBytes())));
         assertThat(IOUtils.toString(ci.getInputStream(), UTF_8))
-            .isEqualTo("STILL OK");
+                .isEqualTo("STILL OK");
 
         // all noops
         assertThatNoException().isThrownBy(() -> {

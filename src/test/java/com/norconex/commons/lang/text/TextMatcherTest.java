@@ -62,29 +62,28 @@ class TextMatcherTest {
 
         assertThat(tm
                 .replace(text, "super"))
-                .isEqualTo(text);
+                        .isEqualTo(text);
 
         assertThat(tm
                 .withPartial(true)
                 .replace(text, "super"))
-                .isEqualTo("un super-gros éléphant");
+                        .isEqualTo("un super-gros éléphant");
         assertThat(tm
                 .withPartial(true)
                 .withReplaceAll(true)
                 .apply(text, "super"))
-                .isEqualTo("un super-super éléphant");
+                        .isEqualTo("un super-super éléphant");
 
         assertThat(TextMatcher.csv("GROS")
                 .withPartial(true)
                 .withIgnoreCase(true)
                 .replace(text, "super"))
-                .isEqualTo("un super-gros éléphant");
+                        .isEqualTo("un super-gros éléphant");
 
         assertThat(TextMatcher.wildcard("un * elephant")
                 .withIgnoreDiacritic(true)
                 .replace(text, "un petit ours"))
-                .isEqualTo("un petit ours");
-
+                        .isEqualTo("un petit ours");
 
         tm.partial();
         tm.setMethod(Method.REGEX);
@@ -93,21 +92,21 @@ class TextMatcherTest {
         assertThat(tm
                 .withPattern("(gros.)+")
                 .replace(text, "super "))
-                .isEqualTo("un super éléphant");
+                        .isEqualTo("un super éléphant");
         assertThat(tm
                 .withPattern("ele")
                 .replace(text, "oli"))
-                .isEqualTo("un gros-gros éléphant");
+                        .isEqualTo("un gros-gros éléphant");
         assertThat(tm
                 .withPattern("ele")
                 .ignoreDiacritic()
                 .replace(text, "oli"))
-                .isEqualTo("un gros-gros oliphant");
+                        .isEqualTo("un gros-gros oliphant");
 
         assertThat(tm
                 .withPattern(null)
                 .replace("aaa", "bbb"))
-                .isEqualTo("aaa");
+                        .isEqualTo("aaa");
     }
 
     @Test
@@ -118,27 +117,27 @@ class TextMatcherTest {
                 .withMethod(Method.WILDCARD)
                 .withPattern("aaa")
                 .matches(" "))
-                .isFalse();
+                        .isFalse();
         assertThat(TextMatcher.regex("bbb").trim().matches(" ")).isFalse();
         assertThat(new TextMatcher("ccc", Method.BASIC)
                 .withTrim(true)
                 .withMatchEmpty(true)
                 .matches(" "))
-                .isTrue();
+                        .isTrue();
         assertThat(TextMatcher.basic("ddd")
                 .matchEmpty()
                 .matches(null))
-                .isTrue();
+                        .isTrue();
     }
 
     @Test
     void testRegexPattern() {
         assertThat(
-            TextMatcher
-                .wildcard("ab*ef?h")
-                .toRegexPattern()
-                .pattern()
-        ).isEqualTo(Pattern.compile("ab.*ef.h").pattern());
+                TextMatcher
+                        .wildcard("ab*ef?h")
+                        .toRegexPattern()
+                        .pattern()).isEqualTo(
+                                Pattern.compile("ab.*ef.h").pattern());
     }
 
     @Test
@@ -172,21 +171,21 @@ class TextMatcherTest {
         testMatch(regexAssert, Method.REGEX, sr, text);
         testMatch(csvAssert, Method.CSV, sr, text);
     }
+
     private void testMatch(
             boolean expected, Method method, TextMatcher sr, String text) {
         var s = new TextMatcher(sr);
         s.setMethod(method);
 
         Assertions.assertAll(method.toString(),
-            () -> {
-                s.setIgnoreDiacritic(true).setIgnoreCase(true);
-                try {
-                    Assertions.assertEquals(expected,
-                            s.matches(text), () -> s.toString());
-                } catch (PatternSyntaxException e) {
-                    Assertions.assertFalse(expected);
-                }
-            }
-        );
+                () -> {
+                    s.setIgnoreDiacritic(true).setIgnoreCase(true);
+                    try {
+                        Assertions.assertEquals(expected,
+                                s.matches(text), () -> s.toString());
+                    } catch (PatternSyntaxException e) {
+                        Assertions.assertFalse(expected);
+                    }
+                });
     }
 }

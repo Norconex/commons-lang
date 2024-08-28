@@ -56,8 +56,8 @@ class FileUtilTest {
         assertThat(FileUtil.dirEmpty(nonEmptyParentDir)).isFalse();
         assertThat(FileUtil.dirEmpty(emptyDir)).isTrue();
 
-        assertThrows(IOException.class, () ->  //NOSONAR
-                FileUtil.dirEmpty((File) null));
+        assertThrows(IOException.class, () -> //NOSONAR
+        FileUtil.dirEmpty((File) null));
     }
 
     @Test
@@ -82,10 +82,9 @@ class FileUtilTest {
         assertThat(FileUtil.dirHasFile(emptyDir,
                 f -> f.getName().endsWith("child.txt"))).isFalse();
 
-        assertThrows(IOException.class, () ->  //NOSONAR
-                FileUtil.dirHasFile((File) null, f -> true));
+        assertThrows(IOException.class, () -> //NOSONAR
+        FileUtil.dirHasFile((File) null, f -> true));
     }
-
 
     @Test
     void testSafeFileName() {
@@ -110,17 +109,17 @@ class FileUtilTest {
         assertThat(readFile(targetFile)).contains("source");
 
         // moving dir
-        assertThrows(IOException.class, () ->  //NOSONAR
-                FileUtil.moveFileToDir(sourceDir, targetDir));
+        assertThrows(IOException.class, () -> //NOSONAR
+        FileUtil.moveFileToDir(sourceDir, targetDir));
         // moving non existing source
-        assertThrows(IOException.class, () ->  //NOSONAR
-                FileUtil.moveFileToDir(new File(sourceDir, "bad.bad"),
-                        targetDir));
+        assertThrows(IOException.class, () -> //NOSONAR
+        FileUtil.moveFileToDir(new File(sourceDir, "bad.bad"),
+                targetDir));
         // moving over existing file instead of dir
         var someFile = new File(tempDir, "someFile.txt");
         writeFile(someFile, "some file");
-        assertThrows(IOException.class, () ->  //NOSONAR
-                FileUtil.moveFileToDir(targetFile, someFile));
+        assertThrows(IOException.class, () -> //NOSONAR
+        FileUtil.moveFileToDir(targetFile, someFile));
     }
 
     @Test
@@ -148,19 +147,19 @@ class FileUtilTest {
         assertThat(readFile(fileNewLoc)).contains("source");
 
         // null/bad files
-        assertThrows(NullPointerException.class, () ->  //NOSONAR
-                FileUtil.moveFile(null, new File(targetDir, "tblah")));
-        assertThrows(NullPointerException.class, () ->  //NOSONAR
-                FileUtil.moveFile(new File(sourceDir, "sblah").toPath(), null));
-        assertThrows(IOException.class, () ->  //NOSONAR
-                FileUtil.moveFile(new File(sourceDir, "bad.bad"), targetFile));
+        assertThrows(NullPointerException.class, () -> //NOSONAR
+        FileUtil.moveFile(null, new File(targetDir, "tblah")));
+        assertThrows(NullPointerException.class, () -> //NOSONAR
+        FileUtil.moveFile(new File(sourceDir, "sblah").toPath(), null));
+        assertThrows(IOException.class, () -> //NOSONAR
+        FileUtil.moveFile(new File(sourceDir, "bad.bad"), targetFile));
 
         // Over a non-empty directory
         var nonEmptyDir = new File(tempDir, "nonEmptyDir");
         FileUtils.forceMkdir(nonEmptyDir);
         writeFile(new File(nonEmptyDir, "someFile"), "source");
-        assertThrows(IOException.class, () ->  //NOSONAR
-                FileUtil.moveFile(fileNewLoc, nonEmptyDir));
+        assertThrows(IOException.class, () -> //NOSONAR
+        FileUtil.moveFile(fileNewLoc, nonEmptyDir));
     }
 
     @Test
@@ -336,9 +335,9 @@ class FileUtilTest {
         assertThat(file).exists();
 
         assertThat(FileUtil.head(file, UTF_8.toString(), 6, false))
-            .containsExactly("one", "two", "  ", "three", "", "four");
+                .containsExactly("one", "two", "  ", "three", "", "four");
         assertThat(FileUtil.head(file, 4))
-            .containsExactly("one", "two", "three", "four");
+                .containsExactly("one", "two", "three", "four");
     }
 
     @Test
@@ -348,17 +347,17 @@ class FileUtilTest {
         assertThat(file).exists();
 
         assertThat(FileUtil.tail(file, UTF_8.toString(), 5, false))
-            .containsExactly("three", "four", "   ", "five", "");
+                .containsExactly("three", "four", "   ", "five", "");
         assertThat(FileUtil.tail(file, 3))
-            .containsExactly("three", "four", "five");
+                .containsExactly("three", "four", "five");
     }
 
     @Test
     void testCreateDateTimeDirs() throws IOException {
         var file = FileUtil.createDateTimeDirs(tempDir,
                 DateModel.of(2022, 2, 28, 14, 52, 36)
-                    .withZoneId(ZoneId.systemDefault())
-                    .toDate());
+                        .withZoneId(ZoneId.systemDefault())
+                        .toDate());
         assertThat(file).exists().isDirectory();
         assertThat(file.getAbsolutePath().replace('\\', '/')).endsWith(
                 "/2022/02/28/14/52/36");
@@ -368,8 +367,8 @@ class FileUtilTest {
     void testCreateDateDirs() throws IOException {
         var file = FileUtil.createDateDirs(
                 tempDir, DateModel.of(2022, 2, 28)
-                    .withZoneId(ZoneId.systemDefault())
-                    .toDate());
+                        .withZoneId(ZoneId.systemDefault())
+                        .toDate());
         assertThat(file).exists().isDirectory();
         assertThat(file.getAbsolutePath().replace('\\', '/')).endsWith(
                 "/2022/02/28");
@@ -396,8 +395,8 @@ class FileUtilTest {
                 tempDir, new URL("http://norconex.com/some/test/page.html"));
 
         assertThat(file1)
-            .isEqualTo(file2)
-            .doesNotExist();
+                .isEqualTo(file2)
+                .doesNotExist();
         assertThat(file1.getAbsolutePath().replace('\\', '/')).endsWith(
                 "/http/norconex.com/some/test/page.html");
     }
@@ -409,6 +408,7 @@ class FileUtilTest {
             throw new UncheckedIOException(e);
         }
     }
+
     private void writeFile(File file, String text) {
         try {
             FileUtils.writeStringToFile(file, text, UTF_8);

@@ -77,7 +77,7 @@ public class SystemCommand {
      * @param command the command to run
      */
     public SystemCommand(String... command) {
-    	this(null, command);
+        this(null, command);
     }
 
     /**
@@ -95,7 +95,6 @@ public class SystemCommand {
         this.workdir = workdir;
     }
 
-
     /**
      * Gets the command to be run.
      * @return the command
@@ -109,7 +108,7 @@ public class SystemCommand {
      * @return command working directory.
      */
     public File getWorkdir() {
-    	return workdir;
+        return workdir;
     }
 
     /**
@@ -119,9 +118,10 @@ public class SystemCommand {
     public void addErrorListener(
             final InputStreamListener listener) {
         synchronized (errorListeners) {
-        	errorListeners.add(0, listener);
+            errorListeners.add(0, listener);
         }
     }
+
     /**
      * Removes an error (STDERR) listener.
      * @param listener command error listener
@@ -129,9 +129,10 @@ public class SystemCommand {
     public void removeErrorListener(
             final InputStreamListener listener) {
         synchronized (errorListeners) {
-        	errorListeners.remove(listener);
+            errorListeners.remove(listener);
         }
     }
+
     /**
      * Gets an unmodifiable list of error (STDERR) listeners.
      * @return error listeners
@@ -148,9 +149,10 @@ public class SystemCommand {
     public void addOutputListener(
             final InputStreamListener listener) {
         synchronized (outputListeners) {
-        	outputListeners.add(0, listener);
+            outputListeners.add(0, listener);
         }
     }
+
     /**
      * Removes an output (STDOUT) listener.
      * @param listener command output listener
@@ -158,9 +160,10 @@ public class SystemCommand {
     public void removeOutputListener(
             final InputStreamListener listener) {
         synchronized (outputListeners) {
-        	outputListeners.remove(listener);
+            outputListeners.remove(listener);
         }
     }
+
     /**
      * Gets an unmodifiable list of output (STDOUT) listeners.
      * @return output listeners
@@ -177,6 +180,7 @@ public class SystemCommand {
     public Map<String, String> getEnvironmentVariables() {
         return environmentVariables;
     }
+
     /**
      * Sets environment variables. Set to <code>null</code> (default) for the
      * command to inherit the environment of the current process.
@@ -192,15 +196,15 @@ public class SystemCommand {
      * @return <code>true</code> if running
      */
     public boolean isRunning() {
-    	if (process == null) {
-    		return false;
-    	}
-    	try {
-        	process.exitValue();
-        	return false;
-    	} catch (IllegalThreadStateException e) {
-    		return true;
-    	}
+        if (process == null) {
+            return false;
+        }
+        try {
+            process.exitValue();
+            return false;
+        } catch (IllegalThreadStateException e) {
+            return true;
+        }
     }
 
     /**
@@ -480,21 +484,27 @@ public class SystemCommand {
     }
 
     private static class State {
-        private enum Type {NORMAL, IN_QUOTE, IN_DOUBLE_QUOTE}
+        private enum Type {
+            NORMAL, IN_QUOTE, IN_DOUBLE_QUOTE
+        }
+
         private Type type = Type.NORMAL;
         private StringBuilder current = new StringBuilder();
         private final ArrayList<String> list = new ArrayList<>();
         private boolean lastTokenHasBeenQuoted;
+
         private boolean isEndQuote(String nextTok) {
             return Type.IN_DOUBLE_QUOTE == type && "\"".equals(nextTok)
                     || Type.IN_QUOTE == type && "\'".equals(nextTok);
         }
+
         private void ensureBalancedQuotes(String toProcess) {
             if (Type.NORMAL != type) {
                 throw new IllegalArgumentException(
                         "Unbalanced quotes in " + toProcess);
             }
         }
+
         private void resolveLastToken() {
             if (lastTokenHasBeenQuoted || current.length() != 0) {
                 list.add(current.toString());
@@ -505,6 +515,7 @@ public class SystemCommand {
 
     private static class ErrorTracker extends InputStreamLineListener {
         private final StringBuilder b = new StringBuilder();
+
         @Override
         protected void lineStreamed(String type, String line) {
             if (b.length() > 0) {

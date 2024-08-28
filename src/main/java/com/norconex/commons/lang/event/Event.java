@@ -74,6 +74,7 @@ public class Event extends EventObjectAdapter {
         }
         return is(event.getName());
     }
+
     /**
      * Gets whether this event has the same name as any of the supplied names.
      * @param eventName event names
@@ -89,12 +90,13 @@ public class Event extends EventObjectAdapter {
     @Override
     public String toString() {
         return new StringBuilder()
-            .append(name)
-            .append(" - ")
-            .append(isBlank(message) ? Objects.toString(source) : message)
-            .append(exceptionAsString())
-            .toString();
+                .append(name)
+                .append(" - ")
+                .append(isBlank(message) ? Objects.toString(source) : message)
+                .append(exceptionAsString())
+                .toString();
     }
+
     private String exceptionAsString() {
         if (exception == null) {
             return StringUtils.EMPTY;

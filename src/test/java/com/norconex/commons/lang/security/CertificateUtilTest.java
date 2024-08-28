@@ -47,8 +47,7 @@ class CertificateUtilTest {
     private static HandshakeCertificates clientCertificates;
 
     @BeforeAll
-    static void setUp() throws
-            IOException,
+    static void setUp() throws IOException,
             NoSuchAlgorithmException,
             KeyManagementException {
         //Tips:
@@ -75,20 +74,18 @@ class CertificateUtilTest {
 
         HandshakeCertificates serverCertificates =
                 new HandshakeCertificates.Builder()
-                    .heldCertificate(localhostCertificate)
-                    .build();
+                        .heldCertificate(localhostCertificate)
+                        .build();
 
         server = new MockWebServer();
         server.useHttps(serverCertificates.sslSocketFactory(), false);
         server.enqueue(new MockResponse().setBody("Having trust issues?"));
         server.start();
 
-
         // Tell the clients to trust:
-        clientCertificates = new HandshakeCertificates
-              .Builder()
-              .addTrustedCertificate(localhostCertificate.certificate())
-              .build();
+        clientCertificates = new HandshakeCertificates.Builder()
+                .addTrustedCertificate(localhostCertificate.certificate())
+                .build();
 
         HttpsURLConnection.setDefaultSSLSocketFactory(
                 clientCertificates.sslSocketFactory());
@@ -97,7 +94,7 @@ class CertificateUtilTest {
 
     @AfterAll
     static void tearDown() throws IOException {
-      server.shutdown();
+        server.shutdown();
     }
 
     @Test

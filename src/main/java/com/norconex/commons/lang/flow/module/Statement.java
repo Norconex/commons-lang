@@ -50,6 +50,7 @@ enum Statement {
     public String toString() {
         return name;
     }
+
     public boolean isAnyOf(Statement... tags) {
         for (Statement statement : tags) {
             if (statement == this) {
@@ -58,6 +59,7 @@ enum Statement {
         }
         return false;
     }
+
     public static boolean isAnyOf(String tagName, Statement... tags) {
         for (Statement statement : tags) {
             if (statement.is(tagName)) {
@@ -66,10 +68,11 @@ enum Statement {
         }
         return false;
     }
+
     public static Statement of(String tagName) {
         return Arrays.stream(values())
-            .filter(t -> t.is(tagName))
-            .findFirst()
-            .orElse(null);
+                .filter(t -> t.is(tagName))
+                .findFirst()
+                .orElse(null);
     }
 }

@@ -55,26 +55,28 @@ class JarDuplicateFinderTest {
     @Test
     void testFindJarDuplicates() {
         JarDuplicates[] expected = {
-            new JarDuplicates(
-                    new JarFile(sourceDir.resolve("noversion.jar").toFile()),
-                    new JarFile(targetDir.resolve("noversion.jar").toFile())),
-            new JarDuplicates(
-                    new JarFile(sourceDir.resolve("a-1.0.0.jar").toFile()),
-                    new JarFile(targetDir.resolve("a-1.0.0.jar").toFile())),
-            new JarDuplicates(
-                    new JarFile(sourceDir.resolve("b-1.1.0.jar").toFile()),
-                    new JarFile(targetDir.resolve("b-1.0.4.jar").toFile()),
-                    new JarFile(targetDir.resolve("b-1.0.3.jar").toFile()),
-                    new JarFile(sourceDir.resolve("b-1.0.0.jar").toFile()))
+                new JarDuplicates(
+                        new JarFile(
+                                sourceDir.resolve("noversion.jar").toFile()),
+                        new JarFile(
+                                targetDir.resolve("noversion.jar").toFile())),
+                new JarDuplicates(
+                        new JarFile(sourceDir.resolve("a-1.0.0.jar").toFile()),
+                        new JarFile(targetDir.resolve("a-1.0.0.jar").toFile())),
+                new JarDuplicates(
+                        new JarFile(sourceDir.resolve("b-1.1.0.jar").toFile()),
+                        new JarFile(targetDir.resolve("b-1.0.4.jar").toFile()),
+                        new JarFile(targetDir.resolve("b-1.0.3.jar").toFile()),
+                        new JarFile(sourceDir.resolve("b-1.0.0.jar").toFile()))
         };
 
         assertThat(JarDuplicateFinder.findJarDuplicates(
                 Arrays.asList(sourceDir.toFile(), targetDir.toFile())))
-            .hasSize(3).containsExactlyInAnyOrder(expected);
+                        .hasSize(3).containsExactlyInAnyOrder(expected);
 
         assertThat(JarDuplicateFinder.findJarDuplicates(
                 sourceDir.toString(), targetDir.toString()))
-            .hasSize(3).containsExactlyInAnyOrder(expected);
+                        .hasSize(3).containsExactlyInAnyOrder(expected);
     }
 
     @Test
@@ -82,15 +84,18 @@ class JarDuplicateFinderTest {
         assertThat(JarDuplicateFinder.findJarDuplicatesOf(
                 sourceDir.resolve("noversion.jar").toFile(),
                 Arrays.asList(targetDir.toFile())))
-            .containsExactly(
-                    new JarFile(targetDir.resolve("noversion.jar").toFile()));
+                        .containsExactly(
+                                new JarFile(targetDir.resolve("noversion.jar")
+                                        .toFile()));
 
         assertThat(JarDuplicateFinder.findJarDuplicatesOf(
                 sourceDir.resolve("b-1.1.0.jar").toFile(),
                 Arrays.asList(targetDir.toFile())))
-            .containsExactly(
-                    new JarFile(targetDir.resolve("b-1.0.4.jar").toFile()),
-                    new JarFile(targetDir.resolve("b-1.0.3.jar").toFile()));
+                        .containsExactly(
+                                new JarFile(targetDir.resolve("b-1.0.4.jar")
+                                        .toFile()),
+                                new JarFile(targetDir.resolve("b-1.0.3.jar")
+                                        .toFile()));
     }
 
     @Test
@@ -98,17 +103,17 @@ class JarDuplicateFinderTest {
         String out = Mocker.mockStdInOutErr(() -> JarDuplicateFinder.main(
                 new String[] { sourceDir.toString(), targetDir.toString() }));
         assertThat(out)
-            .contains(
-                "a:",
-                "b:",
-                "noversion:")
-            .matches("(?s).*targetDir.a-1\\.0\\.0\\.jar.*")
-            .matches("(?s).*sourceDir.a-1\\.0\\.0\\.jar.*")
-            .matches("(?s).*sourceDir.b-1\\.1\\.0\\.jar.*")
-            .matches("(?s).*targetDir.b-1\\.0\\.4\\.jar.*")
-            .matches("(?s).*targetDir.b-1\\.0\\.3\\.jar.*")
-            .matches("(?s).*sourceDir.b-1\\.0\\.0\\.jar.*")
-            .matches("(?s).*targetDir.noversion\\.jar.*")
-            .matches("(?s).*sourceDir.noversion\\.jar.*");
+                .contains(
+                        "a:",
+                        "b:",
+                        "noversion:")
+                .matches("(?s).*targetDir.a-1\\.0\\.0\\.jar.*")
+                .matches("(?s).*sourceDir.a-1\\.0\\.0\\.jar.*")
+                .matches("(?s).*sourceDir.b-1\\.1\\.0\\.jar.*")
+                .matches("(?s).*targetDir.b-1\\.0\\.4\\.jar.*")
+                .matches("(?s).*targetDir.b-1\\.0\\.3\\.jar.*")
+                .matches("(?s).*sourceDir.b-1\\.0\\.0\\.jar.*")
+                .matches("(?s).*targetDir.noversion\\.jar.*")
+                .matches("(?s).*sourceDir.noversion\\.jar.*");
     }
 }

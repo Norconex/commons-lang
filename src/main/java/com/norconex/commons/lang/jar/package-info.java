@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 /**
- * Utility classes related to jar file duplicate and version conflict 
- * detection and resolution. 
+ * Utility classes related to jar file duplicate and version conflict
+ * detection and resolution.
  * @since 1.10.0
  */
 package com.norconex.commons.lang.jar;

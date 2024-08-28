@@ -40,8 +40,8 @@ class ExecUtilTest {
         assertThat(ExecUtil.watchProcess(process,
                 (t, b, l) -> stdout.append(new String(b)))).isZero();
         assertThat(stdout)
-            .containsIgnoringCase("usage")
-            .containsIgnoringCase("classpath");
+                .containsIgnoringCase("usage")
+                .containsIgnoringCase("classpath");
     }
 
     @Test
@@ -52,14 +52,14 @@ class ExecUtilTest {
         assertThat(ExecUtil.watchProcess(
                 process,
                 new InputStreamListener[] {
-                    (t, b, l) -> stdout1.append(new String(b)),
-                    (t, b, l) -> stdout2.append(new String(b))
+                        (t, b, l) -> stdout1.append(new String(b)),
+                        (t, b, l) -> stdout2.append(new String(b))
                 }))
-            .isZero();
+                        .isZero();
         assertThat(stdout1.toString())
-            .containsIgnoringCase("usage")
-            .containsIgnoringCase("classpath")
-            .isEqualTo(stdout2.toString());
+                .containsIgnoringCase("usage")
+                .containsIgnoringCase("classpath")
+                .isEqualTo(stdout2.toString());
     }
 
     @Test
@@ -72,23 +72,23 @@ class ExecUtilTest {
                 process,
                 (t, b, l) -> stdout.append(new String(b)),
                 (t, b, l) -> stderr.append(new String(b))))
-            .isZero();
+                        .isZero();
         assertThat(stdout)
-            .containsIgnoringCase("usage")
-            .containsIgnoringCase("classpath");
+                .containsIgnoringCase("usage")
+                .containsIgnoringCase("classpath");
         assertThat(stderr).isEmpty();
     }
 
-//    @Test
-//    void testWatchProcessProcessInputStreamListenerArrayInputStreamListenerArray() {
-//        throw new RuntimeException("not yet implemented");
-//    }
-//
-//    @Test
-//    void testWatchProcessProcessInputStreamInputStreamListenerArrayInputStreamListenerArray() {
-//        throw new RuntimeException("not yet implemented");
-//    }
-//
+    //    @Test
+    //    void testWatchProcessProcessInputStreamListenerArrayInputStreamListenerArray() {
+    //        throw new RuntimeException("not yet implemented");
+    //    }
+    //
+    //    @Test
+    //    void testWatchProcessProcessInputStreamInputStreamListenerArrayInputStreamListenerArray() {
+    //        throw new RuntimeException("not yet implemented");
+    //    }
+    //
     @Test
     void testWatchProcessAsyncProcessInputStreamListenerInputStreamListener()
             throws IOException {
@@ -100,12 +100,13 @@ class ExecUtilTest {
                 (t, b, l) -> stdout.append(new String(b)),
                 (t, b, l) -> stderr.append(new String(b))));
     }
-//
-//    @Test
-//    void testWatchProcessAsyncProcessInputStreamListenerArrayInputStreamListenerArray() {
-//        throw new RuntimeException("not yet implemented");
-//    }
-//
+
+    //
+    //    @Test
+    //    void testWatchProcessAsyncProcessInputStreamListenerArrayInputStreamListenerArray() {
+    //        throw new RuntimeException("not yet implemented");
+    //    }
+    //
     @Test
     void testWatchProcessAsyncProcessInputStream() throws IOException {
         var stdout = new StringBuilder();

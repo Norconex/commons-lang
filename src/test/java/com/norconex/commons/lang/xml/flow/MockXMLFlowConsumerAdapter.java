@@ -28,6 +28,7 @@ final class MockXMLFlowConsumerAdapter
     public void accept(Properties t) {
         consumer.accept(t);
     }
+
     @Override
     public void loadFromXML(XML xml) {
         consumer = xml.toObjectImpl(Consumer.class);
@@ -37,6 +38,7 @@ final class MockXMLFlowConsumerAdapter
             xml.populate(consumer);
         }
     }
+
     @Override
     public void saveToXML(XML xml) {
         xml.replace(new XML(xml.getName(), consumer));

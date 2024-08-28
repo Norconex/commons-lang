@@ -57,6 +57,7 @@ public class Retrier {
      */
     public Retrier() {
     }
+
     /**
      * Creates a new instance with the default retry delay (no delay).
      * @param maxRetries maximum number of execution retries
@@ -64,6 +65,7 @@ public class Retrier {
     public Retrier(int maxRetries) {
         this.maxRetries = maxRetries;
     }
+
     /**
      * Creates a new instance which will retry execution
      * only if the exception thrown by an attempt is accepted by
@@ -74,6 +76,7 @@ public class Retrier {
     public Retrier(ExceptionFilter exceptionFilter) {
         this.exceptionFilter = exceptionFilter;
     }
+
     /**
      * Creates a new instance which will retry execution
      * only if the exception thrown by an attempt is accepted by
@@ -94,6 +97,7 @@ public class Retrier {
     public int getMaxRetries() {
         return maxRetries;
     }
+
     /**
      * Sets the maximum number of retries (the initial run does not count as
      * a retry).
@@ -104,6 +108,7 @@ public class Retrier {
         this.maxRetries = maxRetries;
         return this;
     }
+
     /**
      * Gets the delay in milliseconds before attempting to execute again.
      * @return delay in milliseconds
@@ -111,6 +116,7 @@ public class Retrier {
     public long getRetryDelay() {
         return retryDelay;
     }
+
     /**
      * Sets the delay in milliseconds before attempting to execute again.
      * @param retryDelay delay in milliseconds
@@ -120,6 +126,7 @@ public class Retrier {
         this.retryDelay = retryDelay;
         return this;
     }
+
     /**
      * Sets an exception filter that limits the exceptions eligible for retry.
      * @return exception filter
@@ -127,6 +134,7 @@ public class Retrier {
     public ExceptionFilter getExceptionFilter() {
         return exceptionFilter;
     }
+
     /**
      * Sets an exception filter that limits the exceptions eligible for retry.
      * @param exceptionFilter exception filter
@@ -136,6 +144,7 @@ public class Retrier {
         this.exceptionFilter = exceptionFilter;
         return this;
     }
+
     /**
      * Gets the maximum number of exception causes to keep when all attempts
      * were made and a {@link RetriableException} is thrown.
@@ -144,6 +153,7 @@ public class Retrier {
     public int getMaxCauses() {
         return maxCauses;
     }
+
     /**
      * Sets the maximum number of exception causes to keep when all attempts
      * were made and a {@link RetriableException} is thrown.
@@ -154,6 +164,7 @@ public class Retrier {
         this.maxCauses = maxCauses;
         return this;
     }
+
     /**
      * Runs the {@link Retriable} instance.  This method is only
      * thread-safe if not modified after being used for the first time,
@@ -183,17 +194,17 @@ public class Retrier {
                 if (exceptionFilter != null && !exceptionFilter.retry(e)) {
                     throw new RetriableException(
                             "Encountered an exception preventing "
-                          + "execution retry.",
-                          exceptions.toArray(EMPTY_EXCEPTIONS));
+                                    + "execution retry.",
+                            exceptions.toArray(EMPTY_EXCEPTIONS));
                 }
             }
             retryCount++;
             if (retryCount <= maxRetries) {
-                 LOG.warn("Execution failed, retrying "
+                LOG.warn("Execution failed, retrying "
                         + "({} of {} maximum retries). Cause:\n{}",
                         retryCount, maxRetries,
                         ExceptionUtil.getFormattedMessages(
-                                exceptions.get(exceptions.size() -1)));
+                                exceptions.get(exceptions.size() - 1)));
                 Sleeper.sleepMillis(retryDelay);
             }
         }

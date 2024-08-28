@@ -153,7 +153,6 @@ import jdk.javadoc.doclet.Taglet;
  */
 public class IncludeTaglet implements Taglet {
 
-
     public static final String NAME = "nx.include";
 
     private DocletEnvironment env;
@@ -169,10 +168,12 @@ public class IncludeTaglet implements Taglet {
     public Set<Location> getAllowedLocations() {
         return allowedSet;
     }
+
     @Override
     public boolean isInlineTag() {
         return true;
     }
+
     @Override
     public String getName() {
         return NAME;
@@ -203,15 +204,13 @@ public class IncludeTaglet implements Taglet {
         return resolveIncludeDirective(directive, env);
     }
 
-
     // When a resolved comment has one or more includes in it, resolve them.
     static String resolveContentIncludes(
             String content, DocletEnvironment env) {
         var m = Pattern.compile("\\{\\@nx\\.include +([^\\n]+?)\\}",
                 Pattern.DOTALL).matcher(content);
-        return m.replaceAll(mr ->
-           resolveIncludeDirective(IncludeDirective.of(mr.group(1)), env)
-        );
+        return m.replaceAll(mr -> resolveIncludeDirective(
+                IncludeDirective.of(mr.group(1)), env));
     }
 
     // directive derived from javadoc tool picking up {@nx.include ...}
@@ -227,21 +226,21 @@ public class IncludeTaglet implements Taglet {
         if (typeEl == null) {
             return TagletUtil.documentationError(
                     "Include directive failed as type element could not be "
-                    + "resolved: %s (maybe a typo?).",
+                            + "resolved: %s (maybe a typo?).",
                     directive.getClassName());
         }
 
         if (!TagletUtil.isDeclaredType(typeEl)) {
             return TagletUtil.documentationError(
                     "Include directive failed as referenced element is not a "
-                    + "declared type: %s.",
+                            + "declared type: %s.",
                     directive.getClassName());
         }
 
         var typeCommentTree = env.getDocTrees().getDocCommentTree(typeEl);
 
         var content = "";
-        for (DocTree bodyPart  : typeCommentTree.getFullBody()) {
+        for (DocTree bodyPart : typeCommentTree.getFullBody()) {
             if (bodyPart.getKind() == UNKNOWN_INLINE_TAG) {
                 var tag = TagContent.of(
                         TagletUtil.toUnknownInlineTagTreeOrFail(bodyPart));

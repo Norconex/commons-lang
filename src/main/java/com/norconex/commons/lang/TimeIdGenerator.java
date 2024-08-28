@@ -146,6 +146,7 @@ public final class TimeIdGenerator {
     public static synchronized long last() {
         return previousGeneratedId;
     }
+
     /**
      * Generates a new number unique within this JVM.
      * @return a long value

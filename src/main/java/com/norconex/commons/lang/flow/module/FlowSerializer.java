@@ -64,7 +64,7 @@ public class FlowSerializer<T> extends JsonSerializer<Consumer<T>>
     @Override
     public JsonSerializer<?> createContextual(
             SerializerProvider prov, BeanProperty property)
-                    throws JsonMappingException {
+            throws JsonMappingException {
         if (property == null) {
             return defaultSerializer;
         }

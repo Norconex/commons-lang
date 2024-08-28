@@ -43,47 +43,47 @@ class HttpURLTest {
     @ParameterizedTest
     @CsvSource(
         value = {
-            """
+                """
             	Keep protocol character case,\
             	HTTP://www.example.com,\
             	HTTP://www.example.com""",
-            """
+                """
             	'http' protocol without port,\
             	http://www.example.com/blah,\
             	http://www.example.com/blah""",
-            """
+                """
             	'http' protocol with default port,\
             	http://www.example.com:80/blah,\
             	http://www.example.com/blah""",
-            """
+                """
             	'http' protocol with non-default port,\
             	http://www.example.com:81/blah,\
             	http://www.example.com:81/blah""",
-            """
+                """
             	'https' protocol without port,\
             	https://www.example.com/blah,\
             	https://www.example.com/blah""",
-            """
+                """
             	'https' protocol with default port,\
             	https://www.example.com:443/blah,\
             	https://www.example.com/blah""",
-            """
+                """
             	'https' protocol with non-default port,\
             	https://www.example.com:444/blah,\
             	https://www.example.com:444/blah""",
-            """
+                """
             	Non 'http(s)' protocol without port,\
             	ftp://ftp.example.com/dir,\
             	ftp://ftp.example.com/dir""",
-            """
+                """
             	Non 'http(s)' protocol with port,\
             	ftp://ftp.example.com:20/dir,\
             	ftp://ftp.example.com:20/dir""",
-            """
+                """
             	Invalid URL,\
             	http://www.example.com/"path",\
             	http://www.example.com/%22path%22""",
-            """
+                """
             	URL with leading or trailing spaces,\
             	  http://www.example.com/path  ,\
             	http://www.example.com/path""",
@@ -93,43 +93,43 @@ class HttpURLTest {
     void testURLToStringEquals(
             String desc, String actual, String expected) {
         assertThat(new HttpURL(actual))
-            .describedAs("Test: %s (actual: \"%s\", expected: \"%s\")",
-                    desc, actual, expected)
-            .hasToString(expected);
+                .describedAs("Test: %s (actual: \"%s\", expected: \"%s\")",
+                        desc, actual, expected)
+                .hasToString(expected);
     }
 
     @ParameterizedTest
     @CsvSource(
         value = {
-            """
+                """
             	Relative to protocol,\
             	//www.relative.com/e/f.html,\
             	https://www.relative.com/e/f.html""",
-            """
+                """
             	Relative to domain name,\
             	/e/f.html,\
             	https://www.example.com/e/f.html""",
-            """
+                """
             	Relative to full page URL,\
             	?name=john,\
             	https://www.example.com/a/b/c.html?name=john""",
-            """
+                """
             	Relative to last directory,\
             	g.html,\
             	https://www.example.com/a/b/g.html""",
-            """
+                """
             	Absolute URL,\
             	http://www.sample.com/xyz.html,\
             	http://www.sample.com/xyz.html""",
-            """
+                """
             	Relative with colon in parameter,\
             	h/i.html?param=1:2,\
             	https://www.example.com/a/b/h/i.html?param=1:2""",
-            """
+                """
             	Starts with valid odd scheme,\
             	x1+2-3.4:yz,\
             	x1+2-3.4:yz""",
-            """
+                """
             	Starts with invalid odd scheme,\
             	1+2-3.4x:yz,\
             	https://www.example.com/a/b/1+2-3.4x:yz""",
@@ -139,9 +139,10 @@ class HttpURLTest {
     void testURLToAbsoluteEquals(
             String desc, String actual, String expected) {
         assertThat(HttpURL.toAbsolute(absURL, actual))
-            .describedAs("Test absolute: %s (actual: \"%s\", expected: \"%s\")",
-                    desc, actual, expected)
-            .isEqualTo(expected);
+                .describedAs(
+                        "Test absolute: %s (actual: \"%s\", expected: \"%s\")",
+                        desc, actual, expected)
+                .isEqualTo(expected);
     }
 
     //Test for issue https://github.com/Norconex/collector-http/issues/225
@@ -214,17 +215,16 @@ class HttpURLTest {
 
         var httpUrl = new HttpURL(url, "UTF-8");
         assertThat(httpUrl)
-            .returns("UTF-8", HttpURL::getEncoding)
-            .returns("/some/path.html", HttpURL::getPath)
-            .returns(new QueryString(url), HttpURL::getQueryString)
-            .returns("http", HttpURL::getProtocol)
-            .returns(false, HttpURL::isSecure)
-            .returns(80, HttpURL::getPort)
-            .returns("A1", HttpURL::getFragment)
-            .returns("path.html", HttpURL::getLastPathSegment)
-            .returns("http://example.com", HttpURL::getRoot)
-            .returns(url.toURI(), HttpURL::toURI)
-            ;
+                .returns("UTF-8", HttpURL::getEncoding)
+                .returns("/some/path.html", HttpURL::getPath)
+                .returns(new QueryString(url), HttpURL::getQueryString)
+                .returns("http", HttpURL::getProtocol)
+                .returns(false, HttpURL::isSecure)
+                .returns(80, HttpURL::getPort)
+                .returns("A1", HttpURL::getFragment)
+                .returns("path.html", HttpURL::getLastPathSegment)
+                .returns("http://example.com", HttpURL::getRoot)
+                .returns(url.toURI(), HttpURL::toURI);
 
         httpUrl = new HttpURL();
         httpUrl.setPath("/some/path.html");
@@ -236,9 +236,9 @@ class HttpURLTest {
                 "https://example.com/some/path.html#A1");
 
         assertThat(HttpURL.toURL("http://example.com/some path"))
-            .hasToString("http://example.com/some%20path");
+                .hasToString("http://example.com/some%20path");
         assertThat(HttpURL.toURI("http://example.com/some path"))
-            .hasToString("http://example.com/some%20path");
+                .hasToString("http://example.com/some%20path");
 
         assertThat(HttpURL.getRoot(null)).isNull();
     }
@@ -246,19 +246,19 @@ class HttpURLTest {
     @Test
     void testGetRoot() throws MalformedURLException, URISyntaxException {
         assertThat(HttpURL.getRoot("http://acme.com"))
-            .isEqualTo("http://acme.com");
+                .isEqualTo("http://acme.com");
         assertThat(HttpURL.getRoot("http://acme.com/"))
-            .isEqualTo("http://acme.com");
+                .isEqualTo("http://acme.com");
         assertThat(HttpURL.getRoot("http://acme.com/asdf"))
-            .isEqualTo("http://acme.com");
+                .isEqualTo("http://acme.com");
         assertThat(HttpURL.getRoot("http://acme.com/asdf/"))
-            .isEqualTo("http://acme.com");
+                .isEqualTo("http://acme.com");
         assertThat(HttpURL.getRoot("http://acme.com?adsf=asdf"))
-            .isEqualTo("http://acme.com");
+                .isEqualTo("http://acme.com");
         assertThat(HttpURL.getRoot("http://acme.com#asdf"))
-            .isEqualTo("http://acme.com");
+                .isEqualTo("http://acme.com");
         assertThat(HttpURL.getRoot("http://acme.com%123"))
-            .isEqualTo("http://acme.com%123");
+                .isEqualTo("http://acme.com%123");
     }
 
 }

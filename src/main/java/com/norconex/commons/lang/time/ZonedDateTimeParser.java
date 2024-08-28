@@ -118,19 +118,24 @@ public class ZonedDateTimeParser {
         HOUR(ChronoUnit.HOURS, "h"),
         MINUTE(ChronoUnit.MINUTES, "m"),
         SECOND(ChronoUnit.SECONDS, "s");
+
         private final TemporalUnit temporalUnit;
         private final String abbr;
+
         TimeUnit(TemporalUnit temporalUnit, String abbr) {
             this.temporalUnit = temporalUnit;
             this.abbr = abbr;
         }
+
         public TemporalUnit toTemporal() {
             return temporalUnit;
         }
+
         @Override
         public String toString() {
             return abbr;
         }
+
         public static TimeUnit getTimeUnit(String unit) {
             if (StringUtils.isBlank(unit)) {
                 return null;
@@ -147,13 +152,14 @@ public class ZonedDateTimeParser {
     private static final Pattern RELATIVE_DATE_PATTERN = Pattern.compile(
             //1              23            4         5
             "^(NOW|TODAY)\\s*(([-+]{1})\\s*(\\d+)\\s*([YMDhms]{1})\\s*)?$");
+
     private enum Group {
-        ALL,             // 0
-        NOW_TODAY,       // 1
-        MODIFIER_PARTS,  // 2
-        PLUS_MINUS,      // 3
-        AMOUNT,          // 4
-        TIME_UNIT        // 5
+        ALL, // 0
+        NOW_TODAY, // 1
+        MODIFIER_PARTS, // 2
+        PLUS_MINUS, // 3
+        AMOUNT, // 4
+        TIME_UNIT // 5
     }
 
     private String format;
@@ -231,10 +237,10 @@ public class ZonedDateTimeParser {
 
         // with optional format elements
         var dtf = new DateTimeFormatterBuilder().append(formatter)
-            .parseDefaulting(ChronoField.HOUR_OF_DAY, 0)
-            .parseDefaulting(ChronoField.MINUTE_OF_HOUR, 0)
-            .parseDefaulting(ChronoField.SECOND_OF_MINUTE, 0)
-            .toFormatter();
+                .parseDefaulting(ChronoField.HOUR_OF_DAY, 0)
+                .parseDefaulting(ChronoField.MINUTE_OF_HOUR, 0)
+                .parseDefaulting(ChronoField.SECOND_OF_MINUTE, 0)
+                .toFormatter();
 
         var parsed = dtf.parseBest(dateStr,
                 ZonedDateTime::from,
@@ -286,7 +292,7 @@ public class ZonedDateTimeParser {
 
         var amount = NumberUtils.toInt(m.group(Group.AMOUNT.ordinal()), -1);
         if (amount > -1) {
-            if  ("-".equals(m.group(Group.PLUS_MINUS.ordinal()))) {
+            if ("-".equals(m.group(Group.PLUS_MINUS.ordinal()))) {
                 amount = -amount;
             }
             var unit = TimeUnit.getTimeUnit(m.group(Group.TIME_UNIT.ordinal()));

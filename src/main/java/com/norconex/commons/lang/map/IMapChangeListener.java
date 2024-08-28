@@ -26,7 +26,7 @@ import java.util.Map;
  * @param <V> the type of mapped values
  * @deprecated Use {@link MapChangeListener} instead.
  */
-@Deprecated(since="3.0.0")
+@Deprecated(since = "3.0.0")
 @FunctionalInterface
 public interface IMapChangeListener<K, V> //NOSONAR
         extends MapChangeListener<K, V> {

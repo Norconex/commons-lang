@@ -21,10 +21,12 @@ import lombok.experimental.Accessors;
 
 @Data
 @Accessors(chain = true)
-@JsonPropertyOrder({"name", "type"})
+@JsonPropertyOrder({ "name", "type" })
 public class PlaneConfig {
 
-    public enum Type { COMMERCIAL, PRIVATE }
+    public enum Type {
+        COMMERCIAL, PRIVATE
+    }
 
     private Type type;
     private String name;

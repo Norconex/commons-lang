@@ -62,6 +62,7 @@ public class PropertyMatcherCondition
         }
         matcher = new PropertyMatcher(fieldMatcher, valueMatcher);
     }
+
     @Override
     public void saveToXML(XML xml) {
         if (xml == null || matcher == null) {
@@ -93,6 +94,7 @@ public class PropertyMatcherCondition
                 "@matchEmpty", matcher.isMatchEmpty()));
         matcher.setPattern(xml.getString("."));
     }
+
     private void saveMatcherToXML(XML xml, TextMatcher matcher) {
         if (xml == null) {
             return;
@@ -106,11 +108,5 @@ public class PropertyMatcherCondition
         xml.setAttribute("matchEmpty", matcher.isMatchEmpty());
         xml.setTextContent(matcher.getPattern());
     }
-
-
-
-
-
-
 
 }

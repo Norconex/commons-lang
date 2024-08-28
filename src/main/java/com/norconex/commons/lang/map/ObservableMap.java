@@ -37,14 +37,15 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * @param <K> the type of keys maintained by the map we are observing
  * @param <V> the type of mapped values
  */
-public class ObservableMap<K,V> implements Map<K,V> {
+public class ObservableMap<K, V> implements Map<K, V> {
 
-    private final MapChangeSupport<K,V> mcs = new MapChangeSupport<>(this);
+    private final MapChangeSupport<K, V> mcs = new MapChangeSupport<>(this);
     private final Map<K, V> map;
 
     public ObservableMap() {
         this(null);
     }
+
     /**
      * Decorates map argument as an {@code ObservableMap}.
      * @param map the Map to decorate
@@ -61,14 +62,15 @@ public class ObservableMap<K,V> implements Map<K,V> {
      * Adds a map change listener.
      * @param listener change listener
      */
-    public void addMapChangeListener(MapChangeListener<K,V> listener) {
+    public void addMapChangeListener(MapChangeListener<K, V> listener) {
         mcs.addMapChangeListener(listener);
     }
+
     /**
      * Removes a map change listener.
      * @param listener change listener
      */
-    public void removeMapChangeListener(MapChangeListener<K,V> listener) {
+    public void removeMapChangeListener(MapChangeListener<K, V> listener) {
         mcs.removeMapChangeListener(listener);
     }
 
@@ -94,23 +96,28 @@ public class ObservableMap<K,V> implements Map<K,V> {
     public int size() {
         return map.size();
     }
+
     @Override
     @JsonIgnore
     public boolean isEmpty() {
         return map.isEmpty();
     }
+
     @Override
     public boolean containsKey(Object key) {
         return map.containsKey(key);
     }
+
     @Override
     public boolean containsValue(Object value) {
         return map.containsValue(value);
     }
+
     @Override
     public V get(Object key) {
         return map.get(key);
     }
+
     @Override
     public V put(K key, V value) {
         if (mcs.isEmpty()) {
@@ -120,6 +127,7 @@ public class ObservableMap<K,V> implements Map<K,V> {
         mcs.fireMapChange(key, oldValue, value);
         return oldValue;
     }
+
     @SuppressWarnings("unchecked")
     @Override
     public V remove(Object key) {
@@ -130,6 +138,7 @@ public class ObservableMap<K,V> implements Map<K,V> {
         mcs.fireMapChange((K) key, oldValue, null);
         return oldValue;
     }
+
     @Override
     public void putAll(Map<? extends K, ? extends V> m) {
         if (mcs.isEmpty()) {
@@ -143,6 +152,7 @@ public class ObservableMap<K,V> implements Map<K,V> {
             put(entry.getKey(), entry.getValue());
         }
     }
+
     @Override
     public void clear() {
         if (mcs.isEmpty()) {
@@ -158,14 +168,17 @@ public class ObservableMap<K,V> implements Map<K,V> {
             mcs.fireMapChange(entry.getKey(), entry.getValue(), null);
         }
     }
+
     @Override
     public Set<K> keySet() {
         return map.keySet();
     }
+
     @Override
     public Collection<V> values() {
         return map.values();
     }
+
     @Override
     public Set<Entry<K, V>> entrySet() {
         return map.entrySet();

@@ -38,33 +38,41 @@ import lombok.extern.slf4j.Slf4j;
 @Data
 @Accessors(chain = true)
 public class MockProxySettings implements XMLConfigurable {
-    private MockHost  host;
+    private MockHost host;
     private String scheme;
     private String realm;
     private final MockCredentials credentials =
             new MockCredentials();
 
-    public MockProxySettings() {}
+    public MockProxySettings() {
+    }
+
     public MockProxySettings(String name, int port) {
         this(new MockHost(name, port));
     }
+
     public MockProxySettings(MockHost host) {
         this.host = host;
     }
+
     public MockProxySettings setCredentials(
             MockCredentials credentials) {
         this.credentials.copyFrom(credentials);
         return this;
     }
+
     public boolean isSet() {
         return host != null && host.isSet();
     }
+
     public void copyTo(MockProxySettings another) {
         BeanUtil.copyProperties(another, this);
     }
+
     public void copyFrom(MockProxySettings another) {
         BeanUtil.copyProperties(this, another);
     }
+
     public Proxy toProxy() {
         if (!isSet()) {
             return null;
@@ -80,6 +88,7 @@ public class MockProxySettings implements XMLConfigurable {
         var address = new InetSocketAddress(host.getName(), host.getPort());
         return new Proxy(type, address);
     }
+
     @Override
     public void loadFromXML(XML xml) {
         if (xml != null) {

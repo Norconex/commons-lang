@@ -56,6 +56,7 @@ public class JarDuplicates {
     public JarDuplicates(@NonNull JarFile... jarFiles) {
         this(Arrays.asList(jarFiles));
     }
+
     /**
      * Creates a group of 2 or more {@link JarFile} duplicates.
      * @param jarFiles duplicate jar files (must not be <code>null</code>)
@@ -158,6 +159,7 @@ public class JarDuplicates {
     public boolean hasVersionConflict() { //NOSONAR
         return !areEquivalent();
     }
+
     /**
      * Gets whether all jar files in this duplicate are equivalent
      * (equivalent versions and identical last modified dates).

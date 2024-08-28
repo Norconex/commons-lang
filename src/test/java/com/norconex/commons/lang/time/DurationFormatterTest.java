@@ -28,20 +28,20 @@ class DurationFormatterTest {
 
     private static final long TEST_DATETIME_DURATION =
             DurationUnit.YEAR.toMilliseconds(4)
-          + DurationUnit.MONTH.toMilliseconds(1)
-          + DurationUnit.WEEK.toMilliseconds(3)
-          + DurationUnit.DAY.toMilliseconds(5)
-          + DurationUnit.HOUR.toMilliseconds(18)
-          + DurationUnit.MINUTE.toMilliseconds(1)
-          + DurationUnit.SECOND.toMilliseconds(23)
-          + DurationUnit.MILLISECOND.toMilliseconds(469);
+                    + DurationUnit.MONTH.toMilliseconds(1)
+                    + DurationUnit.WEEK.toMilliseconds(3)
+                    + DurationUnit.DAY.toMilliseconds(5)
+                    + DurationUnit.HOUR.toMilliseconds(18)
+                    + DurationUnit.MINUTE.toMilliseconds(1)
+                    + DurationUnit.SECOND.toMilliseconds(23)
+                    + DurationUnit.MILLISECOND.toMilliseconds(469);
 
     private static final long TEST_DAYTIME_DURATION =
-          + DurationUnit.DAY.toMilliseconds(5)
-          + DurationUnit.HOUR.toMilliseconds(18)
-          + DurationUnit.MINUTE.toMilliseconds(1)
-          + DurationUnit.SECOND.toMilliseconds(23)
-          + DurationUnit.MILLISECOND.toMilliseconds(469);
+            +DurationUnit.DAY.toMilliseconds(5)
+                    + DurationUnit.HOUR.toMilliseconds(18)
+                    + DurationUnit.MINUTE.toMilliseconds(1)
+                    + DurationUnit.SECOND.toMilliseconds(23)
+                    + DurationUnit.MILLISECOND.toMilliseconds(469);
 
     private DurationFormatter full;
     private DurationFormatter compact;
@@ -59,27 +59,34 @@ class DurationFormatterTest {
     void testGetters() {
         DurationUnitFormatter duf = (unit, locale, plural) -> "blah";
         assertThat(
-            new DurationFormatter()
-                .withHighestUnit(DurationUnit.MONTH)
-                .withInnerSeparator("|")
-                .withLocale(Locale.CANADA_FRENCH)
-                .withLowestUnit(DurationUnit.MINUTE)
-                .withNumberFormat(NumberFormat.getIntegerInstance())
-                .withOuterLastSeparator("-")
-                .withOuterSeparator("_")
-                .withUnitFormatter(duf)
-                .withUnitPrecision(66))
-            .returns(DurationUnit.MONTH, DurationFormatter::getHighestUnit)
-            .returns("|", DurationFormatter::getInnerSeparator)
-            .returns(Locale.CANADA_FRENCH, DurationFormatter::getLocale)
-            .returns(DurationUnit.MINUTE, DurationFormatter::getLowestUnit)
-            .returns(NumberFormat.getIntegerInstance(),
-                    DurationFormatter::getNumberFormat)
-            .returns("-", DurationFormatter::getOuterLastSeparator)
-            .returns("_", DurationFormatter::getOuterSeparator)
-            .returns(duf, DurationFormatter::getUnitFormatter)
-            .returns(66, DurationFormatter::getUnitPrecision)
-            ;
+                new DurationFormatter()
+                        .withHighestUnit(DurationUnit.MONTH)
+                        .withInnerSeparator("|")
+                        .withLocale(Locale.CANADA_FRENCH)
+                        .withLowestUnit(DurationUnit.MINUTE)
+                        .withNumberFormat(NumberFormat.getIntegerInstance())
+                        .withOuterLastSeparator("-")
+                        .withOuterSeparator("_")
+                        .withUnitFormatter(duf)
+                        .withUnitPrecision(66))
+                                .returns(DurationUnit.MONTH,
+                                        DurationFormatter::getHighestUnit)
+                                .returns("|",
+                                        DurationFormatter::getInnerSeparator)
+                                .returns(Locale.CANADA_FRENCH,
+                                        DurationFormatter::getLocale)
+                                .returns(DurationUnit.MINUTE,
+                                        DurationFormatter::getLowestUnit)
+                                .returns(NumberFormat.getIntegerInstance(),
+                                        DurationFormatter::getNumberFormat)
+                                .returns("-",
+                                        DurationFormatter::getOuterLastSeparator)
+                                .returns("_",
+                                        DurationFormatter::getOuterSeparator)
+                                .returns(duf,
+                                        DurationFormatter::getUnitFormatter)
+                                .returns(66,
+                                        DurationFormatter::getUnitPrecision);
     }
 
     @Test
@@ -92,26 +99,33 @@ class DurationFormatterTest {
                 .format(TEST_DATETIME_DURATION));
 
     }
+
     @Test
     void testFullAllUnitsFormat() {
         Assertions.assertEquals("4 years 1 month 3 weeks 5 days "
-                + "18 hours 1 minute 23 seconds 469 milliseconds", full
-                .format(TEST_DATETIME_DURATION));
+                + "18 hours 1 minute 23 seconds 469 milliseconds",
+                full
+                        .format(TEST_DATETIME_DURATION));
         Assertions.assertEquals("4 ans 1 mois 3 semaines 5 jours "
-                + "18 heures 1 minute 23 secondes 469 millisecondes", full
-                .withLocale(Locale.FRENCH)
-                .format(TEST_DATETIME_DURATION));
+                + "18 heures 1 minute 23 secondes 469 millisecondes",
+                full
+                        .withLocale(Locale.FRENCH)
+                        .format(TEST_DATETIME_DURATION));
     }
+
     @Test
     void testAbbrAllUnitsFormat() {
         Assertions.assertEquals("4 yrs 1 mo 3 wks 5 days "
-                + "18 hrs 1 min 23 secs 469 msecs", abbr
-                .format(TEST_DATETIME_DURATION));
+                + "18 hrs 1 min 23 secs 469 msecs",
+                abbr
+                        .format(TEST_DATETIME_DURATION));
         Assertions.assertEquals("4 ans 1 mo 3 sems 5 jrs "
-                + "18 hrs 1 min 23 secs 469 msecs", abbr
-                .withLocale(Locale.FRENCH)
-                .format(TEST_DATETIME_DURATION));
+                + "18 hrs 1 min 23 secs 469 msecs",
+                abbr
+                        .withLocale(Locale.FRENCH)
+                        .format(TEST_DATETIME_DURATION));
     }
+
     @Test
     void testCompactDaysToSecondsFormat() {
         Assertions.assertEquals("5D18h1m23s", compact
@@ -125,6 +139,7 @@ class DurationFormatterTest {
                 .withLowestUnit(DurationUnit.SECOND)
                 .format(TEST_DAYTIME_DURATION));
     }
+
     @Test
     void testFullDaysToSecondsFormat() {
         Assertions.assertEquals("5 days 18 hours 1 minute 23 seconds", full
@@ -137,6 +152,7 @@ class DurationFormatterTest {
                 .withLocale(Locale.FRENCH)
                 .format(TEST_DAYTIME_DURATION));
     }
+
     @Test
     void testAbbrDaysToSecondsFormat() {
         Assertions.assertEquals("5 days 18 hrs 1 min 23 secs", abbr
@@ -149,6 +165,7 @@ class DurationFormatterTest {
                 .withLocale(Locale.FRENCH)
                 .format(TEST_DAYTIME_DURATION));
     }
+
     @Test
     void testHighestUnitsSmaller() {
         Assertions.assertEquals("138 hours 1 minute 23 seconds", full
@@ -192,15 +209,17 @@ class DurationFormatterTest {
                 DurationFormatter.FULL.withOuterSeparator(", ");
 
         Assertions.assertEquals("4 years, 1 month, 3 weeks, 5 days, "
-                + "18 hours, 1 minute, 23 seconds and 469 milliseconds", df
-                .withOuterLastSeparator(" and ")
-                .format(TEST_DATETIME_DURATION));
+                + "18 hours, 1 minute, 23 seconds and 469 milliseconds",
+                df
+                        .withOuterLastSeparator(" and ")
+                        .format(TEST_DATETIME_DURATION));
 
         Assertions.assertEquals("4 ans, 1 mois, 3 semaines, 5 jours, "
-                + "18 heures, 1 minute, 23 secondes et 469 millisecondes", df
-                .withOuterLastSeparator(" et ")
-                .withLocale(Locale.FRENCH)
-                .format(TEST_DATETIME_DURATION));
+                + "18 heures, 1 minute, 23 secondes et 469 millisecondes",
+                df
+                        .withOuterLastSeparator(" et ")
+                        .withLocale(Locale.FRENCH)
+                        .format(TEST_DATETIME_DURATION));
     }
 
     @Test

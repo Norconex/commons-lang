@@ -46,18 +46,17 @@ class JarDuplicatesTest {
                 Files.createFile(tempDir.resolve("a-2.0.0.jar")).toFile());
     }
 
-
     @SuppressWarnings("deprecation")
     @Test
     void testJarDuplicates() {
         List<JarFile> expected = Arrays.asList(file2_0, file1_2, file1_0);
 
         assertThat(new JarDuplicates(file1_0, file2_0, file1_2).getJarFiles())
-            .containsExactlyElementsOf(expected);
+                .containsExactlyElementsOf(expected);
 
         assertThat(new JarDuplicates(
                 Arrays.asList(file1_0, file1_2, file2_0)).getJarFiles())
-            .containsExactlyElementsOf(expected);
+                        .containsExactlyElementsOf(expected);
 
         assertThrows(IllegalArgumentException.class,
                 () -> new JarDuplicates(file1_0));

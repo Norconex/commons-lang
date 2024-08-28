@@ -62,29 +62,33 @@ public abstract class AbstractConverter implements Converter {
 
     protected abstract <T> T nullSafeToType(
             String value, Class<T> type) throws Exception; //NOSONAR
+
     protected abstract String nullSafeToString(
             Object object) throws Exception; //NOSONAR
 
     protected ConverterException toUnsupportedTypeException(Object obj) {
         return new ConverterException(
                 "Type " + obj.getClass().getSimpleName()
-              + " is not supported by this converter ("
-              + getClass().getSimpleName() + ").");
+                        + " is not supported by this converter ("
+                        + getClass().getSimpleName() + ").");
     }
 
     protected ConverterException toTypeException(
             String value, Class<?> type) {
         return toTypeException(value, type, null);
     }
+
     protected ConverterException toTypeException(
             String value, Class<?> type, Throwable e) {
         return new ConverterException(String.format(
                 "Cannot convert string \"%s\" to type \"%s\".",
                 value, type), e);
     }
+
     protected ConverterException toStringException(Object object) {
         return toStringException(object, null);
     }
+
     protected ConverterException toStringException(Object object, Throwable e) {
         return new ConverterException(String.format(
                 "Cannot convert object of type \"%s\" to String.",

@@ -49,19 +49,20 @@ class QueryStringTest {
 
         assertThat(new QueryString(new URL(
                 "http://example.com/blah"
-                + "?param1=value1"
-                + "&param2=value2a"
-                + "&param2=value2b"
-                + "#asdf")))
-            .isEqualTo(qs);
+                        + "?param1=value1"
+                        + "&param2=value2a"
+                        + "&param2=value2b"
+                        + "#asdf")))
+                                .isEqualTo(qs);
         assertThat(new QueryString(new URL(
                 "http://example.com/blah"
-                + "?param1=value1"
-                + "&param2=value2a"
-                + "&param2=value2b"
-                + "#asdf"), UTF_8.toString()))
-            .isEqualTo(qs)
-            .returns("UTF-8", q -> ((QueryString) q).getEncoding());
+                        + "?param1=value1"
+                        + "&param2=value2a"
+                        + "&param2=value2b"
+                        + "#asdf"),
+                UTF_8.toString()))
+                        .isEqualTo(qs)
+                        .returns("UTF-8", q -> ((QueryString) q).getEncoding());
     }
 
     @Test
@@ -71,20 +72,20 @@ class QueryStringTest {
         qs.set("param2", "value2a", "value2b");
 
         assertThat(qs.applyOnURL("http://example.com/blah?param3=value3#hash"))
-            .isEqualTo(
-                    "http://example.com/blah"
-                    + "?param1=value1"
-                    + "&param2=value2a"
-                    + "&param2=value2b");
+                .isEqualTo(
+                        "http://example.com/blah"
+                                + "?param1=value1"
+                                + "&param2=value2a"
+                                + "&param2=value2b");
 
         assertThat(qs.applyOnURL(
                 new URL("http://example.com/blah?param3=value3#hash"))
-                        .toString())
-            .isEqualTo(
-                    "http://example.com/blah"
-                    + "?param1=value1"
-                    + "&param2=value2a"
-                    + "&param2=value2b");
+                .toString())
+                        .isEqualTo(
+                                "http://example.com/blah"
+                                        + "?param1=value1"
+                                        + "&param2=value2a"
+                                        + "&param2=value2b");
 
         assertThat(qs.applyOnURL((String) null)).isNull();
         assertThat(qs.applyOnURL((URL) null)).isNull();

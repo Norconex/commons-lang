@@ -26,25 +26,31 @@ import lombok.Getter;
 public final class MockHost {
     private String name;
     private int port = -1;
-    public MockHost (String name, int port) {
+
+    public MockHost(String name, int port) {
         this.name = name;
         this.port = port;
     }
+
     public boolean isSet() {
         return StringUtils.isNotBlank(name);
     }
+
     public MockHost withName(String name) {
         return new MockHost(name, getPort());
     }
+
     public MockHost withPort(int port) {
         return new MockHost(getName(), port);
     }
+
     @Override
     public String toString() {
         return name + ":" + port;
     }
+
     public static MockHost loadFromXML(
-            XML xml, MockHost  defaultHost) {
+            XML xml, MockHost defaultHost) {
         if (xml == null) {
             return defaultHost;
         }
@@ -54,7 +60,8 @@ public final class MockHost {
         }
         return defaultHost;
     }
-    public static void saveToXML(XML xml, MockHost  host) {
+
+    public static void saveToXML(XML xml, MockHost host) {
         if (host != null) {
             xml.addElement("name", host.getName());
             xml.addElement("port", host.getPort());

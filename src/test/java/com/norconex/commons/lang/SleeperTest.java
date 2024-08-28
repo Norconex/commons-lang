@@ -26,7 +26,7 @@ class SleeperTest {
         long before = System.currentTimeMillis();
         Sleeper.sleepHours(0);
         assertThat(System.currentTimeMillis() - before)
-            .isLessThanOrEqualTo(1000);
+                .isLessThanOrEqualTo(1000);
 
         before = System.currentTimeMillis();
         Sleeper.sleepMinutes(0);

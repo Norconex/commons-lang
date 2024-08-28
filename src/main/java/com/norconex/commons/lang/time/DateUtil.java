@@ -29,7 +29,8 @@ import java.util.Date;
 @Deprecated(since = "3.0.0")
 public final class DateUtil { //NOSONAR
 
-    private DateUtil() {}
+    private DateUtil() {
+    }
 
     /**
      * Converts a {@link Date} to a {@link LocalDate}, local to the system
@@ -40,6 +41,7 @@ public final class DateUtil { //NOSONAR
     public static LocalDate toLocalDate(Date date) {
         return toLocalDate(date, ZoneId.systemDefault());
     }
+
     /**
      * Converts a {@link Date} to a {@link LocalDate}, local to the specified
      * {@link ZoneId}.
@@ -50,6 +52,7 @@ public final class DateUtil { //NOSONAR
     public static LocalDate toLocalDate(Date date, ZoneId zoneId) {
         return date.toInstant().atZone(zoneId).toLocalDate();
     }
+
     /**
      * Converts a {@link Date} to a {@link LocalDate}, local to
      * {@link ZoneOffset#UTC} (Greenwich).
@@ -70,6 +73,7 @@ public final class DateUtil { //NOSONAR
     public static LocalDate toLocalDate(long date) {
         return toLocalDate(date, ZoneId.systemDefault());
     }
+
     /**
      * Converts a millisecond EPOCH date to a {@link LocalDate}, local to the
      * specified {@link ZoneId}.
@@ -80,6 +84,7 @@ public final class DateUtil { //NOSONAR
     public static LocalDate toLocalDate(long date, ZoneId zoneId) {
         return toLocalDateTime(date, zoneId).toLocalDate();
     }
+
     /**
      * Converts a millisecond EPOCH date to a {@link LocalDate}, local to
      * {@link ZoneOffset#UTC} (Greenwich).
@@ -100,6 +105,7 @@ public final class DateUtil { //NOSONAR
     public static LocalDateTime toLocalDateTime(Date date) {
         return toLocalDateTime(date, ZoneId.systemDefault());
     }
+
     /**
      * Converts a {@link Date} to a {@link LocalDateTime}, local to the
      * specified {@link ZoneId}.
@@ -110,6 +116,7 @@ public final class DateUtil { //NOSONAR
     public static LocalDateTime toLocalDateTime(Date date, ZoneId zoneId) {
         return date.toInstant().atZone(zoneId).toLocalDateTime();
     }
+
     /**
      * Converts a {@link Date} to a {@link LocalDateTime}, local to
      * {@link ZoneOffset#UTC} (Greenwich).
@@ -130,6 +137,7 @@ public final class DateUtil { //NOSONAR
     public static LocalDateTime toLocalDateTime(long date) {
         return toLocalDateTime(date, ZoneId.systemDefault());
     }
+
     /**
      * Converts a millisecond EPOCH date to a {@link LocalDateTime}, local to
      * the specified {@link ZoneId}.
@@ -140,6 +148,7 @@ public final class DateUtil { //NOSONAR
     public static LocalDateTime toLocalDateTime(long date, ZoneId zoneId) {
         return LocalDateTime.ofInstant(Instant.ofEpochMilli(date), zoneId);
     }
+
     /**
      * Converts a millisecond EPOCH date to a {@link LocalDateTime}, local to
      * {@link ZoneOffset#UTC} (Greenwich).
@@ -160,6 +169,7 @@ public final class DateUtil { //NOSONAR
     public static Date toDate(LocalDate date) {
         return toDate(date, ZoneId.systemDefault());
     }
+
     /**
      * Converts a {@link LocalDate} to a {@link Date} using the specified
      * {@link ZoneId}.
@@ -170,6 +180,7 @@ public final class DateUtil { //NOSONAR
     public static Date toDate(LocalDate date, ZoneId zoneId) {
         return Date.from(date.atStartOfDay().atZone(zoneId).toInstant());
     }
+
     /**
      * Converts a {@link LocalDate} to a {@link Date}
      * using {@link ZoneOffset#UTC} (Greenwich).
@@ -190,6 +201,7 @@ public final class DateUtil { //NOSONAR
     public static Date toDate(LocalDateTime date) {
         return toDate(date, ZoneId.systemDefault());
     }
+
     /**
      * Converts a {@link LocalDateTime} to a {@link Date} using the specified
      * {@link ZoneId}.
@@ -200,6 +212,7 @@ public final class DateUtil { //NOSONAR
     public static Date toDate(LocalDateTime date, ZoneId zoneId) {
         return Date.from(date.atZone(zoneId).toInstant());
     }
+
     /**
      * Converts a {@link LocalDateTime} to a {@link Date}
      * using {@link ZoneOffset#UTC} (Greenwich).
@@ -220,6 +233,7 @@ public final class DateUtil { //NOSONAR
     public static Date toDate(Instant instant) {
         return toDate(instant, ZoneId.systemDefault());
     }
+
     /**
      * Converts an {@link Instant} to a {@link Date} using the specified
      * {@link ZoneId}.
@@ -233,6 +247,7 @@ public final class DateUtil { //NOSONAR
                 .withZoneSameLocal(zoneId)
                 .toInstant());
     }
+
     /**
      * Converts an {@link Instant} to a {@link Date}
      * using {@link ZoneOffset#UTC} (Greenwich).

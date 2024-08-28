@@ -151,26 +151,32 @@ class MutableImageTest {
     void testRotateLeft(String ext) throws IOException {
         test(MutableImage::rotateLeft, ext);
     }
+
     @ExtensionTest
     void testRotate45Left(String ext) throws IOException {
         test(img -> img.rotate(-45), ext);
     }
+
     @ExtensionTest
     void testRotateRight(String ext) throws IOException {
         test(MutableImage::rotateRight, ext);
     }
+
     @ExtensionTest
     void testRotate45Right(String ext) throws IOException {
         test(img -> img.rotate(45), ext);
     }
+
     @ExtensionTest
     void testFlipHorizontal(String ext) throws IOException {
         test(MutableImage::flipHorizontal, ext);
     }
+
     @ExtensionTest
     void testFilpVertical(String ext) throws IOException {
         test(MutableImage::flipVertical, ext);
     }
+
     @ExtensionTest
     void testCrop(String ext) throws IOException {
         test(img -> img.crop(new Rectangle(10, 48, 30, 26)), ext);
@@ -180,14 +186,17 @@ class MutableImageTest {
     void testStretch75x20(String ext) throws IOException {
         test(img -> img.stretch(75, 20), ext);
     }
+
     @ExtensionTest
     void testStretchHeightFactor1_5(String ext) throws IOException {
         test(img -> img.stretchHeightFactor(1.5f), ext);
     }
+
     @ExtensionTest
     void testStretchWidthFactor1_5(String ext) throws IOException {
         test(img -> img.stretchWidthFactor(1.5f), ext);
     }
+
     @ExtensionTest
     void testStretchFactor3x0_5(String ext) throws IOException {
         test(img -> img.stretchFactor(3.0f, 0.5f), ext);
@@ -197,18 +206,22 @@ class MutableImageTest {
     void testScale75_20(String ext) throws IOException {
         test(img -> img.scale(75, 20), ext);
     }
+
     @ExtensionTest
     void testScaleHeightFactor1_5(String ext) throws IOException {
         test(img -> img.scaleHeightFactor(1.5f), ext);
     }
+
     @ExtensionTest
     void testScaleWidthFactor1_5(String ext) throws IOException {
         test(img -> img.scaleWidthFactor(1.5f), ext);
     }
+
     @ExtensionTest
     void testScaleInHalf(String ext) throws IOException {
         test(img -> img.scaleFactor(0.5f), ext);
     }
+
     @ExtensionTest
     void testScaleDouble(String ext) throws IOException {
         test(img -> img.scaleFactor(2.0f), ext);
@@ -219,7 +232,7 @@ class MutableImageTest {
         new File("target/img-tests").mkdirs();
         var targetImage = "target/img-tests/" +
                 Thread.currentThread().getStackTrace()[2].getMethodName()
-                        + "." + ext;
+                + "." + ext;
         LOG.debug("Writing: " + targetImage);
         try (var is =
                 MutableImageTest.class.getResourceAsStream(srcImage)) {
@@ -238,6 +251,7 @@ class MutableImageTest {
     @MethodSource("extensionProvider")
     @interface ExtensionTest {
     }
+
     @SuppressWarnings("unused")
     private static Stream<String> extensionProvider() {
         return Stream.of("png", "gif", "jpg", "bmp");

@@ -20,7 +20,8 @@ import jakarta.validation.Valid;
 import lombok.Data;
 
 @Data
-public class Automobile implements Transportation, Configurable<AutomobileConfig> {
+public class Automobile
+        implements Transportation, Configurable<AutomobileConfig> {
 
     private final AutomobileConfig configuration = new AutomobileConfig();
 

@@ -52,6 +52,7 @@ public final class PropertyMatcher implements Predicate<Properties> {
     public PropertyMatcher(TextMatcher fieldMatcher) {
         this(fieldMatcher, null);
     }
+
     /**
      * <p>
      * A property matcher matching both fields and values. Only a single value
@@ -87,6 +88,7 @@ public final class PropertyMatcher implements Predicate<Properties> {
     public TextMatcher getValueMatcher() {
         return valueMatcher == null ? null : new TextMatcher(valueMatcher);
     }
+
     /**
      * Gets the field matcher (copy) or <code>null</code> if the field matcher
      * is <code>null</code>.
@@ -236,7 +238,6 @@ public final class PropertyMatcher implements Predicate<Properties> {
         }
         return replacedValues;
     }
-
 
     // return new value
     private String replaceValue(String value, String replacement) {

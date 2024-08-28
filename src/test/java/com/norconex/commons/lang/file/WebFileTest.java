@@ -48,7 +48,7 @@ class WebFileTest {
         assertThat(webFile.isAbsolute()).isTrue();
         assertThat(webFile.getRoot()).isNotNull();
         assertThat(webFile.getParent()).isNotNull();
-        assertThat(webFile.getName(webFile.getNameCount() -1)).isEqualTo(
+        assertThat(webFile.getName(webFile.getNameCount() - 1)).isEqualTo(
                 Paths.get(FILENAME));
         assertThat(webFile.getResolvedFile()).endsWith(
                 webFile.subpath(0, webFile.getNameCount()));
@@ -70,10 +70,10 @@ class WebFileTest {
         assertThat(webFile.iterator()).isNotNull();
         assertThat(webFile.toString()).isNotNull();
         assertThat(webFile)
-            .isEqualByComparingTo(webFile)
-            .isEqualTo(webFile)
-            .hasSameHashCodeAs(webFile.getResolvedFile())
-            .isEqualTo(webFile.getResolvedFile());
+                .isEqualByComparingTo(webFile)
+                .isEqualTo(webFile)
+                .hasSameHashCodeAs(webFile.getResolvedFile())
+                .isEqualTo(webFile.getResolvedFile());
     }
 
     enum WebFileCreator {
@@ -84,10 +84,13 @@ class WebFileTest {
         CONSTR_STRING_PATH(dir -> new WebFile(URLSTR, dir.resolve(FILENAME))),
         CONSTR_URL(dir -> new WebFile(URL)),
         ;
+
         private final Function<Path, WebFile> creator;
+
         WebFileCreator(Function<Path, WebFile> creator) {
             this.creator = creator;
         }
+
         WebFile create(Path downloadDir) {
             return creator.apply(downloadDir);
         }

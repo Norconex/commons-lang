@@ -48,7 +48,7 @@ class CollectionUtilTest {
         assertThat(adaptedList(null)).isEmpty();
         assertThat(adaptedList("   ")).isEmpty();
         assertThat(adaptedList(Arrays.asList("1", "2"))).hasSize(2);
-        assertThat(adaptedList(new String[] {"1", "2", "3"})).hasSize(3);
+        assertThat(adaptedList(new String[] { "1", "2", "3" })).hasSize(3);
         assertThat(adaptedList(BigDecimal.valueOf(4))).hasSize(1);
     }
 
@@ -57,7 +57,7 @@ class CollectionUtilTest {
         assertThat(adaptedSet(null)).isEmpty();
         assertThat(adaptedSet("   ")).isEmpty();
         assertThat(adaptedSet(Arrays.asList("1", "2"))).hasSize(2);
-        assertThat(adaptedSet(new String[] {"1", "2", "3"})).hasSize(3);
+        assertThat(adaptedSet(new String[] { "1", "2", "3" })).hasSize(3);
         assertThat(adaptedSet(BigDecimal.valueOf(4))).hasSize(1);
     }
 
@@ -67,7 +67,7 @@ class CollectionUtilTest {
         List<String> list = Arrays.asList("1", "2");
         assertThrows(NullPointerException.class, () -> toArray(list, null));
         assertThat(toArray(Arrays.asList("1", "2"), String.class))
-            .isEqualTo(new String[] {"1", "2"});
+                .isEqualTo(new String[] { "1", "2" });
     }
 
     @Test
@@ -113,7 +113,7 @@ class CollectionUtilTest {
 
         // source and target are the same entries
         target = new ArrayList<>(Arrays.asList("1", "2"));
-        var source = new String[] {"1", "2"};
+        var source = new String[] { "1", "2" };
         CollectionUtil.setAll(target, source);
         assertThat(target).containsExactly("1", "2");
 
@@ -180,7 +180,8 @@ class CollectionUtilTest {
                 Locale.CANADA_FRENCH,
                 StandardCharsets.UTF_8,
                 true))
-            .containsExactly("11", "22000", "fr_CA", "UTF-8", "true");
+                        .containsExactly("11", "22000", "fr_CA", "UTF-8",
+                                "true");
     }
 
     @Test
@@ -193,7 +194,8 @@ class CollectionUtilTest {
                 Locale.CANADA_FRENCH,
                 StandardCharsets.UTF_8,
                 true)))
-            .containsExactly("11", "22000", "fr_CA", "UTF-8", "true");
+                        .containsExactly("11", "22000", "fr_CA", "UTF-8",
+                                "true");
     }
 
     @Test
@@ -201,10 +203,10 @@ class CollectionUtilTest {
         assertThat(toTypeList((List<String>) null, s -> "blah")).isEmpty();
         assertThat(toTypeList(Arrays.asList("1000", "2000", "3000"),
                 s -> Duration.ofMillis(Long.parseLong(s))))
-            .containsExactly(
-                    Duration.ofSeconds(1),
-                    Duration.ofSeconds(2),
-                    Duration.ofSeconds(3));
+                        .containsExactly(
+                                Duration.ofSeconds(1),
+                                Duration.ofSeconds(2),
+                                Duration.ofSeconds(3));
     }
 
     @Test
@@ -307,11 +309,11 @@ class CollectionUtilTest {
         assertThat(unionList(
                 "smallest",
                 List.of("smaller",
-                        Arrays.asList("medium1", null, "medium2")
-                ),
+                        Arrays.asList("medium1", null, "medium2")),
                 new TreeSet<>(List.of("larger", "largest"))))
-            .containsExactly("smallest", "smaller", "medium1", "medium2",
-                    "larger", "largest");
+                        .containsExactly("smallest", "smaller", "medium1",
+                                "medium2",
+                                "larger", "largest");
     }
 
     @Test
@@ -325,11 +327,11 @@ class CollectionUtilTest {
         assertThat(unionSet(
                 "smallest",
                 List.of("smaller",
-                        Arrays.asList("medium1", null, "medium2")
-                ),
+                        Arrays.asList("medium1", null, "medium2")),
                 new TreeSet<>(List.of("larger", "largest"))))
-            .containsExactlyInAnyOrder("smallest", "smaller", "medium1",
-                    "medium2", "larger", "largest");
+                        .containsExactlyInAnyOrder("smallest", "smaller",
+                                "medium1",
+                                "medium2", "larger", "largest");
     }
 
 }

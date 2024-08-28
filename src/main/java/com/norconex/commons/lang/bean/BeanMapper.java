@@ -158,9 +158,10 @@ public class BeanMapper { //NOSONAR
                     var m = (XmlMapper) b.build();
                     m.enable(EMPTY_ELEMENT_AS_NULL);
                     m.getFactory()
-                        .getXMLOutputFactory()
-                        .setProperty(XMLOutputFactory.IS_REPAIRING_NAMESPACES,
-                                true);
+                            .getXMLOutputFactory()
+                            .setProperty(
+                                    XMLOutputFactory.IS_REPAIRING_NAMESPACES,
+                                    true);
                     m.registerModule(new SimpleModule().addDeserializer(
                             Properties.class,
                             new JsonXmlPropertiesDeserializer()));
@@ -171,14 +172,13 @@ public class BeanMapper { //NOSONAR
                 MapperBuilder::build),
         YAML(
                 () -> YAMLMapper.builder()
-                    .disable(YAMLGenerator.Feature.USE_NATIVE_TYPE_ID),
+                        .disable(YAMLGenerator.Feature.USE_NATIVE_TYPE_ID),
                 MapperBuilder::build),
-        ;
+                ;
+
         final Supplier<MapperBuilder<?, ?>> builder;
         final Function<MapperBuilder<?, ?>, ObjectMapper> mapper;
     }
-
-
 
     /**
      * A build mapper initialized with default settings.
@@ -283,8 +283,8 @@ public class BeanMapper { //NOSONAR
     // We keep a copy of resolved polymorphic type as they are otherwise
     // difficult to obtain from the ObjectMapper and we may need them in
     // different context (e.g., registration in OpenApi).
-    private final MultiValuedMap<Class<?>, Class<?>>
-        resolvedPolymorphicTypes = MultiMapUtils.newListValuedHashMap();
+    private final MultiValuedMap<Class<?>, Class<?>> resolvedPolymorphicTypes =
+            MultiMapUtils.newListValuedHashMap();
     private final MutableBoolean polyTypesResolved = new MutableBoolean();
 
     public MultiValuedMap<Class<?>, Class<?>> getPolymorphicTypes() {
@@ -367,10 +367,10 @@ public class BeanMapper { //NOSONAR
             var validator = factory.getValidator();
             Set<ConstraintViolation<Object>> violations =
                     validator.validate(obj);
-            if (!violations.isEmpty() ) {
+            if (!violations.isEmpty()) {
                 throw new ConstraintViolationException(
                         "Object validation failed for object of type: %s"
-                        .formatted(obj.getClass().getName()),
+                                .formatted(obj.getClass().getName()),
                         violations);
             }
         }
@@ -402,7 +402,6 @@ public class BeanMapper { //NOSONAR
         }
         return Format.YAML;
     }
-
 
     /**
      * Gets a Jackson {@link ObjectMapper} for the given format.
@@ -465,9 +464,9 @@ public class BeanMapper { //NOSONAR
             mapper.disable(DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY);
             mapper.setDefaultSetterInfo(
                     Value
-                    .empty()
-                    .withValueNulls(Nulls.SET) // value
-                    .withContentNulls(Nulls.SET));  // collection entry value
+                            .empty()
+                            .withValueNulls(Nulls.SET) // value
+                            .withContentNulls(Nulls.SET)); // collection entry value
 
             // write:
             mapper.configure(SerializationFeature.INDENT_OUTPUT, indent);
@@ -487,13 +486,15 @@ public class BeanMapper { //NOSONAR
         });
     }
 
-//     @JsonIgnoreType  // <-- messes up nested object deserializing since update of Jackson
+    //     @JsonIgnoreType  // <-- messes up nested object deserializing since update of Jackson
     abstract static class ConfigurableMixIn<T> {
         @JsonUnwrapped
         @Valid
         abstract T getConfiguration();
+
         @JsonUnwrapped
-        void setConfiguration(T configuration) { }
+        void setConfiguration(T configuration) {
+        }
     }
 
     //NOTE: we need to set NON_DEFAULT here since setting it globally
@@ -502,7 +503,6 @@ public class BeanMapper { //NOSONAR
     @JsonInclude(value = Include.NON_DEFAULT)
     abstract static class NonDefaultInclusionMixIn {
     }
-
 
     private synchronized void resolvePolymorphicTypes() {
         if (polyTypesResolved.isTrue()) {
@@ -522,9 +522,9 @@ public class BeanMapper { //NOSONAR
         }
 
         //--- Configured ---
-        polymorphicTypes.forEach((type, predicate) ->
-            resolvedPolymorphicTypes.putAll(
-                    type, ClassFinder.findSubTypes(type, predicate)));
+        polymorphicTypes
+                .forEach((type, predicate) -> resolvedPolymorphicTypes.putAll(
+                        type, ClassFinder.findSubTypes(type, predicate)));
 
         //--- Flow-specific ---
         Class<?> conditionType =
@@ -534,8 +534,8 @@ public class BeanMapper { //NOSONAR
                     conditionType,
                     ClassFinder.findSubTypes(conditionType,
                             flowMapperConfig
-                                .getPredicateType()
-                                .getScanFilter()));
+                                    .getPredicateType()
+                                    .getScanFilter()));
         }
         Class<?> consumerType =
                 flowMapperConfig.getConsumerType().getBaseType();
@@ -544,13 +544,12 @@ public class BeanMapper { //NOSONAR
                     consumerType,
                     ClassFinder.findSubTypes(consumerType,
                             flowMapperConfig
-                                .getConsumerType()
-                                .getScanFilter()));
+                                    .getConsumerType()
+                                    .getScanFilter()));
         }
 
         polyTypesResolved.setTrue();
     }
-
 
     private void registerPolymorphicTypes(ObjectMapper mapper) {
         resolvePolymorphicTypes();
@@ -559,6 +558,7 @@ public class BeanMapper { //NOSONAR
             registerPolymorphicType(mapper, type, subTypes);
         });
     }
+
     private void registerPolymorphicType(
             ObjectMapper mapper,
             Class<?> type,
@@ -573,8 +573,8 @@ public class BeanMapper { //NOSONAR
             LOG.debug("Registered polymorphic type and its sub-types:\n{}\n{}",
                     "  ▪ " + type.getName(),
                     StringUtils.join(subTypes.stream()
-                        .map(st -> "    ▫ " + st.getName())
-                        .toList(), "\n"));
+                            .map(st -> "    ▫ " + st.getName())
+                            .toList(), "\n"));
         }
     }
 
@@ -599,8 +599,10 @@ public class BeanMapper { //NOSONAR
     @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
         include = JsonTypeInfo.As.PROPERTY,
-        property = "class")
-    abstract static class PolymorphicMixIn {}
+        property = "class"
+    )
+    abstract static class PolymorphicMixIn {
+    }
 
     @RequiredArgsConstructor
     static class BeanMapperPropertyHandler
@@ -652,7 +654,8 @@ public class BeanMapper { //NOSONAR
             }
             throw new BeanException(
                     "Default polymorphic type %s not a subtype of %s."
-                        .formatted(type.getTypeName(), baseType.getTypeName()));
+                            .formatted(type.getTypeName(),
+                                    baseType.getTypeName()));
         }
 
         @Override

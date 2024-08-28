@@ -59,7 +59,7 @@ public class SemanticVersion implements Comparable<SemanticVersion> {
 
     // evaluated in ordinal order
     // Used against non-null, trimmed, and lower-cased values
-    private enum PreRelease{
+    private enum PreRelease {
         SNAPSHOT(0, s -> s.startsWith("snapshot")),
         MILESTONE(1, s -> s.matches("^(m|m[^a-zA-Z].*)$")),
         ALPHA(2, s -> s.startsWith("alpha")),
@@ -73,18 +73,20 @@ public class SemanticVersion implements Comparable<SemanticVersion> {
 
         private final int weight;
         private final Predicate<String> predicate;
+
         PreRelease(int weight, Predicate<String> predicate) {
             this.weight = weight;
             this.predicate = predicate;
         }
+
         static PreRelease of(String preRelease) {
             if (StringUtils.isBlank(preRelease)) {
                 return UNKNOWN;
             }
-            return Stream.of(PreRelease.values())  //NOSONAR
-                .filter(pr -> pr.predicate.test(preRelease))
-                .findFirst()
-                .get(); // never null
+            return Stream.of(PreRelease.values()) //NOSONAR
+                    .filter(pr -> pr.predicate.test(preRelease))
+                    .findFirst()
+                    .get(); // never null
         }
     }
 
@@ -197,7 +199,7 @@ public class SemanticVersion implements Comparable<SemanticVersion> {
      * @return <code>true</code> if versioned
      */
     public boolean isVersioned() {
-        return major >=0 && minor >= 0 && patch >= 0;
+        return major >= 0 && minor >= 0 && patch >= 0;
     }
 
     @Override
@@ -268,6 +270,7 @@ public class SemanticVersion implements Comparable<SemanticVersion> {
     public boolean isEquivalentTo(SemanticVersion other) {
         return compareTo(other) == 0;
     }
+
     /**
      * Gets whether this version is semantically greater than the other one.
      * @param other other version we are comparing to
@@ -276,6 +279,7 @@ public class SemanticVersion implements Comparable<SemanticVersion> {
     public boolean isGreaterThan(SemanticVersion other) {
         return compareTo(other) > 0;
     }
+
     /**
      * Gets whether this version is semantically greater or equivalent to
      * the other one.
@@ -286,6 +290,7 @@ public class SemanticVersion implements Comparable<SemanticVersion> {
     public boolean isGreaterOrEquivalentTo(SemanticVersion other) {
         return compareTo(other) >= 0;
     }
+
     /**
      * Gets whether this version is semantically lower than the other one.
      * @param other other version we are comparing to
@@ -294,6 +299,7 @@ public class SemanticVersion implements Comparable<SemanticVersion> {
     public boolean isLowerThan(SemanticVersion other) {
         return compareTo(other) < 0;
     }
+
     /**
      * Gets whether this version is semantically lower or equivalent to
      * the other one.

@@ -33,7 +33,7 @@ public class XMLUsageTaglet extends XMLTaglet {
 
     public XMLUsageTaglet() {
         super(NAME, tag -> "<h3 id=\"nx-xml-" + orDefaultId(tag.getReference())
-        + "-heading\">XML configuration usage:</h3>\n");
+                + "-heading\">XML configuration usage:</h3>\n");
     }
 
     private static String orDefaultId(String id) {

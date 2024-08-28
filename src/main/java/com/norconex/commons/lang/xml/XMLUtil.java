@@ -81,8 +81,8 @@ public final class XMLUtil {
 
     private static final Set<String> alreadyLogged = new HashSet<>();
 
-
-    private XMLUtil() {}
+    private XMLUtil() {
+    }
 
     public static Validator createSchemaValidator(Schema schema) {
         var validator = schema.newValidator();
@@ -93,9 +93,9 @@ public final class XMLUtil {
     }
 
     public static SchemaFactory createSchemaFactory() {
-      return SchemaFactory.newInstance( //NOSONAR handled
-              W3C_XML_SCHEMA_NS_URI_1_1);
-  }
+        return SchemaFactory.newInstance( //NOSONAR handled
+                W3C_XML_SCHEMA_NS_URI_1_1);
+    }
 
     public static XMLReader createXMLReader() {
         var parserFactory = createSaxParserFactory();
@@ -204,6 +204,7 @@ public final class XMLUtil {
         }
         return localName;
     }
+
     static String toName(QName qname) {
         return StringUtils.isBlank(qname.getPrefix())
                 ? qname.getLocalPart()
@@ -213,6 +214,7 @@ public final class XMLUtil {
     private static XMLEventReader createXMLEventReader(Path path) {
         return createXMLEventReader(path.toFile());
     }
+
     private static XMLEventReader createXMLEventReader(File file) {
         try (var r = new FileReader(file)) {
             return createXMLEventReader(r);
@@ -221,19 +223,24 @@ public final class XMLUtil {
                     "Could not stream XML file " + file.getAbsolutePath(), e);
         }
     }
+
     private static XMLEventReader createXMLEventReader(Node node) {
         return createXMLEventReader(new XML(node));
     }
+
     private static XMLEventReader createXMLEventReader(XML xml) {
         return createXMLEventReader(xml.toString());
     }
+
     private static XMLEventReader createXMLEventReader(String xml) {
         return createXMLEventReader(new StringReader(xml));
     }
+
     private static XMLEventReader createXMLEventReader(InputStream is) {
         return createXMLEventReader(
                 new InputStreamReader(is, StandardCharsets.UTF_8));
     }
+
     private static XMLEventReader createXMLEventReader(Reader reader) {
         try {
             var factory = XMLUtil.createXMLInputFactory();

@@ -26,6 +26,7 @@ public class GenericXmlAdapter<T> extends XmlAdapter<String, T> {
     public String marshal(T obj) throws Exception {
         return GenericConverter.convert(obj);
     }
+
     @Override
     public T unmarshal(String value) throws Exception {
         return GenericConverter.convert(value, type);

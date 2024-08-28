@@ -38,30 +38,30 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 final class FlowUtil {
 
-    private FlowUtil() {}
+    private FlowUtil() {
+    }
 
     static void whileInArrayObjects(
             JsonParser p, FailableRunnable<IOException> runnable)
-                    throws IOException {
+            throws IOException {
         whileInArray(p, () -> whileInObject(p, runnable));
     }
 
-
     static void whileInArray(
             JsonParser p, FailableRunnable<IOException> runnable)
-                    throws IOException {
+            throws IOException {
         while (nextNotTokenOrNull(p, JsonToken.END_ARRAY)) {
             runnable.run();
         }
     }
+
     static void whileInObject(
             JsonParser p, FailableRunnable<IOException> runnable)
-                    throws IOException {
+            throws IOException {
         while (nextNotTokenOrNull(p, JsonToken.END_OBJECT)) {
             runnable.run();
         }
     }
-
 
     static boolean nextNotTokenOrNull(JsonParser p, JsonToken token)
             throws IOException {
@@ -75,12 +75,14 @@ final class FlowUtil {
                     + "<" + nodeName + ">");
         }
     }
+
     static void logClose(FlowDeserContext ctx, String nodeName) {
         if (LOG.isDebugEnabled()) {
             LOG.debug(StringUtils.repeat("  ", ctx.decrementDepth())
                     + "</" + nodeName + ">");
         }
     }
+
     static void logBody(FlowDeserContext ctx, Object obj) {
         if (LOG.isDebugEnabled()) {
             var resolved = obj;
@@ -100,7 +102,7 @@ final class FlowUtil {
             Collection<T> collection,
             FlowSerContext ctx,
             FailableConsumer<T, IOException> c)
-                    throws IOException {
+            throws IOException {
         writeArrayWrap(ctx, () -> {
             for (T obj : collection) {
                 writeArrayObjectWrap(ctx, () -> {
@@ -117,7 +119,7 @@ final class FlowUtil {
     static void writeArrayWrap(
             FlowSerContext ctx,
             FailableRunnable<IOException> r)
-                    throws IOException {
+            throws IOException {
         var gen = ctx.getGen();
         var isXml = isXml(ctx);
 
@@ -139,7 +141,7 @@ final class FlowUtil {
     static void writeArrayObjectWrap(
             FlowSerContext ctx,
             FailableRunnable<IOException> r)
-                    throws IOException {
+            throws IOException {
         var gen = ctx.getGen();
         var isXml = isXml(ctx);
         if (!isXml) {

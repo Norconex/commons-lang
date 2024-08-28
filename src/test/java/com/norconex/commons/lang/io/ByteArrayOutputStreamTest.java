@@ -86,7 +86,7 @@ class ByteArrayOutputStreamTest {
         assertThrows(IllegalArgumentException.class, //NOSONAR
                 () -> new ByteArrayOutputStream().getBytes(null, 0));
         assertThrows(IndexOutOfBoundsException.class, //NOSONAR
-                () -> new ByteArrayOutputStream().write(new byte [] {}, -1, 0));
+                () -> new ByteArrayOutputStream().write(new byte[] {}, -1, 0));
         assertThrows(NullPointerException.class, //NOSONAR
                 () -> new ByteArrayOutputStream().write(null, 0, 0));
     }
@@ -122,7 +122,7 @@ class ByteArrayOutputStreamTest {
     void testToX() throws IOException {
         var val = "0123456789";
         try (var in =
-                        new ByteArrayInputStream(val.getBytes(UTF_8))) {
+                new ByteArrayInputStream(val.getBytes(UTF_8))) {
             var is = ByteArrayOutputStream.toBufferedInputStream(in);
             assertThat(IOUtils.toString(is, UTF_8)).hasToString(val);
         }

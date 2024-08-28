@@ -17,6 +17,6 @@ package com.norconex.commons.lang.io;
 /**
  * @deprecated Use {@link CachedStream} instead.
  */
-@Deprecated(since="3.0.0")
+@Deprecated(since = "3.0.0")
 public interface ICachedStream extends CachedStream { //NOSONAR
 }
