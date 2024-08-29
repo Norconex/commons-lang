@@ -525,17 +525,11 @@ public class JarCopier {
 
         /**
          * Action to perform (or not) on source file.
-         * @param sourceAction source action
-         * @return {@code this}.
          */
-        @SuppressWarnings("javadoc")
         private final SourceAction sourceAction;
         /**
          * Action to perform (or not) on target file.
-         * @param targetAction target action
-         * @return {@code this}.
          */
-        @SuppressWarnings("javadoc")
         private final TargetAction targetAction;
 
         public OnJarConflict() {

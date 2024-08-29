@@ -19,10 +19,9 @@ import lombok.ToString;
 
 /**
  * <p>
- * Behaves the same as {@link XMLIf}, reversing matching logic.
+ * Behaves the same as <code>XMLIf</code>, reversing matching logic.
  * </p>
  * @since 2.0.0
- * @see XMLIfNot
  */
 @ToString
 @EqualsAndHashCode

@@ -17,7 +17,6 @@ package com.norconex.commons.lang.version;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
@@ -37,9 +36,10 @@ import lombok.Singular;
  * <p>
  * The maximum string length supported by this parser is 255 characters.
  * Longer strings will throw a {@link SemanticVersionParserException}
- * except when {@link #ignoreLeadingCharacters} is <code>true</code>. In such
- * case, it will try parsing longer strings, but will only
- * consider the last 255 characters.
+ * except when
+ * {@link SemanticVersionParserBuilder#ignoreLeadingCharacters(boolean)} is
+ * <code>true</code>. In such case, it will try parsing longer strings, but
+ * will only consider the last 255 characters.
  * </p>
  * @since 3.0.0
  */
@@ -107,11 +107,7 @@ public class SemanticVersionParser {
      *   <li><code>1.2</code> is interpreted as <code>1.2.0</code></li>
      *   <li><code>3</code> is interpreted as <code>3.0.0</code></li>
      * </ul>
-     * @param optionalMinorAndPatch <code>true</code> if minor and patch
-     *     numbers are optional
-     * @return {@code this}.
      */
-    @SuppressWarnings("javadoc")
     private final boolean optionalMinorAndPatch;
     /**
      * <p>
@@ -123,11 +119,7 @@ public class SemanticVersionParser {
      *   <li><code>1.2.3RC1</code> is interpreted as <code>1.2.3-RC1</code></li>
      *   <li><code>1.2.3_M3</code> is interpreted as <code>1.2.3-M3</code></li>
      * </ul>
-     * @param optionalPreReleasePrefix <code>true</code> if pre-release prefix
-     *     presence is optional
-     * @return {@code this}.
      */
-    @SuppressWarnings("javadoc")
     private final boolean optionalPreReleasePrefix;
     /**
      * <p>
@@ -139,11 +131,7 @@ public class SemanticVersionParser {
      *   <li><code>v1.2.3</code> is interpreted as <code>1.2.3</code></li>
      *   <li><code>some-library-1.2.3</code> is interpreted as <code>1.2.3</code></li>
      * </ul>
-     * @param ignoreLeadingCharacters <code>true</code> if ignoring leading
-     *     characters
-     * @return {@code this}.
      */
-    @SuppressWarnings("javadoc")
     private final boolean ignoreLeadingCharacters;
     /**
      * <p>
@@ -155,10 +143,7 @@ public class SemanticVersionParser {
      * <ul>
      *   <li><code>1.2.3.jar</code> is interpreted as <code>1.2.3</code></li>
      * </ul>
-     * @param ignoreSuffixes suffixes to be ignored when extracting version
-     * @return {@code this}.
      */
-    @SuppressWarnings("javadoc")
     @Singular(ignoreNullCollections = true, value = "ignoreSuffix")
     private List<String> ignoreSuffixes;
 
@@ -169,7 +154,7 @@ public class SemanticVersionParser {
      * @throws SemanticVersionParserException if the version can't be parsed.
      */
     public SemanticVersion parse(String version) {
-        String v = StringUtils.trimToNull(version);
+        var v = StringUtils.trimToNull(version);
 
         if (v == null) {
             throw new SemanticVersionParserException(
@@ -183,26 +168,26 @@ public class SemanticVersionParser {
             v = v.replaceFirst("^.*[^\\w\\.\\+-](.*)$", "$1");
         }
         for (String suffix : ignoreSuffixes) {
-            String before = v;
+            var before = v;
             v = StringUtils.removeEnd(v, suffix);
             if (Objects.equals(before, v)) {
                 break;
             }
         }
 
-        Matcher m = semverPattern.matcher(v);
+        var m = semverPattern.matcher(v);
         if (!m.matches()) {
             throw new SemanticVersionParserException(
                     "Could not parse: " + version);
         }
 
-        String leadingChars = m.group("leadingchars");
-        String major = m.group("major");
-        String minor = m.group("minor");
-        String patch = m.group("patch");
-        String preReleasePrefix = m.group("prereleaseprefix");
-        String preRelease = m.group("prerelease");
-        String metadata = m.group("buildmetadata");
+        var leadingChars = m.group("leadingchars");
+        var major = m.group("major");
+        var minor = m.group("minor");
+        var patch = m.group("patch");
+        var preReleasePrefix = m.group("prereleaseprefix");
+        var preRelease = m.group("prerelease");
+        var metadata = m.group("buildmetadata");
 
         if (!ignoreLeadingCharacters && StringUtils.isNotBlank(leadingChars)) {
             throw new SemanticVersionParserException(

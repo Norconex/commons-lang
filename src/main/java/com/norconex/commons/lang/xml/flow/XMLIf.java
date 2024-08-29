@@ -14,7 +14,6 @@
  */
 package com.norconex.commons.lang.xml.flow;
 
-import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -23,8 +22,8 @@ import org.apache.commons.lang3.builder.EqualsExclude;
 import org.apache.commons.lang3.builder.HashCodeExclude;
 import org.apache.commons.lang3.builder.ToStringExclude;
 
-import com.norconex.commons.lang.xml.XMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.commons.lang.xml.XMLConfigurable;
 
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -82,7 +81,6 @@ import lombok.ToString;
  * </if>
  * }
  * @since 2.0.0
- * @see XMLIfNot
  */
 @ToString
 @EqualsAndHashCode
@@ -131,7 +129,7 @@ class XMLIf<T> implements Consumer<T>, XMLConfigurable {
     public void loadFromXML(XML xml) {
         // There must be exactly one top-level child named "conditions"
         // or "condition".
-        List<XML> bag = xml.getXMLList(Tag.CONDITIONS + "|" + Tag.CONDITION);
+        var bag = xml.getXMLList(Tag.CONDITIONS + "|" + Tag.CONDITION);
         if (bag.size() != 1) {
             throw new XMLFlowException("There must be exactly one of "
                     + "<conditions> or <condition> as a direct child element "
@@ -140,15 +138,15 @@ class XMLIf<T> implements Consumer<T>, XMLConfigurable {
                             .replaceAll("[\n\r]", ""), 40)
                     + "\"");
         }
-        XMLCondition<T> cond = new XMLCondition<>(flow);
+        var cond = new XMLCondition<T>(flow);
         cond.loadFromXML(bag.get(0));
-        this.condition = cond;
+        condition = cond;
 
         // There must be exactly one top-level child named "then"
         // and one optional "else".
         //MAYBE enforce in schema that there must be one "then".
-        this.thenConsumer = flow.parse(xml.getXML(Tag.THEN.toString()));
-        this.elseConsumer = flow.parse(xml.getXML(Tag.ELSE.toString()));
+        thenConsumer = flow.parse(xml.getXML(Tag.THEN.toString()));
+        elseConsumer = flow.parse(xml.getXML(Tag.ELSE.toString()));
     }
 
     @Override

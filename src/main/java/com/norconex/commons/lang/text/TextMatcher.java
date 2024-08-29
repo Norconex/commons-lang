@@ -74,44 +74,6 @@ import lombok.ToString;
  * {@link #replace(String, String)}.
  * </p>
  *
- * {@nx.xml.usage #attributes
- *     method="[basic|csv|wildcard|regex]"
- *     ignoreCase="[false|true]"
- *     ignoreDiacritic="[false|true]"
- *     replaceAll="[false|true]"
- *     partial="[false|true]"
- *     trim="[false|true]"
- *     matchEmpty="[false|true]"
- * }
- *
- * <p>
- * The above are configurable attributes consuming classes can expect.
- * The actual expression is expected to be the tag content.
- * </p>
- *
- * <p>
- * When simply matching (no replacements) the attributes are the same,
- * minus the "replaceAll" (which is simply ignored):
- * </p>
- * {@nx.xml #matchAttributes
- *     method="[basic|csv|wildcard|regex]"
- *     ignoreCase="[false|true]"
- *     ignoreDiacritic="[false|true]"
- *     partial="[false|true]"
- *     trim="[false|true]"
- *     matchEmpty="[false|true]"
- * }
- *
- * {@nx.xml.example
- * <sampleConfig method="wildcard" ignoreCase="true" partial="true">
- *     paul*mar?
- * </sampleConfig>
- * }
- * <p>
- * Given a text of "It seems Paul and Marc are friends" and a replacement of
- * "they", the above will result in "It seems they are friends.".
- * </p>
- *
  * @since 2.0.0
  */
 @ToString
@@ -356,7 +318,7 @@ public class TextMatcher implements
      * Sets whether to negates the result of invoking
      * {@link #matches(CharSequence)}.
      * <b>Note: only applies to the {@link #matches(CharSequence)} method.</b>
-     * @parm negateMatches <code>true</code> to negate matches
+     * @param negateMatches <code>true</code> to negate matches
      * @return this
      * @since 3.0.0
      */
@@ -382,6 +344,7 @@ public class TextMatcher implements
      * Sets whether to negates the result of invoking
      * {@link #matches(CharSequence)} on a copy of this instance.
      * <b>Note: only applies to the {@link #matches(CharSequence)} method.</b>
+     * @param negateMatches <code>true</code> to negate matches
      * @return this
      * @since 3.0.0
      */

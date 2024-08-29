@@ -52,37 +52,6 @@ import lombok.ToString;
  * behaves as if the value is an empty string.
  * </p>
  *
- * {@nx.xml.usage #attributes
- *     ignoreCase="[false|true]"
- *     ignoreDiacritic="[false|true]"
- *     dotAll="[false|true]"
- *     unixLines="[false|true]"
- *     literal="[false|true]"
- *     comments="[false|true]"
- *     multiline="[false|true]"
- *     canonEq="[false|true]"
- *     unicodeCase="[false|true]"
- *     unicodeCharacterClass="[false|true]"
- *     trim="[false|true]"
- *     matchEmpty="[false|true]"
- * }
- * <p>
- * The above are configurable attributes consuming classes can expect.
- * The actual regular expression is expected to be the tag content.
- * Many of the available attributes on XML configuration represent the
- * regular expression flags as defined in {@link Pattern}.
- * </p>
- *
- * {@nx.xml.example
- * <sampleConfig ignoreCase="true" dotAll="true">
- *   ^start.*end$
- * </sampleConfig>
- * }
- * <p>
- * The above will match any text that starts with "start" and ends with "ends",
- * regardless if there are new line characters in between.
- * </p>
- *
  * @since 2.0.0
  * @see Pattern
  */
@@ -352,7 +321,7 @@ public class Regex {
      * </p>
      * <p>
      * For text-matching with diacritical mark insensitivity support enabled,
-     * or for {@link #trim} and {@link #matchEmpty} support,
+     * or for {@link #trim()} and {@link #matchEmpty()} support,
      * use {@link #matcher(CharSequence)} instead.
      * </p>
      * @return compiled pattern
@@ -368,7 +337,7 @@ public class Regex {
      * </p>
      * <p>
      * For text-matching with diacritical mark insensitivity support enabled,
-     * or for {@link #trim} and {@link #matchEmpty} support,
+     * or for {@link #trim()} and {@link #matchEmpty()} support,
      * use {@link #matcher(String, CharSequence)} instead.
      * </p>
      * @param pattern the pattern to compile

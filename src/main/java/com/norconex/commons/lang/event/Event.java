@@ -39,27 +39,18 @@ public class Event extends EventObjectAdapter {
 
     private static final long serialVersionUID = 1L;
     /**
-     * Gets the event name (never <code>null</code>).
-     * @param name the event name
-     * @return event name
+     * The event name (never <code>null</code>).
      */
-    @SuppressWarnings("javadoc")
     @NonNull
     private final String name;
     /**
-     * Gets a message describing the event or giving precision,
+     * A message describing the event or giving precision,
      * or <code>null</code> if the event has no message.
-     * @param message the event message
-     * @return event message
      */
-    @SuppressWarnings("javadoc")
     private final String message;
     /**
-     * Gets the exception associated with this event, or <code>null</code>.
-     * @param exception an exception
-     * @return event message
+     * The exception associated with this event, or <code>null</code>.
      */
-    @SuppressWarnings("javadoc")
     private final transient Throwable exception;
 
     /**

@@ -142,7 +142,8 @@ import lombok.extern.slf4j.Slf4j;
  * treated as if annotated with <code>{@literal @}valid</code>. That
  * configuration class will be populated without the need for "configuration"
  * wrapper elements (automatically adds <code>{@literal @}JsonUnwrapped</code>
- * This behavior can be turned off with {@link #configurableDetectionDisabled}
+ * This behavior can be turned off with
+ * {@link BeanMapperBuilder#configurableDetectionDisabled(boolean)}
  * </p>
  * @since 3.0.0
  */
@@ -486,7 +487,6 @@ public class BeanMapper { //NOSONAR
         });
     }
 
-    //     @JsonIgnoreType  // <-- messes up nested object deserializing since update of Jackson
     abstract static class ConfigurableMixIn<T> {
         @JsonUnwrapped
         @Valid

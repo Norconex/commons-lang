@@ -28,11 +28,6 @@ import lombok.EqualsAndHashCode;
 
 /**
  * Holds a host name and port.
- *
- * {@nx.xml.usage
- * <name>(host name)</name>
- * <port>(host port)</port>
- * }
  * @since 2.0.0
  */
 @EqualsAndHashCode

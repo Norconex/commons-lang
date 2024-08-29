@@ -24,51 +24,44 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.norconex.commons.lang.bean.BeanUtil;
 import com.norconex.commons.lang.security.Credentials;
 
-import lombok.AccessLevel;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
-import lombok.experimental.FieldNameConstants;
+import lombok.Data;
+import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 
 /**
  * <p>
  * Convenience class for implementation requiring proxy settings.
  * </p>
- *
- * {@nx.include com.norconex.commons.lang.security.Credentials#doc}
- *
- * {@nx.xml.usage
- * <host>
- *   {@nx.include com.norconex.commons.lang.net.Host@nx.xml.usage}
- * </host>
- * <scheme>(Default is "http")</scheme>
- * <realm>(Authentication realm. Default is any.)</realm>
- * <credentials>
- *   {@nx.include com.norconex.commons.lang.security.Credentials@nx.xml.usage}
- * </credentials>
- * }
- * <p>The above can be found under any parent tag. See consuming class
- * documentation for exact usage.</p>
- *
  * @since 1.14.0
  */
-@SuppressWarnings("javadoc")
-@ToString
-@EqualsAndHashCode
-@FieldNameConstants(level = AccessLevel.PRIVATE)
 @Slf4j
 @JsonAutoDetect(
     fieldVisibility = Visibility.ANY,
     getterVisibility = Visibility.NONE,
     isGetterVisibility = Visibility.NONE
 )
+@Data
+@Accessors(chain = true)
 public class ProxySettings implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    /** Proxy host (name and port), or <code>null</code> when not set. */
     private Host host;
+    /**
+     * Proxy scheme (default is "http").
+     * @since 2.0.0
+     */
     private String scheme;
+    /**
+     * Proxy credentials, when required or applicable. Never <code>null</code>.
+     * @since 2.0.0
+     */
     private final Credentials credentials = new Credentials();
+    /**
+     * Proxy authentication realm, when required or applicable.
+     * @since 2.0.0
+     */
     private String realm;
 
     public ProxySettings() {
@@ -83,54 +76,6 @@ public class ProxySettings implements Serializable {
     }
 
     /**
-     * Gets the proxy host.
-     * @return proxy host or <code>null</code> if not set
-     * @see #isSet()
-     */
-    public Host getHost() {
-        return host;
-    }
-
-    /**
-     * Sets the proxy host.
-     * @param host proxy host
-     * @return this
-     */
-    public ProxySettings setHost(Host host) {
-        this.host = host;
-        return this;
-    }
-
-    /**
-     * Gets the proxy scheme.
-     * @return proxy scheme
-     * @since 2.0.0
-     */
-    public String getScheme() {
-        return scheme;
-    }
-
-    /**
-     * Sets the proxy scheme.
-     * @param scheme proxy scheme
-     * @return this
-     * @since 2.0.0
-     */
-    public ProxySettings setScheme(String scheme) {
-        this.scheme = scheme;
-        return this;
-    }
-
-    /**
-     * Gets the proxy credentials.
-     * @return proxy credentials (never <code>null</code>)
-     * @since 2.0.0
-     */
-    public Credentials getCredentials() {
-        return credentials;
-    }
-
-    /**
      * Sets the proxy credentials.
      * @param credentials proxy credentials
      * @return this
@@ -142,33 +87,27 @@ public class ProxySettings implements Serializable {
     }
 
     /**
-     * Gets the proxy realm.
-     * @return proxy realm
-     * @since 2.0.0
+     * Wether this proxy is configured. That is, if the host is not
+     * <code>null</code> and also configured.
+     * @return <code>true</code> if set
+     * @see Host#isSet()
      */
-    public String getRealm() {
-        return realm;
-    }
-
-    /**
-     * Sets the proxy realm.
-     * @param realm proxy realm
-     * @return this
-     * @since 2.0.0
-     */
-    public ProxySettings setRealm(String realm) {
-        this.realm = realm;
-        return this;
-    }
-
     public boolean isSet() {
         return host != null && host.isSet();
     }
 
+    /**
+     * Copy properties of this instance to the supplied instance.
+     * @param another another proxy settings instance
+     */
     public void copyTo(ProxySettings another) {
         BeanUtil.copyProperties(another, this);
     }
 
+    /**
+     * Copy properties of the supplied instance to this instance.
+     * @param another another proxy settings instance
+     */
     public void copyFrom(ProxySettings another) {
         BeanUtil.copyProperties(this, another);
     }

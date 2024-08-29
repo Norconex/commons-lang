@@ -379,6 +379,7 @@ public final class StringUtil {
      * singular variant. You are encouraged to used a more sophisticated
      * approach if accuracy is important.
      * @param plural plural word
+     * @param defaultValue default value if singular can't be resolved
      * @return singular word or <code>null</code>
      * @since 3.0.0
      */

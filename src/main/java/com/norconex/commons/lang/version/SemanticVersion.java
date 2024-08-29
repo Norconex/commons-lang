@@ -20,7 +20,6 @@ import static org.apache.commons.lang3.StringUtils.trimToNull;
 import java.util.Comparator;
 import java.util.Objects;
 import java.util.function.Predicate;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -97,38 +96,23 @@ public class SemanticVersion implements Comparable<SemanticVersion> {
 
     /**
      * Major version number. The first number of a semantic version.
-     * @param major major number
-     * @return {@code this}.
      */
-    @SuppressWarnings("javadoc")
     private final int major;
     /**
      * Minor version number. The second number of a semantic version.
-     * @param minor minor number
-     * @return {@code this}.
      */
-    @SuppressWarnings("javadoc")
     private final int minor;
     /**
      * Patch version number. The third number of a semantic version.
-     * @param patch patch number
-     * @return {@code this}.
      */
-    @SuppressWarnings("javadoc")
     private final int patch;
     /**
      * Optional pre-release indicator (M1, RC1, etc.).
-     * @param preRelease pre-release indicator
-     * @return {@code this}.
      */
-    @SuppressWarnings("javadoc")
     private final String preRelease;
     /**
      * Optional metadata associated with a build.
-     * @param buildMetadata build metadata
-     * @return {@code this}.
      */
-    @SuppressWarnings("javadoc")
     private final String buildMetadata;
 
     /**
@@ -209,7 +193,7 @@ public class SemanticVersion implements Comparable<SemanticVersion> {
         }
 
         // Compare major.minor.patch
-        int result = new CompareToBuilder()
+        var result = new CompareToBuilder()
                 .append(major, o.major)
                 .append(minor, o.minor)
                 .append(patch, o.patch)
@@ -219,8 +203,8 @@ public class SemanticVersion implements Comparable<SemanticVersion> {
         }
 
         // Compare pre-release
-        String thisPrTxt = lowerCase(trimToNull(preRelease));
-        String thatPrTxt = lowerCase(trimToNull(o.preRelease));
+        var thisPrTxt = lowerCase(trimToNull(preRelease));
+        var thatPrTxt = lowerCase(trimToNull(o.preRelease));
 
         if (Objects.equals(thisPrTxt, thatPrTxt)) {
             return 0;
@@ -231,16 +215,16 @@ public class SemanticVersion implements Comparable<SemanticVersion> {
         }
 
         // both pre-releases can't be null at this point
-        PreRelease thisPr = PreRelease.of(thisPrTxt);
-        PreRelease thatPr = PreRelease.of(thatPrTxt);
+        var thisPr = PreRelease.of(thisPrTxt);
+        var thatPr = PreRelease.of(thatPrTxt);
         result = Integer.compare(thisPr.weight, thatPr.weight);
         if (result != 0) {
             return result;
         }
 
         // extract numerical values (if any) and compare them.
-        Matcher thisMatcher = numberPattern.matcher(thisPrTxt);
-        Matcher thatMatcher = numberPattern.matcher(thatPrTxt);
+        var thisMatcher = numberPattern.matcher(thisPrTxt);
+        var thatMatcher = numberPattern.matcher(thatPrTxt);
         while (thisMatcher.find()) {
             // if this matcher has more numbers, it is higher
             if (!thatMatcher.find()) {
@@ -316,7 +300,7 @@ public class SemanticVersion implements Comparable<SemanticVersion> {
      */
     @Override
     public String toString() {
-        StringBuilder b = new StringBuilder()
+        var b = new StringBuilder()
                 .append(major).append('.')
                 .append(minor).append('.')
                 .append(patch);

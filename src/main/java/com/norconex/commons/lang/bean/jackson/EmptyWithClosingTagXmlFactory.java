@@ -25,7 +25,8 @@ import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
 import com.fasterxml.jackson.dataformat.xml.util.DefaultXmlPrettyPrinter;
 
 /**
- * Version of {@link XmlFactory} that configures a {@link XmlPrettyPrinter}
+ * Version of {@link XmlFactory} that configures a
+ * {@link com.fasterxml.jackson.dataformat.xml.XmlPrettyPrinter}
  * to write "empty" objects with a closing tag instead of self-closing.
  * Self-closing are treated as <code>null</code> and a pair of tags witn
  * no content is treated as empty.

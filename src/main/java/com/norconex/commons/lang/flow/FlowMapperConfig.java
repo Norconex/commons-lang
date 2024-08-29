@@ -28,12 +28,10 @@ public class FlowMapperConfig {
     private final FlowPolymorphicType<FlowConsumerAdapter<?>> consumerType =
             new FlowPolymorphicType<>();
     /**
-     * Provide a custom name to be used when a consumer is being serialized.
+     * A function that takes a consumer about to be serialize and returns
+     * a custom name for it.
      * When not specified or returning <code>null</code>, the default is
      * "consumer".
-     * @param consumerNameProvider name provider
-     * @return consumer name
      */
-    @SuppressWarnings("javadoc")
     private Function<Consumer<?>, String> consumerNameProvider;
 }

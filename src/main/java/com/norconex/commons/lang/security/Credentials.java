@@ -73,39 +73,10 @@ import lombok.experimental.FieldNameConstants;
  * </p>
  * }
  *
- * {@nx.xml.usage
- * <username>(the username)</username>
- * <password>(the optionally encrypted password)</password>
- * <passwordKey>
- *   <value>(The actual password encryption key or a reference to it.)</value>
- *   <source>[key|file|environment|property]</source>
- *   <size>(Size in bits of encryption key. Default is 128.)</size>
- * </passwordKey>
- * }
- * <p>
- * The expected parent tag name is defined by the consuming classes.
- * </p>
- *
- * {@nx.xml.example
- * <sampleConfig>
- *   <username>goldorak</username>
- *   <password>3ncryp73d</password>
- *   <passwordKey>
- *     <value>/path/to/my.key</value>
- *     <source>file</source>
- *   </passwordKey>
- * </sampleConfig>
- * }
- * <p>
- * The above example has the password encrypted with a key.  The encryption
- * key is stored in a file (required to decrypt the password).
- * </p>
- *
  * @since 2.0.0
  * @see EncryptionKey
  * @see EncryptionUtil
  */
-@SuppressWarnings("javadoc")
 @FieldNameConstants(level = AccessLevel.PRIVATE)
 @Data
 @Accessors(chain = true)
@@ -120,21 +91,15 @@ public class Credentials implements Serializable {
 
     /**
      * Credential user name.
-     * @param username user name
-     * @return {@code this}.
      */
     private String username;
     /**
      * Credential password.
-     * @param password password
-     * @return {@code this}.
      */
     private String password;
     /**
      * Credential password encryption key pointer (provided the password is
      * encrypted).
-     * @param passwordKey password key
-     * @return {@code this}.
      */
     private EncryptionKey passwordKey;
 
@@ -175,6 +140,11 @@ public class Credentials implements Serializable {
         copyFrom(copy);
     }
 
+    /**
+     * Whether this credentials instance is set. That is, if any of
+     * user name and password is not blank.
+     * @return <code>true</code> if set
+     */
     public boolean isSet() {
         return !isEmpty();
     }

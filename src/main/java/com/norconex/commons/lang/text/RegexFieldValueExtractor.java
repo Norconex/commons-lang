@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -51,31 +50,6 @@ import lombok.extern.slf4j.Slf4j;
  * When initialized with a "pattern" only instead of passing or configuring
  * a {@link Regex} instance, a default one will be created, assuming
  * case insensitivity and dots matching any character.
- * </p>
- *
- * {@nx.xml.usage #attributes
- *     toField="(toField name)"
- *     fieldGroup="(toField name match group index)"
- *     valueGroup="(value match group index)"
- *     {@nx.include com.norconex.commons.lang.map.PropertySetter#attributes}
- *     {@nx.include com.norconex.commons.lang.text.Regex#attributes}
- * }
- *
- * <p>
- * The above are configurable attributes consuming classes can expect.
- * The actual regular expression is expected to be the tag content.
- * Many of the available attributes on XML configuration represent the
- * regular expression flags as defined in {@link Pattern}.
- * </p>
- *
- * {@nx.xml.example
- * <sampleConfig fieldGroup="1" valueGroup="2">
- *   (DocNo):(\d+)
- * </sampleConfig>
- * }
- * <p>
- * The above is configured to extract "DocNo" as the toField, and the following
- * numeric characters will make up the value.
  * </p>
  *
  * @since 2.0.0 (moved from Norconex Importer RegexKeyValueExtractor)
