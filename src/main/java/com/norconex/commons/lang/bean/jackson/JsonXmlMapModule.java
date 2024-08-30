@@ -15,6 +15,7 @@
 package com.norconex.commons.lang.bean.jackson;
 
 import java.util.Map;
+import java.util.Properties;
 
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.norconex.commons.lang.bean.BeanMapper;
@@ -33,6 +34,8 @@ public class JsonXmlMapModule extends SimpleModule {
     public JsonXmlMapModule() {
         this.addSerializer((Class<Map<?, ?>>) (Class<?>) Map.class,
                 new JsonXmlMapSerializer<>());
+        this.addDeserializer((Class<Map<?, ?>>) (Class<?>) Properties.class,
+                new JsonXmlMapDeserializer<>());
         this.addDeserializer(Map.class, new JsonXmlMapDeserializer<>());
     }
 }

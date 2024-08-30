@@ -125,7 +125,7 @@ public class JsonXmlMapDeserializer<T extends Map<?, ?>>
         if (containedType != null) {
             return containedType.getRawClass();
         }
-        return null;
+        return Object.class;
     }
 
     @SuppressWarnings("unchecked")
