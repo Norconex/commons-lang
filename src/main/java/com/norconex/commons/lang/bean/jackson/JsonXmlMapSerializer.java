@@ -42,12 +42,12 @@ public class JsonXmlMapSerializer<T extends Map<?, ?>>
 
     @SuppressWarnings("unchecked")
     public JsonXmlMapSerializer() {
-        super((Class<T>) Map.class);
+        super((Class<T>) (Class<?>) Map.class);
     }
 
     @SuppressWarnings("unchecked")
     private JsonXmlMapSerializer(BeanProperty currentProperty) {
-        super((Class<T>) Map.class);
+        super((Class<T>) (Class<?>) Map.class);
         this.currentProperty = currentProperty;
     }
 
