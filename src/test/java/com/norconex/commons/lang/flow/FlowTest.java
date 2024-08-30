@@ -97,7 +97,6 @@ class FlowTest {
         beanMapper.assertWriteRead(cfg, format);
     }
 
-    @SuppressWarnings("unchecked")
     private Consumer<Properties> createPropertiesFlowAsRead() {
         return Consumers.of(
 

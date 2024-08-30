@@ -68,19 +68,19 @@ class PropertiesTest {
         props.add("ccc", 555);
 
         assertThatNoException().isThrownBy(() -> {
-            BeanMapper.DEFAULT.assertWriteRead(props);//, Format.JSON, Format.YAML);
+            BeanMapper.DEFAULT.assertWriteRead(props);
         });
     }
 
     @Test
-    void testValueList() throws IOException {
+    void testValueList() {
         var properties = sampleProps();
         assertThat(properties.valueList()).contains(
                 "1", "2", "3", "4", "5", "6", "7", "8", "9");
     }
 
     @Test
-    void testMiscGetters() throws IOException {
+    void testMiscGetters() {
         var props = new Properties();
         props.add("bool", "1", "0", "true", "FALSE", "tRuE",
                 "yes", "nO", "On", "oFf");
@@ -112,7 +112,7 @@ class PropertiesTest {
     }
 
     @Test
-    void testNumberGetters() throws IOException {
+    void testNumberGetters() {
         var props = new Properties();
         props.add("numbers", "1", "2", "3");
 
@@ -143,7 +143,7 @@ class PropertiesTest {
     }
 
     @Test
-    void testDateGetters() throws IOException {
+    void testDateGetters() {
         var props = new Properties();
         props.add("localDateTime",
                 "2022-11-06T16:20:02", "2023-11-06T16:20:02");
@@ -180,7 +180,7 @@ class PropertiesTest {
     }
 
     @Test
-    void testSetValue() throws IOException {
+    void testSetValue() {
         var properties = new Properties();
         properties.set("a", "1", "2", "3");
         properties.set("a", "4", "5", "6");
@@ -188,7 +188,7 @@ class PropertiesTest {
     }
 
     @Test
-    void testSetAddList() throws IOException {
+    void testSetAddList() {
         var properties = new Properties();
         properties.set("a", "1", "2", "3");
         properties.setList("a", null);
@@ -200,7 +200,7 @@ class PropertiesTest {
     }
 
     @Test
-    void testToJavaUtilProperties() throws IOException {
+    void testToJavaUtilProperties() {
         var properties = sampleProps();
         var javaProps = properties.toProperties();
 
@@ -302,7 +302,7 @@ class PropertiesTest {
     }
 
     @Test
-    void testLoadUsingDefaultDelimiter() throws Exception {
+    void testLoadUsingDefaultDelimiter() {
 
         var key = "source";
         var value = "X^2";
@@ -320,7 +320,7 @@ class PropertiesTest {
     }
 
     @Test
-    void testGetList() throws Exception {
+    void testGetList() {
         var properties = new Properties();
         List<String> list = asList("1", "2", "3");
         properties.put("key", list);
@@ -336,7 +336,7 @@ class PropertiesTest {
     }
 
     @Test
-    void testGetValue() throws Exception {
+    void testGetValue() {
         var properties = new Properties(MapUtil.toMap(
                 "key", asList("1", "2", "3")));
         assertEquals((Integer) 1, properties.get("key", Integer.class));
@@ -350,7 +350,7 @@ class PropertiesTest {
     }
 
     @Test
-    void testRemove() throws Exception {
+    void testRemove() {
         var properties = new Properties();
         List<String> list = asList("a", "b", "c");
         properties.put("key", list);
@@ -358,7 +358,7 @@ class PropertiesTest {
     }
 
     @Test
-    void testRemoveCaseInsensitive() throws Exception {
+    void testRemoveCaseInsensitive() {
         var properties = new Properties(true);
         List<String> list = asList("a", "b", "c");
         properties.put("KEY", list);
@@ -366,7 +366,7 @@ class PropertiesTest {
     }
 
     @Test
-    void testRemoveCaseInsensitiveMultiple() throws Exception {
+    void testRemoveCaseInsensitiveMultiple() {
         var properties = new Properties(true);
         List<String> list1 = asList("a", "b", "c");
         List<String> list2 = asList("d", "e", "f");
@@ -376,19 +376,19 @@ class PropertiesTest {
     }
 
     @Test
-    void testRemoveNonExistingKey() throws Exception {
+    void testRemoveNonExistingKey() {
         var properties = new Properties();
         assertNull(properties.remove("key"));
     }
 
     @Test
-    void testRemoveNonExistingKeyCaseInsensitive() throws Exception {
+    void testRemoveNonExistingKeyCaseInsensitive() {
         var properties = new Properties(true);
         assertNull(properties.remove("key"));
     }
 
     @Test
-    void testAddDifferentCharacterCases() throws Exception {
+    void testAddDifferentCharacterCases() {
         var properties = new Properties(true);
         properties.add("KEY", "value1");
         properties.add("key", "value2");
@@ -398,7 +398,7 @@ class PropertiesTest {
     }
 
     @Test
-    void testPutAll() throws Exception {
+    void testPutAll() {
         Map<String, List<String>> m = new TreeMap<>();
         m.put("KEY", Arrays.asList("1", "2"));
         m.put("key", Arrays.asList("3", "4"));
@@ -422,7 +422,7 @@ class PropertiesTest {
     }
 
     @Test
-    void testPut() throws Exception {
+    void testPut() {
         List<String> list = Arrays.asList("1", null, "2", "");
 
         // Case insensitive

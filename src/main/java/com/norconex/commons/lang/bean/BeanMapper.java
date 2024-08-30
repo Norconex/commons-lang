@@ -61,7 +61,6 @@ import com.fasterxml.jackson.databind.cfg.MapperBuilder;
 import com.fasterxml.jackson.databind.deser.DeserializationProblemHandler;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
@@ -73,14 +72,14 @@ import com.norconex.commons.lang.ClassFinder;
 import com.norconex.commons.lang.ClassUtil;
 import com.norconex.commons.lang.bean.jackson.EmptyWithClosingTagXmlFactory;
 import com.norconex.commons.lang.bean.jackson.JsonXmlCollectionModule;
-import com.norconex.commons.lang.bean.jackson.JsonXmlPropertiesDeserializer;
+import com.norconex.commons.lang.bean.jackson.JsonXmlMapModule;
+import com.norconex.commons.lang.bean.jackson.JsonXmlPropertiesModule;
 import com.norconex.commons.lang.bean.spi.PolymorphicTypeLoader;
 import com.norconex.commons.lang.bean.spi.PolymorphicTypeProvider;
 import com.norconex.commons.lang.config.Configurable;
 import com.norconex.commons.lang.convert.GenericJsonModule;
 import com.norconex.commons.lang.flow.FlowMapperConfig;
 import com.norconex.commons.lang.flow.module.FlowModule;
-import com.norconex.commons.lang.map.Properties;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -163,9 +162,6 @@ public class BeanMapper { //NOSONAR
                             .setProperty(
                                     XMLOutputFactory.IS_REPAIRING_NAMESPACES,
                                     true);
-                    m.registerModule(new SimpleModule().addDeserializer(
-                            Properties.class,
-                            new JsonXmlPropertiesDeserializer()));
                     return m;
                 }),
         JSON(
@@ -479,6 +475,8 @@ public class BeanMapper { //NOSONAR
             // misc:
             if (format == Format.XML) {
                 mapper.registerModule(new JsonXmlCollectionModule());
+                mapper.registerModule(new JsonXmlMapModule());
+                mapper.registerModule(new JsonXmlPropertiesModule());
             }
 
             mapper.addMixIn(Object.class, NonDefaultInclusionMixIn.class);
