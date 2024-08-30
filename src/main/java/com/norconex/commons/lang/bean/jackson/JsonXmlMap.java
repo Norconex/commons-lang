@@ -40,7 +40,12 @@ public @interface JsonXmlMap {
 
     /**
      * Field name to use for each map entries when serializing as XML.
-     * This name does not affect reading. Default is "entry".
+     * This name does not affect reading. The default behavior uses
+     * basic heuristics to detect whether the collection property name is
+     * plural and can make a singular variant of it. It it can't figure it out,
+     * it falls back to "entry".  Given the plural detection logic's simplicity,
+     * it won't always get it right. Use this attribute to ensure the exact
+     * name you want.
      * @return entry field name, when writing XML
      */
     public String entryName() default "entry";

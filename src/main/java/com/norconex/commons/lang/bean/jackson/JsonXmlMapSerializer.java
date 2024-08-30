@@ -15,6 +15,7 @@
 package com.norconex.commons.lang.bean.jackson;
 
 import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.io.IOException;
 import java.util.Map;
@@ -25,6 +26,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.ContextualSerializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import com.norconex.commons.lang.text.StringUtil;
 
 /**
  * Serializes Map as a list of "entry" elements each having a "key" and "value"
@@ -37,6 +39,8 @@ public class JsonXmlMapSerializer<T extends Map<?, ?>>
         extends StdSerializer<T> implements ContextualSerializer {
 
     private static final long serialVersionUID = 1L;
+
+    public static final String DEFAULT_ENTRY_NAME = "entry";
 
     private transient BeanProperty currentProperty;
 
@@ -64,14 +68,21 @@ public class JsonXmlMapSerializer<T extends Map<?, ?>>
             JsonGenerator gen,
             SerializerProvider provider) throws IOException {
 
-        var entryName = "entry";
+        var entryName = DEFAULT_ENTRY_NAME;
         var keyName = "key";
         var valueName = "value";
         var annot = currentProperty.getAnnotation(JsonXmlMap.class);
         if (annot != null) {
             keyName = defaultIfBlank(annot.keyName(), keyName);
             valueName = defaultIfBlank(annot.valueName(), valueName);
-            entryName = defaultIfBlank(annot.entryName(), entryName);
+            entryName = annot.entryName();
+            if (isBlank(entryName)) {
+                entryName = StringUtil.singularOrElse(
+                        currentProperty.getName(), DEFAULT_ENTRY_NAME);
+            }
+            if (isBlank(entryName)) {
+                entryName = DEFAULT_ENTRY_NAME;
+            }
         }
         gen.writeStartObject();  // outter name
 
