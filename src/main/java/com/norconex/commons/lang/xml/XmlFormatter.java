@@ -307,7 +307,7 @@ public class XmlFormatter {
                 case AT_MAX_ALL:
                     yield writeAttribsWrapAtMaxAll(w, margin);
                 default: // ALL
- {
+                {
                     writeAttribsWarpAll(w, margin);
                     yield true;
                 }

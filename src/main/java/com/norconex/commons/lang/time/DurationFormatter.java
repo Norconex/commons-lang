@@ -62,7 +62,7 @@ public final class DurationFormatter {
      * Creates a duration with the default locale and full words for
      * duration units.
      */
-    public DurationFormatter() {  //NOSONAR Exists for javadoc
+    public DurationFormatter() { //NOSONAR Exists for javadoc
     }
 
     /**

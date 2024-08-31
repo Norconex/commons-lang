@@ -46,13 +46,13 @@ class JsonXmlMapTest {
         ch = new MapHolder();
         ch.some = "thing";
         ch.defaultEntryNames.putAll(MapUtil.toMap("k1", "v1", "k2", "v2"));
-        ch.specifiedEntryNames = new LinkedMap<>(MapUtil.toMap("k3", "v3", "k4", "v4"));
+        ch.specifiedEntryNames =
+                new LinkedMap<>(MapUtil.toMap("k3", "v3", "k4", "v4"));
         ch.defaultType = new HashMap<>(MapUtil.toMap(5, true, 6, false));
         ch.complexType.putAll(MapUtil.toMap(
                 new SomeKey("k7-a", "k7-b"), new SomeValue("v7-a", "b7-b"),
                 new SomeKey("k8-a", "k8-b"), new SomeValue("v8-a", "b8-b"),
-                new SomeKey("k9-a", "k9-b"), new SomeValue("v9-a", "b9-b")
-                ));
+                new SomeKey("k9-a", "k9-b"), new SomeValue("v9-a", "b9-b")));
     }
 
     @Test
@@ -95,9 +95,10 @@ class JsonXmlMapTest {
         private final Map<String, String> defaultEntryNames = new TreeMap<>();
 
         @JsonXmlMap(
-                entryName = "child",
-                keyName = "childKey",
-                valueName = "childValue")
+            entryName = "child",
+            keyName = "childKey",
+            valueName = "childValue"
+        )
         private Map<String, String> specifiedEntryNames;
 
         private Map<Integer, Boolean> defaultType;
@@ -122,7 +123,6 @@ class JsonXmlMapTest {
         private String propc;
         private String propd;
     }
-
 
     @Data
     @JsonInclude(value = Include.ALWAYS, content = Include.ALWAYS)

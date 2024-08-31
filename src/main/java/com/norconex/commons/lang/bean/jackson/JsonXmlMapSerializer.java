@@ -58,7 +58,7 @@ public class JsonXmlMapSerializer<T extends Map<?, ?>>
     @Override
     public StdSerializer<?> createContextual(
             SerializerProvider prov, BeanProperty property)
-                    throws JsonMappingException {
+            throws JsonMappingException {
         return new JsonXmlMapSerializer<>(property);
     }
 
@@ -84,12 +84,12 @@ public class JsonXmlMapSerializer<T extends Map<?, ?>>
                 entryName = DEFAULT_ENTRY_NAME;
             }
         }
-        gen.writeStartObject();  // outter name
+        gen.writeStartObject(); // outter name
 
         for (Map.Entry<?, ?> entry : map.entrySet()) {
             gen.writeFieldName(entryName);
 
-            gen.writeStartObject();  // <entry>
+            gen.writeStartObject(); // <entry>
 
             // Write key
             gen.writeFieldName(keyName);
@@ -100,8 +100,8 @@ public class JsonXmlMapSerializer<T extends Map<?, ?>>
             provider.defaultSerializeValue(entry.getValue(), gen);
 
             // Close the entry element manually
-            gen.writeEndObject();  // </entry>
+            gen.writeEndObject(); // </entry>
         }
-        gen.writeEndObject();  // </entry>
+        gen.writeEndObject(); // </entry>
     }
 }
