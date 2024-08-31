@@ -41,7 +41,7 @@ import jdk.javadoc.doclet.Taglet;
  * The text to be included is taken from the declared type JavaDoc comment of
  * the referenced class source file. The given text needs to be wrapped by
  * a block tag such as {@link BlockTaglet},
- * {@link HTMLTaglet}, {@link JSONTaglet}, {@link XMLTaglet}, etc.
+ * {@link HtmlTaglet}, {@link JsonTaglet}, {@link XmlTaglet}, etc.
  * </p>
  * <p>
  * If you have multiple blocks of text to include from a JavaDoc comment,

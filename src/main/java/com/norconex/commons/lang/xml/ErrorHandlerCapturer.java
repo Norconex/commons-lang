@@ -21,7 +21,7 @@ import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-import com.norconex.commons.lang.xml.XMLValidationError.Severity;
+import com.norconex.commons.lang.xml.XmlValidationError.Severity;
 
 /**
  * Collects XML validation errors.
@@ -29,13 +29,13 @@ import com.norconex.commons.lang.xml.XMLValidationError.Severity;
  */
 public class ErrorHandlerCapturer implements ErrorHandler {
     private final Class<?> clazz;
-    private final List<XMLValidationError> errors;
+    private final List<XmlValidationError> errors;
 
     public ErrorHandlerCapturer() {
         this(null, null);
     }
 
-    public ErrorHandlerCapturer(List<XMLValidationError> errors) {
+    public ErrorHandlerCapturer(List<XmlValidationError> errors) {
         this(null, errors);
     }
 
@@ -44,13 +44,13 @@ public class ErrorHandlerCapturer implements ErrorHandler {
     }
 
     public ErrorHandlerCapturer(
-            Class<?> clazz, List<XMLValidationError> errors) {
+            Class<?> clazz, List<XmlValidationError> errors) {
         super();
         this.clazz = clazz;
         this.errors = errors == null ? new ArrayList<>() : errors;
     }
 
-    public List<XMLValidationError> getErrors() {
+    public List<XmlValidationError> getErrors() {
         return errors;
     }
 
@@ -62,17 +62,17 @@ public class ErrorHandlerCapturer implements ErrorHandler {
 
     @Override
     public void warning(SAXParseException e) throws SAXException {
-        errors.add(new XMLValidationError(Severity.WARNING, msg(e)));
+        errors.add(new XmlValidationError(Severity.WARNING, msg(e)));
     }
 
     @Override
     public void error(SAXParseException e) throws SAXException {
-        errors.add(new XMLValidationError(Severity.ERROR, msg(e)));
+        errors.add(new XmlValidationError(Severity.ERROR, msg(e)));
     }
 
     @Override
     public void fatalError(SAXParseException e) throws SAXException {
-        errors.add(new XMLValidationError(Severity.FATAL, msg(e)));
+        errors.add(new XmlValidationError(Severity.FATAL, msg(e)));
     }
 
     private String msg(SAXParseException e) {

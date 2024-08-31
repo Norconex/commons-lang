@@ -75,12 +75,12 @@ class TagletTest {
         ToolProvider.getSystemDocumentationTool().run(null, null, null,
                 "-d", javadocDir,
                 "-taglet", BlockTaglet.class.getName(),
-                "-taglet", HTMLTaglet.class.getName(),
+                "-taglet", HtmlTaglet.class.getName(),
                 "-taglet", IncludeTaglet.class.getName(),
-                "-taglet", JSONTaglet.class.getName(),
-                "-taglet", XMLTaglet.class.getName(),
-                "-taglet", XMLExampleTaglet.class.getName(),
-                "-taglet", XMLUsageTaglet.class.getName(),
+                "-taglet", JsonTaglet.class.getName(),
+                "-taglet", XmlTaglet.class.getName(),
+                "-taglet", XmlExampleTaglet.class.getName(),
+                "-taglet", XmlUsageTaglet.class.getName(),
                 "-nohelp",
                 "-noindex",
                 "-nonavbar",
@@ -271,7 +271,7 @@ class TagletTest {
 
     @Test
     void testMisc() {
-        var taglet = new XMLUsageTaglet();
+        var taglet = new XmlUsageTaglet();
 
         assertNotNull(taglet.getHeadingProvider());
         assertEquals(

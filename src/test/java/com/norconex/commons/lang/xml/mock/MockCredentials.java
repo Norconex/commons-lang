@@ -19,8 +19,8 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.bean.BeanUtil;
-import com.norconex.commons.lang.xml.XML;
-import com.norconex.commons.lang.xml.XMLConfigurable;
+import com.norconex.commons.lang.xml.Xml;
+import com.norconex.commons.lang.xml.XmlConfigurable;
 
 import lombok.AccessLevel;
 import lombok.Data;
@@ -31,7 +31,7 @@ import lombok.experimental.FieldNameConstants;
 @Data
 @Accessors(chain = true)
 public class MockCredentials
-        implements XMLConfigurable {
+        implements XmlConfigurable {
     private String username;
     private String password;
     private MockEncryptionKey passwordKey;
@@ -72,7 +72,7 @@ public class MockCredentials
     }
 
     @Override
-    public void loadFromXML(XML xml) {
+    public void loadFromXML(Xml xml) {
         if (xml != null) {
             setUsername(xml.getString(Fields.username, getUsername()));
             setPassword(xml.getString(Fields.password, getPassword()));
@@ -82,7 +82,7 @@ public class MockCredentials
     }
 
     @Override
-    public void saveToXML(XML xml) {
+    public void saveToXML(Xml xml) {
         if (xml != null) {
             xml.addElement(Fields.username, getUsername());
             xml.addElement(Fields.password, getPassword());

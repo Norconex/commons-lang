@@ -22,7 +22,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.norconex.commons.lang.collection.CollectionUtil;
-import com.norconex.commons.lang.xml.XML;
+import com.norconex.commons.lang.xml.Xml;
 
 /**
  * <p>Convenient way of handling the different ways a value (or values) can
@@ -143,14 +143,14 @@ public enum PropertySetter {
     }
 
     // Gets from XML, returns default value if not defined
-    public static PropertySetter fromXML(XML xml, PropertySetter defaultValue) {
+    public static PropertySetter fromXML(Xml xml, PropertySetter defaultValue) {
         if (xml == null) {
             return defaultValue;
         }
         return xml.getEnum("@onSet", PropertySetter.class, defaultValue);
     }
 
-    public static void toXML(XML xml, PropertySetter setter) {
+    public static void toXML(Xml xml, PropertySetter setter) {
         if (xml != null) {
             xml.setAttribute("onSet", setter);
         }

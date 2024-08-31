@@ -210,7 +210,7 @@ class HttpURLTest {
         assertThat(new HttpURL(url).toURL()).isEqualTo(url);
         assertThat(new HttpURL(url, "UTF-8").toURL()).isEqualTo(url);
 
-        assertThatExceptionOfType(URLException.class).isThrownBy(
+        assertThatExceptionOfType(UrlException.class).isThrownBy(
                 () -> new HttpURL("blah:I am invalid"));
 
         var httpUrl = new HttpURL(url, "UTF-8");

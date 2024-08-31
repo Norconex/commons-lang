@@ -71,7 +71,7 @@ public class QueryString extends Properties {
      * It is possible to only supply a query string as opposed to an
      * entire URL.
      * Key and values making up a query string are assumed to be URL-encoded.
-     * Will throw a {@link URLException} if UTF-8 encoding is not supported.
+     * Will throw a {@link UrlException} if UTF-8 encoding is not supported.
      * @param urlWithQueryString a URL from which to extract a query string.
      */
     public QueryString(String urlWithQueryString) {
@@ -83,7 +83,7 @@ public class QueryString extends Properties {
      * It is possible to only supply a query string as opposed to an
      * entire URL.
      * Key and values making up a query string are assumed to be URL-encoded.
-     * Will throw a {@link URLException} if the supplied encoding is
+     * Will throw a {@link UrlException} if the supplied encoding is
      * unsupported or invalid.
      * @param urlWithQueryString a URL from which to extract a query string.
      * @param encoding character encoding
@@ -118,7 +118,7 @@ public class QueryString extends Properties {
                 add(URLDecoder.decode(key, this.encoding),
                         URLDecoder.decode(value, this.encoding));
             } catch (UnsupportedEncodingException e) {
-                throw new URLException(
+                throw new UrlException(
                         "Cannot URL-decode query string (key="
                                 + key + "; value=" + value + ").",
                         e);
@@ -155,7 +155,7 @@ public class QueryString extends Properties {
                     b.append('=');
                     b.append(URLEncoder.encode(value, encoding));
                 } catch (UnsupportedEncodingException e) {
-                    throw new URLException(
+                    throw new UrlException(
                             "Cannot URL-encode query string (key="
                                     + key + "; value=" + value + ").",
                             e);
@@ -192,7 +192,7 @@ public class QueryString extends Properties {
         try {
             return new URL(applyOnURL(url.toString()));
         } catch (MalformedURLException e) {
-            throw new URLException("Cannot applyl query string to: " + url, e);
+            throw new UrlException("Cannot applyl query string to: " + url, e);
         }
     }
 }

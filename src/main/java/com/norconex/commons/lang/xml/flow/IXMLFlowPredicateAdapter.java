@@ -21,9 +21,9 @@ import java.util.function.Predicate;
  * {@link Predicate}.
  * @param <T> type of the object to be submitted to the flow.
  * @since 2.0.0
- * @deprecated Use {@link XMLFlowPredicateAdapter} instead.
+ * @deprecated Use {@link XmlFlowPredicateAdapter} instead.
  */
 @Deprecated(since = "3.0.0")
 public interface IXMLFlowPredicateAdapter<T> //NOSONAR
-        extends XMLFlowPredicateAdapter<T> {
+        extends XmlFlowPredicateAdapter<T> {
 }

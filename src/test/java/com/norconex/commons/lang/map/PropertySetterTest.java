@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import org.junit.jupiter.api.Test;
 
-import com.norconex.commons.lang.xml.XML;
+import com.norconex.commons.lang.xml.Xml;
 
 class PropertySetterTest {
 
@@ -81,7 +81,7 @@ class PropertySetterTest {
 
     @Test
     void testSaveLoadXML() {
-        XML xml = new XML("test");
+        Xml xml = new Xml("test");
         PropertySetter.toXML(xml, REPLACE);
 
         assertThat(PropertySetter.fromXML(xml, null)).isSameAs(REPLACE);

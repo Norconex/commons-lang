@@ -20,9 +20,9 @@ import java.util.function.Consumer;
  * Adapts flow consuming elements so they can be treated as {@link Consumer}.
  * @param <T> type of the object to be submitted to the flow.
  * @since 2.0.0
- * @deprecated Use {@link XMLFlowConsumerAdapter} instead.
+ * @deprecated Use {@link XmlFlowConsumerAdapter} instead.
  */
 @Deprecated(since = "3.0.0")
 public interface IXMLFlowConsumerAdapter<T> //NOSONAR
-        extends XMLFlowConsumerAdapter<T> {
+        extends XmlFlowConsumerAdapter<T> {
 }

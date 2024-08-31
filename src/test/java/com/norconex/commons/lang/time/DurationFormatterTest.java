@@ -52,7 +52,7 @@ class DurationFormatterTest {
         full = new DurationFormatter();
         compact = DurationFormatter.COMPACT;
         abbr = new DurationFormatter().withUnitFormatter(
-                RBDurationUnitFormatter.ABBREVIATED);
+                RbDurationUnitFormatter.ABBREVIATED);
     }
 
     @Test

@@ -21,7 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 import com.norconex.commons.lang.encrypt.EncryptionException;
-import com.norconex.commons.lang.xml.XML;
+import com.norconex.commons.lang.xml.Xml;
 
 import lombok.EqualsAndHashCode;
 
@@ -112,7 +112,7 @@ public final class MockEncryptionKey {
         }
     }
 
-    public static MockEncryptionKey loadFromXML(XML xml,
+    public static MockEncryptionKey loadFromXML(Xml xml,
             MockEncryptionKey defaultKey) {
         if (xml == null) {
             return defaultKey;
@@ -132,7 +132,7 @@ public final class MockEncryptionKey {
         return defaultKey;
     }
 
-    public static void saveToXML(XML xml, MockEncryptionKey key) {
+    public static void saveToXML(Xml xml, MockEncryptionKey key) {
         if (key != null) {
             xml.addElement("value", key.value);
             xml.addElement("size", key.size);

@@ -31,7 +31,7 @@ import org.apache.commons.lang3.function.Failable;
 import com.norconex.commons.lang.version.SemanticVersion;
 import com.norconex.commons.lang.version.SemanticVersionParser;
 import com.norconex.commons.lang.version.SemanticVersionParserException;
-import com.norconex.commons.lang.xml.XML;
+import com.norconex.commons.lang.xml.Xml;
 
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -156,7 +156,7 @@ public final class PackageManifest {
                     .map(url -> Failable.<URI, URISyntaxException>call(
                             () -> url.toURI().resolve("../../pom.xml")))
                     .map(uri -> new File(uri.getPath()))
-                    .map(pomFile -> XML.of(pomFile).create())
+                    .map(pomFile -> Xml.of(pomFile).create())
                     .ifPresent(xml -> {
                         ifBlank(pmb.version, () -> pmb.version(
                                 xml.getString("version")));

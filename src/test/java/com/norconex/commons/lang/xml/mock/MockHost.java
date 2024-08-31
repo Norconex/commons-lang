@@ -16,7 +16,7 @@ package com.norconex.commons.lang.xml.mock;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.norconex.commons.lang.xml.XML;
+import com.norconex.commons.lang.xml.Xml;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -50,7 +50,7 @@ public final class MockHost {
     }
 
     public static MockHost loadFromXML(
-            XML xml, MockHost defaultHost) {
+            Xml xml, MockHost defaultHost) {
         if (xml == null) {
             return defaultHost;
         }
@@ -61,7 +61,7 @@ public final class MockHost {
         return defaultHost;
     }
 
-    public static void saveToXML(XML xml, MockHost host) {
+    public static void saveToXML(Xml xml, MockHost host) {
         if (host != null) {
             xml.addElement("name", host.getName());
             xml.addElement("port", host.getPort());

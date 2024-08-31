@@ -17,7 +17,7 @@ package com.norconex.commons.lang.config;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import com.norconex.commons.lang.xml.XML;
+import com.norconex.commons.lang.xml.Xml;
 
 class ConfigurationTest {
 
@@ -25,7 +25,7 @@ class ConfigurationTest {
 
     @Test
     void testPreserveWhiteSpace() {
-        var xml = XML.of(
+        var xml = Xml.of(
                 "<test>"
                         + "<tagBlank>   </tagBlank>"
                         + "<tagPreserve xml:space=\"preserve\">   </tagPreserve>"

@@ -20,8 +20,8 @@ import java.net.Proxy;
 import org.apache.commons.lang3.StringUtils;
 
 import com.norconex.commons.lang.bean.BeanUtil;
-import com.norconex.commons.lang.xml.XML;
-import com.norconex.commons.lang.xml.XMLConfigurable;
+import com.norconex.commons.lang.xml.Xml;
+import com.norconex.commons.lang.xml.XmlConfigurable;
 
 import lombok.AccessLevel;
 import lombok.Data;
@@ -37,7 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Data
 @Accessors(chain = true)
-public class MockProxySettings implements XMLConfigurable {
+public class MockProxySettings implements XmlConfigurable {
     private MockHost host;
     private String scheme;
     private String realm;
@@ -90,7 +90,7 @@ public class MockProxySettings implements XMLConfigurable {
     }
 
     @Override
-    public void loadFromXML(XML xml) {
+    public void loadFromXML(Xml xml) {
         if (xml != null) {
             xml.checkDeprecated("proxyHost", Fields.host, true);
             xml.checkDeprecated("proxyPort", Fields.host, true);
@@ -106,7 +106,7 @@ public class MockProxySettings implements XMLConfigurable {
     }
 
     @Override
-    public void saveToXML(XML xml) {
+    public void saveToXML(Xml xml) {
         if (xml != null) {
             MockHost.saveToXML(xml.addElement(Fields.host), host);
             xml.addElement(Fields.scheme, scheme);

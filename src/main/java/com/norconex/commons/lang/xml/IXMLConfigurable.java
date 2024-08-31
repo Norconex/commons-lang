@@ -19,8 +19,8 @@ package com.norconex.commons.lang.xml;
  * implementing this should be careful to document XML configuration options
  * properly (e.g. in Javadoc).
  * @since 2.0.0 (Moved and modified from *.lang.config.XMLConfigurable)
- * @deprecated Use {@link XMLConfigurable} instead.
+ * @deprecated Use {@link XmlConfigurable} instead.
  */
 @Deprecated(since = "3.0.0")
-public interface IXMLConfigurable extends XMLConfigurable { //NOSONAR
+public interface IXMLConfigurable extends XmlConfigurable { //NOSONAR
 }

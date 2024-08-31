@@ -21,8 +21,8 @@ import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertyMatcher;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.text.TextMatcher.Method;
-import com.norconex.commons.lang.xml.XML;
-import com.norconex.commons.lang.xml.XMLConfigurable;
+import com.norconex.commons.lang.xml.Xml;
+import com.norconex.commons.lang.xml.XmlConfigurable;
 
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -34,7 +34,7 @@ import lombok.ToString;
 @ToString
 @EqualsAndHashCode
 public class PropertyMatcherCondition
-        implements Predicate<Properties>, XMLConfigurable {
+        implements Predicate<Properties>, XmlConfigurable {
 
     private PropertyMatcher matcher;
 
@@ -44,7 +44,7 @@ public class PropertyMatcherCondition
     }
 
     @Override
-    public void loadFromXML(XML xml) {
+    public void loadFromXML(Xml xml) {
         if (xml == null || xml.isEmpty()) {
             return;
         }
@@ -64,7 +64,7 @@ public class PropertyMatcherCondition
     }
 
     @Override
-    public void saveToXML(XML xml) {
+    public void saveToXML(Xml xml) {
         if (xml == null || matcher == null) {
             return;
         }
@@ -76,7 +76,7 @@ public class PropertyMatcherCondition
                 .ifPresent(m -> saveMatcherToXML(vmXml, m));
     }
 
-    private void loadMatcherFromXML(XML xml, TextMatcher matcher) {
+    private void loadMatcherFromXML(Xml xml, TextMatcher matcher) {
         if (xml == null) {
             return;
         }
@@ -95,7 +95,7 @@ public class PropertyMatcherCondition
         matcher.setPattern(xml.getString("."));
     }
 
-    private void saveMatcherToXML(XML xml, TextMatcher matcher) {
+    private void saveMatcherToXML(Xml xml, TextMatcher matcher) {
         if (xml == null) {
             return;
         }

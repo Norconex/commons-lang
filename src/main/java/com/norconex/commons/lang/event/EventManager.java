@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
 
 import com.norconex.commons.lang.ExceptionUtil;
-import com.norconex.commons.lang.SLF4JUtil;
+import com.norconex.commons.lang.Slf4jUtil;
 import com.norconex.commons.lang.bean.BeanUtil;
 
 import lombok.Getter;
@@ -222,11 +222,11 @@ public class EventManager {
                 + "." + event.getName());
         Level safeLevel = ObjectUtils.defaultIfNull(level, Level.INFO);
         if (stacktraceLoggingDisabled && event.getException() != null) {
-            SLF4JUtil.log(log, safeLevel, event.toString()
+            Slf4jUtil.log(log, safeLevel, event.toString()
                     + " Cause:\n{}",
                     ExceptionUtil.getFormattedMessages(event.getException()));
         } else {
-            SLF4JUtil.log(
+            Slf4jUtil.log(
                     log, safeLevel, event.toString(), event.getException());
         }
     }

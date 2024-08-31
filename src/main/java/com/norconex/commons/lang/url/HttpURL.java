@@ -115,7 +115,7 @@ public class HttpURL implements Serializable {
             try {
                 urlwrap = new URL(u);
             } catch (MalformedURLException e) {
-                throw new URLException("Could not interpret URL: " + u, e);
+                throw new UrlException("Could not interpret URL: " + u, e);
             }
             protocol = StringUtils.substringBefore(u, ":");
             host = urlwrap.getHost();
@@ -281,14 +281,14 @@ public class HttpURL implements Serializable {
      * Converts this HttpURL to a regular {@link URL}, making sure
      * appropriate characters are escaped properly.
      * @return a URL
-     * @throws URLException when URL is malformed
+     * @throws UrlException when URL is malformed
      */
     public URL toURL() {
         var url = toString();
         try {
             return new URL(url);
         } catch (MalformedURLException e) {
-            throw new URLException("Cannot convert to URL: " + url, e);
+            throw new UrlException("Cannot convert to URL: " + url, e);
         }
     }
 
@@ -300,7 +300,7 @@ public class HttpURL implements Serializable {
      * a <code>null</code> document root.
      * @return left part of a URL up to (and including) the host name or
      *     <code>null</code>
-     * @throws URLException when URL is malformed
+     * @throws UrlException when URL is malformed
      * @since 1.8.0
      */
     public String getRoot() {
@@ -312,14 +312,14 @@ public class HttpURL implements Serializable {
      * appropriate characters are escaped properly.
      * @return a URI
      * @since 1.7.0
-     * @throws URLException when URL is malformed
+     * @throws UrlException when URL is malformed
      */
     public URI toURI() {
         var url = toString();
         try {
             return new URI(url);
         } catch (URISyntaxException e) {
-            throw new URLException("Cannot convert to URI: " + url, e);
+            throw new UrlException("Cannot convert to URI: " + url, e);
         }
     }
 
@@ -333,7 +333,7 @@ public class HttpURL implements Serializable {
      * @param url a URL string
      * @return a URL object
      * @since 1.7.0
-     * @throws URLException when URL is malformed
+     * @throws UrlException when URL is malformed
      */
     public static URL toURL(String url) {
         return new HttpURL(url).toURL();
@@ -348,7 +348,7 @@ public class HttpURL implements Serializable {
      * @param url a URL string
      * @return a URI object
      * @since 1.7.0
-     * @throws URLException when URL is malformed
+     * @throws UrlException when URL is malformed
      */
     public static URI toURI(String url) {
         return new HttpURL(url).toURI();

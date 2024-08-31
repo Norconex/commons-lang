@@ -35,7 +35,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.norconex.commons.lang.url.URLStreamer;
+import com.norconex.commons.lang.url.UrlStreamer;
 
 /**
  * Access a web-based file as a local file.
@@ -213,7 +213,7 @@ public class WebFile implements Path {
                 targetURL = new URL("jar:" + url);
             }
             FileUtils.copyInputStreamToFile(
-                    URLStreamer.stream(targetURL), localFile.toFile());
+                    UrlStreamer.stream(targetURL), localFile.toFile());
             LOG.debug("Web file downloaded from \"{}\" to \"{}\"",
                     url, localFile);
         } catch (IOException e) {

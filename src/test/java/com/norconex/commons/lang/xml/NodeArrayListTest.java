@@ -22,7 +22,7 @@ class NodeArrayListTest {
 
     @Test
     void testNodeArrayList() {
-        XML xml = new XML("<test><value>a</value><value>b</value></test>");
+        Xml xml = new Xml("<test><value>a</value><value>b</value></test>");
 
         NodeArrayList node1 = new NodeArrayList(xml.getNode());
         assertThat(node1.getLength()).isEqualTo(2);

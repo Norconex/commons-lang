@@ -20,11 +20,11 @@ import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-import com.norconex.commons.lang.xml.XMLValidationError.Severity;
+import com.norconex.commons.lang.xml.XmlValidationError.Severity;
 
 /**
  * Fails upon encountering first XML validation errors by throwing an
- * {@link XMLValidationException}.
+ * {@link XmlValidationException}.
  * as error.
  * @since 2.0.0
  */
@@ -58,7 +58,7 @@ public class ErrorHandlerFailer implements ErrorHandler {
         } else {
             msg += clazz.getSimpleName() + ": " + e.getMessage();
         }
-        throw new XMLValidationException(
-                Arrays.asList(new XMLValidationError(severity, msg)));
+        throw new XmlValidationException(
+                Arrays.asList(new XmlValidationError(severity, msg)));
     }
 }

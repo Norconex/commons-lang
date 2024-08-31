@@ -31,7 +31,7 @@ import org.xml.sax.ErrorHandler;
 
 import com.norconex.commons.lang.bean.BeanMapper;
 import com.norconex.commons.lang.bean.BeanMapper.Format;
-import com.norconex.commons.lang.xml.XML;
+import com.norconex.commons.lang.xml.Xml;
 
 import jakarta.validation.ConstraintViolationException;
 import lombok.AccessLevel;
@@ -276,25 +276,25 @@ public final class ConfigurationLoader {
     }
 
     /**
-     * Loads an XML configuration file into an {@link XML} object, performing
+     * Loads an XML configuration file into an {@link Xml} object, performing
      * variable interpolation and handling any other Velocity directives.
      * @param configFile XML configuration file
      * @return XML
      * @since 3.0.0 renamed from <code>loadXML(Path)</code>
      */
-    public XML toXml(Path configFile) {
+    public Xml toXml(Path configFile) {
         return toXml(configFile, null);
     }
 
     /**
-     * Loads an XML configuration file into an {@link XML} object, performing
+     * Loads an XML configuration file into an {@link Xml} object, performing
      * variable interpolation and handling any other Velocity directives.
      * @param configFile XML configuration file
      * @param errorHandler XML error handler
      * @return XML
      * @since 3.0.0 renamed from <code>loadXML(Path, ErrorHandler)</code>
      */
-    public XML toXml(
+    public Xml toXml(
             Path configFile, ErrorHandler errorHandler) {
         if (configFile == null || !configFile.toFile().exists()) {
             return null;
@@ -307,7 +307,7 @@ public final class ConfigurationLoader {
             // as they are not necessary to parse configs.
             xml = Pattern.compile("((?!^)<\\?xml.*?\\?>|<\\!DOCTYPE[^>]*>)")
                     .matcher(xml).replaceAll("");
-            return XML.of(xml).setErrorHandler(errorHandler).create();
+            return Xml.of(xml).setErrorHandler(errorHandler).create();
         } catch (Exception e) {
             throw new ConfigurationException(
                     "Cannot load configuration file: \"" + configFile + "\". "
@@ -370,7 +370,7 @@ public final class ConfigurationLoader {
      * @deprecated Use {@link #toXml(Path)} instead.
      */
     @Deprecated(since = "3.0.0")
-    public XML loadXML(Path configFile) {
+    public Xml loadXML(Path configFile) {
         return loadXML(configFile, null);
     }
 
@@ -383,7 +383,7 @@ public final class ConfigurationLoader {
      * @deprecated Use {@link #toXml(Path, ErrorHandler)} instead.
      */
     @Deprecated(since = "3.0.0")
-    public XML loadXML(
+    public Xml loadXML(
             Path configFile, ErrorHandler errorHandler) {
         if (configFile == null || !configFile.toFile().exists()) {
             return null;
@@ -396,7 +396,7 @@ public final class ConfigurationLoader {
             // as they are not necessary to parse configs.
             xml = Pattern.compile("((?!^)<\\?xml.*?\\?>|<\\!DOCTYPE[^>]*>)")
                     .matcher(xml).replaceAll("");
-            return XML.of(xml).setErrorHandler(errorHandler).create();
+            return Xml.of(xml).setErrorHandler(errorHandler).create();
         } catch (Exception e) {
             throw new ConfigurationException(
                     "Cannot load configuration file: \"" + configFile + "\". "

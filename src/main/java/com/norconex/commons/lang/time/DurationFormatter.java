@@ -37,7 +37,7 @@ public final class DurationFormatter {
 
     /** Example: 5D18h1m23s */
     public static final DurationFormatter COMPACT = new DurationFormatter()
-            .withUnitFormatter(RBDurationUnitFormatter.COMPACT)
+            .withUnitFormatter(RbDurationUnitFormatter.COMPACT)
             .withInnerSeparator(null)
             .withOuterSeparator(null);
 
@@ -46,7 +46,7 @@ public final class DurationFormatter {
 
     private static final Locale DEFAULT_LOCALE = Locale.ENGLISH;
     private static final DurationUnitFormatter DEFAULT_UNIT_FORMATTER =
-            RBDurationUnitFormatter.FULL;
+            RbDurationUnitFormatter.FULL;
 
     private Locale locale;
     private int unitPrecision;
@@ -98,7 +98,7 @@ public final class DurationFormatter {
 
     /**
      * Creates a copy if this formatter with the given number format.
-     * Default number format is {@link RBDurationUnitFormatter#FULL}.
+     * Default number format is {@link RbDurationUnitFormatter#FULL}.
      * @param numberFormat number format
      * @return duration formatter copy
      */

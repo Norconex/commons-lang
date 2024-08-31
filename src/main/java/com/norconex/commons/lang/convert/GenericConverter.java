@@ -146,7 +146,7 @@ public final class GenericConverter implements Converter {
         cc.put(char.class, new CharacterConverter());
         cc.put(Class.class, new ClassConverter());
         cc.put(String.class, new StringConverter());
-        cc.put(URL.class, new URLConverter());
+        cc.put(URL.class, new UrlConverter());
         cc.put(Duration.class, new DurationConverter());
         cc.put(ContentType.class, new ContentTypeConverter());
         cc.put(Charset.class, new CharsetConverter());
