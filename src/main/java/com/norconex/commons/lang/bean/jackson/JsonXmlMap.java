@@ -48,7 +48,7 @@ public @interface JsonXmlMap {
      * name you want.
      * @return entry field name, when writing XML
      */
-    public String entryName() default "entry";
+    public String entryName() default "";
 
     /**
      * Field name to use for each map entry keys when serializing as XML.
