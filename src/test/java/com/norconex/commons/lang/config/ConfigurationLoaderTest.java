@@ -177,14 +177,14 @@ class ConfigurationLoaderTest {
                                   5555: 5555555555
                         depth_tst_4_ifelse_and_loop:
                             Name: Alice
-                          Age: [10, 30, 50]
+                          Age: 10
                           Feels: very old.
                           Name: Bob
-                          Age: [10, 30, 50]
-                          Feels: very old.
+                          Age: 30
+                          age: you are nothing.
                           Name: Charlie
-                          Age: [10, 30, 50]
-                          Feels: very old.    
+                          Age: 50
+                          age: you are nothing.
                             """);
 
         // null path
