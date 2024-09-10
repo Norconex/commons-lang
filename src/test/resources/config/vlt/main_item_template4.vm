@@ -1,0 +1,8 @@
+tst_depth_3_1_1:
+  3333: 3333333333
+  #include("main_item_template1.vm")
+  3333: 3333333333
+tst_depth_3_1_2:
+  #parse("main_item_template1.vm")
+  #parse("main_item_template2.vm")
+  #parse("main_item_template5.vm")

@@ -33,7 +33,7 @@ import lombok.Data;
 
 class ConfigurationLoaderTest {
 
-    private static final String CFG_BASE_PATH = "src/test/resources/config/";
+    private static final String CFG_BASE_PATH = "src/test/resources/config/vlt/";
 
     private ConfigurationLoader configLoader;
 
@@ -107,6 +107,90 @@ class ConfigurationLoaderTest {
         var blankIncl = cfgPath("blank-include.cfg");
         assertThrows(ConfigurationException.class,
                 () -> loader.toString(blankIncl));
+
+        // invalid path
+        assertThat(loader.toString(cfgPath("doesntExist"))).isNull();
+    }
+    @Test
+    void testIndentToString() throws Exception {
+        var loader = ConfigurationLoader.builder()
+                .variablesFile(cfgPath("main_item_template7.vm"))
+                .build();
+        var str = SystemUtil.callWithProperty("VAR_E", "beans",
+                () -> loader.toString(cfgPath("main_template.vm")));
+        // "varB" should not be resolved as it comes from an #include
+        // directive (as opposed to parse)
+        assertThat(StringUtils.remove(str, '\r')).isEqualTo(
+                """
+                        title: $title
+                        date: $date
+                        title: template title
+                        date: 2024-08-20
+                        depth1_include_tst_1:
+                          - template2
+                          key: template2
+                          depth_test
+                            title: $title
+                            date: $date
+                        depth1_parse_tst2:
+                          - template2
+                          key: template2
+                          depth_test
+                            title: template title
+                            date: 2024-08-20
+                        depth_tst2:
+                          tst_depth_2_1:
+                            - template2
+                            key: template2
+                            depth_test
+                              title: $title
+                              date: $date
+                            - template2
+                            key: template2
+                            depth_test
+                              title: template title
+                              date: 2024-08-20
+                        depth_tst_3:
+                          depth_tst_3_1:
+                            3333: 3333333333
+                            3333: 3333333333
+                            title: $title
+                            date: $date
+                            title: template title
+                            date: 2024-08-20
+                            depth_tst_3_1:
+                              tst_depth_3_1_1:
+                                3333: 3333333333
+                                title: $title
+                                date: $date
+                                3333: 3333333333
+                              tst_depth_3_1_2:
+                                title: template title
+                                date: 2024-08-20
+                                - template2
+                                key: template2
+                                depth_test
+                                  title: template title
+                                  date: 2024-08-20
+                                tst_depth_3_1_2-1
+                                  - 5555: 55555555
+                                  5555: 5555555555
+                        depth_tst_4_ifelse_and_loop:
+                            Name: Alice
+                          Age: [10, 30, 50]
+                          Feels: very old.
+                          Name: Bob
+                          Age: [10, 30, 50]
+                          Feels: very old.
+                          Name: Charlie
+                          Age: [10, 30, 50]
+                          Feels: very old.    
+                            """);
+
+        // null path
+        assertThrows(ConfigurationException.class,
+                () -> loader.toString(null));
+
 
         // invalid path
         assertThat(loader.toString(cfgPath("doesntExist"))).isNull();

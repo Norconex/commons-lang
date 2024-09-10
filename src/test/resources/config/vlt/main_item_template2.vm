@@ -1,0 +1,5 @@
+- template2
+key: template2
+depth_test
+  title: $title
+  date: $date
