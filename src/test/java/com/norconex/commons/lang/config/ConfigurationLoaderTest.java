@@ -33,7 +33,7 @@ import lombok.Data;
 
 class ConfigurationLoaderTest {
 
-    private static final String CFG_BASE_PATH = "src/test/resources/config/vlt/";
+    private static final String CFG_BASE_PATH = "src/test/resources/config/";
 
     private ConfigurationLoader configLoader;
 
@@ -113,11 +113,12 @@ class ConfigurationLoaderTest {
     }
     @Test
     void testIndentToString() throws Exception {
+
         var loader = ConfigurationLoader.builder()
-                .variablesFile(cfgPath("main_item_template7.vm"))
+                .variablesFile(cfgPath("vlt_item7.vm"))
                 .build();
-        var str = SystemUtil.callWithProperty("VAR_E", "beans",
-                () -> loader.toString(cfgPath("main_template.vm")));
+        var str = SystemUtil.callWithProperty("date", "2024-08-20",
+                () -> loader.toString(cfgPath("vlt_indent.yaml")));
         // "varB" should not be resolved as it comes from an #include
         // directive (as opposed to parse)
         assertThat(StringUtils.remove(str, '\r')).isEqualTo(
@@ -126,65 +127,61 @@ class ConfigurationLoaderTest {
                         date: $date
                         title: template title
                         date: 2024-08-20
-                        depth1_include_tst_1:
-                          - template2
-                          key: template2
-                          depth_test
+                        depth1_include_vlt_item2:
+                          title: $title
+                          date: $date
+                          key: value
+                          depth_vlt_item2:
                             title: $title
                             date: $date
-                        depth1_parse_tst2:
-                          - template2
-                          key: template2
-                          depth_test
+                        depth1_parse_vlt_item2:
+                          key: value
+                          depth_vlt_item2:
                             title: template title
                             date: 2024-08-20
-                        depth_tst2:
-                          tst_depth_2_1:
-                            - template2
-                            key: template2
-                            depth_test
+                        multi_depth_vlt_item2:
+                          multi_depth_vlt_item2_1:
+                            key: value
+                            depth_vlt_item2:
                               title: $title
                               date: $date
-                            - template2
-                            key: template2
-                            depth_test
+                            key: value
+                            depth_vlt_item2:
                               title: template title
                               date: 2024-08-20
-                        depth_tst_3:
-                          depth_tst_3_1:
-                            3333: 3333333333
-                            3333: 3333333333
+                        recursive_depth_vlt_item3:
+                          depth_vlt_item3:
+                            key: value
                             title: $title
                             date: $date
                             title: template title
                             date: 2024-08-20
-                            depth_tst_3_1:
+                            depth_vlt_item3_1:
                               tst_depth_3_1_1:
-                                3333: 3333333333
+                                key: value
                                 title: $title
                                 date: $date
-                                3333: 3333333333
+                                key: value
                               tst_depth_3_1_2:
                                 title: template title
                                 date: 2024-08-20
-                                - template2
-                                key: template2
-                                depth_test
+                                key: value
+                                depth_vlt_item2:
                                   title: template title
                                   date: 2024-08-20
                                 tst_depth_3_1_2-1
-                                  - 5555: 55555555
-                                  5555: 5555555555
-                        depth_tst_4_ifelse_and_loop:
-                            Name: Alice
+                                  key: value
+                                  key: value
+                        ifelse_loop_depth_vlt_item6:
+                          Name: Alice
                           Age: 10
-                          Feels: very old.
+                          age: you are nothing.
                           Name: Bob
                           Age: 30
-                          age: you are nothing.
+                          Feels: very old
                           Name: Charlie
                           Age: 50
-                          age: you are nothing.
+                          Feels: very old
                             """);
 
         // null path

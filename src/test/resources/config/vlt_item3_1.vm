@@ -1,0 +1,8 @@
+tst_depth_3_1_1:
+  key: value
+  #include("vlt_item1.vm")
+  key: value
+tst_depth_3_1_2:
+  #parse("vlt_item1.vm")
+  #parse("vlt_item2.vm")
+  #parse("vlt_item3_2.vm")

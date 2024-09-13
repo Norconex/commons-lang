@@ -131,6 +131,9 @@ public class CustomParseDirective extends Parse {
             writer.append(prefixedContent);
             //Mod end
 
+            node.jjtGetChild(0).getColumn();
+
+
         } catch (StopCommand stop) {
             if (!stop.isFor(this)) {
                 throw stop;
