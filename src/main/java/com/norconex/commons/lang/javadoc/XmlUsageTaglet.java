@@ -19,21 +19,17 @@ import org.apache.commons.lang3.StringUtils;
 /**
  * <p>{&#64;nx.xml.usage} XML beautifier with enhanced functionality.</p>
  *
- * {@nx.xml.usage
- * <test>
- *   <sub attr="whatever">Example XML from XMLUsageTaglet.</sub>
- * </test>
- * }
- *
  * @since 2.0.0
+ * @deprecated Will be removed
  */
+@Deprecated(since = "3.0.0", forRemoval = true)
 public class XmlUsageTaglet extends XmlTaglet {
 
     public static final String NAME = "nx.xml.usage";
 
     public XmlUsageTaglet() {
-        super(NAME, tag -> "<h3 id=\"nx-xml-" + orDefaultId(tag.getReference())
-                + "-heading\">XML configuration usage:</h3>\n");
+        super(NAME, tag -> "<h2 id=\"nx-xml-" + orDefaultId(tag.getReference())
+                + "-heading\">XML configuration usage:</h2>\n");
     }
 
     private static String orDefaultId(String id) {

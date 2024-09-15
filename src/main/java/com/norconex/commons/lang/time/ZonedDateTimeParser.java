@@ -43,7 +43,7 @@ import lombok.Data;
  * Parses a string representation of a date to a {@link ZonedDateTime}.
  * </p>
  *
- * <h3>Supported date string formats</h3>
+ * <h2>Supported date string formats</h2>
  * <ul>
  *   <li>
  *     A string parsable by {@link DateTimeFormatter}, as per the format
@@ -64,7 +64,7 @@ import lombok.Data;
  *   </li>
  * </ul>
  *
- * <h3>Time zones</h3>
+ * <h2>Time zones</h2>
  * <p>
  * You can dictate which time zone the returned date-time should be,
  * with {@link #setZoneId(ZoneId)}.
@@ -82,7 +82,7 @@ import lombok.Data;
  * zone id.
  * </p>
  *
- * <h3>Relative dates</h3>
+ * <h2>Relative dates</h2>
  * <P>
  * Date string values can be moment in time relative to the
  * current date using the <code>TODAY</code> or <code>NOW</code> keyword

@@ -32,27 +32,6 @@ import lombok.EqualsAndHashCode;
  * encryption key can be seen as equivalent to a secret key,
  * passphrase or password.</p>
  *
- * {@nx.xml.usage
- * <value>(The actual key or reference to it.)</value>
- * <source>[key|file|environment|property]</source>
- * <size>(Size in bits of encryption key. Default is 256.)</size>
- * }
- * <p>
- * These XML configurable options can be nested in a parent tag of any name.
- * The expected parent tag name is defined by the consuming classes.
- * </p>
- *
- * {@nx.xml.example
- * <sampleKey>
- *   <value>/path/to/my.key</value>
- *   <source>file</source>
- * </sampleKey>
- * }
- * <p>
- * The above example has the encryption key configuration is nested in a
- * <code>&lt;passwordKey&gt;</code> tag. It uses a key stored in a file to
- * decrypt a password for user credentials. </p>
- *
  * @since 1.9.0
  * @see EncryptionUtil
  * @see Credentials
@@ -130,10 +109,20 @@ public final class EncryptionKey implements Serializable {
         this(value, Source.KEY, DEFAULT_KEY_SIZE);
     }
 
+    /**
+     * The actual encryption key (when "source" is KEY) or a reference to the
+     * encryption key location (when "source" is something other than KEY).
+     * @return the encryption key or reference it
+     */
     public String getValue() {
         return value;
     }
 
+    /**
+     * A pointer to the encryption key location, returned by
+     * {@link #getValue()}.
+     * @return key source
+     */
     public Source getSource() {
         return source;
     }

@@ -42,7 +42,9 @@ import jdk.javadoc.doclet.Taglet;
  * </pre>
  *
  * @since 2.0.0
+ * @deprecated Will be removed
  */
+@Deprecated(since = "3.0.0", forRemoval = true)
 public abstract class AbstractInlineTaglet implements Taglet {
 
     // References:

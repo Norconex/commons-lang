@@ -33,43 +33,43 @@ import lombok.ToString;
  * {@link Predicate} statements deciding whether to execute or not
  * {@link Consumer} objects.
  * </p>
- * <h3>XML Syntax</h3>
- * {@nx.xml
- * <!-- Proceeds if condition is true. -->
- * <if>
- *   <!--
+ * <h2>XML Syntax</h2>
+ * <pre>
+ * &lt;!-- Proceeds if condition is true. --&gt;
+ * &lt;if&gt;
+ *   &lt;!--
  *     A single XML "condition" or "conditions" (i.e., condition group).
  *     A condition group accepts an operator. Example:
- *     -->
- *   <conditions operator="[AND|OR]">
- *     <!--
+ *     --&gt;
+ *   &lt;conditions operator="[AND|OR]"&gt;
+ *     &lt;!--
  *       Unless you have a default implementation configured, "condition"
  *       expects a "class" attribute pointing to a Predicate implementation.
  *       E.g.:
- *       -->
- *     <condition class="(a Predicate implementation)"/>
- *     <condition class="(a Predicate implementation)"/>
- *   </conditions>
- *   <then>
- *     <!--
+ *       --&gt;
+ *     &lt;condition class="(a Predicate implementation)"/&gt;
+ *     &lt;condition class="(a Predicate implementation)"/&gt;
+ *   &lt;/conditions&gt;
+ *   &lt;then&gt;
+ *     &lt;!--
  *       Holds one or more XML elements with a "class" attribute pointing to a
  *       Consumer implementation. Executed when above condition or condition
  *       group evaluates to true. Can also contain nested if/ifNot blocks.
- *       -->
- *   </then>
- *   <else>
- *     <!--
+ *       --&gt;
+ *   &lt;/then&gt;
+ *   &lt;else&gt;
+ *     &lt;!--
  *       Optional. Same as "then" above, but triggered if the condition
  *       evaluates to false. Can also contain nested if/ifNot blocks.
- *       -->
- *   </else>
- * </if>
+ *       --&gt;
+ *   &lt;/else&gt;
+ * &lt;/if&gt;
  *
- * <!-- Proceed if condition is false. -->
- * <ifNot>
- *   <!-- Same as "if" tag -->
- * </ifNot>
- * }
+ * &lt;!-- Proceed if condition is false. --&gt;
+ * &lt;ifNot&gt;
+ *   &lt;!-- Same as "if" tag --&gt;
+ * &lt;/ifNot&gt;
+ * </pre>
  * @param <T> type of the object to be submitted to the flow.
  * @since 2.0.0
  */

@@ -14,6 +14,7 @@ import lombok.Data;
 @Data
 @Builder(access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Deprecated(since = "3.0.0", forRemoval = true)
 class IncludeDirective {
     private final String reference;
     private final String tagName;

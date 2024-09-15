@@ -55,7 +55,7 @@ import lombok.ToString;
  * This class is not thread-safe.
  * </p>
  *
- * <h3>Empty and <code>null</code> values</h3>
+ * <h2>Empty and <code>null</code> values</h2>
  * <p>
  * <b>Since 3.0.0</b>, <code>null</code> or empty strings are not matched by
  * default. To have those considered as positive matches, set
@@ -66,7 +66,7 @@ import lombok.ToString;
  * behaves as if the value is an empty string.
  * </p>
  *
- * <h3><code>null</code> pattern</h3>
+ * <h2><code>null</code> pattern</h2>
  * <p>
  * Unless otherwise stated by consuming classes,
  * a <code>null</code> expressions will match everything, but replace nothing.

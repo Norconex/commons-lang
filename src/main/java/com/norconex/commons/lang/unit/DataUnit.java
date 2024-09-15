@@ -30,7 +30,7 @@ import org.apache.commons.lang3.StringUtils;
  * units.
  * </p>
  *
- * <h3>Decimal vs binary notations</h3>
+ * <h2>Decimal vs binary notations</h2>
  * <p>
  * As of 2.0.0, this class aligns with the international standard
  * system of units by treating
@@ -58,7 +58,7 @@ import org.apache.commons.lang3.StringUtils;
  *       <th>Yi</th><td>yobi</td><td>2<sup>80</sup></td></tr>
  * </table>
  *
- * <h3>Bytes vs bits</h3>
+ * <h2>Bytes vs bits</h2>
  * <p>
  * As of 2.0.0, this class supports bits in addition to bytes. They are
  * represented as:
@@ -70,7 +70,7 @@ import org.apache.commons.lang3.StringUtils;
  * </table>
  *
  *
- * <h3>Usage examples</h3>
+ * <h2>Usage examples</h2>
  *
  * <pre>
  *   // how many kibibyte in a gibiabyte amount (binary notation).

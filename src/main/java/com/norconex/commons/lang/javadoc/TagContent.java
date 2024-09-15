@@ -31,6 +31,7 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Deprecated(since = "3.0.0", forRemoval = true)
 public class TagContent {
     @NonNull
     private final UnknownInlineTagTree unknownTag;

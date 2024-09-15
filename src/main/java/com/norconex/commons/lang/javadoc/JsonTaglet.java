@@ -38,7 +38,9 @@ import lombok.AllArgsConstructor;
  *
  *
  * @since 2.0.0
+ * @deprecated Will be removed
  */
+@Deprecated(since = "3.0.0", forRemoval = true)
 public class JsonTaglet extends AbstractInlineTaglet {
 
     public static final String NAME = "nx.json";

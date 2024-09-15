@@ -40,8 +40,7 @@ import lombok.experimental.FieldNameConstants;
  * is assumed not to be encrypted.
  * </p>
  *
- * {@nx.block #doc
- * <h3>Password encryption:</h3>
+ * <h2>Password encryption:</h2>
  * <p>
  * Passwords can be encrypted using <code>EncryptionUtil</code> (or
  * command-line "encrypt.bat" or "encrypt.sh" if those are available to you).
@@ -51,8 +50,8 @@ import lombok.experimental.FieldNameConstants;
  * "value" and "source" is used to properly locate the key.
  * The supported sources are:
  * </p>
- * <p>
- * <table border="1" summary="">
+ * <table border="1">
+ *   <caption>List of sources and their descriptions</caption>
  *   <tr>
  *     <td><code>key</code></td>
  *     <td>The actual encryption key.</td>
@@ -70,8 +69,6 @@ import lombok.experimental.FieldNameConstants;
  *     <td>Name of a JVM system property containing the key.</td>
  *   </tr>
  * </table>
- * </p>
- * }
  *
  * @since 2.0.0
  * @see EncryptionKey

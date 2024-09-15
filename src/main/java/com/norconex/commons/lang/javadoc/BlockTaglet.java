@@ -21,7 +21,9 @@ import org.apache.commons.lang3.StringUtils;
  * inclusion in other classes.</p>
  *
  * @since 2.0.0
+ * @deprecated Will be removed
  */
+@Deprecated(since = "3.0.0", forRemoval = true)
 public class BlockTaglet extends AbstractInlineTaglet {
 
     public static final String NAME = "nx.block";

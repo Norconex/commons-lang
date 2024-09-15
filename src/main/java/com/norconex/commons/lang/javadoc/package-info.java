@@ -15,5 +15,7 @@
 /**
  * Collection of useful Taglets.
  * @since 2.0.0
+ * @deprecated Will be removed
  */
+@Deprecated(since = "3.0.0", forRemoval = true)
 package com.norconex.commons.lang.javadoc;

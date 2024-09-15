@@ -96,16 +96,16 @@ import lombok.extern.slf4j.Slf4j;
  * <p>
  * Simplified mapping of objects to/from XML, JSON, and Yaml.
  * </p>
- * <h3>Polymorphism</h3>
+ * <h2>Polymorphism</h2>
  * <p>
  * Polymorphism is supported in a few different ways.
  * </p>
- * <h3>Via Annotations</h3>
+ * <h2>Via Annotations</h2>
  * <p>
  * First, classes annotated with {@link JsonTypeInfo} and {@link JsonSubTypes}
  * are properly handled by this mapper.
  * </p>
- * <h3>Via registration</h3>
+ * <h2>Via registration</h2>
  * <p>
  * For cases where no annotations are used, you can register one or more
  * classes (typically interfaces) that can have subclasses with
@@ -119,7 +119,7 @@ import lombok.extern.slf4j.Slf4j;
  * (de)serialize sub-types.
  * </p>
  *
- * <h3>Class mapping</h3>
+ * <h2>Class mapping</h2>
  * <p>
  * When auto-registering subtypes, class short names are used (class name
  * without package name). You can optionally provide in the source the full
@@ -132,7 +132,7 @@ import lombok.extern.slf4j.Slf4j;
  * While this mapper supports a wide variety of use cases, it is recommended
  * to use a more elaborate serialization tool for more complex needs.
  * </p>
- * <h3>Configurable objects</h3>
+ * <h2>Configurable objects</h2>
  * <p>
  * Objects implementing {@link Configurable} indicates that a
  * separate class dedicated to configuration is used for bean-style mapping.

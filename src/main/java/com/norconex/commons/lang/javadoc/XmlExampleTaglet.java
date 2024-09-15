@@ -19,14 +19,10 @@ import org.apache.commons.lang3.StringUtils;
 /**
  * <p>{&#64;nx.xml.example} XML beautifier with enhanced functionality.</p>
  *
- * {@nx.xml.example
- * <test>
- *   <sub attr="whatever">Example XML from XMLExampleTaglet.</sub>
- * </test>
- * }
- *
  * @since 2.0.0
+ * @deprecated Will be removed
  */
+@Deprecated(since = "3.0.0", forRemoval = true)
 public class XmlExampleTaglet extends XmlTaglet {
 
     public static final String NAME = "nx.xml.example";

@@ -39,7 +39,7 @@ import lombok.experimental.Accessors;
  * ({@link Date}, {@link LocalDate}, {@link ZonedDateTime}, etc.).
  * The
  * </p>
- * <h3>Default values</h3>
+ * <h2>Default values</h2>
  * When unspecified, the following are the default values:
  * <ul>
  *   <li>Time units: zero</li>

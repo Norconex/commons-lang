@@ -42,7 +42,7 @@ import lombok.extern.slf4j.Slf4j;
  * The following are acceptable symbols for each data units, for bytes and bits.
  * The symbols are case-insensitive, and accent-insensitive.
  * </p>
- * <h3>English decimal notation:</h3>
+ * <h2>English decimal notation:</h2>
  * <ul>
  *   <li>kB,kilobyte,kilobytes, kbit,kilobit,kilobits</li>
  *   <li>MB,megabyte,megabytes, Mbit,megabit,megabits</li>
@@ -53,7 +53,7 @@ import lombok.extern.slf4j.Slf4j;
  *   <li>ZB,zettabyte,zettabytes, Zbit,zettabit,zettabits</li>
  *   <li>YB,yottabyte,yottabytes, Ybit,yottabit,yottabits</li>
  * </ul>
- * <h3>English binary notation:</h3>
+ * <h2>English binary notation:</h2>
  * <ul>
  *   <li>KiB,kibibyte,kibibytes, kibit,kibibit,kibibits</li>
  *   <li>MiB,mebibyte,mebibytes, Mibit,mebibit,mebibits</li>
@@ -65,7 +65,7 @@ import lombok.extern.slf4j.Slf4j;
  *   <li>YiB,yobibyte,yobibytes, Yibit,yobibit,yobibits</li>
  * </ul>
  *
- * <h3>French notations</h3>
+ * <h2>French notations</h2>
  * <p>
  * French uses the same symbols. Accents aside, the names are also the same,
  * except for replacing "byte" with "octet"
@@ -90,7 +90,7 @@ import lombok.extern.slf4j.Slf4j;
  * are ignored.
  * </p>
  *
- * <h3>Examples:</h3>
+ * <h2>Examples:</h2>
  * <p>
  * All of the following will be parsed properly:
  * </p>

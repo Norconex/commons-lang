@@ -46,7 +46,7 @@ import lombok.ToString;
  * Languages supported are English (default) and French (since 2.0.0).
  * Here is are acceptable values for each duration units.
  * </p>
- * <h3>English:</h3>
+ * <h2>English:</h2>
  * <ul>
  *   <li>Y,yr,yrs,year,years</li>
  *   <li>M,mo,mos,mth,mths,month,months</li>
@@ -57,7 +57,7 @@ import lombok.ToString;
  *   <li>s,sec,secs,second,seconds</li>
  *   <li>ms,msec,msecs,millis,millisecond,milliseconds</li>
  * </ul>
- * <h3>French:</h3>
+ * <h2>French:</h2>
  * <ul>
  *   <li>A,an,ans,ann&eacute;e,ann&eacute;es</li>
  *   <li>M,mo,mos,mois</li>
@@ -78,7 +78,7 @@ import lombok.ToString;
  * are ignored.
  * </p>
  *
- * <h3>Examples:</h3>
+ * <h2>Examples:</h2>
  * <p>
  * All of the following will be parsed properly:
  * </p>

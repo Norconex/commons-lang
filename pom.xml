@@ -29,6 +29,8 @@
     <java.version>17</java.version>
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
+    <maven.compiler.release>${java.version}</maven.compiler.release>
+    
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <sonar.organization>norconex</sonar.organization>
@@ -67,7 +69,7 @@
     <testcontainers.version>1.16.0</testcontainers.version>
 
     <!-- Test and provided -->      
-    <lombok.version>1.18.32</lombok.version>
+    <lombok.version>1.18.34</lombok.version>
     
     <!-- === Maven plugins ================================================= -->
 
@@ -398,39 +400,6 @@
 
     <plugins>
 
-      <!-- This is only required to avoid false warnings in Eclipse:
-           https://stackoverflow.com/questions/23908837/
-           apache-camel-maven-remote-resources-plugin-goal-process-is-
-           ignored-by-m2e
-        -->
-        <!--
-      <plugin>
-        <groupId>org.eclipse.m2e</groupId>
-        <artifactId>lifecycle-mapping</artifactId>
-        <version>1.0.0</version>
-        <configuration>
-          <lifecycleMappingMetadata>
-            <pluginExecutions>
-              <pluginExecution>
-                <pluginExecutionFilter>
-                  <groupId>org.apache.maven.plugins</groupId>
-                  <artifactId>maven-remote-resources-plugin</artifactId>
-                  <versionRange>[1.0,)</versionRange>
-                  <goals>
-                    <goal>process</goal>
-                  </goals>
-                </pluginExecutionFilter>
-                <action>
-                  <ignore>
-                  </ignore>
-                </action>
-              </pluginExecution>
-            </pluginExecutions>
-          </lifecycleMappingMetadata>
-        </configuration>
-      </plugin>
-      -->
-
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
@@ -466,6 +435,20 @@
             <artifactId>lombok</artifactId>
             <version>${lombok.version}</version>
           </dependency>
+          
+          <!-- test -->
+          <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${commons-lang3.version}</version>
+          </dependency>          
+          <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>${jackson.version}</version>
+          </dependency>
+          
+          
         </dependencies>
         <executions>
           <execution>
@@ -506,15 +489,6 @@
             </goals>
             <phase>generate-resources</phase>
           </execution>
-          <!-- NOT NEEDED: listing available in licenses.xml sufficient?
-          <execution>
-            <id>create-license-list</id>
-            <goals>
-              <goal>add-third-party</goal>
-            </goals>
-            <phase>generate-resources</phase>
-          </execution>
-           -->
         </executions>
       </plugin>
 
@@ -555,11 +529,18 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.11.0</version>
+        <version>3.13.0</version>
         <configuration>
           <source>${maven.compiler.source}</source>
           <target>${maven.compiler.target}</target>
           <encoding>UTF-8</encoding>
+          <annotationProcessorPaths>
+            <path>
+              <groupId>org.projectlombok</groupId>
+              <artifactId>lombok</artifactId>
+              <version>${lombok.version}</version>
+            </path>
+          </annotationProcessorPaths>          
         </configuration>
       </plugin>
 
@@ -572,100 +553,30 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>3.4.1</version>
+        <version>3.10.0</version>
         <configuration>
-          <reportOutputDirectory>${project.build.directory}/site</reportOutputDirectory>
-          <outputDirectory>${project.build.directory}/site/apidocs</outputDirectory>
-          <stylesheetfile>${project.build.directory}/site/apidocs/norconex-javadoc.css</stylesheetfile>
-          
-          <!-- Until Lombok fixes JavaDoc generation with @SuperBuilder:
-               https://github.com/projectlombok/lombok/issues/3147 -->
-          <failOnError>false</failOnError>
-          
-          <!--
-          <resourcesArtifacts>
-            <resourcesArtifact>
-              <groupId>com.norconex.commons</groupId>
-              <artifactId>javadoc-resources</artifactId>
-              <version>${project.version}</version>
-            </resourcesArtifact>
-          </resourcesArtifacts>
-          -->
-          
-          <additionalDependencies>
-<!--          
-            <additionalDependency>
-              <groupId>org.slf4j</groupId>
-              <artifactId>slf4j-api</artifactId>
-              <version>${slf4j.version}</version>
-            </additionalDependency>
-            <additionalDependency>
-              <groupId>org.apache.logging.log4j</groupId>
-              <artifactId>log4j-slf4j-impl</artifactId>
-              <version>${log4j.version}</version>
-            </additionalDependency>
-            <additionalDependency>
-              <groupId>jakarta.xml.bind</groupId>
-              <artifactId>jakarta.xml.bind-api</artifactId>
-              <version>${xml-bind-api.version}</version>
-            </additionalDependency>
-            <additionalDependency>
-              <groupId>org.glassfish.jaxb</groupId>
-              <artifactId>jaxb-runtime</artifactId>
-              <version>${jaxb-runtime.version}</version>
-            </additionalDependency>
--->
-          </additionalDependencies>
-          
+          <outputDirectory>${project.build.directory}/site</outputDirectory>
+          <sourcepath>${project.build.directory}/generated-sources/delombok</sourcepath>
+          <sourceFileIncludes>
+            <sourceInclude>com/norconex/**/*.java</sourceInclude>
+          </sourceFileIncludes>
+          <sourceFileExcludes>
+            <sourceExclude>com/fasterxml/**/*.java</sourceExclude>
+            <sourceExclude>com/norconex/commons/lang/javadoc/**/*.java</sourceExclude>
+          </sourceFileExcludes>
           <additionalJOptions>
-            <additionalJOption>--allow-script-in-comments</additionalJOption>
-            <additionalJOption>-J-Dbasedir=${basedir}</additionalJOption>
+            <additionalJOption>-Xdoclint:all</additionalJOption>
+            <additionalJOption>-Xdoclint:-missing</additionalJOption>
           </additionalJOptions>
-          <overview>src/main/javadoc/overview.html</overview>
-          <packagesheader>${project.name} API</packagesheader>
-          <top><![CDATA[
-            <script src="{@docRoot}/jquery-3.3.1.min.js" type="text/javascript"></script>
-            <script src="{@docRoot}/bootstrap.bundle.min.js" type="text/javascript"></script>
-            <script src="{@docRoot}/prism.js" type="text/javascript"></script>
-            <link href="{@docRoot}/bootstrap.min.css" rel="stylesheet" type="text/css">
-            <link href="{@docRoot}/prism.css" rel="stylesheet" type="text/css">
-            <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-          ]]>
-          </top>
-          <header><![CDATA[
-            <div id="pom" class="d-none"
-                 data-doc-root="{@docRoot}"
-                 data-project-name="${project.name}"
-                 data-project-url="${project.url}"
-                 data-project-version="${project.version}"></div>
-          ]]>
-          </header>
-          <footer><![CDATA[
-            <a style="font-size: 1.4em;" href="${project.issueManagement.url}">Submit an Issue</a>
-            &nbsp;&nbsp;|&nbsp;&nbsp; 
-            <a style="font-size: 1.4em;" href="https://norconex.com">norconex.com</a>
-            <script src="{@docRoot}/norconex-javadoc.js" type="text/javascript"></script>
-          ]]>
-          </footer>
           <show>protected</show>
           <nodeprecated>false</nodeprecated>
-          <!--
-          <source>${maven.compiler.source}</source>
-          <sourcepath>${delombok.output}</sourcepath>
-          -->
-          <sourcepath>${project.build.directory}/generated-sources/delombok</sourcepath>
           <detectLinks>false</detectLinks>
           <links>
-            <!-- All above dependencies are referenced here. 
+            <!-- We're trying to resolve links for all above dependencies 
+                 that are referenced in our JavaDoc. 
                  Do not end with forward slash as it can cause issues
                  finding the links.
               -->
-
-            <!-- Norconex dependencies -->
-            <!--
-            <link>https://opensource.norconex.com/commons/lang/v3/apidocs</link>
-            -->
-
             <!-- Regular dependencies -->
             <link>https://commons.apache.org/proper/commons-lang/javadocs/api-release</link>
             <link>https://commons.apache.org/proper/commons-collections/javadocs/api-${commons-collections4.version}</link>
@@ -675,36 +586,8 @@
             <link>https://commons.apache.org/proper/commons-logging/javadocs/api-release</link>
             <link>https://velocity.apache.org/engine/${velocity-engine.version}/apidocs</link>
             <link>https://www.slf4j.org/apidocs</link>
-            <link>https://javadoc.io/doc/com.tdunning/json/latest</link>
             <!-- Missing: xerces (1.1 schema), xpath2, java-cup, jackson/fasterxml --> 
-
-            <!-- Test dependencies -->
-            <link>https://junit.org/junit5/docs/${junit-jupiter.version}/api</link>
-            <link>https://logging.apache.org/log4j/2.x/log4j-api/apidocs</link>
-            <link>https://ant.apache.org/manual/api</link>
           </links>
-          
-          <!-- For IncludeTaglet to work on external source files, the 
-               "-sources.jar" artifact must be present in local Maven 
-               repository or needs to be explicitly added as a JavaDoc
-               additional dependency. 
-               -->
-          <taglets>
-            <taglet><tagletClass>com.norconex.commons.lang.javadoc.IncludeTaglet</tagletClass></taglet>
-            <taglet><tagletClass>com.norconex.commons.lang.javadoc.XMLTaglet</tagletClass></taglet>
-            <taglet><tagletClass>com.norconex.commons.lang.javadoc.XMLUsageTaglet</tagletClass></taglet>
-            <taglet><tagletClass>com.norconex.commons.lang.javadoc.XMLExampleTaglet</tagletClass></taglet>
-            <taglet><tagletClass>com.norconex.commons.lang.javadoc.BlockTaglet</tagletClass></taglet>
-            <taglet><tagletClass>com.norconex.commons.lang.javadoc.HTMLTaglet</tagletClass></taglet>
-            <taglet><tagletClass>com.norconex.commons.lang.javadoc.JSONTaglet</tagletClass></taglet>
-          </taglets>
-          <tagletArtifacts>
-            <tagletArtifact>
-              <groupId>com.norconex.commons</groupId>
-              <artifactId>norconex-commons-lang</artifactId>
-              <version>${project.version}</version>
-            </tagletArtifact>
-          </tagletArtifacts>
         </configuration>
         <executions>
           <execution>
@@ -720,7 +603,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
-        <version>3.2.1</version>
+        <version>3.3.1</version>
         <executions>
           <execution>
             <id>attach-sources</id>
@@ -798,14 +681,8 @@
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <version>3.5.1</version>
-      </plugin>
-      
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-site-plugin</artifactId>
-        <version>4.0.0-M7</version>
+        <version>4.0.0-M16</version>
         <dependencies>
           <dependency>
             <groupId>org.apache.maven.wagon</groupId>
@@ -840,7 +717,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
-        <version>3.3.0</version>
+        <version>3.5.0</version>
         <executions>
           <execution>
             <id>enforce-versions</id>

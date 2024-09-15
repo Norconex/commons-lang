@@ -36,7 +36,7 @@ import jdk.javadoc.doclet.Taglet;
  * source files.
  * </p>
  *
- * <h3>Making comments eligible for inclusion</h3>
+ * <h2>Making comments eligible for inclusion</h2>
  * <p>
  * The text to be included is taken from the declared type JavaDoc comment of
  * the referenced class source file. The given text needs to be wrapped by
@@ -76,7 +76,7 @@ import jdk.javadoc.doclet.Taglet;
  *  }
  * </pre>
  *
- * <h3>Including comments</h3>
+ * <h2>Including comments</h2>
  * <p>
  * The <code>{&#x40;nx.include ...}</code> directive is used
  * to reference other classes along with which comment block to include.
@@ -150,7 +150,9 @@ import jdk.javadoc.doclet.Taglet;
  * </p>
  *
  * @since 2.0.0
+ * @deprecated Will be removed
  */
+@Deprecated(since = "3.0.0", forRemoval = true)
 public class IncludeTaglet implements Taglet {
 
     public static final String NAME = "nx.include";

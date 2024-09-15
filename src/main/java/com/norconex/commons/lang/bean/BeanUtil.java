@@ -107,12 +107,11 @@ public final class BeanUtil {
      * are supported and method name variations will be used to detect
      * read and write methods.
      * </p>
-     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#writables}
-     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#readables}
      *
      * @param bean the bean to get property descriptors from
      * @return list of property descriptors or an empty list if the supplied
      *     bean does not qualify or is <code>null</code>.
+     * @see FluentPropertyDescriptor
      */
     public static List<FluentPropertyDescriptor> getPropertyDescriptors(
             Object bean) {
@@ -143,13 +142,12 @@ public final class BeanUtil {
      * </p>
      * <p>
      * Supports method name variations for accessors.
-     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#writables}
-     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#readables}
      * </p>
      *
      * @param beanClass the bean class to get property descriptors from
      * @return list of property descriptors or an empty list if the supplied
      *     bean does not qualify or is <code>null</code>.
+     * @see FluentPropertyDescriptor
      * @since 3.0.0
      */
     public static List<FluentPropertyDescriptor> getPropertyDescriptors(
@@ -184,11 +182,10 @@ public final class BeanUtil {
      * over the corresponding target properties whose values are
      * <code>null</code>.
      * Supports method name variations for accessors.
-     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#writables}
-     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#readables}
      * @param <T> the type of source and target objects
      * @param target the target object
      * @param source the source object
+     * @see FluentPropertyDescriptor
      */
     public static <T> void copyPropertiesOverNulls(T target, T source) {
         if (source == null || target == null) {
@@ -211,11 +208,10 @@ public final class BeanUtil {
      * Performs shallow copies of source object property values
      * over the corresponding target properties.
      * Supports method name variations for accessors.
-     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#writables}
-     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#readables}
      * @param <T> the type of source and target objects
      * @param target the target object
      * @param source the source object
+     * @see FluentPropertyDescriptor
      */
     public static <T> void copyProperties(T target, T source) {
         if (source == null || target == null) {
@@ -237,12 +233,11 @@ public final class BeanUtil {
      * over the corresponding target properties of the new object.
      * The object type must have an empty constructor.
      * Supports method name variations for accessors.
-     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#writables}
-     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#readables}
      * @param <T> the type of the object being cloned
      * @param bean the object being cloned
      * @return the cloned object
      * @throws BeanException error cloning the bean
+     * @see FluentPropertyDescriptor
      */
     public static <T> T clone(T bean) {
         if (bean == null) {
@@ -354,13 +349,12 @@ public final class BeanUtil {
      * Gets the type of specified object property based on its
      * property descriptor.
      * Supports method name variations for accessors.
-     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#writables}
-     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#readables}
      * @param bean the object
      * @param propertyName the property name
      * @return object property type or <code>null</code> if not a bean property
      *     (e.g., has no read or write method)
      * @throws BeanException on error obtaining the property type
+     * @see FluentPropertyDescriptor
      */
     public static Class<?> getPropertyType(Object bean, String propertyName) {
         if (bean == null || propertyName == null) {
@@ -408,12 +402,11 @@ public final class BeanUtil {
     /**
      * Gets the read method (getter) for a bean property.
      * Supports method name variations for accessors.
-     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#writables}
-     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#readables}
      * @param bean bean object
      * @param propertyName property name
      * @return read method, or {@link Null} if property is write-only
      * @since 3.0.0
+     * @see FluentPropertyDescriptor
      */
     public static Method getReadMethod(Object bean, String propertyName) {
         if (bean == null || propertyName == null) {
@@ -425,12 +418,12 @@ public final class BeanUtil {
     /**
      * Gets the read method (getter) for a bean property.
      * Supports method name variations for accessors.
-     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#writables}
-     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#readables}
+     * @see FluentPropertyDescriptor
      * @param beanClass object class
      * @param propertyName property name
      * @return read method, or {@link Null} if property is write-only
      * @since 3.0.0
+     * @see FluentPropertyDescriptor
      */
     public static Method getReadMethod(
             Class<?> beanClass, String propertyName) {
@@ -465,12 +458,11 @@ public final class BeanUtil {
     /**
      * Gets the write method (setter) for a bean property.
      * Supports method name variations for accessors.
-     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#writables}
-     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#readables}
      * @param bean object
      * @param propertyName property name
      * @return write method, or <code>null</code> if property is read-only
      * @since 3.0.0
+     * @see FluentPropertyDescriptor
      */
     public static Method getWriteMethod(Object bean, String propertyName) {
         if (bean == null || propertyName == null) {
@@ -482,12 +474,11 @@ public final class BeanUtil {
     /**
      * Gets the write method (setter) for a bean property.
      * Supports method name variations for accessors.
-     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#writables}
-     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#readables}
      * @param beanClass object class
      * @param propertyName property name
      * @return write method, or {@link Null} if property is read-only
      * @since 3.0.0
+     * @see FluentPropertyDescriptor
      */
     public static Method getWriteMethod(
             Class<?> beanClass, String propertyName) {
@@ -497,13 +488,12 @@ public final class BeanUtil {
     /**
      * Gets the write method (setter) for a bean property.
      * Supports method name variations for accessors.
-     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#writables}
-     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#readables}
      * @param beanClass object class
      * @param propertyName property name
      * @param propertyType property type, or <code>null</code> if to be detected
      * @return write method, or {@link Null} if property is read-only
      * @since 3.0.0
+     * @see FluentPropertyDescriptor
      */
     public static Method getWriteMethod(
             Class<?> beanClass, String propertyName, Class<?> propertyType) {
@@ -545,14 +535,13 @@ public final class BeanUtil {
      * Gets the value of a bean property. Returns <code>null</code> if the
      * property has no read method.
      * Supports method name variations for accessors.
-     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#writables}
-     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#readables}
      * @param <T> return value type
      * @param bean the object
      * @param propertyName the property name
      * @return object property value or <code>null</code> if no read method
      * @throws BeanException on error obtaining the property value
      * @see BeanUtil#isReadable(Object, String)
+     * @see FluentPropertyDescriptor
      */
     public static <T> T getValue(Object bean, String propertyName) {
         if (bean == null || propertyName == null) {
@@ -589,14 +578,13 @@ public final class BeanUtil {
      * Gets whether a given bean property has a read method for it
      * (getter).
      * Supports method name variations for accessors.
-     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#writables}
-     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#readables}
      * @param bean the object
      * @param propertyName the property name
      * @return <code>true</code> if the object property as a getter method
      * @throws BeanException on error obtaining property information
      * @since 3.0.0, replaces now
      *      deprecated {@link #isGettable(Object, String)}
+     * @see FluentPropertyDescriptor
      */
     public static boolean isReadable(Object bean, String propertyName) {
         if (bean == null || propertyName == null) {
@@ -609,13 +597,12 @@ public final class BeanUtil {
      * Gets whether a given class property has a read method for it
      * (getter).
      * Supports method name variations for accessors.
-     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#writables}
-     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#readables}
      * @param beanClass a bean class
      * @param propertyName the property name
      * @return <code>true</code> if the object property as a getter method
      * @throws BeanException on error obtaining property information
      * @since 3.0.0
+     * @see FluentPropertyDescriptor
      */
     public static boolean isReadable(Class<?> beanClass, String propertyName) {
         if (beanClass == null || propertyName == null) {
@@ -642,13 +629,12 @@ public final class BeanUtil {
      * Sets the value of a bean property only if it is writable. Otherwise
      * does nothing.
      * Supports method name variations for accessors.
-     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#writables}
-     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#readables}
      * @param bean the object
      * @param propertyName the property name
      * @param value object property value
      * @throws BeanException on error obtaining the property value
      * @see #isWritable(Object, String)
+     * @see FluentPropertyDescriptor
      */
     public static void setValue(
             @NonNull Object bean, @NonNull String propertyName, Object value) {
@@ -666,13 +652,12 @@ public final class BeanUtil {
     /**
      * Gets whether a given bean property has a write method for it (setter).
      * Supports method name variations for accessors.
-     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#writables}
-     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#readables}
      * @param bean the object
      * @param propertyName the property name
      * @return <code>true</code> if the object property as a setter method
      * @throws BeanException on error obtaining property information
      * @deprecated Use {@link #isWritable(Object, String)} instead.
+     * @see FluentPropertyDescriptor
      */
     @Deprecated(since = "3.0.0")
     public static boolean isSettable( //NOSONAR
@@ -683,13 +668,12 @@ public final class BeanUtil {
     /**
      * Gets whether a given bean property has a write method for it (setter).
      * Supports method name variations for accessors.
-     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#writables}
-     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#readables}
      * @param bean the object
      * @param propertyName the property name
      * @return <code>true</code> if the object property as a write method
      * @throws BeanException on error obtaining property information
      * @since 3.0.0
+     * @see FluentPropertyDescriptor
      */
     public static boolean isWritable(Object bean, String propertyName) {
         if (bean == null || propertyName == null) {
@@ -701,13 +685,12 @@ public final class BeanUtil {
     /**
      * Gets whether a given bean property has a write method for it (setter).
      * Supports method name variations for accessors.
-     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#writables}
-     * {@nx.include com.norconex.commons.lang.bean.FluentPropertyDescriptor#readables}
      * @param beanClass bean class
      * @param propertyName property name
      * @return <code>true</code> if the object property as a write method
      * @throws BeanException on error obtaining property information
      * @since 3.0.0
+     * @see FluentPropertyDescriptor
      */
     public static boolean isWritable(Class<?> beanClass, String propertyName) {
         if (beanClass == null || propertyName == null) {

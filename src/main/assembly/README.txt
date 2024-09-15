@@ -1,5 +1,5 @@
 Norconex Commons Lang
-Copyright 2008 Norconex Inc.
+Copyright 2008-2024 Norconex Inc.
 
 General Information:
 ====================
@@ -20,6 +20,6 @@ See LICENSE.txt for a copy of that license.
 Third-party licenses:
 =====================
 
-For third-party licenses, read the third-party/THIRD-PARTY.txt file.
-A copy of third-party license files can be found under the "third-party"
-directory.
+Refer to "third-party/licenses.xml" for a listing of third party licenses.
+A copy of third-party license files can also be found under the  
+"third-party/licenses" directory.

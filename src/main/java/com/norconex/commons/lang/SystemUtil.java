@@ -134,7 +134,7 @@ public final class SystemUtil {
      * Useful when the invoked code expects a system property that is
      * configurable and may change from one thread to another.
      * </p>
-     * <h3><code>null</code> handling</h3>
+     * <h4><code>null</code> handling</h4>
      * <p>
      * This method is <code>null</code>-safe.
      * If the runnable is <code>null</code>, invoking this method has no effect.
@@ -181,7 +181,7 @@ public final class SystemUtil {
      * Useful when the invoked code expects a system property that is
      * configurable and may change from one thread to another.
      * </p>
-     * <h3><code>null</code> handling</h3>
+     * <h4><code>null</code> handling</h4>
      * <p>
      * This method is <code>null</code>-safe.
      * If the callable is <code>null</code>, invoking this method returns

@@ -24,7 +24,9 @@ import com.norconex.commons.lang.xml.XmlFormatter.Builder.AttributeWrap;
  * HTML has to follow basic XML syntax.</p>
  *
  * @since 2.0.0
+ * @deprecated Will be removed
  */
+@Deprecated(since = "3.0.0", forRemoval = true)
 public class HtmlTaglet extends AbstractInlineTaglet {
 
     public static final String NAME = "nx.html";

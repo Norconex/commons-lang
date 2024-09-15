@@ -29,20 +29,10 @@ import com.norconex.commons.lang.xml.XmlFormatter.Builder.AttributeWrap;
  *   samples were generated.
  * </p>
  *
- * {@nx.xml
- * <test>
- *   <sub attr="xml-taglet-test">This is an XML example.</sub>
- * </test>
- * }
- *
- * {@nx.xml #usage
- * <test>
- *   <sub attr="xml-taglet-test">This is another XML example.</sub>
- * </test>
- * }
- *
  * @since 2.0.0
+ * @deprecated Will be removed
  */
+@Deprecated(since = "3.0.0", forRemoval = true)
 public class XmlTaglet extends AbstractInlineTaglet {
 
     public static final String NAME = "nx.xml";

@@ -32,7 +32,7 @@ import lombok.Singular;
  * <a href="https://semver.org/">https://semver.org/</a> specifications.
  * Use available builder options for more lenient parsing.
  * </p>
- * <h3>Max version length</h3>
+ * <h2>Max version length</h2>
  * <p>
  * The maximum string length supported by this parser is 255 characters.
  * Longer strings will throw a {@link SemanticVersionParserException}

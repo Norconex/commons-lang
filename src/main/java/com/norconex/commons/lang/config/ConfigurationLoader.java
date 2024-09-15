@@ -44,7 +44,7 @@ import lombok.NonNull;
  * <p>Configuration file parser using Velocity template engine
  * which supports variables, parse/include directives, and more).
  * </p>
- * <h3>Variables</h3>
+ * <h2>Variables</h2>
  * <p>
  * Variables can be defined in a few different ways (in order of precedence):
  * system properties, environment variable, or variable files. In a
@@ -64,7 +64,7 @@ import lombok.NonNull;
  *     found.
  *   </li>
  * </ul>
- * <h4>System Properties</h4>
+ * <h3>System Properties</h3>
  * <p>
  * System properties are typically passed to the JVM at launch time with
  * the <code>-D</code> argument.
@@ -79,7 +79,7 @@ import lombok.NonNull;
  *   <li><code>-DPAGE_TITLE</code></li>
  * </ul>
  *
- * <h4>Environment variables</h4>
+ * <h3>Environment variables</h3>
  * <p>
  * Environment variables are typically set at a user account level, or
  * operating system level. Environment variables take precedence over
@@ -94,7 +94,7 @@ import lombok.NonNull;
  *   <li><code>PAGE_TITLE</code></li>
  * </ul>
  *
- * <h4>Implicit variable files</h4>
+ * <h3>Implicit variable files</h3>
  * <p>
  * Configuration templates, whether the main template or any template
  * included using the <code>#parse</code> directive, can have variable files
@@ -125,7 +125,7 @@ import lombok.NonNull;
  * precedence.
  * </p>
  *
- * <h4>Explicit variable files</h4>
+ * <h3>Explicit variable files</h3>
  * <p>
  * Any <code>.variables</code> or <code>.properties</code> file
  * can also be specified using the
@@ -135,7 +135,7 @@ import lombok.NonNull;
  * types is the same as described under <em>Implicit variable files</em> above.
  * </p>
  *
- * <h3>Configuration fragments</h3>
+ * <h2>Configuration fragments</h2>
  * <p>
  * To include configuration fragments and favor reuse, use the
  * <code>#include("myfile.cg")</code> or <code>#parse("myfile.cg")</code>

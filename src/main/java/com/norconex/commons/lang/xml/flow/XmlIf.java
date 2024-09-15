@@ -49,37 +49,37 @@ import lombok.ToString;
  * {@link Predicate} which trigger {@link Consumer} objects if evaluating
  * to <code>true</code>.
  * </p>
- * <h3>XML Syntax</h3>
- * {@nx.xml
- * <if>
- *   <!--
+ * <h2>XML Syntax</h2>
+ * <pre>
+ * &lt;if&gt;
+ *   &lt;!--
  *     A single XML "condition" or "conditions" (i.e., condition group).
  *     A condition group accepts an operator. Example:
- *     -->
- *   <conditions operator="[AND|OR]">
- *     <!--
+ *     --&gt;
+ *   &lt;conditions operator="[AND|OR]"&gt;
+ *     &lt;!--
  *       Unless you have a default implementation configured, "condition"
  *       expects a "class" attribute pointing to a Predicate implementation.
  *       E.g.:
- *       -->
- *     <condition class="(a Predicate implementation)">
- *     <condition class="(a Predicate implementation)">
- *   </conditions>
- *   <then>
- *     <!--
+ *       --&gt;
+ *     &lt;condition class="(a Predicate implementation)"&gt;
+ *     &lt;condition class="(a Predicate implementation)"&gt;
+ *   &lt;/conditions&gt;
+ *   &lt;then&gt;
+ *     &lt;!--
  *       Holds one or more XML elements with a "class" attribute pointing to a
  *       Consumer implementation. Executed when above condition or condition
  *       group evaluates to true. Can also contain nested if/ifNot blocks.
- *       -->
- *   </then>
- *   <else>
- *     <!--
+ *       --&gt;
+ *   &lt;/then&gt;
+ *   &lt;else&gt;
+ *     &lt;!--
  *       Optional. Same as "then" above, but triggered if the condition
  *       evaluates to false. Can also contain nested if/ifNot blocks.
- *       -->
- *   </else>
- * </if>
- * }
+ *       --&gt;
+ *   &lt;/else&gt;
+ * &lt;/if&gt;
+ * </pre>
  * @since 2.0.0
  */
 @ToString
@@ -138,7 +138,7 @@ class XmlIf<T> implements Consumer<T>, XmlConfigurable {
                             .replaceAll("[\n\r]", ""), 40)
                     + "\"");
         }
-        var cond = new XmlCondition<T>(flow);
+        var cond = new XmlCondition<>(flow);
         cond.loadFromXML(bag.get(0));
         condition = cond;
 

@@ -1,5 +1,5 @@
 @echo off
-REM Copyright 2017 Norconex Inc.
+REM Copyright 2017-2024 Norconex Inc.
 REM 
 REM Licensed under the Apache License, Version 2.0 (the "License");
 REM you may not use this file except in compliance with the License.
@@ -17,15 +17,9 @@ cd %~dp0
 echo.
 echo PLEASE READ CAREFULLY
 echo.
-echo To install this component and its dependencies into another product, 
-echo please specify the target product directory where libraries (.jar files)
-echo can be found.
-echo.
-echo This is often a "lib" directory. For example, to install this component  
-echo into the Norconex HTTP Collector, specify the full path to the Collector
-echo "lib" directory, which may look somewhat like this:
-echo. 
-echo    C:\MyProject\norconex-collector-http-x.x.x\lib
+echo To install this component and its into an existing installation, 
+echo please specify the target directory where Java libraries 
+echo (.jar files) are stored. This is often a "lib" directory.
 echo.
 echo If .jar duplicates are found, you will be asked how you wish to deal with
 echo them. It is recommended to try keep most recent versions upon encountering

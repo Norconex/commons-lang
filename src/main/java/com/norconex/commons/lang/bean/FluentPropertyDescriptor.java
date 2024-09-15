@@ -47,24 +47,20 @@ import org.apache.commons.lang3.reflect.MethodUtils;
  * (for cases where their might be more than one variation on a class for
  * the same property).
  * </p>
- * {@nx.block #readables
- * <h3>Supported readable method styles (getters)</h3>
+ * <h2>Supported readable method styles (getters)</h2>
  * <ul>
  *   <li><code>Foo getFoo()</code></li>
  *   <li><code>boolean isFoo()</code>
  *   <li><code>Foo foo()</code></li>
  * </ul>
- * }
  *
- * {@nx.block #writables
- * <h3>Supported writable method styles (setters)</h3>
+ * <h2>Supported writable method styles (setters)</h2>
  * <ul>
  *   <li><code>void setFoo(Foo foo)</code></li>
  *   <li><code><i>Self</i> setFoo(Foo foo) //Self is "this" instance</code></li>
  *   <li><code>void foo(Foo foo)</code></li>
  *   <li><code><i>Self</i> foo(Foo foo) //Self is "this" instance</code></li>
  * </ul>
- * }
  *
  * @version 2.0.0
  */

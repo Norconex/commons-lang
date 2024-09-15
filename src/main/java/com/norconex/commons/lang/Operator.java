@@ -28,14 +28,14 @@ import com.fasterxml.jackson.annotation.JsonValue;
  * as strings
  * </p>
  *
- * {@nx.block #operators
- * <h3>Textual representation:</h3>
+ * <h2>Textual representation:</h2>
  * <p>
  * Operators can be parsed using symbols or
  * text abbreviations. Text abbreviations are useful when you do now want to
  * concern yourself when used in XML. Possible representations are:
  * </p>
  * <table>
+ *   <caption>Text representation of operator symbols</caption>
  *   <tr><th>Symbol</th><th>Abbreviation</th><th>Meaning</th></tr>
  *   <tr><td>&gt;</td><td>gt</td><td>greater than</td></tr>
  *   <tr><td>&gt;=, =&gt;</td><td>ge</td><td>greater equal</td></tr>
@@ -43,7 +43,6 @@ import com.fasterxml.jackson.annotation.JsonValue;
  *   <tr><td>&lt;=, =&lt;</td><td>le</td><td>lowe equal</td></tr>
  *   <tr><td>=, ==</td><td>eq,is</td><td>equals</td></tr>
  * </table>
- * }
  *
  * @since 2.0.0
  */

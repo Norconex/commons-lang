@@ -41,7 +41,7 @@ import lombok.ToString;
  * with support for empty or <code>null</code> values
  * </p>
  *
- * <h3>Empty and <code>null</code> values</h3>
+ * <h2>Empty and <code>null</code> values</h2>
  * <p>
  * <b>Since 3.0.0</b>, you can force <code>null</code> and empty strings
  * to be considered a positive match, regardless of the specified pattern.

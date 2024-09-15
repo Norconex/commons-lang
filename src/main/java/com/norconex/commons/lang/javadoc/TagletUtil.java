@@ -24,21 +24,17 @@ import org.apache.commons.lang3.StringUtils;
 import com.sun.source.doctree.DocTree;
 import com.sun.source.doctree.UnknownInlineTagTree;
 
+@Deprecated(since = "3.0.0", forRemoval = true)
 final class TagletUtil {
 
     private TagletUtil() {
     }
 
     static boolean isDeclaredType(TypeElement el) {
-        switch (el.getKind()) {
-            case CLASS:
-            case INTERFACE:
-            case ENUM:
-            case ANNOTATION_TYPE:
-                return true;
-            default:
-                return false;
-        }
+        return switch (el.getKind()) {
+            case CLASS, INTERFACE, ENUM, ANNOTATION_TYPE -> true;
+            default -> false;
+        };
     }
 
     static UnknownInlineTagTree toUnknownInlineTagTreeOrFail(DocTree docTree) {

@@ -121,7 +121,7 @@ import lombok.extern.slf4j.Slf4j;
  * validating, and populating classes from/to XML, with support
  * for {@link XmlConfigurable} and {@link JAXB}.
  * </p>
- * <h3>XML syntax and white spaces</h3>
+ * <h2>XML syntax and white spaces</h2>
  * <p>
  * Some white spaces in element text may be removed when parsed.
  * To keep them, add the XML standard attribute
@@ -1763,7 +1763,7 @@ public class Xml implements Iterable<XmlCursor> {
      * Validates this XML against an XSD schema attached to the class
      * represented in this XML root tag "class" attribute.
      * </p>
-     * <h3>Error handling</h3>
+     * <h4>Error handling</h4>
      * <p>
      * The expected behavior when encountering validation errors is tied
      * to the registered {@link ErrorHandler}. When no error handler is
@@ -1794,7 +1794,7 @@ public class Xml implements Iterable<XmlCursor> {
      * Validates this XML against an XSD schema attached to the class
      * represented in this XML root tag "class" attribute.
      * </p>
-     * <h3>Error handling</h3>
+     * <h4>Error handling</h4>
      * <p>
      * The expected behavior when encountering validation errors is tied
      * to the registered {@link ErrorHandler}. When no error handler is
@@ -1829,7 +1829,7 @@ public class Xml implements Iterable<XmlCursor> {
      * Validates this XML against an XSD schema attached to the class
      * represented in this XML root tag "class" attribute.
      * </p>
-     * <h3>Error handling</h3>
+     * <h4>Error handling</h4>
      * <p>
      * The expected behavior when encountering validation errors is tied
      * to the registered {@link ErrorHandler}. When no error handler is
