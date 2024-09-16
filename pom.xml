@@ -476,7 +476,6 @@
         </executions>
       </plugin>
 
-      <!-- https://www.mojohaus.org/license-maven-plugin/ -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>license-maven-plugin</artifactId>
@@ -555,7 +554,7 @@
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>3.10.0</version>
         <configuration>
-          <outputDirectory>${project.build.directory}/site</outputDirectory>
+          <outputDirectory>${project.build.directory}</outputDirectory>
           <sourcepath>${project.build.directory}/generated-sources/delombok</sourcepath>
           <sourceFileIncludes>
             <sourceInclude>com/norconex/**/*.java</sourceInclude>

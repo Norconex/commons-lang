@@ -44,7 +44,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.With;
 import lombok.experimental.Accessors;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Performs a version-sensitive copy a Jar file or directory containing Jar
@@ -53,7 +52,6 @@ import lombok.extern.slf4j.Slf4j;
  * this application to be run from a command prompt.
  * @since 1.10.0
  */
-@Slf4j
 public class JarCopier {
 
     //MAYBE option to do a dry-run (show table-like findings + expected result)
@@ -345,16 +343,26 @@ public class JarCopier {
     private static void error(String error, Object... args) {
         if (commandLine) {
             System.err.println(String.format(error, args)); //NOSONAR
-        } else if (LOG.isErrorEnabled()) {
-            LOG.error(String.format(error, args));
+        } else {
+            // declaring logging here to prevent warnings on command prompt
+            // where deps may not be present.
+            var LOG = org.slf4j.LoggerFactory.getLogger(JarCopier.class);
+            if (LOG.isErrorEnabled()) {
+                LOG.error(String.format(error, args));
+            }
         }
     }
 
     private static void info(String info, Object... args) {
         if (commandLine) {
             System.out.println(String.format(info, args)); //NOSONAR
-        } else if (LOG.isInfoEnabled()) {
-            LOG.info(String.format(info, args));
+        } else {
+            // declaring logging here to prevent warnings on command prompt
+            // where deps may not be present.
+            var LOG = org.slf4j.LoggerFactory.getLogger(JarCopier.class);
+            if (LOG.isInfoEnabled()) {
+                LOG.info(String.format(info, args));
+            }
         }
     }
 

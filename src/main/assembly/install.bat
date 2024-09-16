@@ -17,8 +17,8 @@ cd %~dp0
 echo.
 echo PLEASE READ CAREFULLY
 echo.
-echo To install this component and its into an existing installation, 
-echo please specify the target directory where Java libraries 
+echo To install this component and its dependencies into an existing 
+echo installation, please specify the target directory where Java libraries 
 echo (.jar files) are stored. This is often a "lib" directory.
 echo.
 echo If .jar duplicates are found, you will be asked how you wish to deal with
