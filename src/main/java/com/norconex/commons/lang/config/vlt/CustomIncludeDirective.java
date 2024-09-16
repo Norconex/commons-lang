@@ -1,5 +1,6 @@
 package com.norconex.commons.lang.config.vlt;
 
+import com.norconex.commons.lang.config.ConfigurationException;
 import org.apache.velocity.app.event.EventHandlerUtil;
 import org.apache.velocity.context.InternalContextAdapter;
 import org.apache.velocity.exception.MethodInvocationException;
@@ -52,7 +53,7 @@ public class CustomIncludeDirective extends Include {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new ConfigurationException(e);
         }
         return true;
     }

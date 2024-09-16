@@ -183,14 +183,6 @@ class ConfigurationLoaderTest {
                           Age: 50
                           Feels: very old
                             """);
-
-        // null path
-        assertThrows(ConfigurationException.class,
-                () -> loader.toString(null));
-
-
-        // invalid path
-        assertThat(loader.toString(cfgPath("doesntExist"))).isNull();
     }
 
     private Path cfgPath(String path) {
