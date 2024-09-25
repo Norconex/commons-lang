@@ -2,7 +2,6 @@ package com.norconex.commons.lang.config.vlt;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 import com.norconex.commons.lang.SystemUtil;
 import com.norconex.commons.lang.config.ConfigurationLoader;
