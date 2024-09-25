@@ -4,15 +4,20 @@ import com.norconex.commons.lang.SystemUtil;
 import com.norconex.commons.lang.config.ConfigurationException;
 import com.norconex.commons.lang.config.ConfigurationLoader;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.velocity.VelocityContext;
 import org.apache.velocity.exception.ParseErrorException;
 import org.apache.velocity.exception.ResourceNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.StringWriter;
 import java.nio.file.Path;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import org.apache.velocity.app.VelocityEngine;
 
 public class CustomIncludeDirectiveTest {
 
@@ -21,9 +26,42 @@ public class CustomIncludeDirectiveTest {
 
     private ConfigurationLoader configLoader;
 
+    private VelocityEngine velocityEngine;
+
     @BeforeEach
     void beforeEach() {
         configLoader = ConfigurationLoader.builder().build();
+    }
+
+    @BeforeEach
+    void setUp() {
+        // Initialize Velocity engine
+        velocityEngine = new VelocityEngine();
+        velocityEngine.setProperty("runtime.custom_directives",
+                "com.norconex.commons.lang.config.vlt.CustomIncludeDirective,"
+                        + "com.norconex.commons.lang.config.vlt.CustomParseDirective");
+
+        velocityEngine.init();
+    }
+
+    @Test
+    void testIncludeWithNullArgument() throws Exception {
+
+        //test 40-42
+        // Prepare the template with the #include directive and a null argument
+        String template = "#include($nullArg)";
+
+        // Set up Velocity context
+        VelocityContext context = new VelocityContext();
+        context.put("nullArg", null);
+
+        // Render the template
+        StringWriter writer = new StringWriter();
+        velocityEngine.evaluate(context, writer, "test", template);
+
+        // Verify that the output is as expected (empty output or error handling depending on implementation)
+        String output = writer.toString();
+        assertEquals("", output, "null error with arg 0 please see log. null");
     }
 
 
