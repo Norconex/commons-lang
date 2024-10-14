@@ -42,22 +42,22 @@ public class ConverterTest {
     @Test
     public void testNumberConverter() {
         assertConvert("64", (byte) 64, byte.class);
-        assertConvert("64", Byte.valueOf((byte) 64), Byte.class);
+        assertConvert("64", (byte) 64, Byte.class);
 
         assertConvert("37", (short) 37, short.class);
-        assertConvert("37", Short.valueOf((short) 37), Short.class);
+        assertConvert("37", (short) 37, Short.class);
 
         assertConvert("123", 123, int.class);
-        assertConvert("123", Integer.valueOf(123), Integer.class);
+        assertConvert("123", 123, Integer.class);
 
         assertConvert("456.78", 456.78f, float.class);
-        assertConvert("456.78", Float.valueOf(456.78f), Float.class);
+        assertConvert("456.78", 456.78f, Float.class);
 
         assertConvert("901", 901L, long.class);
-        assertConvert("901", Long.valueOf(901L), Long.class);
+        assertConvert("901", 901L, Long.class);
 
         assertConvert("234.56", 234.56d, double.class);
-        assertConvert("234.56", Double.valueOf(234.56d), Double.class);
+        assertConvert("234.56", 234.56d, Double.class);
 
         assertConvert("789012", BigInteger.valueOf(789012), BigInteger.class);
         assertConvert("34.6789", BigDecimal.valueOf(34.6789), BigDecimal.class);
@@ -75,26 +75,26 @@ public class ConverterTest {
 
     @Test
     public void testFileConverter() {
-        String filePath = new File("/tmp/filepath.txt").getAbsolutePath();
+        var filePath = new File("/tmp/filepath.txt").getAbsolutePath();
         assertConvert(filePath, new File(filePath), File.class);
         assertConvert(filePath, Paths.get(filePath), Path.class);
     }
 
     @Test
     public void testDateConverter() {
-        Date now = new Date();
+        var now = new Date();
         assertConvert(Long.toString(now.getTime()), now, Date.class);
     }
 
     @Test
     public void testLocalDateTimeConverter() {
-        LocalDateTime now = LocalDateTime.now();
+        var now = LocalDateTime.now();
         assertConvert(now.toString(), now, LocalDateTime.class);
     }
 
     @Test
     public void testDimensionConverter() {
-        Dimension d = new Dimension(640, 480);
+        var d = new Dimension(640, 480);
 
         //to string
         Assertions.assertEquals("640x480", Converter.convert(d));
@@ -126,7 +126,7 @@ public class ConverterTest {
     @Test
     public void testCharacterConverter() {
         assertConvert("a", 'a', char.class);
-        assertConvert("b", new Character('b'), Character.class);
+        assertConvert("b", 'b', Character.class);
     }
 
     @Test
@@ -137,7 +137,7 @@ public class ConverterTest {
 
     @Test
     public void testStringConverter() {
-        assertConvert("blah", new String("blah"), String.class);
+        assertConvert("blah", "blah", String.class);
     }
 
     @Test

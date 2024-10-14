@@ -103,7 +103,7 @@ import org.slf4j.LoggerFactory;
  * This class is thread-safe.
  * </p>
  *
- * <a name="year2262"></a>
+ * <a id="year2262"></a>
  * <h3>Year 2262 and beyond</h3>
  * <p>
  * Whenever the millisecond EPOCH representation of the current time reaches
@@ -135,7 +135,6 @@ public final class TimeIdGenerator {
     private static int previousGeneratedDupSequence = 0;
 
     private TimeIdGenerator() {
-        super();
     }
 
     /**
@@ -153,8 +152,8 @@ public final class TimeIdGenerator {
      * @return a long value
      */
     public static synchronized long next() {
-        long time = System.currentTimeMillis() % MILLIS_ROLLOVER_VALUE;
-        long id = time * TIME_MULTIPLIER;
+        var time = System.currentTimeMillis() % MILLIS_ROLLOVER_VALUE;
+        var id = time * TIME_MULTIPLIER;
         id += getDupSequence(time == previousTime);
         previousTime = time;
         previousGeneratedId = id;
@@ -163,7 +162,7 @@ public final class TimeIdGenerator {
 
     private static int getDupSequence(boolean needsIncrement) {
         if (needsIncrement) {
-            int dupSeq = DUP_SEQUENCE.incrementAndGet();
+            var dupSeq = DUP_SEQUENCE.incrementAndGet();
             previousGeneratedDupSequence = dupSeq;
             if (dupSeq == MAX_DUP_SEQUENCE) {
                 while (System.currentTimeMillis() == previousTime) {

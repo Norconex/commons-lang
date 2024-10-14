@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
+import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
@@ -41,7 +42,8 @@ import org.slf4j.LoggerFactory;
  * the word "custom" inserted: <code>ContentType-custom-[...]</code>.
  * The actual custom names and classpath location are:
  * <br><br>
- * <table border="1" summary="">
+ * <table border="1">
+ *   <caption style="display:none;">Original vs custom mapping files.</caption>
  *   <tr>
  *     <th>Original</th>
  *     <th>Custom</th>
@@ -107,8 +109,7 @@ public final class ContentType implements Serializable {
      * @param contentType string representation of a content type
      */
     private ContentType(String contentType) {
-        super();
-        this.type = contentType;
+        type = contentType;
         REGISTRY.put(contentType, this);
     }
 
@@ -120,11 +121,11 @@ public final class ContentType implements Serializable {
      *         {@code null} or blank.
      */
     public static ContentType valueOf(String contentType) {
-        String trimmedType = StringUtils.trim(contentType);
+        var trimmedType = StringUtils.trim(contentType);
         if (StringUtils.isBlank(trimmedType)) {
             return null;
         }
-        ContentType type = REGISTRY.get(trimmedType);
+        var type = REGISTRY.get(trimmedType);
         if (type != null) {
             return type;
         }
@@ -141,9 +142,9 @@ public final class ContentType implements Serializable {
      */
     public static ContentType[] valuesOf(String... contentTypes) {
         if (!ArrayUtils.isEmpty(contentTypes)) {
-            ContentType[] cts = new ContentType[contentTypes.length];
-            for (int i = 0; i < contentTypes.length; i++) {
-                String ctString = contentTypes[i];
+            var cts = new ContentType[contentTypes.length];
+            for (var i = 0; i < contentTypes.length; i++) {
+                var ctString = contentTypes[i];
                 cts[i] = ContentType.valueOf(ctString);
             }
             return cts;
@@ -188,7 +189,7 @@ public final class ContentType implements Serializable {
      * @return display name
      */
     public String getDisplayName(Locale locale) {
-        Locale safeLocale = locale;
+        var safeLocale = locale;
         if (safeLocale == null) {
             safeLocale = Locale.getDefault();
         }
@@ -201,7 +202,7 @@ public final class ContentType implements Serializable {
         return "[" + type + "]";
     }
     private ResourceBundle getDisplayBundle(Locale locale) {
-        ResourceBundle bundle = BUNDLE_DISPLAYNAMES.get(locale);
+        var bundle = BUNDLE_DISPLAYNAMES.get(locale);
         if (bundle != null) {
             return bundle;
         }
@@ -227,7 +228,7 @@ public final class ContentType implements Serializable {
      * @return file extension or empty string if no extension is defined
      */
     public String getExtension() {
-        String[] exts = getExtensions();
+        var exts = getExtensions();
         if (exts == null || exts.length == 0) {
             return StringUtils.EMPTY;
         }
@@ -240,7 +241,7 @@ public final class ContentType implements Serializable {
      */
     public String[] getExtensions() {
         try {
-            String ext = BUNDLE_EXTENSIONS.getString(toBaseTypeString());
+            var ext = BUNDLE_EXTENSIONS.getString(toBaseTypeString());
             return StringUtils.split(ext, ',');
         } catch (MissingResourceException e) {
             LOG.debug("Could not find extension(s) for content type: "
@@ -255,16 +256,12 @@ public final class ContentType implements Serializable {
      * @return {@code true} if the given string matches this content type
      */
     public boolean matches(String contentType) {
-        return this.type.equals(StringUtils.trim(contentType));
+        return type.equals(StringUtils.trim(contentType));
     }
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result
-                + ((type == null) ? 0 : type.hashCode());
-        return result;
+        return Objects.hash(type);
     }
 
     @Override
@@ -272,18 +269,11 @@ public final class ContentType implements Serializable {
         if (this == obj) {
             return true;
         }
-        if (obj == null) {
+        if ((obj == null) || (getClass() != obj.getClass())) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        ContentType other = (ContentType) obj;
-        if (type == null) {
-            if (other.type != null) {
-                return false;
-            }
-        } else if (!type.equals(other.type)) {
+        var other = (ContentType) obj;
+        if (!Objects.equals(type, other.type)) {
             return false;
         }
         return true;

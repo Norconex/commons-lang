@@ -22,11 +22,9 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.beans.Statement;
 import java.beans.Transient;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -64,7 +62,6 @@ public final class BeanUtil {
     private static final Logger LOG = LoggerFactory.getLogger(BeanUtil.class);
 
     private BeanUtil() {
-        super();
     }
 
     public static Class<?> getPropertyType(Object bean, String propertyName) {
@@ -72,7 +69,7 @@ public final class BeanUtil {
             return null;
         }
         try {
-            PropertyDescriptor p =
+            var p =
                     new PropertyDescriptor(propertyName, bean.getClass());
             return p.getPropertyType();
         } catch (IntrospectionException | IllegalArgumentException e) {
@@ -89,8 +86,8 @@ public final class BeanUtil {
             return null;
         }
         try {
-            Field field = beanClass.getDeclaredField(propertyName);
-            Type type = field.getGenericType();
+            var field = beanClass.getDeclaredField(propertyName);
+            var type = field.getGenericType();
             if (type instanceof ParameterizedType) {
                 return (Class<?>)
                         ((ParameterizedType) type).getActualTypeArguments()[0];
@@ -126,11 +123,11 @@ public final class BeanUtil {
             // If child is equal to parent, it may be a source of
             // infinite loop, so we do not return it.  We do the same
             // if the property is transient.
-            Method getter = property.getReadMethod();
+            var getter = property.getReadMethod();
             if (getter.getAnnotation(Transient.class) != null) {
                 return null;
             }
-            T value = (T) getter.invoke(bean);
+            var value = (T) getter.invoke(bean);
             if (Objects.equals(bean, value)) {
                 return null;
             }
@@ -150,7 +147,7 @@ public final class BeanUtil {
         Objects.requireNonNull(propertyName, "propertyName must not be null");
 
         try {
-            Statement stmt = new Statement(
+            var stmt = new Statement(
                     bean, "set" + StringUtils.capitalize(propertyName),
                     new Object[]{value});
             stmt.execute();
@@ -167,7 +164,7 @@ public final class BeanUtil {
             return false;
         }
         try {
-            PropertyDescriptor p =
+            var p =
                     new PropertyDescriptor(propertyName, bean.getClass());
             return p.getWriteMethod() != null;
         } catch (IntrospectionException | IllegalArgumentException e) {
@@ -182,7 +179,7 @@ public final class BeanUtil {
             return false;
         }
         try {
-            PropertyDescriptor p =
+            var p =
                     new PropertyDescriptor(propertyName, bean.getClass());
             return p.getReadMethod() != null;
         } catch (IntrospectionException | IllegalArgumentException e) {
@@ -199,11 +196,11 @@ public final class BeanUtil {
         }
         Map<String, Object> map = new HashMap<>();
         try {
-            PropertyDescriptor[] descs = Introspector.getBeanInfo(
+            var descs = Introspector.getBeanInfo(
                     bean.getClass()).getPropertyDescriptors();
             for (PropertyDescriptor desc : descs) {
-                Method read = desc.getReadMethod();
-                Method write = desc.getWriteMethod();
+                var read = desc.getReadMethod();
+                var write = desc.getWriteMethod();
                 if (read != null && write != null) {
                     map.put(desc.getName(), read.invoke(bean));
                 }
@@ -226,10 +223,10 @@ public final class BeanUtil {
             return new Properties();
         }
 
-        Properties props = new Properties();
+        var props = new Properties();
         for (Entry<String, Object> en : toMap(bean).entrySet()) {
-            String key = en.getKey();
-            Object value = en.getValue();
+            var key = en.getKey();
+            var value = en.getValue();
             if (value == null
                     || ArrayUtils.contains(ignoredProperties, key)) {
                 continue;
@@ -284,20 +281,15 @@ public final class BeanUtil {
         }
         cache.add(bean);
 
-        if (type == null || type.isInstance(bean)) {
-            if (!visitor.test((T) bean)) {
-                return false;
-            }
+        if ((type == null || type.isInstance(bean)) && !visitor.test((T) bean)) {
+            return false;
         }
 
         for (Object child : getChildren(bean)) {
             if (child instanceof Map) {
                 for (Entry<Object, Object> entry :
                         ((Map<Object, Object>) child).entrySet()) {
-                    if (!visit(entry.getKey(), visitor, type, cache)) {
-                        return false;
-                    }
-                    if (!visit(entry.getValue(), visitor, type, cache)) {
+                    if (!visit(entry.getKey(), visitor, type, cache) || !visit(entry.getValue(), visitor, type, cache)) {
                         return false;
                     }
                 }
@@ -307,10 +299,8 @@ public final class BeanUtil {
                         return false;
                     }
                 }
-            } else {
-                if (!visit(child, visitor, type, cache)) {
-                    return false;
-                }
+            } else if (!visit(child, visitor, type, cache)) {
+                return false;
             }
         }
         return true;
@@ -325,7 +315,7 @@ public final class BeanUtil {
         }
         List<Object> list = new ArrayList<>();
         for (PropertyDescriptor desc : getPropertyDescriptors(bean)) {
-            final String name = desc.getName();
+            final var name = desc.getName();
             if (desc.getReadMethod() != null && !"class".equals(name)) {
                 list.add(getValue(bean, name));
             }
@@ -338,7 +328,7 @@ public final class BeanUtil {
             return false;
         }
         for (PropertyDescriptor desc : getPropertyDescriptors(bean)) {
-            final String name = desc.getName();
+            final var name = desc.getName();
             if (desc.getReadMethod() != null && !"class".equals(name)) {
                 return true;
             }
@@ -394,10 +384,7 @@ public final class BeanUtil {
                 for (Entry<Object, Object> entry :
                         ((Map<Object, Object>) child).entrySet()) {
                     if (!visitProperties(
-                            entry.getKey(), visitor, type, cache)) {
-                        return false;
-                    }
-                    if (!visitProperties(
+                            entry.getKey(), visitor, type, cache) || !visitProperties(
                             entry.getValue(), visitor, type, cache)) {
                         return false;
                     }
@@ -408,10 +395,8 @@ public final class BeanUtil {
                         return false;
                     }
                 }
-            } else {
-                if (!visitProperties(child, visitor, type, cache)) {
-                    return false;
-                }
+            } else if (!visitProperties(child, visitor, type, cache)) {
+                return false;
             }
         }
         return true;
@@ -429,7 +414,7 @@ public final class BeanUtil {
             List<PropertyDescriptor> pdList = new ArrayList<>();
             for (PropertyDescriptor pd : Introspector.getBeanInfo(
                     bean.getClass()).getPropertyDescriptors()) {
-                FluentPropertyDescriptor fpd = new FluentPropertyDescriptor(pd);
+                var fpd = new FluentPropertyDescriptor(pd);
                 if (fpd.getReadMethod() != null
                         && fpd.getWriteMethod() != null) {
                     pdList.add(fpd);
@@ -452,7 +437,7 @@ public final class BeanUtil {
             if (obj != source) {
                 return false;
             }
-            String name = pd.getName();
+            var name = pd.getName();
             if (getValue(target, name) == null) {
                 setValue(target, name, getValue(source, name));
             }
@@ -469,7 +454,7 @@ public final class BeanUtil {
             if (obj != source) {
                 return false;
             }
-            String name = pd.getName();
+            var name = pd.getName();
             BeanUtil.setValue(target, name, BeanUtil.getValue(source, name));
             return true;
         });
@@ -488,25 +473,26 @@ public final class BeanUtil {
             }
 
             @SuppressWarnings("unchecked")
-            T newBean = (T) bean.getClass().newInstance();
+            var newBean =
+                    (T) bean.getClass().getDeclaredConstructor().newInstance();
             copyProperties(newBean, bean);
             return newBean;
-        } catch (InstantiationException | IllegalAccessException e) {
+        } catch (Exception e) {
             throw new BeanException("Cannot clone bean.", e);
         }
     }
 
     public static <T> String diff(T bean1, T bean2) {
         //MAYBE: Visit all properties keeping trail, or nesting level
-        Bag<String> b1 = graphLeavesAsBag(bean1);
-        Bag<String> b2 = graphLeavesAsBag(bean2);
+        var b1 = graphLeavesAsBag(bean1);
+        var b2 = graphLeavesAsBag(bean2);
 
         Collection<String> left = CollectionUtils.removeAll(b1, b2);
         Collection<String> right = CollectionUtils.removeAll(b2, b1);
 
         Bag<String> allDiffs = new TreeBag<>((s1, s2) -> {
             // compare keys
-            int comp = substringBefore(s1.substring(1), "=")
+            var comp = substringBefore(s1.substring(1), "=")
                     .compareTo(substringBefore(s2.substring(1), "="));
             if (comp == 0) {
                 // compare left or right
@@ -531,10 +517,10 @@ public final class BeanUtil {
     private static Bag<String> graphLeavesAsBag(Object bean) {
         Bag<String> bag = new HashBag<>();
         visitAllProperties(bean, (o, p) -> {
-            String key = o.getClass().getSimpleName()
+            var key = o.getClass().getSimpleName()
                     + "." + p.getName() + " = ";
-            Object value = getValue(o, p);
-            String line = key;
+            var value = getValue(o, p);
+            var line = key;
             if (!hasChildren(value)) {
                 line += Objects.toString(value);
             } else if (value == null) {
@@ -567,7 +553,7 @@ public final class BeanUtil {
             return null;
         }
         try {
-            FluentPropertyDescriptor pd =
+            var pd =
                     new FluentPropertyDescriptor(propertyName, bean.getClass());
             return pd.getWriteMethod();
         } catch (IntrospectionException e) {

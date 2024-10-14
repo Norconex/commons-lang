@@ -146,7 +146,6 @@ public final class ConfigurationLoader {
      * Constructor.
      */
     public ConfigurationLoader() {
-        super();
         defaultContext = createDefaultContext();
         velocityEngine = createVelocityEngine();
     }
@@ -183,7 +182,7 @@ public final class ConfigurationLoader {
             return null;
         }
         try {
-            String xml = loadString(configFile);
+            var xml = loadString(configFile);
             // clean-up extra duplicate declaration tags due to template
             // includes/imports that could break parsing.
             // Keep first <?xml... tag only, and delete all <!DOCTYPE...
@@ -246,7 +245,7 @@ public final class ConfigurationLoader {
      */
     public <T> T loadFromXML(
             Path configFile, Class<T> objClass, ErrorHandler errorHandler) {
-        XML xml = loadXML(configFile, errorHandler);
+        var xml = loadXML(configFile, errorHandler);
         if (xml == null) {
             return null;
         }
@@ -255,8 +254,8 @@ public final class ConfigurationLoader {
         }
         T obj;
         try {
-            obj = objClass.newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
+            obj = objClass.getDeclaredConstructor().newInstance();
+        } catch (Exception e) {
             throw new ConfigurationException(
                     "This class could not be instantiated: " + objClass, e);
         }
@@ -282,7 +281,7 @@ public final class ConfigurationLoader {
     public void loadFromXML(
             Path configFile, Object object, ErrorHandler errorHandler) {
         Objects.requireNonNull("'object' must not be null.");
-        XML xml = loadXML(configFile, errorHandler);
+        var xml = loadXML(configFile, errorHandler);
         if (xml != null) {
             xml.populate(object);
         }
@@ -303,22 +302,22 @@ public final class ConfigurationLoader {
             return null;
         }
 
-        VelocityContext context = new VelocityContext(defaultContext);
+        var context = new VelocityContext(defaultContext);
 
         // Load from explicitly referenced properties
         loadVariables(context, variablesFile);
 
         // Load from properties matching config file name
-        String file = configFile.toAbsolutePath().toString();
-        String fullpath = FilenameUtils.getFullPath(file);
-        String baseName = FilenameUtils.getBaseName(file);
+        var file = configFile.toAbsolutePath().toString();
+        var fullpath = FilenameUtils.getFullPath(file);
+        var baseName = FilenameUtils.getBaseName(file);
 
-        Path varsFile = getVariablesFile(fullpath, baseName);
+        var varsFile = getVariablesFile(fullpath, baseName);
         if (varsFile != null) {
             loadVariables(context, varsFile);
         }
 
-        StringWriter sw = new StringWriter();
+        var sw = new StringWriter();
         try (Reader reader = Files.newBufferedReader(configFile)) {
             velocityEngine.evaluate(context, sw, file, reader);
         } catch (Exception e) {
@@ -337,7 +336,7 @@ public final class ConfigurationLoader {
 
     // @since 2.0.0
     protected VelocityEngine createVelocityEngine() {
-        VelocityEngine engine = new VelocityEngine();
+        var engine = new VelocityEngine();
         engine.setProperty(RuntimeConstants.EVENTHANDLER_INCLUDE,
                 RelativeIncludeEventHandler.class.getName());
         engine.setProperty(RuntimeConstants.EVENTHANDLER_REFERENCEINSERTION,
@@ -358,7 +357,7 @@ public final class ConfigurationLoader {
     //--- Private methods ------------------------------------------------------
 
     private Path getVariablesFile(String fullpath, String baseName) {
-        Path vars = Paths.get(fullpath + baseName + EXTENSION_PROPERTIES);
+        var vars = Paths.get(fullpath + baseName + EXTENSION_PROPERTIES);
         if (isVariableFile(vars, EXTENSION_PROPERTIES)) {
         	return vars;
         }
@@ -374,15 +373,15 @@ public final class ConfigurationLoader {
             if (isVariableFile(vars, EXTENSION_VARIABLES)) {
                 for (String line : Files.readAllLines(vars)) {
 					if (line.contains("=")) {
-						String key =
+						var key =
 								StringUtils.substringBefore(line, "=").trim();
-						String value =
+						var value =
 								StringUtils.substringAfter(line, "=").trim();
 	                    context.put(key, value);
 					}
 				}
             } else if (isVariableFile(vars, EXTENSION_PROPERTIES)) {
-                Properties props = new Properties();
+                var props = new Properties();
 
                 try (Reader r = Files.newBufferedReader(vars)) {
                     props.load(r);

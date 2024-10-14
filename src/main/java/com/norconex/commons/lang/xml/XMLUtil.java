@@ -65,35 +65,51 @@ public final class XMLUtil {
 
     public static final String W3C_XML_SCHEMA_NS_URI_1_1 =
             "http://www.w3.org/XML/XMLSchema/v1.1";
+    public static final String ACCESS_EXTERNAL_DTD =
+            "http://javax.xml.XMLConstants/property/accessExternalDTD";
+    public static final String ACCESS_EXTERNAL_SCHEMA =
+            "http://javax.xml.XMLConstants/property/accessExternalSchema";
+    public static final String ACCESS_EXTERNAL_STYLESHEET =
+            "http://javax.xml.XMLConstants/property/accessExternalStylesheet";
 
     private static boolean featureErrorsLogged;
     private static boolean propertyErrorsLogged;
+    private static boolean schemaErrorsLogged;
 
     private XMLUtil() {
-        super();
     }
 
     public static Validator createSchemaValidator(Schema schema) {
-        Validator validator = schema.newValidator();
+        var validator = schema.newValidator();
         try {
             validator.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            validator.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
-            validator.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
         } catch (SAXException e) {
-            if (propertyErrorsLogged) {
+            if (!propertyErrorsLogged) {
                 LOG.debug(e.getMessage());
+                propertyErrorsLogged = true;
             }
-            propertyErrorsLogged = false;
         }
         return validator;
     }
 
     public static SchemaFactory createSchemaFactory() {
-        return SchemaFactory.newInstance(W3C_XML_SCHEMA_NS_URI_1_1);
+        var schemaFactory =
+                SchemaFactory.newInstance(W3C_XML_SCHEMA_NS_URI_1_1);
+        try {
+            schemaFactory.setProperty(ACCESS_EXTERNAL_DTD, "");
+            schemaFactory.setProperty(ACCESS_EXTERNAL_SCHEMA, "");
+        } catch (SAXNotRecognizedException | SAXNotSupportedException e) {
+            if (!schemaErrorsLogged) {
+                LOG.debug(e.getMessage());
+                schemaErrorsLogged = true;
+            }
+        }
+        return schemaFactory;
     }
 
     public static XMLReader createXMLReader() throws SAXException {
-        XMLReader xmlReader = XMLReaderFactory.createXMLReader();
+        @SuppressWarnings("deprecation")
+        var xmlReader = XMLReaderFactory.createXMLReader();
         try {
             xmlReader.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
             xmlReader.setFeature("http://apache.org/xml/features/"
@@ -104,16 +120,16 @@ public final class XMLUtil {
                     + "external-parameter-entities", false);
             xmlReader.setEntityResolver((publicId, systemId) -> null);
         } catch (SAXException e) {
-            if (featureErrorsLogged) {
+            if (!featureErrorsLogged) {
                 LOG.debug(e.getMessage());
+                featureErrorsLogged = true;
             }
-            featureErrorsLogged = false;
         }
         return xmlReader;
     }
 
     public static DocumentBuilderFactory createDocumentBuilderFactory() {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        var factory = DocumentBuilderFactory.newInstance();
         try {
             factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
         } catch (ParserConfigurationException e) {
@@ -123,7 +139,7 @@ public final class XMLUtil {
     }
 
     public static SAXParserFactory createSaxParserFactory() {
-        SAXParserFactory factory = SAXParserFactory.newInstance();
+        var factory = SAXParserFactory.newInstance();
         try {
             factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
         } catch (SAXNotRecognizedException | SAXNotSupportedException
@@ -134,7 +150,7 @@ public final class XMLUtil {
     }
 
     public static XMLInputFactory createXMLInputFactory() {
-        XMLInputFactory factory = XMLInputFactory.newInstance();
+        var factory = XMLInputFactory.newInstance();
         factory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
         factory.setProperty("javax.xml.stream.isSupportingExternalEntities", false);
         return factory;
@@ -190,7 +206,7 @@ public final class XMLUtil {
         return createXMLEventReader(path.toFile());
     }
     private static XMLEventReader createXMLEventReader(File file) {
-        try (FileReader r = new FileReader(file)) {
+        try (var r = new FileReader(file)) {
             return createXMLEventReader(r);
         } catch (IOException e) {
             throw new XMLException(
@@ -212,7 +228,7 @@ public final class XMLUtil {
     }
     private static XMLEventReader createXMLEventReader(Reader reader) {
         try {
-            XMLInputFactory factory = XMLUtil.createXMLInputFactory();
+            var factory = XMLUtil.createXMLInputFactory();
             factory.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, false);
             return factory.createXMLEventReader(IOUtils.buffer(reader));
         } catch (XMLStreamException e) {
@@ -225,8 +241,8 @@ public final class XMLUtil {
     // We account for that in the next two methods, as we always want the
     // local name to be // the part after ":" when present.
     protected static String toLocalName(QName qname) {
-        String name = toName(qname);
-        String localName = StringUtils.substringAfterLast(name, ":");
+        var name = toName(qname);
+        var localName = StringUtils.substringAfterLast(name, ":");
         if (StringUtils.isBlank(localName)) {
             return name;
         }

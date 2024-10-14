@@ -7,6 +7,19 @@
   </properties>
   <body>
 
+    <release version="2.1.0-SHAPSHOT" date="2024-??-??" 
+        description="Maintenance release.">
+      <action dev="essiembre" type="update">
+        Now require Java 11.
+      </action>
+      <action dev="essiembre" type="update">
+        Maven dependency updates.
+      </action>
+      <action dev="essiembre" type="update">
+        Taglets refactored to work with Java 11.
+      </action>
+    </release>
+
     <release version="2.0.2" date="2023-07-09" 
         description="Maintenance release.">
       <action dev="ohtwadi" type="fix">

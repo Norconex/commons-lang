@@ -87,7 +87,7 @@ public class ByteArrayOutputStream extends OutputStream {
                 "Negative initial size: " + size);
         }
         synchronized (this) {
-            this.bufferCapacity = size;
+            bufferCapacity = size;
             addNewBuffer();
         }
 
@@ -107,12 +107,12 @@ public class ByteArrayOutputStream extends OutputStream {
      * @return a decimal byte value
      */
     public int getByte(int offset) {
-        int pos = Math.max(0, offset);
+        var pos = Math.max(0, offset);
         if (pos >= totalCount) {
             return -1;
         }
-        int buffersIndex = pos / bufferCapacity;
-        int bufPos = pos % bufferCapacity;
+        var buffersIndex = pos / bufferCapacity;
+        var bufPos = pos % bufferCapacity;
         return buffers.get(buffersIndex)[bufPos];
     }
 
@@ -135,19 +135,19 @@ public class ByteArrayOutputStream extends OutputStream {
         }
 
         //TODO no need to synchronize since read-only and no cursor?
-        int thisStartOffset = Math.max(0, offset);
+        var thisStartOffset = Math.max(0, offset);
         if (thisStartOffset >= totalCount) {
             return -1;
         }
-        int thisLengthToRead =
+        var thisLengthToRead =
                 Math.min(target.length, totalCount - thisStartOffset);
 
-        int sourceBytesLeftToRead = thisLengthToRead;
-        int sourceOffset = thisStartOffset;
-        int targetOffset = 0;
+        var sourceBytesLeftToRead = thisLengthToRead;
+        var sourceOffset = thisStartOffset;
+        var targetOffset = 0;
         while (sourceBytesLeftToRead > 0) {
-            byte[] sliceBuffer = buffers.get(sourceOffset / bufferCapacity);
-            int sliceOffset = sourceOffset % bufferCapacity;
+            var sliceBuffer = buffers.get(sourceOffset / bufferCapacity);
+            var sliceOffset = sourceOffset % bufferCapacity;
             int lengthToRead;
             if (sourceBytesLeftToRead > bufferCapacity - sliceOffset) {
                 lengthToRead = bufferCapacity - sliceOffset;
@@ -177,15 +177,16 @@ public class ByteArrayOutputStream extends OutputStream {
                 || ((off + len) > b.length)
                 || ((off + len) < 0)) {
             throw new IndexOutOfBoundsException();
-        } else if (len == 0) {
+        }
+        if (len == 0) {
             return;
         }
         synchronized (this) {
-            int bytesLeftToWrite = len;
-            int lastOff = off;
+            var bytesLeftToWrite = len;
+            var lastOff = off;
             while (bytesLeftToWrite > 0) {
-                int currentRoomLeft = bufferCapacity - currentBufferIndex;
-                int lengthToWrite = Math.min(bytesLeftToWrite, currentRoomLeft);
+                var currentRoomLeft = bufferCapacity - currentBufferIndex;
+                var lengthToWrite = Math.min(bytesLeftToWrite, currentRoomLeft);
                 System.arraycopy(b, lastOff, currentBuffer,
                         currentBufferIndex, lengthToWrite);
                 currentBufferIndex += lengthToWrite;
@@ -224,8 +225,8 @@ public class ByteArrayOutputStream extends OutputStream {
      * @throws IOException if an I/O error occurs while reading the input stream
      */
     public synchronized int write(InputStream in) throws IOException {
-        byte[] buffer = new byte[DEFAULT_INITIAL_CAPACITY];
-        int readCount = 0;
+        var buffer = new byte[DEFAULT_INITIAL_CAPACITY];
+        var readCount = 0;
         int length;
         while ((length = in.read(buffer)) != -1) {
             readCount += length;
@@ -243,9 +244,9 @@ public class ByteArrayOutputStream extends OutputStream {
     }
 
     /**
-     * Closing a <tt>ByteArrayOutputStream</tt> has no effect. The methods in
-     * this class can be called after the stream has been closed without
-     * generating an <tt>IOException</tt>.
+     * Closing a <code>ByteArrayOutputStream</code> has no effect. The methods
+     * in this class can be called after the stream has been closed without
+     * generating an <code>IOException</code>.
      *
      * @throws IOException never (this method should not declare this exception
      * but it has to now due to backwards compatability)
@@ -274,9 +275,9 @@ public class ByteArrayOutputStream extends OutputStream {
      * @see java.io.ByteArrayOutputStream#writeTo(OutputStream)
      */
     public synchronized void writeTo(OutputStream out) throws IOException {
-        int remaining = totalCount;
+        var remaining = totalCount;
         for (byte[] buf : buffers) {
-            int c = Math.min(buf.length, remaining);
+            var c = Math.min(buf.length, remaining);
             out.write(buf, 0, c);
             remaining -= c;
             if (remaining == 0) {
@@ -315,8 +316,8 @@ public class ByteArrayOutputStream extends OutputStream {
      */
     public static InputStream toBufferedInputStream(InputStream input)
             throws IOException {
-        try (ByteArrayOutputStream output = new ByteArrayOutputStream();
-                InputStream is = input) {
+        try (var output = new ByteArrayOutputStream();
+                var is = input) {
             output.write(is);
             return output.toBufferedInputStream();
         }
@@ -332,13 +333,13 @@ public class ByteArrayOutputStream extends OutputStream {
      * @see #reset()
      */
     private InputStream toBufferedInputStream() {
-        int remaining = totalCount;
+        var remaining = totalCount;
         if (remaining == 0) {
             return new ClosedInputStream();
         }
         List<ByteArrayInputStream> list = new ArrayList<>(buffers.size());
         for (byte[] buf : buffers) {
-            int c = Math.min(buf.length, remaining);
+            var c = Math.min(buf.length, remaining);
             list.add(new ByteArrayInputStream(buf, 0, c));
             remaining -= c;
             if (remaining == 0) {
@@ -356,14 +357,14 @@ public class ByteArrayOutputStream extends OutputStream {
      * @see java.io.ByteArrayOutputStream#toByteArray()
      */
     public synchronized byte[] toByteArray() {
-        int remaining = totalCount;
+        var remaining = totalCount;
         if (remaining == 0) {
             return ArrayUtils.EMPTY_BYTE_ARRAY;
         }
-        byte[] newbuf = new byte[remaining];
-        int pos = 0;
+        var newbuf = new byte[remaining];
+        var pos = 0;
         for (byte[] buf : buffers) {
-            int c = Math.min(buf.length, remaining);
+            var c = Math.min(buf.length, remaining);
             System.arraycopy(buf, 0, newbuf, pos, c);
             pos += c;
             remaining -= c;

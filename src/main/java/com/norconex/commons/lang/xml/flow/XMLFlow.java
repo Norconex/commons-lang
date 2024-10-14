@@ -109,15 +109,15 @@ public final class XMLFlow<T> {
         List<Consumer<T>> consumers = new ArrayList<>();
         xml.forEach("*", x -> {
             Consumer<T> consumer = null;
-            Tag tag = Tag.of(x.getName());
+            var tag = Tag.of(x.getName());
             if (tag == null) {
                 consumer = parseConsumer(x);
             } else if (tag == Tag.IF) {
-                XMLIf<T> ifBlock = new XMLIf<>(this);
+                var ifBlock = new XMLIf<T>(this);
                 ifBlock.loadFromXML(x);
                 consumer = ifBlock;
             } else if (tag == Tag.IFNOT) {
-                XMLIfNot<T> ifNotBlock = new XMLIfNot<>(this);
+                var ifNotBlock = new XMLIfNot<T>(this);
                 ifNotBlock.loadFromXML(x);
                 consumer = ifNotBlock;
             } else {
@@ -127,7 +127,8 @@ public final class XMLFlow<T> {
         });
         if (consumers.size() > 1) {
             return FunctionUtil.allConsumers(consumers);
-        } else if (consumers.size() == 1) {
+        }
+        if (consumers.size() == 1) {
             return consumers.get(0);
         }
         return null;
@@ -140,10 +141,11 @@ public final class XMLFlow<T> {
             // If a consumer adapter is set, use it to parse the XML
             try {
                 //TODO throw XMLValidationException if there are any errors?
-                IXMLFlowConsumerAdapter<T> c = consumerAdapter.newInstance();
+                IXMLFlowConsumerAdapter<T> c = consumerAdapter
+                        .getDeclaredConstructor().newInstance();
                 c.loadFromXML(consumerXML);
                 consumer = c;
-            } catch (InstantiationException | IllegalAccessException e) {
+            } catch (Exception e) {
                 throw new XMLFlowException("Consumer adapter "
                         + consumerAdapter.getName() + " could not resolve "
                         + "this XML: " + consumerXML, e);

@@ -92,12 +92,11 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
      */
     public EnhancedXMLStreamWriter(
             Writer writer, boolean writeBlanks, int indent) {
-        super();
         try {
             XMLOutputFactory factory = createXMLOutputFactory();
             this.writer = writer;
-            this.streamWriter = factory.createXMLStreamWriter(writer);
-            this.defaultWriteBlanks = writeBlanks;
+            streamWriter = factory.createXMLStreamWriter(writer);
+            defaultWriteBlanks = writeBlanks;
             this.indent = indent;
         } catch (XMLStreamException e) {
             throw new XMLException(
@@ -131,7 +130,7 @@ public class EnhancedXMLStreamWriter implements XMLStreamWriter {
     }
 
     private static XMLOutputFactory createXMLOutputFactory() {
-        XMLOutputFactory factory = XMLOutputFactory.newFactory();
+        XMLOutputFactory factory = XMLOutputFactory.newInstance();
         // If using Woodstox factory, disable structure validation
         // which can cause issues when you want to use the xml writer on
         // a stream that already has XML written to it (could cause

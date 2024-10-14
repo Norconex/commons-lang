@@ -50,7 +50,6 @@ public class FileLocker {
     private FileChannel fileChannel;
 
     public FileLocker(Path lockFile) {
-        super();
         this.lockFile = Objects.requireNonNull(
                 lockFile, "'lockFile' must not be null.");
     }
@@ -74,8 +73,8 @@ public class FileLocker {
             FileChannel fc = fileChannel();
             FileLock lck = lock(fc, false);
             if (lck != null) {
-                this.fileChannel = fc;
-                this.lock = lck;
+                fileChannel = fc;
+                lock = lck;
             }
             return lock != null;
         } catch (OverlappingFileLockException e) {
@@ -120,8 +119,8 @@ public class FileLocker {
             if (lck == null) {
                 throw alreadyLocked(null);
             }
-            this.fileChannel = fc;
-            this.lock = lck;
+            fileChannel = fc;
+            lock = lck;
         } catch (OverlappingFileLockException e) {
             throw alreadyLocked(e);
         }
@@ -157,7 +156,28 @@ public class FileLocker {
      * @return <code>true</code> if locked.
      */
     public synchronized boolean isLocked() {
-        return lock != null && lock.isValid();
+        if (!Files.exists(lockFile)) {
+            return false;
+        }
+
+        if (lock != null && lock.isValid()) {
+            return true;
+        }
+
+        try (FileChannel channel =
+                FileChannel.open(lockFile, StandardOpenOption.WRITE)) {
+            // Try to acquire an exclusive lock on the file
+            FileLock lockAttempt = channel.tryLock();
+            if (lockAttempt != null) {
+                // If lock is acquired, release it and return false
+                // (file is not locked by another process)
+                lockAttempt.release();
+                return false;
+            }
+        } catch (IOException e) {
+            // swallow
+        }
+        return true;
     }
 
     private FileChannel fileChannel() throws IOException {
@@ -177,5 +197,10 @@ public class FileLocker {
     private FileAlreadyLockedException alreadyLocked(Exception e) {
         return new FileAlreadyLockedException(
                 lockFile.toAbsolutePath() + " already locked.", e);
+    }
+
+    @Override
+    public String toString() {
+        return "Lock file: " + lockFile.toAbsolutePath();
     }
 }

@@ -1,4 +1,4 @@
-/* Copyright 2020 Norconex Inc.
+/* Copyright 2020-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,73 +14,92 @@
  */
 package com.norconex.commons.lang.javadoc;
 
-import java.util.Map;
+import static org.apache.commons.lang3.StringUtils.removeEnd;
+import static org.apache.commons.lang3.StringUtils.removeStart;
+import static org.apache.commons.lang3.StringUtils.substringAfter;
+import static org.apache.commons.lang3.StringUtils.substringBeforeLast;
 
-import org.apache.commons.lang3.StringUtils;
+import java.util.function.Function;
+import java.util.function.UnaryOperator;
+
 import org.apache.commons.text.StringEscapeUtils;
+import org.json.JSONException;
 import org.json.JSONObject;
-
-import com.sun.javadoc.Tag;
-import com.sun.tools.doclets.Taglet;
 
 /**
  * <p>{&#64;nx.json} JSON beautifier with enhanced functionality making
  * it easy to integrate into JavaDoc.</p>
  * <p>
  * Make sure your curly braces are matching (each opening one has a closing
- * one) or it will fail.  You can also escape them with
+ * one) to prevent documentation errors.  You can also escape them with
  * <code>&amp;#123;</code> and <code>&amp;#125;</code>.
  * </p>
  *
- *
- * @author Pascal Essiembre
  * @since 2.0.0
  */
 public class JSONTaglet extends AbstractInlineTaglet {
 
     public static final String NAME = "nx.json";
 
-    /**
-     * Register an instance of this taglet.
-     * @param tagletMap registry of taglets
-     */
-    public static void register(Map<String, Taglet> tagletMap) {
-        tagletMap.put(NAME, new JSONTaglet());
+    private static final Wrapper ARRAY_WRAPPER = new Wrapper(
+            s -> "{\"wrap\":[" + s + "]}",
+            s -> {
+                var json = s;
+                json = substringAfter(json, "\"wrap\": [");
+                json = substringBeforeLast(json, "]").trim();
+                json = removeEnd(json, "null");
+                return json.replaceAll("(?m)^ {4}", "").trim();
+            });
+    private static final Wrapper PROP_WRAPPER = new Wrapper(
+            s -> ("{" + s + (s.endsWith(",") ? "\"comma\":\"\"" : "") + "}"),
+            s -> {
+                var json = removeEnd(removeStart(s, "{"), "}").trim();
+                json = removeEnd(json, "\"comma\": \"\"").trim();
+                return json.replaceAll("(?m)^ {2}", "").trim();
+            });
+
+    private static final Wrapper NO_WRAPPER = new Wrapper(s -> s, s -> s);
+
+    public JSONTaglet() {
+        super(NAME);
     }
 
     @Override
-    public String getName() {
-        return NAME;
-    }
+    protected String toString(TagContent tag) {
+        var json = tag.getContent();
 
-    protected String getHeading(String text, String id) {
-        return null;
-    }
+        Wrapper wrapper = null;
+        if (json.startsWith("{") || json.startsWith("[")) {
+            wrapper = ARRAY_WRAPPER;
+        } else if (json.matches("^(?s)[a-zA-Z0-9\"].*")) {
+            wrapper = PROP_WRAPPER;
+        } else {
+            wrapper = NO_WRAPPER;
+        }
+        json = wrapper.wrap.apply(json);
+        try {
+            json = new JSONObject(json).toString(2);
+            json = wrapper.unrap.apply(json);
 
-    @Override
-    protected String toString(Tag tag, String text, String id) {
-        StringBuilder b = new StringBuilder();
-
-        String heading = getHeading(text, id);
-        if (StringUtils.isNotBlank(heading)) {
-            b.append(heading);
+            return TagletUtil.preCodeWrap(
+                    TagletUtil.toHtmlIdOrNull(tag, "nx-json-"),
+                    "language-json",
+                    StringEscapeUtils.escapeXml11(json));
+        } catch (JSONException e) {
+            return TagletUtil.documentationError("JSONTaglet could not parse "
+                    + "JSON content: " + e.getMessage());
         }
 
-        b.append("<pre><code ");
-        if (StringUtils.isNotBlank(id)) {
-            b.append("id=\"nx-json-" + id + "\" ");
+    }
+
+    // Wrappers to enable entries without a parent.
+    private static class Wrapper {
+        final Function<String, String> wrap;
+        final Function<String, String> unrap;
+        public Wrapper(UnaryOperator<String> wrap,
+                UnaryOperator<String> unrap) {
+            this.wrap = wrap;
+            this.unrap = unrap;
         }
-        b.append("class=\"language-json\">\n");
-
-        String json = resolveIncludes(text);
-        json = "{\"wrap\":" + json + "}";
-        json = new JSONObject(json).toString(2);
-        json = json.replaceFirst(
-                "(?s)^\\s*\\{\\s*\"?wrap\"?\\s*:\\s*(.*)\\}\\s*$", "$1").trim();
-        json = StringEscapeUtils.escapeXml11(json);
-        b.append(json);
-
-        b.append("</code></pre>");
-        return b.toString();
     }
 }

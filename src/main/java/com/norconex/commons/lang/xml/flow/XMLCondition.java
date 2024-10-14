@@ -84,7 +84,7 @@ class XMLCondition<T> implements IXMLConfigurable, Predicate<T> {
 
     @Override
     public void loadFromXML(XML xml) {
-        this.predicate = loadConditionFromXML(xml);
+        predicate = loadConditionFromXML(xml);
     }
 
     @Override
@@ -134,7 +134,7 @@ class XMLCondition<T> implements IXMLConfigurable, Predicate<T> {
 
     Predicate<T> parseConditionGroup(XML xml) {
         List<Predicate<T>> predicateList = new ArrayList<>();
-        Operator operator = Operator.of(xml.getString("operator"));
+        var operator = Operator.of(xml.getString("operator"));
         xml.forEach("*", x -> {
             predicateList.add(loadConditionFromXML(x));
         });
@@ -151,10 +151,11 @@ class XMLCondition<T> implements IXMLConfigurable, Predicate<T> {
             try {
                 //TODO throw XMLValidationException if there are any errors?
                 IXMLFlowPredicateAdapter<T> adapter =
-                        flow.getPredicateAdapter().newInstance();
+                        flow.getPredicateAdapter()
+                                .getDeclaredConstructor().newInstance();
                 adapter.loadFromXML(predicateXML);
                 p = adapter;
-            } catch (InstantiationException | IllegalAccessException e) {
+            } catch (Exception e) {
                 throw new XMLFlowException("Predicate adapter "
                         + flow.getPredicateAdapter().getName() + " could not "
                         + "resolve this XML: " + predicateXML, e);

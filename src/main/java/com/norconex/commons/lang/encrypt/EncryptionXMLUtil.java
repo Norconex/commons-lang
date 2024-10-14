@@ -40,7 +40,6 @@ import com.norconex.commons.lang.xml.XML;
 public final class EncryptionXMLUtil {
 
     private EncryptionXMLUtil() {
-        super();
     }
 
     /**
@@ -53,7 +52,7 @@ public final class EncryptionXMLUtil {
      */
     public static EncryptionKey loadFromXML(
             Reader in, String tagPrefix, EncryptionKey defaultKey) {
-        XML xml = XML.of(in).create();
+        var xml = XML.of(in).create();
         return loadFromXML(xml, tagPrefix, defaultKey);
     }
     /**
@@ -66,15 +65,15 @@ public final class EncryptionXMLUtil {
      */
     public static EncryptionKey loadFromXML(
             XML xml, String tagPrefix, EncryptionKey defaultKey) {
-        String tagKey = StringUtils.trimToEmpty(tagPrefix);
+        var tagKey = StringUtils.trimToEmpty(tagPrefix);
         tagKey = tagKey.length() > 0 ? tagKey + "Key" : "key";
-        String tagSource = tagKey + "Source";
-        String tagSize = tagKey + "Size";
+        var tagSource = tagKey + "Source";
+        var tagSize = tagKey + "Size";
 
-        String xmlKey = xml.getString(tagKey, null);
+        var xmlKey = xml.getString(tagKey, null);
         if (StringUtils.isNotBlank(xmlKey)) {
-            String xmlSource = xml.getString(tagSource, null);
-            Integer size = xml.getInteger(
+            var xmlSource = xml.getString(tagSource, null);
+            var size = xml.getInteger(
                     tagSize, EncryptionKey.DEFAULT_KEY_SIZE);
             EncryptionKey.Source source = null;
             if (StringUtils.isNotBlank(xmlSource)) {
@@ -115,10 +114,10 @@ public final class EncryptionXMLUtil {
     public static void saveToXML(EnhancedXMLStreamWriter writer,
             String tagPrefix, EncryptionKey encryptionKey) throws IOException {
 
-        String tagKey = StringUtils.trimToEmpty(tagPrefix);
+        var tagKey = StringUtils.trimToEmpty(tagPrefix);
         tagKey = tagKey.length() > 0 ? tagKey + "Key" : "key";
-        String tagSource = tagKey + "Source";
-        String tagSize = tagKey + "Size";
+        var tagSource = tagKey + "Source";
+        var tagSize = tagKey + "Size";
 
         if (encryptionKey != null) {
             writer.writeElementString(tagKey, encryptionKey.getValue());

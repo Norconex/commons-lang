@@ -1,4 +1,4 @@
-/* Copyright 2020-2021 Norconex Inc.
+/* Copyright 2020-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,12 @@
  */
 package com.norconex.commons.lang.javadoc;
 
-import java.util.Map;
+import static org.apache.commons.text.StringEscapeUtils.escapeXml11;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.text.StringEscapeUtils;
+import java.util.function.Function;
 
 import com.norconex.commons.lang.xml.XMLFormatter;
 import com.norconex.commons.lang.xml.XMLFormatter.Builder.AttributeWrap;
-import com.sun.javadoc.Tag;
-import com.sun.tools.doclets.Taglet;
 
 /**
  * <p>{&#64;nx.xml} XML beautifier with enhanced functionality.</p>
@@ -32,24 +29,9 @@ import com.sun.tools.doclets.Taglet;
  *   samples were generated.
  * </p>
  *
- * {@nx.xml
- * <test>
- *   <sub attr="xml-taglet-test">This is an XML example.</sub>
- * </test>
- * }
- *
- * {@nx.xml #usage
- * <test>
- *   <sub attr="xml-taglet-test">This is another XML example.</sub>
- * </test>
- * }
- *
- * @author Pascal Essiembre
  * @since 2.0.0
  */
 public class XMLTaglet extends AbstractInlineTaglet {
-
-    //TODO resolve classes in XML to create links to JavaDoc
 
     public static final String NAME = "nx.xml";
     public static final XMLFormatter FORMATTER = XMLFormatter.builder()
@@ -62,44 +44,20 @@ public class XMLTaglet extends AbstractInlineTaglet {
             .selfCloseEmptyElements()
             .build();
 
-    /**
-     * Register an instance of this taglet.
-     *
-     * @param tagletMap
-     *            registry of taglets
-     */
-    public static void register(Map<String, Taglet> tagletMap) {
-        tagletMap.put(NAME, new XMLTaglet());
+    public XMLTaglet() {
+        super(NAME);
+    }
+
+    protected XMLTaglet(String name,
+            Function<TagContent, String> headingProvider) {
+        super(name, headingProvider);
     }
 
     @Override
-    public String getName() {
-        return NAME;
-    }
-
-    protected String getHeading(String text, String id) {
-        return null;
-    }
-
-    @Override
-    protected String toString(Tag tag, String text, String id) {
-        StringBuilder b = new StringBuilder();
-
-        String heading = getHeading(text, id);
-        if (StringUtils.isNotBlank(heading)) {
-            b.append(heading);
-        }
-
-        b.append("<pre><code ");
-        if (StringUtils.isNotBlank(id)) {
-            b.append("id=\"nx-xml-" + id + "\" ");
-        }
-        b.append("class=\"language-xml\">\n");
-        b.append(StringEscapeUtils.escapeXml11(
-                FORMATTER.format(resolveIncludes(text))
-        ));
-        b.append("</code></pre>");
-
-        return b.toString();
+    protected String toString(TagContent tag) {
+        return TagletUtil.preCodeWrap(
+                TagletUtil.toHtmlIdOrNull(tag, "nx-xml-"),
+                "language-xml",
+                escapeXml11(FORMATTER.format(tag.getContent())));
     }
 }

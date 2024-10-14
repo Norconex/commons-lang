@@ -26,7 +26,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.collections4.map.ListOrderedMap;
@@ -78,7 +77,7 @@ public class XMLFormatter {
         return format(xml.toString());
     }
     public String format(String xml) {
-        StringWriter w = new StringWriter();
+        var w = new StringWriter();
         try {
             format(new StringReader(xml), w);
         } catch (IOException e) {
@@ -90,10 +89,10 @@ public class XMLFormatter {
     }
     public void format(Reader reader, Writer writer) throws IOException {
         Writer w = IOUtils.buffer(writer);
-        int depth = 0;
-        TokenReader tokenReader = new TokenReader(reader, cfg);
+        var depth = 0;
+        var tokenReader = new TokenReader(reader, cfg);
         Token token = null;
-        boolean first = true;
+        var first = true;
         while ((token = tokenReader.next()) != null) {
             if (!first) {
                 w.append('\n');
@@ -116,7 +115,7 @@ public class XMLFormatter {
         final Reader r;
         final Builder cfg;
         TokenReader(Reader reader, Builder cfg) {
-            this.r = IOUtils.buffer(reader);
+            r = IOUtils.buffer(reader);
             this.cfg = cfg;
         }
 
@@ -125,7 +124,7 @@ public class XMLFormatter {
             skipWhiteSpaces(r);
 
             r.mark(1);
-            int ch = r.read();
+            var ch = r.read();
             r.reset();
             if (ch == -1) {
                 return null;
@@ -183,7 +182,7 @@ public class XMLFormatter {
         }
         @Override
         void read(Reader r) throws IOException {
-            final StringBuilder b = new StringBuilder();
+            final var b = new StringBuilder();
             skipWhiteSpaces(r);
             r.skip(1); // '<'
 
@@ -196,13 +195,13 @@ public class XMLFormatter {
             b.setLength(0);
             IOUtil.consumeUntil(r, c -> c == '>', b);
 
-            String attribsStr = b.toString().trim();
+            var attribsStr = b.toString().trim();
             if (attribsStr.endsWith("/")) {
                 closed = true;
                 selfClosed = true;
             }
             attribsStr = StringUtils.removeEnd(attribsStr, "/");
-            Matcher m = ATTRIB_PATTERN.matcher(attribsStr);
+            var m = ATTRIB_PATTERN.matcher(attribsStr);
             while (m.find()) {
                 attribs.put(m.group(1).trim(), m.group(2).trim());
             }
@@ -213,14 +212,14 @@ public class XMLFormatter {
             if (!closed) {
                 b.setLength(0);
                 IOUtil.consumeUntil(r, c -> c == '<', b);
-                String txt = b.toString();
+                var txt = b.toString();
                 flIndent = firstLineIndentSize(txt);
                 directContent = txt.trim();
             }
 
             //--- Possible closing Tag ---
             r.mark(name.length() + 3);
-            char[] chars = new char[name.length() + 3];
+            var chars = new char[name.length() + 3];
             r.read(chars);
             if (("</" + name + ">").equals(new String(chars))) {
                 closed = true;
@@ -236,7 +235,7 @@ public class XMLFormatter {
         }
         @Override
         void write(Appendable w, String margin) throws IOException {
-            boolean attribsWrapped = false;
+            var attribsWrapped = false;
 
             // name
             w.append(margin).append('<').append(name);
@@ -258,11 +257,11 @@ public class XMLFormatter {
 
             // possible direct content
             // we "nest" on any the following conditions:
-            boolean nestContent = !closed || attribsWrapped;
+            var nestContent = !closed || attribsWrapped;
             if (StringUtils.isNotBlank(directContent)) {
-                String trimmedContent = directContent.trim();
+                var trimmedContent = directContent.trim();
                 // line length = margin + '<tag>' + content + '</tag>'
-                int lineLength = margin.length() + (name.length() * 2) + 5
+                var lineLength = margin.length() + (name.length() * 2) + 5
                         + trimmedContent.length();
                 nestContent = nestContent
                         || StringUtils.containsAny(trimmedContent, "\n\r")
@@ -323,7 +322,7 @@ public class XMLFormatter {
                 return false;
             }
 
-            int tagEndLength = 0;
+            var tagEndLength = 0;
             if (!cfg.closeWrappingTagOnOwnLine) {
                 // '/>' vs '>'
                 tagEndLength = (selfClosed) ? 2 : 1;
@@ -331,7 +330,7 @@ public class XMLFormatter {
 
             // Calculate the potential text length:
             //   '<' + name length + all attribs length + '>' or '/>'
-            int txtLength = 1 + name.length()
+            var txtLength = 1 + name.length()
                     + attribs.entrySet().stream().mapToInt(en ->
                             en.getKey().length()
                           + en.getValue().length() + 4).sum()
@@ -341,27 +340,26 @@ public class XMLFormatter {
                     && txtLength >= cfg.minTextLength) {
                 writeAttribsWarpAll(w, margin);
                 return true;
-            } else {
-                writeAttribsWrapNone(w);
-                return false;
             }
+            writeAttribsWrapNone(w);
+            return false;
         }
         private boolean writeAttribsWrapAtMax(Appendable w, String margin)
                 throws IOException {
 
-            boolean wrapped = false;
-            int tagEndLength = 0;
+            var wrapped = false;
+            var tagEndLength = 0;
             if (!cfg.closeWrappingTagOnOwnLine) {
                 // '/>' vs '>'
                 tagEndLength = (selfClosed) ? 2 : 1;
             }
             // we start the text length at '<' + name length
-            int txtLength = name.length() + 1;
+            var txtLength = name.length() + 1;
             for (Entry<String, String> en: attribs.entrySet()) {
-                String attribute = en.getKey() + "=\"" + en.getValue() + "\"";
+                var attribute = en.getKey() + "=\"" + en.getValue() + "\"";
                 // ' ' + attribute
                 txtLength += attribute.length() + 1;
-                int lineLength = margin.length() + txtLength + tagEndLength;
+                var lineLength = margin.length() + txtLength + tagEndLength;
                 if (lineLength > cfg.maxLineLength
                         && txtLength >= cfg.minTextLength) {
                     // wrap and indent
@@ -387,9 +385,9 @@ public class XMLFormatter {
         }
         @Override
         void read(Reader r) throws IOException {
-            StringBuilder b = new StringBuilder();
+            var b = new StringBuilder();
             IOUtil.consumeUntil(r, c -> c == '<', b);
-            String txt = b.toString();
+            var txt = b.toString();
             flIndent = firstLineIndentSize(txt);
             text = b.toString().trim();
         }
@@ -408,7 +406,7 @@ public class XMLFormatter {
         }
         @Override
         void read(Reader r) throws IOException {
-            StringBuilder b = new StringBuilder();
+            var b = new StringBuilder();
             r.skip(2); // '</'
             IOUtil.consumeUntil(r, c -> c == '>', b);
             name = b.toString().trim();
@@ -429,7 +427,7 @@ public class XMLFormatter {
         }
         @Override
         void read(Reader r) throws IOException {
-            StringBuilder b = new StringBuilder();
+            var b = new StringBuilder();
             IOUtil.consumeUntil(r, "]]>", b);
             text = b.toString().trim();
         }
@@ -447,12 +445,12 @@ public class XMLFormatter {
         }
         @Override
         void read(Reader r) throws IOException {
-            StringBuilder b = new StringBuilder();
+            var b = new StringBuilder();
             r.skip(4); // '<!--'
 
             IOUtil.consumeUntil(r, "-->", b);
             b.setLength(b.length() - 3);
-            String txt = b.toString();
+            var txt = b.toString();
             flIndent = firstLineIndentSize(txt);
             text = txt.trim();
         }
@@ -470,9 +468,9 @@ public class XMLFormatter {
             w.append(margin).append("<!--");
 
             // nest comment if contains new line or too big.
-            String trimmedText = text.trim();
-            int lineLength = margin.length() + 9 + trimmedText.length();
-            boolean nestContent = StringUtils.containsAny(trimmedText, "\n\r")
+            var trimmedText = text.trim();
+            var lineLength = margin.length() + 9 + trimmedText.length();
+            var nestContent = StringUtils.containsAny(trimmedText, "\n\r")
                     || cfg.maxLineLength > 0 && lineLength > cfg.maxLineLength;
             if (nestContent) {
                 w.append('\n').append(margin).append(cfg.elementIndent);
@@ -497,7 +495,7 @@ public class XMLFormatter {
     private static final Pattern FL_INDENT_PATTERN =
             Pattern.compile("(?s)^[\\s\n\r]*[\n\r](\\s+).*$");
     private static int firstLineIndentSize(String str) {
-        Matcher m = FL_INDENT_PATTERN.matcher(str);
+        var m = FL_INDENT_PATTERN.matcher(str);
         if (m.matches()) {
             return m.group(1).length();
         }
@@ -513,10 +511,10 @@ public class XMLFormatter {
         // if multi-line AND preserving indent, loop through lines and find
         // smallest indent which will be removed from each line in favor of
         // margin.
-        int spacesToCut = -1;
+        var spacesToCut = -1;
         List<String> paragraphs = Arrays.asList(content.split("\\R"));
-        for (int i = 0; i < paragraphs.size(); i++) {
-            String paragraph = paragraphs.get(i);
+        for (var i = 0; i < paragraphs.size(); i++) {
+            var paragraph = paragraphs.get(i);
             if (cfg.preserveTextIndent) {
                 if (spacesToCut == -1) {
                     // first line, use argument
@@ -533,16 +531,16 @@ public class XMLFormatter {
 
         //--- Process each lines ---
 
-        StringBuilder b = new StringBuilder();
+        var b = new StringBuilder();
         for (String paragraph: paragraphs) {
-            String line = paragraph;
-            String textIndent = "";
+            var line = paragraph;
+            var textIndent = "";
             if (cfg.preserveTextIndent) {
                 textIndent = StringUtils.repeat(' ',
                         StringUtil.countMatchesStart(line, " ") - spacesToCut);
                 line = line.trim();//StringUtil.trimStart(line);
             }
-            int lineLength =
+            var lineLength =
                     margin.length() + textIndent.length() + paragraph.length();
             if (cfg.maxLineLength > 0
                     && lineLength > cfg.maxLineLength
@@ -557,7 +555,7 @@ public class XMLFormatter {
     }
     private static String breakLongParagraphs(
             Builder cfg, String margin, String paragraph) {
-        int maxTextLength = NumberUtils.max(
+        var maxTextLength = NumberUtils.max(
                 1, cfg.minTextLength, cfg.maxLineLength - margin.length());
         return paragraph.replaceAll(
                 "(.{1," + maxTextLength + "})( |$)",
@@ -614,21 +612,19 @@ public class XMLFormatter {
         private boolean preserveTextIndent;
 
         private Builder() {
-            super();
         }
         // Copy constructor
         private Builder(Builder b) {
-            super();
-            this.elementIndent = b.elementIndent;
-            this.attributeIndent = b.attributeIndent;
-            this.attributeWrap = b.attributeWrap;
-            this.closeWrappingTagOnOwnLine = b.closeWrappingTagOnOwnLine;
-            this.maxLineLength = b.maxLineLength;
-            this.minTextLength = b.minTextLength;
-            this.blankLineBeforeComment = b.blankLineBeforeComment;
-            this.blankLineAfterComment = b.blankLineAfterComment;
-            this.selfCloseEmptyElements = b.selfCloseEmptyElements;
-            this.preserveTextIndent = b.preserveTextIndent;
+            elementIndent = b.elementIndent;
+            attributeIndent = b.attributeIndent;
+            attributeWrap = b.attributeWrap;
+            closeWrappingTagOnOwnLine = b.closeWrappingTagOnOwnLine;
+            maxLineLength = b.maxLineLength;
+            minTextLength = b.minTextLength;
+            blankLineBeforeComment = b.blankLineBeforeComment;
+            blankLineAfterComment = b.blankLineAfterComment;
+            selfCloseEmptyElements = b.selfCloseEmptyElements;
+            preserveTextIndent = b.preserveTextIndent;
         }
 
         /**
@@ -640,7 +636,7 @@ public class XMLFormatter {
          * @return this builder
          */
         public Builder elementIndent(String indent) {
-            this.elementIndent = indent;
+            elementIndent = indent;
             return this;
         }
         /**
@@ -650,7 +646,7 @@ public class XMLFormatter {
          * @return this builder
          */
         public Builder attributeIndent(String indent) {
-            this.attributeIndent = indent;
+            attributeIndent = indent;
             return this;
         }
         /**
@@ -660,7 +656,7 @@ public class XMLFormatter {
          * @return this builder
          */
         public Builder attributeWrapping(AttributeWrap attributeWrapping) {
-            this.attributeWrap = attributeWrapping;
+            attributeWrap = attributeWrapping;
             return this;
         }
         /**
@@ -671,7 +667,7 @@ public class XMLFormatter {
          * @return this builder
          */
         public Builder closeWrappingTagOnOwnLine() {
-          this.closeWrappingTagOnOwnLine = true;
+          closeWrappingTagOnOwnLine = true;
           return this;
         }
         /**
@@ -684,7 +680,7 @@ public class XMLFormatter {
          * @return this builder
          */
         public Builder maxLineLength(int charQty) {
-            this.maxLineLength = charQty;
+            maxLineLength = charQty;
             return this;
         }
         /**
@@ -694,7 +690,7 @@ public class XMLFormatter {
          * @return this builder
          */
         public Builder minTextLength(int charQty) {
-            this.minTextLength = charQty;
+            minTextLength = charQty;
             return this;
         }
         /**
@@ -702,7 +698,7 @@ public class XMLFormatter {
          * @return this builder
          */
         public Builder blankLineBeforeComment() {
-            this.blankLineBeforeComment = true;
+            blankLineBeforeComment = true;
             return this;
         }
         /**
@@ -710,7 +706,7 @@ public class XMLFormatter {
          * @return this builder
          */
         public Builder blankLineAfterComment() {
-            this.blankLineAfterComment = true;
+            blankLineAfterComment = true;
             return this;
         }
         /**
@@ -718,7 +714,7 @@ public class XMLFormatter {
          * @return this builder
          */
         public Builder selfCloseEmptyElements() {
-            this.selfCloseEmptyElements = true;
+            selfCloseEmptyElements = true;
             return this;
         }
         /**
@@ -728,7 +724,7 @@ public class XMLFormatter {
          * @return this builder
          */
         public Builder preserveTextIndent() {
-            this.preserveTextIndent = true;
+            preserveTextIndent = true;
             return this;
         }
 

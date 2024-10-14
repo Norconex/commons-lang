@@ -263,6 +263,7 @@ public class CachedOutputStream extends OutputStream
         memOutputStream = null;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     protected void finalize() throws Throwable {
         close();
