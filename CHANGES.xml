@@ -8,7 +8,10 @@
   <body>
 
     <release version="2.1.0-SHAPSHOT" date="2024-??-??" 
-        description="Maintenance release.">
+        description="Minor release.">
+      <action dev="essiembre" type="add">
+        New URLNormalizer#removeTrailingFragment method.
+      </action>
       <action dev="essiembre" type="update">
         Now require Java 11.
       </action>
