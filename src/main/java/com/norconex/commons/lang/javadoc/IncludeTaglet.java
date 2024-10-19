@@ -240,19 +240,19 @@ public class IncludeTaglet implements Taglet {
         }
 
         var typeCommentTree = env.getDocTrees().getDocCommentTree(typeEl);
-
         var content = "";
-        for (DocTree bodyPart : typeCommentTree.getFullBody()) {
-            if (bodyPart.getKind() == UNKNOWN_INLINE_TAG) {
-                var tag = TagContent.of(
-                        TagletUtil.toUnknownInlineTagTreeOrFail(bodyPart));
-                if (tag.isPresent() && directive.matches(tag.get())) {
-                    content = tag.get().getContent();
-                    break;
+        if (typeCommentTree != null) {
+            for (DocTree bodyPart : typeCommentTree.getFullBody()) {
+                if (bodyPart.getKind() == UNKNOWN_INLINE_TAG) {
+                    var tag = TagContent.of(
+                            TagletUtil.toUnknownInlineTagTreeOrFail(bodyPart));
+                    if (tag.isPresent() && directive.matches(tag.get())) {
+                        content = tag.get().getContent();
+                        break;
+                    }
                 }
             }
         }
-
         return resolveContentIncludes(content, env);
     }
 }
