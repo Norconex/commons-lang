@@ -25,27 +25,28 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-public class UrlNormalizerTest {
+class UrlNormalizerTest {
 
     private String s;
     private String t;
 
     @AfterEach
-    public void tearDown() throws Exception {
+    void tearDown() throws Exception {
         s = null;
         t = null;
     }
 
     @Test
-    public void testAllAtOnce() {
-        s = "https://www.Example.org/0/../1/././%7ea_b:c\\d_|e~f!g "
-                + "h/./^i^J[k]//l./m/n/o/../../p/q/r?cc=&dd=ee&bb=aa"
-                + "#fragment";
+    void testAllAtOnce() {
+        s = """
+            https://www.Example.org/0/../1/././%7ea_b:c\\d_|e~f!g \
+            h/./^i^J[k]//l./m/n/o/../../p/q/r?cc=&dd=ee&bb=aa\
+            #fragment""";
         t = "http://example.org/1/~a_b:c%5Cd_%7Ce~f!g%20h/%5Ei%5EJ%5Bk%5D/l./"
                 + "m/p/q/r/?bb=aa&dd=ee";
         //System.out.println("original  : " + s);
 
-        UrlNormalizer n = new UrlNormalizer(s)
+        var n = new UrlNormalizer(s)
                 .addDirectoryTrailingSlash()
                 .addWWW()
                 .removeFragment()
@@ -71,7 +72,7 @@ public class UrlNormalizerTest {
     }
 
     @Test
-    public void testAddDomainTrailingSlash() {
+    void testAddDomainTrailingSlash() {
         s = "http://www.example.com";
         t = "http://www.example.com/";
         assertEquals(t, n(s).addDomainTrailingSlash().toString());
@@ -106,14 +107,14 @@ public class UrlNormalizerTest {
     }
 
     @Test
-    public void testEncodeUTF8Characters() {
+    void testEncodeUTF8Characters() {
         s = "http://www.example.com/élève?série=0é0è";
         t = "http://www.example.com/%C3%A9l%C3%A8ve?s%C3%A9rie=0%C3%A90%C3%A8";
         assertEquals(t, n(s).encodeNonURICharacters().toString());
     }
 
     @Test
-    public void testEncodeNonURICharacters() {
+    void testEncodeNonURICharacters() {
         s = "http://www.example.com/^a [b]/c?d e=";
         t = "http://www.example.com/%5Ea%20%5Bb%5D/c?d+e=";
         assertEquals(t, n(s).encodeNonURICharacters().toString());
@@ -126,14 +127,14 @@ public class UrlNormalizerTest {
     }
 
     @Test
-    public void testEncodeSpaces() {
+    void testEncodeSpaces() {
         s = "http://www.example.com/a b c?d e=f g";
         t = "http://www.example.com/a%20b%20c?d+e=f+g";
         assertEquals(t, n(s).encodeSpaces().toString());
     }
 
     @Test
-    public void testLowerCase() {
+    void testLowerCase() {
 
         // All
         s = "HTTP://www.Example.com/Path/Query?Param1=AAA&amp;Param2=BBB";
@@ -188,26 +189,27 @@ public class UrlNormalizerTest {
     }
 
     @Test
-    public void testUpperCaseEscapeSequence() {
+    void testUpperCaseEscapeSequence() {
         s = "http://www.example.com/a%c2%b1b";
         t = "http://www.example.com/a%C2%B1b";
         assertEquals(t, n(s).upperCaseEscapeSequence().toString());
     }
 
     @Test
-    public void testDecodeUnreservedCharacters() {
+    void testDecodeUnreservedCharacters() {
         // ALPHA (%41-%5A and %61-%7A), DIGIT (%30-%39), hyphen (%2D),
         // period (%2E), underscore (%5F), or tilde (%7E)
-        s = "http://www.example.com/%41%42%59%5Aalpha"
-                + "%61%62%79%7A/digit%30%31%38%39/%2Dhyphen/period%2E"
-                + "/underscore%5F/%7Etilde/reserved%2F%3A%5B%26";
+        s = """
+            http://www.example.com/%41%42%59%5Aalpha\
+            %61%62%79%7A/digit%30%31%38%39/%2Dhyphen/period%2E\
+            /underscore%5F/%7Etilde/reserved%2F%3A%5B%26""";
         t = "http://www.example.com/ABYZalphaabyz/digit0189"
                 + "/-hyphen/period./underscore_/~tilde/reserved%2F%3A%5B%26";
         assertEquals(t, n(s).decodeUnreservedCharacters().toString());
     }
 
     @Test
-    public void testRemoveDefaultPort() {
+    void testRemoveDefaultPort() {
         s = "http://www.example.com:80/bar.html";
         t = "http://www.example.com/bar.html";
         assertEquals(t, n(s).removeDefaultPort().toString());
@@ -232,7 +234,7 @@ public class UrlNormalizerTest {
     }
 
     @Test
-    public void testAddTrailingSlash() {
+    void testAddTrailingSlash() {
         s = "http://www.example.com/alice";
         t = "http://www.example.com/alice/";
         assertEquals(t, n(s).addDirectoryTrailingSlash().toString());
@@ -255,7 +257,7 @@ public class UrlNormalizerTest {
     }
 
     @Test
-    public void testRemoveTrailingSlash() {
+    void testRemoveTrailingSlash() {
         s = "http://www.example.com/alice/";
         t = "http://www.example.com/alice";
         assertEquals(t, n(s).removeTrailingSlash().toString());
@@ -283,7 +285,7 @@ public class UrlNormalizerTest {
     }
 
     @Test
-    public void testRemoveTrailingHash() {
+    void testRemoveTrailingHash() {
         s = "http://www.example.com/blah#";
         t = "http://www.example.com/blah";
         assertEquals(t, n(s).removeTrailingHash().toString());
@@ -296,7 +298,7 @@ public class UrlNormalizerTest {
     }
 
     @Test
-    public void testRemoveDotSegments() {
+    void testRemoveDotSegments() {
         s = "http://www.example.com/../a/b/../c/./d.html";
         t = "http://www.example.com/a/c/d.html";
         assertEquals(t, n(s).removeDotSegments().toString());
@@ -309,7 +311,7 @@ public class UrlNormalizerTest {
         assertEquals(t, n(s).removeDotSegments().toString());
 
         //--- Tests from http://tools.ietf.org/html/rfc3986#section-5.4 ---
-        String urlRoot = "http://a.com";
+        var urlRoot = "http://a.com";
         Map<String, String> m = new HashMap<>();
 
         // 5.4.1 Normal Examples
@@ -353,7 +355,7 @@ public class UrlNormalizerTest {
     }
 
     @Test
-    public void testRemoveDirectoryIndex() {
+    void testRemoveDirectoryIndex() {
         s = "http://www.example.com/index.html";
         t = "http://www.example.com/";
         assertEquals(t, n(s).removeDirectoryIndex().toString());
@@ -375,7 +377,7 @@ public class UrlNormalizerTest {
     }
 
     @Test
-    public void testRemoveFragment() {
+    void testRemoveFragment() {
         s = "http://www.example.com/bar.html#section1";
         t = "http://www.example.com/bar.html";
         assertEquals(t, n(s).removeFragment().toString());
@@ -385,7 +387,20 @@ public class UrlNormalizerTest {
     }
 
     @Test
-    public void testRemoveQueryString() {
+    void testRemoveTrailingFragment() {
+        s = "http://www.example.com/abc.html#section1";
+        t = "http://www.example.com/abc.html";
+        assertEquals(t, n(s).removeTrailingFragment().toString());
+        s = "http://www.example.com/abc#/def/ghi";
+        t = "http://www.example.com/abc#/def/ghi";
+        assertEquals(t, n(s).removeTrailingFragment().toString());
+        s = "http://www.example.com/abc#def/ghi#klm";
+        t = "http://www.example.com/abc#def/ghi";
+        assertEquals(t, n(s).removeTrailingFragment().toString());
+    }
+
+    @Test
+    void testRemoveQueryString() {
         s = "http://www.example.com/q?param1=AAA&param2=BBB";
         t = "http://www.example.com/q";
         assertEquals(t, n(s).removeQueryString().toString());
@@ -402,7 +417,7 @@ public class UrlNormalizerTest {
 
     @Test
     @Disabled("This test may not have proper network condition to execute.")
-    public void testReplaceIPWithDomainName() {
+    void testReplaceIPWithDomainName() {
         s = "http://208.80.154.224/wiki/Main_Page";
         t = null;
         Assertions.assertTrue(
@@ -417,7 +432,7 @@ public class UrlNormalizerTest {
     }
 
     @Test
-    public void testUnsecureScheme() {
+    void testUnsecureScheme() {
         s = "https://www.example.com/secure.html";
         t = "http://www.example.com/secure.html";
         assertEquals(t, n(s).unsecureScheme().toString());
@@ -430,7 +445,7 @@ public class UrlNormalizerTest {
     }
 
     @Test
-    public void testSecureScheme() {
+    void testSecureScheme() {
         s = "https://www.example.com/secure.html";
         t = "https://www.example.com/secure.html";
         assertEquals(t, n(s).secureScheme().toString());
@@ -443,7 +458,7 @@ public class UrlNormalizerTest {
     }
 
     @Test
-    public void testRemoveDuplicateSlashes() {
+    void testRemoveDuplicateSlashes() {
         s = "http://www.example.com/a//b///c////d/////e.html";
         t = "http://www.example.com/a/b/c/d/e.html";
         assertEquals(t, n(s).removeDuplicateSlashes().toString());
@@ -457,7 +472,7 @@ public class UrlNormalizerTest {
     }
 
     @Test
-    public void testRemoveWWW() {
+    void testRemoveWWW() {
         s = "http://www.example.com/foo.html";
         t = "http://example.com/foo.html";
         assertEquals(t, n(s).removeWWW().toString());
@@ -467,7 +482,7 @@ public class UrlNormalizerTest {
     }
 
     @Test
-    public void testAddWWW() {
+    void testAddWWW() {
         s = "http://example.com/foo.html";
         t = "http://www.example.com/foo.html";
         assertEquals(t, n(s).addWWW().toString());
@@ -480,7 +495,7 @@ public class UrlNormalizerTest {
     }
 
     @Test
-    public void testSortQueryParameters() {
+    void testSortQueryParameters() {
         // test with fragment
         s = "http://example.com?z=1&a=1#frag";
         t = "http://example.com?a=1&z=1#frag";
@@ -505,14 +520,14 @@ public class UrlNormalizerTest {
     }
 
     @Test
-    public void testRemoveEmptyParameters() {
+    void testRemoveEmptyParameters() {
         s = "http://www.example.com/display?a=b&a=&c=d&e=&f=g&h&=i";
         t = "http://www.example.com/display?a=b&c=d&f=g";
         assertEquals(t, n(s).removeEmptyParameters().toString());
     }
 
     @Test
-    public void testRemoveTrailingQuestionMark() {
+    void testRemoveTrailingQuestionMark() {
         s = "http://www.example.com/remove?";
         t = "http://www.example.com/remove";
         assertEquals(t, n(s).removeTrailingQuestionMark().toString());
@@ -525,7 +540,7 @@ public class UrlNormalizerTest {
     }
 
     @Test
-    public void testRemoveSessionIds() {
+    void testRemoveSessionIds() {
         //PHP
         s = "http://1.eg.com/app?a=b&PHPSESSID=f9f2770d591366bc&aa=bbb&c=d";
         t = "http://1.eg.com/app?a=b&aa=bbb&c=d";
@@ -580,7 +595,7 @@ public class UrlNormalizerTest {
     // Test for supporting file:// scheme, from here:
     // https://github.com/Norconex/commons-lang/issues/11
     @Test
-    public void testFileScheme() {
+    void testFileScheme() {
 
         // Encode non-URI characters
         s = "file:///etc/some dir/my file.txt";

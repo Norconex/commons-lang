@@ -118,6 +118,7 @@ import com.norconex.commons.lang.EqualsUtil;
  * <ul>
  *   <li>{@link #removeDirectoryIndex() Remove directory index}</li>
  *   <li>{@link #removeFragment() Remove fragment (#)}</li>
+ *   <li>{@link #removeTrailingFragment() Remove trailing fragment (#)}</li>
  *   <li>{@link #replaceIPWithDomainName() Replace IP with domain name}</li>
  *   <li>{@link #unsecureScheme() Unsecure scheme (https &rarr; http)}</li>
  *   <li>{@link #secureScheme() Secure scheme (http &rarr; https)}</li>
@@ -153,10 +154,11 @@ public class UrlNormalizer implements Serializable {
     private static final Pattern PATTERN_PERCENT_ENCODED_CHAR =
             Pattern.compile("(%[0-9a-f]{2})", Pattern.CASE_INSENSITIVE);
     private static final Pattern PATTERN_PATH_LAST_SEGMENT = Pattern.compile(
-            "(.*/)(index\\.html|index\\.htm|index\\.shtml|index\\.php"
-                    + "|default\\.html|default\\.htm|home\\.html|home\\.htm"
-                    + "|index\\.php5|index\\.php4|index\\.php3|index\\.cgi"
-                    + "|placeholder\\.html|default\\.asp)$",
+            """
+                (.*/)(index\\.html|index\\.htm|index\\.shtml|index\\.php\
+                |default\\.html|default\\.htm|home\\.html|home\\.htm\
+                |index\\.php5|index\\.php4|index\\.php3|index\\.cgi\
+                |placeholder\\.html|default\\.asp)$""",
             Pattern.CASE_INSENSITIVE);
     private static final Pattern PATTERN_DOMAIN = Pattern.compile(
             "^[a-z0-9]+([\\-\\.]{1}[a-z0-9]+)*\\.[a-z]{2,5}$",
@@ -699,13 +701,34 @@ public class UrlNormalizer implements Serializable {
     }
 
     /**
-     * <p>Removes the URL fragment (from the "#" character until the end).</p>
-     * <code>http://www.example.com/bar.html#section1 &rarr;
-     *       http://www.example.com/bar.html</code>
+     * <p>Removes the URL fragment (from the first "#" character encountered
+     * to the end of the URL).</p>
+     * <code>http://www.example.com/abc.html#section1 &rarr;
+     *       http://www.example.com/abc.html</code>
+     * <code>http://www.example.com/abc#/def/ghi &rarr;
+     *       http://www.example.com/abc</code>
+     * <code>http://www.example.com/abc#def/ghi#klm &rarr;
+     *       http://www.example.com/abc</code>
      * @return this instance
      */
     public UrlNormalizer removeFragment() {
         url = url.replaceFirst("(.*?)(#.*)", "$1");
+        return this;
+    }
+
+    /**
+     * <p>Removes the URL fragment like {@link #removeFragment()}, but only if
+     * it is found after the last URL segment (/...).</p>
+     * <code>http://www.example.com/abc.html#section1 &rarr;
+     *       http://www.example.com/abc.html</code>
+     * <code>http://www.example.com/abc#/def/ghi &rarr;
+     *       http://www.example.com/abc#/def/ghi</code>
+     * <code>http://www.example.com/abc#def/ghi#klm &rarr;
+     *       http://www.example.com/abc#def/ghi</code>
+     * @return this instance
+     */
+    public UrlNormalizer removeTrailingFragment() {
+        url = url.replaceFirst("(.*?)(#[^\\/]*)$", "$1");
         return this;
     }
 
