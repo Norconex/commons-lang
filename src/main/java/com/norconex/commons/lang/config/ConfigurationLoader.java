@@ -337,7 +337,7 @@ public final class ConfigurationLoader {
         return beanMapper.read(
                 type,
                 new StringReader(toString(configFile)),
-                resolveFormat(configFile));
+                Format.fromPath(configFile, Format.XML));
     }
 
     /**
@@ -359,7 +359,7 @@ public final class ConfigurationLoader {
         beanMapper.read(
                 object,
                 new StringReader(toString(configFile)),
-                resolveFormat(configFile));
+                Format.fromPath(configFile, Format.XML));
     }
 
     /**
@@ -525,19 +525,6 @@ public final class ConfigurationLoader {
     }
 
     //--- Private methods ----------------------------------------------------
-
-    private Format resolveFormat(@NonNull Path path) {
-        Format format;
-        var asStr = path.toString();
-        if (asStr.endsWith(".json")) {
-            format = Format.JSON;
-        } else if (asStr.endsWith(".yaml") || asStr.endsWith(".yml")) {
-            format = Format.YAML;
-        } else {
-            format = Format.XML;
-        }
-        return format;
-    }
 
     private static VelocityEngine createDefaultVelocityEngine() {
         var engine = new VelocityEngine();

@@ -22,6 +22,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -175,6 +176,76 @@ public class BeanMapper { //NOSONAR
 
         final Supplier<MapperBuilder<?, ?>> builder;
         final Function<MapperBuilder<?, ?>, ObjectMapper> mapper;
+
+        /**
+         * Resolve the format based on the file extension for a given path.
+         * Supported extensions are ".json", ".yaml", ".yml", and ".xml"
+         * (all case-insensitive).
+         * @param path the path to evaluate
+         * @return the detected format or <code>null</code> if path is
+         *     <code>null</code> or does not have a supported extension.
+         */
+        public static Format fromPath(Path path) {
+            return fromPath(path, null);
+        }
+
+        /**
+         * Resolve the format based on the file extension for a given path.
+         * Supported extensions are ".json", ".yaml", ".yml", and ".xml"
+         * (all case-insensitive).
+         * @param path the path to evaluate
+         * @param defaultFormat format returned if the path is <code>null</code>
+         *     or does not have a supported extension
+         * @return the detected or default format
+         */
+        public static Format fromPath(Path path, Format defaultFormat) {
+            if (path == null) {
+                return defaultFormat;
+            }
+            Format format;
+            var asStr = path.toString().toLowerCase();
+            if (asStr.endsWith(".json")) {
+                format = Format.JSON;
+            } else if (asStr.endsWith(".yaml") || asStr.endsWith(".yml")) {
+                format = Format.YAML;
+            } else if (asStr.endsWith(".xml")) {
+                format = Format.XML;
+            } else {
+                format = defaultFormat;
+            }
+            return format;
+        }
+
+        /**
+         * Resolve the format based on supplied content.
+         * @param content the content to evaluate
+         * @return the detected format or <code>null</code> if the content is
+         *     blank or the format could not be detected
+         */
+        public static Format fromContent(String content) {
+            return fromContent(content, null);
+        }
+
+        /**
+         * Resolve the format based on supplied content.
+         * @param content the content to evaluate
+         * @param defaultFormat format returned if the content is blank
+         *     or the format could not be detected
+         * @return the detected or default format
+         */
+        public static Format fromContent(String content, Format defaultFormat) {
+            if (StringUtils.isBlank(content)) {
+                return defaultFormat;
+            }
+            var cfg = content.stripLeading();
+            if (cfg.startsWith("{")) {
+                return Format.JSON;
+            }
+            if (cfg.startsWith("<")) {
+                return Format.XML;
+            }
+            return Format.YAML;
+        }
     }
 
     /**
@@ -387,17 +458,6 @@ public class BeanMapper { //NOSONAR
         for (Format format : resolvedFormats) {
             assertWriteRead(obj, format);
         }
-    }
-
-    public static Format detectFormat(@NonNull String str) {
-        var cfg = str.stripLeading();
-        if (cfg.startsWith("{")) {
-            return Format.JSON;
-        }
-        if (cfg.startsWith("<")) {
-            return Format.XML;
-        }
-        return Format.YAML;
     }
 
     /**
