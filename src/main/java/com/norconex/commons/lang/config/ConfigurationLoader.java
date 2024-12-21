@@ -64,7 +64,7 @@ import lombok.NonNull;
  *     found.
  *   </li>
  * </ul>
- * <h3>System Properties</h3>
+ * <h2>System Properties</h2>
  * <p>
  * System properties are typically passed to the JVM at launch time with
  * the <code>-D</code> argument.
@@ -79,7 +79,7 @@ import lombok.NonNull;
  *   <li><code>-DPAGE_TITLE</code></li>
  * </ul>
  *
- * <h3>Environment variables</h3>
+ * <h2>Environment variables</h2>
  * <p>
  * Environment variables are typically set at a user account level, or
  * operating system level. Environment variables take precedence over
@@ -94,7 +94,7 @@ import lombok.NonNull;
  *   <li><code>PAGE_TITLE</code></li>
  * </ul>
  *
- * <h3>Implicit variable files</h3>
+ * <h2>Implicit variable files</h2>
  * <p>
  * Configuration templates, whether the main template or any template
  * included using the <code>#parse</code> directive, can have variable files
@@ -125,7 +125,7 @@ import lombok.NonNull;
  * precedence.
  * </p>
  *
- * <h3>Explicit variable files</h3>
+ * <h2>Explicit variable files</h2>
  * <p>
  * Any <code>.variables</code> or <code>.properties</code> file
  * can also be specified using the
