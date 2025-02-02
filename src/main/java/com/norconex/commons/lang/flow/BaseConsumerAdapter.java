@@ -19,8 +19,8 @@ import java.util.Objects;
 /**
  * An abstract {@link FlowConsumerAdapter} that takes care setting/getting
  * the adaptee and leaves only the {@link #accept(Object)} method to implement.
- * @param <A> the adaptee type
- * @param <T> the type being processed by this consuemr adapter
+ * @param <A> the adaptee type (the type adapted to a Consumer)
+ * @param <T> the type being consumed by this consumer adapter
  */
 public abstract class BaseConsumerAdapter<A, T>
         implements FlowConsumerAdapter<T> {

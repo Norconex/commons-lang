@@ -19,7 +19,7 @@ import java.util.Objects;
 /**
  * An abstract {@link FlowPredicateAdapter} that takes care setting/getting
  * the adaptee and leaves only the {@link #test(Object)} method to implement.
- * @param <A> the adaptee type
+ * @param <A> the adaptee type (the type adapted to a Predicate)
  * @param <T> the type being evaluated by this predicate adapter
  */
 public abstract class BasePredicateAdapter<A, T>
