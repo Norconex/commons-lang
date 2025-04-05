@@ -31,6 +31,4 @@ public interface PolymorphicTypeProvider {
      * @return a map keyed by polymorphic types and valued by their subtypes
      */
     MultiValuedMap<Class<?>, Class<?>> getPolymorphicTypes();
-
-    //TODO have a way to disable service loader in BeanMapper
 }

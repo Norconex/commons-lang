@@ -25,15 +25,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -171,8 +168,8 @@ public final class ClassFinder {
 
         // since we want those associated with the given file only, we
         // do not use the cache.
-        Set<String> classNames = listClasses(file);
-        ClassLoader loader = createClassLoader(toURL(file));
+        var classNames = listClasses(file);
+        var loader = createClassLoader(toURL(file));
         return findSubTypes(loader, classNames, superClass, predicate);
     }
 
@@ -214,9 +211,8 @@ public final class ClassFinder {
         if (refCache == null || refCache.get() == null) {
             Set<String> classes = new HashSet<>();
             for (File file : Arrays.stream(SystemUtils.JAVA_CLASS_PATH.split(
-                    File.pathSeparator)).distinct().map(File::new)
-                    .collect(Collectors.toList())) {
-                Set<String> listClasses = listClasses(file);
+                    File.pathSeparator)).distinct().map(File::new).toList()) {
+                var listClasses = listClasses(file);
                 if (!listClasses.isEmpty()) {
                     classes.addAll(listClasses);
                 }
@@ -261,12 +257,12 @@ public final class ClassFinder {
 
     private static Set<String> listClassesInDirectory(File dir) {
         Set<String> classes = new HashSet<>();
-        String dirPath = dir.getAbsolutePath();
-        Collection<File> classFiles = FileUtils.listFiles(
+        var dirPath = dir.getAbsolutePath();
+        var classFiles = FileUtils.listFiles(
                 dir, new String[] { "class" }, true);
         for (File classFile : classFiles) {
-            String filePath = classFile.getAbsolutePath();
-            String className = StringUtils.removeStart(filePath, dirPath);
+            var filePath = classFile.getAbsolutePath();
+            var className = StringUtils.removeStart(filePath, dirPath);
             className = resolveClassName(/*loader, */ className);
             if (className != null) {
                 classes.add(className);
@@ -277,11 +273,11 @@ public final class ClassFinder {
 
     private static Set<String> listClassesFromJar(File jarFile) {
         Set<String> classes = new HashSet<>();
-        try (JarFile jar = new JarFile(jarFile)) {
-            Enumeration<JarEntry> entries = jar.entries();
+        try (var jar = new JarFile(jarFile)) {
+            var entries = jar.entries();
             while (entries.hasMoreElements()) {
-                JarEntry entry = entries.nextElement();
-                String className = entry.getName();
+                var entry = entries.nextElement();
+                var className = entry.getName();
                 className = resolveClassName(className);
                 if (className != null) {
                     classes.add(className);
@@ -295,7 +291,7 @@ public final class ClassFinder {
 
     private static String resolveClassName(String rawName) {
         if (!rawName.endsWith(".class")
-                || rawName.contains("$")
+                // || rawName.contains("$")
                 || rawName.endsWith("module-info.class")
                 || rawName.startsWith("META-INF")
                 || rawName.startsWith("com/sun/")
@@ -305,7 +301,7 @@ public final class ClassFinder {
             return null;
         }
 
-        String className = rawName;
+        var className = rawName;
         className = className.replaceAll("[\\\\/]", ".");
         className = StringUtils.removeStart(className, ".");
         return StringUtils.removeEnd(className, ".class");
