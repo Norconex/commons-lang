@@ -21,6 +21,10 @@ import java.util.List;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 /**
  * Exception-related utility methods.
  * @since 2.0.0
@@ -83,5 +87,35 @@ public final class ExceptionUtil {
             msgs.add(ExceptionUtils.getMessage(t));
         }
         return msgs;
+    }
+
+    /**
+     * <p>Gets a list made of all exceptions classes and their
+     * message found in an exception stack, starting with the
+     * supplied exception itself.</p>
+     *
+     * <p>Exceptions without a message will result in a <code>null</code>
+     * map value.</p>
+     *
+     * <p>This method handles infinite loops and never returns
+     * <code>null</code>.</p>
+     *
+     * @param throwable  the throwable to inspect, may be <code>null</code>
+     * @return the list of messages, never <code>null</code>
+     */
+    public static List<ExceptionMessage> getExceptionMessageList(
+            Throwable throwable) {
+        return ExceptionUtils.getThrowableList(throwable)
+                .stream()
+                .map(t -> new ExceptionMessage(t.getClass(), t.getMessage()))
+                .toList();
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class ExceptionMessage {
+        private Class<?> exceptionType;
+        private String message;
     }
 }
