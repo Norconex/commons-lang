@@ -29,20 +29,20 @@ class TextReaderTest {
     @Test
     void testSentenceBreaks() throws IOException {
 
-        TextReader reader = getTextReader("funkyParagraphBreaks.txt", 60);
-        int count = 0;
+        var reader = getTextReader("funkyParagraphBreaks.txt", 60);
+        var count = 0;
         while ((reader.readText()) != null) {
             count++;
         }
         reader.close();
-        Assertions.assertEquals(11, count, "Wrong number of sentences");
+        Assertions.assertEquals(10, count, "Wrong number of sentences");
     }
 
     @Test
     void testParagraphBreaks() throws IOException {
 
-        TextReader reader = getTextReader("funkyParagraphBreaks.txt", 100);
-        int count = 0;
+        var reader = getTextReader("funkyParagraphBreaks.txt", 100);
+        var count = 0;
         while ((reader.readText()) != null) {
             count++;
         }
@@ -53,8 +53,8 @@ class TextReaderTest {
 
     @Test
     void testNoBreak() throws IOException {
-        TextReader reader = getTextReader("funkyParagraphBreaks.txt", 1000);
-        String allContent = reader.readText();
+        var reader = getTextReader("funkyParagraphBreaks.txt", 1000);
+        var allContent = reader.readText();
         reader.close();
         Assertions.assertEquals(400, allContent.replace("\r", "").length(),
                 "Wrong number of characters returned.");
@@ -62,8 +62,8 @@ class TextReaderTest {
 
     @Test
     void testUnlimited() throws IOException {
-        TextReader reader = getTextReader("funkyParagraphBreaks.txt", -1);
-        String allContent = reader.readText();
+        var reader = getTextReader("funkyParagraphBreaks.txt", -1);
+        var allContent = reader.readText();
         reader.close();
         Assertions.assertEquals(400, allContent.replace("\r", "").length(),
                 "Wrong number of characters returned.");

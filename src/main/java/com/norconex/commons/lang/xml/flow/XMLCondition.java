@@ -134,7 +134,7 @@ class XMLCondition<T> implements IXMLConfigurable, Predicate<T> {
 
     Predicate<T> parseConditionGroup(XML xml) {
         List<Predicate<T>> predicateList = new ArrayList<>();
-        var operator = Operator.of(xml.getString("operator"));
+        var operator = Operator.of(xml.getString("@operator"));
         xml.forEach("*", x -> {
             predicateList.add(loadConditionFromXML(x));
         });

@@ -15,7 +15,6 @@
 package com.norconex.commons.lang.xml.flow;
 
 import java.io.IOException;
-import java.io.Reader;
 import java.util.function.Consumer;
 
 import org.junit.jupiter.api.Assertions;
@@ -44,23 +43,23 @@ class XMLFlowTest {
     void testWriteRead() throws IOException {
         // to test and it was written properly, we load it back and execute
         // the same test again and it should still work just fine.
-        XMLFlow<Properties> flow = createXMLFlow();
-        XML sourceXML = sampleXML();
-        Consumer<Properties> c = flow.parse(sourceXML);
-        XML writtenXML = new XML("<xml/>");
+        var flow = createXMLFlow();
+        var sourceXML = sampleXML();
+        var c = flow.parse(sourceXML);
+        var writtenXML = new XML("<xml/>");
         flow.write(writtenXML, c);
-        LOG.debug("{}", writtenXML.toString(2));
+        LOG.info("{}", writtenXML.toString(2));
         testFlow(writtenXML);
     }
 
     private void testFlow(XML xml) throws IOException {
-        XMLFlow<Properties> flow = createXMLFlow();
+        var flow = createXMLFlow();
         Consumer<Properties> c;
-        try (Reader r = ResourceLoader.getXmlReader(getClass())) {
+        try (var r = ResourceLoader.getXmlReader(getClass())) {
             c = flow.parse(xml);
         }
 
-        Properties data1 = new Properties();
+        var data1 = new Properties();
         data1.add("firstName", "John");
         data1.add("lastName", "Smith");
         data1.set("car", "volvo");
@@ -71,7 +70,7 @@ class XMLFlowTest {
         // last name unchanged
         Assertions.assertEquals("Smith", data1.getString("lastName"));
 
-        Properties data2 = new Properties();
+        var data2 = new Properties();
         data2.add("firstName", "John");
         data2.add("lastName", "Smith");
         data2.set("car", "toyota");
@@ -84,7 +83,7 @@ class XMLFlowTest {
     }
 
     private XML sampleXML() throws IOException {
-        try (Reader r = ResourceLoader.getXmlReader(getClass())) {
+        try (var r = ResourceLoader.getXmlReader(getClass())) {
             return new XML(r);
         }
     }
