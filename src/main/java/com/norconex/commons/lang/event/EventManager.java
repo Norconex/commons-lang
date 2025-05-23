@@ -14,7 +14,6 @@
  */
 package com.norconex.commons.lang.event;
 
-import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -152,7 +151,7 @@ public class EventManager {
         if (listeners == null) {
             return false;
         }
-        boolean anyRemoved = false;
+        var anyRemoved = false;
         for (EventListener<Event> l : listeners) {
             if (removeListener(l)) {
                 anyRemoved = true;
@@ -201,7 +200,7 @@ public class EventManager {
 
     private void doFire(Event event) {
         for (EventListener<Event> listener : listeners) {
-            Method method = MethodUtils.getMatchingAccessibleMethod(
+            var method = MethodUtils.getMatchingAccessibleMethod(
                     listener.getClass(), "accept", event.getClass());
             if (method != null) {
                 listener.accept(event);
@@ -218,9 +217,9 @@ public class EventManager {
     public void log(Event event, Level level) {
         //FYI, depending on logger pattern, it is possible only the last part
         //of the logger name is shown (after the dot)
-        Logger log = LoggerFactory.getLogger(event.getClass().getSimpleName()
+        var log = LoggerFactory.getLogger(event.getClass().getSimpleName()
                 + "." + event.getName());
-        Level safeLevel = ObjectUtils.defaultIfNull(level, Level.INFO);
+        var safeLevel = ObjectUtils.defaultIfNull(level, Level.INFO);
         if (stacktraceLoggingDisabled && event.getException() != null) {
             Slf4jUtil.log(log, safeLevel, event.toString()
                     + " Cause:\n{}",

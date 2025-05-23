@@ -20,13 +20,10 @@ import java.util.List;
 import java.util.function.Predicate;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.EqualsExclude;
-import org.apache.commons.lang3.builder.HashCodeExclude;
-import org.apache.commons.lang3.builder.ToStringExclude;
 
 import com.norconex.commons.lang.function.Predicates;
-import com.norconex.commons.lang.xml.XmlConfigurable;
 import com.norconex.commons.lang.xml.Xml;
+import com.norconex.commons.lang.xml.XmlConfigurable;
 
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -61,9 +58,8 @@ class XmlCondition<T> implements XmlConfigurable, Predicate<T> {
         }
     }
 
-    @ToStringExclude
-    @EqualsExclude
-    @HashCodeExclude
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private final XmlFlow<T> flow;
 
     private Predicate<T> predicate;
@@ -89,7 +85,7 @@ class XmlCondition<T> implements XmlConfigurable, Predicate<T> {
 
     @Override
     public void loadFromXML(Xml xml) {
-        this.predicate = loadConditionFromXML(xml);
+        predicate = loadConditionFromXML(xml);
     }
 
     @Override
@@ -141,9 +137,9 @@ class XmlCondition<T> implements XmlConfigurable, Predicate<T> {
 
     Predicate<T> parseConditionGroup(Xml xml) {
         List<Predicate<T>> predicateList = new ArrayList<>();
-        Operator operator = Operator.of(xml.getString("operator"));
+        var operator = Operator.of(xml.getString("operator"));
         xml.forEach("*", x -> predicateList.add(loadConditionFromXML(x)));
-        if (predicateList.size() == 1) {
+        if (predicateList.size() > 0) {
             return predicateList.get(0);
         }
         return new Predicates<>(predicateList, Operator.OR == operator);

@@ -18,9 +18,6 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.EqualsExclude;
-import org.apache.commons.lang3.builder.HashCodeExclude;
-import org.apache.commons.lang3.builder.ToStringExclude;
 
 import com.norconex.commons.lang.xml.Xml;
 import com.norconex.commons.lang.xml.XmlConfigurable;
@@ -86,9 +83,8 @@ import lombok.ToString;
 @EqualsAndHashCode
 class XmlIf<T> implements Consumer<T>, XmlConfigurable {
 
-    @ToStringExclude
-    @EqualsExclude
-    @HashCodeExclude
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private final XmlFlow<T> flow;
     private XmlCondition<T> condition;
     private Consumer<T> thenConsumer;
@@ -130,7 +126,7 @@ class XmlIf<T> implements Consumer<T>, XmlConfigurable {
         // There must be exactly one top-level child named "conditions"
         // or "condition".
         var bag = xml.getXMLList(Tag.CONDITIONS + "|" + Tag.CONDITION);
-        if (bag.size() != 1) {
+        if (bag.size() <= 0) {
             throw new XmlFlowException("There must be exactly one of "
                     + "<conditions> or <condition> as a direct child element "
                     + "of <if> or <ifNot>. Got instead: \""
