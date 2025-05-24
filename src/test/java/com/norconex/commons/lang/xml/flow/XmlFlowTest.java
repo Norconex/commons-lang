@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 
 import java.io.IOException;
-import java.io.Reader;
 import java.util.function.Consumer;
 
 import org.junit.jupiter.api.Assertions;
@@ -45,21 +44,21 @@ class XmlFlowTest {
 
     @Test
     void testCondition() {
-        XmlCondition<Integer> cnd1 = new XmlCondition<>(new XmlFlow<>());
+        var cnd1 = new XmlCondition<Integer>(new XmlFlow<>());
         assertThat(cnd1.test(null)).isFalse(); // nothing to test, false
         assertThat(cnd1.test(123)).isTrue(); // no predicate, always true
     }
 
     @Test
     void testMisc() {
-        XmlFlow<Properties> flow = createXMLFlow();
+        var flow = createXMLFlow();
         assertThat(flow.getConsumerAdapter()).isEqualTo(
                 MockXmlFlowConsumerAdapter.class);
         assertThat(flow.getPredicateAdapter()).isEqualTo(
                 MockXmlFlowPredicateAdapter.class);
         assertThat(flow.parse(new Xml("test"))).isNull();
 
-        XmlFlow<Properties> flow2 = new XmlFlow<>();
+        var flow2 = new XmlFlow<Properties>();
         assertThatExceptionOfType(XmlFlowException.class)
                 .isThrownBy(() -> flow2.parse( //NOSONAR
                         new Xml("<test><value>1</value></test>")))
@@ -75,23 +74,23 @@ class XmlFlowTest {
     void testWriteRead() throws IOException {
         // to test and it was written properly, we load it back and execute
         // the same test again and it should still work just fine.
-        XmlFlow<Properties> flow = createXMLFlow();
-        Xml sourceXML = sampleXML();
-        Consumer<Properties> c = flow.parse(sourceXML);
-        Xml writtenXML = new Xml("<xml/>");
+        var flow = createXMLFlow();
+        var sourceXML = sampleXML();
+        var c = flow.parse(sourceXML);
+        var writtenXML = new Xml("<xml/>");
         flow.write(writtenXML, c);
         LOG.debug("{}", writtenXML.toString(2));
         testFlow(writtenXML);
     }
 
     private void testFlow(Xml xml) throws IOException {
-        XmlFlow<Properties> flow = createXMLFlow();
+        var flow = createXMLFlow();
         Consumer<Properties> c;
-        try (Reader r = ResourceLoader.getXmlReader(getClass())) {
+        try (var r = ResourceLoader.getXmlReader(getClass())) {
             c = flow.parse(xml);
         }
 
-        Properties data1 = new Properties();
+        var data1 = new Properties();
         data1.add("firstName", "John");
         data1.add("lastName", "Smith");
         data1.set("car", "volvo");
@@ -102,7 +101,7 @@ class XmlFlowTest {
         // last name unchanged
         Assertions.assertEquals("Smith", data1.getString("lastName"));
 
-        Properties data2 = new Properties();
+        var data2 = new Properties();
         data2.add("firstName", "John");
         data2.add("lastName", "Smith");
         data2.set("car", "toyota");
@@ -115,7 +114,7 @@ class XmlFlowTest {
     }
 
     private Xml sampleXML() throws IOException {
-        try (Reader r = ResourceLoader.getXmlReader(getClass())) {
+        try (var r = ResourceLoader.getXmlReader(getClass())) {
             return new Xml(r);
         }
     }

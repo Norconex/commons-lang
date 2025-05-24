@@ -137,9 +137,9 @@ class XmlCondition<T> implements XmlConfigurable, Predicate<T> {
 
     Predicate<T> parseConditionGroup(Xml xml) {
         List<Predicate<T>> predicateList = new ArrayList<>();
-        var operator = Operator.of(xml.getString("operator"));
+        var operator = Operator.of(xml.getString("@operator"));
         xml.forEach("*", x -> predicateList.add(loadConditionFromXML(x)));
-        if (predicateList.size() > 0) {
+        if (predicateList.size() == 1) {
             return predicateList.get(0);
         }
         return new Predicates<>(predicateList, Operator.OR == operator);
