@@ -22,7 +22,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
 
@@ -30,30 +29,30 @@ import com.norconex.commons.lang.ExceptionUtil;
 import com.norconex.commons.lang.Slf4jUtil;
 import com.norconex.commons.lang.bean.BeanUtil;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 /**
+ * <p>
  * Manages event listeners and logs events.  New event managers can be
  * constructed with a "parent" event manager. When chained as such,
  * event on a particular event manager are bubbled up to the parents but
  * never down to children. Events are logged by the manager in the chain that
  * first fires the event.
+ * </p>
+ * <p>
+ * When an event holds an exception, a summarized version of it is logged
+ * by default. To have the full stack trace logged by this event manager,
+ * set the log level for the corresponding class to `DEBUG` (or more verbose).
+ * </p>
  * @since 2.0.0
  */
+@Slf4j
 public class EventManager {
-
-    private static final Logger LOG =
-            LoggerFactory.getLogger(EventManager.class);
 
     private EventManager parentEventManager;
 
     private final CopyOnWriteArrayList<EventListener<Event>> listeners =
             new CopyOnWriteArrayList<>();
-
-    @Setter
-    @Getter
-    private boolean stacktraceLoggingDisabled;
 
     public EventManager() {
         this(null);
@@ -220,9 +219,8 @@ public class EventManager {
         var log = LoggerFactory.getLogger(event.getClass().getSimpleName()
                 + "." + event.getName());
         var safeLevel = ObjectUtils.defaultIfNull(level, Level.INFO);
-        if (stacktraceLoggingDisabled && event.getException() != null) {
-            Slf4jUtil.log(log, safeLevel, event.toString()
-                    + " Cause:\n{}",
+        if (!log.isDebugEnabled() && event.getException() != null) {
+            Slf4jUtil.log(log, safeLevel, event.toString() + " Cause: {}",
                     ExceptionUtil.getFormattedMessages(event.getException()));
         } else {
             Slf4jUtil.log(
