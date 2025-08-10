@@ -64,6 +64,41 @@ public final class SystemUtil {
     }
 
     /**
+     * Same as {@link SystemUtil#callAndCaptureOutput(Callable)} but with
+     * no thread-safety guarantee. This method is not synchronized.
+     * @param <T> the type of the return value
+     * @param callable the code to execute
+     * @return captured return value and standard output/error
+     * @throws UncheckedCallableException wrapper around
+     *     any {@link Callable} exception
+     * @since 3.0.0
+     */
+    public static <T> Captured<T> withOutputCapture(Callable<T> callable) {
+        var captured = new Captured<T>();
+        var originalOut = System.out; //NOSONAR
+        var originalErr = System.err; //NOSONAR
+        try (var out = new ByteArrayOutputStream();
+                var outPs = new PrintStream(out);
+                var err = new ByteArrayOutputStream();
+                var errPs = new PrintStream(err)) {
+            System.setOut(outPs);
+            System.setErr(errPs);
+            captured.returnValue = callable.call();
+            outPs.flush();
+            errPs.flush();
+            captured.stdOut = out.toString();
+            captured.stdErr = err.toString();
+            return captured;
+        } catch (Exception e) {
+            throw new UncheckedCallableException(
+                    "Could not invoke Callable and capture its output.", e);
+        } finally {
+            System.setOut(originalOut);
+            System.setErr(originalErr);
+        }
+    }
+
+    /**
      * Executes a {@link Callable} and return its value along with
      * any standard output or error (i.e., STDOUT/STDERR).
      * While this method is synchronized, nothing prevent other threads

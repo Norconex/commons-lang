@@ -666,6 +666,8 @@
         </executions>
       </plugin>
 
+      <!-- DELETE WHEN MIGRATED TO NEW SONATYPE/GITHUB -->
+      <!--
       <plugin>
         <groupId>org.sonatype.plugins</groupId>
         <artifactId>nexus-staging-maven-plugin</artifactId>
@@ -677,6 +679,7 @@
           <autoReleaseAfterClose>false</autoReleaseAfterClose>
         </configuration>
       </plugin>
+      -->
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
