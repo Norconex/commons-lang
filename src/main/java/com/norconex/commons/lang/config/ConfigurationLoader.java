@@ -539,6 +539,10 @@ public final class ConfigurationLoader {
         engine.setProperty(RuntimeConstants.ENCODING_DEFAULT,
                 StandardCharsets.UTF_8.toString());
 
+        engine.setProperty("runtime.custom_directives",
+                "com.norconex.commons.lang.config.vlt.CustomIncludeDirective,"
+                        + "com.norconex.commons.lang.config.vlt.CustomParseDirective");
+
         engine.setProperty("runtime.log", "");
         return engine;
     }

@@ -1,0 +1,24 @@
+Test_basic_#Include: \$date \$title expected no change
+#include("main_item_template1.vm")
+
+Test_basic_#Parse: Inline replace
+#parse("main_item_template1.vm")
+
+Test_Depth1: #iclude and #Parse in Depth
+depth1_include_tst_1:
+  #include("main_item_template2.vm")
+depth1_parse_tst2:
+  #parse("main_item_template2.vm")
+
+Test_Depth2: include and parse
+depth_tst2:
+  tst_depth_2_1:
+    #include("main_item_template2.vm")
+    #parse("main_item_template2.vm")
+
+depth_tst_3:
+  #parse("main_item_template3.vm")
+
+depth_tst_4_ifelse_and_loop:
+  #parse("main_item_template6.vm")
+

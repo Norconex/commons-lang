@@ -1,0 +1,15 @@
+#set($names = ["Alice", "Bob", "Charlie"])
+#set($age = [10, 30, 50])
+#set($size = $names.size() - 1)
+#set($index = 0)
+#foreach($name in $names)
+#set($x = $name)
+#set($y = $age[$index])
+#parse("vlt_item6_1.vm")
+#if($age[$index] < 18)
+age: you are nothing.
+#else
+Feels: very old
+#end
+#set($index = $index + 1)
+#end
