@@ -423,9 +423,14 @@ public class BeanMapper { //NOSONAR
             return (T) validate(
                     toObjectMapper(format).readerFor(type).readValue(reader));
         } catch (IOException e) {
-            LOG.error(e.getLocalizedMessage());
+            // Log the error with full context for easier debugging
+            LOG.error("Failed to read {} source for type: {}. Error: {}",
+                    format, type.getName(), e.getMessage());
+			LOG.debug("Error stacktrace:\n", e);
             throw new BeanException(
-                    "Could not read %s source.".formatted(format), e);
+                    "Could not read %s source for type %s: %s"
+                            .formatted(format, type.getName(), e.getMessage()),
+                    e);
         }
     }
 

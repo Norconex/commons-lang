@@ -20,6 +20,7 @@ import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
@@ -46,10 +47,19 @@ import lombok.NonNull;
  * </p>
  * <h2>Variables</h2>
  * <p>
- * Variables can be defined in a few different ways (in order of precedence):
- * system properties, environment variable, or variable files. In a
- * configuration file, variables are referenced surrounded by curly braces
- * and prefixed with a dollar sign.  Default values can be specified by
+ * Variables can be defined in a few different ways and will be resolved
+ * in this order precedence (first one to match):
+ * </p>
+ * <ul>
+ *   <li>System properties</li>
+ *   <li>Environment variables</li>
+ *   <li>Java properties</li>
+ *   <li>Explicit variable files</li>
+ *   <li>Implicit variable files</li>
+ * </ul>
+ * <p>
+ * In a configuration file, variables are referenced surrounded by curly
+ * braces and prefixed with a dollar sign.  Default values can be specified by
  * following the variable name with a vertical bar character and the value.
  * Examples:
  * </p>
@@ -94,6 +104,22 @@ import lombok.NonNull;
  *   <li><code>PAGE_TITLE</code></li>
  * </ul>
  *
+ * <h2>Java Properties</h2>
+ * <p>
+ *
+ * </p>
+ *
+ * <h2>Explicit variable files</h2>
+ * <p>
+ * Any <code>.variables</code> or <code>.properties</code> file
+ * can also be specified using the
+ * {@link ConfigurationLoaderBuilder#setVariablesFile(Path)} method.
+ * <b>Since 3.0.0</b>, any variable file without the <code>.properties</code>
+ * extension is treated as if its extension was <code>.variables</code>.
+ * The syntax for both file types is the same as described
+ * under <em>Implicit variable files</em> below.
+ * </p>
+ *
  * <h2>Implicit variable files</h2>
  * <p>
  * Configuration templates, whether the main template or any template
@@ -123,16 +149,6 @@ import lombok.NonNull;
  * When both <code>.variables</code> and <code>.properties</code> exist
  * for a template, the <code>.properties</code> file variables take
  * precedence.
- * </p>
- *
- * <h2>Explicit variable files</h2>
- * <p>
- * Any <code>.variables</code> or <code>.properties</code> file
- * can also be specified using the
- * {@link ConfigurationLoaderBuilder#setVariablesFile(Path)} method.
- * <b>Since 3.0.0</b>, any variable files without the <code>.properties</code>
- * extension as if it was <code>.variables</code>. The syntax for both file
- * types is the same as described under <em>Implicit variable files</em> above.
  * </p>
  *
  * <h2>Configuration fragments</h2>
@@ -216,6 +232,8 @@ public final class ConfigurationLoader {
     /** File holding variables. See class documentation. */
     private Path variablesFile;
 
+    private Map<String, Object> variableMap;
+
     /**
      * @deprecated Use {@link ConfigurationLoader#builder()} instead.
      */
@@ -265,6 +283,10 @@ public final class ConfigurationLoader {
 
         VariablesFileResolver.resolve(fullpath, baseName).forEach(context::put);
 
+        // overwrite context built from file with explicit Properties
+        if (variableMap != null) {
+            variableMap.forEach(context::put);
+        }
         var sw = new StringWriter();
         try (Reader reader = Files.newBufferedReader(configFile)) {
             velocityEngine.evaluate(context, sw, file, reader);

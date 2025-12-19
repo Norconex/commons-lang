@@ -27,6 +27,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import com.norconex.commons.lang.SystemUtil;
+import com.norconex.commons.lang.map.MapUtil;
 import com.norconex.commons.lang.security.Credentials;
 
 import lombok.Data;
@@ -85,7 +86,7 @@ class ConfigurationLoaderTest {
     }
 
     @Test
-    void testLoadToString() throws Exception {
+    void testLoadToString() {
         var loader = ConfigurationLoader.builder()
                 .variablesFile(cfgPath("string.vars.txt"))
                 .build();
@@ -110,6 +111,20 @@ class ConfigurationLoaderTest {
 
         // invalid path
         assertThat(loader.toString(cfgPath("doesntExist"))).isNull();
+    }
+
+    @Test
+    void testVarsResolutionOrder() {
+        var loader = ConfigurationLoader.builder()
+                //.variablesFile(cfgPath("resolution-order.variables"))
+                .variableMap(MapUtil.toMap(
+                        "varA", "MapValueA",
+                        "varB", "MapValueB"))
+                .build();
+        var str = SystemUtil.callWithProperty("varA", "PropValueA",
+                () -> loader.toString(cfgPath("resolution-order.cfg")));
+
+        assertThat(str).isEqualTo("PropValueA, MapValueB, FileVarC, DefaultD");
     }
 
     private Path cfgPath(String path) {
