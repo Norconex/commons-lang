@@ -64,7 +64,7 @@
 
     <!-- Test dependencies -->
     <ant.version>1.10.13</ant.version>
-    <assertj.version>3.24.2</assertj.version>
+    <assertj.version>3.27.7</assertj.version>
     <junit-jupiter.version>5.9.3</junit-jupiter.version>
     <testcontainers.version>1.16.0</testcontainers.version>
 
