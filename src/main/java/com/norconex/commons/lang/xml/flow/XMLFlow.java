@@ -36,7 +36,7 @@ import com.norconex.commons.lang.xml.XML;
  * {@link Predicate} statements deciding whether to execute or not
  * {@link Consumer} objects.
  * </p>
- * <h3>XML Syntax</h3>
+ * <h2>XML Syntax</h2>
  * {@nx.xml
  * <!-- Proceeds if condition is true. -->
  * <if>

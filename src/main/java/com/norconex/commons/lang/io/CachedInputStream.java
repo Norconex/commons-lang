@@ -232,7 +232,7 @@ public class CachedInputStream extends InputStream implements ICachedStream {
      */
     @Override
     public synchronized void reset() throws IOException {
-        pos = markpos;
+        pos = Math.max(0, markpos);
         markpos = -1;
     }
 
@@ -339,7 +339,9 @@ public class CachedInputStream extends InputStream implements ICachedStream {
                 if (memOutputStream != null) {
                     var bytes = new byte[toRead];
                     read = memOutputStream.getBytes(bytes, cursor);
-                    System.arraycopy(bytes, 0, b, off, toRead);
+                    if (read != -1) {
+                        System.arraycopy(bytes, 0, b, off, toRead);
+                    }
                 } else if (cursor >= memCache.length) {
                     read = -1;
                 } else {
@@ -400,7 +402,7 @@ public class CachedInputStream extends InputStream implements ICachedStream {
      */
     public void enforceFullCaching() throws IOException {
         if (firstRead) {
-            IOUtils.copy(this, NullOutputStream.NULL_OUTPUT_STREAM);
+            IOUtils.copy(this, NullOutputStream.nullOutputStream());
             length = count;
             firstRead = false;
         }

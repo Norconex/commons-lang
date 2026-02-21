@@ -26,7 +26,7 @@ import org.apache.commons.lang3.compare.ComparableUtils;
  * </p>
  *
  * {@nx.block #operators
- * <h3>Textual representation:</h3>
+ * <h2>Textual representation:</h2>
  * <p>
  * Operators can be parsed using symbols or
  * text abbreviations. Text abbreviations are useful when you do now want to
@@ -84,7 +84,7 @@ public enum Operator {
         if (StringUtils.isBlank(op)) {
             return null;
         }
-        String cleanOp = StringUtils.remove(op.toLowerCase().trim(), ' ');
+        var cleanOp = StringUtils.remove(op.toLowerCase().trim(), ' ');
         for (Operator c : Operator.values()) {
             if (ArrayUtils.contains(c.abbr, cleanOp)) {
                 return c;

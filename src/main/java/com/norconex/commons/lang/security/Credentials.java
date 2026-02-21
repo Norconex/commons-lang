@@ -36,7 +36,7 @@ import com.norconex.commons.lang.xml.XML;
  * </p>
  *
  * {@nx.block #doc
- * <h3>Password encryption:</h3>
+ * <h2>Password encryption:</h2>
  * <p>
  * Passwords can be encrypted using <code>EncryptionUtil</code> (or
  * command-line "encrypt.bat" or "encrypt.sh" if those are available to you).
@@ -110,10 +110,8 @@ public class Credentials implements IXMLConfigurable, Serializable {
     private EncryptionKey passwordKey;
 
     public Credentials() {
-        super();
     }
     public Credentials(Credentials copy) {
-        super();
         copyFrom(copy);
     }
 

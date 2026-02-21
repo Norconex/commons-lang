@@ -32,7 +32,7 @@ import com.norconex.commons.lang.xml.XML;
  * <p>Convenient way of matching values and/or fields (key)
  * in a given {@link Properties}.
  * </p>
- * <h3>Null handling:</h3>
+ * <h2>Null handling:</h2>
  * <p>
  * Since {@link Properties} does not store <code>null</code> values,
  * a <code>null</code> pattern for the field or value matcher will

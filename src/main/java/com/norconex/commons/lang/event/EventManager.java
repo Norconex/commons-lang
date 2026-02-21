@@ -14,7 +14,6 @@
  */
 package com.norconex.commons.lang.event;
 
-import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -64,19 +63,18 @@ public class EventManager {
      * @param parentEventManager parent event manager
      */
     public EventManager(EventManager parentEventManager) {
-        super();
         this.parentEventManager = parentEventManager;
     }
 
     public void addListener(IEventListener<Event> listener) {
         if (listener != null) {
             // Purposely compare listeners by identity, not equality/hash.
-            for (IEventListener<Event> l : this.listeners) {
+            for (IEventListener<Event> l : listeners) {
                 if (listener == l) {
                     return;
                 }
             }
-            this.listeners.add(listener);
+            listeners.add(listener);
         }
     }
     public void addListeners(Collection<IEventListener<Event>> listeners) {
@@ -92,27 +90,27 @@ public class EventManager {
     }
 
     public List<IEventListener<Event>> getListeners() {
-        return Collections.unmodifiableList(this.listeners);
+        return Collections.unmodifiableList(listeners);
     }
     public boolean removeListener(IEventListener<Event> listener) {
-        return this.listeners.remove(listener);
+        return listeners.remove(listener);
     }
     public boolean removeListeners(
             Collection<IEventListener<Event>> listeners) {
         return this.listeners.removeAll(listeners);
     }
     public void clearListeners() {
-        this.listeners.clear();
+        listeners.clear();
     }
     public int getListenerCount() {
-        return this.listeners.size();
+        return listeners.size();
     }
 
     public boolean isStacktraceLoggingDisabled() {
         return stacktraceLoggingDisabled;
     }
     public void setStacktraceLoggingDisabled(boolean disableStacktraceLogging) {
-        this.stacktraceLoggingDisabled = disableStacktraceLogging;
+        stacktraceLoggingDisabled = disableStacktraceLogging;
     }
 
     public void fire(Event event) {
@@ -138,7 +136,7 @@ public class EventManager {
 
     private void doFire(Event event) {
         for (IEventListener<Event> listener : listeners) {
-            Method method = MethodUtils.getMatchingAccessibleMethod(
+            var method = MethodUtils.getMatchingAccessibleMethod(
                     listener.getClass(), "accept", event.getClass());
             if (method != null) {
                 listener.accept(event);
@@ -155,9 +153,9 @@ public class EventManager {
     public void log(Event event, Level level) {
         //FYI, depending on logger pattern, it is possible only the last part
         //of the logger name is shown (after the dot)
-        Logger log =  LoggerFactory.getLogger(event.getClass().getSimpleName()
+        var log =  LoggerFactory.getLogger(event.getClass().getSimpleName()
                 + "." + event.getName());
-        Level safeLevel = ObjectUtils.defaultIfNull(level, Level.INFO);
+        var safeLevel = ObjectUtils.getIfNull(level, Level.INFO);
         if (stacktraceLoggingDisabled && event.getException() != null) {
             SLF4JUtil.log(log, safeLevel, event.toString()
                     + " Cause:\n{}",

@@ -39,12 +39,13 @@ public class BeanUtilTest {
 
     @Test
     public void testToMap() {
-        Map<String, Object> map = BeanUtil.toMap(new Bean());
+        Bean bean = new Bean();
+        Map<String, Object> map = BeanUtil.toMap(bean);
         Assertions.assertEquals("potato", map.get("string"));
         Assertions.assertEquals(123, map.get("primitiveInt"));
         Assertions.assertEquals(Integer.valueOf(456), map.get("objectInteger"));
         Assertions.assertEquals(new Event.Builder<>(
-                "testEvent", this).build(), map.get("event"));
+                "testEvent", bean).build(), map.get("event"));
         Assertions.assertEquals(Arrays.asList(0.5d, 1.0d), map.get("doubles"));
         Assertions.assertEquals(5, map.size());
     }
@@ -67,7 +68,7 @@ public class BeanUtilTest {
         Assertions.assertEquals(123, (int) BeanUtil.getValue(bean, "primitiveInt"));
         Assertions.assertEquals(Integer.valueOf(456),
                 BeanUtil.getValue(bean, "objectInteger"));
-        Assertions.assertEquals(new Event.Builder<>("testEvent", this).build(),
+        Assertions.assertEquals(new Event.Builder<>("testEvent", bean).build(),
                 BeanUtil.getValue(bean, "event"));
     }
 

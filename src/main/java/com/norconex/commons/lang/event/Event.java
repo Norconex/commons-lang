@@ -126,7 +126,19 @@ public class Event extends EventObject {
 
     @Override
     public boolean equals(final Object other) {
-        return EqualsBuilder.reflectionEquals(this, other);
+        if (this == other) {
+            return true;
+        }
+        if (other == null || getClass() != other.getClass()) {
+            return false;
+        }
+        Event o = (Event) other;
+        return new EqualsBuilder()
+                .append(name, o.name)
+                .append(message, o.message)
+                .append(exception, o.exception)
+                .append(source, o.source)
+                .isEquals();
     }
     @Override
     public int hashCode() {

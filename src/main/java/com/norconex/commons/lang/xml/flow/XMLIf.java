@@ -14,7 +14,6 @@
  */
 package com.norconex.commons.lang.xml.flow;
 
-import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -51,7 +50,7 @@ import com.norconex.commons.lang.xml.XML;
  * {@link Predicate} which trigger {@link Consumer} objects if evaluating
  * to <code>true</code>.
  * </p>
- * <h3>XML Syntax</h3>
+ * <h2>XML Syntax</h2>
  * {@nx.xml
  * <if>
  *   <!--
@@ -114,10 +113,8 @@ class XMLIf<T> implements Consumer<T>, IXMLConfigurable {
             if (thenConsumer != null) {
                 thenConsumer.accept(t);
             }
-        } else {
-            if (elseConsumer != null) {
-                elseConsumer.accept(t);
-            }
+        } else if (elseConsumer != null) {
+            elseConsumer.accept(t);
         }
     }
 
@@ -129,7 +126,7 @@ class XMLIf<T> implements Consumer<T>, IXMLConfigurable {
     public void loadFromXML(XML xml) {
         // There must be exactly one top-level child named "conditions"
         // or "condition".
-        List<XML> bag = xml.getXMLList(Tag.CONDITIONS + "|" + Tag.CONDITION);
+        var bag = xml.getXMLList(Tag.CONDITIONS + "|" + Tag.CONDITION);
         if (bag.size() != 1) {
             throw new XMLFlowException("There must be exactly one of "
                     + "<conditions> or <condition> as a direct child element "
@@ -137,15 +134,15 @@ class XMLIf<T> implements Consumer<T>, IXMLConfigurable {
                     + StringUtils.abbreviate(xml.toString(0)
                             .replaceAll("[\n\r]", ""), 40) + "\"");
         }
-        XMLCondition<T> cond = new XMLCondition<>(flow);
+        var cond = new XMLCondition<T>(flow);
         cond.loadFromXML(bag.get(0));
-        this.condition = cond;
+        condition = cond;
 
         // There must be exactly one top-level child named "then"
         // and one optional "else".
         // TODO enforce in schema that there must be one "then".
-        this.thenConsumer = flow.parse(xml.getXML(Tag.THEN.toString()));
-        this.elseConsumer = flow.parse(xml.getXML(Tag.ELSE.toString()));
+        thenConsumer = flow.parse(xml.getXML(Tag.THEN.toString()));
+        elseConsumer = flow.parse(xml.getXML(Tag.ELSE.toString()));
     }
 
     @Override

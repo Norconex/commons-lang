@@ -20,18 +20,18 @@
   <parent>
     <groupId>com.norconex.commons</groupId>
     <artifactId>norconex-commons-maven-parent</artifactId>
-    <version>1.1.0</version>
+    <version>1.2.0</version>
   </parent>
   <artifactId>norconex-commons-lang</artifactId>
-  <version>2.1.0</version>
+  <version>2.2.0</version>
   <packaging>jar</packaging>
   <name>Norconex Commons Lang</name>
   <inceptionYear>2008</inceptionYear>
 
   <properties>
-    <maven.compiler.source>11</maven.compiler.source>
-    <maven.compiler.target>11</maven.compiler.target>
-    <java.version>11</java.version>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
+    <java.version>17</java.version>
     <sun-jaxb-impl.version>4.0.5</sun-jaxb-impl.version>
   </properties>
 
@@ -208,6 +208,14 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
+        <configuration>
+          <failOnError>false</failOnError>
+          <failOnWarning>false</failOnWarning>
+          <quiet>true</quiet>
+          <options>
+            <option>-Xdoclint:none</option>
+          </options>
+        </configuration>
       </plugin>
       
       <plugin>
@@ -227,8 +235,8 @@
       </plugin>
 
       <plugin>
-        <groupId>org.sonatype.plugins</groupId>
-        <artifactId>nexus-staging-maven-plugin</artifactId>
+        <groupId>org.sonatype.central</groupId>
+        <artifactId>central-publishing-maven-plugin</artifactId>
       </plugin>
 
       <plugin>

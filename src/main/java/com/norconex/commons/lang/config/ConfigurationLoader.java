@@ -39,7 +39,7 @@ import com.norconex.commons.lang.xml.XML;
  * (which can have parse/include directives) and using separate files for
  * defining Velocity variables.
  * </p>
- * <h3>Variables</h3>
+ * <h2>Variables</h2>
  * <p>
  * Templates, whether the main template or any template
  * included using the <code>#parse</code> directive, can have variable files
@@ -75,7 +75,7 @@ import com.norconex.commons.lang.xml.XML;
  * defined in a file (system properties coming first).
  * </p>
  *
- * <h3>Configuration fragments</h3>
+ * <h2>Configuration fragments</h2>
  * <p>
  * To include configuration fragments and favor reuse, use the
  * <code>#include("myfile.cg")</code> or <code>#parse("myfile.cg")</code>

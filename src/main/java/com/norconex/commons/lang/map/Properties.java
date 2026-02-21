@@ -36,7 +36,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -53,7 +52,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.commons.text.translate.UnicodeEscaper;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.slf4j.Logger;
@@ -182,7 +180,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @since 2.0.0
      */
     public Properties matchKeys(TextMatcher keyMatcher) {
-        Properties props = new Properties(isCaseInsensitiveKeys());
+        var props = new Properties(isCaseInsensitiveKeys());
         if (keyMatcher == null) {
             return props;
         }
@@ -200,7 +198,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @since 2.0.0
      */
     public Properties matchValues(TextMatcher valueMatcher) {
-        Properties props = new Properties(isCaseInsensitiveKeys());
+        var props = new Properties(isCaseInsensitiveKeys());
         if (valueMatcher == null) {
             return props;
         }
@@ -248,9 +246,9 @@ public class Properties extends ObservableMap<String, List<String>>
     @Override
     public String toString() {
         try {
-            StringWriter writer = new StringWriter();
+            var writer = new StringWriter();
             storeToProperties(writer);
-            String str = writer.toString();
+            var str = writer.toString();
             writer.close();
             return str;
         } catch (IOException e) {
@@ -382,8 +380,8 @@ public class Properties extends ObservableMap<String, List<String>>
     private synchronized void storeToJavaUtilProperties(
             Object output, String delimiter, boolean isXML) throws IOException {
         // Convert to Java Properties
-        java.util.Properties p = new java.util.Properties();
-        String sep = StringUtils.defaultIfEmpty(
+        var p = new java.util.Properties();
+        var sep = StringUtils.defaultIfEmpty(
                 delimiter, DEFAULT_JAVA_PROPERTIES_DELIMITER);
         for (Entry<String, List<String>> entry : entrySet()) {
             p.setProperty(
@@ -401,13 +399,13 @@ public class Properties extends ObservableMap<String, List<String>>
             }
         } else {
             // Remove silly date comment
-            StringWriter w = new StringWriter();
+            var w = new StringWriter();
             p.store(w, null);
 
             // Java Properties stores
             // We unicode-escape anything above ISO-8859-1 (latin-1) to
             // ensure there are no problems when read back.
-            String clean = w.toString().replaceFirst("^#.*?[\n\r]+", "");
+            var clean = w.toString().replaceFirst("^#.*?[\n\r]+", "");
             clean = UnicodeEscaper.above(127).translate(clean);
             if (output instanceof Writer) {
                 IOUtils.write(clean, (Writer) output);
@@ -438,7 +436,7 @@ public class Properties extends ObservableMap<String, List<String>>
      */
     public void storeToJSON(Writer writer) throws IOException {
         writer.write('{');
-        boolean keyFirst = true;
+        var keyFirst = true;
         for (Entry<String, List<String>> entry : entrySet()) {
             if (!keyFirst) {
                 writer.write(',');
@@ -446,7 +444,7 @@ public class Properties extends ObservableMap<String, List<String>>
             writer.write('"');
             writer.write(StringEscapeUtils.escapeJson(entry.getKey()));
             writer.write("\":[");
-            boolean valueFirst = true;
+            var valueFirst = true;
             for (String value : entry.getValue()) {
                 if (value == null) {
                     continue;
@@ -479,8 +477,8 @@ public class Properties extends ObservableMap<String, List<String>>
             return;
         }
         for (Entry<String, List<String>> it : entrySet()) {
-            String property = it.getKey();
-            List<String> values = it.getValue();
+            var property = it.getKey();
+            var values = it.getValue();
             if (property == null || values.isEmpty()
                     || !BeanUtil.isSettable(bean, property)) {
                 LOG.debug("Property is not writable (no setter?): {}",
@@ -537,8 +535,8 @@ public class Properties extends ObservableMap<String, List<String>>
      * @see #loadFromMap(Map)
      */
     public java.util.Properties toProperties() {
-        java.util.Properties p = new java.util.Properties();
-        String sep = DEFAULT_JAVA_PROPERTIES_DELIMITER;
+        var p = new java.util.Properties();
+        var sep = DEFAULT_JAVA_PROPERTIES_DELIMITER;
         for (Entry<String, List<String>> en : entrySet()) {
             p.setProperty(en.getKey(), StringUtils.join(en.getValue(), sep));
         }
@@ -568,7 +566,7 @@ public class Properties extends ObservableMap<String, List<String>>
                 if (keyObj == null) {
                     continue;
                 }
-                String key = toString(keyObj);
+                var key = toString(keyObj);
                 Object valObj = entry.getValue();
                 if (valObj == null) {
                     valObj = StringUtils.EMPTY;
@@ -577,7 +575,7 @@ public class Properties extends ObservableMap<String, List<String>>
                 if (valObj.getClass().isArray()) {
                     if(valObj.getClass().getComponentType().isPrimitive()) {
                         List<Object> objs = new ArrayList<>();
-                        for (int i = 0; i < Array.getLength(valObj); i++) {
+                        for (var i = 0; i < Array.getLength(valObj); i++) {
                             objs.add(Array.get(valObj, i));
                         }
                         it = objs;
@@ -720,8 +718,8 @@ public class Properties extends ObservableMap<String, List<String>>
     private synchronized void loadFromJavaUtilProperties(
             Object input, String delimiter, boolean isXML) throws IOException {
 
-        java.util.Properties p = new java.util.Properties();
-        String sep = StringUtils.defaultIfEmpty(
+        var p = new java.util.Properties();
+        var sep = StringUtils.defaultIfEmpty(
                 delimiter, DEFAULT_JAVA_PROPERTIES_DELIMITER);
 
         if (input instanceof Reader) {
@@ -731,14 +729,12 @@ public class Properties extends ObservableMap<String, List<String>>
             } else {
                 p.load((Reader) input);
             }
+        } else if (isXML) {
+            p.loadFromXML((InputStream) input);
         } else {
-            if (isXML) {
-                p.loadFromXML((InputStream) input);
-            } else {
 //System.err.println("PROPERTY 1:");
 //System.err.println(IOu);
-                p.load((InputStream) input);
-            }
+            p.load((InputStream) input);
         }
 
         for (Entry<Object, Object> entry : p.entrySet()) {
@@ -774,13 +770,13 @@ public class Properties extends ObservableMap<String, List<String>>
         if (reader == null) {
             return;
         }
-        JSONObject json = new JSONObject(new JSONTokener(reader));
-        Iterator<String> it = json.keys();
+        var json = new JSONObject(new JSONTokener(reader));
+        var it = json.keys();
         while (it.hasNext()) {
-            String key = it.next();
-            JSONArray array = json.getJSONArray(key);
-            for (int i = 0; i < array.length(); i++) {
-                String val = array.getString(i);
+            var key = it.next();
+            var array = json.getJSONArray(key);
+            for (var i = 0; i < array.length(); i++) {
+                var val = array.getString(i);
                 add(key, val);
             }
         }
@@ -828,7 +824,7 @@ public class Properties extends ObservableMap<String, List<String>>
      */
     public final <T> T get(String key, Class<T> type, T defaultValue) {
         try {
-            String value = getString(key);
+            var value = getString(key);
             if (StringUtils.isEmpty(value)) {
                 return defaultValue;
             }
@@ -913,7 +909,7 @@ public class Properties extends ObservableMap<String, List<String>>
             remove(key);
             return;
         }
-        List<String> list = CollectionUtil.toStringList(values);
+        var list = CollectionUtil.toStringList(values);
         //TODO benchmark if an issue with long lists to do a separate
         //iteration for converting nulls
         CollectionUtil.nullsToEmpties(list);
@@ -933,11 +929,11 @@ public class Properties extends ObservableMap<String, List<String>>
         if (CollectionUtils.isEmpty(values)) {
             return;
         }
-        List<String> list = get(key);
+        var list = get(key);
         if (list == null) {
             list = new ArrayList<>(values.size());
         }
-        List<String> newList = CollectionUtil.toStringList(values);
+        var newList = CollectionUtil.toStringList(values);
         //TODO benchmark if an issue with long lists to do a separate
         //iteration for converting nulls
         CollectionUtil.nullsToEmpties(newList);
@@ -952,7 +948,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the value
      */
     public final String getString(String key) {
-        List<String> list = get(key);
+        var list = get(key);
         if (list != null && !list.isEmpty()) {
             return list.get(0);
         }
@@ -974,7 +970,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the values
      */
     public final List<String> getStrings(String key) {
-        List<String> values = get(key);
+        var values = get(key);
         if (values == null) {
             return new ArrayList<>();
         }
@@ -1635,7 +1631,7 @@ public class Properties extends ObservableMap<String, List<String>>
     // If a key already exists under a different case, return it, else
     // return the one passed as argument
     private String caseResolvedKey(Object key) {
-        String resolvedKey = Objects.toString(key, null);
+        var resolvedKey = Objects.toString(key, null);
         if (!isCaseInsensitiveKeys()) {
             return resolvedKey;
         }

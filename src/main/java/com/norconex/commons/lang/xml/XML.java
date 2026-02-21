@@ -122,7 +122,7 @@ import com.norconex.commons.lang.unit.DataUnitParser;
  * validating, and populating classes from/to XML, with support
  * for {@link IXMLConfigurable} and {@link JAXB}.
  * </p>
- * <h3>XML syntax and white spaces</h3>
+ * <h2>XML syntax and white spaces</h2>
  * <p>
  * Some white spaces in element text may be removed when parsed.
  * To keep them, add the XML standard attribute
@@ -138,6 +138,7 @@ import com.norconex.commons.lang.unit.DataUnitParser;
  * Non-existing tags have no effect (when loading over an object, that
  * object current value should remain unchanged).
  * </p>
+ *
  * <p>
  * Checked exceptions are wrapped into an {@link XMLException}.
  * </p>

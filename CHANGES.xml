@@ -7,6 +7,15 @@
   </properties>
   <body>
 
+    <release version="2.2.0" date="2026-02-20" description="Minor release.">
+      <action dev="essiembre" type="update">
+        Minimum Java version is now 17.
+      </action>
+      <action dev="essiembre" type="update">
+        Updated dependencies.
+      </action>
+    </release>
+
     <release version="2.1.0" date="2025-05-24" description="Minor release.">
       <action dev="essiembre" type="add">
         New URLNormalizer#removeTrailingFragment method.

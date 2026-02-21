@@ -14,14 +14,13 @@
  */
 package com.norconex.commons.lang.javadoc;
 
-import static org.apache.commons.lang3.StringUtils.removeEnd;
-import static org.apache.commons.lang3.StringUtils.removeStart;
 import static org.apache.commons.lang3.StringUtils.substringAfter;
 import static org.apache.commons.lang3.StringUtils.substringBeforeLast;
 
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.text.StringEscapeUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -47,14 +46,15 @@ public class JSONTaglet extends AbstractInlineTaglet {
                 var json = s;
                 json = substringAfter(json, "\"wrap\": [");
                 json = substringBeforeLast(json, "]").trim();
-                json = removeEnd(json, "null");
+                json = Strings.CS.removeEnd(json, "null");
                 return json.replaceAll("(?m)^ {4}", "").trim();
             });
     private static final Wrapper PROP_WRAPPER = new Wrapper(
             s -> ("{" + s + (s.endsWith(",") ? "\"comma\":\"\"" : "") + "}"),
             s -> {
-                var json = removeEnd(removeStart(s, "{"), "}").trim();
-                json = removeEnd(json, "\"comma\": \"\"").trim();
+                var json = Strings.CS.removeEnd(
+                        Strings.CS.removeStart(s, "{"), "}").trim();
+                json = Strings.CS.removeEnd(json, "\"comma\": \"\"").trim();
                 return json.replaceAll("(?m)^ {2}", "").trim();
             });
 

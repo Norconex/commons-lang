@@ -21,6 +21,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import com.sun.source.doctree.DocTree;
 import com.sun.source.doctree.UnknownInlineTagTree;
@@ -93,8 +94,8 @@ public class TagContent {
                 .toString().trim().replace("\r", "");
         if (text.startsWith("#")) {
             reference = StringUtils.substringBefore(text, "\n");
-            content = StringUtils.removeStart(text, reference).trim();
-            reference = StringUtils.removeStart(reference, "#");
+            content = Strings.CS.removeStart(text, reference).trim();
+            reference = Strings.CS.removeStart(reference, "#");
         } else {
             content = text;
         }

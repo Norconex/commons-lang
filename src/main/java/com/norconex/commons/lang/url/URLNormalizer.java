@@ -77,7 +77,7 @@ import com.norconex.commons.lang.EqualsUtil;
  * categories:
  * </p>
  *
- * <h3>Preserving Semantics</h3>
+ * <h2>Preserving Semantics</h2>
  * <p>
  * The following normalizations are part of the
  * <a href="http://tools.ietf.org/html/rfc3986">RFC 3986</a> standard
@@ -97,7 +97,7 @@ import com.norconex.commons.lang.EqualsUtil;
  *   <li>{@link #encodeSpaces() Encode spaces to plus sign}</li>
  * </ul>
  *
- * <h3>Usually Preserving Semantics</h3>
+ * <h2>Usually Preserving Semantics</h2>
  * <p>
  * The following techniques will generate a semantically equivalent URL for
  * the majority of use cases but are not enforced as a standard.
@@ -107,7 +107,7 @@ import com.norconex.commons.lang.EqualsUtil;
  *   <li>{@link #removeDotSegments() Remove .dot segments}</li>
  * </ul>
  *
- * <h3>Not Preserving Semantics</h3>
+ * <h2>Not Preserving Semantics</h2>
  * <p>
  * These normalizations will fail to produce semantically equivalent URLs in
  * many cases.  They usually work best when you have a good understanding of

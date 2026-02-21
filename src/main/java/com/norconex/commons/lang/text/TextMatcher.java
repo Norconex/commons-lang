@@ -70,7 +70,7 @@ import com.norconex.commons.lang.xml.XML;
  * The actual expression is expected to be the tag content.
  * </p>
  *
- * <h3>Null handling</h3>
+ * <h2>Null handling</h2>
  * <p>
  * Unless otherwise stated by consuming classes,
  * a <code>null</code> expressions will match everything, but replace nothing.
