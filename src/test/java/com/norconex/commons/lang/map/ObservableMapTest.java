@@ -19,7 +19,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang3.mutable.MutableObject;
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.Test;
 
@@ -33,24 +34,24 @@ class ObservableMapTest {
 
         ObservableMap<String, String> obsMap = new ObservableMap<>(map);
 
-        MutableObject<String> key = new MutableObject<>();
-        MutableObject<String> newValue = new MutableObject<>();
-        MutableObject<String> oldValue = new MutableObject<>();
+        AtomicReference<String> key = new AtomicReference<>();
+        AtomicReference<String> newValue = new AtomicReference<>();
+        AtomicReference<String> oldValue = new AtomicReference<>();
 
         @SuppressWarnings("deprecation")
         IMapChangeListener<String, String> listener = //NOSONAR
                 event -> {
-                    key.setValue(event.getKey());
-                    newValue.setValue(event.getNewValue());
-                    oldValue.setValue(event.getOldValue());
+                    key.set(event.getKey());
+                    newValue.set(event.getNewValue());
+                    oldValue.set(event.getOldValue());
                 };
         obsMap.addMapChangeListener(listener);
 
         obsMap.put("a", "aaa");
 
-        assertThat(key.getValue()).isEqualTo("a");
-        assertThat(oldValue.getValue()).isEqualTo("aa");
-        assertThat(newValue.getValue()).isEqualTo("aaa");
+        assertThat(key.get()).isEqualTo("a");
+        assertThat(oldValue.get()).isEqualTo("aa");
+        assertThat(newValue.get()).isEqualTo("aaa");
 
         assertThat(obsMap)
                 .hasSize(2)
@@ -67,15 +68,15 @@ class ObservableMapTest {
                 ImmutablePair.of("b", "bb"));
         assertThat(obsMap.remove("b")).isEqualTo("bb");
         assertThat(obsMap.size()).isOne();
-        assertThat(key.getValue()).isEqualTo("b");
-        assertThat(oldValue.getValue()).isEqualTo("bb");
-        assertThat(newValue.getValue()).isNull();
+        assertThat(key.get()).isEqualTo("b");
+        assertThat(oldValue.get()).isEqualTo("bb");
+        assertThat(newValue.get()).isNull();
 
         obsMap.clear();
         assertThat(obsMap).isEmpty();
-        assertThat(key.getValue()).isEqualTo("a");
-        assertThat(oldValue.getValue()).isEqualTo("aaa");
-        assertThat(newValue.getValue()).isNull();
+        assertThat(key.get()).isEqualTo("a");
+        assertThat(oldValue.get()).isEqualTo("aaa");
+        assertThat(newValue.get()).isNull();
 
         obsMap.clearMapChangeListeners();
         obsMap.removeMapChangeListener(null);
@@ -83,8 +84,8 @@ class ObservableMapTest {
 
         obsMap.addMapChangeListener(listener);
         obsMap.putAll(MapUtil.toMap("c", "cc"));
-        assertThat(key.getValue()).isEqualTo("c");
-        assertThat(oldValue.getValue()).isNull();
-        assertThat(newValue.getValue()).isEqualTo("cc");
+        assertThat(key.get()).isEqualTo("c");
+        assertThat(oldValue.get()).isNull();
+        assertThat(newValue.get()).isEqualTo("cc");
     }
 }

@@ -17,7 +17,8 @@ package com.norconex.commons.lang;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
-import org.apache.commons.lang3.mutable.MutableObject;
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.SystemUtil.Captured;
@@ -51,11 +52,11 @@ class SystemUtilTest {
 
     @Test
     void testRunWithProperty() {
-        var prop = new MutableObject<String>();
+        var prop = new AtomicReference<String>();
         SystemUtil.runWithProperty("fruit", "apple", () -> {
-            prop.setValue(System.getProperty("fruit"));
+            prop.set(System.getProperty("fruit"));
         });
-        assertThat(prop.getValue()).isEqualTo("apple");
+        assertThat(prop.get()).isEqualTo("apple");
         assertThat(System.getProperty("fruit")).isNull();
 
         assertDoesNotThrow(() -> SystemUtil.runWithProperty("x", "y", null));

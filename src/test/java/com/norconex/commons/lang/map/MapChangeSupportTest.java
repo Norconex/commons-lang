@@ -18,8 +18,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.commons.lang3.mutable.MutableObject;
 import org.junit.jupiter.api.Test;
 
 class MapChangeSupportTest {
@@ -29,16 +29,16 @@ class MapChangeSupportTest {
         Map<String, String> map = new HashMap<>();
         map.put("a", "aaa");
 
-        MutableObject<String> key = new MutableObject<>();
-        MutableObject<String> newValue = new MutableObject<>();
-        MutableObject<String> oldValue = new MutableObject<>();
+        AtomicReference<String> key = new AtomicReference<>();
+        AtomicReference<String> newValue = new AtomicReference<>();
+        AtomicReference<String> oldValue = new AtomicReference<>();
 
         @SuppressWarnings("deprecation")
         IMapChangeListener<String, String> listener = //NOSONAR
                 event -> {
-                    key.setValue(event.getKey());
-                    newValue.setValue(event.getNewValue());
-                    oldValue.setValue(event.getOldValue());
+                    key.set(event.getKey());
+                    newValue.set(event.getNewValue());
+                    oldValue.set(event.getOldValue());
                 };
 
         MapChangeSupport<String, String> mcs = new MapChangeSupport<>(map);
@@ -46,9 +46,9 @@ class MapChangeSupportTest {
         mcs.addMapChangeListener(null); // should have no effect on size
         mcs.fireMapChange("a", "aa", "aaa");
 
-        assertThat(key.getValue()).isEqualTo("a");
-        assertThat(oldValue.getValue()).isEqualTo("aa");
-        assertThat(newValue.getValue()).isEqualTo("aaa");
+        assertThat(key.get()).isEqualTo("a");
+        assertThat(oldValue.get()).isEqualTo("aa");
+        assertThat(newValue.get()).isEqualTo("aaa");
 
         assertThat(mcs.getMapChangeListeners().size()).isOne();
         assertThat(mcs.getMapChangeListeners()).isNotEmpty();

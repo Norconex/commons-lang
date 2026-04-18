@@ -16,7 +16,8 @@ package com.norconex.commons.lang.io;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.apache.commons.lang3.mutable.MutableObject;
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.junit.jupiter.api.Test;
 
 class IInputStreamFilterTest {
@@ -24,13 +25,13 @@ class IInputStreamFilterTest {
     @SuppressWarnings("deprecation")
     @Test
     void testIInputStreamFilter() {
-        MutableObject<String> obj = new MutableObject<>();
+        AtomicReference<String> obj = new AtomicReference<>();
         IInputStreamFilter f = line -> {
-            obj.setValue(line);
+            obj.set(line);
             return true;
         };
         f.test("ok");
-        assertThat(obj.getValue()).isEqualTo("ok");
+        assertThat(obj.get()).isEqualTo("ok");
     }
 
 }

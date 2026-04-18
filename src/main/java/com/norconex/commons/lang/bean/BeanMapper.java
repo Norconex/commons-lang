@@ -39,7 +39,7 @@ import org.apache.commons.collections4.MultiMapUtils;
 import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.mutable.MutableBoolean;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -353,7 +353,7 @@ public class BeanMapper { //NOSONAR
     // different context (e.g., registration in OpenApi).
     private final MultiValuedMap<Class<?>, Class<?>> resolvedPolymorphicTypes =
             MultiMapUtils.newListValuedHashMap();
-    private final MutableBoolean polyTypesResolved = new MutableBoolean();
+    private final AtomicBoolean polyTypesResolved = new AtomicBoolean();
 
     public MultiValuedMap<Class<?>, Class<?>> getPolymorphicTypes() {
         resolvePolymorphicTypes();
@@ -426,7 +426,7 @@ public class BeanMapper { //NOSONAR
             // Log the error with full context for easier debugging
             LOG.error("Failed to read {} source for type: {}. Error: {}",
                     format, type.getName(), e.getMessage());
-			LOG.debug("Error stacktrace:\n", e);
+            LOG.debug("Error stacktrace:\n", e);
             throw new BeanException(
                     "Could not read %s source for type %s: %s"
                             .formatted(format, type.getName(), e.getMessage()),
@@ -568,7 +568,7 @@ public class BeanMapper { //NOSONAR
     }
 
     private synchronized void resolvePolymorphicTypes() {
-        if (polyTypesResolved.isTrue()) {
+        if (polyTypesResolved.get()) {
             // already resolved for this instance, we skip.
             return;
         }
@@ -611,7 +611,7 @@ public class BeanMapper { //NOSONAR
                                     .getScanFilter()));
         }
 
-        polyTypesResolved.setTrue();
+        polyTypesResolved.set(true);
     }
 
     private void registerPolymorphicTypes(ObjectMapper mapper) {
