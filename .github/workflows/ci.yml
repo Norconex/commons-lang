@@ -42,6 +42,13 @@ jobs:
         gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
         gpg-passphrase: MAVEN_GPG_PASSPHRASE
 
+    - name: Add OSSRH server for snapshot deployment
+      run: |
+        sed -i "s|<servers>|<servers><server><id>ossrh</id><username>${OSSRH_USERNAME}</username><password>${OSSRH_TOKEN}</password></server>|" ~/.m2/settings.xml
+      env:
+        OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+        OSSRH_TOKEN: ${{ secrets.OSSRH_TOKEN }}
+
     - name: Cache SonarCloud packages
       uses: actions/cache@v4
       with:
