@@ -1,0 +1,14 @@
+#include("vlt_item1.vm")
+#parse("vlt_item1.vm")
+depth1_include_vlt_item2:
+  #include("vlt_item1.vm","vlt_item2.vm")
+depth1_parse_vlt_item2:
+  #parse("vlt_item2.vm")
+multi_depth_vlt_item2:
+  multi_depth_vlt_item2_1:
+    #include("vlt_item2.vm")
+    #parse("vlt_item2.vm")
+recursive_depth_vlt_item3:
+  #parse("vlt_item3.vm")
+ifelse_loop_depth_vlt_item6:
+  #parse("vlt_item6.vm")

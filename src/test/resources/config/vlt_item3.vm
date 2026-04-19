@@ -1,0 +1,6 @@
+depth_vlt_item3:
+  key: value
+  #include("vlt_item1.vm")
+  #parse("vlt_item1.vm")
+  depth_vlt_item3_1:
+    #parse("vlt_item3_1.vm")
