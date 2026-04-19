@@ -50,12 +50,12 @@ jobs:
           restore-keys: ${{ runner.os }}-sonar
 
       - name: Build and test (PR)
-        if: github.event_name == 'pull_request' && env.SONAR_TOKEN == ''
+        if: github.event_name == 'pull_request' && secrets.SONAR_TOKEN == ''
         run: mvn -B verify -Dgpg.skip=true
 
       - name: Build, test and analyze (PR)
-        if: github.event_name == 'pull_request' && env.SONAR_TOKEN != ''
-        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
+        if: github.event_name == 'pull_request' && secrets.SONAR_TOKEN != ''
+        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:5.5.0.6356:sonar
           -Dsonar.projectKey=Norconex_commons-lang -Dgpg.skip=true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -63,7 +63,7 @@ jobs:
 
       - name: Build, publish and analyze (push to master)
         if: github.event_name == 'push'
-        run: mvn -B -X deploy org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
+        run: mvn -B -X deploy org.sonarsource.scanner.maven:sonar-maven-plugin:5.5.0.6356:sonar
           -Dsonar.projectKey=Norconex_commons-lang
         env:
           MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
