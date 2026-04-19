@@ -87,9 +87,9 @@
 
   <repositories>
     <repository>
-      <id>ossrh-snapshots</id>
-      <name>Sonatype OSSRH Snapshot Repository</name>
-      <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+      <id>central-snapshots</id>
+      <name>Central Portal Snapshot Repository</name>
+      <url>https://central.sonatype.com/repository/snapshots/</url>
       <releases>
         <enabled>false</enabled>
       </releases>
@@ -745,18 +745,28 @@
         <artifactId>formatter-maven-plugin</artifactId>
       </plugin>
 
+      <plugin>
+        <groupId>org.sonatype.central</groupId>
+        <artifactId>central-publishing-maven-plugin</artifactId>
+        <version>0.10.0</version>
+        <extensions>true</extensions>
+        <configuration>
+          <publishingServerId>central</publishingServerId>
+        </configuration>
+      </plugin>
+
     </plugins>
 
   </build>
   
   <distributionManagement>
     <snapshotRepository>
-      <id>ossrh</id>
-      <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+      <id>central</id>
+      <url>https://central.sonatype.com/repository/snapshots/</url>
     </snapshotRepository>
     <repository>
-      <id>ossrh</id>
-      <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+      <id>central</id>
+      <url>https://central.sonatype.com/repository/maven-central/</url>
     </repository>
     <!-- Only used to publish javadoc with "site:deploy", 
          after they were generated 
