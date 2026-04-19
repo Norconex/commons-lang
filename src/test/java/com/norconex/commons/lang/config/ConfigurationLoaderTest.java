@@ -112,6 +112,7 @@ class ConfigurationLoaderTest {
         // invalid path
         assertThat(loader.toString(cfgPath("doesntExist"))).isNull();
     }
+
     @Test
     void testIndentToString() throws Exception {
 

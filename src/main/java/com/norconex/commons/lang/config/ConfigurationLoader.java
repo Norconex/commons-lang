@@ -104,11 +104,6 @@ import lombok.NonNull;
  *   <li><code>PAGE_TITLE</code></li>
  * </ul>
  *
- * <h2>Java Properties</h2>
- * <p>
- *
- * </p>
- *
  * <h2>Explicit variable files</h2>
  * <p>
  * Any <code>.variables</code> or <code>.properties</code> file

@@ -133,7 +133,6 @@ public class CustomParseDirective extends Parse {
 
             node.jjtGetChild(0).getColumn();
 
-
         } catch (StopCommand stop) {
             if (!stop.isFor(this)) {
                 throw stop;

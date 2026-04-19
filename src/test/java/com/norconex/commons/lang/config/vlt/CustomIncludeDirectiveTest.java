@@ -21,7 +21,6 @@ import org.apache.velocity.app.VelocityEngine;
 
 public class CustomIncludeDirectiveTest {
 
-
     private static final String CFG_BASE_PATH = "src/test/resources/config/";
 
     private ConfigurationLoader configLoader;
@@ -64,10 +63,8 @@ public class CustomIncludeDirectiveTest {
         assertEquals("", output, "null error with arg 0 please see log. null");
     }
 
-
     @Test
-    public void testMissingParseError() throws Exception
-    {
+    public void testMissingParseError() throws Exception {
         var loader = ConfigurationLoader.builder().build();
 
         var includeError0 = cfgPath("vlt/missingparse.vm");
@@ -76,8 +73,7 @@ public class CustomIncludeDirectiveTest {
     }
 
     @Test
-    public void testMissingIncludeError() throws Exception
-    {
+    public void testMissingIncludeError() throws Exception {
         var loader = ConfigurationLoader.builder().build();
 
         var includeError0 = cfgPath("vlt/missinginclude.vm");
@@ -87,8 +83,7 @@ public class CustomIncludeDirectiveTest {
     }
 
     @Test
-    public void testParseError() throws Exception
-    {
+    public void testParseError() throws Exception {
 
         var loader = ConfigurationLoader.builder().build();
 
@@ -99,8 +94,7 @@ public class CustomIncludeDirectiveTest {
     }
 
     @Test
-    public void testParseError2() throws Exception
-    {
+    public void testParseError2() throws Exception {
 
         var loader = ConfigurationLoader.builder().build();
         var includeError0 = cfgPath("vlt/parsemain2.vm");
@@ -110,103 +104,96 @@ public class CustomIncludeDirectiveTest {
     }
 
     @Test
-    void testErrorWithArg() throws Exception{
-//        var includeError = cfgPath("vlt/include_error.vm");
+    void testErrorWithArg() throws Exception {
+        //        var includeError = cfgPath("vlt/include_error.vm");
 
         var loader = ConfigurationLoader.builder()
-//                .variablesFile(cfgPath("vlt/include_error.vm"))
+                //                .variablesFile(cfgPath("vlt/include_error.vm"))
                 .build();
-
-
-
-
 
         var includeError1 = cfgPath("vlt/include_error.vm");
         assertThrows(ConfigurationException.class,
                 () -> loader.toString(includeError1));
 
-
         var includeError2 = cfgPath("vlt/include_error_empty.vm");
         assertThrows(ConfigurationException.class,
                 () -> loader.toString(includeError2));
 
-
-
     }
-//
-//    @Test
-//    void testIndentToString() throws Exception {
-//
-//        var loader = ConfigurationLoader.builder()
-//                .variablesFile(cfgPath("vlt_item7.vm"))
-//                .build();
-//        var str = SystemUtil.callWithProperty("date", "2024-08-20",
-//                () -> loader.toString(cfgPath("vlt_indent.yaml")));
-//        // "varB" should not be resolved as it comes from an #include
-//        // directive (as opposed to parse)
-//        assertThat(StringUtils.remove(str, '\r')).isEqualTo(
-//                """
-//                        title: $title
-//                        date: $date
-//                        title: template title
-//                        date: 2024-08-20
-//                        depth1_include_vlt_item2:
-//                          title: $title
-//                          date: $date
-//                          key: value
-//                          depth_vlt_item2:
-//                            title: $title
-//                            date: $date
-//                        depth1_parse_vlt_item2:
-//                          key: value
-//                          depth_vlt_item2:
-//                            title: template title
-//                            date: 2024-08-20
-//                        multi_depth_vlt_item2:
-//                          multi_depth_vlt_item2_1:
-//                            key: value
-//                            depth_vlt_item2:
-//                              title: $title
-//                              date: $date
-//                            key: value
-//                            depth_vlt_item2:
-//                              title: template title
-//                              date: 2024-08-20
-//                        recursive_depth_vlt_item3:
-//                          depth_vlt_item3:
-//                            key: value
-//                            title: $title
-//                            date: $date
-//                            title: template title
-//                            date: 2024-08-20
-//                            depth_vlt_item3_1:
-//                              tst_depth_3_1_1:
-//                                key: value
-//                                title: $title
-//                                date: $date
-//                                key: value
-//                              tst_depth_3_1_2:
-//                                title: template title
-//                                date: 2024-08-20
-//                                key: value
-//                                depth_vlt_item2:
-//                                  title: template title
-//                                  date: 2024-08-20
-//                                tst_depth_3_1_2-1
-//                                  key: value
-//                                  key: value
-//                        ifelse_loop_depth_vlt_item6:
-//                          Name: Alice
-//                          Age: 10
-//                          age: you are nothing.
-//                          Name: Bob
-//                          Age: 30
-//                          Feels: very old
-//                          Name: Charlie
-//                          Age: 50
-//                          Feels: very old
-//                            """);
-//    }
+    //
+    //    @Test
+    //    void testIndentToString() throws Exception {
+    //
+    //        var loader = ConfigurationLoader.builder()
+    //                .variablesFile(cfgPath("vlt_item7.vm"))
+    //                .build();
+    //        var str = SystemUtil.callWithProperty("date", "2024-08-20",
+    //                () -> loader.toString(cfgPath("vlt_indent.yaml")));
+    //        // "varB" should not be resolved as it comes from an #include
+    //        // directive (as opposed to parse)
+    //        assertThat(StringUtils.remove(str, '\r')).isEqualTo(
+    //                """
+    //                        title: $title
+    //                        date: $date
+    //                        title: template title
+    //                        date: 2024-08-20
+    //                        depth1_include_vlt_item2:
+    //                          title: $title
+    //                          date: $date
+    //                          key: value
+    //                          depth_vlt_item2:
+    //                            title: $title
+    //                            date: $date
+    //                        depth1_parse_vlt_item2:
+    //                          key: value
+    //                          depth_vlt_item2:
+    //                            title: template title
+    //                            date: 2024-08-20
+    //                        multi_depth_vlt_item2:
+    //                          multi_depth_vlt_item2_1:
+    //                            key: value
+    //                            depth_vlt_item2:
+    //                              title: $title
+    //                              date: $date
+    //                            key: value
+    //                            depth_vlt_item2:
+    //                              title: template title
+    //                              date: 2024-08-20
+    //                        recursive_depth_vlt_item3:
+    //                          depth_vlt_item3:
+    //                            key: value
+    //                            title: $title
+    //                            date: $date
+    //                            title: template title
+    //                            date: 2024-08-20
+    //                            depth_vlt_item3_1:
+    //                              tst_depth_3_1_1:
+    //                                key: value
+    //                                title: $title
+    //                                date: $date
+    //                                key: value
+    //                              tst_depth_3_1_2:
+    //                                title: template title
+    //                                date: 2024-08-20
+    //                                key: value
+    //                                depth_vlt_item2:
+    //                                  title: template title
+    //                                  date: 2024-08-20
+    //                                tst_depth_3_1_2-1
+    //                                  key: value
+    //                                  key: value
+    //                        ifelse_loop_depth_vlt_item6:
+    //                          Name: Alice
+    //                          Age: 10
+    //                          age: you are nothing.
+    //                          Name: Bob
+    //                          Age: 30
+    //                          Feels: very old
+    //                          Name: Charlie
+    //                          Age: 50
+    //                          Feels: very old
+    //                            """);
+    //    }
 
     private Path cfgPath(String path) {
         return Path.of(CFG_BASE_PATH + path);
