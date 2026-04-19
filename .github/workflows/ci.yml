@@ -55,13 +55,15 @@ jobs:
       - name: Build and test (PR)
         if: >
           github.event_name == 'pull_request' && (env.SONAR_TOKEN == '' ||
-          github.event.pull_request.head.repo.full_name != github.repository)
+          github.event.pull_request.head.repo.full_name != github.repository ||
+          contains(github.actor, '[bot]'))
         run: mvn -B verify -Dgpg.skip=true
 
       - name: Build, test and analyze (PR)
         if: >
           github.event_name == 'pull_request' && env.SONAR_TOKEN != '' &&
-          github.event.pull_request.head.repo.full_name == github.repository
+          github.event.pull_request.head.repo.full_name == github.repository &&
+          !contains(github.actor, '[bot]')
         run: mvn -B verify
           org.sonarsource.scanner.maven:sonar-maven-plugin:5.5.0.6356:sonar
           -Dsonar.projectKey=Norconex_commons-lang -Dgpg.skip=true
