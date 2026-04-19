@@ -633,6 +633,12 @@
             <goals>
               <goal>test-jar</goal>
             </goals>
+            <configuration>
+              <!-- test-jar is only for local use;
+                   Central Portal does not support
+                   deploying test-jar artifacts. -->
+              <attach>false</attach>
+            </configuration>
           </execution>
         </executions>
       </plugin>
