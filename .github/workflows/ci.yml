@@ -72,7 +72,7 @@ jobs:
 
       - name: Build, publish and analyze (push to master)
         if: github.event_name == 'push'
-        run: mvn -B -X deploy
+        run: mvn -B deploy
           org.sonarsource.scanner.maven:sonar-maven-plugin:5.5.0.6356:sonar
           -Dsonar.projectKey=Norconex_commons-lang
         env:

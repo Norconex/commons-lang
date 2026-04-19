@@ -89,7 +89,7 @@
     <repository>
       <id>central-snapshots</id>
       <name>Central Portal Snapshot Repository</name>
-      <url>https://central.sonatype.com/repository/snapshots/</url>
+      <url>https://central.sonatype.com/repository/maven-snapshots/</url>
       <releases>
         <enabled>false</enabled>
       </releases>
@@ -729,7 +729,7 @@
   <distributionManagement>
     <snapshotRepository>
       <id>central</id>
-      <url>https://central.sonatype.com/repository/snapshots/</url>
+      <url>https://central.sonatype.com/repository/maven-snapshots/</url>
     </snapshotRepository>
     <repository>
       <id>central</id>
