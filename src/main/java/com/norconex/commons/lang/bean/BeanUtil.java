@@ -60,8 +60,6 @@ import com.norconex.commons.lang.collection.CollectionUtil;
 import com.norconex.commons.lang.convert.GenericConverter;
 import com.norconex.commons.lang.map.Properties;
 
-import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
@@ -1203,22 +1201,27 @@ public final class BeanUtil {
 
     //--- Inner classes --------------------------------------------------------
 
-    @Builder(access = AccessLevel.PRIVATE)
     private static class VisitArgs<V, T> {
         private final Object bean;
         private final V visitor;
         private final Class<T> type;
-        @Builder.Default
-        private Set<Object> cache =
-                Collections.newSetFromMap(new IdentityHashMap<>());
+        private final Set<Object> cache;
 
-        static <T> VisitArgsBuilder<Predicate<T>, T> beanVisitor() {
-            return new VisitArgsBuilder<>();
+        private VisitArgs(
+                Object bean, V visitor, Class<T> type, Set<Object> cache) {
+            this.bean = bean;
+            this.visitor = visitor;
+            this.type = type;
+            this.cache = cache;
         }
 
-        static <T> VisitArgsBuilder<
+        static <T> Builder<Predicate<T>, T> beanVisitor() {
+            return new Builder<>();
+        }
+
+        static <T> Builder<
                 BiPredicate<Object, PropertyDescriptor>, T> propertyVisitor() {
-            return new VisitArgsBuilder<>();
+            return new Builder<>();
         }
 
         VisitArgs<V, T> withBean(Object bean) {
@@ -1251,6 +1254,32 @@ public final class BeanUtil {
             }
             // continue if not a collection
             return true;
+        }
+
+        private static class Builder<V, T> {
+            private Object bean;
+            private V visitor;
+            private Class<T> type;
+
+            Builder<V, T> bean(Object bean) {
+                this.bean = bean;
+                return this;
+            }
+
+            Builder<V, T> visitor(V visitor) {
+                this.visitor = visitor;
+                return this;
+            }
+
+            Builder<V, T> type(Class<T> type) {
+                this.type = type;
+                return this;
+            }
+
+            VisitArgs<V, T> build() {
+                return new VisitArgs<>(bean, visitor, type,
+                        Collections.newSetFromMap(new IdentityHashMap<>()));
+            }
         }
     }
 }

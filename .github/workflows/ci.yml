@@ -23,6 +23,9 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
     steps:
 
       - name: Source checkout
@@ -49,17 +52,28 @@ jobs:
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
 
-      - name: Build and analyze (PR)
-        if: github.event_name == 'pull_request'
-        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
-          -Dsonar.projectKey=Norconex_commons-lang
+      - name: Build and test (PR)
+        if: >
+          github.event_name == 'pull_request' && (env.SONAR_TOKEN == '' ||
+          github.event.pull_request.head.repo.full_name != github.repository ||
+          contains(github.actor, '[bot]'))
+        run: mvn -B verify -Dgpg.skip=true
+
+      - name: Build, test and analyze (PR)
+        if: >
+          github.event_name == 'pull_request' && env.SONAR_TOKEN != '' &&
+          github.event.pull_request.head.repo.full_name == github.repository &&
+          !contains(github.actor, '[bot]')
+        run: mvn -B verify
+          org.sonarsource.scanner.maven:sonar-maven-plugin:5.5.0.6356:sonar
+          -Dsonar.projectKey=Norconex_commons-lang -Dgpg.skip=true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       - name: Build, publish and analyze (push to master)
         if: github.event_name == 'push'
-        run: mvn -B -X deploy org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
+        run: mvn -B -X deploy
+          org.sonarsource.scanner.maven:sonar-maven-plugin:5.5.0.6356:sonar
           -Dsonar.projectKey=Norconex_commons-lang
         env:
           MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
@@ -69,7 +83,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@67fbcbb121271f7775d2e7715933280b06314838 # v1
         with:
           role-to-assume: ${{ secrets.AWS_ROLE }}
           aws-region: ${{ env.AWS_REGION }}
