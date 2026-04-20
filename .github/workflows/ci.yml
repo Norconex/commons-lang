@@ -1,5 +1,5 @@
-# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-maven
+# This workflow handles Maven CI, Central publishing, Sonar analysis, and
+# site artifact upload for commons-lang.
 
 name: Java CI with Maven
 
@@ -11,7 +11,6 @@ on:
     types: [ opened, synchronize, reopened ]
 
 env:
-  #  BUCKET_NAME : "<example-bucket-name>"
   AWS_REGION: ${{ secrets.AWS_REGION }}
   SITE_S3_URI: ${{ secrets.SITE_S3_URI }}
 
@@ -66,21 +65,28 @@ jobs:
           !contains(github.actor, '[bot]')
         run: mvn -B verify
           org.sonarsource.scanner.maven:sonar-maven-plugin:5.5.0.6356:sonar
-          -Dsonar.projectKey=Norconex_commons-lang -Dgpg.skip=true
+          -Dsonar.projectKey=Norconex_commons-lang -Dsonar.qualitygate.wait=true
+          -Dsonar.qualitygate.timeout=900 -Dgpg.skip=true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build, publish and analyze (push to master)
+      - name: Build, test and analyze (push to master)
         if: github.event_name == 'push'
-        run: mvn -B deploy
+        run: mvn -B verify
           org.sonarsource.scanner.maven:sonar-maven-plugin:5.5.0.6356:sonar
-          -Dsonar.projectKey=Norconex_commons-lang
+          -Dsonar.projectKey=Norconex_commons-lang -Dsonar.qualitygate.wait=true
+          -Dsonar.qualitygate.timeout=900 -Dgpg.skip=true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and publish (push to master)
+        if: github.event_name == 'push'
+        run: mvn -B deploy -DskipTests
         env:
           MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           MAVEN_CENTRAL_TOKEN: ${{ secrets.OSSRH_TOKEN }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@67fbcbb121271f7775d2e7715933280b06314838 # v1
