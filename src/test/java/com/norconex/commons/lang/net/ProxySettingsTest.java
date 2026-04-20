@@ -17,6 +17,9 @@ package com.norconex.commons.lang.net;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+
 import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.bean.BeanMapper;
@@ -60,5 +63,33 @@ class ProxySettingsTest {
 
         assertThatNoException().isThrownBy(
                 () -> BeanMapper.DEFAULT.assertWriteRead(ps));
+    }
+
+    @Test
+    void testToProxy() {
+        assertThat(new ProxySettings().toProxy()).isNull();
+        assertThat(new ProxySettings(new Host(" ", 3128)).isSet()).isFalse();
+
+        var httpProxy = new ProxySettings("example.com", 3128).toProxy();
+        assertThat(httpProxy.type()).isEqualTo(Proxy.Type.HTTP);
+        assertThat((InetSocketAddress) httpProxy.address())
+                .extracting(InetSocketAddress::getHostString,
+                        InetSocketAddress::getPort)
+                .containsExactly("example.com", 3128);
+
+        var socksProxy = new ProxySettings("localhost", 1080)
+                .setScheme("socks5")
+                .toProxy();
+        assertThat(socksProxy.type()).isEqualTo(Proxy.Type.SOCKS);
+
+        var explicitHttpProxy = new ProxySettings("example.com", 8081)
+                .setScheme("http")
+                .toProxy();
+        assertThat(explicitHttpProxy.type()).isEqualTo(Proxy.Type.HTTP);
+
+        var fallbackProxy = new ProxySettings("proxy.example", 8080)
+                .setScheme("ftp")
+                .toProxy();
+        assertThat(fallbackProxy.type()).isEqualTo(Proxy.Type.HTTP);
     }
 }

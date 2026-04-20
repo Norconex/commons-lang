@@ -17,6 +17,8 @@ package com.norconex.commons.lang.net;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 
+import java.net.InetSocketAddress;
+
 import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.bean.BeanMapper;
@@ -44,5 +46,17 @@ class HostTest {
             host = new Host(null, 456);
             BeanMapper.DEFAULT.assertWriteRead(host);
         });
+    }
+
+    @Test
+    void testToInetSocketAddress() {
+        var address = new Host("example.com", 8080).toInetSocketAddress();
+
+        assertThat(address).isInstanceOf(InetSocketAddress.class);
+        assertThat(address.getHostString()).isEqualTo("example.com");
+        assertThat(address.getPort()).isEqualTo(8080);
+        assertThat(new Host(" ", 8080).toInetSocketAddress()).isNull();
+        assertThat(new Host("example.com", -1).toInetSocketAddress())
+                .isNull();
     }
 }

@@ -14,7 +14,11 @@
 */
 package com.norconex.commons.lang.convert;
 
+import java.io.IOException;
 import java.time.ZoneId;
+
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.SerializerProvider;
 
 /**
  * {@link ZoneIdConverter} converter.
@@ -37,6 +41,11 @@ public class ZoneIdConverter extends AbstractConverter {
      */
     public static class JsonSerializer
             extends GenericJsonSerializer<ZoneId> {
+        @Override
+        public void serialize(ZoneId value,
+                JsonGenerator gen, SerializerProvider sp) throws IOException {
+            gen.writeString(new ZoneIdConverter().toString(value));
+        }
     }
 
     /**
@@ -55,6 +64,16 @@ public class ZoneIdConverter extends AbstractConverter {
     public static class XmlAdapter extends GenericXmlAdapter<ZoneId> {
         public XmlAdapter() {
             super(ZoneId.class);
+        }
+
+        @Override
+        public String marshal(ZoneId obj) {
+            return new ZoneIdConverter().toString(obj);
+        }
+
+        @Override
+        public ZoneId unmarshal(String value) {
+            return new ZoneIdConverter().toType(value, ZoneId.class);
         }
     }
 }
