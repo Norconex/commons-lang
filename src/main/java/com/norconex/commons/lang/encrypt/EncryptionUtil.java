@@ -71,6 +71,7 @@ public class EncryptionUtil {
     private static final int SALT_LENGTH_BYTE = 16;
     private static final String CIPHER_ALGO = "AES/GCM/NoPadding";
     private static final String SECRET_ALGO = "PBKDF2WithHmacSHA256";
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     private EncryptionUtil() {
     }
@@ -153,15 +154,13 @@ public class EncryptionUtil {
         }
 
         try {
-            var random = new SecureRandom();
-
             // 16 bytes salt
             var salt = new byte[SALT_LENGTH_BYTE];
-            random.nextBytes(salt);
+            SECURE_RANDOM.nextBytes(salt);
 
             // GCM recommended 12 bytes iv?
             var iv = new byte[IV_LENGTH_BYTE];
-            random.nextBytes(salt);
+            SECURE_RANDOM.nextBytes(iv);
 
             // secret key from password
             var factory = SecretKeyFactory.getInstance(SECRET_ALGO);

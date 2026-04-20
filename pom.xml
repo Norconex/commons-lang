@@ -36,6 +36,9 @@
     <sonar.organization>norconex</sonar.organization>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     <sonar.exclusions>**com/fasterxml/jackson/dataformat/xml/ser/**/*</sonar.exclusions>
+    <sonar.coverage.exclusions>
+      **/com/norconex/commons/lang/javadoc/**
+    </sonar.coverage.exclusions>
      
     <commons-collections4.version>4.4</commons-collections4.version>
     <commons-io.version>2.16.1</commons-io.version>
