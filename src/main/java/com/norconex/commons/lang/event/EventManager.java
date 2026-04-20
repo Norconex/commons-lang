@@ -218,7 +218,7 @@ public class EventManager {
         //of the logger name is shown (after the dot)
         var log = LoggerFactory.getLogger(event.getClass().getSimpleName()
                 + "." + event.getName());
-        var safeLevel = ObjectUtils.defaultIfNull(level, Level.INFO);
+        var safeLevel = ObjectUtils.getIfNull(level, Level.INFO);
         if (!log.isDebugEnabled() && event.getException() != null) {
             Slf4jUtil.log(log, safeLevel, event.toString() + " Cause: {}",
                     ExceptionUtil.getFormattedMessages(event.getException()));

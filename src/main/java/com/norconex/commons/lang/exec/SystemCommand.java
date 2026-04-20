@@ -27,10 +27,11 @@ import java.util.StringTokenizer;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.SystemUtils;
 
-import com.norconex.commons.lang.io.InputStreamListener;
 import com.norconex.commons.lang.io.InputStreamLineListener;
+import com.norconex.commons.lang.io.InputStreamListener;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -280,7 +281,7 @@ public class SystemCommand {
             throw new IllegalStateException(
                     "Command is already running: " + toString());
         }
-        String[] cleanCommand = getCleanCommand();
+        var cleanCommand = getCleanCommand();
         if (LOG.isDebugEnabled()) {
             LOG.debug("Executing command: {}",
                     StringUtils.join(cleanCommand, " "));
@@ -293,15 +294,15 @@ public class SystemCommand {
                     + toString(), e);
         }
 
-        InputStreamListener[] outListeners =
+        var outListeners =
                 outputListeners.toArray(EMPTY_LISTENERS);
 
-        InputStreamListener[] errListeners =
+        var errListeners =
                 errorListeners.toArray(EMPTY_LISTENERS);
-        ErrorTracker errorTracker = new ErrorTracker();
+        var errorTracker = new ErrorTracker();
         errListeners = ArrayUtils.add(errListeners, errorTracker);
 
-        int exitValue = 0;
+        var exitValue = 0;
         if (runInBackground) {
             ExecUtil.watchProcessAsync(
                     process, input, outListeners, errListeners);
@@ -364,8 +365,8 @@ public class SystemCommand {
         if (ArrayUtils.isEmpty(prefixes) || cmd.isEmpty()) {
             return;
         }
-        for (int i = 0; i < prefixes.length; i++) {
-            String prefix = prefixes[i];
+        for (var i = 0; i < prefixes.length; i++) {
+            var prefix = prefixes[i];
             if ((cmd.size() <= i) || !prefix.equalsIgnoreCase(cmd.get(0))) {
                 return;
             }
@@ -408,7 +409,7 @@ public class SystemCommand {
         // If only 1 arg, it can be the command plus args together so
         // attempt to split as such.
         if (command.size() == 1) {
-            String cmdLine = command.get(0);
+            var cmdLine = command.get(0);
             command.clear();
             if (StringUtils.isNotEmpty(cmdLine)) {
                 command.addAll(translateCommandline(cmdLine));
@@ -418,7 +419,7 @@ public class SystemCommand {
         // At this point we know we have command + args, escape.
         List<String> newCmd = new ArrayList<>();
         for (String arg : command) {
-            if (StringUtils.contains(arg, ' ')
+            if (Strings.CS.contains(arg, " ")
                     && !arg.matches("^\\s*\".*\"\\s*$")) {
                 newCmd.add('"' + arg + '"');
             } else {
@@ -444,7 +445,7 @@ public class SystemCommand {
         }
         removePrefixes(cmd, prefixes);
 
-        String wrappedCmd = "\"" + StringUtils.join(cmd, " ") + "\"";
+        var wrappedCmd = "\"" + StringUtils.join(cmd, " ") + "\"";
         cmd.clear();
         cmd.addAll(Arrays.asList(prefixes));
         cmd.add(wrappedCmd);
@@ -456,10 +457,10 @@ public class SystemCommand {
     //XXX https://commons.apache.org/proper/commons-exec/apidocs/src-html/
     //XXX org/apache/commons/exec/CommandLine.html
     private static List<String> translateCommandline(final String toProcess) {
-        State state = new State();
-        StringTokenizer tok = new StringTokenizer(toProcess, "\"\' ", true);
+        var state = new State();
+        var tok = new StringTokenizer(toProcess, "\"\' ", true);
         while (tok.hasMoreTokens()) {
-            final String nextTok = tok.nextToken();
+            final var nextTok = tok.nextToken();
             if (State.Type.NORMAL == state.type) {
                 if ("\'".equals(nextTok)) {
                     state.type = State.Type.IN_QUOTE;

@@ -14,13 +14,12 @@
  */
 package com.norconex.commons.lang.javadoc;
 
-import static org.apache.commons.lang3.StringUtils.removeEnd;
-import static org.apache.commons.lang3.StringUtils.removeStart;
 import static org.apache.commons.lang3.StringUtils.substringAfter;
 import static org.apache.commons.lang3.StringUtils.substringBeforeLast;
 
 import java.util.function.Function;
 
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.text.StringEscapeUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -41,8 +40,10 @@ import lombok.AllArgsConstructor;
  * @deprecated Will be removed
  */
 @Deprecated(since = "3.0.0", forRemoval = true)
+@SuppressWarnings("removal")
 public class JsonTaglet extends AbstractInlineTaglet {
 
+    @Deprecated(since = "3.0.0", forRemoval = true)
     public static final String NAME = "nx.json";
 
     private static final Wrapper ARRAY_WRAPPER = new Wrapper(
@@ -51,23 +52,26 @@ public class JsonTaglet extends AbstractInlineTaglet {
                 var json = s;
                 json = substringAfter(json, "\"wrap\": [");
                 json = substringBeforeLast(json, "]").trim();
-                json = removeEnd(json, "null");
+                json = Strings.CS.removeEnd(json, "null");
                 return json.replaceAll("(?m)^ {4}", "").trim();
             });
     private static final Wrapper PROP_WRAPPER = new Wrapper(
             s -> ("{" + s + (s.endsWith(",") ? "\"comma\":\"\"" : "") + "}"),
             s -> {
-                var json = removeEnd(removeStart(s, "{"), "}").trim();
-                json = removeEnd(json, "\"comma\": \"\"").trim();
+                var json = Strings.CS
+                        .removeEnd(Strings.CS.removeStart(s, "{"), "}").trim();
+                json = Strings.CS.removeEnd(json, "\"comma\": \"\"").trim();
                 return json.replaceAll("(?m)^ {2}", "").trim();
             });
 
     private static final Wrapper NO_WRAPPER = new Wrapper(s -> s, s -> s);
 
+    @Deprecated(since = "3.0.0", forRemoval = true)
     public JsonTaglet() {
         super(NAME);
     }
 
+    @Deprecated(since = "3.0.0", forRemoval = true)
     @Override
     protected String toString(TagContent tag) {
         var json = tag.getContent();

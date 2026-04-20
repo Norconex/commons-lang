@@ -24,14 +24,18 @@ import org.apache.commons.lang3.StringUtils;
  * @deprecated Will be removed
  */
 @Deprecated(since = "3.0.0", forRemoval = true)
+@SuppressWarnings("removal")
 public class BlockTaglet extends AbstractInlineTaglet {
 
+    @Deprecated(since = "3.0.0", forRemoval = true)
     public static final String NAME = "nx.block";
 
+    @Deprecated(since = "3.0.0", forRemoval = true)
     public BlockTaglet() {
         super(NAME);
     }
 
+    @Deprecated(since = "3.0.0", forRemoval = true)
     @Override
     protected String toString(TagContent tag) {
         var b = new StringBuilder();

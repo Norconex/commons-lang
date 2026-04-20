@@ -52,6 +52,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.commons.text.translate.UnicodeEscaper;
@@ -973,7 +974,7 @@ public class Properties extends ObservableMap<String, List<String>>
      * @return the value
      */
     public final String getString(String key, String defaultValue) {
-        return ObjectUtils.defaultIfNull(getString(key), defaultValue);
+        return ObjectUtils.getIfNull(getString(key), defaultValue);
     }
 
     /**
@@ -1454,7 +1455,7 @@ public class Properties extends ObservableMap<String, List<String>>
             return resolvedKey;
         }
         for (String existingKey : super.keySet()) {
-            if (StringUtils.equalsIgnoreCase(existingKey, resolvedKey)) {
+            if (Strings.CI.equals(existingKey, resolvedKey)) {
                 resolvedKey = existingKey;
                 break;
             }

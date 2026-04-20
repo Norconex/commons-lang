@@ -17,7 +17,7 @@ package com.norconex.commons.lang;
 import java.util.Map;
 import java.util.Objects;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 /**
  * Convenience methods related to object equality.
@@ -64,7 +64,7 @@ public final class EqualsUtil {
             return false;
         }
         for (CharSequence target : targets) {
-            if (StringUtils.equalsIgnoreCase(source, target)) {
+            if (Strings.CI.equals(source, target)) {
                 return true;
             }
         }
@@ -108,7 +108,7 @@ public final class EqualsUtil {
             return false;
         }
         for (CharSequence target : targets) {
-            if (!StringUtils.equalsIgnoreCase(source, target)) {
+            if (!Strings.CI.equals(source, target)) {
                 return false;
             }
         }

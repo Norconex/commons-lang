@@ -32,6 +32,7 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.math.NumberUtils;
 
 import lombok.Builder;
@@ -188,7 +189,7 @@ public class ZonedDateTimeParser {
         }
 
         // Relative (TODAY/NOW)
-        if (StringUtils.startsWithAny(dt.toUpperCase(), "TODAY", "NOW")) {
+        if (Strings.CI.startsWithAny(dt, "TODAY", "NOW")) {
             return ofRelative(dateString);
         }
 

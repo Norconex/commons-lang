@@ -33,7 +33,7 @@ import java.util.function.Predicate;
 import java.util.jar.JarFile;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.SystemUtils;
 
 import lombok.extern.slf4j.Slf4j;
@@ -45,6 +45,11 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public final class ClassFinder {
+
+    // Safety limits when scanning JARs to avoid zip-bomb / resource exhaustion
+    private static final int MAX_JAR_ENTRIES = 10_000;
+    private static final long MAX_JAR_SIZE = 200L * 1024L * 1024L; // 200MB
+    private static final int MAX_ENTRY_NAME_LENGTH = 2_048;
 
     private static WeakReference<Cache> refCache;
 
@@ -262,7 +267,7 @@ public final class ClassFinder {
                 dir, new String[] { "class" }, true);
         for (File classFile : classFiles) {
             var filePath = classFile.getAbsolutePath();
-            var className = StringUtils.removeStart(filePath, dirPath);
+            var className = Strings.CS.removeStart(filePath, dirPath);
             className = resolveClassName(/*loader, */ className);
             if (className != null) {
                 classes.add(className);
@@ -273,12 +278,45 @@ public final class ClassFinder {
 
     private static Set<String> listClassesFromJar(File jarFile) {
         Set<String> classes = new HashSet<>();
+        // Basic safety checks before opening/iterating the archive
+        if (jarFile.length() > MAX_JAR_SIZE) {
+            LOG.warn("Skipping large JAR file: {} ({} bytes)", jarFile,
+                    jarFile.length());
+            return classes;
+        }
         try (var jar = new JarFile(jarFile)) {
+            var declaredEntries = jar.size();
+            if (declaredEntries > MAX_JAR_ENTRIES) {
+                LOG.warn("Skipping JAR with too many entries: {} ({} entries)",
+                        jarFile, declaredEntries);
+                return classes;
+            }
             var entries = jar.entries();
+            var processed = 0;
             while (entries.hasMoreElements()) {
+                if (++processed > MAX_JAR_ENTRIES) {
+                    LOG.warn("Too many entries while reading JAR: {} - "
+                            + "stopping after {}", jarFile, processed);
+                    break;
+                }
                 var entry = entries.nextElement();
-                var className = entry.getName();
-                className = resolveClassName(className);
+                var entryName = entry.getName();
+                // Basic sanity checks to avoid path traversal or extremely
+                // long names that could be used in attacks.
+                if (entryName == null
+                        || entryName.length() > MAX_ENTRY_NAME_LENGTH) {
+                    LOG.debug("Skipping suspicious entry name in {}: {}",
+                            jarFile, entryName);
+                    continue;
+                }
+                if (entryName.startsWith("/")
+                        || entryName.contains("..")
+                        || entryName.contains(":\\")) {
+                    LOG.debug("Skipping suspicious entry path in {}: {}",
+                            jarFile, entryName);
+                    continue;
+                }
+                var className = resolveClassName(entryName);
                 if (className != null) {
                     classes.add(className);
                 }
@@ -303,8 +341,8 @@ public final class ClassFinder {
 
         var className = rawName;
         className = className.replaceAll("[\\\\/]", ".");
-        className = StringUtils.removeStart(className, ".");
-        return StringUtils.removeEnd(className, ".class");
+        className = Strings.CS.removeStart(className, ".");
+        return Strings.CS.removeEnd(className, ".class");
     }
 
     private static class Cache {

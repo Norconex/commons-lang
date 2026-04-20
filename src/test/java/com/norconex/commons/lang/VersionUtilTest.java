@@ -20,8 +20,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 
 @Deprecated
+@SuppressWarnings("removal")
 class VersionUtilTest {
 
+    @Deprecated
     @Test
     void testGetVersionClass() {
         assertThat(Integer.parseInt(
@@ -29,18 +31,21 @@ class VersionUtilTest {
                         .isGreaterThanOrEqualTo(3);
     }
 
+    @Deprecated
     @Test
     void testGetVersionClassString() {
         assertThat(VersionUtil.getVersion(
                 String.class, "default")).isEqualTo("default");
     }
 
+    @Deprecated
     @Test
     void testGetDetailedVersionClass() {
         assertThat(VersionUtil.getDetailedVersion(
                 getClass())).startsWith("Norconex Commons Lang");
     }
 
+    @Deprecated
     @Test
     void testGetDetailedVersionClassString() {
         assertThat(VersionUtil.getDetailedVersion(

@@ -47,6 +47,7 @@ import com.sun.source.doctree.UnknownInlineTagTree;
 import jdk.javadoc.doclet.Taglet.Location;
 
 @Disabled
+@SuppressWarnings("removal")
 class TagletTest {
 
     private static String TEST_XML = escapeHtml4("""

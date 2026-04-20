@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.collections4.map.ListOrderedMap;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import com.norconex.commons.lang.map.Properties;
 
@@ -95,19 +96,19 @@ public class QueryString extends Properties {
         } else {
             this.encoding = encoding;
         }
-        String paramString = urlWithQueryString;
-        if (StringUtils.contains(paramString, "?")) {
+        var paramString = urlWithQueryString;
+        if (Strings.CS.contains(paramString, "?")) {
             paramString = StringUtils.substringBefore(paramString, "#");
             paramString = paramString.replaceAll("(.*?)(\\?)(.*)", "$3");
         }
-        String[] paramParts = paramString.split("\\&");
+        var paramParts = paramString.split("\\&");
         for (String paramPart : paramParts) {
             if (StringUtils.isBlank(paramPart)) {
                 continue;
             }
             String key;
             String value;
-            if (StringUtils.contains(paramPart, "=")) {
+            if (Strings.CS.contains(paramPart, "=")) {
                 key = StringUtils.substringBefore(paramPart, "=");
                 value = StringUtils.substringAfter(paramPart, "=");
             } else {
@@ -144,8 +145,8 @@ public class QueryString extends Properties {
         if (isEmpty()) {
             return "";
         }
-        StringBuilder b = new StringBuilder();
-        char sep = '?';
+        var b = new StringBuilder();
+        var sep = '?';
         for (String key : keySet()) {
             for (String value : getStrings(key)) {
                 b.append(sep);

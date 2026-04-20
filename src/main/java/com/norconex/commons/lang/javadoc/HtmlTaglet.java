@@ -27,9 +27,12 @@ import com.norconex.commons.lang.xml.XmlFormatter.Builder.AttributeWrap;
  * @deprecated Will be removed
  */
 @Deprecated(since = "3.0.0", forRemoval = true)
+@SuppressWarnings("removal")
 public class HtmlTaglet extends AbstractInlineTaglet {
 
+    @Deprecated(since = "3.0.0", forRemoval = true)
     public static final String NAME = "nx.html";
+    @Deprecated(since = "3.0.0", forRemoval = true)
     public static final XmlFormatter FORMATTER = XmlFormatter.builder()
             .maxLineLength(80)
             .minTextLength(40)
@@ -40,10 +43,12 @@ public class HtmlTaglet extends AbstractInlineTaglet {
             .closeWrappingTagOnOwnLine()
             .build();
 
+    @Deprecated(since = "3.0.0", forRemoval = true)
     public HtmlTaglet() {
         super(NAME);
     }
 
+    @Deprecated(since = "3.0.0", forRemoval = true)
     @Override
     protected String toString(TagContent tag) {
         return TagletUtil.preCodeWrap(

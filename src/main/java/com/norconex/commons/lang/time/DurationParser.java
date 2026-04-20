@@ -17,10 +17,10 @@ package com.norconex.commons.lang.time;
 import java.time.Duration;
 import java.util.Locale;
 import java.util.ResourceBundle;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -114,7 +114,7 @@ public class DurationParser {
      * @return duration parser copy
      */
     public DurationParser withLocale(Locale locale) {
-        DurationParser dp = copy();
+        var dp = copy();
         dp.locale = locale;
         return dp;
     }
@@ -143,7 +143,7 @@ public class DurationParser {
      * @return duration
      */
     public Duration parse(String duration, Duration defaultValue) {
-        long defVal = defaultValue == null ? 0 : defaultValue.toMillis();
+        var defVal = defaultValue == null ? 0 : defaultValue.toMillis();
         return Duration.ofMillis(parseToMillis(duration, defVal, false));
     }
 
@@ -190,29 +190,29 @@ public class DurationParser {
         }
 
         // Else parse the string
-        Matcher m = PATTERN.matcher(duration);
-        long ms = 0;
-        boolean matchesPattern = false;
+        var m = PATTERN.matcher(duration);
+        var ms = 0L;
+        var matchesPattern = false;
         while (m.find()) {
             matchesPattern = true;
-            String numGroup = m.group(1);
-            String unitGroup = m.group(3).trim();
+            var numGroup = m.group(1);
+            var unitGroup = m.group(3).trim();
 
-            String num = numGroup.replace(',', '.');
+            var num = numGroup.replace(',', '.');
             if (!NumberUtils.isParsable(num)) {
                 parseError(throwException,
                         "Invalid duration value: \"%s\".", duration, numGroup);
                 return defaultValue;
             }
-            float val = NumberUtils.toFloat(num, -1);
+            var val = NumberUtils.toFloat(num, -1);
             if (val == -1) {
                 parseError(throwException,
                         "Invalid duration value: \"%s\".", duration, numGroup);
                 return defaultValue;
             }
 
-            String unitStr = unitGroup.replaceFirst("^(\\w+)(.*)", "$1");
-            DurationUnit unit = getUnit(unitStr);
+            var unitStr = unitGroup.replaceFirst("^(\\w+)(.*)", "$1");
+            var unit = getUnit(unitStr);
             if (unit == null) {
                 parseError(throwException,
                         "Unknown unit: \"%s\".", duration, unitStr);
@@ -231,7 +231,7 @@ public class DurationParser {
 
     private void parseError(boolean throwException, String message,
             String duration, Object... args) {
-        String msg = String.format(message, duration, args);
+        var msg = String.format(message, duration, args);
 
         if (throwException) {
             throw new DurationParserException(msg);
@@ -245,17 +245,16 @@ public class DurationParser {
         if (StringUtils.isBlank(label)) {
             return null;
         }
-        Locale safeLocale = locale == null ? DEFAULT_LOCALE : locale;
+        var safeLocale = locale == null ? DEFAULT_LOCALE : locale;
 
-        ResourceBundle rb = ResourceBundle.getBundle(
+        var rb = ResourceBundle.getBundle(
                 DurationParser.class.getCanonicalName(), safeLocale);
 
         for (String key : rb.keySet()) {
-            String[] variants = rb.getString(key).split(",");
-            if ((label.length() == 1 && StringUtils.equalsAny(label, variants))
+            var variants = rb.getString(key).split(",");
+            if ((label.length() == 1 && Strings.CS.equalsAny(label, variants))
                     || (label.length() > 1
-                            && StringUtils.equalsAnyIgnoreCase(
-                                    label, variants))) {
+                            && Strings.CI.equalsAny(label, variants))) {
                 return DurationUnit.from(key);
             }
         }
@@ -263,7 +262,7 @@ public class DurationParser {
     }
 
     private DurationParser copy() {
-        DurationParser dp = new DurationParser();
+        var dp = new DurationParser();
         dp.locale = locale;
         return dp;
     }

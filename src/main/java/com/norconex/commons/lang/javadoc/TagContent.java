@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import com.sun.source.doctree.DocTree;
 import com.sun.source.doctree.UnknownInlineTagTree;
@@ -39,10 +40,12 @@ public class TagContent {
     private String content;
     private boolean parsed;
 
+    @Deprecated(since = "3.0.0", forRemoval = true)
     public String getName() {
         return unknownTag.getTagName();
     }
 
+    @Deprecated(since = "3.0.0", forRemoval = true)
     public String getReference() {
         if (!parsed) {
             parse();
@@ -50,6 +53,7 @@ public class TagContent {
         return reference;
     }
 
+    @Deprecated(since = "3.0.0", forRemoval = true)
     public String getContent() {
         if (!parsed) {
             parse();
@@ -57,15 +61,18 @@ public class TagContent {
         return content;
     }
 
+    @Deprecated(since = "3.0.0", forRemoval = true)
     public TagContent withReference(String reference) {
         return new TagContent(unknownTag, reference, content, parsed);
     }
 
+    @Deprecated(since = "3.0.0", forRemoval = true)
     public TagContent withContent(String content) {
         return new TagContent(unknownTag, reference, content, parsed);
     }
 
     // Must have content and be UnknownInlineTag
+    @Deprecated(since = "3.0.0", forRemoval = true)
     public static Optional<TagContent> of(List<? extends DocTree> docTrees) {
         if (docTrees.isEmpty()) {
             return Optional.empty();
@@ -73,6 +80,7 @@ public class TagContent {
         return of(docTrees.get(0));
     }
 
+    @Deprecated(since = "3.0.0", forRemoval = true)
     public static Optional<TagContent> of(DocTree docTree) {
         if (docTree.getKind() != UNKNOWN_INLINE_TAG) {
             return Optional.empty();
@@ -89,14 +97,15 @@ public class TagContent {
                 .toString().trim().replace("\r", "");
         if (text.startsWith("#")) {
             reference = StringUtils.substringBefore(text, "\n");
-            content = StringUtils.removeStart(text, reference).trim();
-            reference = StringUtils.removeStart(reference, "#");
+            content = Strings.CS.removeStart(text, reference).trim();
+            reference = Strings.CS.removeStart(reference, "#");
         } else {
             content = text;
         }
         parsed = true;
     }
 
+    @Deprecated(since = "3.0.0", forRemoval = true)
     @Override
     public String toString() {
         return "Tag [name=" + unknownTag.getTagName()

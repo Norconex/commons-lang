@@ -18,6 +18,7 @@ import java.io.Serializable;
 import java.net.Proxy;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -124,10 +125,10 @@ public class ProxySettings implements Serializable {
             return null;
         }
         var type = Proxy.Type.HTTP;
-        if (StringUtils.startsWithIgnoreCase(scheme, "socks")) {
+        if (Strings.CI.startsWith(scheme, "socks")) {
             type = Proxy.Type.SOCKS;
         } else if (StringUtils.isNotBlank(scheme)
-                && !StringUtils.startsWithIgnoreCase(scheme, "http")) {
+                && !Strings.CI.startsWith(scheme, "http")) {
             LOG.warn("Unsupported proxy scheme: '{}'. Defaulting to HTTP.",
                     scheme);
         }

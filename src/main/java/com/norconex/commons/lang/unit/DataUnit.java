@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 /**
  * <p>
@@ -292,7 +293,7 @@ public enum DataUnit {
      * @return DataUnit instance or <code>null</code> if no match.
      */
     public static DataUnit from(String dataUnit) {
-        String txt = StringUtils.trimToNull(dataUnit);
+        var txt = StringUtils.trimToNull(dataUnit);
         if (txt == null) {
             return null;
         }
@@ -300,7 +301,7 @@ public enum DataUnit {
         // normalize (remove accents, plural, and translate)
         txt = StringUtils.stripEnd(txt, "s");
         txt = StringUtils.stripAccents(txt);
-        txt = StringUtils.replaceIgnoreCase(txt, "octet", "byte");
+        txt = Strings.CI.replace(txt, "octet", "byte");
 
         // compare
         for (DataUnit unit : values()) {

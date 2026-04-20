@@ -25,11 +25,13 @@ import com.sun.source.doctree.DocTree;
 import com.sun.source.doctree.UnknownInlineTagTree;
 
 @Deprecated(since = "3.0.0", forRemoval = true)
+@SuppressWarnings("removal")
 final class TagletUtil {
 
     private TagletUtil() {
     }
 
+    @Deprecated(since = "3.0.0", forRemoval = true)
     static boolean isDeclaredType(TypeElement el) {
         return switch (el.getKind()) {
             case CLASS, INTERFACE, ENUM, ANNOTATION_TYPE -> true;
@@ -37,10 +39,12 @@ final class TagletUtil {
         };
     }
 
+    @Deprecated(since = "3.0.0", forRemoval = true)
     static UnknownInlineTagTree toUnknownInlineTagTreeOrFail(DocTree docTree) {
         return toUnknownInlineTagTreeOrFail(docTree, null);
     }
 
+    @Deprecated(since = "3.0.0", forRemoval = true)
     static UnknownInlineTagTree toUnknownInlineTagTreeOrFail(
             DocTree docTree, String expectedTagName) {
         if (docTree.getKind() != UNKNOWN_INLINE_TAG) {
@@ -57,12 +61,14 @@ final class TagletUtil {
         return tag;
     }
 
+    @Deprecated(since = "3.0.0", forRemoval = true)
     static String documentationError(String error, Object... arguments) {
         return "!!! Documentation error: "
                 + String.format(error, arguments)
                 + " Please report to documentation author. !!!";
     }
 
+    @Deprecated(since = "3.0.0", forRemoval = true)
     static String preCodeWrap(String id, String className, String text) {
         var html = "<pre><code ";
         if (StringUtils.isNotBlank(id)) {
@@ -74,6 +80,7 @@ final class TagletUtil {
         return html;
     }
 
+    @Deprecated(since = "3.0.0", forRemoval = true)
     static String toHtmlIdOrNull(TagContent tag, String prefix) {
         return isNotBlank(tag.getReference())
                 ? prefix + tag.getReference()

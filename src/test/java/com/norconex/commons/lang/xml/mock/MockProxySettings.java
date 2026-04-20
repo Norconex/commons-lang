@@ -18,6 +18,7 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import com.norconex.commons.lang.bean.BeanUtil;
 import com.norconex.commons.lang.xml.Xml;
@@ -78,10 +79,10 @@ public class MockProxySettings implements XmlConfigurable {
             return null;
         }
         var type = Proxy.Type.HTTP;
-        if (StringUtils.startsWithIgnoreCase(scheme, "socks")) {
+        if (Strings.CI.startsWith(scheme, "socks")) {
             type = Proxy.Type.SOCKS;
         } else if (StringUtils.isNotBlank(scheme)
-                && !StringUtils.startsWithIgnoreCase(scheme, "http")) {
+                && !Strings.CI.startsWith(scheme, "http")) {
             LOG.warn("Unsupported proxy scheme: '{}'. Defaulting to HTTP.",
                     scheme);
         }

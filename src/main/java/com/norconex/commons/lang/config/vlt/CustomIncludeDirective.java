@@ -1,6 +1,9 @@
 package com.norconex.commons.lang.config.vlt;
 
-import com.norconex.commons.lang.config.ConfigurationException;
+import java.io.IOException;
+import java.io.Writer;
+import java.lang.reflect.Method;
+
 import org.apache.velocity.app.event.EventHandlerUtil;
 import org.apache.velocity.context.InternalContextAdapter;
 import org.apache.velocity.exception.MethodInvocationException;
@@ -9,13 +12,11 @@ import org.apache.velocity.exception.VelocityException;
 import org.apache.velocity.runtime.directive.Include;
 import org.apache.velocity.runtime.parser.node.ASTDirective;
 import org.apache.velocity.runtime.parser.node.Node;
-import org.apache.velocity.runtime.parser.node.ParserTreeConstants;
+import org.apache.velocity.runtime.parser.node.StandardParserTreeConstants;
 import org.apache.velocity.runtime.resource.Resource;
 import org.apache.velocity.util.StringUtils;
 
-import java.io.IOException;
-import java.io.Writer;
-import java.lang.reflect.Method;
+import com.norconex.commons.lang.config.ConfigurationException;
 
 public class CustomIncludeDirective extends Include {
     @Override
@@ -29,16 +30,18 @@ public class CustomIncludeDirective extends Include {
                     "outputErrorToStream",
                     Writer.class,
                     String.class);
-            outputErrorToStreamMethod.setAccessible(true); // Make the protected method accessible
+            // Make the protected method accessible
+            outputErrorToStreamMethod.setAccessible(true); //NOSONAR
 
             int argCount = node.jjtGetNumChildren();
 
             for (int i = 0; i < argCount; i++) {
                 Node n = node.jjtGetChild(i);
 
-                if (n.getType() == ParserTreeConstants.JJTSTRINGLITERAL ||
-                        n.getType() == ParserTreeConstants.JJTREFERENCE) {
-                    if (!renderOutput(n, context, writer))
+                if (n.getType() == StandardParserTreeConstants.JJTSTRINGLITERAL
+                        ||
+                        n.getType() == StandardParserTreeConstants.JJTREFERENCE) {
+                    if (!renderOutputWithCorrectIndent(n, context, writer))
                         outputErrorToStreamMethod.invoke(this, writer,
                                 "error with arg " + i + " please see log.");
                 } else {
@@ -58,7 +61,8 @@ public class CustomIncludeDirective extends Include {
         return true;
     }
 
-    private boolean renderOutput(Node node, InternalContextAdapter context,
+    private boolean renderOutputWithCorrectIndent(Node node,
+            InternalContextAdapter context,
             Writer writer)
             throws IOException, MethodInvocationException,
             ResourceNotFoundException {

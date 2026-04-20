@@ -24,6 +24,7 @@ import java.util.Locale;
 
 import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import com.norconex.commons.lang.collection.CollectionUtil;
 
@@ -121,9 +122,9 @@ public class HttpURL implements Serializable {
             host = urlwrap.getHost();
             port = urlwrap.getPort();
             if (port < 0) {
-                if (StringUtils.startsWithIgnoreCase(u, PROTOCOL_HTTPS)) {
+                if (Strings.CI.startsWith(u, PROTOCOL_HTTPS)) {
                     port = DEFAULT_HTTPS_PORT;
-                } else if (StringUtils.startsWithIgnoreCase(u, PROTOCOL_HTTP)) {
+                } else if (Strings.CI.startsWith(u, PROTOCOL_HTTP)) {
                     port = DEFAULT_HTTP_PORT;
                 }
             }
@@ -131,13 +132,13 @@ public class HttpURL implements Serializable {
             fragment = urlwrap.getRef();
         } else {
             path = u.replaceFirst("^(.*?)([\\?\\#])(.*)", "$1");
-            if (StringUtils.contains(u, "#")) {
+            if (Strings.CS.contains(u, "#")) {
                 fragment = u.replaceFirst("^(.*?)(\\#)(.*)", "$3");
             }
         }
 
         // Parameters
-        if (StringUtils.contains(u, "?")) {
+        if (Strings.CS.contains(u, "?")) {
             setQueryString(new QueryString(u, encoding));
         }
     }

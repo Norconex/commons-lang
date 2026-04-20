@@ -45,6 +45,7 @@ import jdk.javadoc.doclet.Taglet;
  * @deprecated Will be removed
  */
 @Deprecated(since = "3.0.0", forRemoval = true)
+@SuppressWarnings("removal")
 public abstract class AbstractInlineTaglet implements Taglet {
 
     // References:
@@ -59,40 +60,48 @@ public abstract class AbstractInlineTaglet implements Taglet {
     private final Function<TagContent, String> headingProvider;
     private DocletEnvironment env;
 
+    @Deprecated(since = "3.0.0", forRemoval = true)
     protected AbstractInlineTaglet(String name) {
         this(name, null);
     }
 
+    @Deprecated(since = "3.0.0", forRemoval = true)
     protected AbstractInlineTaglet(
             String name, Function<TagContent, String> headingProvider) {
         this.name = name;
         this.headingProvider = headingProvider;
     }
 
+    @Deprecated(since = "3.0.0", forRemoval = true)
     @Override
     public void init(DocletEnvironment env, Doclet doclet) {
         this.env = env;
     }
 
+    @Deprecated(since = "3.0.0", forRemoval = true)
     @Override
     public String getName() {
         return name;
     }
 
+    @Deprecated(since = "3.0.0", forRemoval = true)
     public Function<TagContent, String> getHeadingProvider() {
         return headingProvider;
     }
 
+    @Deprecated(since = "3.0.0", forRemoval = true)
     @Override
     public boolean isInlineTag() {
         return true;
     }
 
+    @Deprecated(since = "3.0.0", forRemoval = true)
     @Override
     public Set<Location> getAllowedLocations() {
         return allowedSet;
     }
 
+    @Deprecated(since = "3.0.0", forRemoval = true)
     @Override
     public String toString(List<? extends DocTree> tagTrees, Element element) {
         var tag = TagContent.of(tagTrees).orElse(null);
@@ -119,5 +128,6 @@ public abstract class AbstractInlineTaglet implements Taglet {
         return text;
     }
 
+    @Deprecated(since = "3.0.0", forRemoval = true)
     protected abstract String toString(TagContent tag);
 }

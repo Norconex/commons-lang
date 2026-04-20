@@ -14,8 +14,6 @@
  */
 package com.norconex.commons.lang.jar;
 
-import static org.apache.commons.lang3.StringUtils.endsWithIgnoreCase;
-
 import java.io.File;
 import java.io.FileFilter;
 import java.io.UncheckedIOException;
@@ -34,6 +32,7 @@ import java.util.stream.Stream;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.stream.Streams;
 
 import com.norconex.commons.lang.collection.CollectionUtil;
@@ -85,7 +84,7 @@ public class JarFile implements Comparable<JarFile> {
             baseName = jarName;
             version = jarVersion;
         } else {
-            baseName = StringUtils.removeEnd(fullName, ".jar");
+            baseName = Strings.CS.removeEnd(fullName, ".jar");
             version = null;
         }
 
@@ -306,7 +305,7 @@ public class JarFile implements Comparable<JarFile> {
                             ? Files.list(jarPath)
                             : Stream.of(jarPath)) {
                         jarFiles.addAll(stream
-                                .filter(f -> endsWithIgnoreCase(f.toString(),
+                                .filter(f -> Strings.CI.endsWith(f.toString(),
                                         ".jar"))
                                 .map(f -> new JarFile(f.toFile()))
                                 .collect(Collectors.toList()));

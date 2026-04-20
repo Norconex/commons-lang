@@ -153,34 +153,41 @@ import jdk.javadoc.doclet.Taglet;
  * @deprecated Will be removed
  */
 @Deprecated(since = "3.0.0", forRemoval = true)
+@SuppressWarnings("removal")
 public class IncludeTaglet implements Taglet {
 
+    @Deprecated(since = "3.0.0", forRemoval = true)
     public static final String NAME = "nx.include";
 
     private DocletEnvironment env;
 
     private final EnumSet<Location> allowedSet = EnumSet.allOf(Location.class);
 
+    @Deprecated(since = "3.0.0", forRemoval = true)
     @Override
     public void init(DocletEnvironment env, Doclet doclet) {
         this.env = env;
     }
 
+    @Deprecated(since = "3.0.0", forRemoval = true)
     @Override
     public Set<Location> getAllowedLocations() {
         return allowedSet;
     }
 
+    @Deprecated(since = "3.0.0", forRemoval = true)
     @Override
     public boolean isInlineTag() {
         return true;
     }
 
+    @Deprecated(since = "3.0.0", forRemoval = true)
     @Override
     public String getName() {
         return NAME;
     }
 
+    @Deprecated(since = "3.0.0", forRemoval = true)
     @Override
     public String toString(List<? extends DocTree> tags, Element element) {
         if (tags.isEmpty()) {
@@ -207,6 +214,7 @@ public class IncludeTaglet implements Taglet {
     }
 
     // When a resolved comment has one or more includes in it, resolve them.
+    @Deprecated(since = "3.0.0", forRemoval = true)
     static String resolveContentIncludes(
             String content, DocletEnvironment env) {
         var m = Pattern.compile("\\{\\@nx\\.include +([^\\n]+?)\\}",
@@ -216,6 +224,7 @@ public class IncludeTaglet implements Taglet {
     }
 
     // directive derived from javadoc tool picking up {@nx.include ...}
+    @Deprecated(since = "3.0.0", forRemoval = true)
     static String resolveIncludeDirective(
             IncludeDirective directive, DocletEnvironment env) {
 

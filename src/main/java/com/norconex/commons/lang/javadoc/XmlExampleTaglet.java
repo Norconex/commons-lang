@@ -23,10 +23,13 @@ import org.apache.commons.lang3.StringUtils;
  * @deprecated Will be removed
  */
 @Deprecated(since = "3.0.0", forRemoval = true)
+@SuppressWarnings("removal")
 public class XmlExampleTaglet extends XmlTaglet {
 
+    @Deprecated(since = "3.0.0", forRemoval = true)
     public static final String NAME = "nx.xml.example";
 
+    @Deprecated(since = "3.0.0", forRemoval = true)
     public XmlExampleTaglet() {
         super(NAME, tag -> "<h4 id=\"nx-xml-" + orDefaultId(tag.getReference())
                 + "-heading\">XML usage example:</h4>\n");
@@ -36,6 +39,7 @@ public class XmlExampleTaglet extends XmlTaglet {
         return StringUtils.isNotBlank(id) ? id : "example";
     }
 
+    @Deprecated(since = "3.0.0", forRemoval = true)
     @Override
     protected String toString(TagContent tag) {
         return super.toString(

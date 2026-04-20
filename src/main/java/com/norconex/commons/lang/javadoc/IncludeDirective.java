@@ -15,12 +15,14 @@ import lombok.Data;
 @Builder(access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Deprecated(since = "3.0.0", forRemoval = true)
+@SuppressWarnings("removal")
 class IncludeDirective {
     private final String reference;
     private final String tagName;
     private final String className;
     private final String parseError;
 
+    @Deprecated(since = "3.0.0", forRemoval = true)
     static IncludeDirective of(DocTree directive) {
         var tag = TagletUtil.toUnknownInlineTagTreeOrFail(
                 directive, IncludeTaglet.NAME);
@@ -29,6 +31,7 @@ class IncludeDirective {
         return of(tag.getContent().get(0).toString());
     }
 
+    @Deprecated(since = "3.0.0", forRemoval = true)
     static IncludeDirective of(String directive) {
         var b = IncludeDirective.builder();
 
@@ -53,10 +56,12 @@ class IncludeDirective {
         return b.build();
     }
 
+    @Deprecated(since = "3.0.0", forRemoval = true)
     boolean matches(TagContent tag) {
         return !hasParseError() && nameOK(tag) && refOK(tag);
     }
 
+    @Deprecated(since = "3.0.0", forRemoval = true)
     boolean hasParseError() {
         return parseError != null;
     }

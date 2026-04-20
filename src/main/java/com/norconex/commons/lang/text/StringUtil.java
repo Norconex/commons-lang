@@ -14,8 +14,6 @@
  */
 package com.norconex.commons.lang.text;
 
-import static org.apache.commons.lang3.StringUtils.removeEnd;
-
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
@@ -24,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.function.Consumer;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -119,7 +118,7 @@ public final class StringUtil {
         }
         truncated += getHash(remainer);
         if (LOG.isTraceEnabled()) {
-            LOG.trace("Truncated text: " + truncated);
+            LOG.trace("Truncated text: {}", truncated);
         }
         return truncated;
     }
@@ -389,13 +388,13 @@ public final class StringUtil {
         }
         String singular;
         if (plural.endsWith("sses")) {
-            singular = removeEnd(plural, "es");
+            singular = Strings.CS.removeEnd(plural, "es");
         } else if (plural.endsWith("ies")) {
-            singular = removeEnd(plural, "ies") + "y";
+            singular = Strings.CS.removeEnd(plural, "ies") + "y";
         } else if (plural.endsWith("oes")) {
-            singular = removeEnd(plural, "es");
+            singular = Strings.CS.removeEnd(plural, "es");
         } else if (plural.endsWith("s") && !plural.endsWith("ss")) {
-            singular = removeEnd(plural, "s");
+            singular = Strings.CS.removeEnd(plural, "s");
         } else {
             singular = defaultValue;
         }

@@ -153,13 +153,15 @@ public class EncryptionUtil {
         }
 
         try {
+            var random = new SecureRandom();
+
             // 16 bytes salt
             var salt = new byte[SALT_LENGTH_BYTE];
-            new SecureRandom().nextBytes(salt);
+            random.nextBytes(salt);
 
             // GCM recommended 12 bytes iv?
             var iv = new byte[IV_LENGTH_BYTE];
-            new SecureRandom().nextBytes(salt);
+            random.nextBytes(salt);
 
             // secret key from password
             var factory = SecretKeyFactory.getInstance(SECRET_ALGO);

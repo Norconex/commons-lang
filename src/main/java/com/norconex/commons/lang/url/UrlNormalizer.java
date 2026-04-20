@@ -32,6 +32,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.collections4.bag.TreeBag;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -253,7 +254,7 @@ public class UrlNormalizer implements Serializable {
 
         var urlRootAndPath = urlRoot + path;
         var urlRootAndLcPath = urlRoot + lcPath;
-        url = StringUtils.replaceOnce(url, urlRootAndPath, urlRootAndLcPath);
+        url = Strings.CS.replaceOnce(url, urlRootAndPath, urlRootAndLcPath);
         return this;
     }
 
@@ -420,10 +421,10 @@ public class UrlNormalizer implements Serializable {
      */
     public UrlNormalizer encodeSpaces() {
         var path = StringUtils.substringBefore(url, "?");
-        path = StringUtils.replace(path, " ", "%20");
+        path = Strings.CS.replace(path, " ", "%20");
         var qs = StringUtils.substringAfter(url, "?");
         if (StringUtils.isNotBlank(qs)) {
-            qs = StringUtils.replace(qs, " ", "+");
+            qs = Strings.CS.replace(qs, " ", "+");
             url = path + "?" + qs;
         } else {
             url = path;
@@ -473,7 +474,7 @@ public class UrlNormalizer implements Serializable {
         if (StringUtils.isNotBlank(name) && !name.contains(".")) {
             var newPath = path + "/";
             var newUrlRootAndPath = urlRoot + newPath;
-            url = StringUtils.replaceOnce(
+            url = Strings.CS.replaceOnce(
                     url, urlRootAndPath, newUrlRootAndPath);
         }
         return this;
@@ -498,7 +499,7 @@ public class UrlNormalizer implements Serializable {
             return this;
         }
         var urlRootAndPath = urlRoot + "/";
-        url = StringUtils.replaceOnce(url, urlRoot, urlRootAndPath);
+        url = Strings.CS.replaceOnce(url, urlRoot, urlRootAndPath);
         return this;
     }
 
@@ -538,10 +539,10 @@ public class UrlNormalizer implements Serializable {
         var path = toURL().getPath();
         var urlRootAndPath = urlRoot + path;
 
-        if (StringUtils.endsWith(path, "/")) {
-            var newPath = StringUtils.removeEnd(path, "/");
+        if (Strings.CS.endsWith(path, "/")) {
+            var newPath = Strings.CS.removeEnd(path, "/");
             var newUrlRootAndPath = urlRoot + newPath;
-            url = StringUtils.replaceOnce(
+            url = Strings.CS.replaceOnce(
                     url, urlRootAndPath, newUrlRootAndPath);
         }
         return this;
@@ -633,7 +634,7 @@ public class UrlNormalizer implements Serializable {
 
         // 3.  Finally, the output buffer is returned as the result of
         //     remove_dot_segments.
-        url = StringUtils.replaceOnce(url, path, out.toString());
+        url = Strings.CS.replaceOnce(url, path, out.toString());
         return this;
     }
 
@@ -693,7 +694,7 @@ public class UrlNormalizer implements Serializable {
     public UrlNormalizer removeDirectoryIndex() {
         var path = toURL().getPath();
         if (PATTERN_PATH_LAST_SEGMENT.matcher(path).matches()) {
-            url = StringUtils.replaceOnce(
+            url = Strings.CS.replaceOnce(
                     url, path,
                     StringUtils.substringBeforeLast(path, "/") + "/");
         }
@@ -728,7 +729,16 @@ public class UrlNormalizer implements Serializable {
      * @return this instance
      */
     public UrlNormalizer removeTrailingFragment() {
-        url = url.replaceFirst("(.*?)(#[^\\/]*)$", "$1");
+        // Avoid regex backtracking by using index-based string ops.
+        // Remove trailing fragment only if the fragment (from last '#')
+        // does not contain a '/' character.
+        var hashIdx = url.lastIndexOf('#');
+        if (hashIdx != -1) {
+            var fragment = url.substring(hashIdx);
+            if (fragment.indexOf('/') == -1) {
+                url = url.substring(0, hashIdx);
+            }
+        }
         return this;
     }
 
@@ -744,7 +754,7 @@ public class UrlNormalizer implements Serializable {
     public UrlNormalizer removeQueryString() {
         var m = PATTERN_QUERY_STRING.matcher(url);
         if (m.find()) {
-            url = StringUtils.removeEnd(m.group(1), "?") + m.group(3);
+            url = Strings.CS.removeEnd(m.group(1), "?") + m.group(3);
         }
         return this;
     }
@@ -817,7 +827,7 @@ public class UrlNormalizer implements Serializable {
         var urlRootAndPath = urlRoot + path;
         var newPath = path.replaceAll("/{2,}", "/");
         var newUrlRootAndPath = urlRoot + newPath;
-        url = StringUtils.replaceOnce(url, urlRootAndPath, newUrlRootAndPath);
+        url = Strings.CS.replaceOnce(url, urlRootAndPath, newUrlRootAndPath);
         return this;
     }
 
@@ -828,8 +838,8 @@ public class UrlNormalizer implements Serializable {
      */
     public UrlNormalizer removeWWW() {
         var host = toURL().getHost();
-        var newHost = StringUtils.removeStartIgnoreCase(host, "www.");
-        url = StringUtils.replaceOnce(url, host, newHost);
+        var newHost = Strings.CI.removeStart(host, "www.");
+        url = Strings.CS.replaceOnce(url, host, newHost);
         return this;
     }
 
@@ -841,7 +851,7 @@ public class UrlNormalizer implements Serializable {
     public UrlNormalizer addWWW() {
         var host = toURL().getHost();
         if (!host.toLowerCase().startsWith("www.")) {
-            url = StringUtils.replaceOnce(url, host, "www." + host);
+            url = Strings.CS.replaceOnce(url, host, "www." + host);
         }
         return this;
     }
@@ -919,7 +929,7 @@ public class UrlNormalizer implements Serializable {
      */
     public UrlNormalizer removeTrailingQuestionMark() {
         if (url.endsWith("?") && StringUtils.countMatches(url, "?") == 1) {
-            url = StringUtils.removeEnd(url, "?");
+            url = Strings.CS.removeEnd(url, "?");
         }
         return this;
     }
@@ -934,20 +944,20 @@ public class UrlNormalizer implements Serializable {
      * @return this instance
      */
     public UrlNormalizer removeSessionIds() {
-        if (StringUtils.containsIgnoreCase(url, ";jsessionid=")) {
+        if (Strings.CI.contains(url, ";jsessionid=")) {
             url = url.replaceFirst(
                     "(;jsessionid=([A-F0-9]+)((\\.\\w+)*))", "");
         } else {
             var u = StringUtils.substringBefore(url, "?");
             var q = StringUtils.substringAfter(url, "?");
-            if (StringUtils.containsIgnoreCase(url, "PHPSESSID=")) {
+            if (Strings.CI.contains(url, "PHPSESSID=")) {
                 q = q.replaceFirst("(&|^)(PHPSESSID=[0-9a-zA-Z]*)", "");
-            } else if (StringUtils.containsIgnoreCase(url, "ASPSESSIONID")) {
+            } else if (Strings.CI.contains(url, "ASPSESSIONID")) {
                 q = q.replaceFirst(
                         "(&|^)(ASPSESSIONID[a-zA-Z]{8}=[a-zA-Z]*)", "");
             }
             if (!StringUtils.isBlank(q)) {
-                u += "?" + StringUtils.removeStart(q, "&");
+                u += "?" + Strings.CS.removeStart(q, "&");
             }
             url = u;
         }
@@ -967,7 +977,7 @@ public class UrlNormalizer implements Serializable {
      */
     public UrlNormalizer removeTrailingHash() {
         if (url.endsWith("#") && StringUtils.countMatches(url, "#") == 1) {
-            url = StringUtils.removeEnd(url, "#");
+            url = Strings.CS.removeEnd(url, "#");
         }
         return this;
     }

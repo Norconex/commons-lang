@@ -31,6 +31,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.collections4.map.ListOrderedMap;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -208,7 +209,7 @@ public class XmlFormatter {
                 closed = true;
                 selfClosed = true;
             }
-            attribsStr = StringUtils.removeEnd(attribsStr, "/");
+            attribsStr = Strings.CS.removeEnd(attribsStr, "/");
             var m = ATTRIB_PATTERN.matcher(attribsStr);
             while (m.find()) {
                 attribs.put(m.group(1).trim(), m.group(2).trim());

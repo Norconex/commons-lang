@@ -266,13 +266,11 @@
       <groupId>jakarta.el</groupId>
       <artifactId>jakarta.el-api</artifactId>
       <version>${jakarta-el-api.version}</version>
-      <!-- <scope>test</scope>-->
     </dependency>
     <dependency>
       <groupId>org.apache.tomcat.embed</groupId>
       <artifactId>tomcat-embed-el</artifactId>
       <version>${tomcat-embed-el.version}</version>
-      <!-- <scope>test</scope> -->
     </dependency>
     
     <!-- okhttp/mockwebserver used to test Certificateutil -->

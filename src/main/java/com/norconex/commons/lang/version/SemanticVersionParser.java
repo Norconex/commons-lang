@@ -20,6 +20,7 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.math.NumberUtils;
 
 import lombok.Builder;
@@ -169,7 +170,7 @@ public class SemanticVersionParser {
         }
         for (String suffix : ignoreSuffixes) {
             var before = v;
-            v = StringUtils.removeEnd(v, suffix);
+            v = Strings.CS.removeEnd(v, suffix);
             if (Objects.equals(before, v)) {
                 break;
             }

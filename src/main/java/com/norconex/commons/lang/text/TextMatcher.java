@@ -668,6 +668,6 @@ public class TextMatcher implements
     }
 
     private Method safeMethod() {
-        return ObjectUtils.defaultIfNull(method, Method.BASIC);
+        return ObjectUtils.getIfNull(method, Method.BASIC);
     }
 }
