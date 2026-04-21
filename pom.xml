@@ -571,13 +571,13 @@
               -->
             <!-- Regular dependencies -->
             <link>https://commons.apache.org/proper/commons-lang/javadocs/api-release</link>
-            <link>https://commons.apache.org/proper/commons-collections/javadocs/api-${commons-collections4.version}</link>
+            <link>https://javadoc.io/doc/org.apache.commons/commons-collections4/${commons-collections4.version}</link>
             <link>https://commons.apache.org/proper/commons-io/javadocs/api-release</link>
             <link>https://commons.apache.org/proper/commons-text/apidocs</link>
             <link>https://commons.apache.org/proper/commons-cli/javadocs/api-release</link>
             <link>https://commons.apache.org/proper/commons-logging/javadocs/api-release</link>
             <link>https://velocity.apache.org/engine/${velocity-engine.version}/apidocs</link>
-            <link>https://www.slf4j.org/apidocs</link>
+            <link>https://javadoc.io/doc/org.slf4j/slf4j-api/${slf4j.version}</link>
             <!-- Missing: xerces (1.1 schema), xpath2, java-cup, jackson/fasterxml --> 
           </links>
         </configuration>
