@@ -125,8 +125,8 @@ public class HttpURL implements Serializable {
      * Returns true if parsing was successful, false otherwise.
      */
     private boolean parseUrlParts(String u) {
-        var matcher = Pattern.compile("^(?:([a-zA-Z][a-zA-Z0-9\\+\\-\\.]*):)?"
-                + "(?://([^/?#]*))?([^?#]*)(?:\\?([^#]*))?(?:#(.*))?")
+        var matcher = Pattern.compile("^(?:([a-zA-Z][a-zA-Z0-9\\+\\-\\.]*+):)?"
+                + "(?://([^/?#]*+))?([^?#]*+)(?:\\?([^#]*+))?(?:#(.*+))?")
                 .matcher(u);
         if (matcher.matches() && matcher.group(1) != null) {
             protocol = matcher.group(1);
