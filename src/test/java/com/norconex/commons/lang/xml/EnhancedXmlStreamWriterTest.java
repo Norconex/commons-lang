@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThatException;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 
+import java.awt.Dimension;
 import java.io.File;
 import java.io.StringWriter;
 import java.time.Duration;
@@ -29,9 +30,6 @@ import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.xml.mock.MockProxySettings;
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
 
 class EnhancedXmlStreamWriterTest {
 
@@ -310,8 +308,7 @@ class EnhancedXmlStreamWriterTest {
 
     @Test
     void testBlanksIndent() {
-        var xml =
-                new EnhancedXmlStreamWriter(new StringWriter(), true, 2);
+        var xml = new EnhancedXmlStreamWriter(new StringWriter(), true, 2);
         xml.writeStartDocument();
         xml.writeStartElement("test");
         xml.writeElementString("value1", " a ");
@@ -329,20 +326,62 @@ class EnhancedXmlStreamWriterTest {
                 </test>""");
     }
 
-    @Data
-    @AllArgsConstructor
-    private static class Configurable implements XmlConfigurable {
-        private String value;
+    @Test
+    void testWriteDimension() {
+        var xml = new EnhancedXmlStreamWriter(new StringWriter(), true, 2);
+        xml.writeStartDocument();
+        xml.writeStartElement("test");
+        xml.writeElementDimension("dim1", new Dimension(300, 400));
+        xml.writeElementDimension("dim2", new Dimension(500, 500));
+        xml.writeEndElement();
+        xml.writeEndDocument();
+        xml.flush();
 
-        @Override
-        public void loadFromXML(Xml xml) {
-            value = xml.getString(".");
-        }
+        assertThat(xml.getWriter()).hasToString(
+                """
+                <?xml version='1.0' encoding='UTF-8'?>
+                <test>
+                  <dim1>300x400</dim1>
+                  <dim2>500</dim2>
+                </test>""");
+    }
 
-        @Override
-        public void saveToXML(Xml xml) {
-            xml.setTextContent(value);
-        }
+    @Test
+    void testExceptions() {
+        var xml =
+                new EnhancedXmlStreamWriter(StringWriter.nullWriter(), true, 2);
+        assertThatExceptionOfType(XmlException.class).isThrownBy(() -> {
+            // no start document
+            xml.writeEndDocument();
+        });
+
+        xml.writeStartDocument();
+
+        assertThatExceptionOfType(XmlException.class).isThrownBy(() -> {
+            xml.writeStartElement("& bad", "& bad");
+        });
+        assertThatExceptionOfType(XmlException.class).isThrownBy(() -> {
+            xml.writeEmptyElement("& bad", "& bad");
+        });
+        assertThatExceptionOfType(XmlException.class).isThrownBy(() -> {
+            // no start element
+            xml.writeEndElement();
+        });
+        assertThatExceptionOfType(XmlException.class).isThrownBy(() -> {
+            xml.writeAttribute("& bad", "& bad", "& bad");
+        });
+        assertThatExceptionOfType(XmlException.class).isThrownBy(() -> {
+            xml.writeAttribute("& bad", "& bad", "& bad", "& bad");
+        });
+        assertThatExceptionOfType(XmlException.class).isThrownBy(() -> {
+            xml.writeNamespace("& bad", "& bad");
+        });
+        assertThatExceptionOfType(XmlException.class).isThrownBy(() -> {
+            xml.writeDefaultNamespace("& bad");
+        });
+        assertThatExceptionOfType(XmlException.class).isThrownBy(() -> {
+            xml.writeComment("!-- & bad");
+        });
     }
 
     private static EnhancedXmlStreamWriter newXMLWriter() {

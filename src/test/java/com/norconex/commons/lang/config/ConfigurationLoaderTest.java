@@ -201,6 +201,12 @@ class ConfigurationLoaderTest {
         assertThat(str).isEqualTo("PropValueA, MapValueB, FileVarC, DefaultD");
     }
 
+    @SuppressWarnings("deprecation")
+    @Test
+    void testMisc() {
+        assertThat(new ConfigurationLoader().toXml(null)).isNull();
+    }
+
     private Path cfgPath(String path) {
         return Path.of(CFG_BASE_PATH + path);
     }

@@ -234,6 +234,7 @@ public final class ConfigurationLoader {
      */
     @Deprecated(since = "3.0.0")
     public ConfigurationLoader() {
+        //NOOP
     }
 
     /**
