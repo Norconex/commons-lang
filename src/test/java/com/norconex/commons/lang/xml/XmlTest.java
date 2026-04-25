@@ -23,8 +23,6 @@ import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -110,7 +108,7 @@ class XmlTest {
     private Path tempDir;
 
     @Test
-    void testWrite(@TempDir File tempDir) throws IOException {
+    void testWrite(@TempDir File tempDir) {
         var file = new File(tempDir, "file.xml");
 
         var xml1 = new Xml("<test><value>1</value></test>");
@@ -212,9 +210,10 @@ class XmlTest {
     @Test
     void testGetName() {
         var xml = new Xml(
-                "<test>"
-                        + "<blah>abc</blah>"
-                        + "</test>");
+                """
+                    <test>\
+                    <blah>abc</blah>\
+                    </test>""");
         assertThat(xml.getName()).isEqualTo("test");
         assertThat(xml.getXML("blah").getName()).isEqualTo("blah");
         assertThat(new Xml("").getName()).isNull();
@@ -223,13 +222,14 @@ class XmlTest {
     @Test
     void testGetStringMap() {
         var xml = new Xml(
-                "<test>"
-                        + "<map>"
-                        + "<entry><key>k1</key><value>v1</value></entry>"
-                        + "<entry><key>k2</key><value>v2</value></entry>"
-                        + "<entry><key>k3</key><value>v3</value></entry>"
-                        + "</map>"
-                        + "</test>");
+                """
+                    <test>\
+                    <map>\
+                    <entry><key>k1</key><value>v1</value></entry>\
+                    <entry><key>k2</key><value>v2</value></entry>\
+                    <entry><key>k3</key><value>v3</value></entry>\
+                    </map>\
+                    </test>""");
         assertThat(xml.getStringMap("map/entry", "key", "value"))
                 .containsAllEntriesOf(MapUtil.toMap(
                         "k1", "v1", "k2", "v2", "k3",
@@ -284,10 +284,11 @@ class XmlTest {
         assertThat(new Xml("<test/>")
                 .getNode().getNodeName()).isEqualTo("test");
         var xml = new Xml(
-                "<test>"
-                        + "<value>abc</value>"
-                        + "<parent><value>def</value></parent>"
-                        + "</test>");
+                """
+                    <test>\
+                    <value>abc</value>\
+                    <parent><value>def</value></parent>\
+                    </test>""");
         assertThat(xml.getNode("value").getTextContent())
                 .isEqualTo("abc");
     }
@@ -325,39 +326,41 @@ class XmlTest {
     }
 
     @Test
-    void testGetURL() throws MalformedURLException {
+    void testGetURL() {
         var xml = Xml.of(
-                "<test>"
-                        + "<single>http://example.com</single>"
-                        + "<value>http://example.com/1</value>"
-                        + "<value>http://example.com/2</value>"
-                        + "<value>http://example.com/3</value>"
-                        + "</test>")
+                """
+                    <test>\
+                    <single>http://example.com</single>\
+                    <value>http://example.com/1</value>\
+                    <value>http://example.com/2</value>\
+                    <value>http://example.com/3</value>\
+                    </test>""")
                 .create();
 
         assertThat(xml.getURL("single"))
-                .isEqualTo(new URL("http://example.com"));
-        assertThat(xml.getURL("nil", new URL("http://example.com/4")))
-                .isEqualTo(new URL("http://example.com/4"));
+                .isEqualTo(HttpURL.toURL("http://example.com"));
+        assertThat(xml.getURL("nil", HttpURL.toURL("http://example.com/4")))
+                .isEqualTo(HttpURL.toURL("http://example.com/4"));
         assertThat(xml.getURLList("value")).containsExactly(
-                new URL("http://example.com/1"),
-                new URL("http://example.com/2"),
-                new URL("http://example.com/3"));
+                HttpURL.toURL("http://example.com/1"),
+                HttpURL.toURL("http://example.com/2"),
+                HttpURL.toURL("http://example.com/3"));
         assertThat(xml.getURLList("nil", Arrays.asList(
-                new URL("http://example.com/5"))))
-                        .containsExactly(new URL(
+                HttpURL.toURL("http://example.com/5"))))
+                        .containsExactly(HttpURL.toURL(
                                 "http://example.com/5"));
     }
 
     @Test
     void testGetPathAndFiles() {
         var xml = Xml.of(
-                "<test>"
-                        + "<single>c:\\file.txt</single>"
-                        + "<value>/path/1</value>"
-                        + "<value>/path/2</value>"
-                        + "<value>/path/3</value>"
-                        + "</test>")
+                """
+                    <test>\
+                    <single>c:\\file.txt</single>\
+                    <value>/path/1</value>\
+                    <value>/path/2</value>\
+                    <value>/path/3</value>\
+                    </test>""")
                 .create();
 
         assertThat(xml.getPath("single"))
@@ -388,15 +391,16 @@ class XmlTest {
     @Test
     void testGetEnum() {
         var xml = Xml.of(
-                "<test>"
-                        + "<single>MINUTE</single>"
-                        + "<value>SECOND</value>"
-                        + "<value>YEAR</value>"
-                        + "<value>DAY</value>"
-                        + "<noValues/>"
-                        + "<values>WEEK, MONTH, MILLISECOND</values>"
-                        + "<dashedValues>YEAR-MONTH-DAY</dashedValues>"
-                        + "</test>")
+                """
+                    <test>\
+                    <single>MINUTE</single>\
+                    <value>SECOND</value>\
+                    <value>YEAR</value>\
+                    <value>DAY</value>\
+                    <noValues/>\
+                    <values>WEEK, MONTH, MILLISECOND</values>\
+                    <dashedValues>YEAR-MONTH-DAY</dashedValues>\
+                    </test>""")
                 .create();
 
         assertThat(xml.getEnum("single", DurationUnit.class))
@@ -430,14 +434,15 @@ class XmlTest {
     @Test
     void testGetString() {
         var xml = Xml.of(
-                "<test>"
-                        + "<value>aa</value>"
-                        + "<value>bb</value>"
-                        + "<value>cc</value>"
-                        + "<noValues/>"
-                        + "<values>x, y, z</values>"
-                        + "<dashedValues>d-a-s-h</dashedValues>"
-                        + "</test>")
+                """
+                    <test>\
+                    <value>aa</value>\
+                    <value>bb</value>\
+                    <value>cc</value>\
+                    <noValues/>\
+                    <values>x, y, z</values>\
+                    <dashedValues>d-a-s-h</dashedValues>\
+                    </test>""")
                 .create();
         assertThat(xml.getStringList("value")).containsExactly(
                 "aa", "bb", "cc");
@@ -468,11 +473,12 @@ class XmlTest {
     @Test
     void testGetXMLList() {
         var xml = Xml.of(
-                "<test>"
-                        + "<values>1, 2, 3</values>"
-                        + "<values>4, 5, 6</values>"
-                        + "<values>7, 8, 9</values>"
-                        + "</test>")
+                """
+                    <test>\
+                    <values>1, 2, 3</values>\
+                    <values>4, 5, 6</values>\
+                    <values>7, 8, 9</values>\
+                    </test>""")
                 .create();
         assertThat(xml.getXMLList("values")).containsExactly(
                 new Xml("<values>1, 2, 3</values>"),
@@ -529,21 +535,22 @@ class XmlTest {
         // List
         var pkg = "com.norconex.commons.lang.convert.";
         var xml = Xml.of(String.format(
-                "<test>"
-                        + "<converters>"
-                        + "<converter class=\"%1$sDurationConverter\"></converter>"
-                        + "<converter class=\"%1$sEnumConverter\"></converter>"
-                        + "<converter class=\"%1$sDateConverter\"></converter>"
-                        + "</converters>"
-                        + "<presentButEmpty>"
-                        + "<converters/>"
-                        + "</presentButEmpty>"
-                        + "<withSingleNull>"
-                        + "<converters>"
-                        + "<converter/>"
-                        + "</converters>"
-                        + "</withSingleNull>"
-                        + "</test>",
+                """
+                    <test>\
+                    <converters>\
+                    <converter class="%1$sDurationConverter"></converter>\
+                    <converter class="%1$sEnumConverter"></converter>\
+                    <converter class="%1$sDateConverter"></converter>\
+                    </converters>\
+                    <presentButEmpty>\
+                    <converters/>\
+                    </presentButEmpty>\
+                    <withSingleNull>\
+                    <converters>\
+                    <converter/>\
+                    </converters>\
+                    </withSingleNull>\
+                    </test>""",
                 pkg)).create();
         assertThat(xml.getObjectList("converters/converter"))
                 .containsExactly(expectedList);
@@ -563,14 +570,15 @@ class XmlTest {
 
         // List Impl
         var xmlImpl = Xml.of(
-                "<test>"
-                        + "<converters>"
-                        + "<converter class=\"DurationConverter\"></converter>"
-                        + "<converter class=\"com.norconex.commons.lang.convert"
-                        + ".EnumConverter\"></converter>"
-                        + "<converter class=\"convert.DateConverter\"></converter>"
-                        + "</converters>"
-                        + "</test>")
+                """
+                    <test>\
+                    <converters>\
+                    <converter class="DurationConverter"></converter>\
+                    <converter class="com.norconex.commons.lang.convert\
+                    .EnumConverter"></converter>\
+                    <converter class="convert.DateConverter"></converter>\
+                    </converters>\
+                    </test>""")
                 .create();
         assertThat(xmlImpl.getObjectListImpl(
                 Converter.class, "converters/converter"))
@@ -591,13 +599,14 @@ class XmlTest {
     @Test
     void testGetDelimitedListObject() {
         var xml = Xml.of(
-                "<test>"
-                        + "<values>1, 2, 3, 4, 5</values>"
-                        + "<converters>"
-                        + "java.time.Duration|java.io.File|java.nio.file.Path"
-                        + "</converters>"
-                        + "<noValues/>"
-                        + "</test>")
+                """
+                    <test>\
+                    <values>1, 2, 3, 4, 5</values>\
+                    <converters>\
+                    java.time.Duration|java.io.File|java.nio.file.Path\
+                    </converters>\
+                    <noValues/>\
+                    </test>""")
                 .create();
         assertThat(xml.getDelimitedList("values", Integer.TYPE))
                 .containsExactly(1, 2, 3, 4, 5);
@@ -812,11 +821,12 @@ class XmlTest {
         Assertions.assertEquals(SAMPLE_XML, removedXML.toString());
 
         var xmlRemove = new Xml(
-                "<test>"
-                        + "<one>1</one>"
-                        + "<two>2</two>"
-                        + "<three>3</three>"
-                        + "</test>");
+                """
+                    <test>\
+                    <one>1</one>\
+                    <two>2</two>\
+                    <three>3</three>\
+                    </test>""");
         xmlRemove.removeElement("two");
         assertThat(xmlRemove).hasToString(
                 """
@@ -998,7 +1008,7 @@ class XmlTest {
                 .setAttribute("attr", "exists");
 
         var xmlStr = xml1.toString();
-        LOG.debug("XML is: " + xmlStr);
+        LOG.debug("XML is: {}", xmlStr);
 
         var xml2 = Xml.of(xmlStr).create();
 
@@ -1030,6 +1040,7 @@ class XmlTest {
             Xml.of(wrappedList).create().unwrap();
             Assertions.fail("Should have thrown exception.");
         } catch (XmlException e) {
+            //NOOP
         }
     }
 

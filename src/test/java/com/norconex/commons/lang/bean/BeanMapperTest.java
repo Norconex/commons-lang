@@ -58,6 +58,7 @@ import com.norconex.commons.lang.bean.stubs.Transportation;
 import com.norconex.commons.lang.file.ContentType;
 import com.norconex.commons.lang.img.MutableImage;
 import com.norconex.commons.lang.img.MutableImage.Quality;
+import com.norconex.commons.lang.url.HttpURL;
 
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.constraints.Min;
@@ -92,7 +93,7 @@ class BeanMapperTest {
         obj.setPath(Path.of("/tmp/somepath.txt"));
         obj.setPattern(Pattern.compile(".*potato.*"));
         obj.setString("some string");
-        obj.setUrl(new URL("http://example.com"));
+        obj.setUrl(HttpURL.toURL("http://example.com"));
         obj.setZonedDateTime(ZonedDateTime.now());
 
         assertThatNoException().isThrownBy(() -> {
@@ -139,18 +140,24 @@ class BeanMapperTest {
     void testExceptions() {
         assertThatException().isThrownBy(() -> //NOSONAR
         BeanMapper.DEFAULT.write(
-                new MultiTypes(), BrokenWriter.INSTANCE, Format.XML));
+                new MultiTypes(), BrokenWriter.INSTANCE,
+                Format.XML));
         assertThatException().isThrownBy(() -> BeanMapper.DEFAULT.read(
-                MultiTypes.class, BrokenReader.INSTANCE, Format.XML));
+                MultiTypes.class, BrokenReader.INSTANCE,
+                Format.XML));
         assertThatException().isThrownBy(() -> //NOSONAR
         BeanMapper.DEFAULT.read(
-                new MultiTypes(), BrokenReader.INSTANCE, Format.XML));
+                new MultiTypes(), BrokenReader.INSTANCE,
+                Format.XML));
 
         var obj = new MultiTypes();
         obj.setIntValue(-200);
         assertThatExceptionOfType(
-                ConstraintViolationException.class).isThrownBy(() -> //NOSONAR
-        BeanMapper.DEFAULT.assertWriteRead(obj));
+                ConstraintViolationException.class)
+                        .isThrownBy(() -> //NOSONAR
+                        BeanMapper.DEFAULT
+                                .assertWriteRead(
+                                        obj));
 
         assertThatException().isThrownBy(() -> //NOSONAR
         BeanMapper.DEFAULT.assertWriteRead(new NotEqual()));
@@ -178,17 +185,24 @@ class BeanMapperTest {
         """;
 
         // Not ignoring unknown properties (default)
-        var bm1 = BeanMapper.builder().ignoreUnknownProperties(false).build();
+        var bm1 = BeanMapper.builder().ignoreUnknownProperties(false)
+                .build();
         assertThatExceptionOfType(BeanException.class)
                 .isThrownBy(() -> {//NOSONAR
-                    System.err.println("" + bm1.read(Plane.class,
-                            new StringReader(badYaml), Format.YAML));
+                    System.err.println("" + bm1.read(
+                            Plane.class,
+                            new StringReader(
+                                    badYaml),
+                            Format.YAML));
                 })
-                .matches(ex -> ExceptionUtil.getFormattedMessages(ex).contains(
-                        "Unrecognized field \"type2\""));
+                .matches(ex -> ExceptionUtil
+                        .getFormattedMessages(ex)
+                        .contains(
+                                "Unrecognized field \"type2\""));
 
         // Ignoring unknown properties
-        var bm2 = BeanMapper.builder().ignoreUnknownProperties(true).build();
+        var bm2 = BeanMapper.builder().ignoreUnknownProperties(true)
+                .build();
         assertThatNoException().isThrownBy(() -> bm2.read(Plane.class,
                 new StringReader(badYaml), Format.YAML));
     }
@@ -212,26 +226,33 @@ class BeanMapperTest {
                 .builder()
                 .skipValidation(true)
                 .polymorphicType(Transportation.class,
-                        name -> name.startsWith("com.norconex."))
+                        name -> name.startsWith(
+                                "com.norconex."))
                 .build();
         assertThatExceptionOfType(BeanException.class)
                 .isThrownBy(() -> bm1.read( //NOSONAR
-                        TestConfig.class, new StringReader(yaml), Format.YAML))
-                .withCauseInstanceOf(InvalidTypeIdException.class);
+                        TestConfig.class,
+                        new StringReader(yaml),
+                        Format.YAML))
+                .withCauseInstanceOf(
+                        InvalidTypeIdException.class);
 
         // with bad mapping, should fail
         var bm2 = BeanMapper
                 .builder()
                 .skipValidation(true)
                 .polymorphicType(Transportation.class,
-                        name -> name.startsWith("com.norconex."))
+                        name -> name.startsWith(
+                                "com.norconex."))
                 .defaultPolymorphicType(
                         Transportation.class,
                         MiscAccessorsBean.class) // <-- not a subtype
                 .build();
         assertThatExceptionOfType(BeanException.class)
                 .isThrownBy(() -> bm2.read( //NOSONAR
-                        TestConfig.class, new StringReader(yaml), Format.YAML))
+                        TestConfig.class,
+                        new StringReader(yaml),
+                        Format.YAML))
                 .withCauseInstanceOf(JsonMappingException.class)
                 .withStackTraceContaining("not a subtype");
 
@@ -240,15 +261,18 @@ class BeanMapperTest {
                 .builder()
                 .skipValidation(true)
                 .polymorphicType(Transportation.class,
-                        name -> name.startsWith("com.norconex."))
+                        name -> name.startsWith(
+                                "com.norconex."))
                 .defaultPolymorphicType(
                         Transportation.class,
                         Plane.class) // <-- valid subtype
                 .build();
         assertThat(bm3.read(
-                TestConfig.class, new StringReader(yaml), Format.YAML))
+                TestConfig.class, new StringReader(yaml),
+                Format.YAML))
                         .matches(cfg -> {
-                            var plane = cfg.getTransportations().get(0);
+                            var plane = cfg.getTransportations()
+                                    .get(0);
                             return "Boeing 737"
                                     .equals(((Plane) plane)
                                             .getConfiguration()
@@ -335,7 +359,8 @@ class BeanMapperTest {
         var builder = BeanMapper.builder()
                 .skipValidation(true)
                 .polymorphicType(Transportation.class,
-                        name -> name.startsWith("com.norconex."));
+                        name -> name.startsWith(
+                                "com.norconex."));
         var cfg = builder.build().read(
                 TestConfig.class,
                 new StringReader(source.source),
@@ -348,16 +373,19 @@ class BeanMapperTest {
         // Test write properly
         var out = new StringWriter();
         builder.indent(true).build().write(cfg, out, source.format);
-        assertThat(out.toString()).isEqualToNormalizingNewlines(source.source);
+        assertThat(out.toString())
+                .isEqualToNormalizingNewlines(source.source);
 
         // Test validates properly
         builder.skipValidation(false);
         assertThatExceptionOfType(
-                ConstraintViolationException.class).isThrownBy(() -> {//NOSONAR
-                    builder.build().read(
-                            TestConfig.class,
-                            new StringReader(source.source),
-                            source.format);
-                });
+                ConstraintViolationException.class)
+                        .isThrownBy(() -> {//NOSONAR
+                            builder.build().read(
+                                    TestConfig.class,
+                                    new StringReader(
+                                            source.source),
+                                    source.format);
+                        });
     }
 }

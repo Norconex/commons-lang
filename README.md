@@ -15,6 +15,6 @@ Version/branches:
 
 | Project Version    | Branch       | Minimum Java   |
 | :----------------- | :----------- | :------------- |
-| `3.0.0-SNAPSHOT`   | `master`     | `17`           |
+| `3.0.0-SNAPSHOT`   | `master`     | `21`           |
 | `2.x`              | `2.x-branch` | `1.8`          |
 | `1.x`              | `1.x-branch` | `1.7`          |

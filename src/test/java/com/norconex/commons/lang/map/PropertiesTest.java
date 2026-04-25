@@ -59,7 +59,7 @@ import lombok.extern.slf4j.Slf4j;
 class PropertiesTest {
 
     @Test
-    void testWriteRead() throws IOException {
+    void testWriteRead() {
         var props = new Properties();
         props.add("aaa", 111);
         props.add("aaa", 222);
@@ -97,7 +97,7 @@ class PropertiesTest {
         assertThat(props.getLocale("bad", Locale.GERMANY))
                 .isEqualTo(Locale.GERMANY);
         assertThat(props.getLocales("locale")).containsExactly(
-                Locale.CANADA_FRENCH, new Locale("es"));
+                Locale.CANADA_FRENCH, Locale.of("es"));
 
         assertThat(props.getFile("file")).isEqualTo(new File("c:\\blah"));
         assertThat(props.getFile("bad", new File("/tmp")))

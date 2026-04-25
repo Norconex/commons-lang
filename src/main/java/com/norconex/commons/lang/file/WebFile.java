@@ -198,7 +198,7 @@ public class WebFile implements Path {
 
     private static URL toURL(String url) {
         try {
-            return new URL(url);
+            return URI.create(url).toURL();
         } catch (MalformedURLException e) {
             throw new IllegalArgumentException("Not a valid URL: " + url, e);
         }
@@ -210,7 +210,7 @@ public class WebFile implements Path {
         URL targetURL = url;
         try {
             if (targetURL.toString().contains(".zip!")) {
-                targetURL = new URL("jar:" + url);
+                targetURL = URI.create("jar:" + url).toURL();
             }
             FileUtils.copyInputStreamToFile(
                     UrlStreamer.stream(targetURL), localFile.toFile());

@@ -29,14 +29,16 @@ class ExecUtilTest {
 
     @Test
     void testWatchProcessProcess() throws IOException {
-        var process = Runtime.getRuntime().exec("java --help");
+        var process =
+                Runtime.getRuntime().exec(new String[] { "java", "--help" });
         assertThat(ExecUtil.watchProcess(process)).isZero();
     }
 
     @Test
     void testWatchProcessProcessInputStreamListener() throws IOException {
         var stdout = new StringBuilder();
-        var process = Runtime.getRuntime().exec("java -help");
+        var process =
+                Runtime.getRuntime().exec(new String[] { "java", "-help" });
         assertThat(ExecUtil.watchProcess(process,
                 (t, b, l) -> stdout.append(new String(b)))).isZero();
         assertThat(stdout)
@@ -48,7 +50,8 @@ class ExecUtilTest {
     void testWatchProcessProcessInputStreamListenerArray() throws IOException {
         var stdout1 = new StringBuilder();
         var stdout2 = new StringBuilder();
-        var process = Runtime.getRuntime().exec("java -help");
+        var process =
+                Runtime.getRuntime().exec(new String[] { "java", "-help" });
         assertThat(ExecUtil.watchProcess(
                 process,
                 new InputStreamListener[] {
@@ -67,7 +70,8 @@ class ExecUtilTest {
             throws IOException {
         var stdout = new StringBuilder();
         var stderr = new StringBuilder();
-        var process = Runtime.getRuntime().exec("java --help");
+        var process =
+                Runtime.getRuntime().exec(new String[] { "java", "--help" });
         assertThat(ExecUtil.watchProcess(
                 process,
                 (t, b, l) -> stdout.append(new String(b)),
@@ -79,39 +83,25 @@ class ExecUtilTest {
         assertThat(stderr).isEmpty();
     }
 
-    //    @Test
-    //    void testWatchProcessProcessInputStreamListenerArrayInputStreamListenerArray() {
-    //        throw new RuntimeException("not yet implemented");
-    //    }
-    //
-    //    @Test
-    //    void testWatchProcessProcessInputStreamInputStreamListenerArrayInputStreamListenerArray() {
-    //        throw new RuntimeException("not yet implemented");
-    //    }
-    //
     @Test
     void testWatchProcessAsyncProcessInputStreamListenerInputStreamListener()
             throws IOException {
         var stdout = new StringBuilder();
         var stderr = new StringBuilder();
-        var process = Runtime.getRuntime().exec("java --help");
+        var process =
+                Runtime.getRuntime().exec(new String[] { "java", "--help" });
         assertDoesNotThrow(() -> ExecUtil.watchProcessAsync(
                 process,
                 (t, b, l) -> stdout.append(new String(b)),
                 (t, b, l) -> stderr.append(new String(b))));
     }
 
-    //
-    //    @Test
-    //    void testWatchProcessAsyncProcessInputStreamListenerArrayInputStreamListenerArray() {
-    //        throw new RuntimeException("not yet implemented");
-    //    }
-    //
     @Test
     void testWatchProcessAsyncProcessInputStream() throws IOException {
         var stdout = new StringBuilder();
         var stderr = new StringBuilder();
-        var process = Runtime.getRuntime().exec("java --help");
+        var process =
+                Runtime.getRuntime().exec(new String[] { "java", "--help" });
         assertDoesNotThrow(() -> ExecUtil.watchProcessAsync(
                 process,
                 CharSequenceInputStream.builder()

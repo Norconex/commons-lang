@@ -22,8 +22,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.file.Path;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -35,6 +33,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import com.norconex.commons.lang.time.DateModel;
+import com.norconex.commons.lang.url.HttpURL;
 
 class FileUtilTest {
 
@@ -377,7 +376,8 @@ class FileUtilTest {
     @Test
     void testcreateURLDir() throws IOException {
         var file1 = FileUtil.createURLDirs(
-                tempDir, new URL("http://norconex.com/some/test/page.html"));
+                tempDir,
+                HttpURL.toURL("http://norconex.com/some/test/page.html"));
         assertThat(file1).doesNotExist();
         assertThat(file1.getParentFile()).exists();
         assertThat(file1.getAbsolutePath().replace('\\', '/')).endsWith(
@@ -388,11 +388,12 @@ class FileUtilTest {
     }
 
     @Test
-    void testToURLDir() throws MalformedURLException {
+    void testToURLDir() {
         var file1 = FileUtil.toURLDir(
                 tempDir, "http://norconex.com/some/test/page.html");
         var file2 = FileUtil.toURLDir(
-                tempDir, new URL("http://norconex.com/some/test/page.html"));
+                tempDir,
+                HttpURL.toURL("http://norconex.com/some/test/page.html"));
 
         assertThat(file1)
                 .isEqualTo(file2)

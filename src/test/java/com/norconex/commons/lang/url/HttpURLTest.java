@@ -18,9 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
-import java.net.URL;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -35,7 +33,7 @@ class HttpURLTest {
     private String t;
 
     @AfterEach
-    void tearDown() throws Exception {
+    void tearDown() {
         s = null;
         t = null;
     }
@@ -54,7 +52,7 @@ class HttpURLTest {
                 """
             	'http' protocol with default port,\
             	http://www.example.com:80/blah,\
-            	http://www.example.com/blah""",
+            	http://www.example.com:80/blah""",
                 """
             	'http' protocol with non-default port,\
             	http://www.example.com:81/blah,\
@@ -66,7 +64,7 @@ class HttpURLTest {
                 """
             	'https' protocol with default port,\
             	https://www.example.com:443/blah,\
-            	https://www.example.com/blah""",
+            	https://www.example.com:443/blah""",
                 """
             	'https' protocol with non-default port,\
             	https://www.example.com:444/blah,\
@@ -204,14 +202,15 @@ class HttpURLTest {
     }
 
     @Test
-    void testMisc() throws MalformedURLException, URISyntaxException {
+    void testMisc() throws URISyntaxException {
         assertThat(new HttpURL().getHost()).isNull();
-        var url = new URL("http://example.com/some/path.html?param1=value1#A1");
+        var url = HttpURL
+                .toURL("http://example.com/some/path.html?param1=value1#A1");
         assertThat(new HttpURL(url).toURL()).isEqualTo(url);
         assertThat(new HttpURL(url, "UTF-8").toURL()).isEqualTo(url);
 
-        assertThatExceptionOfType(UrlException.class).isThrownBy(
-                () -> new HttpURL("blah:I am invalid"));
+        assertThatExceptionOfType(UrlException.class).isThrownBy(//NOSONAR
+                () -> new HttpURL("blah:I am invalid").toURL());
 
         var httpUrl = new HttpURL(url, "UTF-8");
         assertThat(httpUrl)
@@ -220,7 +219,8 @@ class HttpURLTest {
                 .returns(new QueryString(url), HttpURL::getQueryString)
                 .returns("http", HttpURL::getProtocol)
                 .returns(false, HttpURL::isSecure)
-                .returns(80, HttpURL::getPort)
+                .returns(80, HttpURL::getResolvedPort)
+                .returns(-1, HttpURL::getPort)
                 .returns("A1", HttpURL::getFragment)
                 .returns("path.html", HttpURL::getLastPathSegment)
                 .returns("http://example.com", HttpURL::getRoot)
@@ -230,7 +230,7 @@ class HttpURLTest {
         httpUrl.setPath("/some/path.html");
         httpUrl.setHost("example.com");
         httpUrl.setProtocol("https");
-        httpUrl.setPort(443);
+        httpUrl.setPort(-1);
         httpUrl.setFragment("A1");
         assertThat(httpUrl).hasToString(
                 "https://example.com/some/path.html#A1");
@@ -244,7 +244,7 @@ class HttpURLTest {
     }
 
     @Test
-    void testGetRoot() throws MalformedURLException, URISyntaxException {
+    void testGetRoot() {
         assertThat(HttpURL.getRoot("http://acme.com"))
                 .isEqualTo("http://acme.com");
         assertThat(HttpURL.getRoot("http://acme.com/"))

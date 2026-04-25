@@ -18,15 +18,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.InetAddress;
-import java.net.URL;
 import java.security.GeneralSecurityException;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.X509Certificate;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -35,6 +28,8 @@ import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import com.norconex.commons.lang.url.HttpURL;
 
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -47,32 +42,30 @@ class CertificateUtilTest {
     private static HandshakeCertificates clientCertificates;
 
     @BeforeAll
-    static void setUp() throws IOException,
-            NoSuchAlgorithmException,
-            KeyManagementException {
+    static void setUp() throws IOException {
         //Tips:
         // https://adambennett.dev/2021/09/mockwebserver--https/
         // https://github.com/square/okhttp/blob/master/okhttp-tls/README.md
 
         // Server:
-        HeldCertificate rootCertificate = new HeldCertificate.Builder()
+        var rootCertificate = new HeldCertificate.Builder()
                 .certificateAuthority(1)
                 .build();
 
-        HeldCertificate intermediateCertificate = new HeldCertificate.Builder()
+        var intermediateCertificate = new HeldCertificate.Builder()
                 .certificateAuthority(0)
                 .signedBy(rootCertificate)
                 .build();
 
-        String localhost = InetAddress.getByName("localhost")
+        var localhost = InetAddress.getByName("localhost")
                 .getCanonicalHostName();
-        HeldCertificate localhostCertificate = new HeldCertificate.Builder()
+        var localhostCertificate = new HeldCertificate.Builder()
                 .addSubjectAlternativeName(localhost)
                 .signedBy(intermediateCertificate)
                 .duration(10 * 365, TimeUnit.DAYS)
                 .build();
 
-        HandshakeCertificates serverCertificates =
+        var serverCertificates =
                 new HandshakeCertificates.Builder()
                         .heldCertificate(localhostCertificate)
                         .build();
@@ -101,16 +94,22 @@ class CertificateUtilTest {
     void testFetchCertificates()
             throws GeneralSecurityException, IOException {
 
-        String host = "localhost";
-        int port = server.getPort();
-        URL url = new URL("https", host, port, "/");
-        KeyStore keyStore = KeyStoreBuilder.empty().create();
+        var host = "localhost";
+        var port = server.getPort();
+
+        var url = new HttpURL()
+                .setProtocol("https")
+                .setHost(host)
+                .setPort(port)
+                .setPath("/").toURL();
+
+        var keyStore = KeyStoreBuilder.empty().create();
 
         // not trusted at first
         assertThat(CertificateUtil.isTrusted(host, port, keyStore)).isFalse();
 
         // fetch the certificate
-        List<X509Certificate> certs =
+        var certs =
                 CertificateUtil.fetchCertificates(url.toString());
         assertThat(certs).hasSize(1);
         assertThat(CertificateUtil.toString(certs)).contains(
@@ -121,7 +120,7 @@ class CertificateUtilTest {
                 "https://" + host + ":" + port, keyStore);
         assertThat(CertificateUtil.isTrusted(host, port, keyStore)).isTrue();
 
-        try (InputStream is = url.openConnection().getInputStream()) {
+        try (var is = url.openConnection().getInputStream()) {
             assertThat(IOUtils.toString(is, UTF_8)).isEqualTo(
                     "Having trust issues?");
         }

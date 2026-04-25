@@ -17,7 +17,6 @@ package com.norconex.commons.lang.url;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.junit.jupiter.api.Assertions;
@@ -28,7 +27,7 @@ class QueryStringTest {
     // This tests issue: https://github.com/Norconex/collector-http/issues/304
     @Test
     void testKeepProtocolUpperCase() {
-        QueryString qs = new QueryString(
+        var qs = new QueryString(
                 "http://site.com/page?NoEquals&WithEquals=EqualsValue");
 
         Assertions.assertTrue(qs.toString().contains("NoEquals"),
@@ -37,55 +36,58 @@ class QueryStringTest {
 
     @Test
     void testEmptyConstructor() {
-        QueryString qs = new QueryString();
+        var qs = new QueryString();
         Assertions.assertEquals("", qs.toString());
     }
 
     @Test
-    void testURLConstructor() throws MalformedURLException {
-        QueryString qs = new QueryString();
+    void testURLConstructor() {
+        var qs = new QueryString();
         qs.set("param1", "value1");
         qs.set("param2", "value2a", "value2b");
 
-        assertThat(new QueryString(new URL(
-                "http://example.com/blah"
-                        + "?param1=value1"
-                        + "&param2=value2a"
-                        + "&param2=value2b"
-                        + "#asdf")))
-                                .isEqualTo(qs);
-        assertThat(new QueryString(new URL(
-                "http://example.com/blah"
-                        + "?param1=value1"
-                        + "&param2=value2a"
-                        + "&param2=value2b"
-                        + "#asdf"),
+        assertThat(new QueryString(HttpURL.toURL(
+                """
+                http://example.com/blah\
+                ?param1=value1\
+                &param2=value2a\
+                &param2=value2b\
+                #asdf""")))
+                        .isEqualTo(qs);
+        assertThat(new QueryString(HttpURL.toURL(
+                """
+                http://example.com/blah\
+                ?param1=value1\
+                &param2=value2a\
+                &param2=value2b\
+                #asdf"""),
                 UTF_8.toString()))
                         .isEqualTo(qs)
                         .returns("UTF-8", q -> ((QueryString) q).getEncoding());
     }
 
     @Test
-    void testApplyOnURL() throws MalformedURLException {
-        QueryString qs = new QueryString();
+    void testApplyOnURL() {
+        var qs = new QueryString();
         qs.set("param1", "value1");
         qs.set("param2", "value2a", "value2b");
 
         assertThat(qs.applyOnURL("http://example.com/blah?param3=value3#hash"))
                 .isEqualTo(
-                        "http://example.com/blah"
-                                + "?param1=value1"
-                                + "&param2=value2a"
-                                + "&param2=value2b");
+                        """
+                        http://example.com/blah\
+                        ?param1=value1\
+                        &param2=value2a\
+                        &param2=value2b""");
 
         assertThat(qs.applyOnURL(
-                new URL("http://example.com/blah?param3=value3#hash"))
-                .toString())
-                        .isEqualTo(
-                                "http://example.com/blah"
-                                        + "?param1=value1"
-                                        + "&param2=value2a"
-                                        + "&param2=value2b");
+                HttpURL.toURL("http://example.com/blah?param3=value3#hash")))
+                        .hasToString(
+                                """
+                                http://example.com/blah\
+                                ?param1=value1\
+                                &param2=value2a\
+                                &param2=value2b""");
 
         assertThat(qs.applyOnURL((String) null)).isNull();
         assertThat(qs.applyOnURL((URL) null)).isNull();

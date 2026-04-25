@@ -31,7 +31,7 @@ class UrlNormalizerTest {
     private String t;
 
     @AfterEach
-    void tearDown() throws Exception {
+    void tearDown() {
         s = null;
         t = null;
     }
@@ -44,8 +44,6 @@ class UrlNormalizerTest {
             #fragment""";
         t = "http://example.org/1/~a_b:c%5Cd_%7Ce~f!g%20h/%5Ei%5EJ%5Bk%5D/l./"
                 + "m/p/q/r/?bb=aa&dd=ee";
-        //System.out.println("original  : " + s);
-
         var n = new UrlNormalizer(s)
                 .addDirectoryTrailingSlash()
                 .addWWW()
@@ -63,9 +61,6 @@ class UrlNormalizerTest {
                 .sortQueryParameters()
                 .unsecureScheme()
                 .upperCaseEscapeSequence();
-        //          System.out.println("toString(): " + n.toString());
-        //          System.out.println("toURL()   : " + n.toURL());
-        //          System.out.println("toURI()   : " + n.toURI());
         assertEquals(t, n.toString());
         assertEquals(t, n.toURL().toString());
         assertEquals(t, n.toURI().toString());

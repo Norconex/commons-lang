@@ -48,6 +48,7 @@ import com.norconex.commons.lang.convert.ZonedDateTimeConverter;
 import com.norconex.commons.lang.file.ContentType;
 import com.norconex.commons.lang.img.MutableImage;
 import com.norconex.commons.lang.img.MutableImage.Quality;
+import com.norconex.commons.lang.url.HttpURL;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
@@ -85,7 +86,7 @@ class XmlAdaptersTest {
         obj.setPath(Path.of("/tmp/somepath.txt"));
         obj.setPattern(Pattern.compile(".*potato.*"));
         obj.setString("some string");
-        obj.setUrl(new URL("http://example.com"));
+        obj.setUrl(HttpURL.toURL("http://example.com"));
         obj.setZonedDateTime(ZonedDateTime.now());
 
         obj.setFromXMLConfig("am I here?");

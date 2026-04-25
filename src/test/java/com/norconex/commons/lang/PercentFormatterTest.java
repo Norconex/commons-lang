@@ -24,23 +24,23 @@ class PercentFormatterTest {
 
     @Test
     void testPercentFormatter() {
-        PercentFormatter pf = new PercentFormatter();
+        var pf = new PercentFormatter();
         assertThat(pf.format(0.123d)).isEqualTo("12%");
         assertThat(pf.format(0.125d)).isEqualTo("12%");
         assertThat(pf.format(0.135d)).isEqualTo("14%");
         assertThat(pf.format(1, 3)).isEqualTo("33%");
         assertThat(pf.format(3, 0)).isEqualTo("0%");
 
-        pf = new PercentFormatter(3, new Locale("fr", "CA"));
+        pf = new PercentFormatter(3, Locale.of("fr", "CA"));
         assertThat(pf.format(10000, 3)).isEqualTo("333 333,333 %");
 
         assertThat(PercentFormatter.format(0.33333d, 2,
-                new Locale("en", "CA"))).isEqualTo("33.33%");
+                Locale.of("en", "CA"))).isEqualTo("33.33%");
         assertThat(PercentFormatter.format(0.33333d, 2,
-                new Locale("fr", "CA"))).isEqualTo("33,33 %");
+                Locale.of("fr", "CA"))).isEqualTo("33,33 %");
         assertThat(PercentFormatter.format(1, 3, 2,
-                new Locale("en", "CA"))).isEqualTo("33.33%");
+                Locale.of("en", "CA"))).isEqualTo("33.33%");
         assertThat(PercentFormatter.format(1, 3, 2,
-                new Locale("fr", "CA"))).isEqualTo("33,33 %");
+                Locale.of("fr", "CA"))).isEqualTo("33,33 %");
     }
 }

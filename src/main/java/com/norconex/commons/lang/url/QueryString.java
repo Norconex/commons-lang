@@ -15,7 +15,6 @@
 package com.norconex.commons.lang.url;
 
 import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -190,10 +189,6 @@ public class QueryString extends Properties {
         if (url == null) {
             return url;
         }
-        try {
-            return new URL(applyOnURL(url.toString()));
-        } catch (MalformedURLException e) {
-            throw new UrlException("Cannot applyl query string to: " + url, e);
-        }
+        return HttpURL.toURL(applyOnURL(url.toString()));
     }
 }

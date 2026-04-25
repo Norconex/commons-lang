@@ -154,7 +154,7 @@ public final class UrlStreamer {
                 var p = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(
                         proxy.getHostName(), proxy.getPort()));
                 //Authenticator.
-                conn = new URL(url).openConnection(p);
+                conn = HttpURL.toURL(url).openConnection(p);
                 if (proxyCreds != null) {
                     LOG.debug("Streaming with proxy credentials.");
                     conn.setRequestProperty("Proxy-Authorization",
@@ -162,7 +162,7 @@ public final class UrlStreamer {
                                     proxyCreds.getPassword()));
                 }
             } else {
-                conn = new URL(url).openConnection();
+                conn = HttpURL.toURL(url).openConnection();
             }
             if (creds != null) {
                 if (LOG.isDebugEnabled()) {

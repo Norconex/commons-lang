@@ -21,6 +21,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -32,11 +33,11 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
 /**
- * This class act as a mutable URL, which could be a replacement
+ * This class act as a mutable URL supporting a more relaxed syntax
+ * (think browser-like parsing), which could be a replacement
  * or "wrapper" to the {@link URL} class. It can also be used as a safer way
  * to build a {@link URL} or a {@link URI} instance as it will properly escape
  * appropriate characters before creating those.
- *
  */
 //MAYBE: rename MutableURL (really? what about the static methods?  Maybe "Url"?)
 @EqualsAndHashCode
@@ -56,7 +57,7 @@ public class HttpURL implements Serializable {
 
     private final QueryString queryString = new QueryString();
     private String host;
-    private int port = -1;
+    private int explicitPort = -1;
     private String path;
     private String protocol;
     private final String encoding;
@@ -109,35 +110,60 @@ public class HttpURL implements Serializable {
         } else {
             this.encoding = encoding;
         }
-
         var u = StringUtils.trimToEmpty(url);
-        if (u.matches("[a-zA-Z][a-zA-Z0-9\\+\\-\\.]*:.*")) {
-            URL urlwrap;
-            try {
-                urlwrap = new URL(u);
-            } catch (MalformedURLException e) {
-                throw new UrlException("Could not interpret URL: " + u, e);
-            }
-            protocol = StringUtils.substringBefore(u, ":");
-            host = urlwrap.getHost();
-            port = urlwrap.getPort();
-            if (port < 0) {
-                if (Strings.CI.startsWith(u, PROTOCOL_HTTPS)) {
-                    port = DEFAULT_HTTPS_PORT;
-                } else if (Strings.CI.startsWith(u, PROTOCOL_HTTP)) {
-                    port = DEFAULT_HTTP_PORT;
-                }
-            }
-            path = urlwrap.getPath();
-            fragment = urlwrap.getRef();
-        } else {
-            path = u.replaceFirst("^(.*?)([\\?\\#])(.*)", "$1");
+        if (!parseUrlParts(u)) {
+            path = u.replaceFirst("^(.*?)([\\?#])(.*)", "$1");
             if (Strings.CS.contains(u, "#")) {
                 fragment = u.replaceFirst("^(.*?)(\\#)(.*)", "$3");
             }
         }
+        handleQueryAndFragment(u);
+    }
 
-        // Parameters
+    /**
+     * Parses the protocol, host, port, path, and fragment from the URL string.
+     * Returns true if parsing was successful, false otherwise.
+     */
+    private boolean parseUrlParts(String u) {
+        var matcher = Pattern.compile("^(?:([a-zA-Z][a-zA-Z0-9\\+\\-\\.]*):)?"
+                + "(?://([^/?#]*))?([^?#]*)(?:\\?([^#]*))?(?:#(.*))?")
+                .matcher(u);
+        if (matcher.matches() && matcher.group(1) != null) {
+            protocol = matcher.group(1);
+            var hostPort = matcher.group(2);
+            path = matcher.group(3);
+            fragment = matcher.group(5);
+            if (hostPort != null) {
+                // Check if it's an IPv6 address by looking for the closing
+                // bracket
+                var closingBracket = hostPort.lastIndexOf(']');
+                var lastColon = hostPort.lastIndexOf(':');
+
+                // A port exists only if there is a colon AFTER the closing
+                // bracket (or if there are no brackets at all and a colon
+                // exists)
+                if (lastColon > closingBracket) {
+                    host = hostPort.substring(0, lastColon);
+                    try {
+                        explicitPort = Integer.parseInt(
+                                hostPort.substring(lastColon + 1));
+                    } catch (NumberFormatException e) {
+                        explicitPort = -1;
+                    }
+                } else {
+                    host = hostPort;
+                    explicitPort = -1;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Handles the query string and fragment extraction from the URL string.
+     */
+    private void handleQueryAndFragment(String u) {
         if (Strings.CS.contains(u, "?")) {
             setQueryString(new QueryString(u, encoding));
         }
@@ -163,9 +189,11 @@ public class HttpURL implements Serializable {
     /**
      * Sets the URL path.
      * @param path url path
+     * @return this instance
      */
-    public void setPath(String path) {
+    public HttpURL setPath(String path) {
         this.path = path;
+        return this;
     }
 
     /**
@@ -183,9 +211,11 @@ public class HttpURL implements Serializable {
      * parameters with the ones from the supplied query string (the original
      * query string instance is kept).
      * @param queryString the query string
+     * @return this instance
      */
-    public void setQueryString(QueryString queryString) {
+    public HttpURL setQueryString(QueryString queryString) {
         CollectionUtil.setAll(this.queryString, queryString);
+        return this;
     }
 
     /**
@@ -199,9 +229,11 @@ public class HttpURL implements Serializable {
     /**
      * Sets the host portion of the URL.
      * @param host the host portion of the URL
+     * @return this instance
      */
-    public void setHost(String host) {
+    public HttpURL setHost(String host) {
         this.host = host;
+        return this;
     }
 
     /**
@@ -215,9 +247,11 @@ public class HttpURL implements Serializable {
     /**
      * Sets the protocol portion of the URL.
      * @param protocol the protocol portion of the URL
+     * @return this instance
      */
-    public void setProtocol(String protocol) {
+    public HttpURL setProtocol(String protocol) {
         this.protocol = protocol;
+        return this;
     }
 
     /**
@@ -229,21 +263,43 @@ public class HttpURL implements Serializable {
     }
 
     /**
-     * Gets the URL port. If the protocol is other than
-     * <code>http</code> or <code>https</code>, the port is -1 when
-     * not specified.
+     * Gets the URL port as explicitly provided. If no port was
+     * provided in the URL string or set via {@link #setPort(int)},
+     * -1 is returned.
      * @return the URL port
      */
     public int getPort() {
-        return port;
+        return explicitPort;
     }
 
     /**
-     * Sets the URL port.
+     * Sets the URL port. Use -1 to indicate no explicit port
+     * should be used.
      * @param port the URL port
+     * @return this instance
      */
-    public void setPort(int port) {
-        this.port = port;
+    public HttpURL setPort(int port) {
+        explicitPort = port;
+        return this;
+    }
+
+    /**
+     * Resolves the actual URL port. Returns the explicit port if
+     * one was provided; otherwise, returns the default port based
+     * on the protocol (80 for http, 443 for https).
+     * @return resolved port
+     */
+    public int getResolvedPort() {
+        if (explicitPort >= 0) {
+            return explicitPort;
+        }
+        if (PROTOCOL_HTTPS.equalsIgnoreCase(protocol)) {
+            return DEFAULT_HTTPS_PORT;
+        }
+        if (PROTOCOL_HTTP.equalsIgnoreCase(protocol)) {
+            return DEFAULT_HTTP_PORT;
+        }
+        return explicitPort; // Returns -1 if protocol is unknown
     }
 
     /**
@@ -258,10 +314,12 @@ public class HttpURL implements Serializable {
     /**
      * Sets the URL fragment.
      * @param fragment the fragment to set
+     * @return this instance
      * @since 1.8.0
      */
-    public void setFragment(String fragment) {
+    public HttpURL setFragment(String fragment) {
         this.fragment = fragment;
+        return this;
     }
 
     /**
@@ -287,8 +345,8 @@ public class HttpURL implements Serializable {
     public URL toURL() {
         var url = toString();
         try {
-            return new URL(url);
-        } catch (MalformedURLException e) {
+            return new URI(url).toURL();
+        } catch (URISyntaxException | MalformedURLException e) {
             throw new UrlException("Cannot convert to URL: " + url, e);
         }
     }
@@ -389,13 +447,15 @@ public class HttpURL implements Serializable {
         if (StringUtils.isNotBlank(host)) {
             b.append(host);
         }
-        if (!isPortDefault() && port != -1) {
+        // Only append the port if it was explicitly set.
+        // This preserves "http://example.com" vs "http://example.com:80"
+        if (explicitPort >= 0) {
             b.append(':');
-            b.append(port);
+            b.append(explicitPort);
         }
         if (StringUtils.isNotBlank(path)) {
             // If no scheme/host/port, leave the path as is
-            if (b.length() > 0 && !path.startsWith("/")) {
+            if (!b.isEmpty() && !path.startsWith("/")) {
                 b.append('/');
             }
             b.append(encodePath(path));
@@ -412,17 +472,22 @@ public class HttpURL implements Serializable {
 
     /**
      * Whether this URL uses the default port for the protocol.  The default
-     * port is 80 for "http" protocol, and 443 for "https". Other protocols
+     * ports are 80 for "http" protocol, and 443 for "https" or -1 (resolved
+     * dynamically). Other protocols
      * are not supported and this method will always return false
      * for them.
      * @return <code>true</code> if the URL is using the default port.
      * @since 1.8.0
      */
     public boolean isPortDefault() {
-        return PROTOCOL_HTTPS.equalsIgnoreCase(protocol)
-                && port == DEFAULT_HTTPS_PORT
-                || PROTOCOL_HTTP.equalsIgnoreCase(protocol)
-                        && port == DEFAULT_HTTP_PORT;
+        var port = getResolvedPort();
+        if (PROTOCOL_HTTP.equalsIgnoreCase(protocol)) {
+            return port == DEFAULT_HTTP_PORT;
+        }
+        if (PROTOCOL_HTTPS.equalsIgnoreCase(protocol)) {
+            return port == DEFAULT_HTTPS_PORT;
+        }
+        return false;
     }
 
     /**
