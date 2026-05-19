@@ -15,8 +15,10 @@
 package com.norconex.commons.lang.convert;
 
 import java.time.Duration;
+import java.util.Locale;
 
 import com.norconex.commons.lang.time.DurationParser;
+import com.norconex.commons.lang.time.DurationParserException;
 
 import lombok.EqualsAndHashCode;
 
@@ -29,6 +31,8 @@ import lombok.EqualsAndHashCode;
 public class DurationConverter extends AbstractConverter {
 
     private final DurationParser parser = new DurationParser();
+    private final DurationParser frenchParser =
+            new DurationParser().withLocale(Locale.FRENCH);
 
     @Override
     protected String nullSafeToString(Object object) {
@@ -37,7 +41,12 @@ public class DurationConverter extends AbstractConverter {
 
     @Override
     protected <T> T nullSafeToType(String value, Class<T> type) {
-        return type.cast(parser.parse(value.trim()));
+        var trimmedValue = value.trim();
+        try {
+            return type.cast(parser.parse(trimmedValue));
+        } catch (DurationParserException e) {
+            return type.cast(frenchParser.parse(trimmedValue));
+        }
     }
 
     /**
