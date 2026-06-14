@@ -14,20 +14,17 @@
  */
 package com.norconex.commons.lang.bean;
 
-import java.io.IOException;
-
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.BeanDescription;
-import com.fasterxml.jackson.databind.DeserializationConfig;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.deser.BeanDeserializer;
-import com.fasterxml.jackson.databind.deser.BeanDeserializerBase;
-import com.fasterxml.jackson.databind.deser.BeanDeserializerModifier;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.norconex.commons.lang.bean.BeanMapper.BeanMapperBuilder;
 import com.norconex.commons.lang.config.Configurable;
+
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.BeanDescription;
+import tools.jackson.databind.DeserializationConfig;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.ValueDeserializer;
+import tools.jackson.databind.deser.ValueDeserializerModifier;
+import tools.jackson.databind.deser.bean.BeanDeserializerBase;
+import tools.jackson.databind.module.SimpleModule;
 
 /**
  * This Jackson module is a hack to work around Jackson forcing
@@ -49,7 +46,7 @@ class FailOnUnknownConfigurablePropModule extends SimpleModule {
         setDeserializerModifier(new FailOnDeserializerModifier(beanMapper));
     }
 
-    static class FailOnDeserializerModifier extends BeanDeserializerModifier {
+    static class FailOnDeserializerModifier extends ValueDeserializerModifier {
         private static final long serialVersionUID = 1L;
         private final BeanMapper beanMapper;
 
@@ -58,38 +55,38 @@ class FailOnUnknownConfigurablePropModule extends SimpleModule {
         }
 
         @Override
-        public JsonDeserializer<?> modifyDeserializer(
+        public ValueDeserializer<?> modifyDeserializer(
                 DeserializationConfig config,
-                BeanDescription beanDesc,
-                JsonDeserializer<?> deserializer) {
+                BeanDescription.Supplier beanDesc,
+                ValueDeserializer<?> deserializer) {
             if ((deserializer instanceof BeanDeserializerBase bdb)
                     && Configurable.class.isAssignableFrom(
-                            beanDesc.getClassInfo().getRawType())) {
+                            beanDesc.get().getClassInfo().getRawType())) {
                 return new FailOnBeanDeserializer(bdb, beanMapper);
             }
             return deserializer;
         }
     }
 
-    static class FailOnBeanDeserializer extends BeanDeserializer {
+    static class FailOnBeanDeserializer extends ValueDeserializer<Object> {
         private static final long serialVersionUID = 1L;
+        private final BeanDeserializerBase delegate;
+        private final BeanMapper beanMapper;
 
         public FailOnBeanDeserializer(
                 BeanDeserializerBase src, BeanMapper beanMapper) {
-            super(src);
+            this.delegate = src;
+            this.beanMapper = beanMapper;
         }
 
         @Override
-        public Object deserializeFromObject(JsonParser p,
-                DeserializationContext ctxt) throws IOException {
-            var configurable = (Configurable<?>) getValueInstantiator()
+        public Object deserialize(JsonParser p, DeserializationContext ctxt) {
+            var configurable = (Configurable<?>) delegate.getValueInstantiator()
                     .createUsingDefaultOrWithoutArguments(ctxt);
             var configuration = configurable.getConfiguration();
             var node = p.readValueAsTree();
-            var mapper = (ObjectMapper) p.getCodec();
-            var originalFormatString = mapper.writeValueAsString(node);
-            mapper.readerForUpdating(configuration)
-                    .readValue(originalFormatString);
+            var mapper = beanMapper.toObjectMapper(BeanMapper.Format.JSON);
+            mapper.readerForUpdating(configuration).readValue(node.toString());
             return configurable;
         }
     }

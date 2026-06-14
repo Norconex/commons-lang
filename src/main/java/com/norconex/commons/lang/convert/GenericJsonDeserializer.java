@@ -16,19 +16,18 @@ package com.norconex.commons.lang.convert;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.ValueDeserializer;
 
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class GenericJsonDeserializer<T> extends JsonDeserializer<T> {
+public class GenericJsonDeserializer<T> extends ValueDeserializer<T> {
     private final Class<T> type;
 
     @Override
-    public T deserialize(JsonParser p, DeserializationContext ctxt)
-            throws IOException {
+    public T deserialize(JsonParser p, DeserializationContext ctxt) {
         return GenericConverter.convert(p.getValueAsString(), type);
     }
 }

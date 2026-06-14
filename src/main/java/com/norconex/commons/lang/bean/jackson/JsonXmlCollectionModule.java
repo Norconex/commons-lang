@@ -14,15 +14,16 @@
  */
 package com.norconex.commons.lang.bean.jackson;
 
-import com.fasterxml.jackson.databind.BeanDescription;
-import com.fasterxml.jackson.databind.DeserializationConfig;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializationConfig;
-import com.fasterxml.jackson.databind.deser.BeanDeserializerModifier;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
-import com.fasterxml.jackson.databind.type.CollectionType;
+import tools.jackson.databind.BeanDescription;
+import tools.jackson.databind.DeserializationConfig;
+import tools.jackson.databind.BeanDescription.Supplier;
+import tools.jackson.databind.ValueDeserializer;
+import tools.jackson.databind.ValueSerializer;
+import tools.jackson.databind.SerializationConfig;
+import tools.jackson.databind.deser.ValueDeserializerModifier;
+import tools.jackson.databind.module.SimpleModule;
+import tools.jackson.databind.ser.ValueSerializerModifier;
+import tools.jackson.databind.type.CollectionType;
 import com.norconex.commons.lang.bean.BeanMapper;
 
 /**
@@ -41,27 +42,27 @@ public class JsonXmlCollectionModule extends SimpleModule {
     }
 
     public static class CollectionSerializerModifier
-            extends BeanSerializerModifier {
+            extends ValueSerializerModifier {
         private static final long serialVersionUID = 1L;
 
         @Override
-        public JsonSerializer<?> modifyCollectionSerializer(
+        public ValueSerializer<?> modifyCollectionSerializer(
                 SerializationConfig config,
                 CollectionType valueType,
-                BeanDescription beanDesc,
-                JsonSerializer<?> serializer) {
+                Supplier beanDesc,
+                ValueSerializer<?> serializer) {
             return new JsonXmlCollectionSerializer<>(serializer);
         }
     }
 
     public static class CollectionDeserializerModifier
-            extends BeanDeserializerModifier {
+            extends ValueDeserializerModifier {
         private static final long serialVersionUID = 1L;
 
         @Override
-        public JsonDeserializer<?> modifyCollectionDeserializer(
+        public ValueDeserializer<?> modifyCollectionDeserializer(
                 DeserializationConfig config, CollectionType type,
-                BeanDescription beanDesc, JsonDeserializer<?> deserializer) {
+                Supplier beanDesc, ValueDeserializer<?> deserializer) {
             return new JsonXmlCollectionDeserializer<>(deserializer);
         }
     }

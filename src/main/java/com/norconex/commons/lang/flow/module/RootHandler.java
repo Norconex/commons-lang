@@ -17,18 +17,17 @@ package com.norconex.commons.lang.flow.module;
 import static com.norconex.commons.lang.flow.module.FlowUtil.whileInArrayObjects;
 import static com.norconex.commons.lang.flow.module.FlowUtil.whileInObject;
 
-import java.io.IOException;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.norconex.commons.lang.ClassUtil;
 import com.norconex.commons.lang.flow.FlowConsumerAdapter;
 import com.norconex.commons.lang.flow.module.FlowDeserializer.FlowDeserContext;
 import com.norconex.commons.lang.flow.module.FlowSerializer.FlowSerContext;
 import com.norconex.commons.lang.function.Consumers;
 import com.norconex.commons.lang.function.PredicatedConsumer;
+
+import tools.jackson.core.JsonToken;
 
 /**
  * Handles flow conditions and consumers in the order defined.
@@ -41,12 +40,12 @@ class RootHandler<T> implements StatementHandler<Consumer<T>> {
 
     @Override
     public Consumer<T> read(
-            FlowDeserContext ctx) throws IOException {
+            FlowDeserContext ctx) {
         var p = ctx.getParser();
         String parentName = null;
 
         // Ensure current token is START_ARRAY or START_OBJECT
-        if (p.currentToken() == JsonToken.FIELD_NAME) {
+        if (p.currentToken() == JsonToken.PROPERTY_NAME) {
             parentName = p.currentName();
             FlowUtil.logOpen(ctx, parentName);
             p.nextToken();
@@ -64,8 +63,7 @@ class RootHandler<T> implements StatementHandler<Consumer<T>> {
         return consumers;
     }
 
-    private void readObject(FlowDeserContext ctx, Consumers<T> consumers)
-            throws IOException {
+    private void readObject(FlowDeserContext ctx, Consumers<T> consumers) {
         var p = ctx.getParser();
         var name = p.currentName();
         FlowUtil.logOpen(ctx, name);
@@ -75,13 +73,13 @@ class RootHandler<T> implements StatementHandler<Consumer<T>> {
         } else if (statement.isAnyOf(Statement.IF, Statement.IFNOT)) {
             consumers.add((Consumer<T>) statement.handler().read(ctx));
         } else {
-            throw new IOException("<" + statement + "> is misplaced.");
+            throw new IllegalStateException(
+                    "<" + statement + "> is misplaced.");
         }
         FlowUtil.logClose(ctx, name);
     }
 
-    private Consumer<T> readInputConsumer(FlowDeserContext ctx)
-            throws IOException {
+    private Consumer<T> readInputConsumer(FlowDeserContext ctx) {
         var p = ctx.getParser();
         var config = ctx.getConfig();
 
@@ -92,13 +90,12 @@ class RootHandler<T> implements StatementHandler<Consumer<T>> {
             type = Consumer.class;
         } else if (!Consumer.class.isAssignableFrom(type)
                 && config.getPredicateType().getAdapterType() == null) {
-            throw new IOException("""
+            throw new IllegalStateException("""
                 Cannot have a flow consumer type that does not implement \
                 Consumer without a FlowInputConsumerAdapter.""");
         }
 
-        var mapper = (ObjectMapper) p.getCodec();
-        var consumer = mapper.readValue(p, type);
+        var consumer = ctx.getJacksonContext().readValue(p, type);
         if (config.getConsumerType().getAdapterType() != null) {
             var adapter = (FlowConsumerAdapter<T>) ClassUtil.newInstance(
                     config.getConsumerType().getAdapterType());
@@ -112,7 +109,7 @@ class RootHandler<T> implements StatementHandler<Consumer<T>> {
     }
 
     @Override
-    public void write(Consumer<T> obj, FlowSerContext ctx) throws IOException {
+    public void write(Consumer<T> obj, FlowSerContext ctx) {
         FlowUtil.writeArrayWrap(ctx, () -> {
             // consumer(s)
             if (obj instanceof Consumers<T> arr) {
@@ -125,8 +122,7 @@ class RootHandler<T> implements StatementHandler<Consumer<T>> {
         });
     }
 
-    private void writeConsumer(Consumer<T> obj, FlowSerContext ctx)
-            throws IOException {
+    private void writeConsumer(Consumer<T> obj, FlowSerContext ctx) {
         var gen = ctx.getGen();
 
         // if / ifNot
@@ -140,11 +136,11 @@ class RootHandler<T> implements StatementHandler<Consumer<T>> {
         }
 
         FlowUtil.writeArrayObjectWrap(ctx, () -> {
-            gen.writeFieldName(consumerName(obj, ctx));
+            gen.writeName(consumerName(obj, ctx));
             if (obj instanceof FlowConsumerAdapter<?> adapter) {
-                gen.writeObject(adapter.getConsumerAdaptee());
+                gen.writePOJO(adapter.getConsumerAdaptee());
             } else {
-                gen.writeObject(obj);
+                gen.writePOJO(obj);
             }
         });
     }

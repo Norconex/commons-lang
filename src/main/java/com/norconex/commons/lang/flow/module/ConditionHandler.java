@@ -14,10 +14,8 @@
  */
 package com.norconex.commons.lang.flow.module;
 
-import java.io.IOException;
 import java.util.function.Predicate;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.norconex.commons.lang.ClassUtil;
 import com.norconex.commons.lang.flow.FlowPredicateAdapter;
 import com.norconex.commons.lang.flow.module.FlowDeserializer.FlowDeserContext;
@@ -33,7 +31,7 @@ class ConditionHandler<T> implements StatementHandler<Predicate<T>> {
 
     @SuppressWarnings("unchecked")
     @Override
-    public Predicate<T> read(FlowDeserContext ctx) throws IOException {
+    public Predicate<T> read(FlowDeserContext ctx) {
 
         var p = ctx.getParser();
         var config = ctx.getConfig();
@@ -45,14 +43,13 @@ class ConditionHandler<T> implements StatementHandler<Predicate<T>> {
             type = Predicate.class;
         } else if (!Predicate.class.isAssignableFrom(type)
                 && config.getPredicateType().getAdapterType() == null) {
-            throw new IOException("""
+            throw new IllegalStateException("""
                 Cannot have a flow condition type that\s\
                 does not implement Condition without a\s\
                 FlowConditionAdapter.""");
         }
 
-        var mapper = (ObjectMapper) p.getCodec();
-        var condition = mapper.readValue(p, type);
+        var condition = ctx.getJacksonContext().readValue(p, type);
         if (config.getPredicateType().getAdapterType() != null) {
             var adapter = (FlowPredicateAdapter<T>) ClassUtil.newInstance(
                     config.getPredicateType().getAdapterType());
@@ -67,13 +64,13 @@ class ConditionHandler<T> implements StatementHandler<Predicate<T>> {
     }
 
     @Override
-    public void write(Predicate<T> obj, FlowSerContext ctx) throws IOException {
+    public void write(Predicate<T> obj, FlowSerContext ctx) {
         var gen = ctx.getGen();
-        gen.writeFieldName(Statement.CONDITION.toString());
+        gen.writeName(Statement.CONDITION.toString());
         if (obj instanceof FlowPredicateAdapter<?> adapter) {
-            gen.writeObject(adapter.getPredicateAdaptee());
+            gen.writePOJO(adapter.getPredicateAdaptee());
         } else {
-            gen.writeObject(obj);
+            gen.writePOJO(obj);
         }
     }
 }

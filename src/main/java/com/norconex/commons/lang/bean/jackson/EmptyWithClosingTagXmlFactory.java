@@ -14,51 +14,98 @@
  */
 package com.norconex.commons.lang.bean.jackson;
 
-import java.io.IOException;
-import java.io.Writer;
+import javax.xml.stream.XMLStreamWriter;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.dataformat.xml.XmlFactory;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
-import com.fasterxml.jackson.dataformat.xml.util.DefaultXmlPrettyPrinter;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.core.ObjectWriteContext;
+import tools.jackson.core.PrettyPrinter;
+import tools.jackson.core.io.IOContext;
+import tools.jackson.dataformat.xml.XmlPrettyPrinter;
+import tools.jackson.dataformat.xml.XmlFactory;
+import tools.jackson.dataformat.xml.ser.ToXmlGenerator;
+import tools.jackson.dataformat.xml.util.DefaultXmlPrettyPrinter;
 
 /**
  * Version of {@link XmlFactory} that configures a
- * {@link com.fasterxml.jackson.dataformat.xml.XmlPrettyPrinter}
- * to write "empty" objects with a closing tag instead of self-closing.
- * Self-closing are treated as <code>null</code> and a pair of tags witn
- * no content is treated as empty.
+ * {@link XmlPrettyPrinter} to write "empty" objects with a closing tag
+ * instead of self-closing. Self-closing elements ({@code <e/>}) are treated
+ * as {@code null} and a pair of tags with no content ({@code <e></e>}) is
+ * treated as empty.
  * @since 3.0.0
  */
 public class EmptyWithClosingTagXmlFactory extends XmlFactory {
 
     private static final long serialVersionUID = 1L;
 
-    @Override
-    public ToXmlGenerator createGenerator(Writer out) throws IOException {
-        var gen = super.createGenerator(out);
-
-        var prettyPrinter = new XmlPrettyPrinter();
-        var mapper = (XmlMapper) gen.getCodec();
-        if (!mapper.isEnabled(SerializationFeature.INDENT_OUTPUT)) {
-            prettyPrinter.indentArraysWith(null);
-            prettyPrinter.indentObjectsWith(null);
-        }
-        gen.setPrettyPrinter(prettyPrinter);
-        return gen;
+    public EmptyWithClosingTagXmlFactory() {
+        super();
     }
 
-    class XmlPrettyPrinter extends DefaultXmlPrettyPrinter {
+    protected EmptyWithClosingTagXmlFactory(EmptyWithClosingTagXmlFactory src) {
+        super(src);
+    }
+
+    @Override
+    public XmlFactory copy() {
+        return new EmptyWithClosingTagXmlFactory(this);
+    }
+
+    @Override
+    protected ToXmlGenerator _toXmlGenerator(
+            ObjectWriteContext writeCtxt, IOContext ioCtxt,
+            XMLStreamWriter sw) {
+        XmlPrettyPrinter pp = _resolveXmlPrettyPrinter(writeCtxt);
+        return new ToXmlGenerator(writeCtxt, ioCtxt,
+                writeCtxt.getStreamWriteFeatures(_streamWriteFeatures),
+                writeCtxt.getFormatWriteFeatures(_formatWriteFeatures),
+                sw,
+                pp,
+                _nameProcessor);
+    }
+
+    private XmlPrettyPrinter
+            _resolveXmlPrettyPrinter(ObjectWriteContext writeCtxt) {
+        PrettyPrinter configured = writeCtxt.getPrettyPrinter();
+        if (configured == null) {
+            // No indent configured: use a non-indenting printer that forces closing tags
+            var pp = new ClosingTagXmlPrettyPrinter();
+            pp.indentArraysWith(null);
+            pp.indentObjectsWith(null);
+            return pp;
+        }
+        if (!(configured instanceof XmlPrettyPrinter)) {
+            throw new IllegalStateException(
+                    "Configured PrettyPrinter not of type XmlPrettyPrinter but "
+                            + configured.getClass().getName());
+        }
+        // Already has an XmlPrettyPrinter (e.g. for INDENT_OUTPUT=true);
+        // wrap it to also force closing tags
+        return new ClosingTagXmlPrettyPrinter(
+                (DefaultXmlPrettyPrinter) configured);
+    }
+
+    static class ClosingTagXmlPrettyPrinter extends DefaultXmlPrettyPrinter {
         private static final long serialVersionUID = 1L;
 
+        public ClosingTagXmlPrettyPrinter() {
+            super();
+        }
+
+        protected ClosingTagXmlPrettyPrinter(DefaultXmlPrettyPrinter base) {
+            super(base);
+        }
+
         @Override
-        public void writeEndObject(JsonGenerator gen, int nrOfEntries)
-                throws IOException {
-            // Required to write something here to prevent the underlying
-            // XML stream writer from writing a self-closing tag, which
-            // is interpreted as null when reading it back.
+        public ClosingTagXmlPrettyPrinter createInstance() {
+            return new ClosingTagXmlPrettyPrinter(this);
+        }
+
+        @Override
+        public void writeEndObject(JsonGenerator gen, int nrOfEntries) {
+            // Force the underlying StAX writer to use an explicit closing tag
+            // instead of a self-closing element. Without this, an empty object
+            // like new AutomobileConfig() would produce <object/> which is
+            // interpreted as null when read back with EMPTY_ELEMENT_AS_NULL.
             gen.writeRaw("");
             super.writeEndObject(gen, nrOfEntries);
         }

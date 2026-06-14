@@ -16,16 +16,8 @@ package com.norconex.commons.lang.flow.module;
 
 import static java.util.Optional.ofNullable;
 
-import java.io.IOException;
 import java.util.function.Consumer;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.BeanProperty;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
-import com.fasterxml.jackson.databind.deser.ResolvableDeserializer;
 import com.norconex.commons.lang.ClassUtil;
 import com.norconex.commons.lang.flow.FlowMapperConfig;
 import com.norconex.commons.lang.flow.JsonFlow;
@@ -33,6 +25,11 @@ import com.norconex.commons.lang.flow.JsonFlow.NoBuilder;
 
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.BeanProperty;
+import tools.jackson.databind.DatabindException;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.ValueDeserializer;
 
 /**
  * Flow deserializer.
@@ -41,11 +38,10 @@ import lombok.RequiredArgsConstructor;
  * @since 3.0.0
  */
 @RequiredArgsConstructor
-public class FlowDeserializer<T> extends JsonDeserializer<Consumer<T>>
-        implements ContextualDeserializer, ResolvableDeserializer {
+public class FlowDeserializer<T> extends ValueDeserializer<Consumer<T>> {
 
     private final FlowMapperConfig config;
-    private final JsonDeserializer<?> defaultDeserializer;
+    private final ValueDeserializer<?> defaultDeserializer;
     private final ThreadLocal<FlowMapperConfig> propCfg = new ThreadLocal<>();
 
     @SuppressWarnings("unchecked")
@@ -53,16 +49,15 @@ public class FlowDeserializer<T> extends JsonDeserializer<Consumer<T>>
             (RootHandler<T>) Statement.THEN.handler();
 
     @Override
-    public Consumer<T> deserialize(JsonParser p, DeserializationContext ctx)
-            throws IOException {
+    public Consumer<T> deserialize(JsonParser p, DeserializationContext ctx) {
         return rootHandler.read(new FlowDeserContext(
-                ofNullable(propCfg.get()).orElse(config), p));
+                ofNullable(propCfg.get()).orElse(config), p, ctx));
     }
 
     @Override
-    public JsonDeserializer<?> createContextual(
+    public ValueDeserializer<?> createContextual(
             DeserializationContext ctxt, BeanProperty property)
-            throws JsonMappingException {
+            throws DatabindException {
         if (property == null) {
             return defaultDeserializer;
         }
@@ -83,10 +78,9 @@ public class FlowDeserializer<T> extends JsonDeserializer<Consumer<T>>
 
     @Override
     public void resolve(DeserializationContext ctxt)
-            throws JsonMappingException {
-        if (defaultDeserializer != null
-                && defaultDeserializer instanceof ResolvableDeserializer rd) {
-            rd.resolve(ctxt);
+            throws DatabindException {
+        if (defaultDeserializer != null) {
+            defaultDeserializer.resolve(ctxt);
         }
     }
 
@@ -94,6 +88,7 @@ public class FlowDeserializer<T> extends JsonDeserializer<Consumer<T>>
     static class FlowDeserContext {
         private final FlowMapperConfig config;
         private final JsonParser parser;
+        private final DeserializationContext jacksonContext;
         private int depth;
 
         int incrementDepth() {

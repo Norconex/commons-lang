@@ -21,16 +21,14 @@ import java.util.Collection;
 
 import javax.xml.namespace.QName;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.BeanProperty;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.deser.ResolvableDeserializer;
-import com.fasterxml.jackson.databind.ser.ContextualSerializer;
-import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
-import com.fasterxml.jackson.dataformat.xml.ser.XmlSerializerProvider;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.BeanProperty;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.DatabindException;
+import tools.jackson.databind.ValueSerializer;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.dataformat.xml.ser.ToXmlGenerator;
+import tools.jackson.dataformat.xml.ser.XmlSerializationContext;
 import com.norconex.commons.lang.text.StringUtil;
 
 import lombok.RequiredArgsConstructor;
@@ -45,35 +43,33 @@ import lombok.RequiredArgsConstructor;
  */
 @RequiredArgsConstructor
 public class JsonXmlCollectionSerializer<T extends Collection<?>>
-        extends JsonSerializer<T>
-        implements ContextualSerializer, ResolvableDeserializer {
+        extends ValueSerializer<T> {
 
     public static final String DEFAULT_INNER_NAME = "entry";
 
     private BeanProperty currentProperty;
-    private final JsonSerializer<?> defaultSerializer;
+    private final ValueSerializer<?> defaultSerializer;
 
     @Override
-    public JsonSerializer<?> createContextual(
-            SerializerProvider prov, BeanProperty property)
-            throws JsonMappingException {
+    public ValueSerializer<?> createContextual(
+            SerializationContext prov, BeanProperty property)
+            throws DatabindException {
         currentProperty = property;
         if (property == null) {
             return defaultSerializer;
         }
         return Collection.class.isAssignableFrom(
                 property.getType().getRawClass())
-                && prov instanceof XmlSerializerProvider
+                && prov instanceof XmlSerializationContext
                         ? this
                         : defaultSerializer;
     }
 
     @Override
-    public void resolve(DeserializationContext ctxt)
-            throws JsonMappingException {
-        if (defaultSerializer != null
-                && defaultSerializer instanceof ResolvableDeserializer rd) {
-            rd.resolve(ctxt);
+    public void resolve(SerializationContext ctxt)
+            throws DatabindException {
+        if (defaultSerializer != null) {
+            defaultSerializer.resolve(ctxt);
         }
     }
 
@@ -81,7 +77,7 @@ public class JsonXmlCollectionSerializer<T extends Collection<?>>
     public void serialize(
             T objects,
             JsonGenerator gen,
-            SerializerProvider sp) throws IOException {
+            SerializationContext sp) {
 
         //NOTE: not null and not empty when this method gets invoked.
 
@@ -96,15 +92,15 @@ public class JsonXmlCollectionSerializer<T extends Collection<?>>
             for (Object object : objects) {
                 // Not sure why, but first field name is already written for us.
                 if (!first) {
-                    gen.writeFieldName(innerName);
+                    gen.writeName(innerName);
                 }
-                gen.writeObject(object);
+                gen.writePOJO(object);
                 first = false;
             }
         } else {
             gen.writeStartArray();
             for (Object object : objects) {
-                gen.writeObject(object);
+                gen.writePOJO(object);
             }
             gen.writeEndArray();
         }

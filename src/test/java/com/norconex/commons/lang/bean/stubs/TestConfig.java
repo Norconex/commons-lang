@@ -17,7 +17,7 @@ package com.norconex.commons.lang.bean.stubs;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import tools.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 
 import jakarta.validation.Valid;
 import lombok.Data;

@@ -14,10 +14,9 @@
  */
 package com.norconex.commons.lang.bean;
 
-import static com.fasterxml.jackson.dataformat.xml.deser.FromXmlParser.Feature.EMPTY_ELEMENT_AS_NULL;
 import static java.util.Optional.ofNullable;
+import static tools.jackson.dataformat.xml.XmlReadFeature.EMPTY_ELEMENT_AS_NULL;
 
-import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -28,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -39,7 +39,6 @@ import org.apache.commons.collections4.MultiMapUtils;
 import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -48,27 +47,6 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.annotation.Nulls;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonParser.Feature;
-import com.fasterxml.jackson.core.json.JsonReadFeature;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.cfg.MapperBuilder;
-import com.fasterxml.jackson.databind.deser.DeserializationProblemHandler;
-import com.fasterxml.jackson.databind.json.JsonMapper;
-import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
-import com.fasterxml.jackson.databind.type.TypeFactory;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
-import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import com.norconex.commons.lang.ClassFinder;
 import com.norconex.commons.lang.ClassUtil;
 import com.norconex.commons.lang.bean.jackson.EmptyWithClosingTagXmlFactory;
@@ -92,6 +70,29 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Singular;
 import lombok.extern.slf4j.Slf4j;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.StreamReadFeature;
+import tools.jackson.core.json.JsonReadFeature;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.JavaType;
+import tools.jackson.databind.MapperFeature;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.ValueDeserializer;
+import tools.jackson.databind.cfg.CoercionAction;
+import tools.jackson.databind.cfg.CoercionInputShape;
+import tools.jackson.databind.cfg.MapperBuilder;
+import tools.jackson.databind.deser.DeserializationProblemHandler;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.jsontype.TypeIdResolver;
+import tools.jackson.databind.type.LogicalType;
+import tools.jackson.databind.type.TypeFactory;
+import tools.jackson.dataformat.xml.XmlMapper;
+import tools.jackson.dataformat.yaml.YAMLMapper;
+import tools.jackson.dataformat.yaml.YAMLReadFeature;
+import tools.jackson.dataformat.yaml.YAMLWriteFeature;
 
 /**
  * <p>
@@ -153,12 +154,11 @@ public class BeanMapper { //NOSONAR
     @RequiredArgsConstructor
     public enum Format {
         XML(
-                () -> XmlMapper.builder(new EmptyWithClosingTagXmlFactory()),
-                //XmlMapper::builder,
+                () -> XmlMapper.builder(new EmptyWithClosingTagXmlFactory())
+                        .configureForJackson2(),
                 b -> {
                     var m = (XmlMapper) b.build();
-                    m.enable(EMPTY_ELEMENT_AS_NULL);
-                    m.getFactory()
+                    m.tokenStreamFactory()
                             .getXMLOutputFactory()
                             .setProperty(
                                     XMLOutputFactory.IS_REPAIRING_NAMESPACES,
@@ -166,11 +166,11 @@ public class BeanMapper { //NOSONAR
                     return m;
                 }),
         JSON(
-                JsonMapper::builder,
+                JsonMapper::builderWithJackson2Defaults,
                 MapperBuilder::build),
         YAML(
                 () -> YAMLMapper.builder()
-                        .disable(YAMLGenerator.Feature.USE_NATIVE_TYPE_ID),
+                        .disable(YAMLWriteFeature.USE_NATIVE_TYPE_ID),
                 MapperBuilder::build),
                 ;
 
@@ -373,7 +373,8 @@ public class BeanMapper { //NOSONAR
             @NonNull Format format) {
         try {
             toObjectMapper(format).writeValue(writer, object);
-        } catch (IOException e) {
+        } catch (JacksonException e) {
+            rethrowValidationCause(e);
             throw new BeanException("Could not write object to %s: %s"
                     .formatted(format, object), e);
         }
@@ -397,9 +398,13 @@ public class BeanMapper { //NOSONAR
         try {
             return (T) validate(toObjectMapper(format)
                     .readerForUpdating(object).readValue(reader));
-        } catch (IOException e) {
+        } catch (JacksonException e) {
+            rethrowValidationCause(e);
             throw new BeanException(
-                    "Could not read %s source.".formatted(format), e);
+                    "Could not read %s source: %s"
+                            .formatted(format,
+                                    legacyJacksonMessage(e.getMessage())),
+                    e);
         }
     }
 
@@ -422,16 +427,35 @@ public class BeanMapper { //NOSONAR
         try {
             return (T) validate(
                     toObjectMapper(format).readerFor(type).readValue(reader));
-        } catch (IOException e) {
+        } catch (JacksonException e) {
+            rethrowValidationCause(e);
             // Log the error with full context for easier debugging
             LOG.error("Failed to read {} source for type: {}. Error: {}",
                     format, type.getName(), e.getMessage());
             LOG.debug("Error stacktrace:\n", e);
             throw new BeanException(
                     "Could not read %s source for type %s: %s"
-                            .formatted(format, type.getName(), e.getMessage()),
+                            .formatted(format, type.getName(),
+                                    legacyJacksonMessage(e.getMessage())),
                     e);
         }
+    }
+
+    private static void rethrowValidationCause(Throwable throwable) {
+        Throwable current = throwable;
+        while (current != null) {
+            if (current instanceof ConstraintViolationException cve) {
+                throw cve;
+            }
+            current = current.getCause();
+        }
+    }
+
+    private static String legacyJacksonMessage(String message) {
+        if (message == null) {
+            return null;
+        }
+        return message.replace("Unrecognized property", "Unrecognized field");
     }
 
     private Object validate(Object obj) {
@@ -479,24 +503,59 @@ public class BeanMapper { //NOSONAR
 
             // general features:
             builder.disable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY);
+            builder.enable(MapperFeature.ALLOW_FINAL_FIELDS_AS_MUTATORS);
             builder.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS);
-            builder.enable(Feature.ALLOW_COMMENTS);
-            builder.enable(Feature.ALLOW_YAML_COMMENTS);
-            builder.configure(JsonReadFeature.ALLOW_UNQUOTED_FIELD_NAMES
-                    .mappedFeature(), true);
-            builder.configure(JsonReadFeature.ALLOW_TRAILING_COMMA
-                    .mappedFeature(), true);
+            builder.enable(MapperFeature.USE_GETTERS_AS_SETTERS);
+            builder.defaultMergeable(false);
+            builder.disable(StreamReadFeature.AUTO_CLOSE_SOURCE);
             if (LOG.isDebugEnabled()) {
-                builder.enable(Feature.INCLUDE_SOURCE_IN_LOCATION);
+                builder.enable(StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION);
             }
-
+            if (builder instanceof JsonMapper.Builder jsonBuilder) {
+                jsonBuilder.enable(JsonReadFeature.ALLOW_JAVA_COMMENTS);
+                jsonBuilder.enable(JsonReadFeature.ALLOW_YAML_COMMENTS);
+                jsonBuilder
+                        .enable(JsonReadFeature.ALLOW_UNQUOTED_PROPERTY_NAMES);
+                jsonBuilder.enable(JsonReadFeature.ALLOW_TRAILING_COMMA);
+            }
+            if (builder instanceof YAMLMapper.Builder yamlBuilder) {
+                yamlBuilder.enable(YAMLReadFeature.EMPTY_STRING_AS_NULL);
+                yamlBuilder.withCoercionConfig(LogicalType.POJO, cfg -> cfg
+                        .setCoercion(CoercionInputShape.String,
+                                CoercionAction.AsNull));
+            }
+            if (builder instanceof XmlMapper.Builder xmlBuilder) {
+                xmlBuilder.enable(EMPTY_ELEMENT_AS_NULL);
+            }
             // handlers:
             builder.addHandler(new BeanMapperPropertyHandler(this));
 
+            // read:
+            builder.configure(
+                    DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
+                    !ignoreUnknownProperties);
+            builder.configure(
+                    DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT,
+                    treatEmptyAsNull);
+            builder.configure(
+                    DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES,
+                    false);
+            builder.disable(
+                    DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY);
+            builder.changeDefaultNullHandling(v -> Value
+                    .empty()
+                    .withValueNulls(Nulls.SET)
+                    .withContentNulls(Nulls.SET));
+            builder.withCoercionConfig(LogicalType.POJO, cfg -> cfg
+                    .setAcceptBlankAsEmpty(true)
+                    .setCoercion(CoercionInputShape.EmptyString,
+                            CoercionAction.AsEmpty));
+
+            // write:
+            builder.configure(SerializationFeature.INDENT_OUTPUT, indent);
+            builder.disable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
+
             // modules:
-            builder.addModule(new ParameterNamesModule());
-            builder.addModule(new Jdk8Module());
-            builder.addModule(new JavaTimeModule());
             // Nx modules and mix-ins
             builder.addModule(new GenericJsonModule());
             if (!configurableDetectionDisabled) {
@@ -511,42 +570,18 @@ public class BeanMapper { //NOSONAR
                         new FailOnUnknownConfigurablePropModule(this));
             }
 
+            // register polymorphic types and mix-ins before building.
+            registerPolymorphicTypes(builder);
+            if (format == Format.XML) {
+                builder.addModule(new JsonXmlCollectionModule());
+                builder.addModule(new JsonXmlMapModule());
+                builder.addModule(new JsonXmlPropertiesModule());
+            }
+            builder.addMixIn(Object.class, NonDefaultInclusionMixIn.class);
+
             //--- Mapper ---
 
-            var mapper = format.mapper.apply(builder);
-
-            // read:
-            mapper.configure(
-                    DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
-                    !ignoreUnknownProperties);
-            mapper.configure(Feature.AUTO_CLOSE_SOURCE, false);
-            mapper.configure(
-                    DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT,
-                    treatEmptyAsNull);
-            mapper.disable(DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY);
-            mapper.setDefaultSetterInfo(
-                    Value
-                            .empty()
-                            .withValueNulls(Nulls.SET) // value
-                            .withContentNulls(Nulls.SET)); // collection entry value
-
-            // write:
-            mapper.configure(SerializationFeature.INDENT_OUTPUT, indent);
-            mapper.disable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
-
-            // register polymorphic types:
-            registerPolymorphicTypes(mapper);
-
-            // misc:
-            if (format == Format.XML) {
-                mapper.registerModule(new JsonXmlCollectionModule());
-                mapper.registerModule(new JsonXmlMapModule());
-                mapper.registerModule(new JsonXmlPropertiesModule());
-            }
-
-            mapper.addMixIn(Object.class, NonDefaultInclusionMixIn.class);
-
-            return mapper;
+            return format.mapper.apply(builder);
         });
     }
 
@@ -614,24 +649,24 @@ public class BeanMapper { //NOSONAR
         polyTypesResolved.set(true);
     }
 
-    private void registerPolymorphicTypes(ObjectMapper mapper) {
+    private void registerPolymorphicTypes(MapperBuilder<?, ?> builder) {
         resolvePolymorphicTypes();
 
         resolvedPolymorphicTypes.asMap().forEach((type, subTypes) -> {
-            registerPolymorphicType(mapper, type, subTypes);
+            registerPolymorphicType(builder, type, subTypes);
         });
     }
 
     private void registerPolymorphicType(
-            ObjectMapper mapper,
+            MapperBuilder<?, ?> builder,
             Class<?> type,
             Collection<? extends Class<?>> subTypes) {
 
         resolvedPolymorphicTypes.putAll(type, subTypes);
 
         //MAYBE: check and report those already registered?
-        mapper.addMixIn(type, PolymorphicMixIn.class);
-        mapper.registerSubtypes(subTypes.toArray(new Class<?>[] {}));
+        builder.addMixIn(type, PolymorphicMixIn.class);
+        builder.registerSubtypes(subTypes.toArray(Class<?>[]::new));
         if (LOG.isDebugEnabled()) {
             LOG.debug("Registered polymorphic type and its sub-types:\n{}\n{}",
                     "  ▪ " + type.getName(),
@@ -676,9 +711,9 @@ public class BeanMapper { //NOSONAR
         public boolean handleUnknownProperty(
                 DeserializationContext ctxt,
                 JsonParser p,
-                JsonDeserializer<?> deserializer,
+                ValueDeserializer<?> deserializer,
                 Object beanOrClass,
-                String propertyName) throws IOException {
+                String propertyName) {
 
             if ("class".equals(propertyName)
                     || beanMapper.ignoredProperties.contains(propertyName)) {
@@ -698,7 +733,7 @@ public class BeanMapper { //NOSONAR
                 DeserializationContext ctxt,
                 JavaType baseType,
                 TypeIdResolver idResolver,
-                String failureMsg) throws IOException {
+                String failureMsg) {
 
             var defaultType = beanMapper.defaultPolymorphicTypes.get(
                     baseType.getRawClass());
@@ -710,8 +745,7 @@ public class BeanMapper { //NOSONAR
             }
 
             // Default exists, return it.
-            var type = TypeFactory.defaultInstance()
-                    .constructType(defaultType);
+            var type = ctxt.constructType(defaultType);
             if (type.isTypeOrSubTypeOf(baseType.getRawClass())) {
                 return type;
             }
@@ -724,7 +758,7 @@ public class BeanMapper { //NOSONAR
         @Override
         public JavaType handleUnknownTypeId(DeserializationContext ctxt,
                 JavaType baseType, String subTypeId, TypeIdResolver idResolver,
-                String failureMsg) throws IOException {
+                String failureMsg) {
             if (beanMapper.canonicalNameSupportDisabled) {
                 return null;
             }
@@ -733,7 +767,7 @@ public class BeanMapper { //NOSONAR
             // resolve it.
             JavaType type;
             try {
-                type = TypeFactory.defaultInstance()
+                type = TypeFactory.createDefaultInstance()
                         .constructFromCanonical(subTypeId);
                 if (type.isTypeOrSubTypeOf(baseType.getRawClass())) {
                     return type;

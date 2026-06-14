@@ -27,7 +27,6 @@ import java.util.Map;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.norconex.commons.lang.bean.BeanMapper.Format;
 import com.norconex.commons.lang.bean.stubs.AutomobileConfig;
 import com.norconex.commons.lang.bean.stubs.WithDefaultValues;
@@ -174,7 +173,7 @@ class DefaultValueTest {
 
     @ParameterizedTest
     @EnumSource(Format.class)
-    void testEmpty(Format format) throws JsonProcessingException {
+    void testEmpty(Format format) {
         var config = empty.get(format);
         var obj = BeanMapper.DEFAULT.read(
                 WithDefaultValues.class, new StringReader(config), format);

@@ -25,8 +25,8 @@ import java.time.ZonedDateTime;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
-import com.fasterxml.jackson.core.util.VersionUtil;
-import com.fasterxml.jackson.databind.module.SimpleModule;
+import tools.jackson.core.util.VersionUtil;
+import tools.jackson.databind.module.SimpleModule;
 import com.norconex.commons.lang.file.ContentType;
 
 /**

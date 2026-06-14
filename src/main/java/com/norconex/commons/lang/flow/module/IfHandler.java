@@ -14,11 +14,9 @@
  */
 package com.norconex.commons.lang.flow.module;
 
-import java.io.IOException;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-import com.fasterxml.jackson.core.JsonToken;
 import com.norconex.commons.lang.flow.module.FlowDeserializer.FlowDeserContext;
 import com.norconex.commons.lang.flow.module.FlowSerializer.FlowSerContext;
 import com.norconex.commons.lang.function.PredicatedConsumer;
@@ -26,6 +24,7 @@ import com.norconex.commons.lang.function.Predicates;
 
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import tools.jackson.core.JsonToken;
 
 /**
  * Handles flow "if" and "ifNot".
@@ -40,8 +39,7 @@ class IfHandler<T> implements StatementHandler<Consumer<T>> {
     private final boolean negate;
 
     @Override
-    public Consumer<T> read(FlowDeserContext ctx)
-            throws IOException {
+    public Consumer<T> read(FlowDeserContext ctx) {
 
         var p = ctx.getParser();
         var args = new Args<T>();
@@ -81,12 +79,12 @@ class IfHandler<T> implements StatementHandler<Consumer<T>> {
 
     @SuppressWarnings("unchecked")
     @Override
-    public void write(Consumer<T> obj, FlowSerContext ctx) throws IOException {
+    public void write(Consumer<T> obj, FlowSerContext ctx) {
 
         var gen = ctx.getGen();
 
         FlowUtil.writeArrayObjectWrap(ctx, () -> {
-            gen.writeFieldName(negate ? "ifNot" : "if");
+            gen.writeName(negate ? "ifNot" : "if");
             gen.writeStartObject();
 
             var predicatedConsumer = (PredicatedConsumer<T>) obj;
@@ -109,13 +107,13 @@ class IfHandler<T> implements StatementHandler<Consumer<T>> {
             }
 
             // then
-            gen.writeFieldName(Statement.THEN.toString());
+            gen.writeName(Statement.THEN.toString());
             ((RootHandler<T>) Statement.THEN.handler()).write(
                     predicatedConsumer.getThenConsumer(), ctx);
 
             // else
             if (predicatedConsumer.getElseConsumer() != null) {
-                gen.writeFieldName(Statement.ELSE.toString());
+                gen.writeName(Statement.ELSE.toString());
                 ((RootHandler<T>) Statement.ELSE.handler()).write(
                         predicatedConsumer.getElseConsumer(), ctx);
             }
@@ -131,7 +129,7 @@ class IfHandler<T> implements StatementHandler<Consumer<T>> {
         private Consumer<T> elseConsumer;
 
         public void setCondition(
-                Object condition, String name) throws IOException {
+                Object condition, String name) {
             if (this.condition != null) {
                 badChildren("Element appearing more than once: <%s>"
                         .formatted(name));
@@ -139,14 +137,14 @@ class IfHandler<T> implements StatementHandler<Consumer<T>> {
             this.condition = (Predicate<T>) condition;
         }
 
-        public void setThenConsumer(Object thenConsumer) throws IOException {
+        public void setThenConsumer(Object thenConsumer) {
             if (this.thenConsumer != null) {
                 badChildren("Element appearing more than once: <then>");
             }
             this.thenConsumer = (Consumer<T>) thenConsumer;
         }
 
-        public void setElseConsumer(Object elseConsumer) throws IOException {
+        public void setElseConsumer(Object elseConsumer) {
             if (this.elseConsumer != null) {
                 badChildren("Element appearing more than once: <else>");
             }
@@ -154,8 +152,8 @@ class IfHandler<T> implements StatementHandler<Consumer<T>> {
         }
     }
 
-    static void badChildren(String gotInstead) throws IOException {
-        throw new IOException("""
+    static void badChildren(String gotInstead) {
+        throw new IllegalStateException("""
                 Exactly one of <condition>, <anyOf>, and <allOf>, \
                 exactly one <then>, and zero or one <else> \
                 are permitted as direct child elements of <if> and \

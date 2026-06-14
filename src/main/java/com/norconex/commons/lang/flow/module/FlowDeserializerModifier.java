@@ -16,33 +16,34 @@ package com.norconex.commons.lang.flow.module;
 
 import java.util.function.Consumer;
 
-import com.fasterxml.jackson.databind.BeanDescription;
-import com.fasterxml.jackson.databind.DeserializationConfig;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.deser.BeanDeserializerModifier;
 import com.norconex.commons.lang.flow.FlowMapperConfig;
 
 import lombok.RequiredArgsConstructor;
+import tools.jackson.databind.BeanDescription.Supplier;
+import tools.jackson.databind.DeserializationConfig;
+import tools.jackson.databind.ValueDeserializer;
+import tools.jackson.databind.deser.ValueDeserializerModifier;
 
 @RequiredArgsConstructor
-public class FlowDeserializerModifier extends BeanDeserializerModifier {
+public class FlowDeserializerModifier extends ValueDeserializerModifier {
 
     private static final long serialVersionUID = 1L;
 
     private final FlowMapperConfig flowMapperConfig;
 
     @Override
-    public JsonDeserializer<?> modifyDeserializer(
+    public ValueDeserializer<?> modifyDeserializer(
             DeserializationConfig config,
-            BeanDescription beanDesc,
-            JsonDeserializer<?> deserializer) {
+            Supplier beanDesc,
+            ValueDeserializer<?> deserializer) {
+        var beanClass = beanDesc.get().getBeanClass();
 
         Class<?> consumerType =
                 flowMapperConfig.getConsumerType().getBaseType();
         if (consumerType != null
                 && consumerType.getClass().isAssignableFrom(
-                        beanDesc.getBeanClass())
-                || Consumer.class.isAssignableFrom(beanDesc.getBeanClass())) {
+                        beanClass)
+                || Consumer.class.isAssignableFrom(beanClass)) {
             return new FlowDeserializer<>(flowMapperConfig, deserializer);
         }
         return super.modifyDeserializer(config, beanDesc, deserializer);

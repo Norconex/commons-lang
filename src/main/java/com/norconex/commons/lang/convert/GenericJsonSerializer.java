@@ -16,15 +16,15 @@ package com.norconex.commons.lang.convert;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.ValueSerializer;
+import tools.jackson.databind.SerializationContext;
 
-public class GenericJsonSerializer<T> extends JsonSerializer<T> {
+public class GenericJsonSerializer<T> extends ValueSerializer<T> {
 
     @Override
     public void serialize(T value,
-            JsonGenerator gen, SerializerProvider sp) throws IOException {
+            JsonGenerator gen, SerializationContext sp) {
         gen.writeString(GenericConverter.convert(value));
     }
 }

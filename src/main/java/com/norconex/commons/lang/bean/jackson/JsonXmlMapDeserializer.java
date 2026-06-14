@@ -16,18 +16,17 @@ package com.norconex.commons.lang.bean.jackson;
 
 import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.databind.BeanProperty;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.norconex.commons.lang.ClassUtil;
+
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.JsonToken;
+import tools.jackson.databind.BeanProperty;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.JavaType;
+import tools.jackson.databind.deser.std.StdDeserializer;
 
 /**
  * Deserializes a list of "entry" elements each having a "key" and "value"
@@ -35,8 +34,7 @@ import com.norconex.commons.lang.ClassUtil;
  * @param <T> Map concrete type
  */
 public class JsonXmlMapDeserializer<T extends Map<?, ?>>
-        extends StdDeserializer<T>
-        implements ContextualDeserializer {
+        extends StdDeserializer<T> {
 
     private static final long serialVersionUID = 1L;
 
@@ -44,7 +42,7 @@ public class JsonXmlMapDeserializer<T extends Map<?, ?>>
     private JavaType mapType;
 
     public JsonXmlMapDeserializer() {
-        this((Class<T>) null);
+        super(Map.class);
     }
 
     public JsonXmlMapDeserializer(Class<T> vc) {
@@ -70,8 +68,7 @@ public class JsonXmlMapDeserializer<T extends Map<?, ?>>
 
     @SuppressWarnings("unchecked")
     @Override
-    public T deserialize(JsonParser p, DeserializationContext ctxt)
-            throws IOException {
+    public T deserialize(JsonParser p, DeserializationContext ctxt) {
         var map = createMap();
         var keyName = "key";
         var valueName = "value";
@@ -93,7 +90,7 @@ public class JsonXmlMapDeserializer<T extends Map<?, ?>>
 
         while (p.nextToken() != JsonToken.END_OBJECT) {
 
-            if (p.getCurrentToken() == JsonToken.START_OBJECT) {
+            if (p.currentToken() == JsonToken.START_OBJECT) {
                 Object key = null;
                 Object value = null;
 

@@ -20,12 +20,11 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 import java.io.IOException;
 import java.util.Map;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.BeanProperty;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.ser.ContextualSerializer;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.BeanProperty;
+import tools.jackson.databind.DatabindException;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ser.std.StdSerializer;
 import com.norconex.commons.lang.text.StringUtil;
 
 /**
@@ -36,7 +35,7 @@ import com.norconex.commons.lang.text.StringUtil;
  * @see JsonXmlMap
  */
 public class JsonXmlMapSerializer<T extends Map<?, ?>>
-        extends StdSerializer<T> implements ContextualSerializer {
+        extends StdSerializer<T> {
 
     private static final long serialVersionUID = 1L;
 
@@ -57,8 +56,8 @@ public class JsonXmlMapSerializer<T extends Map<?, ?>>
 
     @Override
     public StdSerializer<?> createContextual(
-            SerializerProvider prov, BeanProperty property)
-            throws JsonMappingException {
+            SerializationContext prov, BeanProperty property)
+            throws DatabindException {
         return new JsonXmlMapSerializer<>(property);
     }
 
@@ -66,7 +65,7 @@ public class JsonXmlMapSerializer<T extends Map<?, ?>>
     public void serialize(
             T map,
             JsonGenerator gen,
-            SerializerProvider provider) throws IOException {
+            SerializationContext provider) {
 
         var entryName = DEFAULT_ENTRY_NAME;
         var keyName = "key";
@@ -87,17 +86,15 @@ public class JsonXmlMapSerializer<T extends Map<?, ?>>
         gen.writeStartObject(); // outter name
 
         for (Map.Entry<?, ?> entry : map.entrySet()) {
-            gen.writeFieldName(entryName);
+            gen.writeName(entryName);
 
             gen.writeStartObject(); // <entry>
 
             // Write key
-            gen.writeFieldName(keyName);
-            provider.defaultSerializeValue(entry.getKey(), gen);
+            provider.defaultSerializeProperty(keyName, entry.getKey(), gen);
 
             // Write value
-            gen.writeFieldName(valueName);
-            provider.defaultSerializeValue(entry.getValue(), gen);
+            provider.defaultSerializeProperty(valueName, entry.getValue(), gen);
 
             // Close the entry element manually
             gen.writeEndObject(); // </entry>
