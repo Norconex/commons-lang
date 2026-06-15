@@ -78,11 +78,15 @@ public class EmptyWithClosingTagXmlFactory extends XmlFactory {
                     "Configured PrettyPrinter not of type XmlPrettyPrinter but "
                             + configured.getClass().getName());
         }
+        if (!(configured instanceof DefaultXmlPrettyPrinter)) {
+            throw new IllegalStateException(
+                    "Configured XmlPrettyPrinter not of type DefaultXmlPrettyPrinter but "
+                            + configured.getClass().getName());
+        }
         // Already has an XmlPrettyPrinter (e.g. for INDENT_OUTPUT=true);
         // wrap it to also force closing tags
         return new ClosingTagXmlPrettyPrinter(
                 (DefaultXmlPrettyPrinter) configured);
-    }
 
     static class ClosingTagXmlPrettyPrinter extends DefaultXmlPrettyPrinter {
         private static final long serialVersionUID = 1L;
