@@ -40,9 +40,8 @@ public class FlowSerializerModifier extends ValueSerializerModifier {
 
         Class<?> consumerType =
                 flowMapperConfig.getConsumerType().getBaseType();
-        if (consumerType != null
-                && consumerType.getClass().isAssignableFrom(
-                        beanClass)
+        if ((consumerType != null
+                && consumerType.isAssignableFrom(beanClass))
                 || Consumer.class.isAssignableFrom(beanClass)) {
             return new FlowSerializer<>(flowMapperConfig, serializer);
         }
