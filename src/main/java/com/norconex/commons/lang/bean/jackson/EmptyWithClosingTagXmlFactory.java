@@ -87,6 +87,7 @@ public class EmptyWithClosingTagXmlFactory extends XmlFactory {
         // wrap it to also force closing tags
         return new ClosingTagXmlPrettyPrinter(
                 (DefaultXmlPrettyPrinter) configured);
+    }
 
     static class ClosingTagXmlPrettyPrinter extends DefaultXmlPrettyPrinter {
         private static final long serialVersionUID = 1L;
