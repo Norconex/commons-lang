@@ -17,16 +17,15 @@ package com.norconex.commons.lang.flow.module;
 import static com.norconex.commons.lang.flow.module.FlowUtil.whileInArrayObjects;
 import static com.norconex.commons.lang.flow.module.FlowUtil.whileInObject;
 
-import java.io.IOException;
 import java.util.function.Predicate;
 
-import com.fasterxml.jackson.core.JsonToken;
 import com.norconex.commons.lang.flow.module.FlowDeserializer.FlowDeserContext;
 import com.norconex.commons.lang.flow.module.FlowSerializer.FlowSerContext;
 import com.norconex.commons.lang.function.Predicates;
 
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import tools.jackson.core.JsonToken;
 
 /**
  * Handles flow condition group matching either "anyOf" or "allOf".
@@ -41,7 +40,7 @@ class ConditionGroupHandler<T> implements StatementHandler<Predicate<T>> {
     private final boolean any;
 
     @Override
-    public Predicate<T> read(FlowDeserContext ctx) throws IOException {
+    public Predicate<T> read(FlowDeserContext ctx) {
         var p = ctx.getParser();
         var preds = new Predicates<T>(any);
         FlowUtil.logOpen(ctx, any ? "anyOf" : "allOf");
@@ -58,8 +57,7 @@ class ConditionGroupHandler<T> implements StatementHandler<Predicate<T>> {
     }
 
     @SuppressWarnings("unchecked")
-    private void readObject(FlowDeserContext ctx, Predicates<T> preds)
-            throws IOException {
+    private void readObject(FlowDeserContext ctx, Predicates<T> preds) {
         var p = ctx.getParser();
         FlowUtil.logOpen(ctx, p.currentName());
         var fieldName = p.currentName();
@@ -67,7 +65,7 @@ class ConditionGroupHandler<T> implements StatementHandler<Predicate<T>> {
                 Statement.CONDITION,
                 Statement.ALLOF,
                 Statement.ANYOF)) {
-            throw new IOException("""
+            throw new IllegalStateException("""
                     Only <condition>, <allOf>, and <anyOf> are \
                     permitted as direct child elements of <if> and
                     <ifNot>. Got instead: "%s"
@@ -80,11 +78,10 @@ class ConditionGroupHandler<T> implements StatementHandler<Predicate<T>> {
 
     @SuppressWarnings("unchecked")
     @Override
-    public void write(Predicate<T> predicate, FlowSerContext ctx)
-            throws IOException {
+    public void write(Predicate<T> predicate, FlowSerContext ctx) {
         var gen = ctx.getGen();
 
-        gen.writeFieldName(isAny() ? "anyOf" : "allOf");
+        gen.writeName(isAny() ? "anyOf" : "allOf");
 
         var predicateGroup = (Predicates<T>) predicate;
         FlowUtil.writeArrrayOfObjects(predicateGroup, ctx, pred -> {

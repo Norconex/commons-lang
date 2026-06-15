@@ -22,15 +22,13 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.databind.BeanProperty;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
-import com.fasterxml.jackson.databind.deser.ResolvableDeserializer;
-import com.fasterxml.jackson.dataformat.xml.deser.XmlDeserializationContext;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.JsonToken;
+import tools.jackson.databind.BeanProperty;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.ValueDeserializer;
+import tools.jackson.databind.DatabindException;
+import tools.jackson.dataformat.xml.deser.XmlDeserializationContext;
 import com.norconex.commons.lang.ClassUtil;
 
 import lombok.RequiredArgsConstructor;
@@ -45,15 +43,14 @@ import lombok.RequiredArgsConstructor;
  */
 @RequiredArgsConstructor
 public class JsonXmlCollectionDeserializer<T extends Collection<?>>
-        extends JsonDeserializer<T>
-        implements ContextualDeserializer, ResolvableDeserializer {
+        extends ValueDeserializer<T> {
     private BeanProperty currentProperty;
-    private final JsonDeserializer<?> defaultDeserializer;
+    private final ValueDeserializer<?> defaultDeserializer;
 
     @Override
-    public JsonDeserializer<?> createContextual(
+    public ValueDeserializer<?> createContextual(
             DeserializationContext ctx, BeanProperty property)
-            throws JsonMappingException {
+            throws DatabindException {
         currentProperty = property;
         if (property == null) {
             return defaultDeserializer;
@@ -67,17 +64,16 @@ public class JsonXmlCollectionDeserializer<T extends Collection<?>>
 
     @Override
     public void resolve(DeserializationContext ctxt)
-            throws JsonMappingException {
-        if (defaultDeserializer != null
-                && defaultDeserializer instanceof ResolvableDeserializer rd) {
-            rd.resolve(ctxt);
+            throws DatabindException {
+        if (defaultDeserializer != null) {
+            defaultDeserializer.resolve(ctxt);
         }
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public T deserialize(
-            JsonParser p, DeserializationContext ctx) throws IOException {
+            JsonParser p, DeserializationContext ctx) {
 
         var isXml = ctx instanceof XmlDeserializationContext;
         var enderToken = isXml ? JsonToken.END_OBJECT : JsonToken.END_ARRAY;

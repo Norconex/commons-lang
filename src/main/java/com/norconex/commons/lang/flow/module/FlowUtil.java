@@ -14,22 +14,20 @@
  */
 package com.norconex.commons.lang.flow.module;
 
-import java.io.IOException;
 import java.util.Collection;
+import java.util.function.Consumer;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.function.FailableConsumer;
-import org.apache.commons.lang3.function.FailableRunnable;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
 import com.norconex.commons.lang.flow.FlowConsumerAdapter;
 import com.norconex.commons.lang.flow.FlowPredicateAdapter;
 import com.norconex.commons.lang.flow.module.FlowDeserializer.FlowDeserContext;
 import com.norconex.commons.lang.flow.module.FlowSerializer.FlowSerContext;
 
 import lombok.extern.slf4j.Slf4j;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.JsonToken;
+import tools.jackson.dataformat.xml.ser.ToXmlGenerator;
 
 /**
  * Flow utility methods.
@@ -42,29 +40,25 @@ final class FlowUtil {
     }
 
     static void whileInArrayObjects(
-            JsonParser p, FailableRunnable<IOException> runnable)
-            throws IOException {
+            JsonParser p, Runnable runnable) {
         whileInArray(p, () -> whileInObject(p, runnable));
     }
 
     static void whileInArray(
-            JsonParser p, FailableRunnable<IOException> runnable)
-            throws IOException {
+            JsonParser p, Runnable runnable) {
         while (nextNotTokenOrNull(p, JsonToken.END_ARRAY)) {
             runnable.run();
         }
     }
 
     static void whileInObject(
-            JsonParser p, FailableRunnable<IOException> runnable)
-            throws IOException {
+            JsonParser p, Runnable runnable) {
         while (nextNotTokenOrNull(p, JsonToken.END_OBJECT)) {
             runnable.run();
         }
     }
 
-    static boolean nextNotTokenOrNull(JsonParser p, JsonToken token)
-            throws IOException {
+    static boolean nextNotTokenOrNull(JsonParser p, JsonToken token) {
         var curToken = p.nextToken();
         return curToken != token && curToken != null;
     }
@@ -101,8 +95,7 @@ final class FlowUtil {
     static <T> void writeArrrayOfObjects(
             Collection<T> collection,
             FlowSerContext ctx,
-            FailableConsumer<T, IOException> c)
-            throws IOException {
+            Consumer<T> c) {
         writeArrayWrap(ctx, () -> {
             for (T obj : collection) {
                 writeArrayObjectWrap(ctx, () -> {
@@ -118,8 +111,7 @@ final class FlowUtil {
 
     static void writeArrayWrap(
             FlowSerContext ctx,
-            FailableRunnable<IOException> r)
-            throws IOException {
+            Runnable r) {
         var gen = ctx.getGen();
         var isXml = isXml(ctx);
 
@@ -140,8 +132,7 @@ final class FlowUtil {
 
     static void writeArrayObjectWrap(
             FlowSerContext ctx,
-            FailableRunnable<IOException> r)
-            throws IOException {
+            Runnable r) {
         var gen = ctx.getGen();
         var isXml = isXml(ctx);
         if (!isXml) {

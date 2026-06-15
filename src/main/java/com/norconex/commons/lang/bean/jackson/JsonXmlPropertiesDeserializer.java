@@ -14,14 +14,13 @@
  */
 package com.norconex.commons.lang.bean.jackson;
 
-import java.io.IOException;
-
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.norconex.commons.lang.bean.BeanMapper;
 import com.norconex.commons.lang.map.Properties;
+
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.deser.std.StdDeserializer;
 
 /**
  * XML deserializer for {@link Properties}.
@@ -33,7 +32,7 @@ public class JsonXmlPropertiesDeserializer extends StdDeserializer<Properties> {
     private static final long serialVersionUID = 1L;
 
     public JsonXmlPropertiesDeserializer() {
-        this(null);
+        super(Properties.class);
     }
 
     public JsonXmlPropertiesDeserializer(Class<?> vc) {
@@ -42,13 +41,11 @@ public class JsonXmlPropertiesDeserializer extends StdDeserializer<Properties> {
 
     @Override
     public Properties deserialize(
-            JsonParser p, DeserializationContext ctxt) throws IOException {
-        var node = (JsonNode) p.getCodec().readTree(p);
+            JsonParser p, DeserializationContext ctxt) {
+        var node = (JsonNode) p.readValueAsTree();
         var props = new Properties();
 
-        node.fields().forEachRemaining(en -> {
-            var key = en.getKey();
-            var valueNode = en.getValue();
+        node.forEachEntry((key, valueNode) -> {
             if (valueNode.isArray()) {
                 valueNode.forEach(v -> addString(props, key, v));
             } else {

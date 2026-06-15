@@ -20,7 +20,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import tools.jackson.databind.annotation.JsonSerialize;
 import com.norconex.commons.lang.collection.CollectionUtil;
 
 /**

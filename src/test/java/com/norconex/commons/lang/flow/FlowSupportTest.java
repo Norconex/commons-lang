@@ -25,8 +25,8 @@ import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.JacksonAnnotationsInside;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize.Typing;
+import tools.jackson.databind.annotation.JsonSerialize;
+import tools.jackson.databind.annotation.JsonSerialize.Typing;
 
 class FlowSupportTest {
 

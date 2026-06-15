@@ -16,16 +16,8 @@ package com.norconex.commons.lang.flow.module;
 
 import static java.util.Optional.ofNullable;
 
-import java.io.IOException;
 import java.util.function.Consumer;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.BeanProperty;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.ser.ContextualSerializer;
-import com.fasterxml.jackson.databind.ser.ResolvableSerializer;
 import com.norconex.commons.lang.ClassUtil;
 import com.norconex.commons.lang.flow.FlowMapperConfig;
 import com.norconex.commons.lang.flow.JsonFlow;
@@ -33,6 +25,11 @@ import com.norconex.commons.lang.flow.JsonFlow.NoBuilder;
 
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.BeanProperty;
+import tools.jackson.databind.DatabindException;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ValueSerializer;
 
 /**
  * Flow serializer.
@@ -41,11 +38,11 @@ import lombok.RequiredArgsConstructor;
  * @since 3.0.0
  */
 @RequiredArgsConstructor
-public class FlowSerializer<T> extends JsonSerializer<Consumer<T>>
-        implements ContextualSerializer, ResolvableSerializer {
+public class FlowSerializer<T>
+        extends ValueSerializer<Consumer<T>> {
 
     private final FlowMapperConfig config;
-    private final JsonSerializer<?> defaultSerializer;
+    private final ValueSerializer<?> defaultSerializer;
     private final ThreadLocal<FlowMapperConfig> propCfg = new ThreadLocal<>();
 
     @SuppressWarnings("unchecked")
@@ -56,15 +53,15 @@ public class FlowSerializer<T> extends JsonSerializer<Consumer<T>>
     public void serialize(
             Consumer<T> value,
             JsonGenerator gen,
-            SerializerProvider sp) throws IOException {
+            SerializationContext sp) {
         rootHandler.write(value, new FlowSerContext(
                 ofNullable(propCfg.get()).orElse(config), gen));
     }
 
     @Override
-    public JsonSerializer<?> createContextual(
-            SerializerProvider prov, BeanProperty property)
-            throws JsonMappingException {
+    public ValueSerializer<?> createContextual(
+            SerializationContext prov, BeanProperty property)
+            throws DatabindException {
         if (property == null) {
             return defaultSerializer;
         }
@@ -85,11 +82,10 @@ public class FlowSerializer<T> extends JsonSerializer<Consumer<T>>
     }
 
     @Override
-    public void resolve(SerializerProvider provider)
-            throws JsonMappingException {
-        if (defaultSerializer != null
-                && defaultSerializer instanceof ResolvableSerializer rs) {
-            rs.resolve(provider);
+    public void resolve(SerializationContext provider)
+            throws DatabindException {
+        if (defaultSerializer != null) {
+            defaultSerializer.resolve(provider);
         }
     }
 

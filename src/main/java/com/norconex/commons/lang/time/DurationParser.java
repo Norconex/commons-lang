@@ -204,7 +204,7 @@ public class DurationParser {
                         "Invalid duration value: \"%s\".", duration, numGroup);
                 return defaultValue;
             }
-            var val = NumberUtils.toFloat(num, -1);
+            var val = NumberUtils.toDouble(num, -1);
             if (val == -1) {
                 parseError(throwException,
                         "Invalid duration value: \"%s\".", duration, numGroup);

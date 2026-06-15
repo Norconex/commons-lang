@@ -23,8 +23,8 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import com.fasterxml.jackson.annotation.JacksonAnnotationsInside;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize.Typing;
+import tools.jackson.databind.annotation.JsonSerialize;
+import tools.jackson.databind.annotation.JsonSerialize.Typing;
 import com.norconex.commons.lang.bean.BeanMapper;
 import com.norconex.commons.lang.flow.module.FlowModule;
 

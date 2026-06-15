@@ -16,9 +16,9 @@ package com.norconex.commons.lang.bean.jackson;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.ValueSerializer;
+import tools.jackson.databind.SerializationContext;
 import com.norconex.commons.lang.bean.BeanMapper;
 import com.norconex.commons.lang.map.Properties;
 
@@ -26,15 +26,15 @@ import com.norconex.commons.lang.map.Properties;
  * XML serializer for {@link Properties}.
  * Already registered in {@link BeanMapper}.
  */
-class JsonXmlPropertiesSerializer extends JsonSerializer<Properties> {
+class JsonXmlPropertiesSerializer extends ValueSerializer<Properties> {
 
     @Override
     public void serialize(
-            Properties props, JsonGenerator gen, SerializerProvider serializers)
-            throws IOException {
+            Properties props, JsonGenerator gen,
+            SerializationContext serializers) {
         gen.writeStartObject();
         for (String key : props.keySet()) {
-            gen.writeFieldName(key);
+            gen.writeName(key);
             gen.writeStartArray();
             for (String val : props.getStrings(key)) {
                 gen.writeString(val);

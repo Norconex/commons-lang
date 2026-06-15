@@ -14,7 +14,7 @@
  */
 package com.norconex.commons.lang.flow.module;
 
-import com.fasterxml.jackson.databind.module.SimpleModule;
+import tools.jackson.databind.module.SimpleModule;
 import com.norconex.commons.lang.flow.FlowMapperConfig;
 
 public class FlowModule extends SimpleModule {

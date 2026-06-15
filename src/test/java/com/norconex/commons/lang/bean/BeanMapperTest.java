@@ -45,8 +45,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
+import tools.jackson.databind.DatabindException;
+import tools.jackson.databind.exc.InvalidTypeIdException;
 import com.norconex.commons.lang.ExceptionUtil;
 import com.norconex.commons.lang.Sleeper;
 import com.norconex.commons.lang.bean.BeanMapper.Format;
@@ -253,7 +253,7 @@ class BeanMapperTest {
                         TestConfig.class,
                         new StringReader(yaml),
                         Format.YAML))
-                .withCauseInstanceOf(JsonMappingException.class)
+                .withCauseInstanceOf(DatabindException.class)
                 .withStackTraceContaining("not a subtype");
 
         // With good mapping, it should succeed
