@@ -21,6 +21,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
@@ -28,6 +29,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.norconex.commons.lang.bean.BeanMapper.Format;
 import com.norconex.commons.lang.bean.jackson.JsonXmlCollection;
+import tools.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -78,6 +80,22 @@ class XmlEdgeCaseTest {
         private String presentField = "default";
         private String emptyField = "default";
         private String nullField = "default";
+    }
+
+    @Data
+    @Accessors(chain = true)
+    static class BeanWithXmlAttribute {
+        @JacksonXmlProperty(isAttribute = true)
+        private String id;
+        private String name;
+    }
+
+    @Data
+    @Accessors(chain = true)
+    static class SetCollectionXmlBean {
+        @JsonXmlCollection(entryName = "item")
+        private Set<String> items;
+        private String label;
     }
 
     // Exercises XmlTokenStream._collectUntilTag() self-closing → null path
@@ -280,5 +298,65 @@ class XmlEdgeCaseTest {
         var bean = new NullableXmlBean().setName("copy-test").setCount(1);
         assertThatNoException().isThrownBy(
                 () -> mapper.assertWriteRead(bean, Format.XML));
+    }
+
+    // Exercises XmlTokenStream attribute loop: _nextAttributeIndex < _attributeCount
+    // and XML_ATTRIBUTE_NAME / XML_ATTRIBUTE_VALUE states in _next()
+    @Test
+    void testXmlBeanWithAttribute() {
+        var xml = """
+                <BeanWithXmlAttribute id="test-id">
+                  <name>hello</name>
+                </BeanWithXmlAttribute>
+                """;
+        var result = BeanMapper.DEFAULT.read(BeanWithXmlAttribute.class,
+                new StringReader(xml), Format.XML);
+        assertThat(result.getId()).isEqualTo("test-id");
+        assertThat(result.getName()).isEqualTo("hello");
+    }
+
+    // Exercises _collectUntilTag() StringBuilder accumulation (multiple CDATA sections)
+    @Test
+    void testXmlMultipleCdataSections() {
+        var xml = """
+                <NullableXmlBean>
+                  <name><![CDATA[hello]]><![CDATA[ world]]></name>
+                  <count>5</count>
+                </NullableXmlBean>
+                """;
+        var result = BeanMapper.DEFAULT.read(NullableXmlBean.class,
+                new StringReader(xml), Format.XML);
+        // Result should contain the concatenated CDATA content
+        assertThat(result.getName()).contains("hello");
+        assertThat(result.getCount()).isEqualTo(5);
+    }
+
+    // Exercises JsonXmlCollectionDeserializer.createCollection() Set/HashSet fallback path
+    @Test
+    void testXmlSetCollection() {
+        var xml = """
+                <SetCollectionXmlBean>
+                  <label>set-test</label>
+                  <items>
+                    <item>alpha</item>
+                    <item>beta</item>
+                    <item>gamma</item>
+                  </items>
+                </SetCollectionXmlBean>
+                """;
+        var result = BeanMapper.DEFAULT.read(SetCollectionXmlBean.class,
+                new StringReader(xml), Format.XML);
+        assertThat(result.getItems()).containsExactlyInAnyOrder("alpha", "beta",
+                "gamma");
+        assertThat(result.getLabel()).isEqualTo("set-test");
+    }
+
+    // Exercises XML attribute write-read round-trip
+    @Test
+    void testXmlBeanWithAttributeWriteRead() {
+        var bean =
+                new BeanWithXmlAttribute().setId("round-trip").setName("test");
+        assertThatNoException().isThrownBy(
+                () -> BeanMapper.DEFAULT.assertWriteRead(bean, Format.XML));
     }
 }
