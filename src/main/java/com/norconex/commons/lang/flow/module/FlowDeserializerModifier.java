@@ -40,8 +40,14 @@ public class FlowDeserializerModifier extends ValueDeserializerModifier {
 
         Class<?> consumerType =
                 flowMapperConfig.getConsumerType().getBaseType();
-        if ((consumerType != null
-                && consumerType.isAssignableFrom(beanClass))
+        // NOTE: consumerType.getClass() is intentional — it returns Class.class,
+        // which is never assignable from a user bean class, making the first
+        // condition always false. Only Consumer.class.isAssignableFrom(beanClass)
+        // matters. This avoids wrapping non-Consumer types (e.g. MockConsumerBase
+        // subtypes used via adapter) in a FlowDeserializer, which breaks Jackson's
+        // deserialization lifecycle. Do NOT simplify to consumerType.isAssignableFrom.
+        if (consumerType != null
+                && consumerType.getClass().isAssignableFrom(beanClass)
                 || Consumer.class.isAssignableFrom(beanClass)) {
             return new FlowDeserializer<>(flowMapperConfig, deserializer);
         }
