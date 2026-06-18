@@ -29,8 +29,14 @@ import tools.jackson.databind.JavaType;
 import tools.jackson.databind.deser.std.StdDeserializer;
 
 /**
- * Deserializes a list of "entry" elements each having a "key" and "value"
- * child elements into a Map.
+ * Deserializes a map represented either as a list of "entry" elements each
+ * having "key" and "value" child elements (the XML representation produced by
+ * {@link JsonXmlMapSerializer}) or as a native JSON/YAML object. The two are
+ * distinguished by the shape of each value (an object/array entry vs a scalar),
+ * so no format flag is needed - which matters because this deserializer is also
+ * applied via {@code @JsonDeserialize} (carried by {@link JsonXmlMap}) to reach
+ * {@code @JsonUnwrapped} bean properties, whose values Jackson replays through a
+ * buffer that exposes neither the XML parser nor the XML context.
  * @param <T> Map concrete type
  */
 public class JsonXmlMapDeserializer<T extends Map<?, ?>>
@@ -88,31 +94,49 @@ public class JsonXmlMapDeserializer<T extends Map<?, ?>>
             }
         }
 
+        // p is positioned at the START_OBJECT of the map. Each member is either
+        // an "entry" element whose value is an object/array (XML), or a direct
+        // key->scalar pair (native JSON/YAML).
         while (p.nextToken() != JsonToken.END_OBJECT) {
-
-            if (p.currentToken() == JsonToken.START_OBJECT) {
-                Object key = null;
-                Object value = null;
-
-                while (p.nextToken() != JsonToken.END_OBJECT) {
-                    var fieldName = p.currentName();
-                    p.nextToken(); // Move to the value of the field
-
-                    if (keyName.equals(fieldName)) {
-                        key = ctxt.readValue(p,
-                                fieldType(keyType, mapType.containedType(0)));
-                    } else if (valueName.equals(fieldName)) {
-                        value = ctxt.readValue(p,
-                                fieldType(valueType, mapType.containedType(1)));
-                    }
+            var memberName = p.currentName();
+            var valueToken = p.nextToken();
+            if (valueToken == JsonToken.START_ARRAY) {
+                while (p.nextToken() != JsonToken.END_ARRAY) {
+                    readEntry(p, ctxt, map, keyName, valueName, keyType,
+                            valueType);
                 }
-
-                if (key != null) {
-                    map.put(key, value);
-                }
+            } else if (valueToken == JsonToken.START_OBJECT) {
+                readEntry(p, ctxt, map, keyName, valueName, keyType, valueType);
+            } else {
+                // native key->value pair: member name is the key
+                map.put(memberName, ctxt.readValue(p,
+                        fieldType(valueType, mapType.containedType(1))));
             }
         }
         return (T) map;
+    }
+
+    // reads a single XML "entry" object (positioned at its START_OBJECT)
+    private void readEntry(
+            JsonParser p, DeserializationContext ctxt, Map<Object, Object> map,
+            String keyName, String valueName, Class<?> keyType,
+            Class<?> valueType) {
+        Object key = null;
+        Object value = null;
+        while (p.nextToken() != JsonToken.END_OBJECT) {
+            var fieldName = p.currentName();
+            p.nextToken(); // Move to the value of the field
+            if (keyName.equals(fieldName)) {
+                key = ctxt.readValue(p,
+                        fieldType(keyType, mapType.containedType(0)));
+            } else if (valueName.equals(fieldName)) {
+                value = ctxt.readValue(p,
+                        fieldType(valueType, mapType.containedType(1)));
+            }
+        }
+        if (key != null) {
+            map.put(key, value);
+        }
     }
 
     private Class<?> fieldType(Class<?> annotType, JavaType containedType) {

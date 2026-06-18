@@ -14,9 +14,8 @@
  */
 package com.norconex.commons.lang.bean.jackson;
 
-import tools.jackson.databind.BeanDescription;
-import tools.jackson.databind.DeserializationConfig;
 import tools.jackson.databind.BeanDescription.Supplier;
+import tools.jackson.databind.DeserializationConfig;
 import tools.jackson.databind.ValueDeserializer;
 import tools.jackson.databind.ValueSerializer;
 import tools.jackson.databind.SerializationConfig;
@@ -29,6 +28,14 @@ import com.norconex.commons.lang.bean.BeanMapper;
 /**
  * Jackson module providing (de)serializers for Collections, so they can be
  * written and read as JSON, Yaml, and XML without special hacks.
+ * <p>
+ * The deserializer modifier covers collection properties of regular (not
+ * {@code @JsonUnwrapped}) beans. Collection properties of {@code @JsonUnwrapped}
+ * beans (such as {@link com.norconex.commons.lang.config.Configurable}
+ * configuration objects) are resolved by Jackson through a path that bypasses
+ * deserializer modifiers; those are handled via {@code @JsonDeserialize}
+ * annotations, either on the collection type itself or carried by
+ * {@link JsonXmlCollection}.
  * Already registered in {@link BeanMapper}.
  * @since 3.0.0
  */
@@ -63,7 +70,7 @@ public class JsonXmlCollectionModule extends SimpleModule {
         public ValueDeserializer<?> modifyCollectionDeserializer(
                 DeserializationConfig config, CollectionType type,
                 Supplier beanDesc, ValueDeserializer<?> deserializer) {
-            return new JsonXmlCollectionDeserializer<>(deserializer);
+            return new JsonXmlCollectionDeserializer<>();
         }
     }
 }

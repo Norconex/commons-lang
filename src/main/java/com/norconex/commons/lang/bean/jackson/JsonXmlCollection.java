@@ -25,7 +25,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JacksonAnnotationsInside;
 import com.norconex.commons.lang.bean.BeanMapper;
+
+import tools.jackson.databind.annotation.JsonDeserialize;
 
 /**
  * <p>
@@ -35,10 +38,19 @@ import com.norconex.commons.lang.bean.BeanMapper;
  * Use this annotation only when you wish to overwrite default settings
  * via its attributes. It is otherwise of no use.
  * </p>
+ * <p>
+ * It also carries {@link JsonDeserialize} with
+ * {@link JsonXmlCollectionDeserializer} so the collection is read back
+ * correctly even when it is a property of a {@code @JsonUnwrapped} bean (which
+ * Jackson resolves through a path that bypasses the module's deserializer
+ * modifier).
+ * </p>
  * @since 3.0.0
  */
 @Retention(RUNTIME)
 @Target({ TYPE, FIELD })
+@JacksonAnnotationsInside
+@JsonDeserialize(using = JsonXmlCollectionDeserializer.class)
 public @interface JsonXmlCollection {
 
     /**

@@ -62,12 +62,14 @@ import org.json.JSONTokener;
 import com.norconex.commons.lang.EqualsUtil;
 import com.norconex.commons.lang.bean.BeanException;
 import com.norconex.commons.lang.bean.BeanUtil;
+import com.norconex.commons.lang.bean.jackson.JsonXmlPropertiesDeserializer;
 import com.norconex.commons.lang.collection.CollectionUtil;
 import com.norconex.commons.lang.convert.ConverterException;
 import com.norconex.commons.lang.convert.GenericConverter;
 import com.norconex.commons.lang.text.TextMatcher;
 
 import lombok.extern.slf4j.Slf4j;
+import tools.jackson.databind.annotation.JsonDeserialize;
 
 /**
  * <p>This class is a enhanced version of {@link java.util.Properties}
@@ -100,6 +102,7 @@ import lombok.extern.slf4j.Slf4j;
  * its desired type, a {@link PropertiesException} is thrown.</p>
  */
 @Slf4j
+@JsonDeserialize(using = JsonXmlPropertiesDeserializer.class)
 public class Properties extends ObservableMap<String, List<String>>
         implements Serializable {
 

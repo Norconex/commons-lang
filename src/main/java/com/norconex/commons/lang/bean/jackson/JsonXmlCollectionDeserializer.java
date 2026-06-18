@@ -1,4 +1,4 @@
-/* Copyright 2023 Norconex Inc.
+/* Copyright 2023-2026 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  */
 package com.norconex.commons.lang.bean.jackson;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -27,92 +26,98 @@ import tools.jackson.core.JsonToken;
 import tools.jackson.databind.BeanProperty;
 import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.ValueDeserializer;
-import tools.jackson.databind.DatabindException;
-import tools.jackson.dataformat.xml.deser.XmlDeserializationContext;
 import com.norconex.commons.lang.ClassUtil;
 
-import lombok.RequiredArgsConstructor;
-
 /**
- * XML collection deserializer. Adds support for {@link JsonXmlCollection}
- * annotation and properly writes self-closing and empty tag pairs.
- * for <code>null</code> and empty, respectively.
+ * <p>
+ * XML collection deserializer. Adds support for the {@link JsonXmlCollection}
+ * annotation and reads collections back regardless of how the XML mapper
+ * surfaces repeated child elements.
+ * </p>
+ * <p>
+ * Registered through the {@link JsonXmlCollectionModule} deserializer modifier
+ * for regular bean collection properties, and through {@code @JsonDeserialize}
+ * (on the collection type or carried by {@link JsonXmlCollection}) for
+ * collection properties of {@code @JsonUnwrapped} beans (such as
+ * {@link com.norconex.commons.lang.config.Configurable} configuration objects),
+ * which Jackson resolves through a path that bypasses deserializer modifiers.
+ * </p>
+ * <p>
+ * The XML mapper presents the collection as a wrapper object holding the
+ * entries. Depending on the entry kind, repeated elements appear either as a
+ * JSON array (typically for object entries) or as repeated property names
+ * (typically for scalar entries); a single entry appears as a lone value.
+ * All of these shapes are handled here, as is the plain {@code START_ARRAY}
+ * used by JSON and YAML.
+ * </p>
  * @param <T> type of collection
  * @see JsonXmlCollection
  * @since 3.0.0
  */
-@RequiredArgsConstructor
 public class JsonXmlCollectionDeserializer<T extends Collection<?>>
         extends ValueDeserializer<T> {
+
     private BeanProperty currentProperty;
-    private final ValueDeserializer<?> defaultDeserializer;
 
     @Override
     public ValueDeserializer<?> createContextual(
-            DeserializationContext ctx, BeanProperty property)
-            throws DatabindException {
+            DeserializationContext ctx, BeanProperty property) {
         currentProperty = property;
-        if (property == null) {
-            return defaultDeserializer;
-        }
-        return Collection.class.isAssignableFrom(
-                property.getType().getRawClass())
-                && ctx instanceof XmlDeserializationContext
-                        ? this
-                        : defaultDeserializer;
-    }
-
-    @Override
-    public void resolve(DeserializationContext ctxt)
-            throws DatabindException {
-        if (defaultDeserializer != null) {
-            defaultDeserializer.resolve(ctxt);
-        }
+        return this;
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public T deserialize(
-            JsonParser p, DeserializationContext ctx) {
-
-        var isXml = ctx instanceof XmlDeserializationContext;
-        var enderToken = isXml ? JsonToken.END_OBJECT : JsonToken.END_ARRAY;
-
+    public T deserialize(JsonParser p, DeserializationContext ctx) {
+        var contentType = currentProperty.getType()
+                .getContentType().getRawClass();
         var objects = createCollection();
 
-        if (p.currentToken() == JsonToken.VALUE_STRING) {
-            //NOTE: only way we can get a string here is if we are dealing
-            // with an open and end tags and no content or only white spaces
-            // in between.
-            return (T) objects;
-        }
+        var token = p.currentToken();
 
-        p.nextToken();
-
-        if (p.currentToken() == enderToken) { // <outer>
-            // Self-closed or empty tag, so we treat it as an instruction
-            // to blanking the list so we return it empty.
-            return (T) objects;
-        }
-
-        do {
-            // For XML, each collection entries are made of a field name
-            // followed by either an object or a scalar.
-            if (isXml) {
-                p.nextToken(); // <inner>  (field name)
+        // JSON/YAML style array (also defensive for non-XML contexts).
+        if (token == JsonToken.START_ARRAY) {
+            while (p.nextToken() != JsonToken.END_ARRAY) {
+                addIfPresent(objects, p, contentType);
             }
-            // Since empty tags come up as empty string
-            // We check here to prevent reading a null entry, which may generate
-            // the instantiation of an object with nothing set on it.
-            if (StringUtils.isNotBlank(p.getText())) {
-                var value = p.readValueAs(currentProperty.getType()
-                        .getContentType().getRawClass());
-                if (!(value instanceof String v) || !StringUtils.isBlank(v)) {
-                    objects.add(value);
+            return (T) objects;
+        }
+
+        // Anything other than a wrapper object (e.g. an empty or self-closed
+        // element surfaced as a blank string or null) yields an empty list.
+        if (token != JsonToken.START_OBJECT) {
+            return (T) objects;
+        }
+
+        // XML wrapper object. Each entry is an inner element name (a property)
+        // followed by either an array (repeated object entries), a single
+        // object/scalar value, or - for repeated scalar entries - a repeated
+        // property name. Iterate the whole wrapper until its closing token.
+        while (p.nextToken() != JsonToken.END_OBJECT) {
+            // current token is the inner element name (PROPERTY_NAME)
+            if (p.nextToken() == JsonToken.START_ARRAY) {
+                while (p.nextToken() != JsonToken.END_ARRAY) {
+                    addIfPresent(objects, p, contentType);
                 }
+            } else {
+                addIfPresent(objects, p, contentType);
             }
-        } while (p.nextToken() != enderToken);
+        }
         return (T) objects;
+    }
+
+    private void addIfPresent(
+            Collection<Object> objects, JsonParser p, Class<?> contentType) {
+        // Empty tags surface as blank strings; skip them so we do not create
+        // an empty entry object.
+        if (p.currentToken() == JsonToken.VALUE_STRING
+                && StringUtils.isBlank(p.getText())) {
+            return;
+        }
+        var value = p.readValueAs(contentType);
+        if (!(value instanceof String v) || !StringUtils.isBlank(v)) {
+            objects.add(value);
+        }
     }
 
     @SuppressWarnings("unchecked")

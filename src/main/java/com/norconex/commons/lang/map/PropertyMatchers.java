@@ -20,7 +20,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
 
+import tools.jackson.databind.annotation.JsonDeserialize;
 import tools.jackson.databind.annotation.JsonSerialize;
+import com.norconex.commons.lang.bean.jackson.JsonXmlCollectionDeserializer;
 import com.norconex.commons.lang.collection.CollectionUtil;
 
 /**
@@ -29,6 +31,7 @@ import com.norconex.commons.lang.collection.CollectionUtil;
  * @since 2.0.0
  */
 @JsonSerialize(as = ArrayList.class)
+@JsonDeserialize(using = JsonXmlCollectionDeserializer.class)
 public class PropertyMatchers extends ArrayList<PropertyMatcher>
         implements Predicate<Properties> {
 

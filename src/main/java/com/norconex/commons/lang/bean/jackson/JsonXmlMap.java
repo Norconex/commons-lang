@@ -22,7 +22,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.util.HashMap;
 
+import com.fasterxml.jackson.annotation.JacksonAnnotationsInside;
 import com.norconex.commons.lang.bean.BeanMapper;
+
+import tools.jackson.databind.annotation.JsonDeserialize;
 
 /**
  * <p>
@@ -32,10 +35,18 @@ import com.norconex.commons.lang.bean.BeanMapper;
  * Use this annotation only when you wish to overwrite default settings
  * via its attributes. It is otherwise of no use.
  * </p>
+ * <p>
+ * It also carries {@link JsonDeserialize} with {@link JsonXmlMapDeserializer}
+ * so the map is read back correctly even when it is a property of a
+ * {@code @JsonUnwrapped} bean (which Jackson resolves through a path that
+ * bypasses the module's {@code addDeserializer} registration).
+ * </p>
  * @since 3.0.0
  */
 @Retention(RUNTIME)
 @Target({ TYPE, FIELD })
+@JacksonAnnotationsInside
+@JsonDeserialize(using = JsonXmlMapDeserializer.class)
 public @interface JsonXmlMap {
 
     /**
