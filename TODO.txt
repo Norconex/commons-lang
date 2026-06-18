@@ -32,9 +32,6 @@ LOWER:
 - Use nill/nillable for null handling, as desribed here:
   https://kiranscope.blogspot.com/2009/03/blank-space-or-null-string-validation.html
 
-- DONE? Add feature and tests for when parent element is specified but has no
-  value, which means blanking a list 
-  (e.g. HTTP Collector: StandardSitemapResolverTest).
 
 - Make Properties and XML take a IConverter as constructor agreement, but 
   default to Converter static instance.
