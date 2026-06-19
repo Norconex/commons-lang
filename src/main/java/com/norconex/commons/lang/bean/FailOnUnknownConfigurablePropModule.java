@@ -81,8 +81,24 @@ class FailOnUnknownConfigurablePropModule extends SimpleModule {
 
         @Override
         public Object deserialize(JsonParser p, DeserializationContext ctxt) {
-            var configurable = (Configurable<?>) delegate.getValueInstantiator()
-                    .createUsingDefaultOrWithoutArguments(ctxt);
+            return deserializeInto(
+                    p,
+                    (Configurable<?>) delegate.getValueInstantiator()
+                            .createUsingDefaultOrWithoutArguments(ctxt));
+        }
+
+        // Honor read-into-existing (readerForUpdating) so callers that read
+        // into an existing Configurable instance get that instance populated.
+        // Without this, the base class falls back to the create variant and
+        // the caller's instance is left untouched.
+        @Override
+        public Object deserialize(
+                JsonParser p, DeserializationContext ctxt, Object intoValue) {
+            return deserializeInto(p, (Configurable<?>) intoValue);
+        }
+
+        private Object deserializeInto(
+                JsonParser p, Configurable<?> configurable) {
             var configuration = configurable.getConfiguration();
             var node = p.readValueAsTree();
             var mapper = beanMapper.toObjectMapper(BeanMapper.Format.JSON);
