@@ -134,9 +134,8 @@ public final class ContentType implements Serializable {
      * @return content type instance or {@code null} if content type string is
      *         {@code null} or blank.
      */
-    @JsonCreator
-    public static ContentType valueOf(
-            @JsonProperty("type") String contentType) {
+    @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
+    public static ContentType valueOf(String contentType) {
         var trimmedType = StringUtils.trim(contentType);
         if (StringUtils.isBlank(trimmedType)) {
             return null;

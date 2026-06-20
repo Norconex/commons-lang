@@ -41,6 +41,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonSetter.Value;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
@@ -585,6 +586,15 @@ public class BeanMapper { //NOSONAR
         });
     }
 
+    // A Configurable's only serializable state is its (unwrapped) configuration.
+    // Suppress auto-detected getters on the implementing class so derived
+    // convenience accessors (e.g. getUserAgent(), getOnMatch(), getHttpClient())
+    // are not emitted as duplicate/extra properties alongside the unwrapped
+    // config (which otherwise produces repeated elements that fail to read back).
+    @JsonAutoDetect(
+        getterVisibility = JsonAutoDetect.Visibility.NONE,
+        isGetterVisibility = JsonAutoDetect.Visibility.NONE
+    )
     abstract static class ConfigurableMixIn<T> {
         @JsonUnwrapped
         @Valid

@@ -15,6 +15,7 @@
 package com.norconex.commons.lang.bean.jackson;
 
 import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
@@ -48,7 +49,7 @@ import tools.jackson.databind.annotation.JsonDeserialize;
  * @since 3.0.0
  */
 @Retention(RUNTIME)
-@Target({ TYPE, FIELD })
+@Target({ TYPE, FIELD, METHOD })
 @JacksonAnnotationsInside
 @JsonDeserialize(using = JsonXmlCollectionDeserializer.class)
 public @interface JsonXmlCollection {

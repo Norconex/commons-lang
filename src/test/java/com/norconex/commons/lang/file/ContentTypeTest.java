@@ -23,7 +23,22 @@ import java.util.Locale;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+
 class ContentTypeTest {
+
+    @Test
+    void testRawMapperJsonRoundTrip() {
+        // ContentType must round-trip through a plain mapper that has NO
+        // commons-lang module registered (e.g. crawler SerialUtil). Its
+        // @JsonValue scalar form must be readable by its @JsonCreator.
+        ObjectMapper mapper = JsonMapper.builder().build();
+        var json = mapper.writeValueAsString(ContentType.HTML);
+        assertThat(json).isEqualTo("\"text/html\"");
+        assertThat(mapper.readValue(json, ContentType.class))
+                .isEqualTo(ContentType.HTML);
+    }
 
     @Test
     void testGetDisplayName() {
