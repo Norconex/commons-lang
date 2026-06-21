@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -349,6 +350,10 @@ public class BeanMapper { //NOSONAR
     // We are caching them on first use
     private final Map<Format, ObjectMapper> cache = new ConcurrentHashMap<>(3);
 
+    // Lazily-built mapper used to re-read a Configurable's config from a tree.
+    private final AtomicReference<ObjectMapper> reparseMapper =
+            new AtomicReference<>();
+
     // We keep a copy of resolved polymorphic type as they are otherwise
     // difficult to obtain from the ObjectMapper and we may need them in
     // different context (e.g., registration in OpenApi).
@@ -496,94 +501,113 @@ public class BeanMapper { //NOSONAR
      * @return Jackson ObjectMapper
      */
     public ObjectMapper toObjectMapper(Format format) {
-        return cache.computeIfAbsent(format, fmt -> {
+        return cache.computeIfAbsent(format,
+                fmt -> buildMapper(fmt, fmt == Format.XML));
+    }
 
-            //--- Builder ---
+    // Mapper used to (re-)read a Configurable's configuration from the tree
+    // captured by FailOnBeanDeserializer. It is JSON-based (the capture is a
+    // generic tree) but carries the XML structure modules so that UNannotated
+    // collection/map properties of a config are unwrapped the same way the XML
+    // mapper would, keeping @JsonXmlCollection/@JsonXmlMap optional. Used for
+    // reading only, so the modules' serializer side is inert.
+    ObjectMapper configReparseMapper() {
+        var m = reparseMapper.get();
+        if (m == null) {
+            m = buildMapper(Format.JSON, true);
+            reparseMapper.set(m);
+        }
+        return m;
+    }
 
-            var builder = format.builder.get();
+    private ObjectMapper buildMapper(
+            Format format, boolean xmlStructureModules) {
 
-            // general features:
-            builder.disable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY);
-            builder.enable(MapperFeature.ALLOW_FINAL_FIELDS_AS_MUTATORS);
-            builder.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS);
-            builder.enable(MapperFeature.USE_GETTERS_AS_SETTERS);
-            builder.defaultMergeable(false);
-            builder.disable(StreamReadFeature.AUTO_CLOSE_SOURCE);
-            if (LOG.isDebugEnabled()) {
-                builder.enable(StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION);
-            }
-            if (builder instanceof JsonMapper.Builder jsonBuilder) {
-                jsonBuilder.enable(JsonReadFeature.ALLOW_JAVA_COMMENTS);
-                jsonBuilder.enable(JsonReadFeature.ALLOW_YAML_COMMENTS);
-                jsonBuilder
-                        .enable(JsonReadFeature.ALLOW_UNQUOTED_PROPERTY_NAMES);
-                jsonBuilder.enable(JsonReadFeature.ALLOW_TRAILING_COMMA);
-            }
-            if (builder instanceof YAMLMapper.Builder yamlBuilder) {
-                yamlBuilder.enable(YAMLReadFeature.EMPTY_STRING_AS_NULL);
-                yamlBuilder.withCoercionConfig(LogicalType.POJO, cfg -> cfg
-                        .setCoercion(CoercionInputShape.String,
-                                CoercionAction.AsNull));
-            }
-            if (builder instanceof XmlMapper.Builder xmlBuilder) {
-                xmlBuilder.enable(EMPTY_ELEMENT_AS_NULL);
-            }
-            // handlers:
-            builder.addHandler(new BeanMapperPropertyHandler(this));
+        //--- Builder ---
 
-            // read:
-            builder.configure(
-                    DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
-                    !ignoreUnknownProperties);
-            builder.configure(
-                    DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT,
-                    treatEmptyAsNull);
-            builder.configure(
-                    DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES,
-                    false);
-            builder.disable(
-                    DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY);
-            builder.changeDefaultNullHandling(v -> Value
-                    .empty()
-                    .withValueNulls(Nulls.SET)
-                    .withContentNulls(Nulls.SET));
-            builder.withCoercionConfig(LogicalType.POJO, cfg -> cfg
-                    .setAcceptBlankAsEmpty(true)
-                    .setCoercion(CoercionInputShape.EmptyString,
-                            CoercionAction.AsEmpty));
+        var builder = format.builder.get();
 
-            // write:
-            builder.configure(SerializationFeature.INDENT_OUTPUT, indent);
-            builder.disable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
+        // general features:
+        builder.disable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY);
+        builder.enable(MapperFeature.ALLOW_FINAL_FIELDS_AS_MUTATORS);
+        builder.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS);
+        builder.enable(MapperFeature.USE_GETTERS_AS_SETTERS);
+        builder.defaultMergeable(false);
+        builder.disable(StreamReadFeature.AUTO_CLOSE_SOURCE);
+        if (LOG.isDebugEnabled()) {
+            builder.enable(StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION);
+        }
+        if (builder instanceof JsonMapper.Builder jsonBuilder) {
+            jsonBuilder.enable(JsonReadFeature.ALLOW_JAVA_COMMENTS);
+            jsonBuilder.enable(JsonReadFeature.ALLOW_YAML_COMMENTS);
+            jsonBuilder
+                    .enable(JsonReadFeature.ALLOW_UNQUOTED_PROPERTY_NAMES);
+            jsonBuilder.enable(JsonReadFeature.ALLOW_TRAILING_COMMA);
+        }
+        if (builder instanceof YAMLMapper.Builder yamlBuilder) {
+            yamlBuilder.enable(YAMLReadFeature.EMPTY_STRING_AS_NULL);
+            yamlBuilder.withCoercionConfig(LogicalType.POJO, cfg -> cfg
+                    .setCoercion(CoercionInputShape.String,
+                            CoercionAction.AsNull));
+        }
+        if (builder instanceof XmlMapper.Builder xmlBuilder) {
+            xmlBuilder.enable(EMPTY_ELEMENT_AS_NULL);
+        }
+        // handlers:
+        builder.addHandler(new BeanMapperPropertyHandler(this));
 
-            // modules:
-            // Nx modules and mix-ins
-            builder.addModule(new GenericJsonModule());
-            if (!configurableDetectionDisabled) {
-                builder.addMixIn(Configurable.class, ConfigurableMixIn.class);
-            }
-            builder.addModule(new FlowModule(flowMapperConfig));
-            if (mapperBuilderCustomizer != null) {
-                mapperBuilderCustomizer.accept(builder);
-            }
-            if (!ignoreUnknownProperties) {
-                builder.addModule(
-                        new FailOnUnknownConfigurablePropModule(this));
-            }
+        // read:
+        builder.configure(
+                DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
+                !ignoreUnknownProperties);
+        builder.configure(
+                DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT,
+                treatEmptyAsNull);
+        builder.configure(
+                DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES,
+                false);
+        builder.disable(
+                DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY);
+        builder.changeDefaultNullHandling(v -> Value
+                .empty()
+                .withValueNulls(Nulls.SET)
+                .withContentNulls(Nulls.SET));
+        builder.withCoercionConfig(LogicalType.POJO, cfg -> cfg
+                .setAcceptBlankAsEmpty(true)
+                .setCoercion(CoercionInputShape.EmptyString,
+                        CoercionAction.AsEmpty));
 
-            // register polymorphic types and mix-ins before building.
-            registerPolymorphicTypes(builder);
-            if (format == Format.XML) {
-                builder.addModule(new JsonXmlCollectionModule());
-                builder.addModule(new JsonXmlMapModule());
-                builder.addModule(new JsonXmlPropertiesModule());
-            }
-            builder.addMixIn(Object.class, NonDefaultInclusionMixIn.class);
+        // write:
+        builder.configure(SerializationFeature.INDENT_OUTPUT, indent);
+        builder.disable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
 
-            //--- Mapper ---
+        // modules:
+        // Nx modules and mix-ins
+        builder.addModule(new GenericJsonModule());
+        if (!configurableDetectionDisabled) {
+            builder.addMixIn(Configurable.class, ConfigurableMixIn.class);
+        }
+        builder.addModule(new FlowModule(flowMapperConfig));
+        if (mapperBuilderCustomizer != null) {
+            mapperBuilderCustomizer.accept(builder);
+        }
+        if (!ignoreUnknownProperties) {
+            builder.addModule(
+                    new FailOnUnknownConfigurablePropModule(this));
+        }
 
-            return format.mapper.apply(builder);
-        });
+        // register polymorphic types and mix-ins before building.
+        registerPolymorphicTypes(builder);
+        if (xmlStructureModules) {
+            builder.addModule(new JsonXmlCollectionModule());
+            builder.addModule(new JsonXmlMapModule());
+            builder.addModule(new JsonXmlPropertiesModule());
+        }
+        builder.addMixIn(Object.class, NonDefaultInclusionMixIn.class);
+
+        //--- Mapper ---
+
+        return format.mapper.apply(builder);
     }
 
     // A Configurable's only serializable state is its (unwrapped) configuration.

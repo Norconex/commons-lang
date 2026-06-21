@@ -101,7 +101,11 @@ class FailOnUnknownConfigurablePropModule extends SimpleModule {
                 JsonParser p, Configurable<?> configurable) {
             var configuration = configurable.getConfiguration();
             var node = p.readValueAsTree();
-            var mapper = beanMapper.toObjectMapper(BeanMapper.Format.JSON);
+            // Re-read the config with a JSON-based mapper that carries the XML
+            // structure modules, so unannotated collection/map properties are
+            // unwrapped (no @JsonXmlCollection/@JsonXmlMap required) while
+            // annotated ones keep working.
+            var mapper = beanMapper.configReparseMapper();
             mapper.readerForUpdating(configuration).readValue(node.toString());
             return configurable;
         }
