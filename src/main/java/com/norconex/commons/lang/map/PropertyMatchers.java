@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import tools.jackson.databind.annotation.JsonDeserialize;
 import tools.jackson.databind.annotation.JsonSerialize;
 import com.norconex.commons.lang.bean.jackson.JsonXmlCollectionDeserializer;
@@ -32,6 +33,13 @@ import com.norconex.commons.lang.collection.CollectionUtil;
  */
 @JsonSerialize(as = ArrayList.class)
 @JsonDeserialize(using = JsonXmlCollectionDeserializer.class)
+// This class is a collection: it serializes as a plain array (see
+// @JsonSerialize above) and is configured as a list of PropertyMatcher
+// entries. The inherited ArrayList/SequencedCollection accessors
+// (isEmpty/getFirst/getLast) are not configurable properties, so we hide
+// them to keep bean introspection (e.g. OpenAPI schema generation) from
+// exposing them as spurious "empty", "first" and "last" properties.
+@JsonIgnoreProperties({ "empty", "first", "last" })
 public class PropertyMatchers extends ArrayList<PropertyMatcher>
         implements Predicate<Properties> {
 
