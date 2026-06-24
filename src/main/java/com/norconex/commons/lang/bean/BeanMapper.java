@@ -92,8 +92,10 @@ import tools.jackson.databind.jsontype.TypeIdResolver;
 import tools.jackson.databind.type.LogicalType;
 import tools.jackson.databind.type.TypeFactory;
 import tools.jackson.dataformat.xml.XmlMapper;
+import tools.jackson.dataformat.yaml.YAMLFactory;
 import tools.jackson.dataformat.yaml.YAMLMapper;
 import tools.jackson.dataformat.yaml.YAMLReadFeature;
+import tools.jackson.dataformat.yaml.YAMLSchema;
 import tools.jackson.dataformat.yaml.YAMLWriteFeature;
 
 /**
@@ -171,7 +173,15 @@ public class BeanMapper { //NOSONAR
                 JsonMapper::builderWithJackson2Defaults,
                 MapperBuilder::build),
         YAML(
-                () -> YAMLMapper.builder()
+                // Use the YAML 1.2 Core schema so null literals (e.g. '~', 'null',
+                // 'Null', 'NULL', empty) are recognized as null for POJO fields.
+                // (Jackson defaults to the JSON schema, which only treats lowercase
+                // 'null' as null.) Since Jackson 3.2 this is configurable on the
+                // factory, replacing the former YAMLParser shim.
+                () -> YAMLMapper.builder(
+                        YAMLFactory.builder()
+                                .yamlSchema(YAMLSchema.CORE)
+                                .build())
                         .disable(YAMLWriteFeature.USE_NATIVE_TYPE_ID),
                 MapperBuilder::build),
                 ;
@@ -532,6 +542,12 @@ public class BeanMapper { //NOSONAR
         builder.enable(MapperFeature.ALLOW_FINAL_FIELDS_AS_MUTATORS);
         builder.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS);
         builder.enable(MapperFeature.USE_GETTERS_AS_SETTERS);
+        // Our NON_DEFAULT inclusion (NonDefaultInclusionMixIn on Object) is a global
+        // default; since Jackson 3.2 (databind#1757) global NON_DEFAULT only compares
+        // against real default-bean values when this feature is enabled. Combined with
+        // our PropertyBuilder shim (which keeps explicit nulls writable), this restores
+        // pre-3.2 default-value round-trip behavior.
+        builder.enable(MapperFeature.USE_REAL_INCLUDE_NON_DEFAULT);
         builder.defaultMergeable(false);
         builder.disable(StreamReadFeature.AUTO_CLOSE_SOURCE);
         if (LOG.isDebugEnabled()) {

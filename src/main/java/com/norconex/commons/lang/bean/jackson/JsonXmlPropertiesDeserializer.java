@@ -42,9 +42,23 @@ public class JsonXmlPropertiesDeserializer extends StdDeserializer<Properties> {
     @Override
     public Properties deserialize(
             JsonParser p, DeserializationContext ctxt) {
-        var node = (JsonNode) p.readValueAsTree();
-        var props = new Properties();
+        return populate(p, new Properties());
+    }
 
+    // Honor read-into-existing (readerForUpdating): when a caller (e.g. the
+    // config reparse) reads into an already-initialized field, populate THAT
+    // instance instead of returning a brand-new one. This preserves the target
+    // Properties' configuration (notably case-insensitive keys), so a field
+    // declared as `new Properties(true)` round-trips with that setting intact.
+    @Override
+    public Properties deserialize(
+            JsonParser p, DeserializationContext ctxt, Properties intoValue) {
+        intoValue.clear();
+        return populate(p, intoValue);
+    }
+
+    private Properties populate(JsonParser p, Properties props) {
+        var node = (JsonNode) p.readValueAsTree();
         node.forEachEntry((key, valueNode) -> {
             if (valueNode.isArray()) {
                 valueNode.forEach(v -> addString(props, key, v));

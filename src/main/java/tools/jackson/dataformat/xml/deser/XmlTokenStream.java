@@ -3,6 +3,7 @@ package tools.jackson.dataformat.xml.deser;
 import java.io.IOException;
 
 import javax.xml.XMLConstants;
+import javax.xml.namespace.QName;
 import javax.xml.stream.*;
 
 import org.codehaus.stax2.XMLStreamLocation2;
@@ -16,9 +17,22 @@ import tools.jackson.dataformat.xml.XmlReadFeature;
 import tools.jackson.dataformat.xml.util.Stax2JacksonReaderAdapter;
 
 /* NOTE: This file is a modified copy of the class of the same fully-qualified
- * name from Jackson library. It was modified to restore Jackson 2.x behavior
- * for EMPTY_ELEMENT_AS_NULL: only self-closing elements (<e/>) are treated as
- * null; explicit empty elements (<e></e>) are treated as empty string "".
+ * name from the Jackson library, kept in sync with the Jackson version this
+ * project depends on. It restores Jackson 2.x behavior for EMPTY_ELEMENT_AS_NULL:
+ * only self-closing elements (<e/>) are treated as null; explicit empty elements
+ * (<e></e>) are treated as empty string "". The ONLY functional change vs the
+ * upstream class is in _collectUntilTag(); everything else is a verbatim copy.
+ */
+/**
+ * Simple helper class used on top of STAX {@link XMLStreamReader} to further
+ * abstract out all irrelevant details, and to expose equivalent of flat token
+ * stream with no "fluff" tokens (comments, processing instructions, mixed
+ * content) all of which is just to simplify
+ * actual higher-level conversion to JSON tokens.
+ *<p>
+ * Beyond initial idea there are also couple of other detours like ability
+ * to "replay" some tokens, add virtual wrappers (ironically to support "unwrapped"
+ * array values), and to unroll "Objects" into String values in some cases.
  */
 public class XmlTokenStream
 {
@@ -72,6 +86,9 @@ public class XmlTokenStream
 
     protected final boolean _cfgProcessXsiType;
 
+    // [dataformat-xml#358]
+    protected final boolean _cfgSkipUnknownXsiAttributes;
+
     protected XmlNameProcessor _nameProcessor;
 
     /*
@@ -110,6 +127,15 @@ public class XmlTokenStream
     protected String _namespaceURI;
 
     /**
+     * Root element's qualified name (namespace URI, local name, prefix),
+     * saved during {@link #initialize()} so it remains accessible even
+     * after the stream has advanced past it.
+     *
+     * @since 3.2
+     */
+    protected QName _rootName;
+
+    /**
      * Current text value for TEXT_VALUE returned
      */
     protected String _textValue;
@@ -135,7 +161,7 @@ public class XmlTokenStream
     /* State for handling virtual wrapping
     /**********************************************************************
      */
-
+    
     /**
      * Flag used to indicate that given element should be "replayed".
      */
@@ -167,6 +193,7 @@ public class XmlTokenStream
         _formatFeatures = formatFeatures;
         _cfgProcessXsiNil = XmlReadFeature.PROCESS_XSI_NIL.enabledIn(_formatFeatures);
         _cfgProcessXsiType = XmlReadFeature.AUTO_DETECT_XSI_TYPE.enabledIn(_formatFeatures);
+        _cfgSkipUnknownXsiAttributes = XmlReadFeature.SKIP_UNKNOWN_XSI_ATTRIBUTES.enabledIn(_formatFeatures);
         // 04-Dec-2023, tatu: [dataformat-xml#618] Need further customized adapter:
         _xmlReader = Stax2JacksonReaderAdapter.wrapIfNecessary(xmlReader);
         _nameProcessor = nameProcessor;
@@ -185,7 +212,11 @@ public class XmlTokenStream
                     +XMLStreamConstants.START_ELEMENT+"), instead got "+_xmlReader.getEventType());
         }
         _checkXsiAttributes(); // sets _attributeCount, _nextAttributeIndex
+        // [dataformat-xml#496] Save root element name (with prefix) before stream advances
+        String rootPrefix = _xmlReader.getPrefix();
         _decodeElementName(_xmlReader.getNamespaceURI(), _xmlReader.getLocalName());
+        _rootName = new QName(_namespaceURI, _localName,
+                (rootPrefix == null) ? "" : rootPrefix);
 
         // 02-Jul-2020, tatu: Two choices: if child elements OR attributes, expose
         //    as Object value; otherwise expose as Text
@@ -203,6 +234,36 @@ public class XmlTokenStream
             return (_currentState = XML_ROOT_TEXT);
         }
         return (_currentState = XML_START_ELEMENT);
+
+        // 06-Sep-2022, tatu: This code was used in 2.12, 2.13, may be
+        //   removed after 2.14 if/when no longer needed
+
+        // copied from START_ELEMENT section of _next():
+        /*
+        final String text = _collectUntilTag();
+        if (text == null) {
+            // 30-Nov-2020, tatu: [dataformat-xml#435], this is tricky
+            //   situation since we got coerced `null`... but at least for
+            //   now will have to report as "root String" (... with null contents)
+            _textValue = null;
+            _startElementAfterText = false;
+            return (_currentState = XML_ROOT_TEXT);
+        }
+
+        final boolean startElementNext = _xmlReader.getEventType() == XMLStreamReader.START_ELEMENT;
+        // If we have no/all-whitespace text followed by START_ELEMENT, ignore text
+        if (startElementNext) {
+            if (_allWs(text)) {
+                _textValue = null;
+                return (_currentState = XML_DELAYED_START_ELEMENT);
+            }
+            _textValue = text;
+            return (_currentState = XML_DELAYED_START_ELEMENT);
+        }
+        _startElementAfterText = false;
+        _textValue = text;
+        return (_currentState = XML_ROOT_TEXT);
+        */
     }
 
     public XMLStreamReader2 getXmlReader() {
@@ -214,6 +275,43 @@ public class XmlTokenStream
     /* Public API
     /**********************************************************************
      */
+
+    // DEBUGGING
+    /*
+    public int next() throws XMLStreamException 
+    {
+        int n = next0();
+        switch (n) {
+        case XML_START_ELEMENT: 
+            System.out.printf(" XmlTokenStream.next(): XML_START_ELEMENT '%s' %s\n", _localName, _loc());
+            break;
+        case XML_END_ELEMENT: 
+            // 24-May-2020, tatu: no name available for end element so do not print
+            System.out.printf(" XmlTokenStream.next(): XML_END_ELEMENT %s\n", _loc());
+            break;
+        case XML_ATTRIBUTE_NAME: 
+            System.out.printf(" XmlTokenStream.next(): XML_ATTRIBUTE_NAME '%s' %s\n", _localName, _loc());
+            break;
+        case XML_ATTRIBUTE_VALUE: 
+            System.out.printf(" XmlTokenStream.next(): XML_ATTRIBUTE_VALUE '%s' %s\n", _textValue, _loc());
+            break;
+        case XML_TEXT: 
+            System.out.printf(" XmlTokenStream.next(): XML_TEXT '%s' %s\n", _textValue, _loc());
+            break;
+        case XML_END: 
+            System.out.printf(" XmlTokenStream.next(): XML_END %s\n", _loc());
+            break;
+        default:
+            throw new IllegalStateException();
+        }
+        return n;
+    }
+
+    private String _loc() {
+        TokenStreamLocation loc = currentLocation();
+        return String.format("[line: %d, column: %d]", loc.getLineNr(), loc.getColumnNr());
+    }
+    */
 
 //    public int next0() throws XMLStreamException
     public int next() throws XMLStreamException
@@ -252,9 +350,27 @@ public class XmlTokenStream
 
     public String getNamespaceURI() { return _namespaceURI; }
 
+    /**
+     * Accessor for the qualified name of the root XML element (local name,
+     * namespace URI, prefix), as determined during stream initialization.
+     * Unlike {@link #getLocalName()}, this value does not change as the
+     * stream advances.
+     *
+     * @return Qualified name of the root element
+     *
+     * @since 3.2
+     */
+    public QName getRootName() { return _rootName; }
+
     public boolean hasXsiNil() {
         return _xsiNilFound;
     }
+
+    /*// not used as of 2.10
+    public boolean hasAttributes() {
+        return (_currentState == XML_START_ELEMENT) && (_attributeCount > 0);
+    }
+    */
 
     public void closeCompletely() throws XMLStreamException {
         _xmlReader.closeCompletely();
@@ -277,13 +393,14 @@ public class XmlTokenStream
     /* Internal API: more esoteric methods
     /**********************************************************************
      */
-
+    
     /**
      * Method used to add virtual wrapping, which just duplicates START_ELEMENT
      * stream points to, and its matching closing element.
      */
     protected void repeatStartElement()
     {
+//System.out.println(" XmlTokenStream.repeatStartElement() for <"+_localName+">, _currentWrapper was: "+_currentWrapper);
         // sanity check: can only be used when just returned START_ELEMENT:
         if (_currentState != XML_START_ELEMENT) {
             // 14-May-2020, tatu: Looks like we DO end up here with empty Lists; if so,
@@ -299,6 +416,7 @@ public class XmlTokenStream
         } else {
             _currentWrapper = ElementWrapper.matchingWrapper(_currentWrapper.getParent(), _localName, _namespaceURI);
         }
+//System.out.println(" repeatStartElement for "+_localName+", _currentWrapper now: "+_currentWrapper);
         _repeatElement = REPLAY_START_DUP;
     }
 
@@ -326,11 +444,12 @@ public class XmlTokenStream
     /**
      * Method called to skip any attributes current START_ELEMENT may have,
      * so that they are not returned as token.
-     *
+     * 
      * @since 2.1
      */
     protected void skipAttributes()
     {
+//System.out.println(" XmlTokenStream.skipAttributes(), state: "+_currentStateDesc());
         switch (_currentState) {
         case XML_ATTRIBUTE_NAME:
             _attributeCount = 0;
@@ -340,9 +459,16 @@ public class XmlTokenStream
             // 06-Jan-2012, tatu: As per [#47] it looks like we should NOT do anything
             //   in this particular case, because it occurs when original element had
             //   no attributes and we now point to the first child element.
+//              _attributeCount = 0;
             break;
         case XML_TEXT:
             break; // nothing to do... is it even legal?
+
+            /*
+        case XML_DELAYED_START_ELEMENT:
+            // 03-Jul-2020, tatu: and here nothing to do either... ?
+            break;
+            */
         default:
             throw new IllegalStateException(
 "Current state not XML_START_ELEMENT or XML_ATTRIBUTE_NAME but "+_currentStateDesc());
@@ -357,6 +483,7 @@ public class XmlTokenStream
 
     private final int _next() throws XMLStreamException
     {
+//System.out.println(" XmlTokenStream._next(), state: "+_currentStateDesc());
         switch (_currentState) {
         case XML_ATTRIBUTE_VALUE:
             ++_nextAttributeIndex;
@@ -368,9 +495,28 @@ public class XmlTokenStream
                 // 08-Jul-2021, tatu: as per [dataformat-xml#467] just skip anything
                 //   element might have, no need to ensure it was empty
                 _xmlReader.skipElement();
+//System.out.println(" XmlTokenStream._next(): Got xsi:nil, skipping element");
                 return _handleEndElement();
             }
+            // [dataformat-xml#358]: Optionally skip XSI namespace attributes other
+            //   than "type" (handled by _decodeAttributeName) and "nil" (when xsi:nil
+            //   processing is disabled, it should be exposed as a regular attribute)
+            if (_cfgSkipUnknownXsiAttributes) {
+                while (_nextAttributeIndex < _attributeCount) {
+                    final String attrNs = _xmlReader.getAttributeNamespace(_nextAttributeIndex);
+                    if (XSI_NAMESPACE.equals(attrNs)) {
+                        final String localName = _xmlReader.getAttributeLocalName(_nextAttributeIndex);
+                        if (!"type".equals(localName)
+                                && !(!_cfgProcessXsiNil && "nil".equals(localName))) {
+                            ++_nextAttributeIndex;
+                            continue;
+                        }
+                    }
+                    break;
+                }
+            }
             if (_nextAttributeIndex < _attributeCount) {
+//System.out.println(" XmlTokenStream._next(): Got attr(s)!");
                 _decodeAttributeName(_xmlReader.getAttributeNamespace(_nextAttributeIndex),
                         _xmlReader.getAttributeLocalName(_nextAttributeIndex));
                 _textValue = _xmlReader.getAttributeValue(_nextAttributeIndex);
@@ -378,7 +524,9 @@ public class XmlTokenStream
             }
             // otherwise need to find START/END_ELEMENT or text
             String text = _collectUntilTag();
+//System.out.println(" XmlTokenStream._next(): _collectUntilTag -> '"+text+"'");
             final boolean startElementNext = _xmlReader.getEventType() == XMLStreamReader.START_ELEMENT;
+//System.out.println(" XmlTokenStream._next(): startElementNext? "+startElementNext);
             // If we have no/all-whitespace text followed by START_ELEMENT, ignore text
             if (startElementNext) {
                 if (_allWs(text)) {
@@ -387,7 +535,7 @@ public class XmlTokenStream
                 }
                 _startElementAfterText = true;
                 _textValue = text;
-
+                
                 return (_currentState = XML_TEXT);
             }
             // For END_ELEMENT we will return text, if any
@@ -398,6 +546,18 @@ public class XmlTokenStream
             }
             _startElementAfterText = false;
             return _handleEndElement();
+
+            /*
+        case XML_DELAYED_START_ELEMENT: // since 2.12, to support scalar Root Value
+            // Two cases: either "simple" with not text
+           if (_textValue == null) {
+               return _initStartElement();
+           }
+           // or one where there is first text (to translate into "":<text> key/value entry)
+           // then followed by start element
+           _startElementAfterText = true;
+           return (_currentState = XML_TEXT);
+           */
 
         case XML_ATTRIBUTE_NAME:
             // if we just returned name, will need to just send value next
@@ -442,12 +602,11 @@ public class XmlTokenStream
 
     /**
      * @return Collected text, if any, EXCEPT that if {@code FromXmlParser.Feature.EMPTY_ELEMENT_AS_NULL}
-     *    AND self-closing empty element ({@code <e/>}), returns {@code null}.
-     *    Explicit empty elements ({@code <e></e>}) always return {@code ""}.
+     *    AND empty element, returns {@code null}
      */
     private final String _collectUntilTag() throws XMLStreamException
     {
-        // Self-closing element (<e/>) — isEmptyElement() distinguishes this from <e></e>
+        // 21-Jun-2017, tatu: Whether exposed as `null` or "" is now configurable...
         if (_xmlReader.isEmptyElement()) {
             _xmlReader.next();
             if (XmlReadFeature.EMPTY_ELEMENT_AS_NULL.enabledIn(_formatFeatures)) {
@@ -465,9 +624,9 @@ public class XmlTokenStream
 
                 case XMLStreamConstants.END_ELEMENT:
                 case XMLStreamConstants.END_DOCUMENT:
-                    // Explicit empty element (<e></e>): always return "" regardless of
-                    // EMPTY_ELEMENT_AS_NULL. Only self-closing elements (handled above
-                    // via isEmptyElement()) should be treated as null.
+                    // NORCONEX: Explicit empty element (<e></e>): always return ""
+                    // regardless of EMPTY_ELEMENT_AS_NULL. Only self-closing elements
+                    // (<e/>, handled above via isEmptyElement()) are treated as null.
                     if (chars == null) {
                         return "";
                     }
@@ -568,8 +727,10 @@ public class XmlTokenStream
         if (_currentWrapper != null) {
             if (_currentWrapper.matchesWrapper(localName, ns)) {
                 _currentWrapper = _currentWrapper.intermediateWrapper();
+//System.out.println(" _initStartElement(): START_ELEMENT ("+localName+") DOES match ["+_currentWrapper+"]: leave/add intermediate");
             } else {
                 // implicit end is more interesting:
+//System.out.println(" _initStartElement(): START_ELEMENT ("+localName+") not matching '"+_localName+"'; add extra XML-END-ELEMENT!");
                 _localName = _currentWrapper.getWrapperLocalName();
                 _namespaceURI = _currentWrapper.getWrapperNamespace();
                 _currentWrapper = _currentWrapper.getParent();
@@ -601,6 +762,7 @@ public class XmlTokenStream
                     _nextAttributeIndex = 1;
                     // but only mark as nil marker if enabled
                     _xsiNilFound = "true".equals(_xmlReader.getAttributeValue(0));
+//System.out.println(" XMLTokenStream._checkXsiAttributes(), _xsiNilFound: "+_xsiNilFound);
                     return;
                 }
             }
@@ -653,16 +815,20 @@ public class XmlTokenStream
      * Method called to handle details of repeating "virtual"
      * start/end elements, needed for handling 'unwrapped' lists.
      */
-    protected int _handleRepeatElement() throws XMLStreamException
+    protected int _handleRepeatElement() throws XMLStreamException 
     {
+//System.out.println(" XMLTokenStream._handleRepeatElement()");
+
         int type = _repeatElement;
         _repeatElement = 0;
         if (type == REPLAY_START_DUP) {
+//System.out.println(" XMLTokenStream._handleRepeatElement() for START_ELEMENT: "+_localName+" ("+_xmlReader.getLocalName()+")");
             // important: add the virtual element second time, but not with name to match
             _currentWrapper = _currentWrapper.intermediateWrapper(); // lgtm [java/dereferenced-value-may-be-null]
             return XML_START_ELEMENT;
         }
         if (type == REPLAY_END) {
+//System.out.println(" XMLTokenStream._handleRepeatElement() for END_ELEMENT: "+_localName+" ("+_xmlReader.getLocalName()+")");
             _decodeElementName(_xmlReader.getNamespaceURI(), _xmlReader.getLocalName());
             if (_currentWrapper != null) {
                 _currentWrapper = _currentWrapper.getParent();
@@ -677,13 +843,16 @@ public class XmlTokenStream
             _nextLocalName = null;
             _nextNamespaceURI = null;
 
+//System.out.println(" XMLTokenStream._handleRepeatElement() for START_DELAYED: "+_localName+" ("+_xmlReader.getLocalName()+")");
+
             return XML_START_ELEMENT;
         }
         throw new IllegalStateException("Unrecognized type to repeat: "+type);
     }
-
+    
     private final int _handleEndElement()
     {
+//System.out.println(" XMLTokenStream._handleEndElement()");
         if (_currentWrapper != null) {
             ElementWrapper w = _currentWrapper;
             // important: if we close the scope, must duplicate END_ELEMENT as well
@@ -693,6 +862,7 @@ public class XmlTokenStream
                 _localName = w.getWrapperLocalName();
                 _namespaceURI = w.getWrapperNamespace();
                 _currentWrapper = _currentWrapper.getParent();
+//System.out.println(" XMLTokenStream._handleEndElement(): IMPLICIT requestRepeat of END_ELEMENT '"+_localName);
             } else {
                 _currentWrapper = _currentWrapper.getParent();
                 // 23-May-2020, tatu: Let's clear _localName since it's value is unlikely
@@ -703,6 +873,8 @@ public class XmlTokenStream
 
             }
         } else {
+//System.out.println(" XMLTokenStream._handleEndElement(): no wrapper");
+
             // Not (necessarily) known, as per above, so:
             _localName = "";
             _namespaceURI = "";
@@ -750,6 +922,8 @@ public class XmlTokenStream
             return "XML_ATTRIBUTE_VALUE";
         case XML_TEXT:
             return "XML_TEXT";
+        // case XML_DELAYED_START_ELEMENT:
+        //    return "XML_START_ELEMENT_DELAYED";
         case XML_ROOT_TEXT:
             return "XML_ROOT_TEXT";
         case XML_END:
@@ -757,4 +931,16 @@ public class XmlTokenStream
         }
         return "N/A ("+_currentState+")";
     }
+
+    // for DEBUGGING
+    /*
+    @Override
+    public String toString()
+    {
+        return String.format("(Token stream: state=%s attr=%s nextAttr=%s"
+                +" name=%s text=%s repeat?=%s wrapper=[%s] repeatElement=%s nextName=%s)",
+                _currentState, _attributeCount, _nextAttributeIndex,
+                _localName, _textValue, _repeatElement, _currentWrapper, _repeatElement, _nextLocalName);
+    }
+    */
 }

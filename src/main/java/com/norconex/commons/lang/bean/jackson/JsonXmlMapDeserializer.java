@@ -108,9 +108,16 @@ public class JsonXmlMapDeserializer<T extends Map<?, ?>>
             } else if (valueToken == JsonToken.START_OBJECT) {
                 readEntry(p, ctxt, map, keyName, valueName, keyType, valueType);
             } else {
-                // native key->value pair: member name is the key
-                map.put(memberName, ctxt.readValue(p,
-                        fieldType(valueType, mapType.containedType(1))));
+                // native key->value pair: member name is the key. Convert it to
+                // the declared key type (e.g. an enum) instead of leaving it a
+                // raw String, so the resulting map matches what a fresh (non-
+                // reparsed) read produces and round-trips equal.
+                map.put(
+                        deserializeKey(ctxt, memberName,
+                                fieldType(keyType, mapType.containedType(0))),
+                        ctxt.readValue(p,
+                                fieldType(valueType,
+                                        mapType.containedType(1))));
             }
         }
         return (T) map;
@@ -137,6 +144,21 @@ public class JsonXmlMapDeserializer<T extends Map<?, ?>>
         if (key != null) {
             map.put(key, value);
         }
+    }
+
+    // Converts a raw String map-key (a JSON/YAML object member name) into the
+    // map's declared key type using Jackson's key deserializer. Identity for
+    // String/Object keys; turns "NOT_FOUND" into the matching enum, etc.
+    private Object deserializeKey(
+            DeserializationContext ctxt, String key, Class<?> keyClass) {
+        if (keyClass == null
+                || keyClass == Object.class
+                || keyClass == String.class
+                || keyClass == CharSequence.class) {
+            return key;
+        }
+        return ctxt.findKeyDeserializer(ctxt.constructType(keyClass), null)
+                .deserializeKey(key, ctxt);
     }
 
     private Class<?> fieldType(Class<?> annotType, JavaType containedType) {
