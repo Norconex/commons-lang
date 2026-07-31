@@ -87,7 +87,7 @@ public final class Host implements Serializable {
         }
         String name = xml.getString("name");
         if (StringUtils.isNotBlank(name)) {
-            return new Host(name, xml.getInteger("port"));
+            return new Host(name, xml.getInteger("port", -1));
         }
         return defaultHost;
     }
