@@ -17,11 +17,14 @@ package com.norconex.commons.lang.net;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 
+import java.io.Reader;
+import java.io.StringReader;
 import java.net.InetSocketAddress;
 
 import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.bean.BeanMapper;
+import com.norconex.commons.lang.bean.BeanMapper.Format;
 
 class HostTest {
 
@@ -46,6 +49,21 @@ class HostTest {
             host = new Host(null, 456);
             BeanMapper.DEFAULT.assertWriteRead(host);
         });
+    }
+
+    // Related to https://github.com/Norconex/crawler/issues/1302: a <host>
+    // with a name but no <port> must resolve to "any port" (-1), not a
+    // literal port 0, since 0 would never match a real request's port
+    // (e.g. 443) when used in an org.apache.hc AuthScope.
+    @Test
+    void testLoadFromXmlNameOnlyNoPort() throws Exception {
+        var host = new Host(null, 0);
+        try (Reader r = new StringReader(
+                "<host><name>example.com</name></host>")) {
+            host = BeanMapper.DEFAULT.read(Host.class, r, Format.XML);
+        }
+        assertThat(host.getName()).isEqualTo("example.com");
+        assertThat(host.getPort()).isEqualTo(-1);
     }
 
     @Test

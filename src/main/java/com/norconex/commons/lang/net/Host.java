@@ -43,12 +43,22 @@ public final class Host implements Serializable {
     private String name;
     private int port = -1;
 
-    @JsonCreator
-    public Host(
-            @JsonProperty("name") String name,
-            @JsonProperty("port") int port) {
+    public Host(String name, int port) {
         this.name = name;
         this.port = port;
+    }
+
+    /**
+     * Creator used for deserialization only, so a missing "port" property
+     * (e.g. a {@code <host>} XML element with a name but no port) resolves
+     * to "any port" (-1) rather than the primitive default of 0, which
+     * would never match a real port such as 443.
+     */
+    @JsonCreator
+    private static Host fromJson(
+            @JsonProperty("name") String name,
+            @JsonProperty("port") Integer port) {
+        return new Host(name, port != null ? port : -1);
     }
 
     public String getName() {
