@@ -2822,6 +2822,11 @@ public class Xml implements Iterable<XmlCursor> {
      */
     public Xml replace(Xml replacement) {
         clear();
+        // A null node is a valid state for this class (see getName()), and
+        // there is nothing to replace into — or nothing to replace with.
+        if (node == null || replacement == null || replacement.node == null) {
+            return this;
+        }
         var doc = node.getOwnerDocument();
 
         // overwrite parent node with child one
