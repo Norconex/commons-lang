@@ -133,7 +133,12 @@ public class Credentials implements Serializable {
         this.passwordKey = passwordKey;
     }
 
-    public Credentials(Credentials copy) {
+    // NOSONAR java:S9365 - false positive: fields are not left uninitialized.
+    // copyFrom() delegates to BeanUtil.copyProperties(), which copies every
+    // property reflectively and already no-ops on a null source. Listing the
+    // fields explicitly here would satisfy the rule but would silently miss
+    // any field added to this class later.
+    public Credentials(Credentials copy) { //NOSONAR
         copyFrom(copy);
     }
 

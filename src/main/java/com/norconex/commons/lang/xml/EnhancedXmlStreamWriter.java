@@ -1060,7 +1060,11 @@ public class EnhancedXmlStreamWriter implements XMLStreamWriter {
 
             // We are indenting...
             if (StringUtils.isNotBlank(text)) {
-                var lines = text.split("\n");
+                // NOSONAR javabugs:S2259 - false positive: reaching this line
+                // requires isNotBlank(text) above to be true, which cannot
+                // hold for a null text. The analyzer does not model
+                // StringUtils.isNotBlank as a null check.
+                var lines = text.split("\n"); //NOSONAR
                 if (lines.length == 1) {
                     streamWriter.writeCharacters(lines[0]);
                     indentEnd = false;
