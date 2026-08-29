@@ -401,7 +401,12 @@ public class UrlNormalizer implements Serializable {
      * @since 1.8.0
      */
     public UrlNormalizer encodeNonURICharacters() {
-        urlStr = toURI().toASCIIString();
+        // toURI() returns null for a blank or unparsable URL. Leave the
+        // current value untouched in that case rather than throwing.
+        var uri = toURI();
+        if (uri != null) {
+            urlStr = uri.toASCIIString();
+        }
         return this;
     }
 

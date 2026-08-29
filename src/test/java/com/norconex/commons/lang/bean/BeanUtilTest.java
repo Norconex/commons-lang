@@ -524,7 +524,7 @@ class BeanUtilTest {
                 new Root(),
                 o -> {
                     names.add(o.getClass().getSimpleName());
-                    return !"Sub3Yes".equals(o.getClass().getSimpleName());
+                    return !(o instanceof Sub3Yes);
                 },
                 EventListener.class);
         assertThat(names).containsExactly("Sub1Yes", "Sub3Yes");

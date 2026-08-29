@@ -376,7 +376,7 @@ public final class CollectionUtil {
         if (c == null) {
             return;
         }
-        CollectionUtils.transform(c, e -> Objects.equals(e, null) ? "" : e);
+        CollectionUtils.transform(c, e -> e == null ? "" : e);
     }
 
     /**

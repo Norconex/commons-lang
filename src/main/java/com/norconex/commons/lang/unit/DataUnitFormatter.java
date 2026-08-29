@@ -68,6 +68,7 @@ public class DataUnitFormatter implements Serializable {
             decimalPrecision = formatter.decimalPrecision;
             fixedUnit = formatter.fixedUnit;
             binaryNotation = formatter.binaryNotation;
+            roundingMode = formatter.roundingMode;
         }
     }
 

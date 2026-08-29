@@ -2758,6 +2758,11 @@ public class Xml implements Iterable<XmlCursor> {
      * @return this cleared XML
      */
     public Xml clear() {
+        // A null node is a valid state for this class (see getName()), and
+        // there is nothing to clear in that case.
+        if (node == null) {
+            return this;
+        }
         // clear child nodes
         while (node.hasChildNodes()) {
             node.removeChild(node.getFirstChild());

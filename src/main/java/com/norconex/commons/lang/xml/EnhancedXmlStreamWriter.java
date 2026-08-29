@@ -579,18 +579,22 @@ public class EnhancedXmlStreamWriter implements XMLStreamWriter {
     public void writeElementObjectList(String parentLocalName,
             String localName, List<?> values, boolean writeBlanks) {
         var hasParent = StringUtils.isNotBlank(parentLocalName);
-        if (CollectionUtils.isEmpty(values) && hasParent) {
-            writeElementObject(parentLocalName, null, writeBlanks);
-        } else {
+        // Handle "no values" before iterating: a null list with no parent
+        // element previously fell through to the loop and threw an NPE.
+        if (CollectionUtils.isEmpty(values)) {
             if (hasParent) {
-                writeStartElement(parentLocalName);
+                writeElementObject(parentLocalName, null, writeBlanks);
             }
-            for (Object value : values) {
-                writeElementObject(localName, value, writeBlanks);
-            }
-            if (hasParent) {
-                writeEndElement();
-            }
+            return;
+        }
+        if (hasParent) {
+            writeStartElement(parentLocalName);
+        }
+        for (Object value : values) {
+            writeElementObject(localName, value, writeBlanks);
+        }
+        if (hasParent) {
+            writeEndElement();
         }
     }
 
@@ -746,8 +750,12 @@ public class EnhancedXmlStreamWriter implements XMLStreamWriter {
             String localName, List<? extends Object> values) {
 
         var hasParent = StringUtils.isNotBlank(parentLocalName);
-        if (CollectionUtils.isEmpty(values) && hasParent) {
-            writeElementObject(parentLocalName, null, defaultWriteBlanks);
+        // Handle "no values" before iterating: a null list with no parent
+        // element previously fell through to the loop and threw an NPE.
+        if (CollectionUtils.isEmpty(values)) {
+            if (hasParent) {
+                writeElementObject(parentLocalName, null, defaultWriteBlanks);
+            }
             return;
         }
         if (hasParent) {
