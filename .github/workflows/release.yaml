@@ -34,7 +34,7 @@
 #
 # HOW TO USE
 # ==========
-# 1. Create a release/* branch from master (e.g. release/3.0.x).
+# 1. Create a release/* branch from main (e.g. release/3.0.x).
 #    The branch stays at X.Y.Z-SNAPSHOT between releases.
 # 2. Add changelogs/changelog-X.Y.Z.md on that branch, with real content.
 #    Use changelogs/TEMPLATE.md as a guide. The version in the filename must

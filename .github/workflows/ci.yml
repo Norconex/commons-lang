@@ -6,7 +6,7 @@ name: Java CI with Maven
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
     types: [ opened, synchronize, reopened ]
 
@@ -70,7 +70,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build, test and analyze (push to master)
+      - name: Build, test and analyze (push to main)
         if: github.event_name == 'push'
         run: mvn -B verify
           org.sonarsource.scanner.maven:sonar-maven-plugin:5.5.0.6356:sonar
@@ -79,7 +79,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and publish (push to master)
+      - name: Build and publish (push to main)
         if: github.event_name == 'push'
         run: mvn -B deploy -DskipTests
         env:
