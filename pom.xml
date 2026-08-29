@@ -626,6 +626,30 @@
         <version>3.0.0</version>
       </plugin>
 
+      <!--
+        Publishes releases to Maven Central through the Central Portal.
+        "publishingServerId" matches the <server> id the CI workflows set up
+        (setup-java server-id: central -> MAVEN_USERNAME/MAVEN_CENTRAL_TOKEN).
+
+        The Portal always creates a "deployment" that is validated before it
+        goes live — that step cannot be turned off. autoPublish releases it
+        automatically once validation passes, so nothing waits on a manual
+        "Publish" click. waitUntil=published makes the build block until
+        Central confirms, so a failed publish fails the job rather than
+        passing silently.
+      -->
+      <plugin>
+        <groupId>org.sonatype.central</groupId>
+        <artifactId>central-publishing-maven-plugin</artifactId>
+        <version>0.9.0</version>
+        <extensions>true</extensions>
+        <configuration>
+          <publishingServerId>central</publishingServerId>
+          <autoPublish>true</autoPublish>
+          <waitUntil>published</waitUntil>
+        </configuration>
+      </plugin>
+
       <!-- Use VM argument -Dgpg.skip=true to disable GPG signing. -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -717,16 +741,26 @@
 
   </build>
   
+  <!--
+    Releases are NOT published via distributionManagement. The Central Portal
+    has no plain "PUT to a release repository URL" endpoint: releases go
+    through central-publishing-maven-plugin (declared above), which uploads a
+    bundle to the Portal API and publishes it. A <repository> entry pointing at
+    central.sonatype.com/repository/maven-central/ resolves to the Portal
+    *website* (it answers with an HTML 404 page, not a Maven repository), which
+    makes release deploys fail with a misleading
+    "Could not find artifact ... in central".
+
+    Snapshots are different and DO use a real repository URL — the Nexus-backed
+    endpoint below is the documented Central Portal snapshot target.
+  -->
   <distributionManagement>
     <snapshotRepository>
       <id>central</id>
       <url>https://central.sonatype.com/repository/maven-snapshots/</url>
     </snapshotRepository>
-    <repository>
-      <id>central</id>
-      <url>https://central.sonatype.com/repository/maven-central/</url>
-    </repository>
-  </distributionManagement>  
+  </distributionManagement>
+
   <organization>
     <name>Norconex Inc.</name>
     <url>https://norconex.com</url>
