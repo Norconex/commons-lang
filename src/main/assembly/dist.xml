@@ -36,9 +36,15 @@
       <directory>${basedir}</directory>
       <includes>
         <include>LICENSE.txt</include>
-        <include>CHANGES.xml</include>
       </includes>
       <outputDirectory>./</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>${basedir}/changelogs</directory>
+      <includes>
+        <include>changelog-*.md</include>
+      </includes>
+      <outputDirectory>./changelogs</outputDirectory>
     </fileSet>
     <fileSet>
       <directory>${project.build.directory}/apidocs</directory>

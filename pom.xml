@@ -316,12 +316,13 @@
           <include>**/*</include>
         </includes>
       </resource>
+      <!-- Release notes, staged into the site output for publishing. -->
       <resource>
         <filtering>false</filtering>
-        <directory>${project.basedir}</directory>
-        <targetPath>${project.build.directory}/site</targetPath>
+        <directory>${project.basedir}/changelogs</directory>
+        <targetPath>${project.build.directory}/site/changelogs</targetPath>
         <includes>
-          <include>CHANGES.xml</include>
+          <include>changelog-*.md</include>
         </includes>
       </resource>
     </resources>
