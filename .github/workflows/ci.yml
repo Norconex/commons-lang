@@ -97,8 +97,16 @@ jobs:
       # Release notes moved from a single CHANGES.xml to per-version markdown
       # under changelogs/ (same convention as Norconex/crawler), so this
       # publishes that directory instead of the old single file.
+      #
+      # Those changelog-X.Y.Z.md files live on release branches, so main
+      # usually has none staged and the directory is absent. That is expected,
+      # not an error: CHANGES.xml used to exist on every branch, which is why
+      # this step never had to tolerate a missing path before.
       - name: Copy site resources to s3
         run: |
-          aws s3 cp --recursive \
-            /home/runner/work/commons-lang/commons-lang/target/site/changelogs \
-            ${{ env.SITE_S3_URI }}commons/lang/v3/changelogs/
+          SRC=/home/runner/work/commons-lang/commons-lang/target/site/changelogs
+          if [ -d "$SRC" ] && [ -n "$(ls -A "$SRC" 2>/dev/null)" ]; then
+            aws s3 cp --recursive "$SRC" ${{ env.SITE_S3_URI }}commons/lang/v3/changelogs/
+          else
+            echo "No changelogs staged on this branch - nothing to publish."
+          fi
