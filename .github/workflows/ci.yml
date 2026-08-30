@@ -10,14 +10,9 @@ on:
   pull_request:
     types: [ opened, synchronize, reopened ]
 
-env:
-  AWS_REGION: ${{ secrets.AWS_REGION }}
-  SITE_S3_URI: ${{ secrets.SITE_S3_URI }}
-
 jobs:
   build:
     permissions:
-      id-token: write
       contents: read
 
     runs-on: ubuntu-latest
@@ -87,26 +82,3 @@ jobs:
           MAVEN_CENTRAL_TOKEN: ${{ secrets.OSSRH_TOKEN }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@67fbcbb121271f7775d2e7715933280b06314838 # v1
-        with:
-          role-to-assume: ${{ secrets.AWS_ROLE }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      # Release notes moved from a single CHANGES.xml to per-version markdown
-      # under changelogs/ (same convention as Norconex/crawler), so this
-      # publishes that directory instead of the old single file.
-      #
-      # Those changelog-X.Y.Z.md files live on release branches, so main
-      # usually has none staged and the directory is absent. That is expected,
-      # not an error: CHANGES.xml used to exist on every branch, which is why
-      # this step never had to tolerate a missing path before.
-      - name: Copy site resources to s3
-        run: |
-          SRC=/home/runner/work/commons-lang/commons-lang/target/site/changelogs
-          if [ -d "$SRC" ] && [ -n "$(ls -A "$SRC" 2>/dev/null)" ]; then
-            aws s3 cp --recursive "$SRC" ${{ env.SITE_S3_URI }}commons/lang/v3/changelogs/
-          else
-            echo "No changelogs staged on this branch - nothing to publish."
-          fi
