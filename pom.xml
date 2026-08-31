@@ -306,6 +306,27 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-gpg-plugin</artifactId>
         <version>${maven-gpg-plugin.version}</version>
+        <!-- Central REJECTS unsigned artifacts. Declaring the plugin alone
+             does nothing: without an <executions> binding it to the verify
+             phase, "sign" never runs and deploy uploads unsigned files, which
+             is exactly what happened on the first release attempt of 2.2.1. -->
+        <executions>
+          <execution>
+            <id>sign-artifacts</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>sign</goal>
+            </goals>
+            <configuration>
+              <!-- Needed so gpg does not try to use the pinentry programs,
+                   which have no terminal to prompt on in CI. -->
+              <gpgArguments>
+                <arg>--pinentry-mode</arg>
+                <arg>loopback</arg>
+              </gpgArguments>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
 
       <plugin>
