@@ -42,7 +42,7 @@ public class YearMonthDayIntervalTest {
     public void testGetDays() {
         Assertions.assertEquals(365, interval("2001-03-15 - 2002-03-15").getDays());
         Assertions.assertEquals(364, interval("2001-03-15 - 2002-03-14").getDays());
-        Assertions.assertEquals(485, interval("2001-03-01 - 2002-06-30").getDays());
+        Assertions.assertEquals(486, interval("2001-03-01 - 2002-06-30").getDays());
         Assertions.assertEquals(61, interval("2001-12-01 - 2002-01-31").getDays());
     }
 

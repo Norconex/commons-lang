@@ -15,11 +15,11 @@
 package com.norconex.commons.lang.time;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.Calendar;
 import java.util.Date;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DateUtils;
 
 /**
  * An immutable date interval where both the start and end are inclusive, unless
@@ -175,8 +175,23 @@ public final class YearMonthDayInterval implements Serializable {
      * @return number of days
      */
     public int getDays() {
-        return (int) ((end.toMillis() - start.toMillis()) 
-                / DateUtils.MILLIS_PER_DAY);
+        // Date arithmetic, not millisecond arithmetic. Dividing an elapsed
+        // millisecond span by MILLIS_PER_DAY is wrong whenever a daylight
+        // saving transition falls inside the interval: the span is then short
+        // (or long) by an hour, and the integer division truncates a whole day
+        // away. That made this method return a different answer depending on
+        // the machine's default time zone -- 2001-03-01 to 2002-06-30 gave 485
+        // in US Eastern but the correct 486 in UTC. A YearMonthDay has no time
+        // component, so the difference between two of them is a plain count of
+        // calendar days and must not depend on a time zone at all.
+        return (int) (toEpochDay(end) - toEpochDay(start));
+    }
+
+    private static long toEpochDay(YearMonthDay ymd) {
+        // YearMonthDay months are 1-based (toCalendar does month - 1), which
+        // is what LocalDate.of expects.
+        return LocalDate.of(
+                ymd.getYear(), ymd.getMonth(), ymd.getDay()).toEpochDay();
     }
     
     /**

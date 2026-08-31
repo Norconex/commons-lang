@@ -165,6 +165,21 @@ jobs:
 
       #--- Step ------------------------------------------------------------------
 
+      # Full test suite gates the release, and runs BEFORE the version bump is
+      # committed and pushed. Ordering matters: a Maven Central release cannot
+      # be taken back, so the gate must come before anything is uploaded -- but
+      # if the bump is pushed FIRST, a failing gate strands the branch on a
+      # non-SNAPSHOT version, and the next attempt is refused by the "Validate
+      # current POM is SNAPSHOT" step until someone resets it by hand. Testing
+      # first means a failure leaves the branch exactly as it was.
+      #
+      # The POM has already been set to the release version in the working
+      # tree, so this tests precisely what will be published.
+      - name: Run tests (release gate)
+        run: mvn -B clean verify -Dgpg.skip=true -Dsonar.skip=true
+
+      #--- Step ------------------------------------------------------------------
+
       # RELEASE_NOTES.md is a build artifact, not source, so it is kept out of
       # the commit rather than added by "git add -A".
       - name: Commit and push version bump
@@ -174,14 +189,6 @@ jobs:
           git add pom.xml
           git commit -s -m "chore(release): set version to ${{ inputs.version }}"
           git push
-
-      #--- Step ------------------------------------------------------------------
-
-      # Full test suite gates the release. Runs BEFORE deploy: a Maven Central
-      # release cannot be taken back, so a failure must stop the release before
-      # anything is uploaded.
-      - name: Run tests (release gate)
-        run: mvn -B clean verify -Dgpg.skip=true -Dsonar.skip=true
 
       #--- Step ------------------------------------------------------------------
 

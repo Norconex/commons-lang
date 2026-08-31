@@ -11,6 +11,13 @@
       <action dev="essiembre" type="fix">
         Host.loadFromXML no longer fails when the "port" element is absent.
       </action>
+      <action dev="essiembre" type="fix">
+        YearMonthDayInterval#getDays no longer returns a different number of
+        days depending on the machine's time zone. It divided an elapsed
+        millisecond span by the length of a day, which loses a day whenever a
+        daylight saving transition falls inside the interval; it now counts
+        calendar days.
+      </action>
       <action dev="essiembre" type="update">
         Project is now standalone, no longer inheriting from
         norconex-commons-maven-parent.
