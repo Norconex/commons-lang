@@ -1,0 +1,275 @@
+#-------------------------------------------------------------------------------
+# Copyright 2026 Norconex Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#-------------------------------------------------------------------------------
+
+# Releases norconex-commons-lang 2.x to Maven Central.
+#
+# HOW THIS DIFFERS FROM THE 3.x WORKFLOW ON main
+# ==============================================
+# Same repository, different branch, and three deliberate differences:
+#
+# 1. CHANGELOG SOURCE. 3.x keeps one markdown file per release under
+#    changelogs/. 2.x keeps CHANGES.xml in Maven Changes Plugin format, because
+#    opensource.norconex.com renders that XML directly. CHANGES.xml therefore
+#    stays the single source of truth here, and the GitHub Release notes are
+#    DERIVED from it by .github/scripts/changes-to-notes.py rather than
+#    maintained separately where the two could drift.
+#
+# 2. NO "move default branch" STEP. In the 3.x workflow that step advances main
+#    after a final release. Here main is the 3.x line and has nothing to do
+#    with a 2.x release, so touching it would be wrong.
+#
+# 3. STAGED, NOT AUTO-PUBLISHED. The POM sets autoPublish=false, so a
+#    successful run leaves the deployment VALIDATED in the Central Portal
+#    awaiting a human Publish. See the POM comment for the reasoning.
+#
+# HOW TO USE
+# ==========
+# 1. Make sure 2.x-branch is at X.Y.Z-SNAPSHOT and CHANGES.xml has a
+#    <release version="X.Y.Z"> block describing the release.
+# 2. Actions -> "Release 2.x" -> "Run workflow", pick 2.x-branch, enter the
+#    target version (e.g. 2.2.1).
+# 3. This job then: validates -> renders the notes -> sets the version -> runs
+#    the full test suite -> uploads to Central (staged) -> tags -> creates a
+#    GitHub Release -> returns the branch to a SNAPSHOT version.
+# 4. Log in to central.sonatype.com and press Publish.
+
+name: Release 2.x
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version (e.g. 2.2.1) — must not contain SNAPSHOT"
+        required: true
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    permissions:
+      # Needed to push the version-bump commits, push the tag, and create the
+      # GitHub Release.
+      contents: write
+
+    steps:
+      #--- Step ------------------------------------------------------------------
+
+      # This workflow releases the 2.x line only. Running it from main would
+      # publish the 3.x code under a 2.x version number.
+      - name: Validate branch is a 2.x line
+        run: |
+          BRANCH="${GITHUB_REF#refs/heads/}"
+          if [[ ! "$BRANCH" =~ ^(2\.x-branch|release/2\..*)$ ]]; then
+            echo "ERROR: This workflow releases the 2.x line only."
+            echo "Current ref: $GITHUB_REF"
+            echo "Pick '2.x-branch' (or a release/2.* branch) from the 'Run workflow' dropdown."
+            exit 1
+          fi
+          echo "Releasing from branch: $BRANCH"
+
+      #--- Step ------------------------------------------------------------------
+
+      - name: Validate version input
+        run: |
+          VERSION="${{ inputs.version }}"
+          if [[ "$VERSION" == *SNAPSHOT* ]]; then
+            echo "ERROR: Version '$VERSION' must not contain SNAPSHOT."
+            exit 1
+          fi
+          if [[ ! "$VERSION" =~ ^2\. ]]; then
+            echo "ERROR: Version '$VERSION' is not a 2.x version."
+            echo "This workflow releases the 2.x line only."
+            exit 1
+          fi
+
+      #--- Step ------------------------------------------------------------------
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      #--- Step ------------------------------------------------------------------
+
+      # Java 17: the 2.x line targets 17, unlike 3.x which is on 21.
+      - name: Set up JDK 17 and Maven
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: temurin
+          cache: maven
+          server-id: central
+          server-username: MAVEN_USERNAME
+          server-password: MAVEN_CENTRAL_TOKEN
+          gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
+
+      #--- Step ------------------------------------------------------------------
+
+      - name: Validate current POM is SNAPSHOT
+        run: |
+          CURRENT=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          if [[ "$CURRENT" != *-SNAPSHOT ]]; then
+            echo "ERROR: Current POM version '$CURRENT' is not a SNAPSHOT."
+            echo "This branch may have already been released, or a previous run failed partway."
+            exit 1
+          fi
+          echo "Current version: $CURRENT -> releasing as: ${{ inputs.version }}"
+
+      #--- Step ------------------------------------------------------------------
+
+      # A published Maven Central version can never be replaced or deleted, so
+      # refuse early if this version was already tagged rather than failing
+      # later against Central.
+      - name: Validate version was not already released
+        run: |
+          if git ls-remote --exit-code --tags origin "refs/tags/v${{ inputs.version }}" > /dev/null 2>&1; then
+            echo "ERROR: Tag v${{ inputs.version }} already exists — that version was already released."
+            echo "Maven Central releases are permanent; pick a new version."
+            exit 1
+          fi
+
+      #--- Step ------------------------------------------------------------------
+
+      # Renders the GitHub Release body from CHANGES.xml. This doubles as the
+      # changelog gate: the script exits non-zero when there is no block for
+      # the version being released, so a release cannot silently ship carrying
+      # the previous version's notes.
+      - name: Render release notes from CHANGES.xml
+        run: |
+          python3 .github/scripts/changes-to-notes.py "${{ inputs.version }}" > RELEASE_NOTES.md
+          echo "--- release notes ---"
+          cat RELEASE_NOTES.md
+
+      #--- Step ------------------------------------------------------------------
+
+      - name: Set release version in POM
+        run: |
+          mvn versions:set \
+            -DnewVersion=${{ inputs.version }} \
+            -DgenerateBackupPoms=false \
+            -B
+
+      #--- Step ------------------------------------------------------------------
+
+      # RELEASE_NOTES.md is a build artifact, not source, so it is kept out of
+      # the commit rather than added by "git add -A".
+      - name: Commit and push version bump
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add pom.xml
+          git commit -s -m "chore(release): set version to ${{ inputs.version }}"
+          git push
+
+      #--- Step ------------------------------------------------------------------
+
+      # Full test suite gates the release. Runs BEFORE deploy: a Maven Central
+      # release cannot be taken back, so a failure must stop the release before
+      # anything is uploaded.
+      - name: Run tests (release gate)
+        run: mvn -B clean verify -Dgpg.skip=true -Dsonar.skip=true
+
+      #--- Step ------------------------------------------------------------------
+
+      # Tests are not re-run here — the gate above already ran them on this
+      # exact commit. -DskipTests (not -Dmaven.test.skip) so test classes are
+      # still compiled and any test-jar artifact is still produced.
+      #
+      # The POM sets autoPublish=false, so this uploads and validates but does
+      # NOT publish: the deployment waits in the Central Portal for a human.
+      # waitUntil=validated still fails the build here if Central rejects the
+      # artifacts, so metadata problems surface in CI.
+      - name: Upload to Maven Central (staged)
+        run: mvn -B deploy -DskipTests
+        env:
+          MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          MAVEN_CENTRAL_TOKEN: ${{ secrets.OSSRH_TOKEN }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+
+      #--- Step ------------------------------------------------------------------
+
+      - name: Tag release version
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "v${{ inputs.version }}"
+          git push origin "v${{ inputs.version }}"
+
+      #--- Step ------------------------------------------------------------------
+
+      # --latest=false: 2.x is the maintenance line, so a 2.x release must not
+      # take over the repository's "Latest release" badge from the 3.x line.
+      - name: Create GitHub Release
+        run: |
+          VERSION="${{ inputs.version }}"
+
+          PRERELEASE_FLAG=""
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            PRERELEASE_FLAG="--prerelease"
+            echo "Version '$VERSION' has a qualifier — publishing as a pre-release."
+          fi
+
+          gh release create "v${VERSION}" \
+            --title "Release ${VERSION}" \
+            --notes-file RELEASE_NOTES.md \
+            --latest=false \
+            $PRERELEASE_FLAG
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      #--- Step ------------------------------------------------------------------
+
+      # Return the branch to a SNAPSHOT so it is never left sitting on a
+      # release version.
+      - name: Bump to next development version
+        if: success()
+        run: |
+          VERSION="${{ inputs.version }}"
+          rm -f RELEASE_NOTES.md
+
+          # Strip any qualifier before doing arithmetic: reading "2.2.1-rc1"
+          # straight into MAJOR/MINOR/PATCH puts "1-rc1" in PATCH.
+          BASE="${VERSION%%-*}"
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$BASE"
+
+          if [[ "$VERSION" == "$BASE" ]]; then
+            NEXT_SNAPSHOT="${MAJOR}.${MINOR}.$((PATCH + 1))-SNAPSHOT"
+          else
+            # Pre-release: return to the SNAPSHOT of the SAME target version so
+            # the final X.Y.Z can still be cut from this branch afterwards.
+            NEXT_SNAPSHOT="${MAJOR}.${MINOR}.${PATCH}-SNAPSHOT"
+          fi
+          echo "Released '$VERSION' — next development version: $NEXT_SNAPSHOT"
+
+          mvn versions:set \
+            -DnewVersion="$NEXT_SNAPSHOT" \
+            -DgenerateBackupPoms=false \
+            -B
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add pom.xml
+          git commit -s -m "chore(release): bump to next development version ${NEXT_SNAPSHOT}"
+          git push
+
+      #--- Step ------------------------------------------------------------------
+
+      # The job succeeding does NOT mean the version is public. Say so loudly,
+      # so a staged deployment is not left sitting unpublished in the Portal.
+      - name: Remind that publishing is manual
+        if: success()
+        run: |
+          echo "::notice::${{ inputs.version }} is uploaded and VALIDATED on Central, but NOT yet public. Log in to https://central.sonatype.com and press Publish to release it."

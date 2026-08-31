@@ -312,6 +312,23 @@
         <groupId>org.sonatype.central</groupId>
         <artifactId>central-publishing-maven-plugin</artifactId>
         <version>${central-publishing-maven-plugin.version}</version>
+        <!-- extensions=true is what binds this plugin into the deploy
+             lifecycle. Without it the plugin is inert and "mvn deploy" falls
+             through to maven-deploy-plugin, which then PUTs at whatever
+             distributionManagement/repository says. -->
+        <extensions>true</extensions>
+        <configuration>
+          <publishingServerId>central</publishingServerId>
+          <!-- Staged, not auto-published: the deployment lands in the Central
+               Portal as VALIDATED and a human presses Publish. This matches how
+               the V3 stack has always released, and a Maven Central release can
+               never be withdrawn. waitUntil=validated still makes the build fail
+               here if Central rejects the artifacts, so problems surface in CI
+               rather than at the moment of publishing. Flip to autoPublish=true
+               with waitUntil=published to release without the manual step. -->
+          <autoPublish>false</autoPublish>
+          <waitUntil>validated</waitUntil>
+        </configuration>
       </plugin>
 
       <plugin>
@@ -330,10 +347,6 @@
       <id>central</id>
       <url>https://central.sonatype.com/repository/maven-snapshots/</url>
     </snapshotRepository>
-    <repository>
-      <id>central</id>
-      <url>https://central.sonatype.com/</url>
-    </repository>
     <site>
       <id>norconex-site-deployment</id>
       <url>${site.baseurl}/commons/lang/v2</url>
@@ -346,6 +359,35 @@
     complements the Java API and are not found in commonly available 
     libraries (such as the great Apache Commons Lang, which it relies on).
   </description>
+  <!-- Until 2.2.0 these three came from norconex-commons-maven-parent.
+       That parent was dropped deliberately to make this module standalone,
+       which also dropped the inherited metadata. Maven Central REQUIRES
+       <licenses> and <developers> on every published artifact, so they are
+       declared here rather than inherited. -->
+  <organization>
+    <name>Norconex Inc.</name>
+    <url>https://norconex.com</url>
+  </organization>
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <id>essiembre</id>
+      <name>Pascal Essiembre</name>
+      <email>pascal.essiembre@norconex.com</email>
+      <organization>Norconex Inc.</organization>
+      <organizationUrl>https://norconex.com</organizationUrl>
+      <roles>
+        <role>project leader</role>
+        <role>developer</role>
+      </roles>
+      <timezone>-4</timezone>
+    </developer>
+  </developers>
   <scm>
     <url>https://github.com/Norconex/commons-lang</url>
     <connection>scm:git:git@github.com:Norconex/commons-lang.git</connection>

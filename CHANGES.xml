@@ -7,6 +7,19 @@
   </properties>
   <body>
 
+    <release version="2.2.1" date="2026-08-30" description="Maintenance release.">
+      <action dev="essiembre" type="fix">
+        Host.loadFromXML no longer fails when the "port" element is absent.
+      </action>
+      <action dev="essiembre" type="update">
+        Project is now standalone, no longer inheriting from
+        norconex-commons-maven-parent.
+      </action>
+      <action dev="essiembre" type="update">
+        Repository text files normalized to LF line endings.
+      </action>
+    </release>
+
     <release version="2.2.0" date="2026-02-20" description="Minor release.">
       <action dev="essiembre" type="update">
         Minimum Java version is now 17.
