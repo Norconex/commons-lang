@@ -253,6 +253,94 @@ class ClassFinderTest {
                 false)).isEmpty();
     }
 
+    // --- Include patterns ------------------------------------------------
+
+    // The patterns decide from the file name alone, so a JAR that does not
+    // match is never opened. That is what makes it cheaper than the index.
+    @Test
+    void testIncludePatternsSelectJarsByName(@TempDir Path tempDir)
+            throws Exception {
+        var ours = tempDir.resolve("nx-ours-1.0.jar").toFile();
+        writeJar(ours, Map.of("com/example/Ours.class", "irrelevant"));
+        var theirs = tempDir.resolve("some-library-9.9.jar").toFile();
+        writeJar(theirs, Map.of("com/other/Theirs.class", "irrelevant"));
+
+        var entries = List.of(ours, theirs);
+        var loader = ClassFinder.class.getClassLoader();
+
+        // No patterns: both considered.
+        assertThat(ClassFinder.scanSources(loader, entries, null, false))
+                .contains("com.example.Ours", "com.other.Theirs");
+
+        // With a pattern: only the matching JAR.
+        assertThat(ClassFinder.scanSources(
+                loader, entries, null, false, "nx-*.jar"))
+                        .contains("com.example.Ours")
+                        .doesNotContain("com.other.Theirs");
+    }
+
+    @Test
+    void testIncludePatternsAcceptSeveralAndIgnoreBlanks(
+            @TempDir Path tempDir) throws Exception {
+        var a = tempDir.resolve("nx-a.jar").toFile();
+        writeJar(a, Map.of("com/example/A.class", "irrelevant"));
+        var b = tempDir.resolve("norconex-b.jar").toFile();
+        writeJar(b, Map.of("com/example/B.class", "irrelevant"));
+        var c = tempDir.resolve("other-c.jar").toFile();
+        writeJar(c, Map.of("com/example/C.class", "irrelevant"));
+
+        assertThat(ClassFinder.scanSources(
+                ClassFinder.class.getClassLoader(),
+                List.of(a, b, c),
+                null,
+                false,
+                "nx-*.jar", "  ", "norconex-*.jar"))
+                        .contains("com.example.A", "com.example.B")
+                        .doesNotContain("com.example.C");
+    }
+
+    // An excluded JAR's types stay reachable by putting it in the extension
+    // directory, which the patterns do not gate.
+    @Test
+    void testExtensionDirIsNotGatedByIncludePatterns(@TempDir Path tempDir)
+            throws Exception {
+        var extDir = Files.createDirectory(tempDir.resolve("ext")).toFile();
+        var extJar = new File(extDir, "totally-unrelated-name.jar");
+        writeJar(extJar, Map.of("com/example/Extension.class", "irrelevant"));
+
+        assertThat(ClassFinder.scanSources(
+                ClassFinder.class.getClassLoader(),
+                List.of(), extDir, true, "nx-*.jar"))
+                        .contains("com.example.Extension");
+    }
+
+    // Directories hold compiled output and are never gated either.
+    @Test
+    void testDirectoriesAreNotGatedByIncludePatterns() {
+        assertThat(ClassFinder.scanSources(
+                ClassFinder.class.getClassLoader(),
+                List.of(new File("target/classes")),
+                null,
+                true,
+                "nx-*.jar")).contains(DurationConverter.class.getName());
+    }
+
+    // With patterns set, an index inside a matching JAR is still preferred
+    // over enumerating it.
+    @Test
+    void testIndexIsUsedWithinIncludedJars(@TempDir Path tempDir)
+            throws Exception {
+        var jar = jarWithIndex(tempDir.resolve("nx-indexed.jar"),
+                List.of("com.example.FromIndex"),
+                Map.of("com/example/OnlyInTheArchive.class", "irrelevant"));
+
+        assertThat(ClassFinder.scanSources(
+                ClassFinder.class.getClassLoader(),
+                List.of(jar), null, false, "nx-*.jar"))
+                        .contains("com.example.FromIndex")
+                        .doesNotContain("com.example.OnlyInTheArchive");
+    }
+
     @Test
     void testClearCacheForcesARescan() {
         ClassFinder.clearCache();

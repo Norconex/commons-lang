@@ -37,6 +37,7 @@ import java.util.function.Predicate;
 import java.util.jar.JarFile;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.SystemUtils;
@@ -80,13 +81,34 @@ import lombok.extern.slf4j.Slf4j;
  *   </li>
  * </ul>
  *
+ * <h2>Restricting which JARs are considered</h2>
+ * <p>
+ * The system property {@value #PROPERTY_INCLUDE_JARS} takes a
+ * comma-separated list of wildcard patterns matched against classpath JAR
+ * <em>file names</em>. When set, only matching JARs are considered, and the
+ * rest are never opened. Example:
+ * </p>
+ * <pre>
+ * -Dnorconex.classfinder.includeJars=nx-*.jar,norconex-*.jar
+ * </pre>
+ * <p>
+ * This is the setting that actually saves time on a large classpath. Both a
+ * class index and the <code>indexed</code> scan mode still have to establish
+ * whether each JAR carries an index, and answering that means opening every
+ * archive; deciding from the file name does not. Directories are unaffected,
+ * and so is the extension directory below, which is where a JAR excluded by
+ * these patterns should go if its types must still be discovered.
+ * </p>
+ *
  * <h2>Extension directory</h2>
  * <p>
  * The directory named by {@value #PROPERTY_EXT_DIR} (default
  * <code>{@value #DEFAULT_EXT_DIR}</code>, relative to the working directory)
- * is always scanned when it exists, whatever the scan mode, and whether or not
- * it is on the classpath. It is the place to drop JARs holding classes that
- * have to be discovered by scanning.
+ * is always scanned when it exists, whatever the scan mode or include
+ * patterns, and whether or not it is on the classpath. It is the place to drop
+ * JARs holding classes that have to be discovered by scanning. Note the
+ * launcher must still put it on the classpath for those classes to be
+ * loadable.
  * </p>
  */
 @Slf4j
@@ -111,6 +133,14 @@ public final class ClassFinder {
      */
     public static final String PROPERTY_EXT_DIR =
             "norconex.classfinder.extDir";
+
+    /**
+     * System property holding a comma-separated list of wildcard patterns
+     * matched against classpath JAR <em>file names</em>. When set, a
+     * classpath JAR is only considered if its name matches one of them.
+     */
+    public static final String PROPERTY_INCLUDE_JARS =
+            "norconex.classfinder.includeJars";
 
     /** Default extension directory, relative to the working directory. */
     public static final String DEFAULT_EXT_DIR = "ext";
@@ -318,7 +348,9 @@ public final class ClassFinder {
                         System.getProperty(PROPERTY_EXT_DIR),
                         DEFAULT_EXT_DIR)),
                 SCAN_MODE_INDEXED.equalsIgnoreCase(StringUtils.trimToEmpty(
-                        System.getProperty(PROPERTY_SCAN_MODE))));
+                        System.getProperty(PROPERTY_SCAN_MODE))),
+                StringUtils.split(StringUtils.trimToEmpty(
+                        System.getProperty(PROPERTY_INCLUDE_JARS)), ','));
     }
 
     /**
@@ -329,27 +361,55 @@ public final class ClassFinder {
      * @param classpathEntries JARs and directories forming the classpath
      * @param extDir always-scanned extension directory, need not exist
      * @param indexedOnly skip classpath JARs carrying no class index
+     * @param includeJars wildcard patterns for JAR file names to consider,
+     *     or <code>null</code>/empty to consider all of them
      * @return discovered fully qualified class names
      */
     static Set<String> scanSources(
             ClassLoader loader,
             List<File> classpathEntries,
             File extDir,
-            boolean indexedOnly) {
+            boolean indexedOnly,
+            String... includeJars) {
 
         Set<String> classes = new HashSet<>();
+        var patterns = trimPatterns(includeJars);
 
-        // Indexed JARs first: reading a listing beats opening the archive.
-        // Remember which files they were so they are not then walked as well.
-        var indexedFiles = readClassIndexes(loader, classes);
+        // Indexes are looked up per file when a name filter is in play.
+        // Going through the class loader instead would defeat the filter:
+        // it has to open every archive on the classpath to answer, which is
+        // the very cost being avoided.
+        Set<String> indexedFiles;
+        if (patterns.length > 0) {
+            indexedFiles = Collections.emptySet();
+        } else {
+            // Reading a listing beats opening the archive, so take those
+            // first and remember the files, which are then not walked again.
+            indexedFiles = readClassIndexes(loader, classes);
+        }
 
         for (File file : classpathEntries) {
             if (indexedFiles.contains(canonical(file))) {
                 continue;
             }
+            // Directories are compiled output, so they are always walked;
+            // working from an IDE or target/classes must keep resolving.
+            if (file.isDirectory()) {
+                classes.addAll(listClassesInDirectory(new File(
+                        file.getAbsolutePath() + File.separatorChar)));
+                continue;
+            }
+            if (patterns.length > 0 && !matchesAny(file.getName(), patterns)) {
+                LOG.debug("Skipping JAR not matching {}: {}",
+                        PROPERTY_INCLUDE_JARS, file);
+                continue;
+            }
+            var indexed = readClassIndexFromJar(file, classes);
+            if (indexed) {
+                continue;
+            }
             // Skipping unindexed JARs is the point of "indexed" mode.
-            // Directories stay in so compiled output still resolves.
-            if (indexedOnly && file.isFile()) {
+            if (indexedOnly) {
                 LOG.debug("Skipping unindexed JAR in \"{}\" scan mode: {}",
                         SCAN_MODE_INDEXED, file);
                 continue;
@@ -359,6 +419,60 @@ public final class ClassFinder {
 
         classes.addAll(scanExtensionDir(extDir));
         return classes;
+    }
+
+    private static String[] trimPatterns(String... patterns) {
+        if (patterns == null) {
+            return new String[0];
+        }
+        return Arrays.stream(patterns)
+                .map(StringUtils::trimToNull)
+                .filter(Objects::nonNull)
+                .toArray(String[]::new);
+    }
+
+    private static boolean matchesAny(String name, String... patterns) {
+        for (String pattern : patterns) {
+            if (FilenameUtils.wildcardMatch(name, pattern)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Reads a JAR's own class index, if it carries one, without enumerating
+     * the rest of the archive.
+     * @return <code>true</code> when an index was found and read
+     */
+    private static boolean readClassIndexFromJar(
+            File jarFile, Set<String> classes) {
+        if (!jarFile.isFile() || !jarFile.getName().endsWith(".jar")) {
+            return false;
+        }
+        try (var jar = new JarFile(jarFile)) {
+            var entry = jar.getEntry(INDEX_RESOURCE);
+            if (entry == null) {
+                return false;
+            }
+            var count = 0;
+            try (var reader = new BufferedReader(new InputStreamReader(
+                    jar.getInputStream(entry), StandardCharsets.UTF_8))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    var name = normalizeIndexEntry(line);
+                    if (name != null) {
+                        classes.add(name);
+                        count++;
+                    }
+                }
+            }
+            LOG.debug("Read {} class names from index in: {}", count, jarFile);
+            return true;
+        } catch (IOException e) {
+            LOG.warn("Could not read class index from JAR: {}", jarFile, e);
+            return false;
+        }
     }
 
     /**
