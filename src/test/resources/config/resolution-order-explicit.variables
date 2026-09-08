@@ -1,0 +1,4 @@
+# Explicit variable file, passed via the builder. Overlaps with the implicit
+# resolution-order.variables on varC to prove the explicit file wins.
+varC = ExplicitVarC
+varD = ExplicitVarD

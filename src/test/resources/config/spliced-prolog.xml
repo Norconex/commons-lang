@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE xml>
+<testConfig>
+  <username>joe</username>
+#parse("spliced-prolog-parsed.xml")
+#include("spliced-prolog-included.xml")
+</testConfig>

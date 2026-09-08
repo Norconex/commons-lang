@@ -58,6 +58,16 @@ import lombok.NonNull;
  *   <li>Implicit variable files</li>
  * </ul>
  * <p>
+ * System properties and environment variables are resolved when a reference
+ * is substituted into the rendered output (see
+ * {@link ExtendedReferenceInsertionEventHandler}), so they apply to
+ * <code>${name}</code> references but <b>not</b> to the conditions of
+ * Velocity directives. A <code>#if ( $name == 'x' )</code> test reads
+ * <code>$name</code> straight from the Velocity context, which is built from
+ * the variable files and {@code variableMap} only. To drive a conditional,
+ * define the variable in a variable file or pass it in the variable map.
+ * </p>
+ * <p>
  * In a configuration file, variables are referenced surrounded by curly
  * braces and prefixed with a dollar sign.  Default values can be specified by
  * following the variable name with a vertical bar character and the value.
@@ -161,6 +171,15 @@ import lombok.NonNull;
  * Example (both Windows and UNIX path styles are supported):
  * </p>
  * <p>
+ * <b>Since 3.1.0</b>, XML fragments may keep their own
+ * <code>&lt;?xml ... ?&gt;</code> declaration and <code>DOCTYPE</code>, which
+ * is convenient for editing and validating them on their own. Both are removed
+ * after the template is rendered but before it is parsed, since a fragment is
+ * spliced into the middle of the parent document where XML permits neither.
+ * The parent's own leading declaration is preserved. This clean-up applies to
+ * XML only; JSON and Yaml configurations are passed through untouched.
+ * </p>
+ * <p>
  * <i>Sample directory structure:</i>
  * </p>
  * <pre>
@@ -213,6 +232,15 @@ import lombok.NonNull;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
 public final class ConfigurationLoader {
+
+    /**
+     * Matches XML declarations that are not at the very start of the document,
+     * plus every DOCTYPE, wherever it sits. Template includes and parses
+     * splice whole files into the middle of a document, and any declaration
+     * or DOCTYPE they carry lands where XML does not allow one.
+     */
+    private static final Pattern SPLICED_XML_PROLOG = Pattern.compile(
+            "((?!^)<\\?xml.*?\\?>|<\\!DOCTYPE[^>]*>)");
 
     /** Optional custom velocity engine. */
     @Default
@@ -269,17 +297,20 @@ public final class ConfigurationLoader {
 
         var context = new VelocityContext(defaultContext);
 
-        // Load from explicitly referenced properties
-        VariablesFileResolver.resolve(variablesFile).forEach(context::put);
-
-        // Load from properties matching config file name
+        // Lowest precedence: the implicit variable file, found by matching
+        // the configuration file base name. Loaded first so the sources
+        // below can override it.
         var file = configFile.toAbsolutePath().toString();
         var fullpath = FilenameUtils.getFullPath(file);
         var baseName = FilenameUtils.getBaseName(file);
 
         VariablesFileResolver.resolve(fullpath, baseName).forEach(context::put);
 
-        // overwrite context built from file with explicit Properties
+        // An explicitly supplied variable file overrides the implicit one.
+        // That is the whole point of naming one, so it has to win.
+        VariablesFileResolver.resolve(variablesFile).forEach(context::put);
+
+        // Explicitly supplied variables override both files.
         if (variableMap != null) {
             variableMap.forEach(context::put);
         }
@@ -318,13 +349,7 @@ public final class ConfigurationLoader {
             return null;
         }
         try {
-            var xml = toString(configFile);
-            // clean-up extra duplicate declaration tags due to template
-            // includes/imports that could break parsing.
-            // Keep first <?xml... tag only, and delete all <!DOCTYPE...
-            // as they are not necessary to parse configs.
-            xml = Pattern.compile("((?!^)<\\?xml.*?\\?>|<\\!DOCTYPE[^>]*>)")
-                    .matcher(xml).replaceAll("");
+            var xml = toConfigString(configFile, Format.XML);
             return Xml.of(xml).setErrorHandler(errorHandler).create();
         } catch (Exception e) {
             throw new ConfigurationException(
@@ -352,10 +377,11 @@ public final class ConfigurationLoader {
      * @since 3.0.0
      */
     public <T> T toObject(@NonNull Path configFile, Class<T> type) {
+        var format = Format.fromPath(configFile, Format.XML);
         return beanMapper.read(
                 type,
-                new StringReader(toString(configFile)),
-                Format.fromPath(configFile, Format.XML));
+                new StringReader(toConfigString(configFile, format)),
+                format);
     }
 
     /**
@@ -374,10 +400,28 @@ public final class ConfigurationLoader {
      * @since 3.0.0
      */
     public void toObject(@NonNull Path configFile, @NonNull Object object) {
+        var format = Format.fromPath(configFile, Format.XML);
         beanMapper.read(
                 object,
-                new StringReader(toString(configFile)),
-                Format.fromPath(configFile, Format.XML));
+                new StringReader(toConfigString(configFile, format)),
+                format);
+    }
+
+    /**
+     * Renders the template, then — for XML only — removes any XML declaration
+     * or DOCTYPE that template inclusion spliced into the middle of the
+     * document. The first declaration is kept; DOCTYPEs are not needed to
+     * parse configurations, so all of them go.
+     * @param configFile configuration file
+     * @param format resolved configuration format
+     * @return rendered configuration, safe to parse
+     */
+    private String toConfigString(Path configFile, Format format) {
+        var config = toString(configFile);
+        if (format == Format.XML && config != null) {
+            config = SPLICED_XML_PROLOG.matcher(config).replaceAll("");
+        }
+        return config;
     }
 
     /**
@@ -407,13 +451,7 @@ public final class ConfigurationLoader {
             return null;
         }
         try {
-            var xml = loadString(configFile);
-            // clean-up extra duplicate declaration tags due to template
-            // includes/imports that could break parsing.
-            // Keep first <?xml... tag only, and delete all <!DOCTYPE...
-            // as they are not necessary to parse configs.
-            xml = Pattern.compile("((?!^)<\\?xml.*?\\?>|<\\!DOCTYPE[^>]*>)")
-                    .matcher(xml).replaceAll("");
+            var xml = toConfigString(configFile, Format.XML);
             return Xml.of(xml).setErrorHandler(errorHandler).create();
         } catch (Exception e) {
             throw new ConfigurationException(

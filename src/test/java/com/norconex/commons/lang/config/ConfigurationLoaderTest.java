@@ -201,10 +201,62 @@ class ConfigurationLoaderTest {
         assertThat(str).isEqualTo("PropValueA, MapValueB, FileVarC, DefaultD");
     }
 
+    // An explicitly named variable file outranks the implicit one found by
+    // matching the config file base name. Naming a file is a deliberate act,
+    // so it has to beat the file that was merely sitting next to the config.
+    @Test
+    void testExplicitVarsFileBeatsImplicitOne() {
+        var loader = ConfigurationLoader.builder()
+                .variablesFile(cfgPath("resolution-order-explicit.variables"))
+                .build();
+        var str = loader.toString(cfgPath("resolution-order.cfg"));
+
+        // varA/varB come from the implicit file only, varC is defined in both
+        // (explicit wins), varD only in the explicit file (beating the
+        // inline default).
+        assertThat(str).isEqualTo(
+                "FileVarA, FileVarB, ExplicitVarC, ExplicitVarD");
+    }
+
     @SuppressWarnings("deprecation")
     @Test
     void testMisc() {
         assertThat(new ConfigurationLoader().toXml(null)).isNull();
+    }
+
+    // Included and parsed fragments carry their own XML declaration and
+    // DOCTYPE. Both get spliced into the middle of the parent document,
+    // where XML allows neither, so they must be stripped before parsing.
+    // The parent's own leading declaration has to survive.
+    @Test
+    void testSplicedXmlPrologIsStripped() {
+        var config = configLoader.toObject(
+                cfgPath("spliced-prolog.xml"), TestSplicedConfig.class);
+        assertThat(config.getUsername()).isEqualTo("joe");
+        assertThat(config.getPassword()).isEqualTo("whatever");
+        assertThat(config.getExtra()).isEqualTo("verbatim");
+    }
+
+    // Same document through the Xml-returning path, which had the only
+    // working copy of this clean-up before it was made to cover toObject.
+    @Test
+    void testSplicedXmlPrologIsStrippedForXml() {
+        var xml = configLoader.toXml(cfgPath("spliced-prolog.xml"));
+        assertThat(xml.getString("username")).isEqualTo("joe");
+        assertThat(xml.getString("password")).isEqualTo("whatever");
+        assertThat(xml.getString("extra")).isEqualTo("verbatim");
+    }
+
+    // The clean-up is XML-specific: a JSON or Yaml value that happens to
+    // contain declaration-like text must be left exactly as written.
+    @ParameterizedTest
+    @ValueSource(strings = { "json", "yaml" })
+    void testPrologCleanupSkipsNonXmlFormats(String extension) {
+        var config = configLoader.toObject(
+                cfgPath("prolog-like-value." + extension),
+                TestConfig.class);
+        assertThat(config.getUsername())
+                .isEqualTo("<?xml version=\"1.0\"?><!DOCTYPE xml>");
     }
 
     private Path cfgPath(String path) {
@@ -220,5 +272,12 @@ class ConfigurationLoaderTest {
     @Data
     static class TestConfigWithCreds {
         private Credentials credentials;
+    }
+
+    @Data
+    static class TestSplicedConfig {
+        private String username;
+        private String password;
+        private String extra;
     }
 }
