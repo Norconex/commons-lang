@@ -17,6 +17,7 @@ package com.norconex.commons.lang.xml;
 import static javax.xml.XMLConstants.ACCESS_EXTERNAL_DTD;
 import static javax.xml.XMLConstants.ACCESS_EXTERNAL_SCHEMA;
 import static javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING;
+import static javax.xml.XMLConstants.W3C_XML_SCHEMA_NS_URI;
 
 import java.io.File;
 import java.io.FileReader;
@@ -56,7 +57,6 @@ import org.xml.sax.XMLReader;
  * Utility XML-related methods. When applicable:
  * </p>
  * <ul>
- *   <li>Uses XML Schema version 1.1.</li>
  *   <li>Addresses XML security vulnerabilities (XXE).</li>
  *   <li>Wraps checked exceptions in a runtime {@link XmlException}.</li>
  * </ul>
@@ -67,6 +67,19 @@ public final class XmlUtil {
 
     private static final Logger LOG = LoggerFactory.getLogger(XmlUtil.class);
 
+    /**
+     * @deprecated The JDK ships no XSD 1.1 {@link SchemaFactory} — not even
+     *     as of JDK 26 — so a usable one required a third-party Xerces
+     *     build with its own transitive dependencies. That dependency has
+     *     been removed: nothing in this library reaches a code path that
+     *     needs XSD 1.1 rather than 1.0, so it was pure weight. This
+     *     constant is kept only so code that referenced it still compiles;
+     *     {@link #createSchemaFactory()} now returns a plain XSD 1.0
+     *     factory and passing this URI to {@link SchemaFactory#newInstance
+     *     (String)} directly will throw unless the caller adds an XSD 1.1
+     *     implementation to their own classpath.
+     */
+    @Deprecated(since = "3.1.0", forRemoval = false)
     public static final String W3C_XML_SCHEMA_NS_URI_1_1 =
             "http://www.w3.org/XML/XMLSchema/v1.1";
 
@@ -92,9 +105,18 @@ public final class XmlUtil {
         return validator;
     }
 
+    /**
+     * Creates a {@link SchemaFactory} for XSD 1.0, the version the JDK
+     * ships support for. Nothing in this library needs XSD 1.1: the one
+     * schema that once did ({@code XmlIf.xsd}, unreachable from any public
+     * API) has been removed. A caller that genuinely needs 1.1 must add an
+     * implementation to their own classpath and construct a
+     * {@link SchemaFactory} directly rather than through this method.
+     * @return a new schema factory
+     */
     public static SchemaFactory createSchemaFactory() {
         return SchemaFactory.newInstance( //NOSONAR handled
-                W3C_XML_SCHEMA_NS_URI_1_1);
+                W3C_XML_SCHEMA_NS_URI);
     }
 
     public static XMLReader createXMLReader() {

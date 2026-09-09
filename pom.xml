@@ -51,7 +51,6 @@
     <hibernate.version>8.0.1.Final</hibernate.version>
     <imgscalr-lib.version>4.2</imgscalr-lib.version>
     <jakarta-el-api.version>6.0.1</jakarta-el-api.version>
-    <java-cup.version>10k</java-cup.version>
     <json.version>1.8</json.version>
     <jackson.version>3.2.0</jackson.version>
     <jackson-annotations.version>2.22</jackson-annotations.version>
@@ -66,9 +65,7 @@
     -->
     <tomcat-embed-el.version>11.0.21</tomcat-embed-el.version>
     <velocity-engine.version>2.4.1</velocity-engine.version>
-    <xerces.version>2.12.2</xerces.version>
     <xml-bind-api.version>4.0.5</xml-bind-api.version>
-    <xpath2.version>2.1.100</xpath2.version>
 
     <!-- Test dependencies -->
     <ant.version>1.10.17</ant.version>
@@ -145,32 +142,6 @@
       <version>${imgscalr-lib.version}</version>
     </dependency>
 
-    <!-- For XSD 1.1 support until Apache releases their Xerces version
-         with 1.1 support to Maven central. -->
-    <dependency>
-      <groupId>org.exist-db.thirdparty.xerces</groupId>
-      <artifactId>xercesImpl</artifactId>
-      <version>${xerces.version}</version>
-      <classifier>xml-schema-1.1</classifier>
-      <exclusions>
-        <!-- This exclusion is to fix: 
-          "The package javax.xml.namespace is accessible from more than 
-          one module: <unnamed>, java.xml"
-         -->
-        <exclusion>
-          <groupId>xml-apis</groupId>
-            <artifactId>xml-apis</artifactId>
-          </exclusion>
-      </exclusions>
-    </dependency>
-    <!-- xpath2 and java-cup are needed at runtime
-         for xercesImpl Schema 1.1 support with above dep. -->
-    <dependency>
-      <groupId>com.rackspace.eclipse.webtools.sourceediting</groupId>
-      <artifactId>org.eclipse.wst.xml.xpath2.processor</artifactId>
-      <version>${xpath2.version}</version>
-    </dependency>
-
     <dependency>
       <groupId>jakarta.xml.bind</groupId>
       <artifactId>jakarta.xml.bind-api</artifactId>
@@ -184,13 +155,6 @@
       <scope>runtime</scope>
     </dependency>
 
-    <dependency>
-      <groupId>edu.princeton.cup</groupId>
-      <artifactId>java-cup</artifactId>
-      <version>${java-cup.version}</version>
-      <scope>runtime</scope>
-    </dependency>
-          
     <dependency>
       <groupId>com.tdunning</groupId>
       <artifactId>json</artifactId>
@@ -560,7 +524,7 @@
             <link>https://commons.apache.org/proper/commons-logging/javadocs/api-release</link>
             <link>https://velocity.apache.org/engine/${velocity-engine.version}/apidocs</link>
             <link>https://javadoc.io/doc/org.slf4j/slf4j-api/${slf4j.version}</link>
-            <!-- Missing: xerces (1.1 schema), xpath2, java-cup, jackson/fasterxml --> 
+            <!-- Missing: jackson/fasterxml -->
           </links>
         </configuration>
         <executions>
