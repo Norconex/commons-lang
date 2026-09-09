@@ -14,6 +14,8 @@ jobs:
   build:
     permissions:
       contents: read
+      # write is required to publish snapshots to GitHub Packages
+      packages: write
 
     runs-on: ubuntu-latest
 
@@ -38,6 +40,21 @@ jobs:
           server-password: MAVEN_CENTRAL_TOKEN
           gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
+
+      # A second invocation, not a replacement of the one above: setup-java
+      # writes server credentials into the same ~/.m2/settings.xml on each
+      # call, so this adds the "github" server (used for snapshots) alongside
+      # "central" (used for releases) rather than overwriting it.
+      # GITHUB_ACTOR is provided by the runner already; GITHUB_TOKEN is set
+      # on the deploy step below, where it is actually used.
+      - name: Add GitHub Packages credentials (for snapshot deploys)
+        uses: actions/setup-java@v3
+        with:
+          java-version: "21"
+          distribution: "temurin"
+          server-id: github
+          server-username: GITHUB_ACTOR
+          server-password: GITHUB_TOKEN
 
       - name: Cache SonarCloud packages
         uses: actions/cache@v4
@@ -74,11 +91,48 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # Deploys to GitHub Packages (see the "github" snapshotRepository in
+      # pom.xml), not Sonatype — auth comes from the settings.xml written by
+      # the "Add GitHub Packages credentials" step above. -Dgpg.skip=true is
+      # new here: this step used to sign snapshots for Sonatype (the private
+      # key is still imported on the first setup-java call, for releases),
+      # but nothing validates a signature on GitHub Packages, so signing a
+      # snapshot bound for it is pure wasted CI time.
       - name: Build and publish (push to main)
         if: github.event_name == 'push'
-        run: mvn -B deploy -DskipTests
+        run: mvn -B deploy -DskipTests -Dgpg.skip=true
         env:
-          MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-          MAVEN_CENTRAL_TOKEN: ${{ secrets.OSSRH_TOKEN }}
-          MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Same "keep last 3" policy as crawlers-v4 uses for its own GitHub
+      # Packages. Just the one package here (a single-module library), but
+      # discovered by name via the API rather than hardcoded, for the same
+      # reason: it does not depend on guessing whether GitHub names a Maven
+      # package "artifactId" or "groupId.artifactId".
+      #
+      # continue-on-error: package deletion has historically needed a token
+      # scoped beyond what the ephemeral GITHUB_TOKEN carries even with
+      # packages: write (that covers publish, not delete, for org-owned
+      # packages) — unconfirmed either way for this org without a real run.
+      # A failure here must not fail the snapshot publish above, which is
+      # the part that actually matters; it will show as an orange warning in
+      # the Actions UI rather than pass silently, so it stays visible to
+      # follow up on: if it's failing, a PAT with delete:packages scope,
+      # added as a repo secret, is what's needed instead.
+      - name: Prune old Maven snapshot packages (keep last 3)
+        if: success() && github.event_name == 'push'
+        continue-on-error: true
+        run: |
+          gh api --paginate "/orgs/Norconex/packages?package_type=maven&per_page=100" \
+            --jq '.[] | select(.repository.name == "commons-lang") | .name' \
+            > /tmp/packages.txt
+
+          while IFS= read -r PKG; do
+            [ -z "$PKG" ] && continue
+            gh api --paginate "/orgs/Norconex/packages/maven/${PKG}/versions?per_page=100" \
+              --jq 'sort_by(.created_at) | reverse | .[3:] | .[].id' \
+              | xargs -r -I {} gh api --method DELETE \
+                  "/orgs/Norconex/packages/maven/${PKG}/versions/{}"
+          done < /tmp/packages.txt
+        env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

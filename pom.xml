@@ -707,13 +707,21 @@
     makes release deploys fail with a misleading
     "Could not find artifact ... in central".
 
-    Snapshots are different and DO use a real repository URL — the Nexus-backed
-    endpoint below is the documented Central Portal snapshot target.
+    Snapshots go to GitHub Packages, not Sonatype. A snapshot is thrown away
+    the moment a newer one exists — it has no business consuming the same
+    metered, permanent-storage service that public releases publish through.
+    Every push to main deploys one (see ci.yml). The crawlers-v4 repo made
+    the same change after finding this was the dominant contributor to the
+    org's Central Publisher quota — one module's Sonatype build number was
+    already past 100 before anyone noticed, and this repo carries the same
+    push-triggered deploy. GitHub Packages costs nothing extra for a public
+    repo and needs no Sonatype credentials — just GITHUB_TOKEN, which every
+    workflow run already has.
   -->
   <distributionManagement>
     <snapshotRepository>
-      <id>central</id>
-      <url>https://central.sonatype.com/repository/maven-snapshots/</url>
+      <id>github</id>
+      <url>https://maven.pkg.github.com/Norconex/commons-lang</url>
     </snapshotRepository>
   </distributionManagement>
 
