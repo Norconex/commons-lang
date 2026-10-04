@@ -52,7 +52,7 @@
     <imgscalr-lib.version>4.2</imgscalr-lib.version>
     <jakarta-el-api.version>6.0.1</jakarta-el-api.version>
     <json.version>1.8</json.version>
-    <jackson.version>3.2.0</jackson.version>
+    <jackson.version>3.2.3</jackson.version>
     <jackson-annotations.version>2.22</jackson-annotations.version>
     <log4j.version>2.25.4</log4j.version>
     <okhttp3.version>4.12.0</okhttp3.version>
