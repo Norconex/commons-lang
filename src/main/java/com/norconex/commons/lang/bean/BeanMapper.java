@@ -54,6 +54,7 @@ import com.norconex.commons.lang.ClassUtil;
 import com.norconex.commons.lang.bean.jackson.EmptyWithClosingTagXmlFactory;
 import com.norconex.commons.lang.bean.jackson.JsonXmlCollectionModule;
 import com.norconex.commons.lang.bean.jackson.JsonXmlMapModule;
+import com.norconex.commons.lang.bean.jackson.NullKeepingSerializerFactory;
 import com.norconex.commons.lang.bean.jackson.JsonXmlPropertiesModule;
 import com.norconex.commons.lang.bean.spi.PolymorphicTypeLoader;
 import com.norconex.commons.lang.bean.spi.PolymorphicTypeProvider;
@@ -545,8 +546,9 @@ public class BeanMapper { //NOSONAR
         // Our NON_DEFAULT inclusion (NonDefaultInclusionMixIn on Object) is a global
         // default; since Jackson 3.2 (databind#1757) global NON_DEFAULT only compares
         // against real default-bean values when this feature is enabled. Combined with
-        // our PropertyBuilder shim (which keeps explicit nulls writable), this restores
-        // pre-3.2 default-value round-trip behavior.
+        // NullKeepingSerializerFactory (installed below, which keeps explicit nulls
+        // writable when the default is non-null), this restores pre-3.2
+        // default-value round-trip behavior.
         builder.enable(MapperFeature.USE_REAL_INCLUDE_NON_DEFAULT);
         builder.defaultMergeable(false);
         builder.disable(StreamReadFeature.AUTO_CLOSE_SOURCE);
@@ -594,6 +596,9 @@ public class BeanMapper { //NOSONAR
                         CoercionAction.AsEmpty));
 
         // write:
+        // Must come before any module is added: modules that register
+        // serializers derive their factory from the one installed here.
+        builder.serializerFactory(NullKeepingSerializerFactory.INSTANCE);
         builder.configure(SerializationFeature.INDENT_OUTPUT, indent);
         builder.disable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
 
