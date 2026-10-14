@@ -122,6 +122,32 @@ jobs:
 
       #--- Step ------------------------------------------------------------------
 
+      # Pin Maven 3.9.x. GitHub's ubuntu-latest image switched to Maven 3.10.0
+      # (image 20261004), under which central-publishing-maven-plugin leaves
+      # maven-metadata-local.xml and _remote.repositories in its staging
+      # directory, they end up in the bundle, and Central rejects it with
+      # "Bundle has content that does NOT have a .pom file" (see
+      # mavenplugins/central-publishing-maven-plugin#79). Nothing is published
+      # when that happens, but the run still leaves the branch on a release
+      # version. Remove this step once the plugin copes with Maven 3.10.
+      # Apache's own archive, with its checksum verified: no third-party action.
+      - name: Use Maven 3.9.9 (not the runner's 3.10)
+        run: |
+          MVN_VERSION=3.9.9
+          BASE="https://archive.apache.org/dist/maven/maven-3/${MVN_VERSION}/binaries"
+          curl -fsSL -o "${RUNNER_TEMP}/maven.tar.gz" "${BASE}/apache-maven-${MVN_VERSION}-bin.tar.gz"
+          EXPECTED=$(curl -fsSL "${BASE}/apache-maven-${MVN_VERSION}-bin.tar.gz.sha512" | awk '{print $1}')
+          echo "${EXPECTED}  ${RUNNER_TEMP}/maven.tar.gz" | sha512sum -c -
+          tar -xzf "${RUNNER_TEMP}/maven.tar.gz" -C "${RUNNER_TEMP}"
+          echo "${RUNNER_TEMP}/apache-maven-${MVN_VERSION}/bin" >> "$GITHUB_PATH"
+
+      #--- Step ------------------------------------------------------------------
+
+      - name: Show Maven version
+        run: mvn -v
+
+      #--- Step ------------------------------------------------------------------
+
       - name: Validate current POM is SNAPSHOT
         run: |
           CURRENT=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
