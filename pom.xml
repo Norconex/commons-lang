@@ -26,6 +26,12 @@
   <inceptionYear>2008</inceptionYear>
   
   <properties>
+    <!-- Where build output goes. Defaults to target/. Override to keep an IDE
+         (VS Code Java compiles into target/ with ecj) and Maven apart, e.g.:
+         mvn -Dnx.buildDir='C:/tmp/nxbuild/${project.artifactId}' verify
+         Caveat: PackageManifestTest/VersionUtilTest expect the Maven layout
+         (../../pom.xml from target/classes) and fail when relocated. -->
+    <nx.buildDir>${project.basedir}/target</nx.buildDir>
     <java.version>21</java.version>
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
@@ -261,7 +267,7 @@
   </dependencies>
 
   <build>
-
+    <directory>${nx.buildDir}</directory>
     <resources>
       <resource>
         <filtering>false</filtering>
