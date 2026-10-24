@@ -45,6 +45,13 @@
 # 4. This job then: validates -> sets the version -> runs the full test suite
 #    -> publishes to Maven Central -> tags -> creates a GitHub Release from
 #    the changelog -> returns the branch to a SNAPSHOT version.
+# 5. AFTER the release, forward-port every fix made on the release/* branch
+#    to main (git cherry-pick the fix commits, not the "chore(release)" ones),
+#    and push. Nothing automates this: a fix that stays only on the release
+#    branch comes back as a regression in the next feature release cut from
+#    main. Changelogs stay on the release branch.
+# 6. Bump the consuming projects (e.g., Norconex/crawler's
+#    norconex-commons-lang.version) once the version is on Maven Central.
 
 name: Release
 
