@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -367,13 +366,20 @@ public class BeanMapper { //NOSONAR
     // We keep a copy of resolved polymorphic type as they are otherwise
     // difficult to obtain from the ObjectMapper and we may need them in
     // different context (e.g., registration in OpenApi).
-    private final MultiValuedMap<Class<?>, Class<?>> resolvedPolymorphicTypes =
-            MultiMapUtils.newListValuedHashMap();
-    private final AtomicBoolean polyTypesResolved = new AtomicBoolean();
+    // Built once, then published as an unmodifiable map so it can safely be
+    // read from any thread while ObjectMappers get created.
+    private volatile MultiValuedMap<Class<?>,
+            Class<?>> resolvedPolymorphicTypes;
 
+    /**
+     * Gets all polymorphic types (and their sub-types) known to this mapper,
+     * resolved on first call. Types are registered when building the mapper
+     * (builder and service loader), not after, so the returned map is
+     * unmodifiable.
+     * @return unmodifiable map of polymorphic types to their sub-types
+     */
     public MultiValuedMap<Class<?>, Class<?>> getPolymorphicTypes() {
-        resolvePolymorphicTypes();
-        return resolvedPolymorphicTypes;
+        return resolvePolymorphicTypes();
     }
 
     /**
@@ -652,33 +658,47 @@ public class BeanMapper { //NOSONAR
     abstract static class NonDefaultInclusionMixIn {
     }
 
-    private synchronized void resolvePolymorphicTypes() {
-        if (polyTypesResolved.get()) {
+    private MultiValuedMap<Class<?>, Class<?>> resolvePolymorphicTypes() {
+        var resolved = resolvedPolymorphicTypes;
+        if (resolved != null) {
             // already resolved for this instance, we skip.
-            return;
+            return resolved;
         }
+        synchronized (this) {
+            if (resolvedPolymorphicTypes == null) {
+                resolvedPolymorphicTypes =
+                        MultiMapUtils.unmodifiableMultiValuedMap(
+                                doResolvePolymorphicTypes());
+            }
+            return resolvedPolymorphicTypes;
+        }
+    }
+
+    private MultiValuedMap<Class<?>, Class<?>> doResolvePolymorphicTypes() {
+        MultiValuedMap<Class<?>, Class<?>> resolved =
+                MultiMapUtils.newListValuedHashMap();
 
         //--- Directly specified ---
-        polymorphicTypeImpls.forEach(resolvedPolymorphicTypes::putAll);
+        polymorphicTypeImpls.forEach(resolved::putAll);
 
         //--- From service loader ---
         var cl = ofNullable(classLoader).orElseGet(
                 () -> getClass().getClassLoader());
         if (!polymorphicServiceLoaderDisabled) {
             PolymorphicTypeLoader.polymorphicTypes(cl).asMap().forEach(
-                    resolvedPolymorphicTypes::putAll);
+                    resolved::putAll);
         }
 
         //--- Configured ---
         polymorphicTypes
-                .forEach((type, predicate) -> resolvedPolymorphicTypes.putAll(
+                .forEach((type, predicate) -> resolved.putAll(
                         type, ClassFinder.findSubTypes(type, predicate)));
 
         //--- Flow-specific ---
         Class<?> conditionType =
                 flowMapperConfig.getPredicateType().getBaseType();
         if (conditionType != null) {
-            resolvedPolymorphicTypes.putAll(
+            resolved.putAll(
                     conditionType,
                     ClassFinder.findSubTypes(conditionType,
                             flowMapperConfig
@@ -688,7 +708,7 @@ public class BeanMapper { //NOSONAR
         Class<?> consumerType =
                 flowMapperConfig.getConsumerType().getBaseType();
         if (consumerType != null) {
-            resolvedPolymorphicTypes.putAll(
+            resolved.putAll(
                     consumerType,
                     ClassFinder.findSubTypes(consumerType,
                             flowMapperConfig
@@ -696,13 +716,11 @@ public class BeanMapper { //NOSONAR
                                     .getScanFilter()));
         }
 
-        polyTypesResolved.set(true);
+        return resolved;
     }
 
     private void registerPolymorphicTypes(MapperBuilder<?, ?> builder) {
-        resolvePolymorphicTypes();
-
-        resolvedPolymorphicTypes.asMap().forEach((type, subTypes) -> {
+        resolvePolymorphicTypes().asMap().forEach((type, subTypes) -> {
             registerPolymorphicType(builder, type, subTypes);
         });
     }
@@ -711,8 +729,6 @@ public class BeanMapper { //NOSONAR
             MapperBuilder<?, ?> builder,
             Class<?> type,
             Collection<? extends Class<?>> subTypes) {
-
-        resolvedPolymorphicTypes.putAll(type, subTypes);
 
         //MAYBE: check and report those already registered?
         builder.addMixIn(type, PolymorphicMixIn.class);
