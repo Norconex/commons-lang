@@ -214,6 +214,41 @@ class ClassFinderTest {
                 .doesNotContain("com.example.Plain");
     }
 
+    // A JAR without an index is still listed from its archive, as it always
+    // was. An indexed JAR named through a detour in its path (sub/../x.jar)
+    // gives the same names as a plain path. This checks the names only: a
+    // mutation that stops the detour being recognised leaves them unchanged,
+    // since an indexed JAR's index is read again when it is walked, so this
+    // test does not guard the path normalisation itself.
+    @Test
+    void testUnindexedJarsAreListedAndIndexedJarsAreRecognisedWhateverTheirPath(
+            @TempDir Path tempDir) throws Exception {
+        var plain = tempDir.resolve("plain.jar").toFile();
+        writeJar(plain, Map.of(
+                "com/example/Plain.class", "irrelevant",
+                "com/example/Other.class", "irrelevant",
+                "com/example/readme.txt", "irrelevant"));
+        var indexed = jarWithIndex(tempDir.resolve("indexed.jar"),
+                List.of("com.example.Indexed"),
+                Map.of("com/example/Hidden.class", "irrelevant"));
+        Files.createDirectories(tempDir.resolve("sub"));
+        var detour = new File(tempDir.toFile(), "sub/../indexed.jar");
+
+        Set<String> names;
+        try (var loader = loaderFor(plain, indexed)) {
+            names = ClassFinder.scanSources(
+                    loader, List.of(plain, detour), null, false);
+        }
+
+        // Plain.jar is walked: its classes are listed, its text file is not.
+        // Indexed.jar is read from its index: Hidden is not reported, through
+        // either spelling of its path.
+        assertThat(names).containsExactlyInAnyOrder(
+                "com.example.Plain",
+                "com.example.Other",
+                "com.example.Indexed");
+    }
+
     // Directories are compiled output, so they stay in even in indexed mode
     // or working from an IDE would stop resolving.
     @Test

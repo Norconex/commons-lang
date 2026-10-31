@@ -25,6 +25,7 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.InvalidPathException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -389,7 +390,7 @@ public final class ClassFinder {
         }
 
         for (File file : classpathEntries) {
-            if (indexedFiles.contains(canonical(file))) {
+            if (indexedFiles.contains(key(file))) {
                 continue;
             }
             // Directories are compiled output, so they are always walked;
@@ -480,7 +481,7 @@ public final class ClassFinder {
      * each one lists.
      * @param loader class loader to look index resources up on
      * @param classes set to add discovered class names to
-     * @return canonical paths of the files whose index was read
+     * @return paths (see {@link #key}) of the files whose index was read
      */
     private static Set<String> readClassIndexes(
             ClassLoader loader, Set<String> classes) {
@@ -540,7 +541,7 @@ public final class ClassFinder {
     }
 
     /**
-     * Resolves the canonical path of the archive or directory an index came
+     * Resolves the path of the archive or directory an index came
      * from, so that entry is not scanned again. Returns <code>null</code> when
      * the source cannot be established, which only means the entry may also
      * be walked.
@@ -553,7 +554,7 @@ public final class ClassFinder {
                 if (sep < 0) {
                     return null;
                 }
-                return canonical(new File(
+                return key(new File(
                         URI.create(spec.substring(4, sep))));
             }
             if ("file".equals(url.getProtocol())) {
@@ -563,7 +564,7 @@ public final class ClassFinder {
                 var root = indexFile.getParentFile() // norconex
                         .getParentFile() // META-INF
                         .getParentFile(); // classpath root
-                return canonical(root);
+                return key(root);
             }
         } catch (Exception e) {
             LOG.debug("Could not resolve the source of class index: {}",
@@ -591,10 +592,18 @@ public final class ClassFinder {
         return classes;
     }
 
-    private static String canonical(File file) {
+    /**
+     * Identifies a classpath entry for the index lookup. Built from the path
+     * alone, without touching the file system: resolving canonical paths
+     * costs a native call per entry, which dominated the cost of a lookup on
+     * a long classpath. Two spellings of the same file may give different
+     * keys; that only means the file is listed again, and the names are
+     * collected in a set.
+     */
+    private static String key(File file) {
         try {
-            return file.getCanonicalPath();
-        } catch (IOException e) {
+            return file.toPath().toAbsolutePath().normalize().toString();
+        } catch (InvalidPathException e) {
             return file.getAbsolutePath();
         }
     }
