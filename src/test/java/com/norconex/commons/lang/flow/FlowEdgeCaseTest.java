@@ -32,7 +32,6 @@ import com.norconex.commons.lang.config.Configurable;
 import com.norconex.commons.lang.flow.mock.MockConsumerBase;
 import com.norconex.commons.lang.flow.mock.MockFlowConsumerAdapter;
 import com.norconex.commons.lang.flow.mock.MockFlowPredicateAdapter;
-import com.norconex.commons.lang.flow.mock.MockMapSizeEqualsCondition;
 import com.norconex.commons.lang.flow.mock.MockPredicateBase;
 import com.norconex.commons.lang.flow.mock.MockPropertyMatcherCondition;
 import com.norconex.commons.lang.flow.mock.MockUppercaseConsumer;

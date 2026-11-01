@@ -69,7 +69,6 @@ class FailOnUnknownConfigurablePropModule extends SimpleModule {
     }
 
     static class FailOnBeanDeserializer extends ValueDeserializer<Object> {
-        private static final long serialVersionUID = 1L;
         private final BeanDeserializerBase delegate;
         private final BeanMapper beanMapper;
 

@@ -15,10 +15,8 @@
 package com.norconex.commons.lang.bean.jackson;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 
-import java.io.StringReader;
 import java.io.StringWriter;
 
 import org.junit.jupiter.api.Test;

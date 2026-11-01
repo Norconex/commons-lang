@@ -14,8 +14,6 @@
  */
 package com.norconex.commons.lang.flow.module;
 
-import java.io.IOException;
-
 import com.norconex.commons.lang.flow.module.FlowDeserializer.FlowDeserContext;
 import com.norconex.commons.lang.flow.module.FlowSerializer.FlowSerContext;
 

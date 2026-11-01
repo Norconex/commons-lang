@@ -14,8 +14,6 @@
  */
 package com.norconex.commons.lang.convert;
 
-import java.io.IOException;
-
 import tools.jackson.core.JsonParser;
 import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.ValueDeserializer;

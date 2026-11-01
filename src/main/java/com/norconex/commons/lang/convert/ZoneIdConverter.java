@@ -14,7 +14,6 @@
 */
 package com.norconex.commons.lang.convert;
 
-import java.io.IOException;
 import java.time.ZoneId;
 
 import tools.jackson.core.JsonGenerator;

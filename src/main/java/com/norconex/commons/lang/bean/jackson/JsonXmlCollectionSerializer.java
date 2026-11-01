@@ -16,14 +16,12 @@ package com.norconex.commons.lang.bean.jackson;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
-import java.io.IOException;
 import java.util.Collection;
 
 import javax.xml.namespace.QName;
 
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.databind.BeanProperty;
-import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.DatabindException;
 import tools.jackson.databind.ValueSerializer;
 import tools.jackson.databind.SerializationContext;

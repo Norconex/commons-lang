@@ -14,8 +14,6 @@
  */
 package com.norconex.commons.lang.bean.jackson;
 
-import java.io.IOException;
-
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.databind.ValueSerializer;
 import tools.jackson.databind.SerializationContext;
