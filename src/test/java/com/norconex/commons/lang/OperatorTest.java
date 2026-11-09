@@ -42,6 +42,21 @@ class OperatorTest {
         assertThat(of("lt", "LT", "<"))
                 .isNotEmpty()
                 .allMatch(op -> Operator.LOWER_THAN == op);
+        // constant names: any case, ignoring non-alphanumeric characters
+        assertThat(of("GREATER_THAN", "greater_than", "Greater_Than",
+                "GreaterThan", "Greater-than", "greater than", " greaterthan "))
+                        .allMatch(op -> Operator.GREATER_THAN == op);
+        assertThat(of("GREATER_EQUAL", "greater_equal", "GreaterEqual"))
+                .allMatch(op -> Operator.GREATER_EQUAL == op);
+        assertThat(of("EQUALS", "equals", "Equals"))
+                .allMatch(op -> Operator.EQUALS == op);
+        assertThat(of("LOWER_EQUAL", "lower_equal", "lower-equal"))
+                .allMatch(op -> Operator.LOWER_EQUAL == op);
+        assertThat(of("LOWER_THAN", "lower_than", "LowerThan"))
+                .allMatch(op -> Operator.LOWER_THAN == op);
+        // symbols alone are not names, and partial names do not match
+        assertThat(of("-", "_", "greater", "than", "greaterthanx"))
+                .allMatch(Objects::isNull);
         assertThat(of((String) null))
                 .isNotEmpty()
                 .allMatch(Objects::isNull);

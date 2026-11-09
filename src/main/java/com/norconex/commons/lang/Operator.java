@@ -14,6 +14,8 @@
  */
 package com.norconex.commons.lang;
 
+import java.util.regex.Pattern;
+
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.compare.ComparableUtils;
@@ -43,6 +45,11 @@ import com.fasterxml.jackson.annotation.JsonValue;
  *   <tr><td>&lt;=, =&lt;</td><td>le</td><td>lowe equal</td></tr>
  *   <tr><td>=, ==</td><td>eq,is</td><td>equals</td></tr>
  * </table>
+ * <p>
+ * The constant names (e.g., <code>GREATER_THAN</code>) are also accepted,
+ * ignoring letter case and any character that is not a letter or a digit
+ * (e.g., <code>GreaterThan</code> or <code>greater-than</code>).
+ * </p>
  *
  * @since 2.0.0
  */
@@ -78,6 +85,9 @@ public enum Operator {
         }
     };
 
+    private static final Pattern NON_ALPHANUMERIC =
+            Pattern.compile("[^a-z0-9]");
+
     String[] abbr;
 
     Operator(String... abbr) {
@@ -90,8 +100,15 @@ public enum Operator {
             return null;
         }
         var cleanOp = StringUtils.remove(op.toLowerCase().trim(), ' ');
+        // for constant names: letters and digits only, so "GreaterThan",
+        // "Greater-than" and "GREATER_THAN" are all the same.
+        var nameOp = NON_ALPHANUMERIC.matcher(cleanOp).replaceAll("");
         for (Operator c : Operator.values()) {
-            if (ArrayUtils.contains(c.abbr, cleanOp)) {
+            if (ArrayUtils.contains(c.abbr, cleanOp)
+                    || (!nameOp.isEmpty()
+                            && nameOp.equals(NON_ALPHANUMERIC
+                                    .matcher(c.name().toLowerCase())
+                                    .replaceAll("")))) {
                 return c;
             }
         }
